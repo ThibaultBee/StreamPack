@@ -1,0 +1,3 @@
+rootProject.name='AndroidSRTStreamer'
+include ':app'
+include ':lib'

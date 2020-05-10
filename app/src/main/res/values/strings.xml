@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">AndroidSRTStreamer</string>
+    <string name="live">Start Live</string>
+    <string name="stop">Stop</string>
+
+    <string name="dismiss">Ok</string>
+</resources>
