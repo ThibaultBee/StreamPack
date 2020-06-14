@@ -6,43 +6,21 @@ import com.github.thibaultbee.srtstreamer.models.Frame
 import com.github.thibaultbee.srtstreamer.utils.Error
 import com.github.thibaultbee.srtstreamer.utils.Logger
 import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.util.zip.CRC32
 import kotlin.experimental.or
 
-class MpegTSMux(val logger: Logger) {
-    var muxerListener: MuxerListener? = null
+class MpegTSMux(logger: Logger, muxerListener: MuxerListener? = null) :
+    MpegTSBase(logger, muxerListener) {
     private var services = mutableListOf<MpegTSService>()
     private var streams = mutableListOf<MpegTSStream>()
-    private lateinit var pat: MpegTSSection
-    private lateinit var sdt: MpegTSSection
-    private lateinit var pmt: MpegTSSection
-    private var tsid = 0x1
-    private var onid = 0x1
-
-    private var serviceType = 1
-    private var tablesVersion = 0
+    private lateinit var pat: MpegTSPat
+    private lateinit var sdt: MpegTSSdt
+    private lateinit var pmt: MpegTSPmt
 
     private val patPacketPeriod = 40
     private var patPacketCount = patPacketPeriod - 1// Output PAT ASAP
 
     private val sdtPacketPeriod = 200
     private var sdtPacketCount = sdtPacketPeriod - 1// Output SDT ASAP
-
-    companion object {
-        const val SECTION_LENGTH = 1020
-        const val TS_PACKET_SIZE = 188
-
-        // Table ids
-        const val PAT_TID = 0x00
-        const val PMT_TID = 0x02
-        const val M4OD_TID = 0x05
-        const val SDT_TID = 0x42
-
-        // Pids
-        const val PAT_PID = 0x0000
-        const val SDT_PID = 0x0011
-    }
 
     fun writeFrame(frame: Frame): Error {
         when (frame.mimeType) {
@@ -114,12 +92,19 @@ class MpegTSMux(val logger: Logger) {
             streams[0].pid
         }
 
-        pmt = MpegTSSection(0x16)
-        val service = MpegTSService(pmt, 0x4698, "Service01", "AndroidSRTStreamer", pcrPid)
+        pmt = MpegTSPmt(logger, muxerListener!!, 0x16)
+        val service = MpegTSService(
+            pmt,
+            MpegTSService.ServiceType.DIGITAL_TV,
+            0x4698,
+            "Service01",
+            "AndroidSRTStreamer",
+            pcrPid
+        )
         services.add(service)
 
-        pat = MpegTSSection(PAT_PID)
-        sdt = MpegTSSection(SDT_PID)
+        pat = MpegTSPat(logger, muxerListener!!)
+        sdt = MpegTSSdt(logger, muxerListener!!)
 
         return Error.SUCCESS
     }
@@ -307,233 +292,16 @@ class MpegTSMux(val logger: Logger) {
         sdtPacketCount += 1
         if (sdtPacketCount == sdtPacketPeriod) {
             sdtPacketCount = 0
-            writeSdt()
+            sdt.write(services)
         }
 
         patPacketCount += 1
         if ((patPacketCount == patPacketPeriod) || forcePat) {
             patPacketCount = 0
-            writePat()
-            services.forEach { writePmt(it) }
+            pat.write(services)
+            services.forEach { pmt.write(it, streams) }
         }
 
         return Error.SUCCESS
-    }
-
-    private fun writePat(): Error {
-        val buffer = ByteBuffer.allocate(SECTION_LENGTH)
-
-        services.forEach {
-            buffer.putShort(it.sid.toShort())
-            buffer.putShort((0xe000 or it.pmt.pid).toShort())
-        }
-
-        buffer.limit(buffer.position())
-        buffer.rewind()
-        writeSection1(pat, buffer, PAT_TID, tsid, tablesVersion, 0, 0)
-
-        return Error.SUCCESS
-    }
-
-    private fun writePmt(service: MpegTSService): Error {
-        val buffer = ByteBuffer.allocate(SECTION_LENGTH)
-
-        buffer.putShort((0xe000 or service.pcrPid).toShort())
-
-        val programInfoLengthPosition = buffer.position()
-        buffer.position(buffer.position() + 2)
-
-        // TODO: Program Info
-
-        var short = 0xF000 or (buffer.position() - programInfoLengthPosition - 2)
-        buffer.put(programInfoLengthPosition, (short shr 8).toByte())
-        buffer.put(programInfoLengthPosition + 1, (short).toByte())
-
-        streams.forEach {
-            buffer.put(StreamType.fromMimeType(it.mimeType).value.toByte())
-            buffer.putShort((0xe000 or it.pid).toShort())
-
-            val descLenghtPosition = buffer.position()
-            buffer.position(buffer.position() + 2)
-
-            // TODO: Optional descriptors
-
-            short = 0xF000 or (buffer.position() - descLenghtPosition - 2)
-            buffer.put(descLenghtPosition, (short shr 8).toByte())
-            buffer.put(descLenghtPosition + 1, short.toByte())
-        }
-
-        buffer.limit(buffer.position())
-        buffer.rewind()
-        writeSection1(services[0].pmt, buffer, PMT_TID, tsid, tablesVersion, 0, 0)
-
-        return Error.SUCCESS
-    }
-
-
-    fun writeSdt(): Error {
-        val buffer = ByteBuffer.allocate(SECTION_LENGTH)
-
-        buffer.put(onid.toByte())
-        buffer.put(0xFF.toByte())
-
-        services.forEach {
-            buffer.putShort(it.sid.toShort())
-            buffer.put(0xfc.toByte())
-
-            val descListLenPosition = buffer.position()
-            buffer.position(buffer.position() + 2)
-
-            // write only one descriptor for the service name and provider
-            buffer.put(0x48.toByte())
-
-            val descLenPosition = buffer.position()
-            buffer.position(buffer.position() + 1)
-
-            buffer.put(serviceType.toByte())
-
-            buffer.put(it.providerName.length.toByte())
-            buffer.put(it.providerName.toByteArray())
-
-            buffer.put(it.name.length.toByte())
-            buffer.put(it.name.toByteArray())
-
-            buffer.put(descLenPosition, (buffer.position() - descLenPosition - 1).toByte())
-
-            /* fill descriptor length */
-            val runningStatus = 4 /* running */
-            val freeCaMode = 0
-            val short = (runningStatus shl 13) or (freeCaMode shl 12) or
-                    (buffer.position() - descListLenPosition - 2)
-            buffer.put(descListLenPosition, (short shr 8).toByte())
-            buffer.put(descListLenPosition + 1, (short).toByte())
-        }
-
-        buffer.limit(buffer.position())
-        buffer.rewind()
-        writeSection1(sdt, buffer, SDT_TID, tsid, tablesVersion, 0, 0)
-
-        return Error.SUCCESS
-    }
-
-
-    private fun writeSection1(section: MpegTSSection, buffer: ByteBuffer, tid: Int, id: Int, version: Int, secNum: Int, lastSecNum: Int): Error {
-        val sectionBuffer = ByteBuffer.allocate(buffer.limit() + 12) // + Header & CRC
-
-        val flags = if (tid == SDT_TID) {
-            0xf000
-        } else {
-            0xb000
-        }
-
-        sectionBuffer.put(tid.toByte())
-        sectionBuffer.putShort((flags or (buffer.limit() + 5 + 4)).toShort())
-        sectionBuffer.putShort(id.toShort())
-        sectionBuffer.put((0xc1 or (version shl 1)).toByte())
-        sectionBuffer.put(secNum.toByte())
-        sectionBuffer.put(lastSecNum.toByte())
-        sectionBuffer.put(buffer)
-
-        // CRC computation
-        val crc32 = CRC32()
-        crc32.update(sectionBuffer.array(), 0, sectionBuffer.position())
-        val crc = ByteBuffer.allocate(4)
-        crc.order(ByteOrder.LITTLE_ENDIAN)
-        crc.putInt(crc32.value.toInt())
-        crc.rewind()
-        sectionBuffer.put(crc)
-
-        sectionBuffer.rewind()
-
-        return writeSection(section, sectionBuffer)
-    }
-
-    private fun writeSection(section: MpegTSSection, buffer: ByteBuffer): Error {
-        val packet = ByteBuffer.allocateDirect(TS_PACKET_SIZE)
-        val limit = buffer.limit()
-
-        while(buffer.hasRemaining()) {
-            packet.rewind()
-            packet.put(0x47)
-            var byte = section.pid shr 8
-            if (buffer.position() == 0) { // first
-                byte = byte or 0x40
-            }
-            packet.put(byte.toByte())
-            packet.put(section.pid.toByte())
-
-            section.cc = (section.cc + 1) and 0xF
-            packet.put((0x10 or section.cc).toByte())
-
-            if (section.discontinuity != 0) {
-                packet.put(packet.position() -1, packet.get(packet.position() -1) or 0x20)
-                packet.put(1.toByte())
-                packet.put(0x80.toByte())
-                section.discontinuity = 0
-            }
-            if (buffer.position() == 0) {
-                packet.put(0)
-            }
-
-
-            buffer.limit(buffer.position() + Math.min(packet.remaining(), buffer.remaining()))
-            packet.put(buffer)
-            buffer.limit(limit)
-
-            // Padding if needed
-            repeat((0 until packet.remaining()).count()) { packet.put(0xFF.toByte()) }
-
-            writePacket(packet)
-        }
-
-        return Error.SUCCESS
-    }
-
-    private fun writePacket(buffer: ByteBuffer): Error {
-        buffer.rewind()
-        return muxerListener?.onOutputFrame(buffer) ?: Error.INVALID_OPERATION
-    }
-
-
-    data class MpegTSSection(val pid: Int, var cc: Int = 15, var discontinuity: Int = 0)
-    data class MpegTSStream(val mimeType: String, val pid: Int, var cc: Int = 15, var discontinuity: Int = 0)
-    data class MpegTSService(val pmt: MpegTSSection, val sid: Int, val name: String, val providerName: String, var pcrPid: Int = 0x1fff, var pcrPacketCount: Int = 0, var pcrPacketPeriod: Int = 0)
-
-    enum class StreamType (val value: Int) {
-        VIDEO_MPEG1 (0x01),
-        VIDEO_MPEG2 (0x02),
-        AUDIO_MPEG1 (0x03),
-        AUDIO_MPEG2 (0x04),
-        PRIVATE_SECTION (0x05),
-        PRIVATE_DATA (0x06),
-        AUDIO_AAC (0x0f),
-        AUDIO_AAC_LATM (0x11),
-        VIDEO_MPEG4 (0x10),
-        METADATA (0x15),
-        VIDEO_H264 (0x1b),
-        VIDEO_HEVC (0x24),
-        VIDEO_CAVS (0x42),
-        VIDEO_VC1 (0xea),
-        VIDEO_DIRAC (0xd1),
-
-        AUDIO_AC3 (0x81),
-        AUDIO_DTS (0x82),
-        AUDIO_TRUEHD (0x83),
-        AUDIO_EAC3 (0x87);
-
-        companion object {
-            fun fromMimeType(mimeType: String) = when (mimeType) {
-                MediaFormat.MIMETYPE_VIDEO_MPEG2 -> VIDEO_MPEG2
-                MediaFormat.MIMETYPE_AUDIO_MPEG -> AUDIO_MPEG1
-                MediaFormat.MIMETYPE_AUDIO_AAC -> AUDIO_AAC
-                MediaFormat.MIMETYPE_VIDEO_MPEG4 -> VIDEO_MPEG4
-                MediaFormat.MIMETYPE_VIDEO_AVC -> VIDEO_H264
-                MediaFormat.MIMETYPE_VIDEO_HEVC -> VIDEO_HEVC
-                MediaFormat.MIMETYPE_AUDIO_AC3 -> AUDIO_AC3
-                MediaFormat.MIMETYPE_AUDIO_EAC3 -> AUDIO_EAC3
-                MediaFormat.MIMETYPE_AUDIO_OPUS -> PRIVATE_DATA
-                else -> PRIVATE_DATA
-            }
-        }
     }
 }
