@@ -4,6 +4,7 @@ import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.util.Size
+import android.view.Surface
 import com.github.thibaultbee.srtstreamer.interfaces.EncoderGenerateExtraListener
 import com.github.thibaultbee.srtstreamer.utils.Error
 import com.github.thibaultbee.srtstreamer.utils.Logger
@@ -65,10 +66,14 @@ class VideoEncoder(logger: Logger) : Encoder(logger), EncoderGenerateExtraListen
         byteBufferSize += pps?.limit() ?: 0
 
         val extra = ByteBuffer.allocateDirect(byteBufferSize)
-        sps?.let {  extra.put(it) }
-        pps?.let {  extra.put(it) }
+        sps?.let { extra.put(it) }
+        pps?.let { extra.put(it) }
 
         extra.rewind()
         return extra
+    }
+
+    fun getIntputSurface(): Surface? {
+        return mediaCodec?.createInputSurface()
     }
 }

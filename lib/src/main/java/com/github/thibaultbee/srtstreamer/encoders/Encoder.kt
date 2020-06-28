@@ -5,7 +5,6 @@ import android.media.MediaCodecInfo
 import android.media.MediaCodecList
 import android.media.MediaFormat
 import android.os.Bundle
-import android.view.Surface
 import com.github.thibaultbee.srtstreamer.interfaces.EncoderGenerateExtraListener
 import com.github.thibaultbee.srtstreamer.interfaces.EncoderListener
 import com.github.thibaultbee.srtstreamer.models.Frame
@@ -88,10 +87,6 @@ open class Encoder(val logger: Logger): EventHandlerManager() {
 
     fun getMimeType(): String? {
         return mediaCodec?.outputFormat?.getString(MediaFormat.KEY_MIME)
-    }
-
-    fun getIntputSurface(): Surface? {
-        return mediaCodec?.createInputSurface()
     }
 
     fun start(): Error {
