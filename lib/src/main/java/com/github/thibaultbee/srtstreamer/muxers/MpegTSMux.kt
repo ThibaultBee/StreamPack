@@ -29,12 +29,12 @@ class MpegTSMux(logger: Logger, muxerListener: MuxerListener? = null) :
                     if (frame.extra == null) {
                         logger.e(this, "Failed to get extra for AVC")
                     }
-
-                    val buffer = ByteBuffer.allocateDirect(6 + frame.extra!!.limit() + frame.buffer.limit())
+                    val buffer =
+                        ByteBuffer.allocate(6 + (frame.extra?.limit() ?: 0) + frame.buffer.limit())
                     buffer.putInt(0x00000001)
                     buffer.put(0x09.toByte())
                     buffer.put(0xf0.toByte())
-                    buffer.put(frame.extra)
+                    frame.extra?.let { buffer.put(it) }
                     buffer.put(frame.buffer)
                     buffer.rewind()
                     frame.buffer = buffer
@@ -48,8 +48,9 @@ class MpegTSMux(logger: Logger, muxerListener: MuxerListener? = null) :
                 if (frame.extra == null) {
                     logger.e(this, "Failed to get ADTS")
                 }
-                val buffer = ByteBuffer.allocateDirect(frame.buffer.limit() + frame.extra!!.limit())
-                buffer.put(frame.extra)
+                val buffer =
+                    ByteBuffer.allocateDirect(frame.buffer.limit() + (frame.extra?.limit() ?: 0))
+                frame.extra?.let { buffer.put(it) }
                 buffer.put(frame.buffer)
                 buffer.rewind()
                 frame.buffer = buffer
