@@ -8,6 +8,7 @@ import android.media.MediaFormat
 import android.os.Bundle
 import android.util.Size
 import android.view.*
+import android.widget.ImageButton
 import android.widget.ToggleButton
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
@@ -24,6 +25,7 @@ import com.github.thibaultbee.srtstreamer.utils.Error
 import com.jakewharton.rxbinding3.view.clicks
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import java.util.concurrent.TimeUnit
 
 class MainFragment : Fragment() {
     private val fragmentDisposables = CompositeDisposable()
@@ -42,8 +44,13 @@ class MainFragment : Fragment() {
     @BindView(R.id.liveButton)
     lateinit var liveButton: ToggleButton
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View {
+    @BindView(R.id.switchButton)
+    lateinit var switchButton: ImageButton
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         val view = inflater.inflate(R.layout.main_fragment, container, false)
         ButterKnife.bind(this, view)
         bindProperties()
@@ -64,6 +71,18 @@ class MainFragment : Fragment() {
                     }
                 } else {
                     viewModel.streamer.stopStream()
+                }
+            }
+            .let(fragmentDisposables::add)
+
+        switchButton.clicks()
+            .observeOn(AndroidSchedulers.mainThread())
+            .throttleFirst(3000, TimeUnit.MILLISECONDS)
+            .subscribe {
+                if (viewModel.streamer.videoSource.cameraId == "0") {
+                    viewModel.streamer.changeVideoSource("1")
+                } else {
+                    viewModel.streamer.changeVideoSource("0")
                 }
             }
             .let(fragmentDisposables::add)
@@ -142,7 +161,7 @@ class MainFragment : Fragment() {
         }
 
         override fun surfaceCreated(holder: SurfaceHolder?) {
-            nbOnSurfaceChange = 0;
+            nbOnSurfaceChange = 0
         }
     }
 }

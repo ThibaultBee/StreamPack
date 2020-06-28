@@ -23,7 +23,7 @@ class CameraCapture (val logger: Logger) :
     lateinit var encoderSurface: Surface
     lateinit var context: Context
 
-    private var cameraId: String = "0"
+    var cameraId: String = "0"
 
     private var camera: CameraDevice? = null
     private var captureSession: CameraCaptureSession? = null

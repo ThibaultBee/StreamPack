@@ -231,6 +231,13 @@ class Streamer(val logger: Logger): EventHandlerManager() {
         audioSource.stop()
     }
 
+    @RequiresPermission(Manifest.permission.CAMERA)
+    fun changeVideoSource(cameraId: String = "0"): Error {
+        videoSource.stopPreview()
+
+        return videoSource.startPreview(cameraId)
+    }
+
     fun connect(ip: String, port: Int) = srtPublisher.connect(ip, port)
     fun disconnect() = srtPublisher.disconnect()
 
