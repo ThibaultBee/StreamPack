@@ -1,15 +1,16 @@
 package com.github.thibaultbee.srtstreamer.transmission
 
+import com.github.thibaultbee.srtdroid.Srt
+import com.github.thibaultbee.srtdroid.enums.SockOpt
+import com.github.thibaultbee.srtdroid.enums.SockStatus
+import com.github.thibaultbee.srtdroid.enums.Transtype
+import com.github.thibaultbee.srtdroid.models.Error.Companion.clearLastError
+import com.github.thibaultbee.srtdroid.models.Error.Companion.lastErrorMessage
+import com.github.thibaultbee.srtdroid.models.Socket
 import com.github.thibaultbee.srtstreamer.utils.Error
 import com.github.thibaultbee.srtstreamer.utils.EventHandlerManager
 import com.github.thibaultbee.srtstreamer.utils.Logger
-import com.github.thibaultbee.srtwrapper.Srt
-import com.github.thibaultbee.srtwrapper.enums.SockOpt
-import com.github.thibaultbee.srtwrapper.enums.SockStatus
-import com.github.thibaultbee.srtwrapper.enums.Transtype
-import com.github.thibaultbee.srtwrapper.models.Error.Companion.clearLastError
-import com.github.thibaultbee.srtwrapper.models.Error.Companion.getLastErrorMessage
-import com.github.thibaultbee.srtwrapper.models.Socket
+import java.io.IOException
 import java.nio.ByteBuffer
 
 class SrtPublisher(val logger: Logger): EventHandlerManager() {
@@ -24,51 +25,25 @@ class SrtPublisher(val logger: Logger): EventHandlerManager() {
     fun connect(ip: String, port: Int): Error {
         srt.startUp()
         val tmpSocket = Socket()
-        if (tmpSocket.setSockFlag(SockOpt.SNDSYN, true) != 0) {
+        try {
+            tmpSocket.setSockFlag(SockOpt.SNDSYN, true)
+            tmpSocket.setSockFlag(SockOpt.RCVSYN, true)
+            tmpSocket.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
+            tmpSocket.setSockFlag(SockOpt.MAXBW, 0)
+            // tmpSocket.setSockFlag(SockOpt.TSBPDMODE, false)
+            tmpSocket.setSockFlag(SockOpt.INPUTBW, 1000000)
+            tmpSocket.setSockFlag(SockOpt.OHEADBW, 25)
+        } catch (e: IOException) {
             tmpSocket.close()
-            logger.e(this, "Failed to set sock flag to SNDSYN: ${getErrorMessage()}")
-            return Error.INVALID_OPERATION
+            logger.e(this, "Failed to configure for connection with $ip:$port: ${e.message}")
+            return Error.CONFIGURATION_ERROR
         }
 
-        if (tmpSocket.setSockFlag(SockOpt.RCVSYN, true) != 0) {
+        try {
+            tmpSocket.connect(ip, port)
+        } catch (e: IOException) {
             tmpSocket.close()
-            logger.e(this, "Failed to set sock flag to RCVSYN: ${getErrorMessage()}")
-            return Error.INVALID_OPERATION
-        }
-
-        if (tmpSocket.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE) != 0) {
-            tmpSocket.close()
-            logger.e(this, "Failed to set sock flag to RCVSYN: ${getErrorMessage()}")
-            return Error.INVALID_OPERATION
-        }
-
-        if (tmpSocket.setSockFlag(SockOpt.MAXBW, 0) != 0) {
-            tmpSocket.close()
-            logger.e(this, "Failed to set sock flag to MAXBW: ${getErrorMessage()}")
-            return Error.INVALID_OPERATION
-        }
-/*
-        if (tmpSocket.setSockFlag(SockOpt.TSBPDMODE, false) != 0) {
-            tmpSocket.close()
-            logger.e(this, "Failed to set sock flag to MAXBW: ${getErrorMessage()}")
-            return Error.INVALID_OPERATION
-        }*/
-
-        if (tmpSocket.setSockFlag(SockOpt.INPUTBW, 1000000) != 0) {
-            tmpSocket.close()
-            logger.e(this, "Failed to set sock flag to MAXBW: ${getErrorMessage()}")
-            return Error.INVALID_OPERATION
-        }
-
-        if (tmpSocket.setSockFlag(SockOpt.OHEADBW, 25) != 0) {
-            tmpSocket.close()
-            logger.e(this, "Failed to set sock flag to MAXBW: ${getErrorMessage()}")
-            return Error.INVALID_OPERATION
-        }
-
-        if (tmpSocket.connect(ip, port) != 0) {
-            tmpSocket.close()
-            logger.e(this, "Failed to connect to $ip:$port: ${getErrorMessage()}")
+            logger.e(this, "Failed to connect to $ip:$port: ${e.message}")
             return Error.CONNECTION_ERROR
         }
 
@@ -103,7 +78,7 @@ class SrtPublisher(val logger: Logger): EventHandlerManager() {
         (array.indices).forEachIndexed { index, _ -> array[index] = sendBuffer.get() }
         if (socket!!.send(array) < 0) {
             logger.e(this, "Failed to send buffer: ${getErrorMessage()}")
-            if (socket!!.getSockState() != SockStatus.CONNECTED) {
+            if (socket!!.sockState != SockStatus.CONNECTED) {
                 disconnect()
             }
             return Error.TRANSMISSION_ERROR
@@ -113,17 +88,17 @@ class SrtPublisher(val logger: Logger): EventHandlerManager() {
     }
 
     fun disconnect() {
-        socket?.close()
+        socket.close()
         socket = null
         srt.cleanUp()
     }
 
     fun isConnected(): Boolean {
-        return socket?.getSockState() == SockStatus.CONNECTED
+        return socket.sockState == SockStatus.CONNECTED
     }
 
     private fun getErrorMessage(): String {
-        val message = getLastErrorMessage()
+        val message = lastErrorMessage
         clearLastError()
         return message
     }
