@@ -329,6 +329,7 @@ class Streamer(val logger: Logger): EventHandlerManager() {
         audioEncoder.release()
         videoEncoder.release()
         audioSource.release()
+        srtPublisher.release()
     }
 
     data class VideoConfig(var mimeType: String, var startBitrate: Int, var resolution: Size, var fps: Int)
