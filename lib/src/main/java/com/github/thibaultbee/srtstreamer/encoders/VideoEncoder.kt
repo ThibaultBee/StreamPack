@@ -43,7 +43,6 @@ class VideoEncoder(logger: Logger) : Encoder(logger), EncoderGenerateExtraListen
             MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
         )
         videoFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1) // 1s between I frame
-        videoFormat.setInteger(MediaFormat.KEY_ROTATION, rotation)
         /*  videoFormat.setInteger(MediaFormat.KEY_PROFILE, profile)
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
               videoFormat.setInteger(MediaFormat.KEY_LEVEL, level)
