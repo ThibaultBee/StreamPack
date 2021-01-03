@@ -15,9 +15,9 @@ import com.github.thibaultbee.srtstreamer.interfaces.MuxerListener
 import com.github.thibaultbee.srtstreamer.interfaces.OnErrorListener
 import com.github.thibaultbee.srtstreamer.models.Frame
 import com.github.thibaultbee.srtstreamer.muxers.MpegTSMux
+import com.github.thibaultbee.srtstreamer.publisher.SrtPublisher
 import com.github.thibaultbee.srtstreamer.sources.AudioCapture
 import com.github.thibaultbee.srtstreamer.sources.CameraCapture
-import com.github.thibaultbee.srtstreamer.transmission.SrtPublisher
 import com.github.thibaultbee.srtstreamer.utils.DeviceOrientation
 import com.github.thibaultbee.srtstreamer.utils.Error
 import com.github.thibaultbee.srtstreamer.utils.EventHandlerManager

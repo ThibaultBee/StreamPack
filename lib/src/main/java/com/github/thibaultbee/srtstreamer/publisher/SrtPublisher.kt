@@ -1,4 +1,4 @@
-package com.github.thibaultbee.srtstreamer.transmission
+package com.github.thibaultbee.srtstreamer.publisher
 
 import com.github.thibaultbee.srtdroid.Srt
 import com.github.thibaultbee.srtdroid.enums.SockOpt
