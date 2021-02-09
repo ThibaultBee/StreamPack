@@ -30,13 +30,17 @@ open class Encoder(val logger: Logger): EventHandlerManager() {
             val buffer = mediaCodec!!.getOutputBuffer(index)
             if (buffer != null) {
                 val extra = encoderGenerateExtraListener.onGenerateExtra(buffer, codec.outputFormat)
-                encoderListener?.onOutputFrame(Frame(buffer,
-                    codec.outputFormat.getString(MediaFormat.KEY_MIME)!!,
-                    info.presentationTimeUs, // pts
-                    info.presentationTimeUs, // dts
-                    info.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME,
-                    info.flags == MediaCodec.BUFFER_FLAG_CODEC_CONFIG,
-                    extra))
+                encoderListener?.onOutputFrame(
+                    Frame(
+                        buffer,
+                        codec.outputFormat.getString(MediaFormat.KEY_MIME)!!,
+                        info.presentationTimeUs, // pts
+                        null, // dts
+                        info.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME,
+                        info.flags == MediaCodec.BUFFER_FLAG_CODEC_CONFIG,
+                        extra
+                    )
+                )
             } else {
                 reportError(Error.INVALID_BUFFER)
             }
