@@ -19,6 +19,12 @@ open class EventHandlerManager: BaseInterface {
         eventHandler.sendMessage(msg)
     }
 
+
+    fun reportError(error: Exception) {
+        val msg = eventHandler.obtainMessage(BASE_ERROR, error.message)
+        eventHandler.sendMessage(msg)
+    }
+
     fun reportConnectionLost() {
         val msg = eventHandler.obtainMessage(BASE_CONNECTION_LOST)
         eventHandler.sendMessage(msg)

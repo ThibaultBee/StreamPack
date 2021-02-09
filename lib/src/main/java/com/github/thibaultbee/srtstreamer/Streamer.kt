@@ -11,10 +11,11 @@ import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.srtstreamer.encoders.AudioEncoder
 import com.github.thibaultbee.srtstreamer.encoders.VideoEncoder
 import com.github.thibaultbee.srtstreamer.interfaces.EncoderListener
-import com.github.thibaultbee.srtstreamer.interfaces.MuxerListener
+import com.github.thibaultbee.srtstreamer.interfaces.MuxListener
 import com.github.thibaultbee.srtstreamer.interfaces.OnErrorListener
 import com.github.thibaultbee.srtstreamer.models.Frame
-import com.github.thibaultbee.srtstreamer.muxers.MpegTSMux
+import com.github.thibaultbee.srtstreamer.mux.ts.TSMux
+import com.github.thibaultbee.srtstreamer.mux.ts.data.ServiceInfo
 import com.github.thibaultbee.srtstreamer.publisher.SrtPublisher
 import com.github.thibaultbee.srtstreamer.sources.AudioCapture
 import com.github.thibaultbee.srtstreamer.sources.CameraCapture
@@ -53,8 +54,22 @@ class Streamer(val logger: Logger): EventHandlerManager() {
     val videoSource =
         CameraCapture(logger)
 
-    private val mpegTSMux =
-        MpegTSMux(logger)
+    private val serviceInfo = ServiceInfo(
+        ServiceInfo.ServiceType.DIGITAL_TV,
+        0x4698,
+        "MyService",
+        "MyProvider"
+    )
+    private val muxListener = object : MuxListener {
+        override fun onOutputFrame(buffer: ByteBuffer) {
+            val error = srtPublisher.write(buffer)
+            if (error != Error.SUCCESS) {
+                stopStream()
+                reportConnectionLost()
+            }
+        }
+    }
+    private val tsMux = TSMux(muxListener, serviceInfo)
 
     private val srtPublisher =
         SrtPublisher(logger)
@@ -65,8 +80,8 @@ class Streamer(val logger: Logger): EventHandlerManager() {
             field = value
         }
 
-    private var audioMpegPid = -1
-    private var videoMpegPid = -1
+    private var audioTsStreamId: Short? = null
+    private var videoTsStreamId: Short? = null
 
     // Keep video configuration
     private lateinit var videoConfig: VideoConfig
@@ -87,8 +102,6 @@ class Streamer(val logger: Logger): EventHandlerManager() {
                 return Error.SUCCESS
             }
 
-            frame.pid = audioMpegPid
-
             /*
              * In case device is >= N, we got real audio timestamp from bootime.
              * They can be compare with video timestamp
@@ -106,15 +119,18 @@ class Streamer(val logger: Logger): EventHandlerManager() {
             }
 
             frame.pts -= baseTimestamp
-            frame.dts -= baseTimestamp
+            frame.dts?.let { it - baseTimestamp }
 
-            val error = mpegTSMux.writeFrame(frame)
-            if(error != Error.SUCCESS) {
-                if (audioEncoder.encoderListener != null) {
-                    reportError(error)
+            audioTsStreamId?.let {
+                try {
+                    tsMux.encode(frame, it)
+                } catch (e: Exception) {
+                    reportError(e)
+                    return Error.UNKNOWN
                 }
             }
-            return error
+
+            return Error.SUCCESS
         }
     }
 
@@ -146,22 +162,21 @@ class Streamer(val logger: Logger): EventHandlerManager() {
                 return Error.SUCCESS
             }
 
-            frame.pid = videoMpegPid
-
             if (videoBaseTimestamp == -1L) {
                 videoBaseTimestamp = frame.pts
             }
 
             frame.pts -= videoBaseTimestamp
-            frame.dts -= videoBaseTimestamp
+            frame.dts?.let { it - videoBaseTimestamp }
 
-            val error = mpegTSMux.writeFrame(frame)
-            if(error != Error.SUCCESS) {
-                if (videoEncoder.encoderListener != null) {
-                    reportError(error)
+            videoTsStreamId?.let {
+                try {
+                    tsMux.encode(frame, it)
+                } catch (e: Exception) {
+                    reportError(e)
                 }
             }
-            return error
+            return Error.SUCCESS
         }
     }
 
@@ -196,16 +211,6 @@ class Streamer(val logger: Logger): EventHandlerManager() {
         )
     }
 
-    private val muxerListener = object : MuxerListener {
-        override fun onOutputFrame(buffer: ByteBuffer): Error {
-            val error = srtPublisher.write(buffer)
-            if(error != Error.SUCCESS) {
-                stopStream()
-                reportConnectionLost()
-            }
-            return error
-        }
-    }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun startCapture(previewSurface: Surface, cameraId: String = "0"): Error {
@@ -249,11 +254,14 @@ class Streamer(val logger: Logger): EventHandlerManager() {
 
         audioEncoder.encoderListener = audioEncoderListener
         videoEncoder.encoderListener = videoEncoderListener
-        mpegTSMux.muxerListener = muxerListener
 
-        videoEncoder.getMimeType()?.let { videoMpegPid = mpegTSMux.addStream(it) }
-        audioEncoder.getMimeType()?.let { audioMpegPid = mpegTSMux.addStream(it) }
-        mpegTSMux.configure()
+        val streams = mutableListOf<String>()
+        videoEncoder.getMimeType()?.let { streams.add(it) }
+        audioEncoder.getMimeType()?.let { streams.add(it) }
+
+        tsMux.addStreams(serviceInfo, streams)
+        videoEncoder.getMimeType()?.let { videoTsStreamId = tsMux.getStreams(it)[0].pid }
+        audioEncoder.getMimeType()?.let { audioTsStreamId = tsMux.getStreams(it)[0].pid }
 
         val error = audioEncoder.start()
         if (error != Error.SUCCESS) {
@@ -270,13 +278,12 @@ class Streamer(val logger: Logger): EventHandlerManager() {
     fun stopStream() {
         audioEncoder.encoderListener = null
         videoEncoder.encoderListener = null
-        mpegTSMux.muxerListener = null
 
         videoSource.stopStream()
         videoEncoder.stop()
         audioEncoder.stop()
 
-        mpegTSMux.stop()
+        tsMux.stop()
 
         // Encoder does not return to CONFIGURED state... so we have to reset everything for video...
         resetAudio()
