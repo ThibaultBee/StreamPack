@@ -10,13 +10,13 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.srtstreamer.encoders.AudioEncoder
 import com.github.thibaultbee.srtstreamer.encoders.VideoEncoder
+import com.github.thibaultbee.srtstreamer.endpoints.IEndpoint
 import com.github.thibaultbee.srtstreamer.interfaces.EncoderListener
 import com.github.thibaultbee.srtstreamer.interfaces.MuxListener
 import com.github.thibaultbee.srtstreamer.interfaces.OnErrorListener
 import com.github.thibaultbee.srtstreamer.models.Frame
 import com.github.thibaultbee.srtstreamer.mux.ts.TSMux
 import com.github.thibaultbee.srtstreamer.mux.ts.data.ServiceInfo
-import com.github.thibaultbee.srtstreamer.publisher.SrtPublisher
 import com.github.thibaultbee.srtstreamer.sources.AudioCapture
 import com.github.thibaultbee.srtstreamer.sources.CameraCapture
 import com.github.thibaultbee.srtstreamer.utils.DeviceOrientation
@@ -26,14 +26,13 @@ import com.github.thibaultbee.srtstreamer.utils.Logger
 import java.nio.ByteBuffer
 
 
-class Streamer(val logger: Logger): EventHandlerManager() {
+class Streamer(val endpoint: IEndpoint, val logger: Logger) : EventHandlerManager() {
     override var onErrorListener: OnErrorListener? = null
         set(value) {
             audioSource.onErrorListener = value
             videoSource.onErrorListener = value
             audioEncoder.onErrorListener = value
             videoEncoder.onErrorListener = value
-            srtPublisher.onErrorListener = value
             field = value
         }
     var context: Context? = null
@@ -62,17 +61,15 @@ class Streamer(val logger: Logger): EventHandlerManager() {
     )
     private val muxListener = object : MuxListener {
         override fun onOutputFrame(buffer: ByteBuffer) {
-            val error = srtPublisher.write(buffer)
-            if (error != Error.SUCCESS) {
+            try {
+                endpoint.write(buffer)
+            } catch (e: Exception) {
                 stopStream()
                 reportConnectionLost()
             }
         }
     }
     private val tsMux = TSMux(muxListener, serviceInfo)
-
-    private val srtPublisher =
-        SrtPublisher(logger)
 
     var videoBitrate = 0
         set(value) {
@@ -243,14 +240,8 @@ class Streamer(val logger: Logger): EventHandlerManager() {
         return videoSource.startPreview(cameraId)
     }
 
-    fun connect(ip: String, port: Int) = srtPublisher.connect(ip, port)
-    fun disconnect() = srtPublisher.disconnect()
-
     fun startStream(): Error {
-        if (!srtPublisher.isConnected()) {
-            logger.w(this, "Not connected yet")
-            return Error.CONNECTION_ERROR
-        }
+        endpoint.run()
 
         audioEncoder.encoderListener = audioEncoderListener
         videoEncoder.encoderListener = videoEncoderListener
@@ -284,6 +275,8 @@ class Streamer(val logger: Logger): EventHandlerManager() {
         audioEncoder.stop()
 
         tsMux.stop()
+
+        endpoint.stop()
 
         // Encoder does not return to CONFIGURED state... so we have to reset everything for video...
         resetAudio()
@@ -336,7 +329,7 @@ class Streamer(val logger: Logger): EventHandlerManager() {
         audioEncoder.release()
         videoEncoder.release()
         audioSource.release()
-        srtPublisher.release()
+        endpoint.close()
     }
 
     data class VideoConfig(var mimeType: String, var startBitrate: Int, var resolution: Size, var fps: Int)

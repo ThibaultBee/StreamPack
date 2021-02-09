@@ -1,19 +1,23 @@
-package com.github.thibaultbee.srtstreamer.publisher
+package com.github.thibaultbee.srtstreamer.endpoints
 
 import com.github.thibaultbee.srtdroid.Srt
 import com.github.thibaultbee.srtdroid.enums.SockOpt
 import com.github.thibaultbee.srtdroid.enums.Transtype
 import com.github.thibaultbee.srtdroid.models.Socket
 import com.github.thibaultbee.srtstreamer.utils.Error
-import com.github.thibaultbee.srtstreamer.utils.EventHandlerManager
 import com.github.thibaultbee.srtstreamer.utils.Logger
 import java.io.IOException
+import java.net.ConnectException
 import java.nio.ByteBuffer
 
-class SrtPublisher(val logger: Logger): EventHandlerManager() {
+class SrtProducer(val logger: Logger) : IEndpoint {
     private val srt = Srt()
     private var socket = Socket()
-    private lateinit var sendBuffer: ByteBuffer
+    private val sendBuffer = ByteBuffer.allocate(PAYLOAD_SIZE)
+
+    companion object {
+        private const val PAYLOAD_SIZE = 1316
+    }
 
     init {
         srt.startUp()
@@ -22,6 +26,7 @@ class SrtPublisher(val logger: Logger): EventHandlerManager() {
     fun connect(ip: String, port: Int): Error {
         socket = Socket()
         try {
+            socket.setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
             socket.setSockFlag(SockOpt.SNDSYN, true)
             socket.setSockFlag(SockOpt.RCVSYN, true)
             socket.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
@@ -44,21 +49,17 @@ class SrtPublisher(val logger: Logger): EventHandlerManager() {
             return Error.CONNECTION_ERROR
         }
 
-        sendBuffer = ByteBuffer.allocate(socket.getSockFlag(SockOpt.PAYLOADSIZE) as Int)
-        sendBuffer.rewind()
         return Error.SUCCESS
     }
 
-    fun write(buffer: ByteBuffer): Error {
-        // Read bytebuffer
+    override fun write(buffer: ByteBuffer) {
+        // Read Byte Buffer
         while (buffer.hasRemaining()) {
             sendBuffer.put(buffer)
             if (!sendBuffer.hasRemaining()) {
                 flush()
             }
         }
-
-        return Error.SUCCESS
     }
 
     private fun flush(): Error {
@@ -81,11 +82,16 @@ class SrtPublisher(val logger: Logger): EventHandlerManager() {
         socket.close()
     }
 
-    fun release() {
-        srt.cleanUp()
+    override fun run() {
+        if (!socket.isConnected)
+            throw ConnectException("SrtEndpoint should be connected at this point")
     }
 
-    fun isConnected(): Boolean {
-        return socket.isConnected
+    override fun stop() {
+        flush()
+    }
+
+    override fun close() {
+        srt.cleanUp()
     }
 }

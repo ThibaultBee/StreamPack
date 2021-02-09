@@ -62,15 +62,16 @@ class MainFragment : Fragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 if (liveButton.isChecked) {
-                    if (viewModel.streamer.connect("192.168.1.10", 9998) != Error.SUCCESS) {
-                        liveButton.isChecked = false
-                    }
-                    if (viewModel.streamer.startStream() != Error.SUCCESS) {
-                        viewModel.streamer.disconnect()
+                    try {
+                        viewModel.endpoint.connect("192.168.1.27", 9998)
+                        viewModel.streamer.startStream()
+                    } catch (e: Exception) {
+                        viewModel.endpoint.disconnect()
                         liveButton.isChecked = false
                     }
                 } else {
                     viewModel.streamer.stopStream()
+                    viewModel.endpoint.disconnect()
                 }
             }
             .let(fragmentDisposables::add)
