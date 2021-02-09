@@ -64,7 +64,7 @@ class VideoEncoder(logger: Logger) : Encoder(logger), EncoderGenerateExtraListen
         var byteBufferSize = sps?.limit() ?: 0
         byteBufferSize += pps?.limit() ?: 0
 
-        val extra = ByteBuffer.allocateDirect(byteBufferSize)
+        val extra = ByteBuffer.allocate(byteBufferSize)
         sps?.let { extra.put(it) }
         pps?.let { extra.put(it) }
 
