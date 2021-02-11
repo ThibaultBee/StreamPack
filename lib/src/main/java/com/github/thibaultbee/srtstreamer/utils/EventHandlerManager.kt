@@ -3,13 +3,12 @@ package com.github.thibaultbee.srtstreamer.utils
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import com.github.thibaultbee.srtstreamer.interfaces.BaseInterface
-import com.github.thibaultbee.srtstreamer.interfaces.OnConnectionListener
-import com.github.thibaultbee.srtstreamer.interfaces.OnErrorListener
+import com.github.thibaultbee.srtstreamer.listeners.OnConnectionListener
+import com.github.thibaultbee.srtstreamer.listeners.OnErrorListener
 
-open class EventHandlerManager: BaseInterface {
-    protected val eventHandler by lazy {
-        EventHandler(this)
+open class EventHandlerManager {
+    private val eventHandler by lazy {
+        EventHandler(this.javaClass.simpleName)
     }
     open var onErrorListener: OnErrorListener? = null
     var onConnectionListener: OnConnectionListener? = null
@@ -36,13 +35,13 @@ open class EventHandlerManager: BaseInterface {
     }
 
     open inner class EventHandler(
-        private val base: BaseInterface,
+        private val name: String,
         looper: Looper = Looper.myLooper() ?: Looper.getMainLooper()
     ) : Handler(looper) {
         override fun handleMessage(msg: Message) {
             when (msg.what) {
                 BASE_ERROR -> onErrorListener?.onError(
-                    base,
+                    name,
                     Error.valueOf(msg.arg1) ?: Error.UNKNOWN
                 )
                 BASE_CONNECTION_LOST -> onConnectionListener?.onLost()

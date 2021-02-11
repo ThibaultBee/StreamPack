@@ -1,6 +1,6 @@
 package com.github.thibaultbee.srtstreamer.mux.ts.utils
 
-import com.github.thibaultbee.srtstreamer.interfaces.MuxListener
+import com.github.thibaultbee.srtstreamer.mux.IMuxListener
 import org.junit.Assert
 import java.nio.ByteBuffer
 
@@ -9,7 +9,7 @@ import java.nio.ByteBuffer
  * @param expectedBuffer expected buffer (pre-generated buffer)
  */
 class AssertEqualsSingleBufferMockMuxListener(private val expectedBuffer: ByteBuffer) :
-    MuxListener {
+    IMuxListener {
     override fun onOutputFrame(buffer: ByteBuffer) {
         Assert.assertEquals(expectedBuffer, buffer)
     }
@@ -20,7 +20,7 @@ class AssertEqualsSingleBufferMockMuxListener(private val expectedBuffer: ByteBu
  * @param expectedBuffers expected buffers (often pre-generated buffers)
  */
 class AssertEqualsBuffersMockMuxListener(private val expectedBuffers: List<ByteBuffer>) :
-    MuxListener {
+    IMuxListener {
     var expectedBufferIndex = 0
 
     override fun onOutputFrame(buffer: ByteBuffer) {

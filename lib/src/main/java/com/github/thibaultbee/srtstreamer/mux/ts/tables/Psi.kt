@@ -1,12 +1,12 @@
 package com.github.thibaultbee.srtstreamer.mux.ts.tables
 
-import com.github.thibaultbee.srtstreamer.interfaces.MuxListener
+import com.github.thibaultbee.srtstreamer.mux.IMuxListener
 import com.github.thibaultbee.srtstreamer.mux.ts.packets.TS
 import com.github.thibaultbee.srtstreamer.mux.ts.utils.CRC32
 import java.nio.ByteBuffer
 
 open class Psi(
-    muxListener: MuxListener,
+    muxListener: IMuxListener,
     pid: Short,
     private val tableId: Byte,
     private val sectionSyntaxIndicator: Boolean = false,

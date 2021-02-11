@@ -1,8 +1,8 @@
 package com.github.thibaultbee.srtstreamer.mux.ts
 
 import android.media.MediaFormat
-import com.github.thibaultbee.srtstreamer.interfaces.MuxListener
 import com.github.thibaultbee.srtstreamer.models.Frame
+import com.github.thibaultbee.srtstreamer.mux.IMuxListener
 import com.github.thibaultbee.srtstreamer.mux.ts.data.Service
 import com.github.thibaultbee.srtstreamer.mux.ts.data.ServiceInfo
 import com.github.thibaultbee.srtstreamer.mux.ts.data.Stream
@@ -17,7 +17,7 @@ import java.util.*
 import kotlin.random.Random
 
 class TSMux(
-    var muxListener: MuxListener,
+    var muxListener: IMuxListener,
     firstServiceInfo: ServiceInfo? = null,
     initialStreams: List<String>? = null
 ) {

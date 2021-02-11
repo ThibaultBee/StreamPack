@@ -5,8 +5,6 @@ import android.media.MediaCodecInfo
 import android.media.MediaCodecList
 import android.media.MediaFormat
 import android.os.Bundle
-import com.github.thibaultbee.srtstreamer.interfaces.EncoderGenerateExtraListener
-import com.github.thibaultbee.srtstreamer.interfaces.EncoderListener
 import com.github.thibaultbee.srtstreamer.models.Frame
 import com.github.thibaultbee.srtstreamer.utils.Error
 import com.github.thibaultbee.srtstreamer.utils.EventHandlerManager
@@ -14,8 +12,8 @@ import com.github.thibaultbee.srtstreamer.utils.Logger
 
 open class Encoder(val logger: Logger): EventHandlerManager() {
     protected var mediaCodec: MediaCodec? = null
-    var encoderListener: EncoderListener? = null
-    lateinit var encoderGenerateExtraListener: EncoderGenerateExtraListener
+    var encoderListener: IEncoderListener? = null
+    lateinit var encoderGenerateExtraListener: IEncoderGenerateExtraListener
 
     var bitrate = 0
         set(value) {
@@ -25,7 +23,7 @@ open class Encoder(val logger: Logger): EventHandlerManager() {
             field = value
         }
 
-    protected val encoderCallback = object: MediaCodec.Callback() {
+    protected val encoderCallback = object : MediaCodec.Callback() {
         override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
             val buffer = mediaCodec!!.getOutputBuffer(index)
             if (buffer != null) {

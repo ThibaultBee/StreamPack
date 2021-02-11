@@ -5,13 +5,12 @@ import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.os.Build
 import com.github.thibaultbee.srtstreamer.encoders.format.Adts
-import com.github.thibaultbee.srtstreamer.interfaces.EncoderGenerateExtraListener
 import com.github.thibaultbee.srtstreamer.utils.Error
 import com.github.thibaultbee.srtstreamer.utils.Logger
 import java.nio.ByteBuffer
 
 
-class AudioEncoder(logger: Logger) : Encoder(logger), EncoderGenerateExtraListener {
+class AudioEncoder(logger: Logger) : Encoder(logger), IEncoderGenerateExtraListener {
 
     fun configure(
         mimeType: String,

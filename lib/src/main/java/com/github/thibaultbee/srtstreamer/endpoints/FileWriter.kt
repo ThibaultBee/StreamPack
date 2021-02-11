@@ -1,13 +1,12 @@
 package com.github.thibaultbee.srtstreamer.endpoints
 
-import com.github.thibaultbee.srtstreamer.utils.EventHandlerManager
 import com.github.thibaultbee.srtstreamer.utils.Logger
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
 
 
-class FileWriter(val logger: Logger? = null, file: File) : EventHandlerManager(), IEndpoint {
+class FileWriter(val logger: Logger? = null, file: File) : IEndpoint {
     private val fileOutputStream = FileOutputStream(file, false)
 
     override fun run() {

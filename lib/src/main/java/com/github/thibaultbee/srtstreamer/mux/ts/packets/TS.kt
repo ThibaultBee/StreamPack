@@ -1,6 +1,6 @@
 package com.github.thibaultbee.srtstreamer.mux.ts.packets
 
-import com.github.thibaultbee.srtstreamer.interfaces.MuxListener
+import com.github.thibaultbee.srtstreamer.mux.IMuxListener
 import com.github.thibaultbee.srtstreamer.mux.ts.descriptors.AdaptationField
 import com.github.thibaultbee.srtstreamer.mux.ts.utils.TSOutputCallback
 import com.github.thibaultbee.srtstreamer.utils.hasRemaining
@@ -10,7 +10,7 @@ import net.magik6k.bitbuffer.BitBuffer
 import java.nio.ByteBuffer
 
 open class TS(
-    muxListener: MuxListener,
+    muxListener: IMuxListener,
     val pid: Short,
     private val transportErrorIndicator: Boolean = false,
     private val transportPriority: Boolean = false,

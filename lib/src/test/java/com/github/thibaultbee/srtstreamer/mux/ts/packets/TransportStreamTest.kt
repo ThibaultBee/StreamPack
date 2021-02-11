@@ -1,6 +1,6 @@
 package com.github.thibaultbee.srtstreamer.mux.ts.packets
 
-import com.github.thibaultbee.srtstreamer.interfaces.MuxListener
+import com.github.thibaultbee.srtstreamer.mux.IMuxListener
 import com.github.thibaultbee.srtstreamer.mux.ts.descriptors.AdaptationField
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -9,7 +9,7 @@ import kotlin.math.min
 import kotlin.random.Random
 
 class TransportStreamTest {
-    class MockMuxListener(val expectedBuffer: ByteBuffer) : MuxListener {
+    class MockMuxListener(val expectedBuffer: ByteBuffer) : IMuxListener {
         var nBuffer = 0
         override fun onOutputFrame(buffer: ByteBuffer) {
             assertEquals(TS.PACKET_SIZE, buffer.capacity())
@@ -21,7 +21,7 @@ class TransportStreamTest {
         }
     }
 
-    class MockTransportStream(muxListener: MuxListener, pid: Short = Random.nextInt().toShort()) :
+    class MockTransportStream(muxListener: IMuxListener, pid: Short = Random.nextInt().toShort()) :
         TS(muxListener, pid) {
         fun mockWrite(
             payload: ByteBuffer? = null,

@@ -9,12 +9,12 @@ import android.util.Size
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.srtstreamer.encoders.AudioEncoder
+import com.github.thibaultbee.srtstreamer.encoders.IEncoderListener
 import com.github.thibaultbee.srtstreamer.encoders.VideoEncoder
 import com.github.thibaultbee.srtstreamer.endpoints.IEndpoint
-import com.github.thibaultbee.srtstreamer.interfaces.EncoderListener
-import com.github.thibaultbee.srtstreamer.interfaces.MuxListener
-import com.github.thibaultbee.srtstreamer.interfaces.OnErrorListener
+import com.github.thibaultbee.srtstreamer.listeners.OnErrorListener
 import com.github.thibaultbee.srtstreamer.models.Frame
+import com.github.thibaultbee.srtstreamer.mux.IMuxListener
 import com.github.thibaultbee.srtstreamer.mux.ts.TSMux
 import com.github.thibaultbee.srtstreamer.mux.ts.data.ServiceInfo
 import com.github.thibaultbee.srtstreamer.sources.AudioCapture
@@ -59,7 +59,7 @@ class Streamer(val endpoint: IEndpoint, val logger: Logger) : EventHandlerManage
         "MyService",
         "MyProvider"
     )
-    private val muxListener = object : MuxListener {
+    private val muxListener = object : IMuxListener {
         override fun onOutputFrame(buffer: ByteBuffer) {
             try {
                 endpoint.write(buffer)
@@ -88,7 +88,7 @@ class Streamer(val endpoint: IEndpoint, val logger: Logger) : EventHandlerManage
     private var videoBaseTimestamp = -1L
     private var audioBaseTimestamp = -1L
 
-    private val audioEncoderListener = object : EncoderListener {
+    private val audioEncoderListener = object : IEncoderListener {
         override fun onInputFrame(buffer: ByteBuffer): Frame? {
             return audioSource.getFrame(buffer)
         }
@@ -147,7 +147,7 @@ class Streamer(val endpoint: IEndpoint, val logger: Logger) : EventHandlerManage
         return audioEncoder.configure(mimeType, startBitrate, sampleRate, nChannel, audioBitFormat)
     }
 
-    private val videoEncoderListener = object : EncoderListener {
+    private val videoEncoderListener = object : IEncoderListener {
         override fun onInputFrame(buffer: ByteBuffer): Frame {
             // Not needed for video
             TODO("Not yet implemented")

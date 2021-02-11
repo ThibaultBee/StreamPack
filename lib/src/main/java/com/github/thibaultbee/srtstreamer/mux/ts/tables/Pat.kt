@@ -1,13 +1,13 @@
 package com.github.thibaultbee.srtstreamer.mux.ts.tables
 
-import com.github.thibaultbee.srtstreamer.interfaces.MuxListener
+import com.github.thibaultbee.srtstreamer.mux.IMuxListener
 import com.github.thibaultbee.srtstreamer.mux.ts.data.ITSElement
 import com.github.thibaultbee.srtstreamer.mux.ts.data.Service
 import net.magik6k.bitbuffer.BitBuffer
 import java.nio.ByteBuffer
 
 class Pat(
-    muxListener: MuxListener,
+    muxListener: IMuxListener,
     private val services: List<Service>,
     tsId: Short,
     versionNumber: Byte = 0,

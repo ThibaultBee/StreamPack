@@ -1,7 +1,7 @@
 package com.github.thibaultbee.srtstreamer.mux.ts.packets
 
-import com.github.thibaultbee.srtstreamer.interfaces.MuxListener
 import com.github.thibaultbee.srtstreamer.models.Frame
+import com.github.thibaultbee.srtstreamer.mux.IMuxListener
 import com.github.thibaultbee.srtstreamer.mux.ts.data.Stream
 import com.github.thibaultbee.srtstreamer.mux.ts.descriptors.AdaptationField
 import com.github.thibaultbee.srtstreamer.mux.ts.packets.Pes.StreamId.Companion.fromMimeType
@@ -9,7 +9,7 @@ import com.github.thibaultbee.srtstreamer.utils.isAudio
 import com.github.thibaultbee.srtstreamer.utils.isVideo
 
 class Pes(
-    muxListener: MuxListener,
+    muxListener: IMuxListener,
     val stream: Stream,
     private val hasPcr: Boolean,
 ) : TS(muxListener, stream.pid) {

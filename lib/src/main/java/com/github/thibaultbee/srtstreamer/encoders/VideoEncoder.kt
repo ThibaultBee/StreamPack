@@ -5,12 +5,11 @@ import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.util.Size
 import android.view.Surface
-import com.github.thibaultbee.srtstreamer.interfaces.EncoderGenerateExtraListener
 import com.github.thibaultbee.srtstreamer.utils.Error
 import com.github.thibaultbee.srtstreamer.utils.Logger
 import java.nio.ByteBuffer
 
-class VideoEncoder(logger: Logger) : Encoder(logger), EncoderGenerateExtraListener {
+class VideoEncoder(logger: Logger) : Encoder(logger), IEncoderGenerateExtraListener {
 
     fun configure(
         mimeType: String,

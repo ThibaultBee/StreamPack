@@ -1,9 +1,8 @@
-package com.github.thibaultbee.srtstreamer.interfaces
+package com.github.thibaultbee.srtstreamer.encoders
 
-import android.media.MediaCodec
 import android.media.MediaFormat
 import java.nio.ByteBuffer
 
-interface EncoderGenerateExtraListener {
+interface IEncoderGenerateExtraListener {
     fun onGenerateExtra(buffer: ByteBuffer, format: MediaFormat): ByteBuffer?
 }

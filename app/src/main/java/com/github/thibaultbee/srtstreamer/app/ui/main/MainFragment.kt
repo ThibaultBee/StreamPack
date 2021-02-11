@@ -18,9 +18,8 @@ import butterknife.ButterKnife
 import com.github.thibaultbee.srtstreamer.app.R
 import com.github.thibaultbee.srtstreamer.app.utils.AlertUtils
 import com.github.thibaultbee.srtstreamer.app.utils.PreviewUtils.Companion.chooseBigEnoughSize
-import com.github.thibaultbee.srtstreamer.interfaces.BaseInterface
-import com.github.thibaultbee.srtstreamer.interfaces.OnConnectionListener
-import com.github.thibaultbee.srtstreamer.interfaces.OnErrorListener
+import com.github.thibaultbee.srtstreamer.listeners.OnConnectionListener
+import com.github.thibaultbee.srtstreamer.listeners.OnErrorListener
 import com.github.thibaultbee.srtstreamer.utils.Error
 import com.jakewharton.rxbinding3.view.clicks
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -103,9 +102,9 @@ class MainFragment : Fragment() {
             AlertUtils.show(context, "Error", "Permission not granted")
         }
 
-        viewModel.streamer.onErrorListener = object : OnErrorListener{
-            override fun onError(base: BaseInterface, type: Error) {
-                AlertUtils.show(context, "Error", "$type on $base")
+        viewModel.streamer.onErrorListener = object : OnErrorListener {
+            override fun onError(name: String, type: Error) {
+                AlertUtils.show(context, "Error", "$type on $name")
             }
         }
 

@@ -1,7 +1,7 @@
 package com.github.thibaultbee.srtstreamer.mux.ts.tables
 
 import android.media.MediaFormat
-import com.github.thibaultbee.srtstreamer.interfaces.MuxListener
+import com.github.thibaultbee.srtstreamer.mux.IMuxListener
 import com.github.thibaultbee.srtstreamer.mux.ts.data.ITSElement
 import com.github.thibaultbee.srtstreamer.mux.ts.data.Service
 import com.github.thibaultbee.srtstreamer.mux.ts.data.Stream
@@ -9,7 +9,7 @@ import net.magik6k.bitbuffer.BitBuffer
 import java.nio.ByteBuffer
 
 class Pmt(
-    muxListener: MuxListener,
+    muxListener: IMuxListener,
     private val service: Service,
     var streams: List<Stream>,
     pid: Short,

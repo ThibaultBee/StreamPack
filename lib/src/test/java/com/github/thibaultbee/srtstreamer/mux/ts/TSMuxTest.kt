@@ -1,8 +1,8 @@
 package com.github.thibaultbee.srtstreamer.mux.ts
 
 import android.media.MediaFormat
-import com.github.thibaultbee.srtstreamer.interfaces.MuxListener
 import com.github.thibaultbee.srtstreamer.models.Frame
+import com.github.thibaultbee.srtstreamer.mux.IMuxListener
 import com.github.thibaultbee.srtstreamer.mux.ts.utils.TSConst
 import com.github.thibaultbee.srtstreamer.mux.ts.utils.Utils.fakeServiceInfo
 import com.github.thibaultbee.srtstreamer.utils.FakeFrames
@@ -12,7 +12,7 @@ import java.nio.ByteBuffer
 import kotlin.random.Random
 
 class TSMuxTest {
-    class MockMuxListener : MuxListener {
+    class MockMuxListener : IMuxListener {
         override fun onOutputFrame(buffer: ByteBuffer) {}
     }
 
