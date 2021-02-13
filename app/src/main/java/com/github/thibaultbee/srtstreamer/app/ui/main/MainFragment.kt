@@ -18,11 +18,12 @@ import com.github.thibaultbee.srtstreamer.listeners.OnConnectionListener
 import com.github.thibaultbee.srtstreamer.listeners.OnErrorListener
 import com.github.thibaultbee.srtstreamer.utils.Error
 import com.github.thibaultbee.srtstreamer.utils.getOutputSizes
-import com.github.thibaultbee.srtstreamer.utils.hasPermission
-import com.jakewharton.rxbinding3.view.clicks
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
+import com.jakewharton.rxbinding4.view.clicks
+import com.tbruyelle.rxpermissions3.RxPermissions
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 import java.util.concurrent.TimeUnit
+
 
 class MainFragment : Fragment() {
     private val fragmentDisposables = CompositeDisposable()
@@ -34,6 +35,8 @@ class MainFragment : Fragment() {
     private val viewModel: MainViewModel by lazy {
         ViewModelProvider(this).get(MainViewModel::class.java)
     }
+
+    private val rxPermissions: RxPermissions by lazy { RxPermissions(this) }
 
     @BindView(R.id.surfaceView)
     lateinit var surfaceView: SurfaceView
@@ -54,21 +57,32 @@ class MainFragment : Fragment() {
         return view
     }
 
+    @SuppressLint("MissingPermission")
     private fun bindProperties() {
         liveButton.clicks()
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                if (liveButton.isChecked) {
-                    try {
-                        viewModel.endpoint.connect("192.168.1.27", 9998)
-                        viewModel.streamer.startStream()
-                    } catch (e: Exception) {
-                        viewModel.endpoint.disconnect()
-                        liveButton.isChecked = false
-                    }
+            .compose(
+                rxPermissions.ensure(
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.RECORD_AUDIO
+                )
+            )
+            .subscribe { granted ->
+                if (!granted) {
+                    context?.let { AlertUtils.show(it, "Error", "Permission not granted") }
                 } else {
-                    viewModel.streamer.stopStream()
-                    viewModel.endpoint.disconnect()
+                    if (liveButton.isChecked) {
+                        try {
+                            viewModel.endpoint.connect("192.168.1.27", 9998)
+                            viewModel.streamer.startStream()
+                        } catch (e: Exception) {
+                            viewModel.endpoint.disconnect()
+                            liveButton.isChecked = false
+                        }
+                    } else {
+                        viewModel.streamer.stopStream()
+                        viewModel.endpoint.disconnect()
+                    }
                 }
             }
             .let(fragmentDisposables::add)
@@ -76,6 +90,7 @@ class MainFragment : Fragment() {
         switchButton.clicks()
             .observeOn(AndroidSchedulers.mainThread())
             .throttleFirst(3000, TimeUnit.MILLISECONDS)
+            .compose(rxPermissions.ensure(Manifest.permission.CAMERA))
             .map { viewModel.streamer.videoSource }
             .subscribe { camera ->
                 camera?.let {
@@ -89,15 +104,21 @@ class MainFragment : Fragment() {
             .let(fragmentDisposables::add)
     }
 
+    @SuppressLint("MissingPermission")
     override fun onAttach(context: Context) {
         super.onAttach(context)
+
+        rxPermissions
+            .request(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
+            .subscribe { granted: Boolean ->
+                if (!granted) {
+                    context.let { AlertUtils.show(it, "Error", "Permission not granted") }
+                }
+            }.let(fragmentDisposables::add)
+
         viewModel.buildStreamer(context)
         viewModel.streamer.configure(viewModel.audioConfig)
-        if (context.hasPermission(Manifest.permission.CAMERA)) {
-            viewModel.streamer.configure(viewModel.videoConfig)
-        } else {
-            AlertUtils.show(context, "Error", "Permission not granted")
-        }
+        viewModel.streamer.configure(viewModel.videoConfig)
 
         viewModel.streamer.onErrorListener = object : OnErrorListener {
             override fun onError(name: String, type: Error) {
