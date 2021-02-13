@@ -8,6 +8,7 @@ import com.github.thibaultbee.srtstreamer.Streamer
 import com.github.thibaultbee.srtstreamer.data.AudioConfig
 import com.github.thibaultbee.srtstreamer.data.VideoConfig
 import com.github.thibaultbee.srtstreamer.endpoints.SrtProducer
+import com.github.thibaultbee.srtstreamer.mux.ts.data.ServiceInfo
 import com.github.thibaultbee.srtstreamer.utils.Logger
 
 class MainViewModel : ViewModel() {
@@ -15,8 +16,16 @@ class MainViewModel : ViewModel() {
     val endpoint: SrtProducer by lazy {
         SrtProducer(logger)
     }
+
+    private val tsServiceInfo = ServiceInfo(
+        ServiceInfo.ServiceType.DIGITAL_TV,
+        0x4698,
+        "MyService",
+        "MyProvider"
+    )
+
     val streamer: Streamer by lazy {
-        Streamer(endpoint, logger)
+        Streamer(tsServiceInfo, endpoint, logger)
     }
 
     val videoConfig: VideoConfig by lazy {

@@ -25,7 +25,11 @@ import com.github.thibaultbee.srtstreamer.utils.Logger
 import java.nio.ByteBuffer
 
 
-class Streamer(val endpoint: IEndpoint, val logger: Logger) : EventHandlerManager() {
+class Streamer(
+    private val tsServiceInfo: ServiceInfo,
+    private val endpoint: IEndpoint,
+    val logger: Logger
+) : EventHandlerManager() {
     override var onErrorListener: OnErrorListener? = null
         set(value) {
             audioSource.onErrorListener = value
@@ -48,12 +52,6 @@ class Streamer(val endpoint: IEndpoint, val logger: Logger) : EventHandlerManage
     val videoSource =
         CameraCapture(logger)
 
-    private val serviceInfo = ServiceInfo(
-        ServiceInfo.ServiceType.DIGITAL_TV,
-        0x4698,
-        "MyService",
-        "MyProvider"
-    )
     private val muxListener = object : IMuxListener {
         override fun onOutputFrame(buffer: ByteBuffer) {
             try {
@@ -64,7 +62,7 @@ class Streamer(val endpoint: IEndpoint, val logger: Logger) : EventHandlerManage
             }
         }
     }
-    private val tsMux = TSMux(muxListener, serviceInfo)
+    private val tsMux = TSMux(muxListener)
 
     private var audioTsStreamId: Short? = null
     private var videoTsStreamId: Short? = null
@@ -216,7 +214,8 @@ class Streamer(val endpoint: IEndpoint, val logger: Logger) : EventHandlerManage
         videoEncoder!!.mimeType?.let { streams.add(it) }
         audioEncoder!!.mimeType?.let { streams.add(it) }
 
-        tsMux.addStreams(serviceInfo, streams)
+        tsMux.addService(tsServiceInfo)
+        tsMux.addStreams(tsServiceInfo, streams)
         videoEncoder!!.mimeType?.let { videoTsStreamId = tsMux.getStreams(it)[0].pid }
         audioEncoder!!.mimeType?.let { audioTsStreamId = tsMux.getStreams(it)[0].pid }
 
