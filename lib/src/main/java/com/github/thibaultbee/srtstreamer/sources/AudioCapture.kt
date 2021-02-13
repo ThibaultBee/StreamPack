@@ -7,7 +7,7 @@ import android.media.MediaFormat
 import android.media.MediaRecorder
 import android.os.Build
 import androidx.annotation.RequiresPermission
-import com.github.thibaultbee.srtstreamer.models.Frame
+import com.github.thibaultbee.srtstreamer.data.Frame
 import com.github.thibaultbee.srtstreamer.utils.Error
 import com.github.thibaultbee.srtstreamer.utils.EventHandlerManager
 import com.github.thibaultbee.srtstreamer.utils.Logger

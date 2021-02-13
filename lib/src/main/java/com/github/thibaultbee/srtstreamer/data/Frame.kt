@@ -1,4 +1,4 @@
-package com.github.thibaultbee.srtstreamer.models
+package com.github.thibaultbee.srtstreamer.data
 
 import java.nio.ByteBuffer
 

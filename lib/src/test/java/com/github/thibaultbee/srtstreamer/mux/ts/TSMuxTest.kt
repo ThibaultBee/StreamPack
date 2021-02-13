@@ -1,7 +1,7 @@
 package com.github.thibaultbee.srtstreamer.mux.ts
 
 import android.media.MediaFormat
-import com.github.thibaultbee.srtstreamer.models.Frame
+import com.github.thibaultbee.srtstreamer.data.Frame
 import com.github.thibaultbee.srtstreamer.mux.IMuxListener
 import com.github.thibaultbee.srtstreamer.mux.ts.utils.TSConst
 import com.github.thibaultbee.srtstreamer.mux.ts.utils.Utils.fakeServiceInfo

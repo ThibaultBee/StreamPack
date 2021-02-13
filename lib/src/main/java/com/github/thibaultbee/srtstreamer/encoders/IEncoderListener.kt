@@ -1,10 +1,19 @@
 package com.github.thibaultbee.srtstreamer.encoders
 
-import com.github.thibaultbee.srtstreamer.models.Frame
-import com.github.thibaultbee.srtstreamer.utils.Error
+import com.github.thibaultbee.srtstreamer.data.Frame
 import java.nio.ByteBuffer
 
 interface IEncoderListener {
+    /**
+     * Calls when an encoder needs an input frame.
+     * @param buffer ByteBuffer to fill. It comes from MediaCodec
+     * @return frame with correct pts and buffer filled with an input buffer
+     */
     fun onInputFrame(buffer: ByteBuffer): Frame?
-    fun onOutputFrame(frame: Frame): Error
+
+    /**
+     * Calls when an encoder has generated an output frame.
+     * @param frame Output frame with correct parameters and buffers
+     */
+    fun onOutputFrame(frame: Frame)
 }

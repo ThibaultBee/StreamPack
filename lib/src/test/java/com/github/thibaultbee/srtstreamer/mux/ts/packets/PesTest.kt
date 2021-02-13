@@ -1,7 +1,7 @@
 package com.github.thibaultbee.srtstreamer.mux.ts.packets
 
 import android.media.MediaFormat
-import com.github.thibaultbee.srtstreamer.models.Frame
+import com.github.thibaultbee.srtstreamer.data.Frame
 import com.github.thibaultbee.srtstreamer.mux.ts.data.Stream
 import com.github.thibaultbee.srtstreamer.mux.ts.utils.AssertEqualsBuffersMockMuxListener
 import org.junit.Test

@@ -4,9 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
-import android.media.MediaFormat
 import android.os.Bundle
-import android.util.Size
 import android.view.*
 import android.widget.ImageButton
 import android.widget.ToggleButton
@@ -91,13 +89,13 @@ class MainFragment : Fragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         viewModel.streamer.context = context
-        viewModel.streamer.configureAudio(MediaFormat.MIMETYPE_AUDIO_AAC, 128000, 48000)
+        viewModel.streamer.configure(viewModel.audioConfig)
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            viewModel.streamer.configureVideo(MediaFormat.MIMETYPE_VIDEO_AVC, 1000000, Size(1280, 720), 30)
+            viewModel.streamer.configure(viewModel.videoConfig)
         } else {
             AlertUtils.show(context, "Error", "Permission not granted")
         }

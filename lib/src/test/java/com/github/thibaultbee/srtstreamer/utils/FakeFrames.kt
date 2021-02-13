@@ -1,6 +1,6 @@
 package com.github.thibaultbee.srtstreamer.utils
 
-import com.github.thibaultbee.srtstreamer.models.Frame
+import com.github.thibaultbee.srtstreamer.data.Frame
 import java.nio.ByteBuffer
 import kotlin.random.Random
 

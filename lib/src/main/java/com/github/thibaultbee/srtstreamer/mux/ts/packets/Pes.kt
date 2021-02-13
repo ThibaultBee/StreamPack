@@ -1,6 +1,6 @@
 package com.github.thibaultbee.srtstreamer.mux.ts.packets
 
-import com.github.thibaultbee.srtstreamer.models.Frame
+import com.github.thibaultbee.srtstreamer.data.Frame
 import com.github.thibaultbee.srtstreamer.mux.IMuxListener
 import com.github.thibaultbee.srtstreamer.mux.ts.data.Stream
 import com.github.thibaultbee.srtstreamer.mux.ts.descriptors.AdaptationField

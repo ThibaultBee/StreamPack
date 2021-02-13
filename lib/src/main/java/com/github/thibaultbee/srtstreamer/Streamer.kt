@@ -2,24 +2,23 @@ package com.github.thibaultbee.srtstreamer
 
 import android.Manifest
 import android.content.Context
-import android.media.AudioFormat
-import android.media.MediaFormat
 import android.os.Build
-import android.util.Size
 import android.view.Surface
 import androidx.annotation.RequiresPermission
-import com.github.thibaultbee.srtstreamer.encoders.AudioEncoder
+import com.github.thibaultbee.srtstreamer.data.AudioConfig
+import com.github.thibaultbee.srtstreamer.data.Frame
+import com.github.thibaultbee.srtstreamer.data.VideoConfig
+import com.github.thibaultbee.srtstreamer.encoders.AudioMediaCodecEncoder
+import com.github.thibaultbee.srtstreamer.encoders.IEncoder
 import com.github.thibaultbee.srtstreamer.encoders.IEncoderListener
-import com.github.thibaultbee.srtstreamer.encoders.VideoEncoder
+import com.github.thibaultbee.srtstreamer.encoders.VideoMediaCodecEncoder
 import com.github.thibaultbee.srtstreamer.endpoints.IEndpoint
 import com.github.thibaultbee.srtstreamer.listeners.OnErrorListener
-import com.github.thibaultbee.srtstreamer.models.Frame
 import com.github.thibaultbee.srtstreamer.mux.IMuxListener
 import com.github.thibaultbee.srtstreamer.mux.ts.TSMux
 import com.github.thibaultbee.srtstreamer.mux.ts.data.ServiceInfo
 import com.github.thibaultbee.srtstreamer.sources.AudioCapture
 import com.github.thibaultbee.srtstreamer.sources.CameraCapture
-import com.github.thibaultbee.srtstreamer.utils.DeviceOrientation
 import com.github.thibaultbee.srtstreamer.utils.Error
 import com.github.thibaultbee.srtstreamer.utils.EventHandlerManager
 import com.github.thibaultbee.srtstreamer.utils.Logger
@@ -31,8 +30,6 @@ class Streamer(val endpoint: IEndpoint, val logger: Logger) : EventHandlerManage
         set(value) {
             audioSource.onErrorListener = value
             videoSource.onErrorListener = value
-            audioEncoder.onErrorListener = value
-            videoEncoder.onErrorListener = value
             field = value
         }
     var context: Context? = null
@@ -43,10 +40,8 @@ class Streamer(val endpoint: IEndpoint, val logger: Logger) : EventHandlerManage
             field = value
         }
 
-    private val audioEncoder =
-        AudioEncoder(logger)
-    private val videoEncoder =
-        VideoEncoder(logger)
+    private var audioEncoder: IEncoder? = null
+    private var videoEncoder: VideoMediaCodecEncoder? = null
 
     private val audioSource =
         AudioCapture(logger)
@@ -71,34 +66,30 @@ class Streamer(val endpoint: IEndpoint, val logger: Logger) : EventHandlerManage
     }
     private val tsMux = TSMux(muxListener, serviceInfo)
 
-    var videoBitrate = 0
-        set(value) {
-            videoEncoder.bitrate = value
-            field = value
-        }
-
     private var audioTsStreamId: Short? = null
     private var videoTsStreamId: Short? = null
 
     // Keep video configuration
-    private lateinit var videoConfig: VideoConfig
-    private lateinit var audioConfig: AudioConfig
+    private var videoConfig: VideoConfig? = null
+    private var audioConfig: AudioConfig? = null
 
 
     private var videoBaseTimestamp = -1L
     private var audioBaseTimestamp = -1L
+
+    private val onCodecErrorListener = object : OnErrorListener {
+        override fun onError(name: String, type: Error) {
+            stopStream()
+            onErrorListener?.onError(name, type)
+        }
+    }
 
     private val audioEncoderListener = object : IEncoderListener {
         override fun onInputFrame(buffer: ByteBuffer): Frame? {
             return audioSource.getFrame(buffer)
         }
 
-        override fun onOutputFrame(frame: Frame): Error {
-            // Drop codec data
-            if (frame.isCodecData) {
-                return Error.SUCCESS
-            }
-
+        override fun onOutputFrame(frame: Frame) {
             /*
              * In case device is >= N, we got real audio timestamp from bootime.
              * They can be compare with video timestamp
@@ -123,28 +114,9 @@ class Streamer(val endpoint: IEndpoint, val logger: Logger) : EventHandlerManage
                     tsMux.encode(frame, it)
                 } catch (e: Exception) {
                     reportError(e)
-                    return Error.UNKNOWN
                 }
             }
-
-            return Error.SUCCESS
         }
-    }
-
-    fun configureAudio(mimeType: String = MediaFormat.MIMETYPE_AUDIO_AAC, startBitrate: Int = 128000, sampleRate: Int = 441000, channelConfig: Int = AudioFormat.CHANNEL_IN_STEREO, audioBitFormat: Int = AudioFormat.ENCODING_PCM_16BIT): Error {
-        audioConfig = AudioConfig(mimeType, startBitrate, sampleRate, channelConfig, audioBitFormat)
-        val error = audioSource.configure(sampleRate, channelConfig, audioBitFormat)
-        if (error != Error.SUCCESS) {
-            logger.e(this, "Failed to set audio capture")
-            return error
-        }
-
-        val nChannel = when (channelConfig) {
-            AudioFormat.CHANNEL_IN_MONO -> 1
-            AudioFormat.CHANNEL_IN_STEREO -> 2
-            else -> 1
-        }
-        return audioEncoder.configure(mimeType, startBitrate, sampleRate, nChannel, audioBitFormat)
     }
 
     private val videoEncoderListener = object : IEncoderListener {
@@ -153,12 +125,7 @@ class Streamer(val endpoint: IEndpoint, val logger: Logger) : EventHandlerManage
             TODO("Not yet implemented")
         }
 
-        override fun onOutputFrame(frame: Frame): Error {
-            // Drop codec data
-            if (frame.isCodecData) {
-                return Error.SUCCESS
-            }
-
+        override fun onOutputFrame(frame: Frame) {
             if (videoBaseTimestamp == -1L) {
                 videoBaseTimestamp = frame.pts
             }
@@ -173,50 +140,48 @@ class Streamer(val endpoint: IEndpoint, val logger: Logger) : EventHandlerManage
                     reportError(e)
                 }
             }
-            return Error.SUCCESS
         }
     }
 
-    @RequiresPermission(Manifest.permission.CAMERA)
-    fun configureVideo(mimeType: String = MediaFormat.MIMETYPE_VIDEO_AVC, startBitrate: Int = 2000000, resolution: Size = Size(1920,1080), fps: Int = 30): Error {
-        // Keep settings, in case we need to reconfigure
-        videoConfig = VideoConfig(mimeType, startBitrate, resolution, fps)
+    fun configure(audioConfig: AudioConfig): Error {
+        this.audioConfig = audioConfig
+        val error = audioSource.configure(
+            audioConfig.sampleRate,
+            audioConfig.channelConfig,
+            audioConfig.audioByteFormat
+        )
+        if (error != Error.SUCCESS) {
+            logger.e(this, "Failed to set audio capture")
+            return error
+        }
 
-        val error = videoSource.configure(fps)
+        audioEncoder =
+            AudioMediaCodecEncoder(audioConfig, audioEncoderListener, onCodecErrorListener, logger)
+        return Error.SUCCESS
+    }
+
+    @RequiresPermission(Manifest.permission.CAMERA)
+    fun configure(videoConfig: VideoConfig): Error {
+        // Keep settings, in case we need to reconfigure
+        this.videoConfig = videoConfig
+
+        val error = videoSource.configure(videoConfig.fps)
         if (error != Error.SUCCESS) {
             logger.e(this, "Failed to set camera configuration")
             return error
         }
 
-        val orientation = if (context != null) {
-            DeviceOrientation.get(context!!)
-        } else {
-            logger.w(this, "Failed to get context: set rotation to default only")
-            90
-        }
-
-        return videoEncoder.configure(mimeType, startBitrate, resolution, fps, orientation)
+        videoEncoder =
+            VideoMediaCodecEncoder(videoConfig, videoEncoderListener, onCodecErrorListener, logger)
+        return Error.SUCCESS
     }
-
-    private fun configureVideo(): Error {
-        return videoEncoder.configure(
-            videoConfig.mimeType,
-            videoConfig.startBitrate,
-            videoConfig.resolution,
-            videoConfig.fps,
-            DeviceOrientation.get(context!!)
-        )
-    }
-
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun startCapture(previewSurface: Surface, cameraId: String = "0"): Error {
+        require(videoEncoder != null)
+
         videoSource.previewSurface = previewSurface
-        val encoderSurface = videoEncoder.getIntputSurface()
-        if (encoderSurface == null) {
-            logger.e(this, "Surface can't be null")
-            return Error.BAD_STATE
-        }
+        val encoderSurface = videoEncoder!!.intputSurface
         videoSource.encoderSurface = encoderSurface
         val error = videoSource.startPreview(cameraId)
         if (error != Error.SUCCESS) {
@@ -240,39 +205,33 @@ class Streamer(val endpoint: IEndpoint, val logger: Logger) : EventHandlerManage
         return videoSource.startPreview(cameraId)
     }
 
-    fun startStream(): Error {
+    @Throws
+    fun startStream() {
+        require(videoEncoder != null)
+        require(audioEncoder != null)
+
         endpoint.run()
 
-        audioEncoder.encoderListener = audioEncoderListener
-        videoEncoder.encoderListener = videoEncoderListener
-
         val streams = mutableListOf<String>()
-        videoEncoder.getMimeType()?.let { streams.add(it) }
-        audioEncoder.getMimeType()?.let { streams.add(it) }
+        videoEncoder!!.mimeType?.let { streams.add(it) }
+        audioEncoder!!.mimeType?.let { streams.add(it) }
 
         tsMux.addStreams(serviceInfo, streams)
-        videoEncoder.getMimeType()?.let { videoTsStreamId = tsMux.getStreams(it)[0].pid }
-        audioEncoder.getMimeType()?.let { audioTsStreamId = tsMux.getStreams(it)[0].pid }
+        videoEncoder!!.mimeType?.let { videoTsStreamId = tsMux.getStreams(it)[0].pid }
+        audioEncoder!!.mimeType?.let { audioTsStreamId = tsMux.getStreams(it)[0].pid }
 
-        val error = audioEncoder.start()
-        if (error != Error.SUCCESS) {
-            logger.e(this, "Failed to start audio encoder")
-            return error
-        }
+        audioEncoder!!.run()
 
         videoSource.startStream()
 
-        return videoEncoder.start()
+        videoEncoder!!.run()
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun stopStream() {
-        audioEncoder.encoderListener = null
-        videoEncoder.encoderListener = null
-
         videoSource.stopStream()
-        videoEncoder.stop()
-        audioEncoder.stop()
+        videoEncoder?.stop()
+        audioEncoder?.stop()
 
         tsMux.stop()
 
@@ -285,32 +244,40 @@ class Streamer(val endpoint: IEndpoint, val logger: Logger) : EventHandlerManage
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     private fun resetAudio(): Error {
+        require(audioConfig != null)
+
         audioBaseTimestamp = -1L
 
-        audioEncoder.release()
+        audioEncoder?.close()
 
         // Reconfigure
-        val nChannel = when (audioConfig.channelConfig) {
-            AudioFormat.CHANNEL_IN_MONO -> 1
-            AudioFormat.CHANNEL_IN_STEREO -> 2
-            else -> 1
-        }
-        return audioEncoder.configure(audioConfig.mimeType, audioConfig.startBitrate, audioConfig.sampleRate, nChannel, audioConfig.audioBitFormat)
+        audioEncoder = AudioMediaCodecEncoder(
+            audioConfig!!,
+            audioEncoderListener,
+            onCodecErrorListener,
+            logger
+        )
+        return Error.SUCCESS
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
     private fun resetVideo(): Error {
+        require(videoConfig != null)
+
         videoBaseTimestamp = -1L
 
-        videoEncoder.release()
-        videoEncoder.getIntputSurface()?.release()
+        videoEncoder?.intputSurface?.release()
+        videoEncoder?.close()
         videoSource.stopPreview()
 
-        // Reconfigure
-        configureVideo()
-
         // And restart...
-        val encoderSurface = videoEncoder.getIntputSurface()
+        videoEncoder = VideoMediaCodecEncoder(
+            videoConfig!!,
+            videoEncoderListener,
+            onCodecErrorListener,
+            logger
+        )
+        val encoderSurface = videoEncoder?.intputSurface
         if (encoderSurface == null) {
             logger.e(this, "Surface can't be null")
             return Error.BAD_STATE
@@ -326,12 +293,11 @@ class Streamer(val endpoint: IEndpoint, val logger: Logger) : EventHandlerManage
     }
 
     fun release() {
-        audioEncoder.release()
-        videoEncoder.release()
+        audioEncoder?.close()
+        audioEncoder = null
+        videoEncoder?.close()
+        videoEncoder = null
         audioSource.release()
         endpoint.close()
     }
-
-    data class VideoConfig(var mimeType: String, var startBitrate: Int, var resolution: Size, var fps: Int)
-    data class AudioConfig(var mimeType: String, var startBitrate: Int, var sampleRate: Int, var channelConfig: Int, var audioBitFormat: Int)
 }
