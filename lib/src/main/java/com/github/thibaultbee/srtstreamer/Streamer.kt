@@ -32,7 +32,6 @@ class Streamer(
 ) : EventHandlerManager() {
     override var onErrorListener: OnErrorListener? = null
         set(value) {
-            audioSource.onErrorListener = value
             videoSource.onErrorListener = value
             field = value
         }
@@ -47,8 +46,7 @@ class Streamer(
     private var audioEncoder: IEncoder? = null
     private var videoEncoder: VideoMediaCodecEncoder? = null
 
-    private val audioSource =
-        AudioCapture(logger)
+    private var audioSource: AudioCapture? = null
     val videoSource =
         CameraCapture(logger)
 
@@ -83,8 +81,10 @@ class Streamer(
     }
 
     private val audioEncoderListener = object : IEncoderListener {
-        override fun onInputFrame(buffer: ByteBuffer): Frame? {
-            return audioSource.getFrame(buffer)
+        override fun onInputFrame(buffer: ByteBuffer): Frame {
+            require(audioSource != null)
+
+            return audioSource!!.getFrame(buffer)
         }
 
         override fun onOutputFrame(frame: Frame) {
@@ -141,21 +141,12 @@ class Streamer(
         }
     }
 
-    fun configure(audioConfig: AudioConfig): Error {
+    fun configure(audioConfig: AudioConfig) {
         this.audioConfig = audioConfig
-        val error = audioSource.configure(
-            audioConfig.sampleRate,
-            audioConfig.channelConfig,
-            audioConfig.audioByteFormat
-        )
-        if (error != Error.SUCCESS) {
-            logger.e(this, "Failed to set audio capture")
-            return error
-        }
 
+        audioSource = AudioCapture(audioConfig, logger)
         audioEncoder =
             AudioMediaCodecEncoder(audioConfig, audioEncoderListener, onCodecErrorListener, logger)
-        return Error.SUCCESS
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
@@ -177,6 +168,7 @@ class Streamer(
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun startCapture(previewSurface: Surface, cameraId: String = "0"): Error {
         require(videoEncoder != null)
+        require(audioSource != null)
 
         videoSource.previewSurface = previewSurface
         val encoderSurface = videoEncoder!!.intputSurface
@@ -187,13 +179,14 @@ class Streamer(
             return error
         }
 
-        return audioSource.start()
+        audioSource!!.run()
+        return Error.SUCCESS
     }
 
     fun stopCapture() {
         videoSource.stopPreview()
 
-        audioSource.stop()
+        audioSource?.stop()
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
@@ -296,7 +289,8 @@ class Streamer(
         audioEncoder = null
         videoEncoder?.close()
         videoEncoder = null
-        audioSource.release()
+        audioSource?.close()
+        audioSource = null
         endpoint.close()
     }
 }

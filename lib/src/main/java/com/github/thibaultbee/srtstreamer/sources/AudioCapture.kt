@@ -7,76 +7,55 @@ import android.media.MediaFormat
 import android.media.MediaRecorder
 import android.os.Build
 import androidx.annotation.RequiresPermission
+import com.github.thibaultbee.srtstreamer.data.AudioConfig
 import com.github.thibaultbee.srtstreamer.data.Frame
-import com.github.thibaultbee.srtstreamer.utils.Error
-import com.github.thibaultbee.srtstreamer.utils.EventHandlerManager
 import com.github.thibaultbee.srtstreamer.utils.Logger
 import java.nio.ByteBuffer
 
-class AudioCapture(val logger: Logger): EventHandlerManager() {
-    private var audioRecord: AudioRecord? = null
+class AudioCapture(audioConfig: AudioConfig, val logger: Logger) : ICapture {
+    private val audioRecord: AudioRecord
 
-    fun configure(sampleRate: Int, channelConfig: Int, audioByteFormat: Int): Error {
+    init {
         val bufferSize = AudioRecord.getMinBufferSize(
-            sampleRate,
-            channelConfig,
-            audioByteFormat
+            audioConfig.sampleRate,
+            audioConfig.channelConfig,
+            audioConfig.audioByteFormat
         )
 
         if (bufferSize <= 0) {
-            logger.e(this, "Invalid size to start recording")
-            return Error.INVALID_PARAMETER
+            throw IllegalArgumentException(audioRecordErrorToString(bufferSize))
         }
 
         audioRecord = AudioRecord(
-            MediaRecorder.AudioSource.DEFAULT, sampleRate,
-            channelConfig, audioByteFormat, bufferSize
+            MediaRecorder.AudioSource.DEFAULT, audioConfig.sampleRate,
+            audioConfig.channelConfig, audioConfig.audioByteFormat, bufferSize
         )
-
-        return Error.SUCCESS
-    }
-
-    fun isConfigured(): Boolean {
-        return audioRecord != null
     }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    fun start(): Error {
-        if (!isConfigured()) {
-            logger.e(this, "Not configured")
-            return Error.BAD_STATE
-        }
-
-        audioRecord!!.startRecording()
+    override fun run() {
+        audioRecord.startRecording()
 
         if (!isRunning()) {
-            logger.e(this, "Failed to start recording")
-            return Error.UNKNOWN
+            throw IllegalStateException("AudioCapture: failed to start recording")
         }
-
-        return Error.SUCCESS
     }
 
-    fun isRunning() = audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING
+    private fun isRunning() = audioRecord.recordingState == AudioRecord.RECORDSTATE_RECORDING
 
-    fun stop(): Error {
+    override fun stop() {
         if (!isRunning()) {
-            logger.e(this, "Not running")
-            return Error.BAD_STATE
+            logger.d(this, "Not running")
+            return
         }
 
         // Stop audio record
-        audioRecord?.stop()
-
-        return Error.SUCCESS
+        audioRecord.stop()
     }
 
-    fun release(): Error {
+    override fun close() {
         // Release audio record
-        audioRecord?.release()
-        audioRecord = null
-
-        return Error.SUCCESS
+        audioRecord.release()
     }
 
     private fun getTimestamp(audioRecord: AudioRecord): Long {
@@ -101,18 +80,19 @@ class AudioCapture(val logger: Logger): EventHandlerManager() {
         return timestamp
     }
 
-    fun getFrame(buffer: ByteBuffer): Frame? {
-        val length = audioRecord!!.read(buffer, buffer.remaining())
+    override fun getFrame(buffer: ByteBuffer): Frame {
+        val length = audioRecord.read(buffer, buffer.remaining())
         return if (length > 0) {
-            Frame(buffer, MediaFormat.MIMETYPE_AUDIO_RAW, getTimestamp(audioRecord!!))
+            Frame(buffer, MediaFormat.MIMETYPE_AUDIO_RAW, getTimestamp(audioRecord))
         } else {
-            reportError(when (length) {
-                AudioRecord.ERROR_INVALID_OPERATION -> Error.INVALID_OPERATION
-                AudioRecord.ERROR_BAD_VALUE -> Error.INVALID_PARAMETER
-                AudioRecord.ERROR_DEAD_OBJECT -> Error.DEAD_OBJECT
-                else -> Error.UNKNOWN
-            })
-            null
+            throw IllegalArgumentException(audioRecordErrorToString(length))
         }
+    }
+
+    private fun audioRecordErrorToString(audioRecordError: Int) = when (audioRecordError) {
+        AudioRecord.ERROR_INVALID_OPERATION -> "AudioRecord returns an invalid operation error"
+        AudioRecord.ERROR_BAD_VALUE -> "AudioRecord returns a bad value error"
+        AudioRecord.ERROR_DEAD_OBJECT -> "AudioRecord returns a dead object error"
+        else -> "Unknown audio record error"
     }
 }

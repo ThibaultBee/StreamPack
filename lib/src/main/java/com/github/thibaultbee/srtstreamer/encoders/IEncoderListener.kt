@@ -9,7 +9,7 @@ interface IEncoderListener {
      * @param buffer ByteBuffer to fill. It comes from MediaCodec
      * @return frame with correct pts and buffer filled with an input buffer
      */
-    fun onInputFrame(buffer: ByteBuffer): Frame?
+    fun onInputFrame(buffer: ByteBuffer): Frame
 
     /**
      * Calls when an encoder has generated an output frame.
