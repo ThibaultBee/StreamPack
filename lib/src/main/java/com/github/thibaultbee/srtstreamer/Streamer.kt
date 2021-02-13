@@ -26,6 +26,7 @@ import java.nio.ByteBuffer
 
 
 class Streamer(
+    context: Context,
     private val tsServiceInfo: ServiceInfo,
     private val endpoint: IEndpoint,
     val logger: Logger
@@ -35,20 +36,13 @@ class Streamer(
             videoSource.onErrorListener = value
             field = value
         }
-    var context: Context? = null
-        set(value) {
-            if (value != null) {
-                videoSource.context = value
-            }
-            field = value
-        }
 
     private var audioEncoder: IEncoder? = null
     private var videoEncoder: VideoMediaCodecEncoder? = null
 
     private var audioSource: AudioCapture? = null
     val videoSource =
-        CameraCapture(logger)
+        CameraCapture(context, logger)
 
     private val muxListener = object : IMuxListener {
         override fun onOutputFrame(buffer: ByteBuffer) {

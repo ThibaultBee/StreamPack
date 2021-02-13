@@ -1,5 +1,6 @@
 package com.github.thibaultbee.srtstreamer.app.ui.main
 
+import android.content.Context
 import android.media.AudioFormat
 import android.media.MediaFormat
 import android.util.Size
@@ -24,9 +25,7 @@ class MainViewModel : ViewModel() {
         "MyProvider"
     )
 
-    val streamer: Streamer by lazy {
-        Streamer(tsServiceInfo, endpoint, logger)
-    }
+    lateinit var streamer: Streamer
 
     val videoConfig: VideoConfig by lazy {
         VideoConfig(
@@ -45,5 +44,9 @@ class MainViewModel : ViewModel() {
             channelConfig = AudioFormat.CHANNEL_IN_STEREO,
             audioByteFormat = AudioFormat.ENCODING_PCM_16BIT
         )
+    }
+
+    fun buildStreamer(context: Context) {
+        streamer = Streamer(context, tsServiceInfo, endpoint, logger)
     }
 }

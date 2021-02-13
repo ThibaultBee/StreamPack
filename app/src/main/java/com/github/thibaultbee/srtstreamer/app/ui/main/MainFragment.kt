@@ -87,7 +87,7 @@ class MainFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        viewModel.streamer.context = context
+        viewModel.buildStreamer(context)
         viewModel.streamer.configure(viewModel.audioConfig)
         if (context.hasPermission(Manifest.permission.CAMERA)) {
             viewModel.streamer.configure(viewModel.videoConfig)

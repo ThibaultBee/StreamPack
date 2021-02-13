@@ -15,13 +15,12 @@ import com.github.thibaultbee.srtstreamer.utils.EventHandlerManager
 import com.github.thibaultbee.srtstreamer.utils.Logger
 
 
-class CameraCapture (val logger: Logger) :
+class CameraCapture(private val context: Context, val logger: Logger) :
     EventHandlerManager() {
-    var fpsRange = Range(30,30)
+    var fpsRange = Range(30, 30)
 
     lateinit var previewSurface: Surface
     lateinit var encoderSurface: Surface
-    lateinit var context: Context
 
     var cameraId: String = "0"
 
@@ -34,6 +33,7 @@ class CameraCapture (val logger: Logger) :
             session.close()
             reportError(Error.INVALID_OPERATION)
         }
+
         override fun onConfigured(session: CameraCaptureSession) {
             captureSession = session
             captureRequestBuilder = camera?.createCaptureRequest(CameraDevice.TEMPLATE_RECORD)
@@ -54,28 +54,33 @@ class CameraCapture (val logger: Logger) :
         }
     }
 
-    private val cameraDeviceCallback = object: CameraDevice.StateCallback() {
+    private val cameraDeviceCallback = object : CameraDevice.StateCallback() {
         override fun onOpened(camera: CameraDevice) {
             this@CameraCapture.camera = camera
             cameraId = camera.id
             createCaptureSession()
         }
+
         override fun onDisconnected(camera: CameraDevice) {
             camera.close()
         }
+
         override fun onError(camera: CameraDevice, error: Int) {
             camera.close()
             logger.e(this, "Camera ${camera.id} is in error $error")
-            reportError(when (error) {
-                ERROR_CAMERA_IN_USE -> Error.DEVICE_ALREADY_IN_USE
-                ERROR_MAX_CAMERAS_IN_USE -> Error.DEVICE_MAX_IN_USE
-                ERROR_CAMERA_DISABLED -> Error.DEVICE_DISABLED
-                ERROR_CAMERA_DEVICE -> Error.UNKNOWN
-                ERROR_CAMERA_SERVICE -> Error.UNKNOWN
-                else -> Error.UNKNOWN
-            })
+            reportError(
+                when (error) {
+                    ERROR_CAMERA_IN_USE -> Error.DEVICE_ALREADY_IN_USE
+                    ERROR_MAX_CAMERAS_IN_USE -> Error.DEVICE_MAX_IN_USE
+                    ERROR_CAMERA_DISABLED -> Error.DEVICE_DISABLED
+                    ERROR_CAMERA_DEVICE -> Error.UNKNOWN
+                    ERROR_CAMERA_SERVICE -> Error.UNKNOWN
+                    else -> Error.UNKNOWN
+                }
+            )
             this@CameraCapture.camera = null
         }
+
         override fun onClosed(camera: CameraDevice) {
             this@CameraCapture.camera = null
             logger.d(this, "Camera ${camera.id} is closed")
@@ -97,7 +102,8 @@ class CameraCapture (val logger: Logger) :
     fun getClosestFpsRange(fps: Int): Range<Int>? {
         var fpsRangeList = getFpsList(cameraId)
         // Get range that contains FPS
-        fpsRangeList = fpsRangeList.filter { it.contains(fps) or it.contains(fps * 1000)} // On Samsung S4 fps range is [4000-30000] instead of [4-30]
+        fpsRangeList =
+            fpsRangeList.filter { it.contains(fps) or it.contains(fps * 1000) } // On Samsung S4 fps range is [4000-30000] instead of [4-30]
         if (fpsRangeList.isEmpty()) {
             logger.e(this, "Failed to find a single FPS range that contains $fps")
             return null
@@ -211,82 +217,46 @@ class CameraCapture (val logger: Logger) :
         }
     }
 
-        @RequiresPermission(Manifest.permission.CAMERA)
-        fun getCameraCharacteristics(cameraId: String? = null): CameraCharacteristics? {
-            val id = cameraId ?: camera?.id
-            if(!::context.isInitialized) {
-                logger.e(this, "Context not initialized")
-                return null
-            }
+    @RequiresPermission(Manifest.permission.CAMERA)
+    fun getCameraCharacteristics(cameraId: String? = null): CameraCharacteristics? {
+        val id = cameraId ?: camera?.id ?: return null
 
-            if (id == null) {
-                return null
-            }
+        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        return cameraManager.getCameraCharacteristics(id)
+    }
 
-            val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-            return cameraManager.getCameraCharacteristics(id)
-        }
+    @RequiresPermission(Manifest.permission.CAMERA)
+    fun getCameraList(): List<String> {
+        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        return cameraManager.cameraIdList.toList()
+    }
 
-        @RequiresPermission(Manifest.permission.CAMERA)
-        fun getCameraList(): List<String> {
-            if(!::context.isInitialized) {
-                logger.e(this, "Context not initialized")
-                return emptyList()
-            }
+    @RequiresPermission(Manifest.permission.CAMERA)
+    fun getOutputCaptureSizes(cameraId: String? = null): List<Size> {
+        val id = cameraId ?: camera?.id ?: return emptyList()
 
-            val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-            return cameraManager.cameraIdList.toList()
-        }
+        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        return cameraManager.getCameraCharacteristics(id)[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]?.getOutputSizes(
+            ImageFormat.YUV_420_888
+        )?.toList() ?: emptyList()
+    }
 
-        @RequiresPermission(Manifest.permission.CAMERA)
-        fun getOutputCaptureSizes(cameraId: String? = null): List<Size> {
-            val id = cameraId ?: camera?.id
-            if(!::context.isInitialized) {
-                logger.e(this, "Context not initialized")
-                return emptyList()
-            }
+    @RequiresPermission(Manifest.permission.CAMERA)
+    fun <T : Any> getOutputSizes(klass: Class<T>, cameraId: String? = null): List<Size> {
+        val id = cameraId ?: camera?.id ?: return emptyList()
 
-            if (id == null) {
-                return emptyList()
-            }
+        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        return cameraManager.getCameraCharacteristics(id)[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]?.getOutputSizes(
+            klass
+        )?.toList() ?: emptyList()
+    }
 
-            val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-            return cameraManager.getCameraCharacteristics(id)[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]?.getOutputSizes(
-                ImageFormat.YUV_420_888)?.toList() ?: emptyList()
-        }
+    @RequiresPermission(Manifest.permission.CAMERA)
+    fun getFpsList(cameraId: String? = null): List<Range<Int>> {
+        val id = cameraId ?: camera?.id ?: return emptyList()
 
-        @RequiresPermission(Manifest.permission.CAMERA)
-        fun <T : Any> getOutputSizes(klass: Class<T>, cameraId: String? = null): List<Size> {
-            val id = cameraId ?: camera?.id
-
-            if(!::context.isInitialized) {
-                logger.e(this, "Context not initialized")
-                return emptyList()
-            }
-
-            if (id == null) {
-                return emptyList()
-            }
-
-            val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-            return cameraManager.getCameraCharacteristics(id)[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]?.getOutputSizes(
-                klass)?.toList() ?: emptyList()
-        }
-
-        @RequiresPermission(Manifest.permission.CAMERA)
-        fun getFpsList(cameraId: String? = null): List<Range<Int>> {
-            val id = cameraId ?: camera?.id
-
-            if(!::context.isInitialized) {
-                logger.e(this, "Context not initialized")
-                return emptyList()
-            }
-
-            if (id == null) {
-                return emptyList()
-            }
-
-            val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-            return cameraManager.getCameraCharacteristics(id)[CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES]?.toList() ?: emptyList()
-        }
+        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        return cameraManager.getCameraCharacteristics(id)[CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES]?.toList()
+            ?: emptyList()
+    }
 }
