@@ -23,26 +23,22 @@ import com.github.thibaultbee.srtstreamer.utils.Error
 import com.github.thibaultbee.srtstreamer.utils.EventHandlerManager
 import com.github.thibaultbee.srtstreamer.utils.Logger
 import java.nio.ByteBuffer
+import java.security.InvalidParameterException
 
 
 class Streamer(
-    context: Context,
+    private val context: Context,
     private val tsServiceInfo: ServiceInfo,
     private val endpoint: IEndpoint,
     val logger: Logger
 ) : EventHandlerManager() {
     override var onErrorListener: OnErrorListener? = null
-        set(value) {
-            videoSource.onErrorListener = value
-            field = value
-        }
 
     private var audioEncoder: IEncoder? = null
     private var videoEncoder: VideoMediaCodecEncoder? = null
 
     private var audioSource: AudioCapture? = null
-    val videoSource =
-        CameraCapture(context, logger)
+    var videoSource: CameraCapture? = null
 
     private val muxListener = object : IMuxListener {
         override fun onOutputFrame(buffer: ByteBuffer) {
@@ -70,6 +66,14 @@ class Streamer(
     private val onCodecErrorListener = object : OnErrorListener {
         override fun onError(name: String, type: Error) {
             stopStream()
+            onErrorListener?.onError(name, type)
+        }
+    }
+
+    private val onCaptureErrorListener = object : OnErrorListener {
+        override fun onError(name: String, type: Error) {
+            stopStream()
+            stopCapture()
             onErrorListener?.onError(name, type)
         }
     }
@@ -144,30 +148,25 @@ class Streamer(
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    fun configure(videoConfig: VideoConfig): Error {
-        // Keep settings, in case we need to reconfigure
+    fun configure(videoConfig: VideoConfig) {
+        // Keep settings when we need to reconfigure
         this.videoConfig = videoConfig
 
-        val error = videoSource.configure(videoConfig.fps)
-        if (error != Error.SUCCESS) {
-            logger.e(this, "Failed to set camera configuration")
-            return error
-        }
-
+        videoSource = CameraCapture(context, videoConfig.fps, onCaptureErrorListener, logger)
         videoEncoder =
             VideoMediaCodecEncoder(videoConfig, videoEncoderListener, onCodecErrorListener, logger)
-        return Error.SUCCESS
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun startCapture(previewSurface: Surface, cameraId: String = "0"): Error {
         require(videoEncoder != null)
         require(audioSource != null)
+        require(videoSource != null)
 
-        videoSource.previewSurface = previewSurface
+        videoSource!!.previewSurface = previewSurface
         val encoderSurface = videoEncoder!!.intputSurface
-        videoSource.encoderSurface = encoderSurface
-        val error = videoSource.startPreview(cameraId)
+        videoSource!!.encoderSurface = encoderSurface
+        val error = videoSource!!.startPreview(cameraId)
         if (error != Error.SUCCESS) {
             logger.e(this, "Failed to start video preview")
             return error
@@ -178,22 +177,23 @@ class Streamer(
     }
 
     fun stopCapture() {
-        videoSource.stopPreview()
-
+        videoSource?.stopPreview()
         audioSource?.stop()
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
     fun changeVideoSource(cameraId: String = "0"): Error {
-        videoSource.stopPreview()
+        require(videoSource != null)
 
-        return videoSource.startPreview(cameraId)
+        videoSource!!.stopPreview()
+        return videoSource!!.startPreview(cameraId)
     }
 
     @Throws
     fun startStream() {
         require(videoEncoder != null)
         require(audioEncoder != null)
+        require(videoSource != null)
 
         endpoint.run()
 
@@ -208,14 +208,14 @@ class Streamer(
 
         audioEncoder!!.run()
 
-        videoSource.startStream()
+        videoSource!!.startStream()
 
         videoEncoder!!.run()
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun stopStream() {
-        videoSource.stopStream()
+        videoSource?.stopStream()
         videoEncoder?.stop()
         audioEncoder?.stop()
 
@@ -247,14 +247,14 @@ class Streamer(
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    private fun resetVideo(): Error {
+    private fun resetVideo() {
         require(videoConfig != null)
 
         videoBaseTimestamp = -1L
 
         videoEncoder?.intputSurface?.release()
         videoEncoder?.close()
-        videoSource.stopPreview()
+        videoSource?.stopPreview()
 
         // And restart...
         videoEncoder = VideoMediaCodecEncoder(
@@ -264,18 +264,9 @@ class Streamer(
             logger
         )
         val encoderSurface = videoEncoder?.intputSurface
-        if (encoderSurface == null) {
-            logger.e(this, "Surface can't be null")
-            return Error.BAD_STATE
-        }
-        videoSource.encoderSurface = encoderSurface
-        val error = videoSource.startPreview()
-        if (error != Error.SUCCESS) {
-            logger.e(this, "Failed to start video preview")
-            return error
-        }
-
-        return Error.SUCCESS
+            ?: throw InvalidParameterException("Surface can't be null")
+        videoSource?.encoderSurface = encoderSurface
+        videoSource?.startPreview()
     }
 
     fun release() {

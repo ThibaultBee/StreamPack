@@ -76,11 +76,14 @@ class MainFragment : Fragment() {
         switchButton.clicks()
             .observeOn(AndroidSchedulers.mainThread())
             .throttleFirst(3000, TimeUnit.MILLISECONDS)
-            .subscribe {
-                if (viewModel.streamer.videoSource.cameraId == "0") {
-                    viewModel.streamer.changeVideoSource("1")
-                } else {
-                    viewModel.streamer.changeVideoSource("0")
+            .map { viewModel.streamer.videoSource }
+            .subscribe { camera ->
+                camera?.let {
+                    if (it.cameraId == "0") {
+                        viewModel.streamer.changeVideoSource("1")
+                    } else {
+                        viewModel.streamer.changeVideoSource("0")
+                    }
                 }
             }
             .let(fragmentDisposables::add)
@@ -102,7 +105,7 @@ class MainFragment : Fragment() {
             }
         }
 
-        viewModel.streamer.onConnectionListener = object : OnConnectionListener{
+        viewModel.streamer.onConnectionListener = object : OnConnectionListener {
             override fun onLost() {
                 AlertUtils.show(context, "Connection Lost")
                 liveButton.isChecked = false
@@ -127,7 +130,7 @@ class MainFragment : Fragment() {
     }
 
     @SuppressLint("MissingPermission")
-    private val surfaceViewCallback = object: SurfaceHolder.Callback {
+    private val surfaceViewCallback = object : SurfaceHolder.Callback {
         var nbOnSurfaceChange = 0
 
         override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
@@ -138,14 +141,13 @@ class MainFragment : Fragment() {
                 if (nbOnSurfaceChange == 2) {
                     viewModel.streamer.startCapture(holder.surface)
                 } else {
-                    val choices = if (!viewModel.streamer.videoSource.isRunning()) {
-                        context!!.getOutputSizes(SurfaceHolder::class.java, "0")
-                    } else {
+                    val choices = viewModel.streamer.videoSource?.let {
                         context!!.getOutputSizes(
                             SurfaceHolder::class.java,
-                            viewModel.streamer.videoSource.cameraId
+                            viewModel.streamer.videoSource!!.cameraId
                         )
-                    }
+                    } ?: context!!.getOutputSizes(SurfaceHolder::class.java, "0")
+
                     chooseBigEnoughSize(choices, width, height)?.let { size ->
                         holder.setFixedSize(size.width, size.height)
                     }

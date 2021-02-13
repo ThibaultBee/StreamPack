@@ -8,13 +8,19 @@ import android.os.HandlerThread
 import android.util.Range
 import android.view.Surface
 import androidx.annotation.RequiresPermission
+import com.github.thibaultbee.srtstreamer.listeners.OnErrorListener
 import com.github.thibaultbee.srtstreamer.utils.Error
 import com.github.thibaultbee.srtstreamer.utils.EventHandlerManager
 import com.github.thibaultbee.srtstreamer.utils.Logger
 import com.github.thibaultbee.srtstreamer.utils.getFpsList
 
 
-class CameraCapture(private val context: Context, val logger: Logger) :
+class CameraCapture(
+    private val context: Context,
+    private val fps: Int,
+    override var onErrorListener: OnErrorListener?,
+    val logger: Logger
+) :
     EventHandlerManager() {
     var fpsRange = Range(30, 30)
 
@@ -91,7 +97,7 @@ class CameraCapture(private val context: Context, val logger: Logger) :
 
     private fun createCaptureSession() {
         val surfaceList = mutableListOf(previewSurface, encoderSurface)
-        camera?.createCaptureSession(surfaceList, captureSessionCallback, null)
+        camera?.createCaptureSession(surfaceList, captureSessionCallback, backgroundHandler)
     }
 
     fun isRunning() = camera != null
@@ -154,7 +160,7 @@ class CameraCapture(private val context: Context, val logger: Logger) :
     fun startPreview(): Error {
         startBackgroundThread()
         val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        cameraManager.openCamera(cameraId, cameraDeviceCallback, null)
+        cameraManager.openCamera(cameraId, cameraDeviceCallback, backgroundHandler)
 
         return Error.SUCCESS
     }
