@@ -2,17 +2,16 @@ package com.github.thibaultbee.srtstreamer.sources
 
 import android.Manifest
 import android.content.Context
-import android.graphics.ImageFormat
 import android.hardware.camera2.*
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Range
-import android.util.Size
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.srtstreamer.utils.Error
 import com.github.thibaultbee.srtstreamer.utils.EventHandlerManager
 import com.github.thibaultbee.srtstreamer.utils.Logger
+import com.github.thibaultbee.srtstreamer.utils.getFpsList
 
 
 class CameraCapture(private val context: Context, val logger: Logger) :
@@ -100,7 +99,7 @@ class CameraCapture(private val context: Context, val logger: Logger) :
 
     @RequiresPermission(Manifest.permission.CAMERA)
     fun getClosestFpsRange(fps: Int): Range<Int>? {
-        var fpsRangeList = getFpsList(cameraId)
+        var fpsRangeList = context.getFpsList(cameraId)
         // Get range that contains FPS
         fpsRangeList =
             fpsRangeList.filter { it.contains(fps) or it.contains(fps * 1000) } // On Samsung S4 fps range is [4000-30000] instead of [4-30]
@@ -215,48 +214,5 @@ class CameraCapture(private val context: Context, val logger: Logger) :
         } catch (e: InterruptedException) {
             e.printStackTrace()
         }
-    }
-
-    @RequiresPermission(Manifest.permission.CAMERA)
-    fun getCameraCharacteristics(cameraId: String? = null): CameraCharacteristics? {
-        val id = cameraId ?: camera?.id ?: return null
-
-        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        return cameraManager.getCameraCharacteristics(id)
-    }
-
-    @RequiresPermission(Manifest.permission.CAMERA)
-    fun getCameraList(): List<String> {
-        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        return cameraManager.cameraIdList.toList()
-    }
-
-    @RequiresPermission(Manifest.permission.CAMERA)
-    fun getOutputCaptureSizes(cameraId: String? = null): List<Size> {
-        val id = cameraId ?: camera?.id ?: return emptyList()
-
-        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        return cameraManager.getCameraCharacteristics(id)[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]?.getOutputSizes(
-            ImageFormat.YUV_420_888
-        )?.toList() ?: emptyList()
-    }
-
-    @RequiresPermission(Manifest.permission.CAMERA)
-    fun <T : Any> getOutputSizes(klass: Class<T>, cameraId: String? = null): List<Size> {
-        val id = cameraId ?: camera?.id ?: return emptyList()
-
-        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        return cameraManager.getCameraCharacteristics(id)[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]?.getOutputSizes(
-            klass
-        )?.toList() ?: emptyList()
-    }
-
-    @RequiresPermission(Manifest.permission.CAMERA)
-    fun getFpsList(cameraId: String? = null): List<Range<Int>> {
-        val id = cameraId ?: camera?.id ?: return emptyList()
-
-        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        return cameraManager.getCameraCharacteristics(id)[CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES]?.toList()
-            ?: emptyList()
     }
 }

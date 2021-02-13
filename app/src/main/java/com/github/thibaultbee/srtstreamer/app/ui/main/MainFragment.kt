@@ -17,6 +17,7 @@ import com.github.thibaultbee.srtstreamer.app.utils.PreviewUtils.Companion.choos
 import com.github.thibaultbee.srtstreamer.listeners.OnConnectionListener
 import com.github.thibaultbee.srtstreamer.listeners.OnErrorListener
 import com.github.thibaultbee.srtstreamer.utils.Error
+import com.github.thibaultbee.srtstreamer.utils.getOutputSizes
 import com.github.thibaultbee.srtstreamer.utils.hasPermission
 import com.jakewharton.rxbinding3.view.clicks
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -130,18 +131,22 @@ class MainFragment : Fragment() {
         var nbOnSurfaceChange = 0
 
         override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
-            if (holder != null) {
+            require(context != null)
+
+            holder?.let {
                 nbOnSurfaceChange++
                 if (nbOnSurfaceChange == 2) {
                     viewModel.streamer.startCapture(holder.surface)
                 } else {
                     val choices = if (!viewModel.streamer.videoSource.isRunning()) {
-                        viewModel.streamer.videoSource.getOutputSizes(SurfaceHolder::class.java, "0")
+                        context!!.getOutputSizes(SurfaceHolder::class.java, "0")
                     } else {
-                        viewModel.streamer.videoSource.getOutputSizes(SurfaceHolder::class.java)
+                        context!!.getOutputSizes(
+                            SurfaceHolder::class.java,
+                            viewModel.streamer.videoSource.cameraId
+                        )
                     }
-                    val size = chooseBigEnoughSize(choices, width, height)
-                    if (size != null) {
+                    chooseBigEnoughSize(choices, width, height)?.let { size ->
                         holder.setFixedSize(size.width, size.height)
                     }
                 }
