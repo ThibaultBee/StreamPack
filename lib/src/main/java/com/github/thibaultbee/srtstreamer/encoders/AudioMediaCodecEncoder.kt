@@ -18,9 +18,8 @@ class AudioMediaCodecEncoder(
     override var onErrorListener: OnErrorListener?,
     logger: Logger
 ) :
-    MediaCodecEncoder(encoderListener, logger) {
+    MediaCodecEncoder(encoderListener, audioConfig.startBitrate, logger) {
     override val mediaCodec: MediaCodec
-    override val startBitrate = audioConfig.startBitrate
 
     init {
         val audioFormat = MediaFormat.createAudioFormat(

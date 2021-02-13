@@ -14,6 +14,7 @@ import java.security.InvalidParameterException
 
 abstract class MediaCodecEncoder(
     override val encoderListener: IEncoderListener,
+    startBitrate: Int,
     val logger: Logger
 ) :
     EventHandlerManager(), IEncoder {

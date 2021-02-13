@@ -14,7 +14,7 @@ class VideoMediaCodecEncoder(
     override var onErrorListener: OnErrorListener?,
     logger: Logger
 ) :
-    MediaCodecEncoder(encoderListener, logger) {
+    MediaCodecEncoder(encoderListener, videoConfig.startBitrate, logger) {
     override val mediaCodec: MediaCodec
 
     init {
