@@ -35,41 +35,53 @@ abstract class MediaCodecEncoder(
             info: MediaCodec.BufferInfo
         ) {
             /**
-             * Drop codec data. They are already pass in the extra buffer.
+             * An IllegalStateException happens when MediaCodec is stopped. Dirty fix: catch it...
              */
-            mediaCodec.getOutputBuffer(index)?.let { buffer ->
-                val extra = onGenerateExtra(buffer, codec.outputFormat)
-                Frame(
-                    buffer,
-                    codec.outputFormat.getString(MediaFormat.KEY_MIME)!!,
-                    info.presentationTimeUs, // pts
-                    null, // dts
-                    info.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME,
-                    info.flags == MediaCodec.BUFFER_FLAG_CODEC_CONFIG,
-                    extra
-                ).takeUnless { it.isCodecData }?.let {
-                    encoderListener.onOutputFrame(
-                        it
-                    )
-                }
+            try {
+                mediaCodec.getOutputBuffer(index)?.let { buffer ->
+                    val extra = onGenerateExtra(buffer, codec.outputFormat)
+                    Frame(
+                        buffer,
+                        codec.outputFormat.getString(MediaFormat.KEY_MIME)!!,
+                        info.presentationTimeUs, // pts
+                        null, // dts
+                        info.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME,
+                        info.flags == MediaCodec.BUFFER_FLAG_CODEC_CONFIG,
+                        extra
+                        /**
+                         * Drop codec data. They are already pass in the extra buffer.
+                         */
+                    ).takeUnless { it.isCodecData }?.let {
+                        encoderListener.onOutputFrame(
+                            it
+                        )
+                    }
 
-                mediaCodec.releaseOutputBuffer(index, false)
-            } ?: reportError(Error.INVALID_BUFFER)
+                    mediaCodec.releaseOutputBuffer(index, false)
+                } ?: reportError(Error.INVALID_BUFFER)
+            } catch (e: IllegalStateException) {
+            }
         }
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
-            mediaCodec.getInputBuffer(index)?.let { buffer ->
-                val frame = encoderListener.onInputFrame(buffer)
-                frame?.let { it ->
-                    mediaCodec.queueInputBuffer(
-                        index,
-                        0,
-                        it.buffer.remaining(),
-                        it.pts /* in us */,
-                        0
-                    )
-                }
-            } ?: reportError(Error.INVALID_BUFFER)
+            /**
+             * An IllegalStateException happens when MediaCodec is stopped. Dirty fix: catch it...
+             */
+            try {
+                mediaCodec.getInputBuffer(index)?.let { buffer ->
+                    val frame = encoderListener.onInputFrame(buffer)
+                    frame?.let { it ->
+                        mediaCodec.queueInputBuffer(
+                            index,
+                            0,
+                            it.buffer.remaining(),
+                            it.pts /* in us */,
+                            0
+                        )
+                    }
+                } ?: reportError(Error.INVALID_BUFFER)
+            } catch (e: IllegalStateException) {
+            }
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
@@ -97,6 +109,8 @@ abstract class MediaCodecEncoder(
 
     override fun stop() {
         try {
+            mediaCodec.setCallback(null)
+            mediaCodec.signalEndOfInputStream()
             mediaCodec.flush()
             mediaCodec.stop()
         } catch (e: IllegalStateException) {
