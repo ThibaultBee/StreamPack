@@ -3,12 +3,10 @@ package com.github.thibaultbee.srtstreamer.app.ui.main
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.*
 import android.widget.ImageButton
 import android.widget.ToggleButton
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import butterknife.BindView
@@ -19,6 +17,7 @@ import com.github.thibaultbee.srtstreamer.app.utils.PreviewUtils.Companion.choos
 import com.github.thibaultbee.srtstreamer.listeners.OnConnectionListener
 import com.github.thibaultbee.srtstreamer.listeners.OnErrorListener
 import com.github.thibaultbee.srtstreamer.utils.Error
+import com.github.thibaultbee.srtstreamer.utils.hasPermission
 import com.jakewharton.rxbinding3.view.clicks
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -90,11 +89,7 @@ class MainFragment : Fragment() {
         super.onAttach(context)
         viewModel.streamer.context = context
         viewModel.streamer.configure(viewModel.audioConfig)
-        if (ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
+        if (context.hasPermission(Manifest.permission.CAMERA)) {
             viewModel.streamer.configure(viewModel.videoConfig)
         } else {
             AlertUtils.show(context, "Error", "Permission not granted")
