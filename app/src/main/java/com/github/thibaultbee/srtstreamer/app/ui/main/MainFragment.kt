@@ -4,14 +4,13 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import android.view.*
-import android.widget.ImageButton
-import android.widget.ToggleButton
+import android.view.LayoutInflater
+import android.view.SurfaceHolder
+import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import butterknife.BindView
-import butterknife.ButterKnife
-import com.github.thibaultbee.srtstreamer.app.R
+import com.github.thibaultbee.srtstreamer.app.databinding.MainFragmentBinding
 import com.github.thibaultbee.srtstreamer.app.utils.AlertUtils
 import com.github.thibaultbee.srtstreamer.app.utils.PreviewUtils.Companion.chooseBigEnoughSize
 import com.github.thibaultbee.srtstreamer.listeners.OnConnectionListener
@@ -27,6 +26,7 @@ import java.util.concurrent.TimeUnit
 
 class MainFragment : Fragment() {
     private val fragmentDisposables = CompositeDisposable()
+    private lateinit var binding: MainFragmentBinding
 
     companion object {
         fun newInstance() = MainFragment()
@@ -38,28 +38,18 @@ class MainFragment : Fragment() {
 
     private val rxPermissions: RxPermissions by lazy { RxPermissions(this) }
 
-    @BindView(R.id.surfaceView)
-    lateinit var surfaceView: SurfaceView
-
-    @BindView(R.id.liveButton)
-    lateinit var liveButton: ToggleButton
-
-    @BindView(R.id.switchButton)
-    lateinit var switchButton: ImageButton
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val view = inflater.inflate(R.layout.main_fragment, container, false)
-        ButterKnife.bind(this, view)
+        binding = MainFragmentBinding.inflate(inflater, container, false)
         bindProperties()
-        return view
+        return binding.root
     }
 
     @SuppressLint("MissingPermission")
     private fun bindProperties() {
-        liveButton.clicks()
+        binding.liveButton.clicks()
             .observeOn(AndroidSchedulers.mainThread())
             .compose(
                 rxPermissions.ensure(
@@ -71,13 +61,13 @@ class MainFragment : Fragment() {
                 if (!granted) {
                     context?.let { AlertUtils.show(it, "Error", "Permission not granted") }
                 } else {
-                    if (liveButton.isChecked) {
+                    if (binding.liveButton.isChecked) {
                         try {
                             viewModel.endpoint.connect("192.168.1.27", 9998)
                             viewModel.streamer.startStream()
                         } catch (e: Exception) {
                             viewModel.endpoint.disconnect()
-                            liveButton.isChecked = false
+                            binding.liveButton.isChecked = false
                         }
                     } else {
                         viewModel.streamer.stopStream()
@@ -87,7 +77,7 @@ class MainFragment : Fragment() {
             }
             .let(fragmentDisposables::add)
 
-        switchButton.clicks()
+        binding.switchButton.clicks()
             .observeOn(AndroidSchedulers.mainThread())
             .throttleFirst(3000, TimeUnit.MILLISECONDS)
             .compose(rxPermissions.ensure(Manifest.permission.CAMERA))
@@ -129,19 +119,22 @@ class MainFragment : Fragment() {
         viewModel.streamer.onConnectionListener = object : OnConnectionListener {
             override fun onLost() {
                 AlertUtils.show(context, "Connection Lost")
-                liveButton.isChecked = false
+                binding.liveButton.isChecked = false
             }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        surfaceView.holder.addCallback(surfaceViewCallback)
+        binding.surfaceView.holder.addCallback(surfaceViewCallback)
     }
 
     override fun onPause() {
         super.onPause()
-        surfaceView.holder.setFixedSize(0, 0) // Ensure to trigger surface holder callback on resume
+        binding.surfaceView.holder.setFixedSize(
+            0,
+            0
+        ) // Ensure to trigger surface holder callback on resume
     }
 
     override fun onDestroy() {
@@ -178,7 +171,7 @@ class MainFragment : Fragment() {
 
         override fun surfaceDestroyed(holder: SurfaceHolder?) {
             viewModel.streamer.stopCapture()
-            surfaceView.holder.removeCallback(this)
+            binding.surfaceView.holder.removeCallback(this)
         }
 
         override fun surfaceCreated(holder: SurfaceHolder?) {
