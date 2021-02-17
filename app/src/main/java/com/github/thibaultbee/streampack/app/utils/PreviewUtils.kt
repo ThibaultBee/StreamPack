@@ -21,7 +21,7 @@ class PreviewUtils {
          */
         fun chooseBigEnoughSize(choices: List<Size>, width: Int, height: Int): Size? {
             // Collect the supported resolutions that are at least as big as the preview Surface
-            val bigEnough: MutableList<Size> = ArrayList<Size>()
+            val bigEnough: MutableList<Size> = ArrayList()
             choices.forEach { option ->
                 if (option.width >= width && option.height >= height) {
                     bigEnough.add(option)

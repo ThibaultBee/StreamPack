@@ -9,8 +9,8 @@ import kotlin.math.min
 import kotlin.random.Random
 
 class TransportStreamTest {
-    class MockMuxerListener(val expectedBuffer: ByteBuffer) : IMuxerListener {
-        var nBuffer = 0
+    class MockMuxerListener(private val expectedBuffer: ByteBuffer) : IMuxerListener {
+        private var nBuffer = 0
         override fun onOutputFrame(buffer: ByteBuffer) {
             assertEquals(TS.PACKET_SIZE, buffer.capacity())
             assertEquals(TS.SYNC_BYTE, buffer[0])

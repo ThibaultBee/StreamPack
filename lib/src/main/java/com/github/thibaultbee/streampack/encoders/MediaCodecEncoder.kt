@@ -70,7 +70,7 @@ abstract class MediaCodecEncoder(
             try {
                 mediaCodec.getInputBuffer(index)?.let { buffer ->
                     val frame = encoderListener.onInputFrame(buffer)
-                    frame.let { it ->
+                    frame.let {
                         mediaCodec.queueInputBuffer(
                             index,
                             0,

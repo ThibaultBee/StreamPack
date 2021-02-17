@@ -8,7 +8,7 @@ import java.nio.ByteBuffer
 import java.util.*
 
 class FileWriterTest {
-    fun createTempFile(): File {
+    private fun createTempFile(): File {
         val tmpFile = File.createTempFile("test", ".tmp")
         tmpFile.deleteOnExit()
         return tmpFile

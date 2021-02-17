@@ -17,7 +17,7 @@ import java.util.*
 import kotlin.random.Random
 
 class TSMuxer(
-    var muxerListener: IMuxerListener,
+    private val muxerListener: IMuxerListener,
     firstServiceInfo: ServiceInfo? = null,
     initialStreams: List<String>? = null
 ) {

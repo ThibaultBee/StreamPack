@@ -17,12 +17,12 @@ import com.github.thibaultbee.streampack.utils.getFpsList
 
 class CameraCapture(
     private val context: Context,
-    private val fps: Int,
+    fps: Int,
     override var onErrorListener: OnErrorListener?,
     val logger: Logger
 ) :
     EventHandlerManager() {
-    var fpsRange = Range(30, 30)
+    var fpsRange = Range(fps, fps)
 
     lateinit var previewSurface: Surface
     lateinit var encoderSurface: Surface
