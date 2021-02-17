@@ -1,4 +1,4 @@
-package com.github.thibaultbee.srtstreamer.encoders.format
+package com.github.thibaultbee.srtstreamer.encoders.format.aac
 
 import android.media.MediaFormat
 import net.magik6k.bitbuffer.BitBuffer

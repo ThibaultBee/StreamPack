@@ -5,7 +5,7 @@ import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.os.Build
 import com.github.thibaultbee.srtstreamer.data.AudioConfig
-import com.github.thibaultbee.srtstreamer.encoders.format.Adts
+import com.github.thibaultbee.srtstreamer.encoders.format.aac.Adts
 import com.github.thibaultbee.srtstreamer.listeners.OnErrorListener
 import com.github.thibaultbee.srtstreamer.utils.Logger
 import java.nio.ByteBuffer
