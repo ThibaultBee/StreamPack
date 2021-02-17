@@ -1,8 +1,8 @@
 package com.github.thibaultbee.srtstreamer.utils
 
-import com.github.thibaultbee.srtstreamer.mux.ts.descriptors.AdaptationField
-import com.github.thibaultbee.srtstreamer.mux.ts.packets.PesHeader
-import com.github.thibaultbee.srtstreamer.mux.ts.tables.TableHeader
+import com.github.thibaultbee.srtstreamer.muxers.ts.descriptors.AdaptationField
+import com.github.thibaultbee.srtstreamer.muxers.ts.packets.PesHeader
+import com.github.thibaultbee.srtstreamer.muxers.ts.tables.TableHeader
 import net.magik6k.bitbuffer.BitBuffer
 
 /**

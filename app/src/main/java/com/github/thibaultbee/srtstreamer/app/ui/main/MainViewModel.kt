@@ -9,7 +9,7 @@ import com.github.thibaultbee.srtstreamer.Streamer
 import com.github.thibaultbee.srtstreamer.data.AudioConfig
 import com.github.thibaultbee.srtstreamer.data.VideoConfig
 import com.github.thibaultbee.srtstreamer.endpoints.SrtProducer
-import com.github.thibaultbee.srtstreamer.mux.ts.data.ServiceInfo
+import com.github.thibaultbee.srtstreamer.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.srtstreamer.utils.Logger
 
 class MainViewModel : ViewModel() {

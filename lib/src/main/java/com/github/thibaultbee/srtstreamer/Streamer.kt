@@ -14,9 +14,9 @@ import com.github.thibaultbee.srtstreamer.encoders.IEncoderListener
 import com.github.thibaultbee.srtstreamer.encoders.VideoMediaCodecEncoder
 import com.github.thibaultbee.srtstreamer.endpoints.IEndpoint
 import com.github.thibaultbee.srtstreamer.listeners.OnErrorListener
-import com.github.thibaultbee.srtstreamer.mux.IMuxListener
-import com.github.thibaultbee.srtstreamer.mux.ts.TSMux
-import com.github.thibaultbee.srtstreamer.mux.ts.data.ServiceInfo
+import com.github.thibaultbee.srtstreamer.muxers.IMuxerListener
+import com.github.thibaultbee.srtstreamer.muxers.ts.TSMuxer
+import com.github.thibaultbee.srtstreamer.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.srtstreamer.sources.AudioCapture
 import com.github.thibaultbee.srtstreamer.sources.CameraCapture
 import com.github.thibaultbee.srtstreamer.utils.Error
@@ -40,7 +40,7 @@ class Streamer(
     private var audioSource: AudioCapture? = null
     var videoSource: CameraCapture? = null
 
-    private val muxListener = object : IMuxListener {
+    private val muxListener = object : IMuxerListener {
         override fun onOutputFrame(buffer: ByteBuffer) {
             try {
                 endpoint.write(buffer)
@@ -50,7 +50,7 @@ class Streamer(
             }
         }
     }
-    private val tsMux = TSMux(muxListener)
+    private val tsMux = TSMuxer(muxListener)
 
     private var audioTsStreamId: Short? = null
     private var videoTsStreamId: Short? = null
