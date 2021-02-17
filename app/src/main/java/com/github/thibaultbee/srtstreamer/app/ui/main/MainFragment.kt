@@ -64,13 +64,13 @@ class MainFragment : Fragment() {
                     if (binding.liveButton.isChecked) {
                         try {
                             viewModel.endpoint.connect("192.168.1.27", 9998)
-                            viewModel.streamer.startStream()
+                            viewModel.captureEncodeMuxTransmitPipeline.startStream()
                         } catch (e: Exception) {
                             viewModel.endpoint.disconnect()
                             binding.liveButton.isChecked = false
                         }
                     } else {
-                        viewModel.streamer.stopStream()
+                        viewModel.captureEncodeMuxTransmitPipeline.stopStream()
                         viewModel.endpoint.disconnect()
                     }
                 }
@@ -81,13 +81,13 @@ class MainFragment : Fragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .throttleFirst(3000, TimeUnit.MILLISECONDS)
             .compose(rxPermissions.ensure(Manifest.permission.CAMERA))
-            .map { viewModel.streamer.videoSource }
+            .map { viewModel.captureEncodeMuxTransmitPipeline.videoSource }
             .subscribe { camera ->
                 camera?.let {
                     if (it.cameraId == "0") {
-                        viewModel.streamer.changeVideoSource("1")
+                        viewModel.captureEncodeMuxTransmitPipeline.changeVideoSource("1")
                     } else {
-                        viewModel.streamer.changeVideoSource("0")
+                        viewModel.captureEncodeMuxTransmitPipeline.changeVideoSource("0")
                     }
                 }
             }
@@ -107,21 +107,22 @@ class MainFragment : Fragment() {
             }.let(fragmentDisposables::add)
 
         viewModel.buildStreamer(context)
-        viewModel.streamer.configure(viewModel.audioConfig)
-        viewModel.streamer.configure(viewModel.videoConfig)
+        viewModel.captureEncodeMuxTransmitPipeline.configure(viewModel.audioConfig)
+        viewModel.captureEncodeMuxTransmitPipeline.configure(viewModel.videoConfig)
 
-        viewModel.streamer.onErrorListener = object : OnErrorListener {
+        viewModel.captureEncodeMuxTransmitPipeline.onErrorListener = object : OnErrorListener {
             override fun onError(name: String, type: Error) {
                 AlertUtils.show(context, "Error", "$type on $name")
             }
         }
 
-        viewModel.streamer.onConnectionListener = object : OnConnectionListener {
-            override fun onLost() {
-                AlertUtils.show(context, "Connection Lost")
-                binding.liveButton.isChecked = false
+        viewModel.captureEncodeMuxTransmitPipeline.onConnectionListener =
+            object : OnConnectionListener {
+                override fun onLost() {
+                    AlertUtils.show(context, "Connection Lost")
+                    binding.liveButton.isChecked = false
+                }
             }
-        }
     }
 
     override fun onResume() {
@@ -139,7 +140,7 @@ class MainFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        viewModel.streamer.release()
+        viewModel.captureEncodeMuxTransmitPipeline.release()
         fragmentDisposables.clear()
     }
 
@@ -153,12 +154,12 @@ class MainFragment : Fragment() {
             holder?.let {
                 nbOnSurfaceChange++
                 if (nbOnSurfaceChange == 2) {
-                    viewModel.streamer.startCapture(holder.surface)
+                    viewModel.captureEncodeMuxTransmitPipeline.startCapture(holder.surface)
                 } else {
-                    val choices = viewModel.streamer.videoSource?.let {
+                    val choices = viewModel.captureEncodeMuxTransmitPipeline.videoSource?.let {
                         context!!.getOutputSizes(
                             SurfaceHolder::class.java,
-                            viewModel.streamer.videoSource!!.cameraId
+                            viewModel.captureEncodeMuxTransmitPipeline.videoSource!!.cameraId
                         )
                     } ?: context!!.getOutputSizes(SurfaceHolder::class.java, "0")
 
@@ -170,7 +171,7 @@ class MainFragment : Fragment() {
         }
 
         override fun surfaceDestroyed(holder: SurfaceHolder?) {
-            viewModel.streamer.stopCapture()
+            viewModel.captureEncodeMuxTransmitPipeline.stopCapture()
             binding.surfaceView.holder.removeCallback(this)
         }
 
