@@ -2,6 +2,8 @@ package com.github.thibaultbee.streampack.utils
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.view.Surface
+import android.view.WindowManager
 import androidx.core.content.ContextCompat
 import java.nio.ByteBuffer
 
@@ -35,6 +37,33 @@ fun ByteBuffer.extractArray(): ByteArray {
         this.get(byteArray)
         byteArray
     }
+}
+
+
+/**
+ * Returns Camera orientation
+ * @return an integer equals to the current camera orientation
+ */
+fun Context.getCameraOrientation(): Int {
+    val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    return when (val displayRotation = windowManager.defaultDisplay.rotation) {
+        Surface.ROTATION_0 -> 90
+        Surface.ROTATION_90 -> 0
+        Surface.ROTATION_180 -> 270
+        Surface.ROTATION_270 -> 180
+        else -> throw UnsupportedOperationException(
+            "Unsupported display rotation: $displayRotation"
+        )
+    }
+}
+
+/**
+ * Check if camera is in portrait
+ * @return true if camera is in portrait, otherwise false
+ */
+fun Context.isCameraPortrait(): Boolean {
+    val orientation = this.getCameraOrientation()
+    return orientation == 90 || orientation == 270
 }
 
 /**

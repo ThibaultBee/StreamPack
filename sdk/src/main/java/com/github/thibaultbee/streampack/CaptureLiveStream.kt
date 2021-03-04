@@ -22,7 +22,6 @@ import com.github.thibaultbee.streampack.utils.Error
 import com.github.thibaultbee.streampack.utils.EventHandlerManager
 import com.github.thibaultbee.streampack.utils.Logger
 import java.nio.ByteBuffer
-import java.security.InvalidParameterException
 
 class CaptureLiveStream(
     context: Context,
@@ -104,7 +103,7 @@ class CaptureLiveStream(
     private var audioEncoder =
         AudioMediaCodecEncoder(audioEncoderListener, onCodecErrorListener, logger)
     private var videoEncoder =
-        VideoMediaCodecEncoder(videoEncoderListener, onCodecErrorListener, logger)
+        VideoMediaCodecEncoder(videoEncoderListener, onCodecErrorListener, context, logger)
 
     private val tsMux = TSMuxer(muxListener)
 
@@ -128,8 +127,7 @@ class CaptureLiveStream(
         require(videoConfig != null)
 
         videoSource.previewSurface = previewSurface
-        videoSource.encoderSurface = videoEncoder.intputSurface
-            ?: throw IllegalStateException("Codec surface is null: video codec must be configured")
+        videoSource.encoderSurface = videoEncoder.inputSurface
         videoSource.startPreview(cameraId)
 
         audioSource.startStream()
@@ -208,9 +206,7 @@ class CaptureLiveStream(
 
         // And restart...
         videoEncoder.configure(videoConfig!!)
-        val encoderSurface = videoEncoder.intputSurface
-            ?: throw InvalidParameterException("Surface can't be null")
-        videoSource.encoderSurface = encoderSurface
+        videoSource.encoderSurface = videoEncoder.inputSurface
         videoSource.startPreview()
     }
 
