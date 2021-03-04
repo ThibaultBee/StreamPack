@@ -26,7 +26,7 @@ import java.nio.ByteBuffer
 import java.security.InvalidParameterException
 
 
-class CaptureEncodeMuxTransmitPipeline(
+class CaptureLiveStream(
     private val context: Context,
     private val tsServiceInfo: ServiceInfo,
     private val endpoint: IEndpoint,

@@ -5,7 +5,7 @@ import android.media.AudioFormat
 import android.media.MediaFormat
 import android.util.Size
 import androidx.lifecycle.ViewModel
-import com.github.thibaultbee.streampack.CaptureEncodeMuxTransmitPipeline
+import com.github.thibaultbee.streampack.CaptureLiveStream
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.endpoints.SrtProducer
@@ -25,7 +25,7 @@ class MainViewModel : ViewModel() {
         "MyProvider"
     )
 
-    lateinit var captureEncodeMuxTransmitPipeline: CaptureEncodeMuxTransmitPipeline
+    lateinit var captureLiveStream: CaptureLiveStream
 
     val videoConfig: VideoConfig by lazy {
         VideoConfig(
@@ -47,7 +47,7 @@ class MainViewModel : ViewModel() {
     }
 
     fun buildStreamer(context: Context) {
-        captureEncodeMuxTransmitPipeline =
-            CaptureEncodeMuxTransmitPipeline(context, tsServiceInfo, endpoint, logger)
+        captureLiveStream =
+            CaptureLiveStream(context, tsServiceInfo, endpoint, logger)
     }
 }
