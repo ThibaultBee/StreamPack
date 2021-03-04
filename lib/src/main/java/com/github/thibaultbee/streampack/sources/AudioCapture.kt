@@ -12,10 +12,10 @@ import com.github.thibaultbee.streampack.data.Frame
 import com.github.thibaultbee.streampack.utils.Logger
 import java.nio.ByteBuffer
 
-class AudioCapture(audioConfig: AudioConfig, val logger: Logger) : ICapture {
-    private val audioRecord: AudioRecord
+class AudioCapture(val logger: Logger) : ICapture {
+    private var audioRecord: AudioRecord? = null
 
-    init {
+    fun set(audioConfig: AudioConfig) {
         val bufferSize = AudioRecord.getMinBufferSize(
             audioConfig.sampleRate,
             audioConfig.channelConfig,
@@ -34,14 +34,16 @@ class AudioCapture(audioConfig: AudioConfig, val logger: Logger) : ICapture {
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun run() {
-        audioRecord.startRecording()
+        audioRecord?.let {
+            it.startRecording()
 
-        if (!isRunning()) {
-            throw IllegalStateException("AudioCapture: failed to start recording")
-        }
+            if (!isRunning()) {
+                throw IllegalStateException("AudioCapture: failed to start recording")
+            }
+        } ?: throw IllegalStateException("AudioCapture: run: : No audioRecorder")
     }
 
-    private fun isRunning() = audioRecord.recordingState == AudioRecord.RECORDSTATE_RECORDING
+    private fun isRunning() = audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING
 
     override fun stop() {
         if (!isRunning()) {
@@ -50,12 +52,12 @@ class AudioCapture(audioConfig: AudioConfig, val logger: Logger) : ICapture {
         }
 
         // Stop audio record
-        audioRecord.stop()
+        audioRecord?.stop()
     }
 
     override fun close() {
         // Release audio record
-        audioRecord.release()
+        audioRecord?.release()
     }
 
     private fun getTimestamp(audioRecord: AudioRecord): Long {
@@ -81,12 +83,14 @@ class AudioCapture(audioConfig: AudioConfig, val logger: Logger) : ICapture {
     }
 
     override fun getFrame(buffer: ByteBuffer): Frame {
-        val length = audioRecord.read(buffer, buffer.remaining())
-        return if (length > 0) {
-            Frame(buffer, MediaFormat.MIMETYPE_AUDIO_RAW, getTimestamp(audioRecord))
-        } else {
-            throw IllegalArgumentException(audioRecordErrorToString(length))
-        }
+        audioRecord?.let {
+            val length = it.read(buffer, buffer.remaining())
+            return if (length > 0) {
+                Frame(buffer, MediaFormat.MIMETYPE_AUDIO_RAW, getTimestamp(it))
+            } else {
+                throw IllegalArgumentException(audioRecordErrorToString(length))
+            }
+        } ?: throw IllegalStateException("AudioCapture: getFrame: No audioRecorder")
     }
 
     private fun audioRecordErrorToString(audioRecordError: Int) = when (audioRecordError) {

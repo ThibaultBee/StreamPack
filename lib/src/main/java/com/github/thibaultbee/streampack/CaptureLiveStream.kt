@@ -37,7 +37,7 @@ class CaptureLiveStream(
     private var audioEncoder: IEncoder? = null
     private var videoEncoder: VideoMediaCodecEncoder? = null
 
-    private var audioSource: AudioCapture? = null
+    private val audioSource = AudioCapture(logger)
     var videoSource: CameraCapture? = null
 
     private val muxListener = object : IMuxerListener {
@@ -80,9 +80,7 @@ class CaptureLiveStream(
 
     private val audioEncoderListener = object : IEncoderListener {
         override fun onInputFrame(buffer: ByteBuffer): Frame {
-            require(audioSource != null)
-
-            return audioSource!!.getFrame(buffer)
+            return audioSource.getFrame(buffer)
         }
 
         override fun onOutputFrame(frame: Frame) {
@@ -142,7 +140,7 @@ class CaptureLiveStream(
     fun configure(audioConfig: AudioConfig) {
         this.audioConfig = audioConfig
 
-        audioSource = AudioCapture(audioConfig, logger)
+        audioSource.set(audioConfig)
         audioEncoder =
             AudioMediaCodecEncoder(audioConfig, audioEncoderListener, onCodecErrorListener, logger)
     }
@@ -159,8 +157,8 @@ class CaptureLiveStream(
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun startCapture(previewSurface: Surface, cameraId: String = "0"): Error {
+        require(audioConfig != null)
         require(videoEncoder != null)
-        require(audioSource != null)
         require(videoSource != null)
 
         videoSource!!.previewSurface = previewSurface
@@ -172,13 +170,13 @@ class CaptureLiveStream(
             return error
         }
 
-        audioSource!!.run()
+        audioSource.run()
         return Error.SUCCESS
     }
 
     fun stopCapture() {
         videoSource?.stopPreview()
-        audioSource?.stop()
+        audioSource.stop()
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
@@ -274,8 +272,7 @@ class CaptureLiveStream(
         audioEncoder = null
         videoEncoder?.close()
         videoEncoder = null
-        audioSource?.close()
-        audioSource = null
+        audioSource.close()
         endpoint.close()
     }
 }
