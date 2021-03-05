@@ -33,18 +33,6 @@ class CaptureLiveStream(
 ) : EventHandlerManager() {
     override var onErrorListener: OnErrorListener? = null
 
-    private val muxListener = object : IMuxerListener {
-        override fun onOutputFrame(buffer: ByteBuffer) {
-            try {
-                endpoint.write(buffer)
-            } catch (e: Exception) {
-                stopStream()
-                reportConnectionLost()
-            }
-        }
-    }
-    private val tsMux = TSMuxer(muxListener)
-
     private var audioTsStreamId: Short? = null
     private var videoTsStreamId: Short? = null
 
@@ -130,14 +118,26 @@ class CaptureLiveStream(
         }
     }
 
+    private val muxListener = object : IMuxerListener {
+        override fun onOutputFrame(buffer: ByteBuffer) {
+            try {
+                endpoint.write(buffer)
+            } catch (e: Exception) {
+                stopStream()
+                reportConnectionLost()
+            }
+        }
+    }
+
+    private val audioSource = AudioCapture(logger)
+    val videoSource = CameraCapture(context, onCaptureErrorListener, logger)
+
     private var audioEncoder =
         AudioMediaCodecEncoder(audioEncoderListener, onCodecErrorListener, logger)
     private var videoEncoder =
         VideoMediaCodecEncoder(videoEncoderListener, onCodecErrorListener, logger)
 
-    private val audioSource = AudioCapture(logger)
-    var videoSource: CameraCapture? = null
-
+    private val tsMux = TSMuxer(muxListener)
 
     fun configure(audioConfig: AudioConfig) {
         this.audioConfig = audioConfig
@@ -151,7 +151,7 @@ class CaptureLiveStream(
         // Keep settings when we need to reconfigure
         this.videoConfig = videoConfig
 
-        videoSource = CameraCapture(context, videoConfig.fps, onCaptureErrorListener, logger)
+        videoSource.configure(videoConfig.fps)
         videoEncoder.set(videoConfig)
     }
 
@@ -159,12 +159,11 @@ class CaptureLiveStream(
     fun startCapture(previewSurface: Surface, cameraId: String = "0"): Error {
         require(audioConfig != null)
         require(videoConfig != null)
-        require(videoSource != null)
 
-        videoSource!!.previewSurface = previewSurface
-        videoSource!!.encoderSurface = videoEncoder.intputSurface
+        videoSource.previewSurface = previewSurface
+        videoSource.encoderSurface = videoEncoder.intputSurface
             ?: throw IllegalStateException("Codec surface is null: video codec must be configured")
-        val error = videoSource!!.startPreview(cameraId)
+        val error = videoSource.startPreview(cameraId)
         if (error != Error.SUCCESS) {
             logger.e(this, "Failed to start video preview")
             return error
@@ -175,21 +174,20 @@ class CaptureLiveStream(
     }
 
     fun stopCapture() {
-        videoSource?.stopPreview()
+        videoSource.stopPreview()
         audioSource.stop()
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
     fun changeVideoSource(cameraId: String = "0"): Error {
-        require(videoSource != null)
-
-        videoSource!!.stopPreview()
-        return videoSource!!.startPreview(cameraId)
+        videoSource.stopPreview()
+        return videoSource.startPreview(cameraId)
     }
 
     @Throws
     fun startStream() {
-        require(videoSource != null)
+        require(audioConfig != null)
+        require(videoConfig != null)
 
         endpoint.run()
 
@@ -204,14 +202,14 @@ class CaptureLiveStream(
 
         audioEncoder.run()
 
-        videoSource!!.startStream()
+        videoSource.startStream()
 
         videoEncoder.run()
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun stopStream() {
-        videoSource?.stopStream()
+        videoSource.stopStream()
         videoEncoder.stop()
         audioEncoder.stop()
 
@@ -243,15 +241,15 @@ class CaptureLiveStream(
 
         videoBaseTimestamp = -1L
 
-        videoSource?.stopPreview()
+        videoSource.stopPreview()
         videoEncoder.close()
 
         // And restart...
         videoEncoder.set(videoConfig!!)
         val encoderSurface = videoEncoder.intputSurface
             ?: throw InvalidParameterException("Surface can't be null")
-        videoSource?.encoderSurface = encoderSurface
-        videoSource?.startPreview()
+        videoSource.encoderSurface = encoderSurface
+        videoSource.startPreview()
     }
 
     fun release() {

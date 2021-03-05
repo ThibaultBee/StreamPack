@@ -17,12 +17,11 @@ import com.github.thibaultbee.streampack.utils.getFpsList
 
 class CameraCapture(
     private val context: Context,
-    fps: Int,
     override var onErrorListener: OnErrorListener?,
     val logger: Logger
 ) :
     EventHandlerManager() {
-    var fpsRange = Range(fps, fps)
+    var fpsRange = Range(0, 30)
 
     lateinit var previewSurface: Surface
     lateinit var encoderSurface: Surface
@@ -100,9 +99,6 @@ class CameraCapture(
         camera?.createCaptureSession(surfaceList, captureSessionCallback, backgroundHandler)
     }
 
-    fun isRunning() = camera != null
-
-
     @RequiresPermission(Manifest.permission.CAMERA)
     fun getClosestFpsRange(fps: Int): Range<Int>? {
         var fpsRangeList = context.getFpsList(cameraId)
@@ -134,15 +130,6 @@ class CameraCapture(
             return Error.INVALID_PARAMETER
         }
         fpsRange = selectedFpsRange
-
-        captureRequestBuilder?.let {
-            it.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
-            captureSession?.setRepeatingRequest(
-                it.build(),
-                null,
-                null
-            )
-        }
 
         return Error.SUCCESS
     }
