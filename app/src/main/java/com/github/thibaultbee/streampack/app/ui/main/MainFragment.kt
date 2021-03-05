@@ -156,12 +156,12 @@ class MainFragment : Fragment() {
                 if (nbOnSurfaceChange == 2) {
                     viewModel.captureLiveStream.startCapture(holder.surface)
                 } else {
-                    val choices = viewModel.captureLiveStream.videoSource?.let {
+                    val choices = viewModel.captureLiveStream.videoSource.let {
                         context!!.getOutputSizes(
                             SurfaceHolder::class.java,
-                            viewModel.captureLiveStream.videoSource!!.cameraId
+                            viewModel.captureLiveStream.videoSource.cameraId
                         )
-                    } ?: context!!.getOutputSizes(SurfaceHolder::class.java, "0")
+                    }
 
                     chooseBigEnoughSize(choices, width, height)?.let { size ->
                         holder.setFixedSize(size.width, size.height)

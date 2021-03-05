@@ -8,19 +8,20 @@ import android.os.HandlerThread
 import android.util.Range
 import android.view.Surface
 import androidx.annotation.RequiresPermission
+import com.github.thibaultbee.streampack.interfaces.Controllable
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.utils.Error
 import com.github.thibaultbee.streampack.utils.EventHandlerManager
 import com.github.thibaultbee.streampack.utils.Logger
 import com.github.thibaultbee.streampack.utils.getFpsList
+import java.security.InvalidParameterException
 
 
 class CameraCapture(
     private val context: Context,
     override var onErrorListener: OnErrorListener?,
     val logger: Logger
-) :
-    EventHandlerManager() {
+) : EventHandlerManager(), Controllable {
     var fpsRange = Range(0, 30)
 
     lateinit var previewSurface: Surface
@@ -100,14 +101,13 @@ class CameraCapture(
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    fun getClosestFpsRange(fps: Int): Range<Int>? {
+    fun getClosestFpsRange(fps: Int): Range<Int> {
         var fpsRangeList = context.getFpsList(cameraId)
         // Get range that contains FPS
         fpsRangeList =
             fpsRangeList.filter { it.contains(fps) or it.contains(fps * 1000) } // On Samsung S4 fps range is [4000-30000] instead of [4-30]
         if (fpsRangeList.isEmpty()) {
-            logger.e(this, "Failed to find a single FPS range that contains $fps")
-            return null
+            throw InvalidParameterException("Failed to find a single FPS range that contains $fps")
         }
 
         // Get smaller range
@@ -123,36 +123,25 @@ class CameraCapture(
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    fun configure(fps: Int): Error {
-        val selectedFpsRange = getClosestFpsRange(fps)
-        if (selectedFpsRange == null) {
-            logger.e(this, "Failed to get supported FPS range")
-            return Error.INVALID_PARAMETER
-        }
-        fpsRange = selectedFpsRange
+    fun configure(fps: Int) {
+        fpsRange = getClosestFpsRange(fps)
 
-        return Error.SUCCESS
+        startBackgroundThread()
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    fun startPreview(cameraId: String): Error {
-        startBackgroundThread()
+    fun startPreview(cameraId: String) {
         val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         cameraManager.openCamera(cameraId, cameraDeviceCallback, backgroundHandler)
-
-        return Error.SUCCESS
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    fun startPreview(): Error {
-        startBackgroundThread()
+    fun startPreview() {
         val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         cameraManager.openCamera(cameraId, cameraDeviceCallback, backgroundHandler)
-
-        return Error.SUCCESS
     }
 
-    fun stopPreview(): Error {
+    fun stopPreview() {
         captureRequestBuilder = null
 
         captureSession?.close()
@@ -160,12 +149,9 @@ class CameraCapture(
 
         camera?.close()
         camera = null
-        stopBackgroundThread()
-
-        return Error.SUCCESS
     }
 
-    fun startStream(): Error {
+    override fun startStream() {
         captureRequestBuilder?.let {
             it.addTarget(encoderSurface)
             captureSession?.setRepeatingRequest(
@@ -173,11 +159,10 @@ class CameraCapture(
                 null,
                 null
             )
-        }
-        return Error.SUCCESS
+        } ?: throw IllegalStateException("Camera is not ready for stream")
     }
 
-    fun stopStream(): Error {
+    override fun stopStream() {
         captureRequestBuilder?.let {
             it.removeTarget(encoderSurface)
             captureSession?.setRepeatingRequest(
@@ -186,7 +171,10 @@ class CameraCapture(
                 null
             )
         }
-        return Error.SUCCESS
+    }
+
+    override fun release() {
+        stopBackgroundThread()
     }
 
     /**

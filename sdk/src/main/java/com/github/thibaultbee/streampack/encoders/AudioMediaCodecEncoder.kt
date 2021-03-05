@@ -19,7 +19,7 @@ class AudioMediaCodecEncoder(
 ) :
     MediaCodecEncoder(encoderListener, logger) {
 
-    fun set(audioConfig: AudioConfig) {
+    fun configure(audioConfig: AudioConfig) {
         val audioFormat = MediaFormat.createAudioFormat(
             audioConfig.mimeType,
             audioConfig.sampleRate,

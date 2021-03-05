@@ -15,7 +15,7 @@ import java.nio.ByteBuffer
 class AudioCapture(val logger: Logger) : ICapture {
     private var audioRecord: AudioRecord? = null
 
-    fun set(audioConfig: AudioConfig) {
+    fun configure(audioConfig: AudioConfig) {
         val bufferSize = AudioRecord.getMinBufferSize(
             audioConfig.sampleRate,
             audioConfig.channelConfig,
@@ -33,7 +33,7 @@ class AudioCapture(val logger: Logger) : ICapture {
     }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    override fun run() {
+    override fun startStream() {
         audioRecord?.let {
             it.startRecording()
 
@@ -45,7 +45,7 @@ class AudioCapture(val logger: Logger) : ICapture {
 
     private fun isRunning() = audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING
 
-    override fun stop() {
+    override fun stopStream() {
         if (!isRunning()) {
             logger.d(this, "Not running")
             return
@@ -55,7 +55,7 @@ class AudioCapture(val logger: Logger) : ICapture {
         audioRecord?.stop()
     }
 
-    override fun close() {
+    override fun release() {
         // Release audio record
         audioRecord?.release()
         audioRecord = null

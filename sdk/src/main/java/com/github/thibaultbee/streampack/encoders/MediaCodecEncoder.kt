@@ -106,11 +106,11 @@ abstract class MediaCodecEncoder(
         get() = mediaCodec?.outputFormat?.getString(MediaFormat.KEY_MIME)
             ?: throw IllegalStateException("Can't get MimeType without configuration")
 
-    override fun run() {
+    override fun startStream() {
         mediaCodec?.start() ?: throw IllegalStateException("Can't start without configuration")
     }
 
-    override fun stop() {
+    override fun stopStream() {
         try {
             mediaCodec?.setCallback(null)
             mediaCodec?.signalEndOfInputStream()
@@ -121,7 +121,7 @@ abstract class MediaCodecEncoder(
         }
     }
 
-    override fun close() {
+    override fun release() {
         mediaCodec?.release()
         mediaCodec = null
     }

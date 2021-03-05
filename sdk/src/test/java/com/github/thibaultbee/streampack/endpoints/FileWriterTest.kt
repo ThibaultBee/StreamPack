@@ -19,7 +19,7 @@ class FileWriterTest {
         val tmpFile = createTempFile()
         val filePublisher = FileWriter(file = tmpFile)
         assertTrue(tmpFile.exists())
-        filePublisher.close()
+        filePublisher.release()
     }
 
     @Test
@@ -29,6 +29,6 @@ class FileWriterTest {
         val random = UUID.randomUUID().toString()
         filePublisher.write(ByteBuffer.wrap(random.toByteArray()))
         assertEquals(random, tmpFile.readText())
-        filePublisher.close()
+        filePublisher.release()
     }
 }

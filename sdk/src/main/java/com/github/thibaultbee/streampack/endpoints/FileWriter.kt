@@ -9,7 +9,7 @@ import java.nio.ByteBuffer
 class FileWriter(val logger: Logger? = null, file: File) : IEndpoint {
     private val fileOutputStream = FileOutputStream(file, false)
 
-    override fun run() {
+    override fun startStream() {
         if (!fileOutputStream.fd.valid()) {
             throw InterruptedException("FileWriter file descriptor is invalid")
         }
@@ -19,9 +19,9 @@ class FileWriter(val logger: Logger? = null, file: File) : IEndpoint {
         fileOutputStream.channel.write(buffer)
     }
 
-    override fun stop() {}
+    override fun stopStream() {}
 
-    override fun close() {
+    override fun release() {
         fileOutputStream.channel.close()
     }
 }

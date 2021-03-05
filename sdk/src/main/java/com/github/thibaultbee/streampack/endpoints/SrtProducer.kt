@@ -82,16 +82,16 @@ class SrtProducer(val logger: Logger) : IEndpoint {
         socket.close()
     }
 
-    override fun run() {
+    override fun startStream() {
         if (!socket.isConnected)
             throw ConnectException("SrtEndpoint should be connected at this point")
     }
 
-    override fun stop() {
+    override fun stopStream() {
         flush()
     }
 
-    override fun close() {
+    override fun release() {
         srt.cleanUp()
     }
 }

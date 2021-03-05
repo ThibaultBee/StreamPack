@@ -142,8 +142,8 @@ class CaptureLiveStream(
     fun configure(audioConfig: AudioConfig) {
         this.audioConfig = audioConfig
 
-        audioSource.set(audioConfig)
-        audioEncoder.set(audioConfig)
+        audioSource.configure(audioConfig)
+        audioEncoder.configure(audioConfig)
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
@@ -152,44 +152,41 @@ class CaptureLiveStream(
         this.videoConfig = videoConfig
 
         videoSource.configure(videoConfig.fps)
-        videoEncoder.set(videoConfig)
+        videoEncoder.configure(videoConfig)
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-    fun startCapture(previewSurface: Surface, cameraId: String = "0"): Error {
+    fun startCapture(previewSurface: Surface, cameraId: String = "0") {
         require(audioConfig != null)
         require(videoConfig != null)
 
         videoSource.previewSurface = previewSurface
         videoSource.encoderSurface = videoEncoder.intputSurface
             ?: throw IllegalStateException("Codec surface is null: video codec must be configured")
-        val error = videoSource.startPreview(cameraId)
-        if (error != Error.SUCCESS) {
-            logger.e(this, "Failed to start video preview")
-            return error
-        }
+        videoSource.startPreview(cameraId)
 
-        audioSource.run()
-        return Error.SUCCESS
+        audioSource.startStream()
     }
 
     fun stopCapture() {
         videoSource.stopPreview()
-        audioSource.stop()
+        audioSource.stopStream()
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    fun changeVideoSource(cameraId: String = "0"): Error {
+    fun changeVideoSource(cameraId: String = "0") {
         videoSource.stopPreview()
-        return videoSource.startPreview(cameraId)
+        videoSource.startPreview(cameraId)
     }
 
     @Throws
     fun startStream() {
         require(audioConfig != null)
         require(videoConfig != null)
+        require(videoEncoder.mimeType != null)
+        require(audioEncoder.mimeType != null)
 
-        endpoint.run()
+        endpoint.startStream()
 
         val streams = mutableListOf<String>()
         videoEncoder.mimeType?.let { streams.add(it) }
@@ -200,22 +197,20 @@ class CaptureLiveStream(
         videoEncoder.mimeType?.let { videoTsStreamId = tsMux.getStreams(it)[0].pid }
         audioEncoder.mimeType?.let { audioTsStreamId = tsMux.getStreams(it)[0].pid }
 
-        audioEncoder.run()
-
+        audioEncoder.startStream()
         videoSource.startStream()
-
-        videoEncoder.run()
+        videoEncoder.startStream()
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun stopStream() {
         videoSource.stopStream()
-        videoEncoder.stop()
-        audioEncoder.stop()
+        videoEncoder.stopStream()
+        audioEncoder.stopStream()
 
         tsMux.stop()
 
-        endpoint.stop()
+        endpoint.stopStream()
 
         // Encoder does not return to CONFIGURED state... so we have to reset everything for video...
         resetAudio()
@@ -228,10 +223,10 @@ class CaptureLiveStream(
 
         audioBaseTimestamp = -1L
 
-        audioEncoder.close()
+        audioEncoder.release()
 
         // Reconfigure
-        audioEncoder.set(audioConfig!!)
+        audioEncoder.configure(audioConfig!!)
         return Error.SUCCESS
     }
 
@@ -242,10 +237,10 @@ class CaptureLiveStream(
         videoBaseTimestamp = -1L
 
         videoSource.stopPreview()
-        videoEncoder.close()
+        videoEncoder.release()
 
         // And restart...
-        videoEncoder.set(videoConfig!!)
+        videoEncoder.configure(videoConfig!!)
         val encoderSurface = videoEncoder.intputSurface
             ?: throw InvalidParameterException("Surface can't be null")
         videoSource.encoderSurface = encoderSurface
@@ -253,9 +248,10 @@ class CaptureLiveStream(
     }
 
     fun release() {
-        audioEncoder.close()
-        videoEncoder.close()
-        audioSource.close()
-        endpoint.close()
+        audioEncoder.release()
+        videoEncoder.release()
+        audioSource.release()
+        videoSource.release()
+        endpoint.release()
     }
 }

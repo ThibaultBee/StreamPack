@@ -10,7 +10,7 @@ class AudioCaptureUnitTest {
     fun `assert exception on bad state`() {
         val audioCapture = AudioCapture(FakeLogger())
         try {
-            audioCapture.run()
+            audioCapture.startStream()
             Assert.fail()
         } catch (e: Exception) {
         }
@@ -25,12 +25,12 @@ class AudioCaptureUnitTest {
     fun `assert no exception on bad state`() {
         val audioCapture = AudioCapture(FakeLogger())
         try {
-            audioCapture.stop()
+            audioCapture.stopStream()
         } catch (e: Exception) {
             Assert.fail()
         }
         try {
-            audioCapture.close()
+            audioCapture.release()
         } catch (e: Exception) {
             Assert.fail()
         }

@@ -18,7 +18,7 @@ class VideoMediaCodecEncoder(
     MediaCodecEncoder(encoderListener, logger) {
     var intputSurface: Surface? = null
 
-    fun set(videoConfig: VideoConfig) {
+    fun configure(videoConfig: VideoConfig) {
         val videoFormat = MediaFormat.createVideoFormat(
             videoConfig.mimeType,
             videoConfig.resolution.width,
@@ -51,8 +51,8 @@ class VideoMediaCodecEncoder(
         } ?: throw InvalidParameterException("Can't start video MediaCodec")
     }
 
-    override fun close() {
-        super.close()
+    override fun release() {
+        super.release()
         intputSurface?.release()
     }
 
