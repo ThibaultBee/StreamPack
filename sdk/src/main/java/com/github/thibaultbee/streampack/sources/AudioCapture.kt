@@ -58,6 +58,7 @@ class AudioCapture(val logger: Logger) : ICapture {
     override fun close() {
         // Release audio record
         audioRecord?.release()
+        audioRecord = null
     }
 
     private fun getTimestamp(audioRecord: AudioRecord): Long {

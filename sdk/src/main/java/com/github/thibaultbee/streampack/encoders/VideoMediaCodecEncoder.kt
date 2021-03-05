@@ -3,21 +3,22 @@ package com.github.thibaultbee.streampack.encoders
 import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
+import android.view.Surface
 import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.utils.Logger
 import java.nio.ByteBuffer
+import java.security.InvalidParameterException
 
 class VideoMediaCodecEncoder(
-    videoConfig: VideoConfig,
     encoderListener: IEncoderListener,
     override var onErrorListener: OnErrorListener?,
     logger: Logger
 ) :
-    MediaCodecEncoder(encoderListener, videoConfig.startBitrate, logger) {
-    override val mediaCodec: MediaCodec
+    MediaCodecEncoder(encoderListener, logger) {
+    var intputSurface: Surface? = null
 
-    init {
+    fun set(videoConfig: VideoConfig) {
         val videoFormat = MediaFormat.createVideoFormat(
             videoConfig.mimeType,
             videoConfig.resolution.width,
@@ -42,8 +43,17 @@ class VideoMediaCodecEncoder(
           }*/
 
         // Apply configuration
-        mediaCodec.setCallback(encoderCallback)
-        mediaCodec.configure(videoFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+        mediaCodec?.let {
+            it.setCallback(encoderCallback)
+            it.configure(videoFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+
+            intputSurface = it.createInputSurface()
+        } ?: throw InvalidParameterException("Can't start video MediaCodec")
+    }
+
+    override fun close() {
+        super.close()
+        intputSurface?.release()
     }
 
     override fun onGenerateExtra(buffer: ByteBuffer, format: MediaFormat): ByteBuffer {
@@ -60,6 +70,4 @@ class VideoMediaCodecEncoder(
         extra.rewind()
         return extra
     }
-
-    val intputSurface = mediaCodec.createInputSurface()
 }

@@ -9,7 +9,6 @@ import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.Frame
 import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.encoders.AudioMediaCodecEncoder
-import com.github.thibaultbee.streampack.encoders.IEncoder
 import com.github.thibaultbee.streampack.encoders.IEncoderListener
 import com.github.thibaultbee.streampack.encoders.VideoMediaCodecEncoder
 import com.github.thibaultbee.streampack.endpoints.IEndpoint
@@ -33,12 +32,6 @@ class CaptureLiveStream(
     val logger: Logger
 ) : EventHandlerManager() {
     override var onErrorListener: OnErrorListener? = null
-
-    private var audioEncoder: IEncoder? = null
-    private var videoEncoder: VideoMediaCodecEncoder? = null
-
-    private val audioSource = AudioCapture(logger)
-    var videoSource: CameraCapture? = null
 
     private val muxListener = object : IMuxerListener {
         override fun onOutputFrame(buffer: ByteBuffer) {
@@ -137,12 +130,20 @@ class CaptureLiveStream(
         }
     }
 
+    private var audioEncoder =
+        AudioMediaCodecEncoder(audioEncoderListener, onCodecErrorListener, logger)
+    private var videoEncoder =
+        VideoMediaCodecEncoder(videoEncoderListener, onCodecErrorListener, logger)
+
+    private val audioSource = AudioCapture(logger)
+    var videoSource: CameraCapture? = null
+
+
     fun configure(audioConfig: AudioConfig) {
         this.audioConfig = audioConfig
 
         audioSource.set(audioConfig)
-        audioEncoder =
-            AudioMediaCodecEncoder(audioConfig, audioEncoderListener, onCodecErrorListener, logger)
+        audioEncoder.set(audioConfig)
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
@@ -151,19 +152,18 @@ class CaptureLiveStream(
         this.videoConfig = videoConfig
 
         videoSource = CameraCapture(context, videoConfig.fps, onCaptureErrorListener, logger)
-        videoEncoder =
-            VideoMediaCodecEncoder(videoConfig, videoEncoderListener, onCodecErrorListener, logger)
+        videoEncoder.set(videoConfig)
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun startCapture(previewSurface: Surface, cameraId: String = "0"): Error {
         require(audioConfig != null)
-        require(videoEncoder != null)
+        require(videoConfig != null)
         require(videoSource != null)
 
         videoSource!!.previewSurface = previewSurface
-        val encoderSurface = videoEncoder!!.intputSurface
-        videoSource!!.encoderSurface = encoderSurface
+        videoSource!!.encoderSurface = videoEncoder.intputSurface
+            ?: throw IllegalStateException("Codec surface is null: video codec must be configured")
         val error = videoSource!!.startPreview(cameraId)
         if (error != Error.SUCCESS) {
             logger.e(this, "Failed to start video preview")
@@ -189,33 +189,31 @@ class CaptureLiveStream(
 
     @Throws
     fun startStream() {
-        require(videoEncoder != null)
-        require(audioEncoder != null)
         require(videoSource != null)
 
         endpoint.run()
 
         val streams = mutableListOf<String>()
-        videoEncoder!!.mimeType?.let { streams.add(it) }
-        audioEncoder!!.mimeType?.let { streams.add(it) }
+        videoEncoder.mimeType?.let { streams.add(it) }
+        audioEncoder.mimeType?.let { streams.add(it) }
 
         tsMux.addService(tsServiceInfo)
         tsMux.addStreams(tsServiceInfo, streams)
-        videoEncoder!!.mimeType?.let { videoTsStreamId = tsMux.getStreams(it)[0].pid }
-        audioEncoder!!.mimeType?.let { audioTsStreamId = tsMux.getStreams(it)[0].pid }
+        videoEncoder.mimeType?.let { videoTsStreamId = tsMux.getStreams(it)[0].pid }
+        audioEncoder.mimeType?.let { audioTsStreamId = tsMux.getStreams(it)[0].pid }
 
-        audioEncoder!!.run()
+        audioEncoder.run()
 
         videoSource!!.startStream()
 
-        videoEncoder!!.run()
+        videoEncoder.run()
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun stopStream() {
         videoSource?.stopStream()
-        videoEncoder?.stop()
-        audioEncoder?.stop()
+        videoEncoder.stop()
+        audioEncoder.stop()
 
         tsMux.stop()
 
@@ -232,15 +230,10 @@ class CaptureLiveStream(
 
         audioBaseTimestamp = -1L
 
-        audioEncoder?.close()
+        audioEncoder.close()
 
         // Reconfigure
-        audioEncoder = AudioMediaCodecEncoder(
-            audioConfig!!,
-            audioEncoderListener,
-            onCodecErrorListener,
-            logger
-        )
+        audioEncoder.set(audioConfig!!)
         return Error.SUCCESS
     }
 
@@ -250,28 +243,20 @@ class CaptureLiveStream(
 
         videoBaseTimestamp = -1L
 
-        videoEncoder?.intputSurface?.release()
-        videoEncoder?.close()
         videoSource?.stopPreview()
+        videoEncoder.close()
 
         // And restart...
-        videoEncoder = VideoMediaCodecEncoder(
-            videoConfig!!,
-            videoEncoderListener,
-            onCodecErrorListener,
-            logger
-        )
-        val encoderSurface = videoEncoder?.intputSurface
+        videoEncoder.set(videoConfig!!)
+        val encoderSurface = videoEncoder.intputSurface
             ?: throw InvalidParameterException("Surface can't be null")
         videoSource?.encoderSurface = encoderSurface
         videoSource?.startPreview()
     }
 
     fun release() {
-        audioEncoder?.close()
-        audioEncoder = null
-        videoEncoder?.close()
-        videoEncoder = null
+        audioEncoder.close()
+        videoEncoder.close()
         audioSource.close()
         endpoint.close()
     }

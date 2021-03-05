@@ -14,17 +14,15 @@ import java.security.InvalidParameterException
 
 abstract class MediaCodecEncoder(
     override val encoderListener: IEncoderListener,
-    startBitrate: Int,
     val logger: Logger
 ) :
     EventHandlerManager(), IEncoder {
-    protected abstract val mediaCodec: MediaCodec
-    open val startBitrate = 0
-    var bitrate = startBitrate
+    protected var mediaCodec: MediaCodec? = null
+    var bitrate = 0
         set(value) {
             val bundle = Bundle()
             bundle.putInt(MediaCodec.PARAMETER_KEY_VIDEO_BITRATE, value)
-            mediaCodec.setParameters(bundle)
+            mediaCodec?.setParameters(bundle)
             field = value
         }
 
@@ -38,27 +36,29 @@ abstract class MediaCodecEncoder(
              * An IllegalStateException happens when MediaCodec is stopped. Dirty fix: catch it...
              */
             try {
-                mediaCodec.getOutputBuffer(index)?.let { buffer ->
-                    val extra = onGenerateExtra(buffer, codec.outputFormat)
-                    Frame(
-                        buffer,
-                        codec.outputFormat.getString(MediaFormat.KEY_MIME)!!,
-                        info.presentationTimeUs, // pts
-                        null, // dts
-                        info.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME,
-                        info.flags == MediaCodec.BUFFER_FLAG_CODEC_CONFIG,
-                        extra
-                        /**
-                         * Drop codec data. They are already pass in the extra buffer.
-                         */
-                    ).takeUnless { it.isCodecData }?.let {
-                        encoderListener.onOutputFrame(
-                            it
-                        )
-                    }
+                mediaCodec?.let { mediaCodec ->
+                    mediaCodec.getOutputBuffer(index)?.let { buffer ->
+                        val extra = onGenerateExtra(buffer, codec.outputFormat)
+                        Frame(
+                            buffer,
+                            codec.outputFormat.getString(MediaFormat.KEY_MIME)!!,
+                            info.presentationTimeUs, // pts
+                            null, // dts
+                            info.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME,
+                            info.flags == MediaCodec.BUFFER_FLAG_CODEC_CONFIG,
+                            extra
+                            /**
+                             * Drop codec data. They are already pass in the extra buffer.
+                             */
+                        ).takeUnless { it.isCodecData }?.let {
+                            encoderListener.onOutputFrame(
+                                it
+                            )
+                        }
 
-                    mediaCodec.releaseOutputBuffer(index, false)
-                } ?: reportError(Error.INVALID_BUFFER)
+                        mediaCodec.releaseOutputBuffer(index, false)
+                    } ?: reportError(Error.INVALID_BUFFER)
+                }
             } catch (e: IllegalStateException) {
             }
         }
@@ -68,18 +68,20 @@ abstract class MediaCodecEncoder(
              * An IllegalStateException happens when MediaCodec is stopped. Dirty fix: catch it...
              */
             try {
-                mediaCodec.getInputBuffer(index)?.let { buffer ->
-                    val frame = encoderListener.onInputFrame(buffer)
-                    frame.let {
-                        mediaCodec.queueInputBuffer(
-                            index,
-                            0,
-                            it.buffer.remaining(),
-                            it.pts /* in us */,
-                            0
-                        )
-                    }
-                } ?: reportError(Error.INVALID_BUFFER)
+                mediaCodec?.let { mediaCodec ->
+                    mediaCodec.getInputBuffer(index)?.let { buffer ->
+                        val frame = encoderListener.onInputFrame(buffer)
+                        frame.let {
+                            mediaCodec.queueInputBuffer(
+                                index,
+                                0,
+                                it.buffer.remaining(),
+                                it.pts /* in us */,
+                                0
+                            )
+                        }
+                    } ?: reportError(Error.INVALID_BUFFER)
+                }
             } catch (e: IllegalStateException) {
             }
         }
@@ -101,25 +103,27 @@ abstract class MediaCodecEncoder(
     }
 
     override val mimeType: String?
-        get() = mediaCodec.outputFormat.getString(MediaFormat.KEY_MIME)
+        get() = mediaCodec?.outputFormat?.getString(MediaFormat.KEY_MIME)
+            ?: throw IllegalStateException("Can't get MimeType without configuration")
 
     override fun run() {
-        mediaCodec.start()
+        mediaCodec?.start() ?: throw IllegalStateException("Can't start without configuration")
     }
 
     override fun stop() {
         try {
-            mediaCodec.setCallback(null)
-            mediaCodec.signalEndOfInputStream()
-            mediaCodec.flush()
-            mediaCodec.stop()
+            mediaCodec?.setCallback(null)
+            mediaCodec?.signalEndOfInputStream()
+            mediaCodec?.flush()
+            mediaCodec?.stop()
         } catch (e: IllegalStateException) {
             logger.d(this, "Not running")
         }
     }
 
     override fun close() {
-        mediaCodec.release()
+        mediaCodec?.release()
+        mediaCodec = null
     }
 
     abstract fun onGenerateExtra(buffer: ByteBuffer, format: MediaFormat): ByteBuffer

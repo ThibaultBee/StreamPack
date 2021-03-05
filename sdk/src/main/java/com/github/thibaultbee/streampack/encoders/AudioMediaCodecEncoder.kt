@@ -13,15 +13,13 @@ import java.security.InvalidParameterException
 
 
 class AudioMediaCodecEncoder(
-    audioConfig: AudioConfig,
     encoderListener: IEncoderListener,
     override var onErrorListener: OnErrorListener?,
     logger: Logger
 ) :
-    MediaCodecEncoder(encoderListener, audioConfig.startBitrate, logger) {
-    override val mediaCodec: MediaCodec
+    MediaCodecEncoder(encoderListener, logger) {
 
-    init {
+    fun set(audioConfig: AudioConfig) {
         val audioFormat = MediaFormat.createAudioFormat(
             audioConfig.mimeType,
             audioConfig.sampleRate,
@@ -49,8 +47,10 @@ class AudioMediaCodecEncoder(
         audioFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 0)
 
         // Apply configuration
-        mediaCodec.setCallback(encoderCallback)
-        mediaCodec.configure(audioFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+        mediaCodec?.let {
+            it.setCallback(encoderCallback)
+            it.configure(audioFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+        } ?: throw InvalidParameterException("Can't start audio MediaCodec")
     }
 
     override fun onGenerateExtra(buffer: ByteBuffer, format: MediaFormat): ByteBuffer {
