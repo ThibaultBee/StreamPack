@@ -2,6 +2,7 @@
     <string name="app_name">StreamPack</string>
     <string name="live">Start Live</string>
     <string name="stop">Stop</string>
-
-    <string name="dismiss">OK</string>
+    
+    <string name="permission">Permission</string>
+    <string name="permission_not_granted">Permission not granted.</string>
 </resources>

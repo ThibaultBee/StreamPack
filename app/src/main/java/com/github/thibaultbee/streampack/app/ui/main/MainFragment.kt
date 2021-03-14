@@ -11,7 +11,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
-import com.github.thibaultbee.streampack.app.utils.AlertUtils
+import com.github.thibaultbee.streampack.app.utils.DialogUtils
 import com.github.thibaultbee.streampack.app.utils.PreviewUtils.Companion.chooseBigEnoughSize
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
@@ -27,10 +27,6 @@ import java.util.concurrent.TimeUnit
 class MainFragment : Fragment() {
     private val fragmentDisposables = CompositeDisposable()
     private lateinit var binding: MainFragmentBinding
-
-    companion object {
-        fun newInstance() = MainFragment()
-    }
 
     private val viewModel: MainViewModel by lazy {
         ViewModelProvider(this).get(MainViewModel::class.java)
@@ -52,14 +48,15 @@ class MainFragment : Fragment() {
         binding.liveButton.clicks()
             .observeOn(AndroidSchedulers.mainThread())
             .compose(
-                rxPermissions.ensure(
+                rxPermissions.ensureEachCombined(
                     Manifest.permission.CAMERA,
                     Manifest.permission.RECORD_AUDIO
                 )
             )
-            .subscribe { granted ->
-                if (!granted) {
-                    context?.let { AlertUtils.show(it, "Error", "Permission not granted") }
+            .subscribe { permission ->
+                if (!permission.granted) {
+                    binding.liveButton.isChecked = false
+                    context?.let { DialogUtils.showPermissionAlertDialog(it) }
                 } else {
                     if (binding.liveButton.isChecked) {
                         try {
@@ -81,10 +78,11 @@ class MainFragment : Fragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .throttleFirst(3000, TimeUnit.MILLISECONDS)
             .compose(rxPermissions.ensure(Manifest.permission.CAMERA))
-            .map { viewModel.captureLiveStream.videoSource }
-            .subscribe { camera ->
-                camera?.let {
-                    if (it.cameraId == "0") {
+            .subscribe { granted ->
+                if (!granted) {
+                    context?.let { DialogUtils.showPermissionAlertDialog(it) }
+                } else {
+                    if (viewModel.captureLiveStream.videoSource.cameraId == "0") {
                         viewModel.captureLiveStream.changeVideoSource("1")
                     } else {
                         viewModel.captureLiveStream.changeVideoSource("0")
@@ -98,31 +96,20 @@ class MainFragment : Fragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
-        rxPermissions
-            .request(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
-            .subscribe { granted: Boolean ->
-                if (!granted) {
-                    context.let { AlertUtils.show(it, "Error", "Permission not granted") }
-                }
-            }.let(fragmentDisposables::add)
-
         viewModel.buildStreamer(context)
-        viewModel.captureLiveStream.configure(viewModel.audioConfig)
-        viewModel.captureLiveStream.configure(viewModel.videoConfig)
 
         viewModel.captureLiveStream.onErrorListener = object : OnErrorListener {
             override fun onError(name: String, type: Error) {
-                AlertUtils.show(context, "Error", "$type on $name")
+                DialogUtils.showAlertDialog(context, "Error", "$type on $name")
             }
         }
 
-        viewModel.captureLiveStream.onConnectionListener =
-            object : OnConnectionListener {
-                override fun onLost() {
-                    AlertUtils.show(context, "Connection Lost")
-                    binding.liveButton.isChecked = false
-                }
+        viewModel.captureLiveStream.onConnectionListener = object : OnConnectionListener {
+            override fun onLost() {
+                DialogUtils.showAlertDialog(context, "Connection Lost")
+                binding.liveButton.isChecked = false
             }
+        }
     }
 
     override fun onResume() {
@@ -151,23 +138,29 @@ class MainFragment : Fragment() {
         override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
             require(context != null)
 
-            holder?.let {
-                nbOnSurfaceChange++
-                if (nbOnSurfaceChange == 2) {
-                    viewModel.captureLiveStream.startCapture(holder.surface)
-                } else {
-                    val choices = viewModel.captureLiveStream.videoSource.let {
-                        context!!.getOutputSizes(
-                            SurfaceHolder::class.java,
-                            viewModel.captureLiveStream.videoSource.cameraId
-                        )
-                    }
+            rxPermissions
+                .requestEachCombined(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
+                .subscribe { permission ->
+                    if (!permission.granted) {
+                        context?.let { DialogUtils.showPermissionAlertDialog(it) }
+                    } else {
+                        holder?.let {
+                            nbOnSurfaceChange++
+                            if (nbOnSurfaceChange == 2) {
+                                viewModel.captureLiveStream.startCapture(holder.surface)
+                            } else {
+                                val choices = context!!.getOutputSizes(
+                                    SurfaceHolder::class.java,
+                                    viewModel.captureLiveStream.videoSource.cameraId
+                                )
 
-                    chooseBigEnoughSize(choices, width, height)?.let { size ->
-                        holder.setFixedSize(size.width, size.height)
+                                chooseBigEnoughSize(choices, width, height)?.let { size ->
+                                    holder.setFixedSize(size.width, size.height)
+                                }
+                            }
+                        }
                     }
                 }
-            }
         }
 
         override fun surfaceDestroyed(holder: SurfaceHolder?) {

@@ -49,5 +49,7 @@ class MainViewModel : ViewModel() {
     fun buildStreamer(context: Context) {
         captureLiveStream =
             CaptureLiveStream(context, tsServiceInfo, endpoint, logger)
+        captureLiveStream.configure(audioConfig)
+        captureLiveStream.configure(videoConfig)
     }
 }
