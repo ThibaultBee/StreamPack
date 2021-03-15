@@ -2,7 +2,6 @@ package com.github.thibaultbee.streampack
 
 import android.Manifest
 import android.content.Context
-import android.os.Build
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.data.AudioConfig
@@ -24,9 +23,8 @@ import com.github.thibaultbee.streampack.utils.Logger
 import java.nio.ByteBuffer
 import java.security.InvalidParameterException
 
-
 class CaptureLiveStream(
-    private val context: Context,
+    context: Context,
     private val tsServiceInfo: ServiceInfo,
     private val endpoint: IEndpoint,
     val logger: Logger
@@ -40,9 +38,7 @@ class CaptureLiveStream(
     private var videoConfig: VideoConfig? = null
     private var audioConfig: AudioConfig? = null
 
-
-    private var videoBaseTimestamp = -1L
-    private var audioBaseTimestamp = -1L
+    private var baseTimestamp = -1L
 
     private val onCodecErrorListener = object : OnErrorListener {
         override fun onError(name: String, type: Error) {
@@ -65,20 +61,8 @@ class CaptureLiveStream(
         }
 
         override fun onOutputFrame(frame: Frame) {
-            /*
-             * In case device is >= N, we got real audio timestamp from bootime.
-             * They can be compare with video timestamp
-             */
-            val baseTimestamp = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                if (videoBaseTimestamp == -1L) {
-                    videoBaseTimestamp = frame.pts
-                }
-                videoBaseTimestamp
-            } else {
-                if (audioBaseTimestamp == -1L) {
-                    audioBaseTimestamp = frame.pts
-                }
-                audioBaseTimestamp
+            if (baseTimestamp == -1L) {
+                baseTimestamp = frame.pts
             }
 
             frame.pts -= baseTimestamp
@@ -97,16 +81,16 @@ class CaptureLiveStream(
     private val videoEncoderListener = object : IEncoderListener {
         override fun onInputFrame(buffer: ByteBuffer): Frame {
             // Not needed for video
-            TODO("Not yet implemented")
+            throw RuntimeException("No video input on VideoEncoder")
         }
 
         override fun onOutputFrame(frame: Frame) {
-            if (videoBaseTimestamp == -1L) {
-                videoBaseTimestamp = frame.pts
+            if (baseTimestamp == -1L) {
+                baseTimestamp = frame.pts
             }
 
-            frame.pts -= videoBaseTimestamp
-            frame.dts?.let { it - videoBaseTimestamp }
+            frame.pts -= baseTimestamp
+            frame.dts?.let { it - baseTimestamp }
 
             videoTsStreamId?.let {
                 try {
@@ -186,6 +170,8 @@ class CaptureLiveStream(
         require(videoEncoder.mimeType != null)
         require(audioEncoder.mimeType != null)
 
+        baseTimestamp = -1L
+
         endpoint.startStream()
 
         val streams = mutableListOf<String>()
@@ -221,8 +207,6 @@ class CaptureLiveStream(
     private fun resetAudio(): Error {
         require(audioConfig != null)
 
-        audioBaseTimestamp = -1L
-
         audioEncoder.release()
 
         // Reconfigure
@@ -233,8 +217,6 @@ class CaptureLiveStream(
     @RequiresPermission(Manifest.permission.CAMERA)
     private fun resetVideo() {
         require(videoConfig != null)
-
-        videoBaseTimestamp = -1L
 
         videoSource.stopPreview()
         videoEncoder.release()

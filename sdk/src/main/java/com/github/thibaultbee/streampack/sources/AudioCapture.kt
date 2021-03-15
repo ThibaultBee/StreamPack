@@ -77,7 +77,7 @@ class AudioCapture(val logger: Logger) : ICapture {
         }
         // Fallback
         if (timestamp < 0) {
-            timestamp = System.currentTimeMillis() * 1000 // to us
+            timestamp = System.nanoTime() / 1000 // to us
         }
 
         return timestamp
