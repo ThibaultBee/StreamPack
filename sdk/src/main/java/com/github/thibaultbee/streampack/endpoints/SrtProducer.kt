@@ -14,6 +14,7 @@ class SrtProducer(val logger: Logger) : IEndpoint {
     private val srt = Srt()
     private var socket = Socket()
     private val sendBuffer = ByteBuffer.allocate(PAYLOAD_SIZE)
+    private var bitrate = 0
 
     companion object {
         private const val PAYLOAD_SIZE = 1316
@@ -23,17 +24,16 @@ class SrtProducer(val logger: Logger) : IEndpoint {
         srt.startUp()
     }
 
+    override fun configure(startBitrate: Int) {
+        this.bitrate = startBitrate
+    }
+
     fun connect(ip: String, port: Int): Error {
         socket = Socket()
         try {
             socket.setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
-            socket.setSockFlag(SockOpt.SNDSYN, true)
-            socket.setSockFlag(SockOpt.RCVSYN, true)
             socket.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
-            // socket.setSockFlag(SockOpt.MAXBW, 0)
-            // socket.setSockFlag(SockOpt.TSBPDMODE, false)
-            // socket.setSockFlag(SockOpt.INPUTBW, 1000000)
-            // socket.setSockFlag(SockOpt.OHEADBW, 25)
+
         } catch (e: IOException) {
             e.printStackTrace()
             socket.close()
@@ -83,6 +83,7 @@ class SrtProducer(val logger: Logger) : IEndpoint {
     }
 
     override fun startStream() {
+        socket.setSockFlag(SockOpt.INPUTBW, bitrate)
         if (!socket.isConnected)
             throw ConnectException("SrtEndpoint should be connected at this point")
     }

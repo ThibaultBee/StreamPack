@@ -15,6 +15,8 @@ class FileWriter(val logger: Logger? = null, file: File) : IEndpoint {
         }
     }
 
+    override fun configure(bitrate: Int) {} // Nothing to configure
+
     override fun write(buffer: ByteBuffer) {
         fileOutputStream.channel.write(buffer)
     }

@@ -21,7 +21,6 @@ import com.github.thibaultbee.streampack.utils.Error
 import com.github.thibaultbee.streampack.utils.EventHandlerManager
 import com.github.thibaultbee.streampack.utils.Logger
 import java.nio.ByteBuffer
-import java.security.InvalidParameterException
 
 class CaptureLiveStream(
     context: Context,
@@ -123,20 +122,18 @@ class CaptureLiveStream(
 
     private val tsMux = TSMuxer(muxListener)
 
-    fun configure(audioConfig: AudioConfig) {
+    @RequiresPermission(Manifest.permission.CAMERA)
+    fun configure(audioConfig: AudioConfig, videoConfig: VideoConfig) {
+        // Keep settings when we need to reconfigure
+        this.videoConfig = videoConfig
         this.audioConfig = audioConfig
 
         audioSource.configure(audioConfig)
         audioEncoder.configure(audioConfig)
-    }
-
-    @RequiresPermission(Manifest.permission.CAMERA)
-    fun configure(videoConfig: VideoConfig) {
-        // Keep settings when we need to reconfigure
-        this.videoConfig = videoConfig
-
         videoSource.configure(videoConfig.fps)
         videoEncoder.configure(videoConfig)
+
+        endpoint.configure(videoConfig.startBitrate + audioConfig.startBitrate)
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
