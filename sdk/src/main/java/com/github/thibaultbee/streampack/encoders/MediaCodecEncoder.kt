@@ -18,6 +18,8 @@ abstract class MediaCodecEncoder(
 ) :
     EventHandlerManager(), IEncoder {
     protected var mediaCodec: MediaCodec? = null
+    private var isStopped = true
+
     var bitrate = 0
         set(value) {
             val bundle = Bundle()
@@ -32,10 +34,11 @@ abstract class MediaCodecEncoder(
             index: Int,
             info: MediaCodec.BufferInfo
         ) {
-            /**
-             * An IllegalStateException happens when MediaCodec is stopped. Dirty fix: catch it...
-             */
-            try {
+            synchronized(this) {
+                if (isStopped) {
+                    return
+                }
+
                 mediaCodec?.let { mediaCodec ->
                     mediaCodec.getOutputBuffer(index)?.let { buffer ->
                         val extra = onGenerateExtra(buffer, codec.outputFormat)
@@ -59,7 +62,6 @@ abstract class MediaCodecEncoder(
                         mediaCodec.releaseOutputBuffer(index, false)
                     } ?: reportError(Error.INVALID_BUFFER)
                 }
-            } catch (e: IllegalStateException) {
             }
         }
 
@@ -67,7 +69,11 @@ abstract class MediaCodecEncoder(
             /**
              * An IllegalStateException happens when MediaCodec is stopped. Dirty fix: catch it...
              */
-            try {
+            synchronized(this) {
+                if (isStopped) {
+                    return
+                }
+
                 mediaCodec?.let { mediaCodec ->
                     mediaCodec.getInputBuffer(index)?.let { buffer ->
                         val frame = encoderListener.onInputFrame(buffer)
@@ -82,7 +88,6 @@ abstract class MediaCodecEncoder(
                         }
                     } ?: reportError(Error.INVALID_BUFFER)
                 }
-            } catch (e: IllegalStateException) {
             }
         }
 
@@ -107,15 +112,19 @@ abstract class MediaCodecEncoder(
             ?: throw IllegalStateException("Can't get MimeType without configuration")
 
     override fun startStream() {
+        isStopped = false
         mediaCodec?.start() ?: throw IllegalStateException("Can't start without configuration")
     }
 
     override fun stopStream() {
         try {
-            mediaCodec?.setCallback(null)
-            mediaCodec?.signalEndOfInputStream()
-            mediaCodec?.flush()
-            mediaCodec?.stop()
+            synchronized(this) {
+                isStopped = true
+                mediaCodec?.setCallback(null)
+                mediaCodec?.signalEndOfInputStream()
+                mediaCodec?.flush()
+                mediaCodec?.stop()
+            }
         } catch (e: IllegalStateException) {
             logger.d(this, "Not running")
         }
