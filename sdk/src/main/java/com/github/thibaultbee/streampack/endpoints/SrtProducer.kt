@@ -11,17 +11,16 @@ import java.net.ConnectException
 import java.nio.ByteBuffer
 
 class SrtProducer(val logger: Logger) : IEndpoint {
-    private val srt = Srt()
     private var socket = Socket()
     private val sendBuffer = ByteBuffer.allocate(PAYLOAD_SIZE)
     private var bitrate = 0
 
     companion object {
-        private const val PAYLOAD_SIZE = 1316
-    }
+        init {
+            Srt.startUp()
+        }
 
-    init {
-        srt.startUp()
+        private const val PAYLOAD_SIZE = 1316
     }
 
     override fun configure(startBitrate: Int) {
@@ -83,7 +82,7 @@ class SrtProducer(val logger: Logger) : IEndpoint {
     }
 
     override fun startStream() {
-        socket.setSockFlag(SockOpt.INPUTBW, bitrate)
+        // socket.setSockFlag(SockOpt.INPUTBW, bitrate)
         if (!socket.isConnected)
             throw ConnectException("SrtEndpoint should be connected at this point")
     }
@@ -93,6 +92,6 @@ class SrtProducer(val logger: Logger) : IEndpoint {
     }
 
     override fun release() {
-        srt.cleanUp()
+        Srt.cleanUp()
     }
 }
