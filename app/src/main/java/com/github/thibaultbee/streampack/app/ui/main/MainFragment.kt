@@ -65,6 +65,13 @@ class MainFragment : Fragment() {
                         } catch (e: Exception) {
                             viewModel.endpoint.disconnect()
                             binding.liveButton.isChecked = false
+                            context?.let { it ->
+                                DialogUtils.showAlertDialog(
+                                    it,
+                                    e.javaClass.simpleName,
+                                    e.message ?: ""
+                                )
+                            }
                         }
                     } else {
                         viewModel.captureLiveStream.stopStream()
