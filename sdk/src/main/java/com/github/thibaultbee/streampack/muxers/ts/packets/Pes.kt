@@ -5,6 +5,7 @@ import com.github.thibaultbee.streampack.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.muxers.ts.data.Stream
 import com.github.thibaultbee.streampack.muxers.ts.descriptors.AdaptationField
 import com.github.thibaultbee.streampack.muxers.ts.packets.Pes.StreamId.Companion.fromMimeType
+import com.github.thibaultbee.streampack.utils.TimeUtils
 import com.github.thibaultbee.streampack.utils.isAudio
 import com.github.thibaultbee.streampack.utils.isVideo
 
@@ -15,7 +16,7 @@ class Pes(
 ) : TS(muxerListener, stream.pid) {
     fun write(frame: Frame) {
         val programClockReference = if (hasPcr) {
-            frame.pts - 300
+            TimeUtils.currentTime()
         } else {
             null
         }

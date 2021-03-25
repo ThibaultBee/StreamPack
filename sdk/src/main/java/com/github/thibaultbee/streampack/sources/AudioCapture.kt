@@ -10,6 +10,7 @@ import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.Frame
 import com.github.thibaultbee.streampack.utils.Logger
+import com.github.thibaultbee.streampack.utils.TimeUtils
 import java.nio.ByteBuffer
 
 class AudioCapture(val logger: Logger) : ICapture {
@@ -77,7 +78,7 @@ class AudioCapture(val logger: Logger) : ICapture {
         }
         // Fallback
         if (timestamp < 0) {
-            timestamp = System.nanoTime() / 1000 // to us
+            timestamp = TimeUtils.currentTime()
         }
 
         return timestamp
