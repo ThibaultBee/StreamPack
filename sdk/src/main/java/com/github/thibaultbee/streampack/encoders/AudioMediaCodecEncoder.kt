@@ -48,7 +48,12 @@ class AudioMediaCodecEncoder(
 
         // Apply configuration
         mediaCodec?.let {
-            it.setCallback(encoderCallback)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                createHandler("AMediaCodecThread")
+                it.setCallback(encoderCallback, handler)
+            } else {
+                it.setCallback(encoderCallback)
+            }
             it.configure(audioFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
         } ?: throw InvalidParameterException("Can't start audio MediaCodec")
     }

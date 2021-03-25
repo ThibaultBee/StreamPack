@@ -3,6 +3,7 @@ package com.github.thibaultbee.streampack.encoders
 import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
+import android.os.Build
 import android.view.Surface
 import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
@@ -44,7 +45,12 @@ class VideoMediaCodecEncoder(
 
         // Apply configuration
         mediaCodec?.let {
-            it.setCallback(encoderCallback)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                createHandler("VMediaCodecThread")
+                it.setCallback(encoderCallback, handler)
+            } else {
+                it.setCallback(encoderCallback)
+            }
             it.configure(videoFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
 
             intputSurface = it.createInputSurface()

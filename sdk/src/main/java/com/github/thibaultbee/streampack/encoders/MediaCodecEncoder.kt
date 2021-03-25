@@ -5,6 +5,8 @@ import android.media.MediaCodecInfo
 import android.media.MediaCodecList
 import android.media.MediaFormat
 import android.os.Bundle
+import android.os.Handler
+import android.os.HandlerThread
 import com.github.thibaultbee.streampack.data.Frame
 import com.github.thibaultbee.streampack.utils.Error
 import com.github.thibaultbee.streampack.utils.EventHandlerManager
@@ -18,6 +20,8 @@ abstract class MediaCodecEncoder(
 ) :
     EventHandlerManager(), IEncoder {
     protected var mediaCodec: MediaCodec? = null
+    private var callbackThread: HandlerThread? = null
+    protected var handler: Handler? = null
     private var isStopped = true
 
     var bitrate = 0
@@ -97,6 +101,14 @@ abstract class MediaCodecEncoder(
 
         override fun onError(codec: MediaCodec, e: MediaCodec.CodecException) {
             reportError(e)
+        }
+    }
+
+    protected fun createHandler(name: String) {
+        callbackThread = HandlerThread("MediaCodecCallback")
+        handler = callbackThread?.let { handlerThread ->
+            handlerThread.start()
+            Handler(handlerThread.looper)
         }
     }
 
