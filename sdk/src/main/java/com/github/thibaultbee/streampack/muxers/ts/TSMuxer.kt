@@ -106,13 +106,27 @@ class TSMuxer(
      * @param forcePat Force to remit a PAT. Set to true on video key frame.
      */
     private fun retransmitPsi(forcePat: Boolean) {
-        sdt.packetCount += 1
-        if (sdt.packetCount == MuxerConst.SDT_PACKET_PERIOD) {
-            sendSdt()
+        var sendSdt = false
+        var sendPat = false
+        synchronized(this) {
+            sdt.packetCount += 1
+            if (sdt.packetCount == MuxerConst.SDT_PACKET_PERIOD) {
+                sdt.packetCount = 0
+                sendSdt = true
+            }
+
+
+            pat.packetCount += 1
+            if ((pat.packetCount == MuxerConst.PAT_PACKET_PERIOD) || forcePat) {
+                pat.packetCount = 0
+                sendPat = true
+            }
         }
 
-        pat.packetCount += 1
-        if ((pat.packetCount == MuxerConst.PAT_PACKET_PERIOD) || forcePat) {
+        if (sendSdt) {
+            sendSdt()
+        }
+        if (sendPat) {
             sendPat()
             sendPmts()
         }
@@ -124,7 +138,6 @@ class TSMuxer(
     }
 
     private fun sendPat() {
-        pat.packetCount = 0
         pat.write()
     }
 
@@ -145,7 +158,6 @@ class TSMuxer(
     }
 
     private fun sendSdt() {
-        sdt.packetCount = 0
         sdt.write()
     }
 
