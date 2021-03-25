@@ -3,11 +3,9 @@ package com.github.thibaultbee.streampack.muxers.ts.packets
 import com.github.thibaultbee.streampack.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.muxers.ts.descriptors.AdaptationField
 import com.github.thibaultbee.streampack.muxers.ts.utils.TSOutputCallback
-import com.github.thibaultbee.streampack.utils.hasRemaining
-import com.github.thibaultbee.streampack.utils.put
-import com.github.thibaultbee.streampack.utils.remaining
-import net.magik6k.bitbuffer.BitBuffer
+import com.github.thibaultbee.streampack.utils.toInt
 import java.nio.ByteBuffer
+import java.security.InvalidParameterException
 
 open class TS(
     muxerListener: IMuxerListener,
@@ -36,35 +34,35 @@ open class TS(
         val payloadIndicator = payload != null
 
         while (payload?.hasRemaining() == true || adaptationFieldIndicator) {
-            val packet = BitBuffer.allocate(Byte.SIZE_BITS * PACKET_SIZE.toLong())
+            val packet = ByteBuffer.allocate(PACKET_SIZE)
 
             // Write header to packet
-            packet.put(SYNC_BYTE, 8)
-            packet.put(transportErrorIndicator)
-            packet.put(payloadUnitStartIndicator)
+            packet.put(SYNC_BYTE)
+            var byte =
+                (transportErrorIndicator.toInt() shl 7) or (payloadUnitStartIndicator.toInt() shl 6) or (transportPriority.toInt() shl 5) or (pid.toInt() shr 8)
+            packet.put(byte.toByte())
             payloadUnitStartIndicator = false
-            packet.put(transportPriority)
-            packet.put(pid, 13)
-            packet.put(transportScramblingControl, 2)
-
-            when {
-                adaptationFieldIndicator and payloadIndicator -> {
-                    packet.put(0b11, 2)
-                }
-                adaptationFieldIndicator -> {
-                    packet.put(0b10, 2)
-                }
-                payloadIndicator -> {
-                    packet.put(0b01, 2)
-                }
+            packet.put(pid.toByte())
+            byte =
+                (transportScramblingControl.toInt() shl 6) or (continuityCounter.toInt() and 0xF) or
+                        when {
+                            adaptationFieldIndicator and payloadIndicator -> {
+                                (0b11 shl 4)
+                            }
+                            adaptationFieldIndicator -> {
+                                (0b10 shl 4)
+                            }
+                            payloadIndicator -> {
+                                (0b01 shl 4)
+                            }
+                            else -> throw InvalidParameterException("TS must have either a payload either an adaption field")
             }
-
-            packet.put(continuityCounter, 4)
+            packet.put(byte.toByte())
             continuityCounter = ((continuityCounter + 1) and 0xF).toByte()
 
             // Add adaptation fields first if needed
             if (adaptationFieldIndicator) {
-                packet.put(adaptationField!!) // Is not null if adaptationFieldIndicator is true
+                packet.put(adaptationField!!.toByteBuffer()) // Is not null if adaptationFieldIndicator is true
                 adaptationFieldIndicator = false
             }
 
@@ -78,22 +76,24 @@ open class TS(
                 if (stuffingForLastPacket) {
                     // Add stuffing before last packet remaining payload
                     if (packet.remaining() > it.remaining()) {
-                        val headerLength = packet.position() / Byte.SIZE_BITS
-                        packet.setPosition(26)
-                        packet.putBoolean(true) // adaptation_field_control
-                        packet.setPosition(32)
+                        val headerLength = packet.position()
+                        byte = packet[3].toInt()
+                        byte = byte or (1 shl 5)
+                        packet.position(3)
+                        packet.put(byte.toByte())
+                        packet.position(4)
                         val stuffingLength = PACKET_SIZE - it.remaining() - headerLength - 1
-                        packet.put(stuffingLength, 8)
+                        packet.put(stuffingLength.toByte())
                         if (stuffingLength >= 2) {
                             packet.put(0.toByte())
-                            while (packet.position() < ((PACKET_SIZE - it.remaining()) * Byte.SIZE_BITS).toLong()) {
+                            while (packet.position() < (PACKET_SIZE - it.remaining()).toLong()) {
                                 packet.put(0xFF.toByte()) // Stuffing
                             }
                         }
                     }
                 }
 
-                it.limit(it.position() + packet.remaining().toInt().coerceAtMost(it.remaining()))
+                it.limit(it.position() + packet.remaining().coerceAtMost(it.remaining()))
                 packet.put(it)
                 it.limit(payloadLimit)
             }
@@ -101,7 +101,7 @@ open class TS(
             while (packet.hasRemaining()) {
                 packet.put(0xFF.toByte())
             }
-            writePacket(packet.asByteBuffer())
+            writePacket(packet)
         }
     }
 }

@@ -3,7 +3,7 @@ package com.github.thibaultbee.streampack.muxers.ts.tables
 import com.github.thibaultbee.streampack.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.muxers.ts.data.ITSElement
 import com.github.thibaultbee.streampack.muxers.ts.data.Service
-import net.magik6k.bitbuffer.BitBuffer
+import com.github.thibaultbee.streampack.utils.BitBuffer
 import java.nio.ByteBuffer
 
 class Pat(
@@ -36,11 +36,11 @@ class Pat(
 
     fun write() {
         if (services.any { it.pmt != null }) {
-            write(asByteBuffer())
+            write(toByteBuffer())
         }
     }
 
-    override fun asByteBuffer(): ByteBuffer {
+    override fun toByteBuffer(): ByteBuffer {
         val buffer = BitBuffer.allocate(bitSize.toLong())
 
         services
@@ -51,6 +51,6 @@ class Pat(
                 buffer.put(it.pmt!!.pid, 13)
             }
 
-        return buffer.asByteBuffer()
+        return buffer.toByteBuffer()
     }
 }

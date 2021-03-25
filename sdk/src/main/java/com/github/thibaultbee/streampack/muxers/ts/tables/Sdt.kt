@@ -3,7 +3,7 @@ package com.github.thibaultbee.streampack.muxers.ts.tables
 import com.github.thibaultbee.streampack.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.muxers.ts.data.ITSElement
 import com.github.thibaultbee.streampack.muxers.ts.data.Service
-import net.magik6k.bitbuffer.BitBuffer
+import com.github.thibaultbee.streampack.utils.BitBuffer
 import java.nio.ByteBuffer
 
 
@@ -47,11 +47,11 @@ class Sdt(
 
     fun write() {
         if (services.isNotEmpty()) {
-            write(asByteBuffer())
+            write(toByteBuffer())
         }
     }
 
-    override fun asByteBuffer(): ByteBuffer {
+    override fun toByteBuffer(): ByteBuffer {
         val buffer = BitBuffer.allocate(bitSize.toLong())
 
         buffer.put(originalNetworkId, 16)
@@ -85,7 +85,7 @@ class Sdt(
             buffer.put(it.name)
         }
 
-        return buffer.asByteBuffer()
+        return buffer.toByteBuffer()
     }
 
 }

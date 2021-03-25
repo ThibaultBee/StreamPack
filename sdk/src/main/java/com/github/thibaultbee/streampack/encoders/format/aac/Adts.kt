@@ -1,7 +1,7 @@
 package com.github.thibaultbee.streampack.encoders.format.aac
 
 import android.media.MediaFormat
-import net.magik6k.bitbuffer.BitBuffer
+import com.github.thibaultbee.streampack.utils.BitBuffer
 import java.nio.ByteBuffer
 
 class Adts(private val format: MediaFormat, private val payloadLength: Int) {
@@ -38,9 +38,9 @@ class Adts(private val format: MediaFormat, private val payloadLength: Int) {
         }
     }
 
-    fun asByteBuffer(): ByteBuffer {
+    fun toByteBuffer(): ByteBuffer {
         val protectionAbsent = true // No CRC protection
-        val adts = BitBuffer.allocate(if (protectionAbsent) 56 else 72) // 56: 7 Bytes - 48: 9 Bytes
+        val adts = BitBuffer.allocate(if (protectionAbsent) 7 else 9) // 56: 7 Bytes - 48: 9 Bytes
 
         adts.put(0xFFF, 12)
         adts.put(0, 1) // MPEG-4
@@ -67,6 +67,6 @@ class Adts(private val format: MediaFormat, private val payloadLength: Int) {
         adts.put(0x7FF, 11) // Buffer fullness 0x7FF for variable bitrate
         adts.put(0b00, 2)
 
-        return adts.asByteBuffer()
+        return adts.toByteBuffer()
     }
 }

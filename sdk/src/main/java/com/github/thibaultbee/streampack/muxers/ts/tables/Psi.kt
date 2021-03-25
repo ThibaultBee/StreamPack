@@ -22,10 +22,10 @@ open class Psi(
     }
 
     protected fun write(buffer: ByteBuffer) {
-        write(payload = asByteBuffer(buffer))
+        write(payload = toByteBuffer(buffer))
     }
 
-    fun asByteBuffer(payload: ByteBuffer): ByteBuffer {
+    fun toByteBuffer(payload: ByteBuffer): ByteBuffer {
         val table =
             ByteBuffer.allocate(payload.limit() + PSI_HEADER_SIZE + CRC_SIZE) // + Header & CRC
 
@@ -42,7 +42,7 @@ open class Psi(
             lastSectionNumber = lastSectionNumber
         )
 
-        table.put(tableHeader.asByteBuffer())
+        table.put(tableHeader.toByteBuffer())
 
         table.put(payload)
 

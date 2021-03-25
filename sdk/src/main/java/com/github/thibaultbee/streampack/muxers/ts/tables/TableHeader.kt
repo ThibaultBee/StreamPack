@@ -1,7 +1,7 @@
 package com.github.thibaultbee.streampack.muxers.ts.tables
 
 import com.github.thibaultbee.streampack.muxers.ts.data.ITSElement
-import net.magik6k.bitbuffer.BitBuffer
+import com.github.thibaultbee.streampack.utils.BitBuffer
 import java.nio.ByteBuffer
 
 class TableHeader(
@@ -20,7 +20,7 @@ class TableHeader(
 
     private val sectionLength = payloadLength + 5 + Psi.CRC_SIZE // 5 - header
 
-    override fun asByteBuffer(): ByteBuffer {
+    override fun toByteBuffer(): ByteBuffer {
         val buffer = BitBuffer.allocate(bitSize.toLong())
         buffer.put(tableId, 8)
         buffer.put(sectionSyntaxIndicator)
@@ -35,7 +35,7 @@ class TableHeader(
         buffer.put(sectionNumber, 8)
         buffer.put(lastSectionNumber, 8)
 
-        return buffer.asByteBuffer()
+        return buffer.toByteBuffer()
     }
 }
 

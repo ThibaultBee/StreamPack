@@ -6,5 +6,5 @@ interface ITSElement {
     val size: Int
     val bitSize: Int
 
-    fun asByteBuffer(): ByteBuffer
+    fun toByteBuffer(): ByteBuffer
 }

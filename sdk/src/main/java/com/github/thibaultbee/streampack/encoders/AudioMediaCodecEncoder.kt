@@ -61,7 +61,7 @@ class AudioMediaCodecEncoder(
     override fun onGenerateExtra(buffer: ByteBuffer, format: MediaFormat): ByteBuffer {
         when (val mimeType = format.getString(MediaFormat.KEY_MIME)) {
             MediaFormat.MIMETYPE_AUDIO_AAC -> {
-                return Adts(format, buffer.limit()).asByteBuffer()
+                return Adts(format, buffer.limit()).toByteBuffer()
             }
             MediaFormat.MIMETYPE_AUDIO_OPUS -> {
                 TODO("Not yet implemented")

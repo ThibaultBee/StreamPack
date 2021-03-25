@@ -2,7 +2,7 @@ package com.github.thibaultbee.streampack.muxers.ts.descriptors
 
 import com.github.thibaultbee.streampack.muxers.ts.data.ITSElement
 import com.github.thibaultbee.streampack.muxers.ts.utils.TSConst
-import net.magik6k.bitbuffer.BitBuffer
+import com.github.thibaultbee.streampack.utils.BitBuffer
 import java.nio.ByteBuffer
 import kotlin.math.pow
 
@@ -32,7 +32,7 @@ class AdaptationField(
         return nBits
     }
 
-    override fun asByteBuffer(): ByteBuffer {
+    override fun toByteBuffer(): ByteBuffer {
         val buffer = BitBuffer.allocate(bitSize.toLong())
         buffer.put(adaptationFieldLength, 8)
         buffer.put(discontinuityIndicator)
@@ -63,7 +63,7 @@ class AdaptationField(
             NotImplementedError("adaptationFieldExtension not implemented yet")
         }
 
-        return buffer.asByteBuffer()
+        return buffer.toByteBuffer()
     }
 
     private fun addClockReference(buffer: BitBuffer, timestamp: Long) {

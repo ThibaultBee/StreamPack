@@ -5,7 +5,7 @@ import com.github.thibaultbee.streampack.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.muxers.ts.data.ITSElement
 import com.github.thibaultbee.streampack.muxers.ts.data.Service
 import com.github.thibaultbee.streampack.muxers.ts.data.Stream
-import net.magik6k.bitbuffer.BitBuffer
+import com.github.thibaultbee.streampack.utils.BitBuffer
 import java.nio.ByteBuffer
 
 class Pmt(
@@ -36,11 +36,11 @@ class Pmt(
 
     fun write() {
         if (service.pcrPid != null) {
-            write(asByteBuffer())
+            write(toByteBuffer())
         }
     }
 
-    override fun asByteBuffer(): ByteBuffer {
+    override fun toByteBuffer(): ByteBuffer {
         val buffer = BitBuffer.allocate(bitSize.toLong())
 
         buffer.put(0b111, 3) // Reserved
@@ -62,7 +62,7 @@ class Pmt(
             // TODO: ES Info
         }
 
-        return buffer.asByteBuffer()
+        return buffer.toByteBuffer()
     }
 
     enum class StreamType(val value: Byte) {

@@ -12,7 +12,7 @@ class TransportStreamTest {
     class MockMuxerListener(private val expectedBuffer: ByteBuffer) : IMuxerListener {
         private var nBuffer = 0
         override fun onOutputFrame(buffer: ByteBuffer) {
-            assertEquals(TS.PACKET_SIZE, buffer.capacity())
+            assertEquals(TS.PACKET_SIZE, buffer.limit())
             assertEquals(TS.SYNC_BYTE, buffer[0])
             for (i in 0 until min(buffer.limit() - 4, expectedBuffer.remaining())) {
                 assertEquals(expectedBuffer.get(), buffer[i + 4])  /* Drop header */
@@ -80,7 +80,7 @@ class TransportStreamTest {
 
         val expectedBuffer =
             ByteBuffer.allocate(payload.limit() + header.limit() + adaptationField.size)
-        expectedBuffer.put(adaptationField.asByteBuffer())
+        expectedBuffer.put(adaptationField.toByteBuffer())
         expectedBuffer.put(header)
         expectedBuffer.put(payload)
         val listener = MockMuxerListener(expectedBuffer)
