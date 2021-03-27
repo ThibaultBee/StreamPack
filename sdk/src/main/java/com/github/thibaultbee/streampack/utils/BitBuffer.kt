@@ -45,18 +45,12 @@ class BitBuffer private constructor(buffer: ByteBuffer) {
         private val MASKS = LongArray(Long.SIZE_BITS + 1)
 
         /**
-         * Limit of the BitBuffer
-         */
-        private var limit = 0
-
-        /**
          * Allocates a new [BitBuffer] backed by a [ByteBuffer].
          *
          * @param capacity the capacity of the [BitBuffer] in `byte`s.
          * @return a [BitBuffer] allocated with the specified capacity.
          */
         fun allocate(capacity: Int): BitBuffer {
-            limit = capacity
             return BitBuffer(ByteBuffer.allocate(capacity + Long.SIZE_BYTES))
         }
 
@@ -80,7 +74,6 @@ class BitBuffer private constructor(buffer: ByteBuffer) {
          * @return this [BitBuffer] to allow for the convenience of method-chaining.
          */
         fun allocateDirect(capacity: Int): BitBuffer {
-            limit = capacity
             return BitBuffer(ByteBuffer.allocateDirect(capacity + Long.SIZE_BYTES))
         }
 
@@ -624,7 +617,7 @@ class BitBuffer private constructor(buffer: ByteBuffer) {
      */
     fun toByteBuffer(): ByteBuffer {
         buffer.putLong(cache).rewind()
-        buffer.limit(limit)
+        buffer.limit(buffer.capacity() - Long.SIZE_BYTES)
         return buffer
     }
 
