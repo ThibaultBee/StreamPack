@@ -33,8 +33,7 @@ class Pes(
             dts = frame.dts
         )
 
-
-        write(frame.buffer, adaptationField, header.toByteBuffer(), true)
+        write(frame.buffer, adaptationField.toByteBuffer(), header.toByteBuffer(), true, frame.pts)
     }
 
     enum class StreamId(val value: Short) {

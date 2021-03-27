@@ -1,11 +1,11 @@
 package com.github.thibaultbee.streampack.muxers.ts.utils
 
+import com.github.thibaultbee.streampack.data.Packet
 import com.github.thibaultbee.streampack.muxers.IMuxerListener
-import java.nio.ByteBuffer
 
 open class TSOutputCallback(private val muxerListener: IMuxerListener) {
-    protected fun writePacket(buffer: ByteBuffer) {
-        buffer.rewind()
-        return muxerListener.onOutputFrame(buffer)
+    protected fun writePacket(packet: Packet) {
+        packet.buffer.rewind()
+        return muxerListener.onOutputFrame(packet)
     }
 }

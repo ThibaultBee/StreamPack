@@ -6,6 +6,7 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.Frame
+import com.github.thibaultbee.streampack.data.Packet
 import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.encoders.AudioMediaCodecEncoder
 import com.github.thibaultbee.streampack.encoders.IEncoderListener
@@ -21,6 +22,7 @@ import com.github.thibaultbee.streampack.utils.Error
 import com.github.thibaultbee.streampack.utils.EventHandlerManager
 import com.github.thibaultbee.streampack.utils.Logger
 import java.nio.ByteBuffer
+import java.security.InvalidParameterException
 
 class CaptureLiveStream(
     context: Context,
@@ -36,8 +38,6 @@ class CaptureLiveStream(
     // Keep video configuration
     private var videoConfig: VideoConfig? = null
     private var audioConfig: AudioConfig? = null
-
-    private var baseTimestamp = -1L
 
     private val onCodecErrorListener = object : OnErrorListener {
         override fun onError(name: String, type: Error) {
@@ -60,13 +60,6 @@ class CaptureLiveStream(
         }
 
         override fun onOutputFrame(frame: Frame) {
-            if (baseTimestamp == -1L) {
-                baseTimestamp = frame.pts
-            }
-
-            frame.pts -= baseTimestamp
-            frame.dts?.let { it - baseTimestamp }
-
             audioTsStreamId?.let {
                 try {
                     tsMux.encode(frame, it)
@@ -84,13 +77,6 @@ class CaptureLiveStream(
         }
 
         override fun onOutputFrame(frame: Frame) {
-            if (baseTimestamp == -1L) {
-                baseTimestamp = frame.pts
-            }
-
-            frame.pts -= baseTimestamp
-            frame.dts?.let { it - baseTimestamp }
-
             videoTsStreamId?.let {
                 try {
                     tsMux.encode(frame, it)
@@ -102,9 +88,9 @@ class CaptureLiveStream(
     }
 
     private val muxListener = object : IMuxerListener {
-        override fun onOutputFrame(buffer: ByteBuffer) {
+        override fun onOutputFrame(packet: Packet) {
             try {
-                endpoint.write(buffer)
+                endpoint.write(packet)
             } catch (e: Exception) {
                 stopStream()
                 reportConnectionLost()
@@ -166,8 +152,6 @@ class CaptureLiveStream(
         require(videoConfig != null)
         require(videoEncoder.mimeType != null)
         require(audioEncoder.mimeType != null)
-
-        baseTimestamp = -1L
 
         endpoint.startStream()
 

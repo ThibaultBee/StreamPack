@@ -2,6 +2,7 @@ package com.github.thibaultbee.streampack.muxers.ts
 
 import android.media.MediaFormat
 import com.github.thibaultbee.streampack.data.Frame
+import com.github.thibaultbee.streampack.data.Packet
 import com.github.thibaultbee.streampack.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.muxers.ts.utils.TSConst
 import com.github.thibaultbee.streampack.muxers.ts.utils.Utils.fakeServiceInfo
@@ -13,7 +14,7 @@ import kotlin.random.Random
 
 class TSMuxerTest {
     class MockMuxerListener : IMuxerListener {
-        override fun onOutputFrame(buffer: ByteBuffer) {}
+        override fun onOutputFrame(packet: Packet) {}
     }
 
     @Test

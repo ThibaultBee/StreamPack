@@ -1,11 +1,12 @@
 package com.github.thibaultbee.streampack.endpoints
 
-import org.junit.Assert.assertEquals
+import com.github.thibaultbee.streampack.data.Packet
+import com.github.thibaultbee.streampack.utils.Utils
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import java.nio.ByteBuffer
-import java.util.*
 
 class FileWriterTest {
     private fun createTempFile(): File {
@@ -26,9 +27,16 @@ class FileWriterTest {
     fun writeToFileTest() {
         val tmpFile = createTempFile()
         val filePublisher = FileWriter(file = tmpFile)
-        val random = UUID.randomUUID().toString()
-        filePublisher.write(ByteBuffer.wrap(random.toByteArray()))
-        assertEquals(random, tmpFile.readText())
+        val randomArray = Utils.generateRandomArray(1024)
+        filePublisher.write(
+            Packet(
+                ByteBuffer.wrap(randomArray),
+                isFirstPacketFrame = true,
+                isLastPacketFrame = true,
+                ts = 0
+            )
+        )
+        assertArrayEquals(randomArray, tmpFile.readBytes())
         filePublisher.release()
     }
 }

@@ -1,7 +1,7 @@
 package com.github.thibaultbee.streampack.muxers
 
-import java.nio.ByteBuffer
+import com.github.thibaultbee.streampack.data.Packet
 
 interface IMuxerListener {
-    fun onOutputFrame(buffer: ByteBuffer)
+    fun onOutputFrame(packet: Packet)
 }

@@ -1,7 +1,7 @@
 package com.github.thibaultbee.streampack.muxers.ts.packets
 
+import com.github.thibaultbee.streampack.data.Packet
 import com.github.thibaultbee.streampack.muxers.IMuxerListener
-import com.github.thibaultbee.streampack.muxers.ts.descriptors.AdaptationField
 import com.github.thibaultbee.streampack.muxers.ts.utils.TSOutputCallback
 import com.github.thibaultbee.streampack.utils.toInt
 import java.nio.ByteBuffer
@@ -23,15 +23,18 @@ open class TS(
 
     protected fun write(
         payload: ByteBuffer? = null,
-        adaptationField: AdaptationField? = null,
+        adaptationField: ByteBuffer? = null,
         specificHeader: ByteBuffer? = null,
-        stuffingForLastPacket: Boolean = false
+        stuffingForLastPacket: Boolean = false,
+        timestamp: Long = 0L
     ) {
         val payloadLimit = payload?.limit() ?: 0
         var payloadUnitStartIndicator = true
 
         var adaptationFieldIndicator = adaptationField != null
         val payloadIndicator = payload != null
+
+        var packetIndicator = 0
 
         while (payload?.hasRemaining() == true || adaptationFieldIndicator) {
             val packet = ByteBuffer.allocate(PACKET_SIZE)
@@ -62,7 +65,7 @@ open class TS(
 
             // Add adaptation fields first if needed
             if (adaptationFieldIndicator) {
-                packet.put(adaptationField!!.toByteBuffer()) // Is not null if adaptationFieldIndicator is true
+                packet.put(adaptationField!!) // Is not null if adaptationFieldIndicator is true
                 adaptationFieldIndicator = false
             }
 
@@ -101,7 +104,14 @@ open class TS(
             while (packet.hasRemaining()) {
                 packet.put(0xFF.toByte())
             }
-            writePacket(packet)
+
+            writePacket(
+                Packet(
+                    packet,
+                    packetIndicator == 0,
+                    payload?.let { !it.hasRemaining() } ?: true,
+                    timestamp))
+            packetIndicator++
         }
     }
 }

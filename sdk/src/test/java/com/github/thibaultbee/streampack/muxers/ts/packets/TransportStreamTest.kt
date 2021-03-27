@@ -1,5 +1,6 @@
 package com.github.thibaultbee.streampack.muxers.ts.packets
 
+import com.github.thibaultbee.streampack.data.Packet
 import com.github.thibaultbee.streampack.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.muxers.ts.descriptors.AdaptationField
 import org.junit.Assert.assertEquals
@@ -11,11 +12,11 @@ import kotlin.random.Random
 class TransportStreamTest {
     class MockMuxerListener(private val expectedBuffer: ByteBuffer) : IMuxerListener {
         private var nBuffer = 0
-        override fun onOutputFrame(buffer: ByteBuffer) {
-            assertEquals(TS.PACKET_SIZE, buffer.limit())
-            assertEquals(TS.SYNC_BYTE, buffer[0])
-            for (i in 0 until min(buffer.limit() - 4, expectedBuffer.remaining())) {
-                assertEquals(expectedBuffer.get(), buffer[i + 4])  /* Drop header */
+        override fun onOutputFrame(packet: Packet) {
+            assertEquals(TS.PACKET_SIZE, packet.buffer.limit())
+            assertEquals(TS.SYNC_BYTE, packet.buffer[0])
+            for (i in 0 until min(packet.buffer.limit() - 4, expectedBuffer.remaining())) {
+                assertEquals(expectedBuffer.get(), packet.buffer[i + 4])  /* Drop header */
             }
             nBuffer++
         }
@@ -25,7 +26,7 @@ class TransportStreamTest {
         TS(muxerListener, pid) {
         fun mockWrite(
             payload: ByteBuffer? = null,
-            adaptationField: AdaptationField? = null,
+            adaptationField: ByteBuffer? = null,
             specificHeader: ByteBuffer? = null
         ) = write(payload, adaptationField, specificHeader)
     }
@@ -90,6 +91,6 @@ class TransportStreamTest {
 
         val transportStream =
             MockTransportStream(muxerListener = listener)
-        transportStream.mockWrite(payload, adaptationField, header)
+        transportStream.mockWrite(payload, adaptationField.toByteBuffer(), header)
     }
 }

@@ -1,9 +1,9 @@
 package com.github.thibaultbee.streampack.endpoints
 
+import com.github.thibaultbee.streampack.data.Packet
 import com.github.thibaultbee.streampack.utils.Logger
 import java.io.File
 import java.io.FileOutputStream
-import java.nio.ByteBuffer
 
 
 class FileWriter(val logger: Logger? = null, file: File) : IEndpoint {
@@ -17,8 +17,8 @@ class FileWriter(val logger: Logger? = null, file: File) : IEndpoint {
 
     override fun configure(bitrate: Int) {} // Nothing to configure
 
-    override fun write(buffer: ByteBuffer) {
-        fileOutputStream.channel.write(buffer)
+    override fun write(packet: Packet) {
+        fileOutputStream.channel.write(packet.buffer)
     }
 
     override fun stopStream() {}

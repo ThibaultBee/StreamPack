@@ -4,6 +4,7 @@ import com.github.thibaultbee.srtdroid.Srt
 import com.github.thibaultbee.srtdroid.enums.SockOpt
 import com.github.thibaultbee.srtdroid.enums.Transtype
 import com.github.thibaultbee.srtdroid.models.Socket
+import com.github.thibaultbee.streampack.data.Packet
 import com.github.thibaultbee.streampack.utils.Error
 import com.github.thibaultbee.streampack.utils.Logger
 import java.io.IOException
@@ -51,10 +52,10 @@ class SrtProducer(val logger: Logger) : IEndpoint {
         return Error.SUCCESS
     }
 
-    override fun write(buffer: ByteBuffer) {
+    override fun write(packet: Packet) {
         // Read Byte Buffer
-        while (buffer.hasRemaining()) {
-            sendBuffer.put(buffer)
+        while (sendBuffer.hasRemaining()) {
+            sendBuffer.put(packet.buffer)
             if (!sendBuffer.hasRemaining()) {
                 flush()
             }
