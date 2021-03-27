@@ -48,7 +48,7 @@ class CaptureLiveStream(
 
     private val onCaptureErrorListener = object : OnErrorListener {
         override fun onError(name: String, type: Error) {
-            stopStream()
+            stopStreamImpl()
             stopCapture()
             onErrorListener?.onError(name, type)
         }
@@ -171,6 +171,14 @@ class CaptureLiveStream(
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun stopStream() {
+        stopStreamImpl()
+
+        // Encoder does not return to CONFIGURED state... so we have to reset everything for video...
+        resetAudio()
+        resetVideo()
+    }
+
+    private fun stopStreamImpl() {
         videoSource.stopStream()
         videoEncoder.stopStream()
         audioEncoder.stopStream()
@@ -178,10 +186,6 @@ class CaptureLiveStream(
         tsMux.stop()
 
         endpoint.stopStream()
-
-        // Encoder does not return to CONFIGURED state... so we have to reset everything for video...
-        resetAudio()
-        resetVideo()
     }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
