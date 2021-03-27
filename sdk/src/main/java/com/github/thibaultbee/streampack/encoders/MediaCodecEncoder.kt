@@ -22,6 +22,7 @@ abstract class MediaCodecEncoder(
     protected var mediaCodec: MediaCodec? = null
     private var callbackThread: HandlerThread? = null
     protected var handler: Handler? = null
+    private val lock = Object()
     private var isStopped = true
 
     var bitrate = 0
@@ -38,7 +39,7 @@ abstract class MediaCodecEncoder(
             index: Int,
             info: MediaCodec.BufferInfo
         ) {
-            synchronized(this) {
+            synchronized(lock) {
                 if (isStopped) {
                     return
                 }
@@ -73,7 +74,7 @@ abstract class MediaCodecEncoder(
             /**
              * An IllegalStateException happens when MediaCodec is stopped. Dirty fix: catch it...
              */
-            synchronized(this) {
+            synchronized(lock) {
                 if (isStopped) {
                     return
                 }
@@ -124,13 +125,15 @@ abstract class MediaCodecEncoder(
             ?: throw IllegalStateException("Can't get MimeType without configuration")
 
     override fun startStream() {
-        isStopped = false
-        mediaCodec?.start() ?: throw IllegalStateException("Can't start without configuration")
+        synchronized(lock) {
+            isStopped = false
+            mediaCodec?.start() ?: throw IllegalStateException("Can't start without configuration")
+        }
     }
 
     override fun stopStream() {
         try {
-            synchronized(this) {
+            synchronized(lock) {
                 isStopped = true
                 mediaCodec?.setCallback(null)
                 mediaCodec?.signalEndOfInputStream()
