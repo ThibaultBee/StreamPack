@@ -88,7 +88,9 @@ class TSMuxer(
             else -> TODO("Format not yet implemented")
         }
 
-        generateStreams(frame, getPes(streamPid))
+        synchronized(this) {
+            generateStreams(frame, getPes(streamPid))
+        }
     }
 
     /**
@@ -108,19 +110,17 @@ class TSMuxer(
     private fun retransmitPsi(forcePat: Boolean) {
         var sendSdt = false
         var sendPat = false
-        synchronized(this) {
-            sdt.packetCount += 1
-            if (sdt.packetCount == MuxerConst.SDT_PACKET_PERIOD) {
-                sdt.packetCount = 0
-                sendSdt = true
-            }
 
+        sdt.packetCount += 1
+        if (sdt.packetCount == MuxerConst.SDT_PACKET_PERIOD) {
+            sdt.packetCount = 0
+            sendSdt = true
+        }
 
-            pat.packetCount += 1
-            if ((pat.packetCount == MuxerConst.PAT_PACKET_PERIOD) || forcePat) {
-                pat.packetCount = 0
-                sendPat = true
-            }
+        pat.packetCount += 1
+        if ((pat.packetCount == MuxerConst.PAT_PACKET_PERIOD) || forcePat) {
+            pat.packetCount = 0
+            sendPat = true
         }
 
         if (sendSdt) {
