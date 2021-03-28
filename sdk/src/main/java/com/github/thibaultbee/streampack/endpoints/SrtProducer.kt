@@ -54,11 +54,9 @@ class SrtProducer(val logger: Logger) : IEndpoint {
 
     override fun write(packet: Packet) {
         // Read Byte Buffer
-        while (sendBuffer.hasRemaining()) {
-            sendBuffer.put(packet.buffer)
-            if (!sendBuffer.hasRemaining()) {
-                flush()
-            }
+        sendBuffer.put(packet.buffer)
+        if (!sendBuffer.hasRemaining()) {
+            flush()
         }
     }
 
