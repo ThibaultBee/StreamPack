@@ -5,22 +5,16 @@ import com.github.thibaultbee.srtdroid.enums.SockOpt
 import com.github.thibaultbee.srtdroid.enums.Transtype
 import com.github.thibaultbee.srtdroid.models.Socket
 import com.github.thibaultbee.streampack.data.Packet
-import com.github.thibaultbee.streampack.utils.Error
 import com.github.thibaultbee.streampack.utils.Logger
-import java.io.IOException
 import java.net.ConnectException
 import java.nio.ByteBuffer
 
 class SrtProducer(val logger: Logger) : IEndpoint {
     private var socket = Socket()
-    private val sendBuffer = ByteBuffer.allocate(PAYLOAD_SIZE)
+    private var sendBuffer = ByteBuffer.allocateDirect(PAYLOAD_SIZE)
     private var bitrate = 0
 
     companion object {
-        init {
-            Srt.startUp()
-        }
-
         private const val PAYLOAD_SIZE = 1316
     }
 
@@ -28,52 +22,32 @@ class SrtProducer(val logger: Logger) : IEndpoint {
         this.bitrate = startBitrate
     }
 
-    fun connect(ip: String, port: Int): Error {
+    fun connect(ip: String, port: Int) {
         socket = Socket()
-        try {
-            socket.setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
-            socket.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
-
-        } catch (e: IOException) {
-            e.printStackTrace()
-            socket.close()
-            logger.e(this, "Failed to configure for connection with $ip:$port: ${e.message}")
-            return Error.CONFIGURATION_ERROR
-        }
-
-        try {
-            socket.connect(ip, port)
-        } catch (e: IOException) {
-            socket.close()
-            logger.e(this, "Failed to connect to $ip:$port: ${e.message}")
-            return Error.CONNECTION_ERROR
-        }
-
-        return Error.SUCCESS
+        socket.setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
+        socket.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
+        socket.connect(ip, port)
     }
 
     override fun write(packet: Packet) {
-        // Read Byte Buffer
         sendBuffer.put(packet.buffer)
-        if (!sendBuffer.hasRemaining()) {
-            flush()
+        if (!sendBuffer.hasRemaining() || packet.isLastPacketFrame) {
+            sendBuffer()
         }
     }
 
-    private fun flush(): Error {
-        val array = ByteArray(sendBuffer.position())
+    private fun sendBuffer() {
+        sendBuffer.limit(sendBuffer.position())
         sendBuffer.rewind()
+        socket.send(sendBuffer)
+        sendBuffer.limit(PAYLOAD_SIZE)
+    }
 
-        (array.indices).forEachIndexed { index, _ -> array[index] = sendBuffer.get() }
-        val outputStream = socket.getOutputStream()
-        try {
-            outputStream.write(array)
-        } catch (e: IOException) {
-            logger.e(this, "Failed to send buffer: ${e.message}")
-            return Error.TRANSMISSION_ERROR
+    private fun flush() {
+        // There is something in the buffer: flush it.
+        if (sendBuffer.position() != 0) {
+            sendBuffer()
         }
-        sendBuffer.rewind()
-        return Error.SUCCESS
     }
 
     fun disconnect() {
