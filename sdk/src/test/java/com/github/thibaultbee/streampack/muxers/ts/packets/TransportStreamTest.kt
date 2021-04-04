@@ -10,19 +10,29 @@ import kotlin.math.min
 import kotlin.random.Random
 
 class TransportStreamTest {
-    class MockMuxerListener(private val expectedBuffer: ByteBuffer) : IMuxerListener {
+    class MockMuxerListener(
+        private val expectedBuffer: ByteBuffer,
+        private val numExpectedBuffer: Int = 1
+    ) : IMuxerListener {
         private var nBuffer = 0
         override fun onOutputFrame(packet: Packet) {
-            assertEquals(TS.PACKET_SIZE, packet.buffer.limit())
+            assertEquals(TS.PACKET_SIZE * numExpectedBuffer, packet.buffer.limit())
             assertEquals(TS.SYNC_BYTE, packet.buffer[0])
             for (i in 0 until min(packet.buffer.limit() - 4, expectedBuffer.remaining())) {
-                assertEquals(expectedBuffer.get(), packet.buffer[i + 4])  /* Drop header */
+                assertEquals(
+                    "Value is not equal on expectedBuffer.position ${expectedBuffer.position()}",
+                    expectedBuffer.get(),
+                    packet.buffer[i + 4 * (1 + i / (TS.PACKET_SIZE - 4))]
+                )  /* Drop header */
             }
             nBuffer++
         }
     }
 
-    class MockTransportStream(muxerListener: IMuxerListener, pid: Short = Random.nextInt().toShort()) :
+    class MockTransportStream(
+        muxerListener: IMuxerListener,
+        pid: Short = Random.nextInt().toShort()
+    ) :
         TS(muxerListener, pid) {
         fun mockWrite(
             payload: ByteBuffer? = null,
@@ -66,7 +76,7 @@ class TransportStreamTest {
     @Test
     fun twoPayloadTest() {
         val payload = generateRandomBuffer(TS.PACKET_SIZE - 3) // 4 - header size
-        val listener = MockMuxerListener(payload.duplicate())
+        val listener = MockMuxerListener(payload.duplicate(), 2)
 
         val transportStream =
             MockTransportStream(muxerListener = listener)
@@ -84,7 +94,7 @@ class TransportStreamTest {
         expectedBuffer.put(adaptationField.toByteBuffer())
         expectedBuffer.put(header)
         expectedBuffer.put(payload)
-        val listener = MockMuxerListener(expectedBuffer)
+        val listener = MockMuxerListener(expectedBuffer, 2)
 
         payload.rewind()
         header.rewind()

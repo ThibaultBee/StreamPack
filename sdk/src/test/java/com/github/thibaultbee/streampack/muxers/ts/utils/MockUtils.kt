@@ -2,6 +2,8 @@ package com.github.thibaultbee.streampack.muxers.ts.utils
 
 import com.github.thibaultbee.streampack.data.Packet
 import com.github.thibaultbee.streampack.muxers.IMuxerListener
+import com.github.thibaultbee.streampack.muxers.ts.packets.TS
+import com.github.thibaultbee.streampack.utils.extractArray
 import org.junit.Assert
 import java.nio.ByteBuffer
 
@@ -25,19 +27,34 @@ class AssertEqualsBuffersMockMuxerListener(private val expectedBuffers: List<Byt
     var expectedBufferIndex = 0
 
     override fun onOutputFrame(packet: Packet) {
-        // Do not compare adaptation field PCR -> Compare first part and last part separately.
-        val expectedArray = expectedBuffers[expectedBufferIndex].array()
-        val actualArray = packet.buffer.array()
-        Assert.assertArrayEquals(
-            "Headers not equal at index $expectedBufferIndex",
-            expectedArray.copyOfRange(0, 6),
-            actualArray.copyOfRange(0, 6)
-        )
-        Assert.assertArrayEquals(
-            "Payloads not equal at index $expectedBufferIndex",
-            expectedArray.copyOfRange(12, expectedBuffers[expectedBufferIndex].limit()),
-            actualArray.copyOfRange(12, expectedBuffers[expectedBufferIndex].limit())
-        )
-        expectedBufferIndex++
+        val actualArray = packet.buffer.extractArray()
+        var i = 0
+        while (i < MuxerConst.MAX_OUTPUT_PACKET_NUMBER) {
+            // Do not compare adaptation field PCR -> Compare first part and last part separately.
+            val expectedArray = expectedBuffers[expectedBufferIndex].array()
+
+            Assert.assertArrayEquals(
+                "Headers not equal at index $expectedBufferIndex",
+                expectedArray.copyOfRange(0, 6),
+                actualArray.copyOfRange(
+                    i * TS.PACKET_SIZE,
+                    6 + i * TS.PACKET_SIZE
+                )
+            )
+            Assert.assertArrayEquals(
+                "Payloads not equal at index $expectedBufferIndex",
+                expectedArray.copyOfRange(12, expectedBuffers[expectedBufferIndex].limit()),
+                actualArray.copyOfRange(
+                    12 + i * TS.PACKET_SIZE,
+                    (i + 1) * TS.PACKET_SIZE
+                )
+            )
+            expectedBufferIndex++
+            i++
+
+            if (expectedBufferIndex >= expectedBuffers.size - 1) {
+                return
+            }
+        }
     }
 }

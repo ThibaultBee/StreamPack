@@ -2,6 +2,7 @@ package com.github.thibaultbee.streampack.muxers.ts.packets
 
 import com.github.thibaultbee.streampack.data.Packet
 import com.github.thibaultbee.streampack.muxers.IMuxerListener
+import com.github.thibaultbee.streampack.muxers.ts.utils.MuxerConst
 import com.github.thibaultbee.streampack.muxers.ts.utils.TSOutputCallback
 import com.github.thibaultbee.streampack.utils.toInt
 import java.nio.ByteBuffer
@@ -36,16 +37,18 @@ open class TS(
 
         var packetIndicator = 0
 
+        val buffer = ByteBuffer.allocateDirect(PACKET_SIZE * MuxerConst.MAX_OUTPUT_PACKET_NUMBER)
+
         while (payload?.hasRemaining() == true || adaptationFieldIndicator) {
-            val packet = ByteBuffer.allocate(PACKET_SIZE)
+            buffer.limit(buffer.position() + PACKET_SIZE)
 
             // Write header to packet
-            packet.put(SYNC_BYTE)
+            buffer.put(SYNC_BYTE)
             var byte =
                 (transportErrorIndicator.toInt() shl 7) or (payloadUnitStartIndicator.toInt() shl 6) or (transportPriority.toInt() shl 5) or (pid.toInt() shr 8)
-            packet.put(byte.toByte())
+            buffer.put(byte.toByte())
             payloadUnitStartIndicator = false
-            packet.put(pid.toByte())
+            buffer.put(pid.toByte())
             byte =
                 (transportScramblingControl.toInt() shl 6) or (continuityCounter.toInt() and 0xF) or
                         when {
@@ -60,57 +63,66 @@ open class TS(
                             }
                             else -> throw InvalidParameterException("TS must have either a payload either an adaption field")
             }
-            packet.put(byte.toByte())
+            buffer.put(byte.toByte())
             continuityCounter = ((continuityCounter + 1) and 0xF).toByte()
 
             // Add adaptation fields first if needed
             if (adaptationFieldIndicator) {
-                packet.put(adaptationField!!) // Is not null if adaptationFieldIndicator is true
+                buffer.put(adaptationField!!) // Is not null if adaptationFieldIndicator is true
                 adaptationFieldIndicator = false
             }
 
             // Then specific stream header. Mainly for PES header.
             specificHeader?.let {
-                packet.put(it)
+                buffer.put(it)
             }
 
             // Fill packet with correct size of payload
             payload?.let {
                 if (stuffingForLastPacket) {
                     // Add stuffing before last packet remaining payload
-                    if (packet.remaining() > it.remaining()) {
-                        val headerLength = packet.position()
-                        byte = packet[3].toInt()
+                    if (buffer.remaining() > it.remaining()) {
+                        val headerSize = buffer.position() % PACKET_SIZE
+                        val currentPacketFirstPosition =
+                            buffer.position() / PACKET_SIZE * PACKET_SIZE
+                        byte = buffer[currentPacketFirstPosition + 3].toInt()
                         byte = byte or (1 shl 5)
-                        packet.position(3)
-                        packet.put(byte.toByte())
-                        packet.position(4)
-                        val stuffingLength = PACKET_SIZE - it.remaining() - headerLength - 1
-                        packet.put(stuffingLength.toByte())
+                        buffer.position(currentPacketFirstPosition + 3)
+                        buffer.put(byte.toByte())
+                        buffer.position(currentPacketFirstPosition + 4)
+                        val stuffingLength = PACKET_SIZE - it.remaining() - headerSize - 1
+                        buffer.put(stuffingLength.toByte())
                         if (stuffingLength >= 2) {
-                            packet.put(0.toByte())
-                            while (packet.position() < (PACKET_SIZE - it.remaining()).toLong()) {
-                                packet.put(0xFF.toByte()) // Stuffing
+                            buffer.put(0.toByte())
+                            for (i in 0..stuffingLength - 2) {
+                                buffer.put(0xFF.toByte()) // Stuffing
                             }
                         }
                     }
                 }
 
-                it.limit(it.position() + packet.remaining().coerceAtMost(it.remaining()))
-                packet.put(it)
+                it.limit(it.position() + buffer.remaining().coerceAtMost(it.remaining()))
+                buffer.put(it)
                 it.limit(payloadLimit)
             }
 
-            while (packet.hasRemaining()) {
-                packet.put(0xFF.toByte())
+            while (buffer.hasRemaining()) {
+                buffer.put(0xFF.toByte())
             }
 
-            writePacket(
-                Packet(
-                    packet,
-                    packetIndicator == 0,
-                    payload?.let { !it.hasRemaining() } ?: true,
-                    timestamp))
+            val isLastPacket = payload?.let { !it.hasRemaining() } ?: true
+            if (buffer.limit() == buffer.capacity() || isLastPacket) {
+                writePacket(
+                    Packet(
+                        buffer,
+                        packetIndicator == 0,
+                        isLastPacket,
+                        timestamp
+                    )
+                )
+                buffer.rewind()
+            }
+
             packetIndicator++
         }
     }

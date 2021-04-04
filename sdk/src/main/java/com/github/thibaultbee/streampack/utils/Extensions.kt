@@ -3,6 +3,7 @@ package com.github.thibaultbee.streampack.utils
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
+import java.nio.ByteBuffer
 
 /**
  * Check if mime type is a video mime type
@@ -21,6 +22,20 @@ fun String.isAudio() = this.startsWith("audio")
  * @return 1 if Boolean is True, 0 otherwise
  */
 fun Boolean.toInt() = if (this) 1 else 0
+
+/**
+ * Returns ByteBuffer array even if [ByteBuffer.hasArray] returnd false
+ * @return [ByteArray] extracted from [ByteBuffer]
+ */
+fun ByteBuffer.extractArray(): ByteArray {
+    return if (this.hasArray()) {
+        this.array()
+    } else {
+        val byteArray = ByteArray(this.remaining())
+        this.get(byteArray)
+        byteArray
+    }
+}
 
 /**
  * Check if permission is granted
