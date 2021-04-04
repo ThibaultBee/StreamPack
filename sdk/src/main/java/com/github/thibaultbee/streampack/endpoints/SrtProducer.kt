@@ -1,8 +1,10 @@
 package com.github.thibaultbee.streampack.endpoints
 
 import com.github.thibaultbee.srtdroid.Srt
+import com.github.thibaultbee.srtdroid.enums.Boundary
 import com.github.thibaultbee.srtdroid.enums.SockOpt
 import com.github.thibaultbee.srtdroid.enums.Transtype
+import com.github.thibaultbee.srtdroid.models.MsgCtrl
 import com.github.thibaultbee.srtdroid.models.Socket
 import com.github.thibaultbee.streampack.data.Packet
 import com.github.thibaultbee.streampack.utils.Logger
@@ -32,7 +34,23 @@ class SrtProducer(val logger: Logger) : IEndpoint {
     }
 
     override fun write(packet: Packet) {
-        socket.send(packet.buffer)
+        val boundary = when {
+            packet.isFirstPacketFrame && packet.isLastPacketFrame -> Boundary.SOLO
+            packet.isFirstPacketFrame -> Boundary.FIRST
+            packet.isLastPacketFrame -> Boundary.LAST
+            else -> Boundary.SUBSEQUENT
+        }
+        val msgCtrl =
+            // For PMT/PAT/...
+            if (packet.ts == 0L) {
+                MsgCtrl(boundary = boundary)
+            } else {
+                MsgCtrl(
+                    srcTime = packet.ts,
+                    boundary = boundary
+                )
+            }
+        socket.send(packet.buffer, msgCtrl)
     }
 
     override fun startStream() {
