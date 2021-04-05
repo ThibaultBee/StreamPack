@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.SurfaceHolder
 import android.view.View
@@ -63,6 +64,7 @@ class MainFragment : Fragment() {
                             viewModel.endpoint.connect("192.168.1.27", 9998)
                             viewModel.captureLiveStream.startStream()
                         } catch (e: Exception) {
+                            Log.e(this::class.java.simpleName, "Oops", e)
                             viewModel.endpoint.disconnect()
                             binding.liveButton.isChecked = false
                             context?.let { it ->
