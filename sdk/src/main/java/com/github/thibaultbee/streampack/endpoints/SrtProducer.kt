@@ -12,14 +12,14 @@ import java.net.ConnectException
 
 class SrtProducer(val logger: Logger) : IEndpoint {
     private var socket = Socket()
-    private var bitrate = 0
+    private var bitrate = 0L
 
     companion object {
         private const val PAYLOAD_SIZE = 1316
     }
 
     override fun configure(startBitrate: Int) {
-        this.bitrate = startBitrate
+        this.bitrate = startBitrate.toLong()
     }
 
     fun connect(ip: String, port: Int) {
@@ -54,9 +54,11 @@ class SrtProducer(val logger: Logger) : IEndpoint {
     }
 
     override fun startStream() {
-        // socket.setSockFlag(SockOpt.INPUTBW, bitrate)
         if (!socket.isConnected)
             throw ConnectException("SrtEndpoint should be connected at this point")
+
+        socket.setSockFlag(SockOpt.MAXBW, 0L)
+        socket.setSockFlag(SockOpt.INPUTBW, bitrate)
     }
 
     override fun stopStream() {
