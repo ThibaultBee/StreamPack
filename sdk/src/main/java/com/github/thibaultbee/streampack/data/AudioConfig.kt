@@ -5,11 +5,11 @@ import com.github.thibaultbee.streampack.utils.isAudio
 import java.security.InvalidParameterException
 
 data class AudioConfig(
-    var mimeType: String,
-    var startBitrate: Int,
-    var sampleRate: Int,
-    var channelConfig: Int,
-    var audioByteFormat: Int
+    val mimeType: String,
+    val startBitrate: Int,
+    val sampleRate: Int,
+    val channelConfig: Int,
+    val audioByteFormat: Int
 ) {
     init {
         require(mimeType.isAudio())
