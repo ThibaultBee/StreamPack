@@ -29,6 +29,14 @@ class VideoMediaCodecEncoder(
     var codecSurface: CodecSurface? = null
 
     fun configure(videoConfig: VideoConfig) {
+        try {
+            configureVideoCodec(videoConfig, true)
+        } catch (e: MediaCodec.CodecException) {
+            configureVideoCodec(videoConfig, false)
+        }
+    }
+
+    private fun configureVideoCodec(videoConfig: VideoConfig, useConfigProfileLevel: Boolean) {
         val videoFormat = MediaFormat.createVideoFormat(
             videoConfig.mimeType,
             videoConfig.resolution.width,
@@ -47,10 +55,13 @@ class VideoMediaCodecEncoder(
             MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
         )
         videoFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1) // 1s between I frame
-        /*  videoFormat.setInteger(MediaFormat.KEY_PROFILE, profile)
-          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-              videoFormat.setInteger(MediaFormat.KEY_LEVEL, level)
-          }*/
+
+        if (useConfigProfileLevel) {
+            videoFormat.setInteger(MediaFormat.KEY_PROFILE, videoConfig.profile)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                videoFormat.setInteger(MediaFormat.KEY_LEVEL, videoConfig.level)
+            }
+        }
 
         // Apply configuration
         mediaCodec?.let {
