@@ -27,7 +27,7 @@ open class BaseCaptureStream(
     context: Context,
     private val tsServiceInfo: ServiceInfo,
     protected val endpoint: IEndpoint,
-    private val logger: Logger
+    logger: Logger
 ) : EventHandlerManager() {
     override var onErrorListener: OnErrorListener? = null
 
