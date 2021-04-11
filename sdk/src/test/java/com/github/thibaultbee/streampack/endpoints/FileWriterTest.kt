@@ -16,9 +16,17 @@ class FileWriterTest {
     }
 
     @Test
+    fun defaultFileExistTest() {
+        val filePublisher = FileWriter()
+        assertTrue(filePublisher.file.exists())
+        filePublisher.release()
+    }
+
+    @Test
     fun fileExistTest() {
         val tmpFile = createTempFile()
-        val filePublisher = FileWriter(file = tmpFile)
+        val filePublisher = FileWriter()
+        filePublisher.file = tmpFile
         assertTrue(tmpFile.exists())
         filePublisher.release()
     }
@@ -26,7 +34,8 @@ class FileWriterTest {
     @Test
     fun writeToFileTest() {
         val tmpFile = createTempFile()
-        val filePublisher = FileWriter(file = tmpFile)
+        val filePublisher = FileWriter()
+        filePublisher.file = tmpFile
         val randomArray = Utils.generateRandomArray(1024)
         filePublisher.write(
             Packet(

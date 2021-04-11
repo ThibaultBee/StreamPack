@@ -23,11 +23,11 @@ import com.github.thibaultbee.streampack.utils.EventHandlerManager
 import com.github.thibaultbee.streampack.utils.Logger
 import java.nio.ByteBuffer
 
-class CaptureLiveStream(
+open class BaseCaptureStream(
     context: Context,
     private val tsServiceInfo: ServiceInfo,
-    private val endpoint: IEndpoint,
-    val logger: Logger
+    protected val endpoint: IEndpoint,
+    private val logger: Logger
 ) : EventHandlerManager() {
     override var onErrorListener: OnErrorListener? = null
 

@@ -61,11 +61,11 @@ class MainFragment : Fragment() {
                 } else {
                     if (binding.liveButton.isChecked) {
                         try {
-                            viewModel.endpoint.connect("192.168.1.27", 9998)
+                            viewModel.captureLiveStream.connect("192.168.1.27", 9998)
                             viewModel.captureLiveStream.startStream()
                         } catch (e: Exception) {
                             Log.e(this::class.java.simpleName, "Oops", e)
-                            viewModel.endpoint.disconnect()
+                            viewModel.captureLiveStream.disconnect()
                             binding.liveButton.isChecked = false
                             context?.let { it ->
                                 DialogUtils.showAlertDialog(
@@ -77,7 +77,7 @@ class MainFragment : Fragment() {
                         }
                     } else {
                         viewModel.captureLiveStream.stopStream()
-                        viewModel.endpoint.disconnect()
+                        viewModel.captureLiveStream.disconnect()
                     }
                 }
             }

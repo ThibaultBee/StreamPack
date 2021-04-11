@@ -5,18 +5,14 @@ import android.media.AudioFormat
 import android.media.MediaFormat
 import android.util.Size
 import androidx.lifecycle.ViewModel
-import com.github.thibaultbee.streampack.CaptureLiveStream
+import com.github.thibaultbee.streampack.CaptureSrtLiveStream
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
-import com.github.thibaultbee.streampack.endpoints.SrtProducer
 import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.utils.Logger
 
 class MainViewModel : ViewModel() {
     private val logger = Logger()
-    val endpoint: SrtProducer by lazy {
-        SrtProducer(logger)
-    }
 
     private val tsServiceInfo = ServiceInfo(
         ServiceInfo.ServiceType.DIGITAL_TV,
@@ -25,7 +21,7 @@ class MainViewModel : ViewModel() {
         "MyProvider"
     )
 
-    lateinit var captureLiveStream: CaptureLiveStream
+    lateinit var captureLiveStream: CaptureSrtLiveStream
 
     val videoConfig: VideoConfig by lazy {
         VideoConfig(
@@ -48,7 +44,7 @@ class MainViewModel : ViewModel() {
 
     fun buildStreamer(context: Context) {
         captureLiveStream =
-            CaptureLiveStream(context, tsServiceInfo, endpoint, logger)
+            CaptureSrtLiveStream(context, tsServiceInfo, logger)
         captureLiveStream.configure(audioConfig, videoConfig)
     }
 }

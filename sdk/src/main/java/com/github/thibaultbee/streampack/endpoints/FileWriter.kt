@@ -6,24 +6,28 @@ import java.io.File
 import java.io.FileOutputStream
 
 
-class FileWriter(val logger: Logger? = null, file: File) : IEndpoint {
-    private val fileOutputStream = FileOutputStream(file, false)
+class FileWriter(val logger: Logger? = null) : IEndpoint {
+    var file: File = File.createTempFile("defaultFile", ".ts")
+        set(value) {
+            fileOutputStream = FileOutputStream(value, false)
+            field = value
+        }
+
+    private var fileOutputStream = FileOutputStream(file)
 
     override fun startStream() {
-        if (!fileOutputStream.fd.valid()) {
-            throw InterruptedException("FileWriter file descriptor is invalid")
-        }
     }
 
-    override fun configure(bitrate: Int) {} // Nothing to configure
+    override fun configure(startBitrate: Int) {} // Nothing to configure
 
     override fun write(packet: Packet) {
         fileOutputStream.channel.write(packet.buffer)
     }
 
-    override fun stopStream() {}
+    override fun stopStream() {
+        fileOutputStream.channel.close()
+    }
 
     override fun release() {
-        fileOutputStream.channel.close()
     }
 }
