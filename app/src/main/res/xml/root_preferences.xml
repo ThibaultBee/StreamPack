@@ -1,0 +1,38 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory app:title="Video">
+
+        <ListPreference
+            app:key="@string/resolution_key"
+            app:title="@string/resolution"
+            app:useSimpleSummaryProvider="true" />
+
+        <SeekBarPreference
+            android:max="10000"
+            app:defaultValue="2000"
+            app:key="@string/video_bitrate_key"
+            app:min="500"
+            app:showSeekBarValue="true"
+            app:title="@string/video_bitrate"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/endpoint">
+
+        <PreferenceCategory app:title="@string/server">
+
+            <EditTextPreference
+                app:key="@string/server_ip_key"
+                app:title="@string/server_ip"
+                app:useSimpleSummaryProvider="true" />
+
+            <EditTextPreference
+                app:key="@string/server_port_key"
+                app:title="@string/server_port"
+                app:useSimpleSummaryProvider="true" />
+
+        </PreferenceCategory>
+
+    </PreferenceCategory>
+</PreferenceScreen>

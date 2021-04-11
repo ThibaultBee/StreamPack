@@ -2,7 +2,22 @@
     <string name="app_name">StreamPack</string>
     <string name="live">Start Live</string>
     <string name="stop">Stop</string>
-    
+
     <string name="permission">Permission</string>
     <string name="permission_not_granted">Permission not granted.</string>
+    <string name="action_settings">Settings</string>
+    <string name="menu_actions">Menu actions</string>
+    <string name="srt">to SRT</string>
+    <string name="file">to File</string>
+    <string name="endpoint_type">Type</string>
+    <string name="resolution">Resolution</string>
+    <string name="video_bitrate">Video bitrate (kb/s)</string>
+    <string name="resolution_key">resolution_key</string>
+    <string name="server_ip_key">server_ip_key</string>
+    <string name="server_ip">Server IP</string>
+    <string name="server_port">Port</string>
+    <string name="server_port_key">server_port_key</string>
+    <string name="server">Server</string>
+    <string name="endpoint">Endpoint</string>
+    <string name="video_bitrate_key">video_bitrate_key</string>
 </resources>
