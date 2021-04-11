@@ -1,8 +1,8 @@
-package com.github.thibaultbee.streampack.app
+package com.github.thibaultbee.streampack.app.ui.main
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.github.thibaultbee.streampack.app.ui.main.MainFragment
+import com.github.thibaultbee.streampack.app.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
