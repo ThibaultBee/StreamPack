@@ -134,6 +134,7 @@ class CaptureLiveStream(
     }
 
     fun stopCapture() {
+        stopStreamImpl()
         videoSource.stopPreview()
         audioSource.stopStream()
     }
