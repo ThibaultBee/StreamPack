@@ -137,8 +137,7 @@ class CameraCapture(
 
     @RequiresPermission(Manifest.permission.CAMERA)
     fun startPreview() {
-        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        cameraManager.openCamera(cameraId, cameraDeviceCallback, backgroundHandler)
+        startPreview(cameraId)
     }
 
     fun stopPreview() {
