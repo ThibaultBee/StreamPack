@@ -87,8 +87,8 @@ class AudioCapture(val logger: Logger) : ICapture {
     override fun getFrame(buffer: ByteBuffer): Frame {
         audioRecord?.let {
             val length = it.read(buffer, buffer.remaining())
-            return if (length > 0) {
-                Frame(buffer, MediaFormat.MIMETYPE_AUDIO_RAW, getTimestamp(it))
+            if (length >= 0) {
+                return Frame(buffer, MediaFormat.MIMETYPE_AUDIO_RAW, getTimestamp(it))
             } else {
                 throw IllegalArgumentException(audioRecordErrorToString(length))
             }
@@ -99,6 +99,6 @@ class AudioCapture(val logger: Logger) : ICapture {
         AudioRecord.ERROR_INVALID_OPERATION -> "AudioRecord returns an invalid operation error"
         AudioRecord.ERROR_BAD_VALUE -> "AudioRecord returns a bad value error"
         AudioRecord.ERROR_DEAD_OBJECT -> "AudioRecord returns a dead object error"
-        else -> "Unknown audio record error"
+        else -> "Unknown audio record error: $audioRecordError"
     }
 }
