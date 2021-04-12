@@ -121,7 +121,7 @@ abstract class MediaCodecEncoder(
     }
 
     protected fun createHandler(name: String) {
-        callbackThread = HandlerThread("MediaCodecCallback")
+        callbackThread = HandlerThread(name)
         handler = callbackThread?.let { handlerThread ->
             handlerThread.start()
             Handler(handlerThread.looper)
