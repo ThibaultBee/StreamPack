@@ -54,17 +54,17 @@ open class BaseCaptureStream(
     private var audioConfig: AudioConfig? = null
 
     private val onCodecErrorListener = object : OnErrorListener {
-        override fun onError(name: String, type: Error) {
+        override fun onError(source: String, message: String) {
             stopStream()
-            onErrorListener?.onError(name, type)
+            onErrorListener?.onError(source, message)
         }
     }
 
     private val onCaptureErrorListener = object : OnErrorListener {
-        override fun onError(name: String, type: Error) {
+        override fun onError(source: String, message: String) {
             stopStreamImpl()
             stopCapture()
-            onErrorListener?.onError(name, type)
+            onErrorListener?.onError(source, message)
         }
     }
 
@@ -107,7 +107,6 @@ open class BaseCaptureStream(
                 endpoint.write(packet)
             } catch (e: Exception) {
                 stopStream()
-                reportConnectionLost()
             }
         }
     }

@@ -22,10 +22,12 @@ import android.media.MediaFormat
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.MutableLiveData
 import com.github.thibaultbee.streampack.CaptureSrtLiveStream
 import com.github.thibaultbee.streampack.app.configuration.Configuration
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
+import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.utils.Logger
 
@@ -46,6 +48,8 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
     val cameraId: String
         get() = captureLiveStream.videoSource.cameraId
 
+    val error = MutableLiveData<String>()
+
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun buildStreamer() {
         val videoConfig =
@@ -63,14 +67,31 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
             channelConfig = AudioFormat.CHANNEL_IN_STEREO,
             audioByteFormat = AudioFormat.ENCODING_PCM_16BIT
         )
-        captureLiveStream =
-            CaptureSrtLiveStream(getApplication(), tsServiceInfo, logger)
-        captureLiveStream.configure(audioConfig, videoConfig)
+
+        try {
+            captureLiveStream =
+                CaptureSrtLiveStream(getApplication(), tsServiceInfo, logger)
+
+            captureLiveStream.onErrorListener = object : OnErrorListener {
+                override fun onError(source: String, message: String) {
+                    error.postValue("$source: $message")
+                }
+            }
+
+            captureLiveStream.configure(audioConfig, videoConfig)
+        } catch (e: Exception) {
+            error.postValue("Failed to create CaptureLiveStream: ${e.message ?: "Unknown error"}")
+        }
+
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun startCapture(previewSurface: Surface) {
-        captureLiveStream.startCapture(previewSurface)
+        try {
+            captureLiveStream.startCapture(previewSurface)
+        } catch (e: Exception) {
+            error.postValue("startCapture: ${e.message ?: "Unknown error"}")
+        }
     }
 
     fun stopCapture() {
@@ -78,8 +99,13 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun startStream() {
-        captureLiveStream.connect(configuration.connection.ip, configuration.connection.port)
-        captureLiveStream.startStream()
+        try {
+            captureLiveStream.connect(configuration.connection.ip, configuration.connection.port)
+            captureLiveStream.startStream()
+        } catch (e: Exception) {
+            captureLiveStream.stopStream()
+            error.postValue("startStream: ${e.message ?: "Unknown error"}")
+        }
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
@@ -98,6 +124,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
     }
 
     override fun onCleared() {
+        super.onCleared()
         captureLiveStream.release()
     }
 }

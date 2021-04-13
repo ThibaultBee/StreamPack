@@ -18,7 +18,6 @@ package com.github.thibaultbee.streampack.app.ui.main
 import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.SurfaceHolder
 import android.view.View
@@ -28,9 +27,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import com.github.thibaultbee.streampack.app.utils.DialogUtils
 import com.github.thibaultbee.streampack.app.utils.PreviewUtils.Companion.chooseBigEnoughSize
-import com.github.thibaultbee.streampack.listeners.OnConnectionListener
-import com.github.thibaultbee.streampack.listeners.OnErrorListener
-import com.github.thibaultbee.streampack.utils.Error
 import com.github.thibaultbee.streampack.utils.getOutputSizes
 import com.jakewharton.rxbinding4.view.clicks
 import com.tbruyelle.rxpermissions3.RxPermissions
@@ -71,23 +67,10 @@ class PreviewFragment : Fragment() {
             .subscribe { permission ->
                 if (!permission.granted) {
                     binding.liveButton.isChecked = false
-                    context?.let { DialogUtils.showPermissionAlertDialog(it) }
+                    showPermissionError()
                 } else {
                     if (binding.liveButton.isChecked) {
-                        try {
-                            viewModel.startStream()
-                        } catch (e: Exception) {
-                            Log.e(this::class.java.simpleName, "Oops", e)
-                            viewModel.stopStream()
-                            binding.liveButton.isChecked = false
-                            context?.let { it ->
-                                DialogUtils.showAlertDialog(
-                                    it,
-                                    e.javaClass.simpleName,
-                                    e.message ?: ""
-                                )
-                            }
-                        }
+                        viewModel.startStream()
                     } else {
                         viewModel.stopStream()
                     }
@@ -97,34 +80,45 @@ class PreviewFragment : Fragment() {
 
         binding.switchButton.clicks()
             .observeOn(AndroidSchedulers.mainThread())
-            .throttleFirst(3000, TimeUnit.MILLISECONDS)
+            .throttleFirst(1000, TimeUnit.MILLISECONDS)
             .compose(rxPermissions.ensure(Manifest.permission.CAMERA))
             .subscribe { granted ->
                 if (!granted) {
-                    context?.let { DialogUtils.showPermissionAlertDialog(it) }
+                    showPermissionError()
                 } else {
                     viewModel.toggleVideoSource()
                 }
             }
             .let(fragmentDisposables::add)
+
+        viewModel.error.observe(viewLifecycleOwner) {
+            showError("Oops", it)
+        }
     }
 
+    private fun showPermissionError() {
+        binding.liveButton.isChecked = false
+        DialogUtils.showPermissionAlertDialog(requireContext())
+    }
+
+    private fun showError(title: String, message: String) {
+        binding.liveButton.isChecked = false
+        DialogUtils.showAlertDialog(requireContext(), "Error: $title", message)
+    }
+
+    @SuppressLint("MissingPermission")
     override fun onResume() {
         super.onResume()
 
-        viewModel.buildStreamer()
-        viewModel.captureLiveStream.onErrorListener = object : OnErrorListener {
-            override fun onError(name: String, type: Error) {
-                DialogUtils.showAlertDialog(requireContext(), "Error", "$type on $name")
+        rxPermissions
+            .requestEachCombined(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
+            .subscribe { permission ->
+                if (!permission.granted) {
+                    showPermissionError()
+                } else {
+                    viewModel.buildStreamer()
+                }
             }
-        }
-
-        viewModel.captureLiveStream.onConnectionListener = object : OnConnectionListener {
-            override fun onLost() {
-                DialogUtils.showAlertDialog(requireContext(), "Connection Lost")
-                binding.liveButton.isChecked = false
-            }
-        }
 
         binding.surfaceView.holder.addCallback(surfaceViewCallback)
     }
@@ -154,7 +148,7 @@ class PreviewFragment : Fragment() {
                 .requestEachCombined(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
                 .subscribe { permission ->
                     if (!permission.granted) {
-                        context?.let { DialogUtils.showPermissionAlertDialog(it) }
+                        showPermissionError()
                     } else {
                         holder?.let {
                             nbOnSurfaceChange++
