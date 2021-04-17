@@ -298,8 +298,15 @@ class BitBuffer private constructor(buffer: ByteBuffer) {
      * @return this [BitBuffer] to allow for the convenience of method-chaining.
      */
     fun put(src: ByteArray): BitBuffer {
-        for (b in src) {
-            put(b)
+        if (remainingBits % Byte.SIZE_BITS == 0) {
+            val numRewindBytes = remainingBits / 8
+            flushCache()
+            buffer.position(buffer.position() - numRewindBytes)
+            buffer.put(src)
+        } else {
+            for (b in src) {
+                put(b)
+            }
         }
         return this
     }
@@ -311,14 +318,15 @@ class BitBuffer private constructor(buffer: ByteBuffer) {
      * @return this [BitBuffer] to allow for the convenience of method-chaining.
      */
     fun put(src: ByteBuffer): BitBuffer {
-        /*  if (remainingBits % Byte.SIZE_BITS == 0) {
-              val numRewindBytes = (Long.SIZE_BITS - remainingBits) / 8
-              flushCache()
-              buffer.position(buffer.position() - numRewindBytes)
-              buffer.put(src)
-          }*/
-        while (src.hasRemaining()) {
-            put(src.get())
+        if (remainingBits % Byte.SIZE_BITS == 0) {
+            val numRewindBytes = remainingBits / 8
+            flushCache()
+            buffer.position(buffer.position() - numRewindBytes)
+            buffer.put(src)
+        } else {
+            while (src.hasRemaining()) {
+                put(src.get())
+            }
         }
         return this
     }
