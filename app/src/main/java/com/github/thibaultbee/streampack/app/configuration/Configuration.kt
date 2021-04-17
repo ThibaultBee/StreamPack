@@ -17,79 +17,115 @@ package com.github.thibaultbee.streampack.app.configuration
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Resources
 import android.util.Size
 import androidx.preference.PreferenceManager
+import com.github.thibaultbee.streampack.app.R
 
 class Configuration(context: Context) {
     private val sharedPref = PreferenceManager.getDefaultSharedPreferences(context)
-    val video = Video(sharedPref)
-    val connection = Connection(sharedPref)
+    private val resources = context.resources
+    val video = Video(sharedPref, resources)
+    val audio = Audio(sharedPref, resources)
+    val muxer = Muxer(sharedPref, resources)
+    val endpoint = Endpoint(sharedPref, resources)
 
-    class Video(private val sharedPref: SharedPreferences) {
-        companion object {
-            const val PREF_RESOLUTION_WIDTH_KEY = "shared_pref_video_resolution_width_key"
-            const val PREF_RESOLUTION_HEIGHT_KEY = "shared_pref_video_resolution_height_key"
-            const val PREF_BITRATE_KEY = "shared_pref_video_bitrate_key"
-        }
+    class Video(private val sharedPref: SharedPreferences, private val resources: Resources) {
+        var encoder: String = resources.getString(R.string.default_video_encoder)
+            get() = sharedPref.getString(resources.getString(R.string.video_encoder_key), field)!!
+
+
+        var fps: Int = 30
+            get() = sharedPref.getString(
+                resources.getString(R.string.video_fps_key),
+                field.toString()
+            )!!.toInt()
+
 
         var resolution: Size = Size(1280, 720)
-            get() = Size(
-                sharedPref.getInt(PREF_RESOLUTION_WIDTH_KEY, field.width),
-                sharedPref.getInt(
-                    PREF_RESOLUTION_HEIGHT_KEY, field.height
+            get() {
+                val res = sharedPref.getString(
+                    resources.getString(R.string.video_resolution_key),
+                    field.toString()
+                )!!
+                val resArray = res.split("x")
+                return Size(
+                    resArray[0].toInt(),
+                    resArray[1].toInt()
                 )
-            )
-            set(value) {
-                with(sharedPref.edit()) {
-                    putInt(
-                        PREF_RESOLUTION_WIDTH_KEY,
-                        value.width
-                    )
-                    putInt(
-                        PREF_RESOLUTION_HEIGHT_KEY,
-                        value.height
-                    )
-                    apply()
-                }
-                field = value
             }
+
 
         var bitrate: Int = 1500
-            get() = sharedPref.getInt(PREF_BITRATE_KEY, field)
-            set(value) {
-                with(sharedPref.edit()) {
-                    putInt(PREF_BITRATE_KEY, value)
-                    apply()
-                }
-                field = value
-            }
+            get() = sharedPref.getInt(resources.getString(R.string.video_bitrate_key), field)
     }
 
-    class Connection(private val sharedPref: SharedPreferences) {
-        companion object {
-            const val PREF_SERVER_IP_KEY = "shared_pref_connection_server_ip_key"
-            const val PREF_SERVER_PORT_KEY = "shared_pref_connection_server_port_key"
+    class Audio(private val sharedPref: SharedPreferences, private val resources: Resources) {
+        var encoder: String = resources.getString(R.string.default_audio_encoder)
+            get() = sharedPref.getString(resources.getString(R.string.audio_encoder_key), field)!!
+    }
+
+    class Muxer(private val sharedPref: SharedPreferences, private val resources: Resources) {
+        var service: String = resources.getString(R.string.default_muxer_service)
+            get() = sharedPref.getString(resources.getString(R.string.muxer_service_key), field)!!
+
+        var provider: String = resources.getString(R.string.default_muxer_provider)
+            get() = sharedPref.getString(resources.getString(R.string.muxer_provider_key), field)!!
+    }
+
+    class Endpoint(private val sharedPref: SharedPreferences, private val resources: Resources) {
+        val file = File(sharedPref, resources)
+        val connection = Connection(sharedPref, resources)
+
+        enum class EndpointType {
+            FILE,
+            SRT
         }
 
-        var ip: String = ""
-            get() = sharedPref.getString(PREF_SERVER_IP_KEY, field)!!
-            set(value) {
-                with(sharedPref.edit()) {
-                    putString(PREF_SERVER_IP_KEY, value)
-                    apply()
+        val enpointType: EndpointType
+            get() {
+                return if (sharedPref.getBoolean(
+                        resources.getString(R.string.endpoint_type_key),
+                        true
+                    )
+                ) {
+                    EndpointType.SRT
+                } else {
+                    EndpointType.FILE
                 }
-                field = value
             }
 
-        var port: Int = 9998
-            get() = sharedPref.getInt(PREF_SERVER_PORT_KEY, field)
-            set(value) {
-                with(sharedPref.edit()) {
-                    putInt(PREF_SERVER_PORT_KEY, value)
-                    apply()
-                }
-                field = value
+        class File(
+            private val sharedPref: SharedPreferences,
+            private val resources: Resources
+        ) {
+            companion object {
+                const val TS_FILE_EXTENSION = ".ts"
             }
 
+            var filename: String = ""
+                get() = "${
+                    sharedPref.getString(
+                        resources.getString(R.string.file_name_key),
+                        field
+                    )!!
+                }$TS_FILE_EXTENSION"
+        }
+
+        class Connection(
+            private val sharedPref: SharedPreferences,
+            private val resources: Resources
+        ) {
+            var ip: String = ""
+                get() = sharedPref.getString(resources.getString(R.string.server_ip_key), field)!!
+
+            var port: Int = 9998
+                get() = sharedPref.getString(
+                    resources.getString(R.string.server_port_key),
+                    field.toString()
+                )!!.toInt()
+
+        }
     }
+
 }

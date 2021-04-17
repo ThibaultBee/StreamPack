@@ -1,10 +1,26 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <PreferenceCategory app:title="Video">
+    <PreferenceCategory app:title="@string/video">
+        <ListPreference
+            app:defaultValue="@string/default_video_encoder"
+            app:entries="@array/VideoEncoderEntries"
+            app:entryValues="@array/VideoEncoderEntryValues"
+            app:key="@string/video_encoder_key"
+            app:title="@string/video_encoder"
+            app:useSimpleSummaryProvider="true" />
 
         <ListPreference
-            app:key="@string/resolution_key"
+            app:defaultValue="@string/default_video_resolution"
+            app:key="@string/video_resolution_key"
             app:title="@string/resolution"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="30"
+            app:entries="@array/FpsEntries"
+            app:entryValues="@array/FpsEntries"
+            app:key="@string/video_fps_key"
+            app:title="@string/fps"
             app:useSimpleSummaryProvider="true" />
 
         <SeekBarPreference
@@ -18,21 +34,69 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/audio">
+        <ListPreference
+            app:defaultValue="@string/default_audio_encoder"
+            app:entries="@array/AudioEncoderEntries"
+            app:entryValues="@array/AudioEncoderEntryValues"
+            app:key="@string/audio_encoder_key"
+            app:title="@string/audio_encoder"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/muxer">
+        <EditTextPreference
+            app:defaultValue="@string/default_muxer_service"
+            app:key="@string/muxer_service_key"
+            app:title="@string/muxer_service"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:defaultValue="@string/default_muxer_provider"
+            app:key="@string/muxer_provider_key"
+            app:title="@string/muxer_provider"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/endpoint">
 
-        <PreferenceCategory app:title="@string/server">
+        <SwitchPreference
+            android:defaultValue="true"
+            app:key="@string/endpoint_type_key"
+            app:summaryOff="@string/tofile"
+            app:summaryOn="@string/toSRT"
+            app:title="@string/endpoint_type" />
+
+        <PreferenceCategory
+            app:key="@string/endpoint_server_key"
+            app:title="@string/server">
 
             <EditTextPreference
+                app:defaultValue=""
                 app:key="@string/server_ip_key"
                 app:title="@string/server_ip"
                 app:useSimpleSummaryProvider="true" />
 
             <EditTextPreference
+                app:defaultValue="9998"
                 app:key="@string/server_port_key"
                 app:title="@string/server_port"
                 app:useSimpleSummaryProvider="true" />
 
         </PreferenceCategory>
 
+        <PreferenceCategory
+            app:key="@string/endpoint_file_key"
+            app:title="@string/file">
+
+            <EditTextPreference
+                app:defaultValue="StreamPackTest"
+                app:key="@string/file_name_key"
+                app:title="@string/file_name"
+                app:useSimpleSummaryProvider="true" />
+
+        </PreferenceCategory>
     </PreferenceCategory>
 </PreferenceScreen>

@@ -18,6 +18,7 @@ package com.github.thibaultbee.streampack.app.ui.main
 import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.SurfaceHolder
 import android.view.View
@@ -36,6 +37,7 @@ import java.util.concurrent.TimeUnit
 
 
 class PreviewFragment : Fragment() {
+    private val TAG = this::class.java.simpleName
     private val fragmentDisposables = CompositeDisposable()
     private lateinit var binding: MainFragmentBinding
 
@@ -58,23 +60,22 @@ class PreviewFragment : Fragment() {
     private fun bindProperties() {
         binding.liveButton.clicks()
             .observeOn(AndroidSchedulers.mainThread())
-            .compose(
-                rxPermissions.ensureEachCombined(
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.RECORD_AUDIO
-                )
-            )
-            .subscribe { permission ->
-                if (!permission.granted) {
-                    binding.liveButton.isChecked = false
-                    showPermissionError()
-                } else {
-                    if (binding.liveButton.isChecked) {
-                        viewModel.startStream()
-                    } else {
-                        viewModel.stopStream()
+            .subscribe {
+                rxPermissions
+                    .requestEachCombined(*viewModel.streamRequiredPermissions.toTypedArray())
+                    .subscribe { permission ->
+                        if (!permission.granted) {
+                            binding.liveButton.isChecked = false
+                            showPermissionError()
+                        } else {
+                            if (binding.liveButton.isChecked) {
+                                viewModel.startStream()
+                            } else {
+                                viewModel.stopStream()
+                            }
+                        }
                     }
-                }
+
             }
             .let(fragmentDisposables::add)
 
@@ -104,22 +105,21 @@ class PreviewFragment : Fragment() {
     private fun showError(title: String, message: String) {
         binding.liveButton.isChecked = false
         DialogUtils.showAlertDialog(requireContext(), "Error: $title", message)
+        Log.e(TAG, "$title: $message")
     }
 
     @SuppressLint("MissingPermission")
-    override fun onResume() {
-        super.onResume()
-
+    override fun onStart() {
+        super.onStart()
         rxPermissions
             .requestEachCombined(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
             .subscribe { permission ->
                 if (!permission.granted) {
                     showPermissionError()
                 } else {
-                    viewModel.buildStreamer()
+                    viewModel.createStreamer()
                 }
             }
-
         binding.surfaceView.holder.addCallback(surfaceViewCallback)
     }
 
