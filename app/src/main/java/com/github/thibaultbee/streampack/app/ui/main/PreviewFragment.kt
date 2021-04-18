@@ -17,6 +17,7 @@ package com.github.thibaultbee.streampack.app.ui.main
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -106,6 +107,12 @@ class PreviewFragment : Fragment() {
         binding.liveButton.isChecked = false
         DialogUtils.showAlertDialog(requireContext(), "Error: $title", message)
         Log.e(TAG, "$title: $message")
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        requireActivity().requestedOrientation =
+            ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
     }
 
     @SuppressLint("MissingPermission")
