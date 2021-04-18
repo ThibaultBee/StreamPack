@@ -52,6 +52,20 @@ fun Context.getOutputCaptureSizesIntersection(): List<Size> {
     return resolutionList
 }
 
+/**
+ * Get all output capture sizes
+ * @return List of all resolutions supported by all camera
+ */
+@RequiresPermission(Manifest.permission.CAMERA)
+fun Context.getOutputCaptureSizes(): List<Size> {
+    val cameraIdList = this.getCameraList()
+    val resolutionSet = mutableSetOf<Size>()
+    cameraIdList.forEach { cameraId ->
+        resolutionSet.addAll(getOutputCaptureSizes(cameraId))
+    }
+    return resolutionSet.toList()
+}
+
 @RequiresPermission(Manifest.permission.CAMERA)
 fun Context.getOutputCaptureSizes(cameraId: String): List<Size> {
     val cameraManager = this.getSystemService(Context.CAMERA_SERVICE) as CameraManager

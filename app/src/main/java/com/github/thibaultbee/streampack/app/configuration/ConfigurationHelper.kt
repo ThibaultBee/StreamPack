@@ -16,8 +16,8 @@
 package com.github.thibaultbee.streampack.app.configuration
 
 import android.content.Context
-import com.github.thibaultbee.streampack.utils.getOutputCaptureSizesIntersection
+import com.github.thibaultbee.streampack.utils.getOutputCaptureSizes
 
 class ConfigurationHelper(context: Context) {
-    val resolutionEntries = context.getOutputCaptureSizesIntersection()
+    val resolutionEntries = context.getOutputCaptureSizes()
 }
