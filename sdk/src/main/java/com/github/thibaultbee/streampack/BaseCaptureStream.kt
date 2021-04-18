@@ -155,8 +155,9 @@ open class BaseCaptureStream(
 
     @RequiresPermission(Manifest.permission.CAMERA)
     fun changeVideoSource(cameraId: String = "0") {
+        val restartStream = videoSource.isStreaming
         videoSource.stopPreview()
-        videoSource.startPreview(cameraId)
+        videoSource.startPreview(cameraId, restartStream)
     }
 
     @Throws

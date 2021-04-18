@@ -43,6 +43,8 @@ class CameraCapture(
     lateinit var encoderSurface: Surface
 
     var cameraId: String = "0"
+    var isStreaming = false
+    private var restartStream = false
 
     private var camera: CameraDevice? = null
     private var captureSession: CameraCaptureSession? = null
@@ -59,6 +61,10 @@ class CameraCapture(
             captureRequestBuilder = camera?.createCaptureRequest(CameraDevice.TEMPLATE_RECORD)
             captureRequestBuilder?.let {
                 it.addTarget(previewSurface)
+                if (restartStream) {
+                    it.addTarget(encoderSurface)
+                    restartStream = false
+                }
                 it.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
                 captureSession?.setRepeatingRequest(
                     it.build(),
@@ -145,7 +151,8 @@ class CameraCapture(
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    fun startPreview(cameraId: String) {
+    fun startPreview(cameraId: String, restartStream: Boolean = false) {
+        this.restartStream = restartStream
         val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         cameraManager.openCamera(cameraId, cameraDeviceCallback, backgroundHandler)
     }
@@ -174,9 +181,11 @@ class CameraCapture(
                 null
             )
         } ?: throw IllegalStateException("Camera is not ready for stream")
+        isStreaming = true
     }
 
     override fun stopStream() {
+        isStreaming = false
         captureRequestBuilder?.let {
             it.removeTarget(encoderSurface)
             captureSession?.setRepeatingRequest(
