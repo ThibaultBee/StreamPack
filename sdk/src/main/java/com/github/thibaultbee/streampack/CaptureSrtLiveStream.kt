@@ -17,6 +17,7 @@ package com.github.thibaultbee.streampack
 
 import android.content.Context
 import com.github.thibaultbee.streampack.endpoints.SrtProducer
+import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.utils.Logger
 import java.net.SocketException
@@ -26,6 +27,15 @@ class CaptureSrtLiveStream(
     tsServiceInfo: ServiceInfo,
     logger: Logger
 ) : BaseCaptureStream(context, tsServiceInfo, SrtProducer(logger), logger) {
+    /**
+     * Listener to manage SRT connection.
+     */
+    var onConnectionListener: OnConnectionListener? = null
+        set(value) {
+            srtProducer.onConnectionListener = value
+            field = value
+        }
+
     private val srtProducer = endpoint as SrtProducer
 
     /**

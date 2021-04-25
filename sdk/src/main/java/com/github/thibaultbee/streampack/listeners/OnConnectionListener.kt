@@ -16,5 +16,23 @@
 package com.github.thibaultbee.streampack.listeners
 
 interface OnConnectionListener {
-    fun onLost()
+    /**
+     * Called when a successful connection has been lost. Could because peer device closes the
+     * connection or that the connection has been lost.
+     *
+     * @param message message that described the reason why the connection has been lost.
+     */
+    fun onLost(message: String)
+
+    /**
+     * Called when a connection failed.
+     *
+     * @param message message that described the reason why the connection has failed.
+     */
+    fun onFailed(message: String)
+
+    /**
+     * Called when a connection just succeeded.
+     */
+    fun onSuccess()
 }

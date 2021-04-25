@@ -20,6 +20,7 @@ import android.app.Application
 import android.content.Context
 import android.media.AudioFormat
 import android.os.Environment
+import android.util.Log
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.AndroidViewModel
@@ -31,12 +32,15 @@ import com.github.thibaultbee.streampack.app.configuration.Configuration
 import com.github.thibaultbee.streampack.app.configuration.Configuration.Endpoint.EndpointType
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
+import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.utils.Logger
 import java.io.File
 
 class PreviewViewModel(application: Application) : AndroidViewModel(application) {
+    private val tag = this::class.java.simpleName
+
     private val logger = Logger()
 
     private val configuration = Configuration(getApplication())
@@ -96,6 +100,23 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
                 override fun onError(source: String, message: String) {
                     error.postValue("$source: $message")
                 }
+            }
+
+            if (captureStream is CaptureSrtLiveStream) {
+                (captureStream as CaptureSrtLiveStream).onConnectionListener =
+                    object : OnConnectionListener {
+                        override fun onLost(message: String) {
+                            error.postValue("Connection lost: $message")
+                        }
+
+                        override fun onFailed(message: String) {
+                            error.postValue("Connection failed: $message")
+                        }
+
+                        override fun onSuccess() {
+                            Log.i(tag, "Connection succeeded")
+                        }
+                    }
             }
 
             captureStream.configure(audioConfig, videoConfig)

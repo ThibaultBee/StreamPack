@@ -17,15 +17,21 @@ package com.github.thibaultbee.streampack.endpoints
 
 import com.github.thibaultbee.srtdroid.Srt
 import com.github.thibaultbee.srtdroid.enums.Boundary
+import com.github.thibaultbee.srtdroid.enums.ErrorType
 import com.github.thibaultbee.srtdroid.enums.SockOpt
 import com.github.thibaultbee.srtdroid.enums.Transtype
+import com.github.thibaultbee.srtdroid.listeners.SocketListener
 import com.github.thibaultbee.srtdroid.models.MsgCtrl
 import com.github.thibaultbee.srtdroid.models.Socket
 import com.github.thibaultbee.streampack.data.Packet
+import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.utils.Logger
 import java.net.ConnectException
+import java.net.InetSocketAddress
 
 class SrtProducer(val logger: Logger) : IEndpoint {
+    var onConnectionListener: OnConnectionListener? = null
+
     private var socket = Socket()
     private var bitrate = 0L
 
@@ -33,15 +39,39 @@ class SrtProducer(val logger: Logger) : IEndpoint {
         private const val PAYLOAD_SIZE = 1316
     }
 
+
     override fun configure(startBitrate: Int) {
         this.bitrate = startBitrate.toLong()
     }
 
     fun connect(ip: String, port: Int) {
-        socket = Socket()
-        socket.setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
-        socket.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
-        socket.connect(ip, port)
+        try {
+            socket = Socket()
+            socket.listener = object : SocketListener {
+                override fun onConnectionLost(
+                    ns: Socket,
+                    error: ErrorType,
+                    peerAddress: InetSocketAddress,
+                    token: Int
+                ) {
+                    onConnectionListener?.onLost(error.toString())
+                }
+
+                override fun onListen(
+                    ns: Socket,
+                    hsVersion: Int,
+                    peerAddress: InetSocketAddress,
+                    streamId: String
+                ) = 0 // Only for server - not needed here
+            }
+            socket.setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
+            socket.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
+            socket.connect(ip, port)
+            onConnectionListener?.onSuccess()
+        } catch (e: Exception) {
+            onConnectionListener?.onFailed(e.message ?: "Unknown error")
+            throw e
+        }
     }
 
     fun disconnect() {
@@ -56,7 +86,6 @@ class SrtProducer(val logger: Logger) : IEndpoint {
             else -> Boundary.SUBSEQUENT
         }
         val msgCtrl =
-            // For PMT/PAT/...
             if (packet.ts == 0L) {
                 MsgCtrl(boundary = boundary)
             } else {
