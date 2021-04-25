@@ -14,7 +14,7 @@
     <string name="video_bitrate">Video bitrate (kb/s)</string>
     <string name="video_resolution_key">video_resolution_key</string>
     <string name="server_ip_key">server_ip_key</string>
-    <string name="server_ip">Server IP</string>
+    <string name="server_ip">IP</string>
     <string name="server_port">Port</string>
     <string name="server_port_key">server_port_key</string>
     <string name="server">Server</string>
