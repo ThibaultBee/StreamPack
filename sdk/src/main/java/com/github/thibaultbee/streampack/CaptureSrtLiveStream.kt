@@ -15,7 +15,9 @@
  */
 package com.github.thibaultbee.streampack
 
+import android.Manifest
 import android.content.Context
+import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.endpoints.SrtProducer
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
@@ -61,6 +63,7 @@ class CaptureSrtLiveStream(
      * Same as calling [connect] and [startStream].
      * @throws Exception if connection has failed or configuration has failed or [startStream] has failed too.
      */
+    @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun startStream(ip: String, port: Int) {
         connect(ip, port)
         startStream()

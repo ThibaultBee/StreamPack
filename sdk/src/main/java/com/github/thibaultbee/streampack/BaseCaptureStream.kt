@@ -140,11 +140,16 @@ open class BaseCaptureStream(
         require(audioConfig != null)
         require(videoConfig != null)
 
-        videoSource.previewSurface = previewSurface
-        videoSource.encoderSurface = videoEncoder.inputSurface
-        videoSource.startPreview(cameraId)
+        try {
+            videoSource.previewSurface = previewSurface
+            videoSource.encoderSurface = videoEncoder.inputSurface
+            videoSource.startPreview(cameraId)
 
-        audioSource.startStream()
+            audioSource.startStream()
+        } catch (e: Exception) {
+            stopCapture()
+            throw e
+        }
     }
 
     fun stopCapture() {
@@ -160,6 +165,7 @@ open class BaseCaptureStream(
         videoSource.startPreview(cameraId, restartStream)
     }
 
+    @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     @Throws
     fun startStream() {
         require(audioConfig != null)
@@ -167,20 +173,25 @@ open class BaseCaptureStream(
         require(videoEncoder.mimeType != null)
         require(audioEncoder.mimeType != null)
 
-        endpoint.startStream()
+        try {
+            endpoint.startStream()
 
-        val streams = mutableListOf<String>()
-        videoEncoder.mimeType?.let { streams.add(it) }
-        audioEncoder.mimeType?.let { streams.add(it) }
+            val streams = mutableListOf<String>()
+            videoEncoder.mimeType?.let { streams.add(it) }
+            audioEncoder.mimeType?.let { streams.add(it) }
 
-        tsMux.addService(tsServiceInfo)
-        tsMux.addStreams(tsServiceInfo, streams)
-        videoEncoder.mimeType?.let { videoTsStreamId = tsMux.getStreams(it)[0].pid }
-        audioEncoder.mimeType?.let { audioTsStreamId = tsMux.getStreams(it)[0].pid }
+            tsMux.addService(tsServiceInfo)
+            tsMux.addStreams(tsServiceInfo, streams)
+            videoEncoder.mimeType?.let { videoTsStreamId = tsMux.getStreams(it)[0].pid }
+            audioEncoder.mimeType?.let { audioTsStreamId = tsMux.getStreams(it)[0].pid }
 
-        audioEncoder.startStream()
-        videoSource.startStream()
-        videoEncoder.startStream()
+            audioEncoder.startStream()
+            videoSource.startStream()
+            videoEncoder.startStream()
+        } catch (e: Exception) {
+            stopStream()
+            throw e
+        }
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])

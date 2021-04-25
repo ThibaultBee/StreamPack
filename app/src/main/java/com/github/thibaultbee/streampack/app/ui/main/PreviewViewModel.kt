@@ -154,7 +154,6 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
             }
             captureStream.startStream()
         } catch (e: Exception) {
-            captureStream.stopStream()
             error.postValue("startStream: ${e.message ?: "Unknown error"}")
         }
     }
