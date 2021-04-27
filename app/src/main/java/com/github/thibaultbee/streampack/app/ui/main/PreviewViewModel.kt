@@ -48,7 +48,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
     private lateinit var captureStream: BaseCaptureStream
 
     val cameraId: String
-        get() = captureStream.videoSource.cameraId
+        get() = captureStream.camera
 
     val error = MutableLiveData<String>()
 
@@ -168,10 +168,10 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
 
     @RequiresPermission(Manifest.permission.CAMERA)
     fun toggleVideoSource() {
-        if (captureStream.videoSource.cameraId == "0") {
-            captureStream.changeVideoSource("1")
+        if (captureStream.camera == "0") {
+            captureStream.camera = "1"
         } else {
-            captureStream.changeVideoSource("0")
+            captureStream.camera = "0"
         }
     }
 

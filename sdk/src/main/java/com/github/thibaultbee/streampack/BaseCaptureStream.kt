@@ -36,6 +36,8 @@ import com.github.thibaultbee.streampack.sources.CameraCapture
 import com.github.thibaultbee.streampack.utils.Error
 import com.github.thibaultbee.streampack.utils.EventHandlerManager
 import com.github.thibaultbee.streampack.utils.Logger
+import com.github.thibaultbee.streampack.utils.getCameraList
+
 import java.nio.ByteBuffer
 
 open class BaseCaptureStream(
@@ -45,6 +47,26 @@ open class BaseCaptureStream(
     logger: Logger
 ) : EventHandlerManager() {
     override var onErrorListener: OnErrorListener? = null
+
+    /**
+     * Get/Set current camera id.
+     */
+    var camera: String
+        /**
+         * Get current camera id.
+         *
+         * @return a string that described current camera
+         */
+        get() = videoSource.cameraId
+        /**
+         * Set current camera id.
+         *
+         * @param value string that described the camera. Retrieves list of camera from [Context.getCameraList]
+         */
+        @RequiresPermission(Manifest.permission.CAMERA)
+        set(value) {
+            changeVideoSource(value)
+        }
 
     private var audioTsStreamId: Short? = null
     private var videoTsStreamId: Short? = null
@@ -112,7 +134,7 @@ open class BaseCaptureStream(
     }
 
     private val audioSource = AudioCapture(logger)
-    val videoSource = CameraCapture(context, onCaptureErrorListener, logger)
+    private val videoSource = CameraCapture(context, onCaptureErrorListener, logger)
 
     private var audioEncoder =
         AudioMediaCodecEncoder(audioEncoderListener, onCodecErrorListener, logger)
@@ -159,7 +181,7 @@ open class BaseCaptureStream(
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    fun changeVideoSource(cameraId: String = "0") {
+    private fun changeVideoSource(cameraId: String = "0") {
         val restartStream = videoSource.isStreaming
         videoSource.stopPreview()
         videoSource.startPreview(cameraId, restartStream)
