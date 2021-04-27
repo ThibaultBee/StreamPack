@@ -63,6 +63,31 @@ class Configuration(context: Context) {
     class Audio(private val sharedPref: SharedPreferences, private val resources: Resources) {
         var encoder: String = resources.getString(R.string.default_audio_encoder)
             get() = sharedPref.getString(resources.getString(R.string.audio_encoder_key), field)!!
+
+        var channelConfiguration: Int = 12
+            get() = sharedPref.getString(
+                resources.getString(R.string.audio_channel_configuration_key),
+                field.toString()
+            )!!.toInt()
+
+        var bitrate: Int = 128000
+            get() = sharedPref.getString(
+                resources.getString(R.string.audio_bitrate_key),
+                field.toString()
+            )!!.toInt()
+
+        var sampleRate: Int = 48000
+            get() = sharedPref.getString(
+                resources.getString(R.string.audio_sample_rate_key),
+                field.toString()
+            )!!.toInt()
+
+
+        var byteFormat: Int = 2
+            get() = sharedPref.getString(
+                resources.getString(R.string.audio_byte_format_key),
+                field.toString()
+            )!!.toInt()
     }
 
     class Muxer(private val sharedPref: SharedPreferences, private val resources: Resources) {

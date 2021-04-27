@@ -47,4 +47,12 @@
     <string name="default_muxer_provider">StreamPack Inc</string>
     <string name="muxer_provider">Provider name</string>
     <string name="default_video_resolution">1280x720</string>
+    <string name="audio_channel_configuration">Channel configuration</string>
+    <string name="audio_channel_configuration_key">audio_channel_configuration_key</string>
+    <string name="audio_bitrate_key">audio_bitrate_key</string>
+    <string name="audio_bitrate">Bitrate</string>
+    <string name="audio_sample_rate_key">audio_sample_rate_key</string>
+    <string name="audio_sample_rate">Sample rate</string>
+    <string name="audio_byte_format">Byte format</string>
+    <string name="audio_byte_format_key">audio_byte_format_key</string>
 </resources>

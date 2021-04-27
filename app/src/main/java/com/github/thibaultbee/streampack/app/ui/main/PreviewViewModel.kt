@@ -18,7 +18,6 @@ package com.github.thibaultbee.streampack.app.ui.main
 import android.Manifest
 import android.app.Application
 import android.content.Context
-import android.media.AudioFormat
 import android.os.Environment
 import android.util.Log
 import android.view.Surface
@@ -76,10 +75,10 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
 
         val audioConfig = AudioConfig(
             mimeType = configuration.audio.encoder,
-            startBitrate = 128000,
-            sampleRate = 48000,
-            channelConfig = AudioFormat.CHANNEL_IN_STEREO,
-            audioByteFormat = AudioFormat.ENCODING_PCM_16BIT
+            startBitrate = configuration.audio.bitrate,
+            sampleRate = configuration.audio.sampleRate,
+            channelConfig = configuration.audio.channelConfiguration,
+            audioByteFormat = configuration.audio.byteFormat
         )
 
         val tsServiceInfo = ServiceInfo(

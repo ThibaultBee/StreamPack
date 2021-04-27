@@ -23,4 +23,56 @@
         <item>audio/mp4a-latm</item>
     </string-array>
 
+    <string-array name="AudioChannelEntries">
+        <item>Mono</item>
+        <item>Stereo</item>
+    </string-array>
+
+    <string-array name="AudioChannelEntryValues">
+        <item>16</item>
+        <item>12</item>
+    </string-array>
+
+    <string-array name="AudioBitrateEntries">
+        <item>24 Kbps</item>
+        <item>64 Kbps</item>
+        <item>128 Kbps</item>
+        <item>192 Kbps</item>
+    </string-array>
+
+    <string-array name="AudioBitrateEntryValues">
+        <item>24000</item>
+        <item>64000</item>
+        <item>128000</item>
+        <item>192000</item>
+    </string-array>
+
+    <string-array name="AudioSampleRateEntries">
+        <item>8 kHz</item>
+        <item>16 kHz</item>
+        <item>32 kHz</item>
+        <item>44.1 kHz</item>
+        <item>48 kHz</item>
+    </string-array>
+
+    <string-array name="AudioSampleRateEntryValues">
+        <item>8000</item>
+        <item>16000</item>
+        <item>32000</item>
+        <item>44100</item>
+        <item>48000</item>
+    </string-array>
+
+    <string-array name="AudioByteFormatEntries">
+        <item>8 bits</item>
+        <item>16 bits</item>
+        <item>Float</item>
+    </string-array>
+
+    <string-array name="AudioByteFormatEntryValues">
+        <item>3</item>
+        <item>2</item>
+        <item>4</item>
+    </string-array>
+
 </resources>
