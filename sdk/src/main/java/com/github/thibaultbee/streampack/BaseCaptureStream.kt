@@ -149,12 +149,17 @@ open class BaseCaptureStream(
         this.videoConfig = videoConfig
         this.audioConfig = audioConfig
 
-        audioSource.configure(audioConfig)
-        audioEncoder.configure(audioConfig)
-        videoSource.configure(videoConfig.fps)
-        videoEncoder.configure(videoConfig)
+        try {
+            audioSource.configure(audioConfig)
+            audioEncoder.configure(audioConfig)
+            videoSource.configure(videoConfig.fps)
+            videoEncoder.configure(videoConfig)
 
-        endpoint.configure(videoConfig.startBitrate + audioConfig.startBitrate)
+            endpoint.configure(videoConfig.startBitrate + audioConfig.startBitrate)
+        } catch (e: Exception) {
+            release()
+            throw e
+        }
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
