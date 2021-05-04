@@ -31,6 +31,7 @@ import java.nio.ByteBuffer
 class AudioCapture(val logger: Logger) : ICapture {
     private var audioRecord: AudioRecord? = null
 
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun configure(audioConfig: AudioConfig) {
         val bufferSize = AudioRecord.getMinBufferSize(
             audioConfig.sampleRate,
@@ -46,9 +47,12 @@ class AudioCapture(val logger: Logger) : ICapture {
             MediaRecorder.AudioSource.DEFAULT, audioConfig.sampleRate,
             audioConfig.channelConfig, audioConfig.audioByteFormat, bufferSize
         )
+
+        if (audioRecord?.state != AudioRecord.STATE_INITIALIZED) {
+            throw IllegalArgumentException("Failed to initialized AudioRecord")
+        }
     }
 
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun startStream() {
         audioRecord?.let {
             it.startRecording()
