@@ -17,8 +17,10 @@ package com.github.thibaultbee.streampack
 
 import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.view.Surface
 import androidx.annotation.RequiresPermission
+import androidx.core.app.ActivityCompat
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.Frame
 import com.github.thibaultbee.streampack.data.Packet
@@ -41,7 +43,7 @@ import com.github.thibaultbee.streampack.utils.getCameraList
 import java.nio.ByteBuffer
 
 open class BaseCaptureStream(
-    context: Context,
+    private val context: Context,
     private val tsServiceInfo: ServiceInfo,
     protected val endpoint: IEndpoint,
     logger: Logger
@@ -143,7 +145,7 @@ open class BaseCaptureStream(
 
     private val tsMux = TSMuxer(muxListener)
 
-    @RequiresPermission(Manifest.permission.CAMERA)
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun configure(audioConfig: AudioConfig, videoConfig: VideoConfig) {
         // Keep settings when we need to reconfigure
         this.videoConfig = videoConfig
@@ -192,9 +194,7 @@ open class BaseCaptureStream(
         videoSource.startPreview(cameraId, restartStream)
     }
 
-    @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-    @Throws
-    fun startStream() {
+    open fun startStream() {
         require(audioConfig != null)
         require(videoConfig != null)
         require(videoEncoder.mimeType != null)
@@ -221,13 +221,19 @@ open class BaseCaptureStream(
         }
     }
 
-    @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun stopStream() {
         stopStreamImpl()
 
         // Encoder does not return to CONFIGURED state... so we have to reset everything for video...
         resetAudio()
-        resetVideo()
+
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            resetVideo()
+        }
     }
 
     private fun stopStreamImpl() {
@@ -240,7 +246,6 @@ open class BaseCaptureStream(
         endpoint.stopStream()
     }
 
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     private fun resetAudio(): Error {
         require(audioConfig != null)
 

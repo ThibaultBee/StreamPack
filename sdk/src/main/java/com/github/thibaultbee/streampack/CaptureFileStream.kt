@@ -15,7 +15,9 @@
  */
 package com.github.thibaultbee.streampack
 
+import android.Manifest
 import android.content.Context
+import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.endpoints.FileWriter
 import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.utils.Logger
@@ -44,4 +46,7 @@ class CaptureFileStream(
         set(value) {
             fileWriter.file = value
         }
+
+    @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
+    override fun startStream() = super.startStream()
 }

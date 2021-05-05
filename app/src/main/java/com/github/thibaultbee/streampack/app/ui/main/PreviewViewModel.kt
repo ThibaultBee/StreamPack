@@ -38,7 +38,7 @@ import com.github.thibaultbee.streampack.utils.Logger
 import java.io.File
 
 class PreviewViewModel(application: Application) : AndroidViewModel(application) {
-    private val tag = this::class.java.simpleName
+    private val TAG = this::class.java.simpleName
 
     private val logger = Logger()
 
@@ -51,7 +51,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
 
     val error = MutableLiveData<String>()
 
-    val streamRequiredPermissions: List<String>
+    val streamAdditionalPermissions: List<String>
         get() {
             val permissions = mutableListOf(
                 Manifest.permission.CAMERA,
@@ -63,24 +63,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
             return permissions
         }
 
-    @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun createStreamer() {
-        val videoConfig =
-            VideoConfig(
-                mimeType = configuration.video.encoder,
-                startBitrate = configuration.video.bitrate * 1000, // to b/s
-                resolution = configuration.video.resolution,
-                fps = configuration.video.fps
-            )
-
-        val audioConfig = AudioConfig(
-            mimeType = configuration.audio.encoder,
-            startBitrate = configuration.audio.bitrate,
-            sampleRate = configuration.audio.sampleRate,
-            channelConfig = configuration.audio.channelConfiguration,
-            audioByteFormat = configuration.audio.byteFormat
-        )
-
         val tsServiceInfo = ServiceInfo(
             ServiceInfo.ServiceType.DIGITAL_TV,
             0x4698,
@@ -113,16 +96,42 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
                         }
 
                         override fun onSuccess() {
-                            Log.i(tag, "Connection succeeded")
+                            Log.i(TAG, "Connection succeeded")
                         }
                     }
             }
-
-            captureStream.configure(audioConfig, videoConfig)
+            Log.d(TAG, "Streamer is created")
         } catch (e: Exception) {
+            Log.e(TAG, "createStreamer failed", e)
+            error.postValue("createStreamer: ${e.message ?: "Unknown error"}")
+        }
+    }
+
+    @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
+    fun configureStreamer() {
+        val videoConfig =
+            VideoConfig(
+                mimeType = configuration.video.encoder,
+                startBitrate = configuration.video.bitrate * 1000, // to b/s
+                resolution = configuration.video.resolution,
+                fps = configuration.video.fps
+            )
+
+        val audioConfig = AudioConfig(
+            mimeType = configuration.audio.encoder,
+            startBitrate = configuration.audio.bitrate,
+            sampleRate = configuration.audio.sampleRate,
+            channelConfig = configuration.audio.channelConfiguration,
+            audioByteFormat = configuration.audio.byteFormat
+        )
+
+        try {
+            captureStream.configure(audioConfig, videoConfig)
+            Log.d(TAG, "Streamer is configured")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to configure streamer", e)
             error.postValue("Failed to create CaptureLiveStream: ${e.message ?: "Unknown error"}")
         }
-
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
@@ -130,6 +139,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
         try {
             captureStream.startCapture(previewSurface)
         } catch (e: Exception) {
+            Log.e(TAG, "startCapture failed", e)
             error.postValue("startCapture: ${e.message ?: "Unknown error"}")
         }
     }
@@ -153,6 +163,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
             }
             captureStream.startStream()
         } catch (e: Exception) {
+            Log.e(TAG, "startStream failed", e)
             error.postValue("startStream: ${e.message ?: "Unknown error"}")
         }
     }

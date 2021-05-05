@@ -19,7 +19,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.SurfaceHolder
 import android.view.View
@@ -63,7 +62,7 @@ class PreviewFragment : Fragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 rxPermissions
-                    .requestEachCombined(*viewModel.streamRequiredPermissions.toTypedArray())
+                    .requestEachCombined(*viewModel.streamAdditionalPermissions.toTypedArray())
                     .subscribe { permission ->
                         if (!permission.granted) {
                             binding.liveButton.isChecked = false
@@ -76,20 +75,14 @@ class PreviewFragment : Fragment() {
                             }
                         }
                     }
-
             }
             .let(fragmentDisposables::add)
 
         binding.switchButton.clicks()
             .observeOn(AndroidSchedulers.mainThread())
             .throttleFirst(1000, TimeUnit.MILLISECONDS)
-            .compose(rxPermissions.ensure(Manifest.permission.CAMERA))
-            .subscribe { granted ->
-                if (!granted) {
-                    showPermissionError()
-                } else {
-                    viewModel.toggleVideoSource()
-                }
+            .subscribe {
+                viewModel.toggleVideoSource()
             }
             .let(fragmentDisposables::add)
 
@@ -103,10 +96,14 @@ class PreviewFragment : Fragment() {
         DialogUtils.showPermissionAlertDialog(requireContext())
     }
 
+    private fun showPermissionErrorAndFinish() {
+        binding.liveButton.isChecked = false
+        DialogUtils.showPermissionAlertDialog(requireContext()) { requireActivity().finish() }
+    }
+
     private fun showError(title: String, message: String) {
         binding.liveButton.isChecked = false
         DialogUtils.showAlertDialog(requireContext(), "Error: $title", message)
-        Log.e(TAG, "$title: $message")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -118,13 +115,17 @@ class PreviewFragment : Fragment() {
     @SuppressLint("MissingPermission")
     override fun onStart() {
         super.onStart()
+
         rxPermissions
             .requestEachCombined(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
             .subscribe { permission ->
                 if (!permission.granted) {
-                    showPermissionError()
+                    showPermissionErrorAndFinish()
                 } else {
                     viewModel.createStreamer()
+                    viewModel.configureStreamer()
+                    // Wait till streamer exists to create the SurfaceView (and call startCapture).
+                    binding.surfaceView.visibility = View.VISIBLE
                 }
             }
         binding.surfaceView.holder.addCallback(surfaceViewCallback)
@@ -138,7 +139,6 @@ class PreviewFragment : Fragment() {
         ) // Ensure to trigger surface holder callback on resume
     }
 
-
     override fun onDestroy() {
         super.onDestroy()
         fragmentDisposables.clear()
@@ -151,29 +151,22 @@ class PreviewFragment : Fragment() {
         override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
             require(context != null)
 
-            rxPermissions
-                .requestEachCombined(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
-                .subscribe { permission ->
-                    if (!permission.granted) {
-                        showPermissionError()
-                    } else {
-                        holder?.let {
-                            nbOnSurfaceChange++
-                            if (nbOnSurfaceChange == 2) {
-                                viewModel.startCapture(holder.surface)
-                            } else {
-                                val choices = context!!.getOutputSizes(
-                                    SurfaceHolder::class.java,
-                                    viewModel.cameraId
-                                )
+            holder?.let {
+                nbOnSurfaceChange++
+                if (nbOnSurfaceChange == 2) {
+                    viewModel.startCapture(it.surface)
+                } else {
+                    val choices = context!!.getOutputSizes(
+                        SurfaceHolder::class.java,
+                        viewModel.cameraId
+                    )
 
-                                chooseBigEnoughSize(choices, width, height)?.let { size ->
-                                    holder.setFixedSize(size.width, size.height)
-                                }
-                            }
-                        }
+                    chooseBigEnoughSize(choices, width, height)?.let { size ->
+                        it.setFixedSize(size.width, size.height)
                     }
                 }
+            }
+
         }
 
         override fun surfaceDestroyed(holder: SurfaceHolder?) {

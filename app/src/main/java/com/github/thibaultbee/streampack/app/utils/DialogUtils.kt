@@ -29,11 +29,14 @@ object DialogUtils {
             .show()
     }
 
-    fun showPermissionAlertDialog(context: Context) {
+    fun showPermissionAlertDialog(context: Context, afterPositiveButton: () -> Unit = {}) {
         AlertDialog.Builder(context)
             .setTitle(R.string.permission)
             .setMessage(R.string.permission_not_granted)
-            .setPositiveButton(android.R.string.ok) { dialogInterface: DialogInterface, _: Int -> dialogInterface.dismiss() }
+            .setPositiveButton(android.R.string.ok) { dialogInterface: DialogInterface, _: Int ->
+                dialogInterface.dismiss()
+                afterPositiveButton()
+            }
             .show()
     }
 }
