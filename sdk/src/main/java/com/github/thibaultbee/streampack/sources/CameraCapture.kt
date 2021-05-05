@@ -113,16 +113,15 @@ class CameraCapture(
         }
     }
 
-    private lateinit var backgroundThread: HandlerThread
-    private lateinit var backgroundHandler: Handler
+    private var backgroundThread: HandlerThread? = null
+    private var backgroundHandler: Handler? = null
 
     private fun createCaptureSession() {
         val surfaceList = mutableListOf(previewSurface, encoderSurface)
         camera?.createCaptureSession(surfaceList, captureSessionCallback, backgroundHandler)
     }
 
-    @RequiresPermission(Manifest.permission.CAMERA)
-    fun getClosestFpsRange(fps: Int): Range<Int> {
+    private fun getClosestFpsRange(fps: Int): Range<Int> {
         var fpsRangeList = context.getFpsList(cameraId)
         // Get range that contains FPS
         fpsRangeList =
@@ -143,18 +142,17 @@ class CameraCapture(
         return selectedFpsRange
     }
 
-    @RequiresPermission(Manifest.permission.CAMERA)
     fun configure(fps: Int) {
         fpsRange = getClosestFpsRange(fps)
-
-        startBackgroundThread()
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
     fun startPreview(cameraId: String, restartStream: Boolean = false) {
+        startBackgroundThread()
+
         this.restartStream = restartStream
         val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        cameraManager.openCamera(cameraId, cameraDeviceCallback, backgroundHandler)
+        cameraManager.openCamera(cameraId, cameraDeviceCallback, backgroundHandler!!)
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
@@ -170,6 +168,8 @@ class CameraCapture(
 
         camera?.close()
         camera = null
+
+        stopBackgroundThread()
     }
 
     override fun startStream() {
@@ -197,7 +197,6 @@ class CameraCapture(
     }
 
     override fun release() {
-        stopBackgroundThread()
     }
 
     /**
@@ -205,16 +204,16 @@ class CameraCapture(
      */
     private fun startBackgroundThread() {
         backgroundThread = HandlerThread("BackgroundCamera").also { it.start() }
-        backgroundHandler = Handler(backgroundThread.looper)
+        backgroundHandler = Handler(backgroundThread!!.looper)
     }
 
     /**
      * Stops the background thread and its [Handler].
      */
     private fun stopBackgroundThread() {
-        backgroundThread.quitSafely()
+        backgroundThread?.quitSafely()
         try {
-            backgroundThread.join()
+            backgroundThread?.join()
         } catch (e: InterruptedException) {
             e.printStackTrace()
         }
