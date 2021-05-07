@@ -148,33 +148,30 @@ class PreviewFragment : Fragment() {
     private val surfaceViewCallback = object : SurfaceHolder.Callback {
         var nbOnSurfaceChange = 0
 
-        override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
+        override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
             require(context != null)
 
-            holder?.let {
-                nbOnSurfaceChange++
-                if (nbOnSurfaceChange == 2) {
-                    viewModel.startCapture(it.surface)
-                } else {
-                    val choices = context!!.getCameraOutputSizes(
-                        SurfaceHolder::class.java,
-                        viewModel.cameraId
-                    )
+            nbOnSurfaceChange++
+            if (nbOnSurfaceChange == 2) {
+                viewModel.startCapture(holder.surface)
+            } else {
+                val choices = context!!.getCameraOutputSizes(
+                    SurfaceHolder::class.java,
+                    viewModel.cameraId
+                )
 
-                    chooseBigEnoughSize(choices, width, height)?.let { size ->
-                        it.setFixedSize(size.width, size.height)
-                    }
+                chooseBigEnoughSize(choices, width, height)?.let { size ->
+                    holder.setFixedSize(size.width, size.height)
                 }
             }
-
         }
 
-        override fun surfaceDestroyed(holder: SurfaceHolder?) {
+        override fun surfaceDestroyed(holder: SurfaceHolder) {
             viewModel.stopCapture()
             binding.surfaceView.holder.removeCallback(this)
         }
 
-        override fun surfaceCreated(holder: SurfaceHolder?) {
+        override fun surfaceCreated(holder: SurfaceHolder) {
             nbOnSurfaceChange = 0
         }
     }
