@@ -28,7 +28,7 @@ import com.github.thibaultbee.streampack.gl.EGlSurface
 import com.github.thibaultbee.streampack.gl.FullFrameRect
 import com.github.thibaultbee.streampack.gl.Texture2DProgram
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
-import com.github.thibaultbee.streampack.utils.Logger
+import com.github.thibaultbee.streampack.utils.ILogger
 import com.github.thibaultbee.streampack.utils.getCameraOrientation
 import java.nio.ByteBuffer
 import java.security.InvalidParameterException
@@ -38,7 +38,7 @@ class VideoMediaCodecEncoder(
     encoderListener: IEncoderListener,
     override var onErrorListener: OnErrorListener?,
     private val context: Context,
-    logger: Logger
+    logger: ILogger
 ) :
     MediaCodecEncoder(encoderListener, logger) {
     var codecSurface: CodecSurface? = null

@@ -1,0 +1,91 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>ITSElement - sdk</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">sdk</a>&nbsp;/&nbsp;<a href="../index.html">com.github.thibaultbee.streampack.muxers.ts.data</a>&nbsp;/&nbsp;<a href="./index.html">ITSElement</a><br/>
+<br/>
+<h1>ITSElement</h1>
+<code><span class="keyword">interface </span><span class="identifier">ITSElement</span></code>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="bit-size.html">bitSize</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">bitSize</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="size.html">size</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">size</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="to-byte-buffer.html">toByteBuffer</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">toByteBuffer</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://developer.android.com/reference/java/nio/ByteBuffer.html"><span class="identifier">ByteBuffer</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Inheritors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="../../com.github.thibaultbee.streampack.muxers.ts.descriptors/-adaptation-field/index.html">AdaptationField</a></p>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">AdaptationField</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">ITSElement</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="../../com.github.thibaultbee.streampack.muxers.ts.tables/-pat/index.html">Pat</a></p>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">Pat</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.muxers.ts.tables/-psi/index.html"><span class="identifier">Psi</span></a><span class="symbol">, </span><a href="./index.html"><span class="identifier">ITSElement</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="../../com.github.thibaultbee.streampack.muxers.ts.packets/-pes-header/index.html">PesHeader</a></p>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">PesHeader</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">ITSElement</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="../../com.github.thibaultbee.streampack.muxers.ts.tables/-pmt/index.html">Pmt</a></p>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">Pmt</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.muxers.ts.tables/-psi/index.html"><span class="identifier">Psi</span></a><span class="symbol">, </span><a href="./index.html"><span class="identifier">ITSElement</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="../../com.github.thibaultbee.streampack.muxers.ts.tables/-sdt/index.html">Sdt</a></p>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">Sdt</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.muxers.ts.tables/-psi/index.html"><span class="identifier">Psi</span></a><span class="symbol">, </span><a href="./index.html"><span class="identifier">ITSElement</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="../../com.github.thibaultbee.streampack.muxers.ts.tables/-table-header/index.html">TableHeader</a></p>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TableHeader</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">ITSElement</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

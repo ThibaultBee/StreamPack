@@ -1,0 +1,61 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Texture2DProgram - sdk</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">sdk</a>&nbsp;/&nbsp;<a href="../index.html">com.github.thibaultbee.streampack.gl</a>&nbsp;/&nbsp;<a href="./index.html">Texture2DProgram</a><br/>
+<br/>
+<h1>Texture2DProgram</h1>
+<code><span class="keyword">class </span><span class="identifier">Texture2DProgram</span></code>
+<p>GL program and supporting functions for textured 2D shapes.</p>
+<p>(Contains mostly code borrowed from CameraX)</p>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-init-.html">&lt;init&gt;</a></p>
+</td>
+<td>
+<code><span class="identifier">Texture2DProgram</span><span class="symbol">(</span><span class="symbol">)</span></code>
+<p>GL program and supporting functions for textured 2D shapes.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="create-texture-object.html">createTextureObject</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">createTextureObject</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code>
+<p>Creates a texture object suitable for use with this program.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="draw.html">draw</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">draw</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.gl.Texture2DProgram$draw(kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int)/mvpMatrix">mvpMatrix</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float-array/index.html"><span class="identifier">FloatArray</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.gl.Texture2DProgram$draw(kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int)/vertexBuffer">vertexBuffer</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/nio/FloatBuffer.html"><span class="identifier">FloatBuffer</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.gl.Texture2DProgram$draw(kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int)/firstVertex">firstVertex</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.gl.Texture2DProgram$draw(kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int)/vertexCount">vertexCount</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.gl.Texture2DProgram$draw(kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int)/coordsPerVertex">coordsPerVertex</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.gl.Texture2DProgram$draw(kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int)/vertexStride">vertexStride</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.gl.Texture2DProgram$draw(kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int)/texMatrix">texMatrix</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float-array/index.html"><span class="identifier">FloatArray</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.gl.Texture2DProgram$draw(kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int)/texBuffer">texBuffer</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/nio/FloatBuffer.html"><span class="identifier">FloatBuffer</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.gl.Texture2DProgram$draw(kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int)/textureId">textureId</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.gl.Texture2DProgram$draw(kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.FloatArray, java.nio.FloatBuffer, kotlin.Int, kotlin.Int)/texStride">texStride</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Issues the draw call.  Does the full setup on every call.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="release.html">release</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">release</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Releases the program.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

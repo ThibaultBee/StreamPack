@@ -22,7 +22,7 @@ import android.os.Build
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.encoders.format.aac.Adts
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
-import com.github.thibaultbee.streampack.utils.Logger
+import com.github.thibaultbee.streampack.utils.ILogger
 import java.nio.ByteBuffer
 import java.security.InvalidParameterException
 
@@ -30,7 +30,7 @@ import java.security.InvalidParameterException
 class AudioMediaCodecEncoder(
     encoderListener: IEncoderListener,
     override var onErrorListener: OnErrorListener?,
-    logger: Logger
+    logger: ILogger
 ) :
     MediaCodecEncoder(encoderListener, logger) {
 
@@ -49,7 +49,7 @@ class AudioMediaCodecEncoder(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             audioFormat.setInteger(
                 MediaFormat.KEY_PCM_ENCODING,
-                audioConfig.audioByteFormat
+                audioConfig.byteFormat
             )
         }
         audioFormat.setInteger(MediaFormat.KEY_BIT_RATE, audioConfig.startBitrate)

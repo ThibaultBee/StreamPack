@@ -1,0 +1,88 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Frame - sdk</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">sdk</a>&nbsp;/&nbsp;<a href="../index.html">com.github.thibaultbee.streampack.data</a>&nbsp;/&nbsp;<a href="./index.html">Frame</a><br/>
+<br/>
+<h1>Frame</h1>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">Frame</span></code>
+<p>Frame internal representation.</p>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-init-.html">&lt;init&gt;</a></p>
+</td>
+<td>
+<code><span class="identifier">Frame</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.data.Frame$<init>(java.nio.ByteBuffer, kotlin.String, kotlin.Long, kotlin.Long, kotlin.Boolean, java.nio.ByteBuffer)/buffer">buffer</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/nio/ByteBuffer.html"><span class="identifier">ByteBuffer</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.data.Frame$<init>(java.nio.ByteBuffer, kotlin.String, kotlin.Long, kotlin.Long, kotlin.Boolean, java.nio.ByteBuffer)/mimeType">mimeType</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.data.Frame$<init>(java.nio.ByteBuffer, kotlin.String, kotlin.Long, kotlin.Long, kotlin.Boolean, java.nio.ByteBuffer)/pts">pts</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.data.Frame$<init>(java.nio.ByteBuffer, kotlin.String, kotlin.Long, kotlin.Long, kotlin.Boolean, java.nio.ByteBuffer)/dts">dts</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.data.Frame$<init>(java.nio.ByteBuffer, kotlin.String, kotlin.Long, kotlin.Long, kotlin.Boolean, java.nio.ByteBuffer)/isKeyFrame">isKeyFrame</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a>&nbsp;<span class="symbol">=</span>&nbsp;false<span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.data.Frame$<init>(java.nio.ByteBuffer, kotlin.String, kotlin.Long, kotlin.Long, kotlin.Boolean, java.nio.ByteBuffer)/extra">extra</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/nio/ByteBuffer.html"><span class="identifier">ByteBuffer</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">)</span></code>
+<p>Frame internal representation.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="buffer.html">buffer</a></p>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">buffer</span><span class="symbol">: </span><a href="https://developer.android.com/reference/java/nio/ByteBuffer.html"><span class="identifier">ByteBuffer</span></a></code>
+<p>Contains an audio or video frame data.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="dts.html">dts</a></p>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">dts</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">?</span></code>
+<p>Decoded timestamp in µs (not used).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="extra.html">extra</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">extra</span><span class="symbol">: </span><a href="https://developer.android.com/reference/java/nio/ByteBuffer.html"><span class="identifier">ByteBuffer</span></a><span class="symbol">?</span></code>
+<p>Contains extra frame description.
+For AAC, it contains ADTS.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="is-key-frame.html">isKeyFrame</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">isKeyFrame</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code>
+<p><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean.true</a> if frame is a key frame (I-frame for AVC/HEVC and audio frames)</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="mime-type.html">mimeType</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">mimeType</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code>
+<p>Frame mime type</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="pts.html">pts</a></p>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">pts</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a></code>
+<p>Presentation timestamp in µs</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

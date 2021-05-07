@@ -570,7 +570,7 @@ class BitBuffer private constructor(buffer: ByteBuffer) {
     }
 
     /**
-     * Gets the capacity of the backing [ByteBuffer].
+     * Get the capacity of the backing [ByteBuffer].
      *
      * @return the capacity of the backing buffer in `byte`s.
      */
@@ -579,7 +579,7 @@ class BitBuffer private constructor(buffer: ByteBuffer) {
 
     var position: Int
         /**
-         * Gets the position of the backing [ByteBuffer].
+         * Get the position of the backing [ByteBuffer].
          *
          * @return the position of the backing buffer in `byte`s.
          */
@@ -593,7 +593,7 @@ class BitBuffer private constructor(buffer: ByteBuffer) {
         }
 
     /**
-     * Gets the remaining of the backing [ByteBuffer].
+     * Get the remaining of the backing [ByteBuffer].
      *
      * @return the remaining of the backing buffer in `byte`s.
      */
@@ -616,7 +616,7 @@ class BitBuffer private constructor(buffer: ByteBuffer) {
     }
 
     /**
-     * Gets the backing [ByteBuffer] of this [BitBuffer].
+     * Get the backing [ByteBuffer] of this [BitBuffer].
      * <br></br><br></br>
      * Modifying this [ByteBuffer] in any way **will** de-synchronize it from the [BitBuffer]
      * that encompasses it.

@@ -18,16 +18,25 @@ package com.github.thibaultbee.streampack.streamer
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
+import com.github.thibaultbee.streampack.endpoints.IEndpoint
 import com.github.thibaultbee.streampack.endpoints.SrtProducer
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
-import com.github.thibaultbee.streampack.utils.Logger
+import com.github.thibaultbee.streampack.utils.ILogger
 import java.net.SocketException
 
+/**
+ * [BaseCaptureStreamer] that sends audio/video frames to a remote device p, Secure Reliable
+ * Transport (SRT) Protocol.
+ *
+ * @param context application context
+ * @param tsServiceInfo MPEG-TS service description
+ * @param logger a [ILogger] implementation
+ */
 class CaptureSrtLiveStreamer(
     context: Context,
     tsServiceInfo: ServiceInfo,
-    logger: Logger
+    logger: ILogger
 ) : BaseCaptureStreamer(context, tsServiceInfo, SrtProducer(logger), logger) {
     /**
      * Listener to manage SRT connection.
@@ -41,7 +50,9 @@ class CaptureSrtLiveStreamer(
     private val srtProducer = endpoint as SrtProducer
 
     /**
-     * Connect to an SRT server with correct Live streaming parameters
+     * Connect to an SRT server with correct Live streaming parameters.
+     * To avoid creating an unresponsive UI, do not call on main thread.
+     *
      * @param ip server ip
      * @param port server port
      * @throws Exception if connection has failed or configuration has failed
@@ -51,7 +62,8 @@ class CaptureSrtLiveStreamer(
     }
 
     /**
-     * Disconnect from the connected SRT server
+     * Disconnect from the connected SRT server.
+     *
      * @throws SocketException is not connected
      */
     fun disconnect() {
@@ -60,7 +72,11 @@ class CaptureSrtLiveStreamer(
 
     /**
      * Connect to an SRT server and start stream.
-     * Same as calling [connect] and [startStream].
+     * Same as calling [connect], then [startStream].
+     * To avoid creating an unresponsive UI, do not call on main thread.
+     *
+     * @param ip server ip
+     * @param port server port
      * @throws Exception if connection has failed or configuration has failed or [startStream] has failed too.
      */
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])

@@ -28,7 +28,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import com.github.thibaultbee.streampack.app.utils.DialogUtils
 import com.github.thibaultbee.streampack.app.utils.PreviewUtils.Companion.chooseBigEnoughSize
-import com.github.thibaultbee.streampack.utils.getOutputSizes
+import com.github.thibaultbee.streampack.utils.getCameraOutputSizes
 import com.jakewharton.rxbinding4.view.clicks
 import com.tbruyelle.rxpermissions3.RxPermissions
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -156,7 +156,7 @@ class PreviewFragment : Fragment() {
                 if (nbOnSurfaceChange == 2) {
                     viewModel.startCapture(it.surface)
                 } else {
-                    val choices = context!!.getOutputSizes(
+                    val choices = context!!.getCameraOutputSizes(
                         SurfaceHolder::class.java,
                         viewModel.cameraId
                     )

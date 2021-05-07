@@ -1,0 +1,104 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>TSMuxer - sdk</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">sdk</a>&nbsp;/&nbsp;<a href="../index.html">com.github.thibaultbee.streampack.muxers.ts</a>&nbsp;/&nbsp;<a href="./index.html">TSMuxer</a><br/>
+<br/>
+<h1>TSMuxer</h1>
+<code><span class="keyword">class </span><span class="identifier">TSMuxer</span></code>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-init-.html">&lt;init&gt;</a></p>
+</td>
+<td>
+<code><span class="identifier">TSMuxer</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.muxers.ts.TSMuxer$<init>(com.github.thibaultbee.streampack.muxers.IMuxerListener, com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, kotlin.collections.List((kotlin.String)))/muxerListener">muxerListener</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.muxers/-i-muxer-listener/index.html"><span class="identifier">IMuxerListener</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.muxers.ts.TSMuxer$<init>(com.github.thibaultbee.streampack.muxers.IMuxerListener, com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, kotlin.collections.List((kotlin.String)))/firstServiceInfo">firstServiceInfo</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.muxers.ts.data/-service-info/index.html"><span class="identifier">ServiceInfo</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.muxers.ts.TSMuxer$<init>(com.github.thibaultbee.streampack.muxers.IMuxerListener, com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, kotlin.collections.List((kotlin.String)))/initialStreams">initialStreams</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html"><span class="identifier">List</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">&gt;</span><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="add-service.html">addService</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">addService</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.muxers.ts.TSMuxer$addService(com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo)/serviceInfo">serviceInfo</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.muxers.ts.data/-service-info/index.html"><span class="identifier">ServiceInfo</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Register a new service. Service will be valid (tables will be emitted) as soon as streams will be added.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="add-streams.html">addStreams</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">addStreams</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.muxers.ts.TSMuxer$addStreams(com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, kotlin.collections.List((kotlin.String)))/serviceInfo">serviceInfo</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.muxers.ts.data/-service-info/index.html"><span class="identifier">ServiceInfo</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.muxers.ts.TSMuxer$addStreams(com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, kotlin.collections.List((kotlin.String)))/streamsMimeType">streamsMimeType</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html"><span class="identifier">List</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html"><span class="identifier">List</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-short/index.html"><span class="identifier">Short</span></a><span class="symbol">&gt;</span></code>
+<p>Add streams for a service</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="encode.html">encode</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">encode</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.muxers.ts.TSMuxer$encode(com.github.thibaultbee.streampack.data.Frame, kotlin.Short)/frame">frame</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.data/-frame/index.html"><span class="identifier">Frame</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.muxers.ts.TSMuxer$encode(com.github.thibaultbee.streampack.data.Frame, kotlin.Short)/streamPid">streamPid</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-short/index.html"><span class="identifier">Short</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Encode a frame to MPEG-TS format.
+Each audio frames and each video key frames must come with an extra buffer containing sps, pps,...</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="get-service.html">getService</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">getService</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html"><span class="identifier">List</span></a><span class="symbol">&lt;</span><a href="../../com.github.thibaultbee.streampack.muxers.ts.data/-service-info/index.html"><span class="identifier">ServiceInfo</span></a><span class="symbol">&gt;</span></code>
+<p>Get registered services list</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="get-streams.html">getStreams</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">getStreams</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.muxers.ts.TSMuxer$getStreams(kotlin.String)/mimeType">mimeType</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html"><span class="identifier">List</span></a><span class="symbol">&lt;</span><a href="../../com.github.thibaultbee.streampack.muxers.ts.data/-stream/index.html"><span class="identifier">Stream</span></a><span class="symbol">&gt;</span></code>
+<p>Get list of streams from a MimeType</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="remove-service.html">removeService</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">removeService</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.muxers.ts.TSMuxer$removeService(com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo)/serviceInfo">serviceInfo</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.muxers.ts.data/-service-info/index.html"><span class="identifier">ServiceInfo</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Remove a service and its streams</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="remove-streams.html">removeStreams</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">removeStreams</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.muxers.ts.TSMuxer$removeStreams(com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, kotlin.collections.List((kotlin.Short)))/serviceInfo">serviceInfo</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.muxers.ts.data/-service-info/index.html"><span class="identifier">ServiceInfo</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.muxers.ts.TSMuxer$removeStreams(com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, kotlin.collections.List((kotlin.Short)))/streamsPid">streamsPid</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html"><span class="identifier">List</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-short/index.html"><span class="identifier">Short</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Remove streams from service. If you want to remove all streams from a service,
+use {@link removeService} instead.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="stop.html">stop</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">stop</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Clear internal parameters</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

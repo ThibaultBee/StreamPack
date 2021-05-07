@@ -24,11 +24,11 @@ import android.os.Build
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.Frame
-import com.github.thibaultbee.streampack.utils.Logger
+import com.github.thibaultbee.streampack.utils.ILogger
 import com.github.thibaultbee.streampack.utils.TimeUtils
 import java.nio.ByteBuffer
 
-class AudioCapture(val logger: Logger) : ICapture {
+class AudioCapture(val logger: ILogger) : ICapture {
     private var audioRecord: AudioRecord? = null
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
@@ -36,7 +36,7 @@ class AudioCapture(val logger: Logger) : ICapture {
         val bufferSize = AudioRecord.getMinBufferSize(
             audioConfig.sampleRate,
             audioConfig.channelConfig,
-            audioConfig.audioByteFormat
+            audioConfig.byteFormat
         )
 
         if (bufferSize <= 0) {
@@ -45,7 +45,7 @@ class AudioCapture(val logger: Logger) : ICapture {
 
         audioRecord = AudioRecord(
             MediaRecorder.AudioSource.DEFAULT, audioConfig.sampleRate,
-            audioConfig.channelConfig, audioConfig.audioByteFormat, bufferSize
+            audioConfig.channelConfig, audioConfig.byteFormat, bufferSize
         )
 
         if (audioRecord?.state != AudioRecord.STATE_INITIALIZED) {

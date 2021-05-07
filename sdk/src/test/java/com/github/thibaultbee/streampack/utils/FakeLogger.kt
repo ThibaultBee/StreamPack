@@ -15,10 +15,10 @@
  */
 package com.github.thibaultbee.streampack.utils
 
-class FakeLogger : Logger() {
-    override fun e(tag: Any, message: String) = println("E:$message")
-    override fun w(tag: Any, message: String) = println("W:$message")
-    override fun i(tag: Any, message: String) = println("I:$message")
-    override fun v(tag: Any, message: String) = println("V:$message")
-    override fun d(tag: Any, message: String) = println("D:$message")
+class FakeLogger : ILogger {
+    override fun e(obj: Any, message: String, tr: Throwable?) = println("E:$message")
+    override fun w(obj: Any, message: String, tr: Throwable?) = println("W:$message")
+    override fun i(obj: Any, message: String, tr: Throwable?) = println("I:$message")
+    override fun v(obj: Any, message: String, tr: Throwable?) = println("V:$message")
+    override fun d(obj: Any, message: String, tr: Throwable?) = println("D:$message")
 }

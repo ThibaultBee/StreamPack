@@ -16,6 +16,7 @@
 package com.github.thibaultbee.streampack.endpoints
 
 import com.github.thibaultbee.streampack.data.Packet
+import com.github.thibaultbee.streampack.utils.FakeLogger
 import com.github.thibaultbee.streampack.utils.Utils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertTrue
@@ -32,7 +33,7 @@ class FileWriterTest {
 
     @Test
     fun defaultFileExistTest() {
-        val filePublisher = FileWriter()
+        val filePublisher = FileWriter(FakeLogger())
         assertTrue(filePublisher.file.exists())
         filePublisher.release()
     }
@@ -40,7 +41,7 @@ class FileWriterTest {
     @Test
     fun fileExistTest() {
         val tmpFile = createTempFile()
-        val filePublisher = FileWriter()
+        val filePublisher = FileWriter(FakeLogger())
         filePublisher.file = tmpFile
         assertTrue(tmpFile.exists())
         filePublisher.release()
@@ -49,7 +50,7 @@ class FileWriterTest {
     @Test
     fun writeToFileTest() {
         val tmpFile = createTempFile()
-        val filePublisher = FileWriter()
+        val filePublisher = FileWriter(FakeLogger())
         filePublisher.file = tmpFile
         val randomArray = Utils.generateRandomArray(1024)
         filePublisher.write(

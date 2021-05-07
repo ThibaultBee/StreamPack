@@ -1,0 +1,21 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>TSMuxer.encode - sdk</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">sdk</a>&nbsp;/&nbsp;<a href="../index.html">com.github.thibaultbee.streampack.muxers.ts</a>&nbsp;/&nbsp;<a href="index.html">TSMuxer</a>&nbsp;/&nbsp;<a href="./encode.html">encode</a><br/>
+<br/>
+<h1>encode</h1>
+<a name="com.github.thibaultbee.streampack.muxers.ts.TSMuxer$encode(com.github.thibaultbee.streampack.data.Frame, kotlin.Short)"></a>
+<code><span class="keyword">fun </span><span class="identifier">encode</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.muxers.ts.TSMuxer$encode(com.github.thibaultbee.streampack.data.Frame, kotlin.Short)/frame">frame</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.data/-frame/index.html"><span class="identifier">Frame</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.muxers.ts.TSMuxer$encode(com.github.thibaultbee.streampack.data.Frame, kotlin.Short)/streamPid">streamPid</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-short/index.html"><span class="identifier">Short</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Encode a frame to MPEG-TS format.
+Each audio frames and each video key frames must come with an extra buffer containing sps, pps,...</p>
+<h3>Parameters</h3>
+<p><a name="frame"></a>
+<code>frame</code> - frame to mux</p>
+<p><a name="streamPid"></a>
+<code>streamPid</code> - Pid of frame stream. Throw a NoSuchElementException if streamPid refers to an unknown stream</p>
+</BODY>
+</HTML>

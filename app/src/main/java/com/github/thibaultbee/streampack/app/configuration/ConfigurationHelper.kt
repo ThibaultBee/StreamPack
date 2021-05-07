@@ -16,8 +16,8 @@
 package com.github.thibaultbee.streampack.app.configuration
 
 import android.content.Context
-import com.github.thibaultbee.streampack.utils.getOutputCaptureSizes
+import com.github.thibaultbee.streampack.utils.getCameraOutputStreamSizes
 
 class ConfigurationHelper(context: Context) {
-    val resolutionEntries = context.getOutputCaptureSizes()
+    val resolutionEntries = context.getCameraOutputStreamSizes()
 }

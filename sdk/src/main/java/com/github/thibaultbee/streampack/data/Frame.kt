@@ -17,12 +17,38 @@ package com.github.thibaultbee.streampack.data
 
 import java.nio.ByteBuffer
 
+/**
+ * Frame internal representation.
+ */
 data class Frame(
+    /**
+     * Contains an audio or video frame data.
+     */
     var buffer: ByteBuffer,
+
+    /**
+     * Frame mime type
+     */
     val mimeType: String,
-    var pts: Long, // in µs
-    var dts: Long? = null, // in µs
+
+    /**
+     * Presentation timestamp in µs
+     */
+    var pts: Long,
+
+    /**
+     * Decoded timestamp in µs (not used).
+     */
+    var dts: Long? = null,
+
+    /**
+     * [Boolean.true] if frame is a key frame (I-frame for AVC/HEVC and audio frames)
+     */
     val isKeyFrame: Boolean = false,
-    val isCodecData: Boolean = false,
+
+    /**
+     * Contains extra frame description.
+     * For AAC, it contains ADTS.
+     */
     val extra: ByteBuffer? = null
 )

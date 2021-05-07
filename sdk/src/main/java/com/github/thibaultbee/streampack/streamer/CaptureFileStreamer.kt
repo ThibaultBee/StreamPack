@@ -20,13 +20,20 @@ import android.content.Context
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.endpoints.FileWriter
 import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
-import com.github.thibaultbee.streampack.utils.Logger
+import com.github.thibaultbee.streampack.utils.ILogger
 import java.io.File
 
+/**
+ * [BaseCaptureStreamer] that sends audio/video frames to a [File].
+ *
+ * @param context application context
+ * @param tsServiceInfo MPEG-TS service description
+ * @param logger a [ILogger] implementation
+ */
 class CaptureFileStreamer(
     context: Context,
     tsServiceInfo: ServiceInfo,
-    val logger: Logger
+    val logger: ILogger
 ) : BaseCaptureStreamer(context, tsServiceInfo, FileWriter(logger), logger) {
     private val fileWriter = endpoint as FileWriter
 
@@ -35,18 +42,24 @@ class CaptureFileStreamer(
      */
     var file: File
         /**
-         * Get file writer file
+         * Get file writer file.
+         *
          * @return file where [FileWriter] writes
          */
         get() = fileWriter.file
         /**
-         * Set file writer file
+         * Set file writer file.
+         *
          * @param value [File] where [FileWriter] writes
          */
         set(value) {
             fileWriter.file = value
         }
 
+    /**
+     * Same as [BaseCaptureStreamer.startStream] with RequiresPermission annotation for
+     * Manifest.permission.WRITE_EXTERNAL_STORAGE.
+     */
     @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
     override fun startStream() = super.startStream()
 }

@@ -1,0 +1,91 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>FullFrameRect - sdk</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">sdk</a>&nbsp;/&nbsp;<a href="../index.html">com.github.thibaultbee.streampack.gl</a>&nbsp;/&nbsp;<a href="./index.html">FullFrameRect</a><br/>
+<br/>
+<h1>FullFrameRect</h1>
+<code><span class="keyword">class </span><span class="identifier">FullFrameRect</span></code>
+<p>This class essentially represents a viewport-sized sprite that will be rendered with
+a texture, usually from an external source like the camera or video decoder.</p>
+<p>(Contains mostly code borrowed from graphika)</p>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-init-.html">&lt;init&gt;</a></p>
+</td>
+<td>
+<code><span class="identifier">FullFrameRect</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.gl.FullFrameRect$<init>(com.github.thibaultbee.streampack.gl.Texture2DProgram)/program">program</span><span class="symbol">:</span>&nbsp;<a href="../-texture2-d-program/index.html"><span class="identifier">Texture2DProgram</span></a><span class="symbol">)</span></code>
+<p>This class essentially represents a viewport-sized sprite that will be rendered with
+a texture, usually from an external source like the camera or video decoder.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="program.html">program</a></p>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">program</span><span class="symbol">: </span><a href="../-texture2-d-program/index.html"><span class="identifier">Texture2DProgram</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="change-program.html">changeProgram</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">changeProgram</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.gl.FullFrameRect$changeProgram(com.github.thibaultbee.streampack.gl.Texture2DProgram)/program">program</span><span class="symbol">:</span>&nbsp;<a href="../-texture2-d-program/index.html"><span class="identifier">Texture2DProgram</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Changes the program.  The previous program will be released.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="create-texture-object.html">createTextureObject</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">createTextureObject</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code>
+<p>Creates a texture object suitable for use with drawFrame().</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="draw-frame.html">drawFrame</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">drawFrame</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.gl.FullFrameRect$drawFrame(kotlin.Int, kotlin.FloatArray)/textureId">textureId</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.gl.FullFrameRect$drawFrame(kotlin.Int, kotlin.FloatArray)/texMatrix">texMatrix</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float-array/index.html"><span class="identifier">FloatArray</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Draws a viewport-filling rect, texturing it with the specified texture object.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="release.html">release</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">release</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.gl.FullFrameRect$release(kotlin.Boolean)/doEglCleanup">doEglCleanup</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Releases resources.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="set-m-v-p-matrix-and-view-port.html">setMVPMatrixAndViewPort</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">setMVPMatrixAndViewPort</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.gl.FullFrameRect$setMVPMatrixAndViewPort(kotlin.Float, android.util.Size)/rotation">rotation</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html"><span class="identifier">Float</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.gl.FullFrameRect$setMVPMatrixAndViewPort(kotlin.Float, android.util.Size)/resolution">resolution</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/util/Size.html"><span class="identifier">Size</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

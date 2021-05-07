@@ -25,13 +25,13 @@ import android.os.HandlerThread
 import com.github.thibaultbee.streampack.data.Frame
 import com.github.thibaultbee.streampack.utils.Error
 import com.github.thibaultbee.streampack.utils.EventHandlerManager
-import com.github.thibaultbee.streampack.utils.Logger
+import com.github.thibaultbee.streampack.utils.ILogger
 import java.nio.ByteBuffer
 import java.security.InvalidParameterException
 
 abstract class MediaCodecEncoder(
     override val encoderListener: IEncoderListener,
-    val logger: Logger
+    val logger: ILogger
 ) :
     EventHandlerManager(), IEncoder {
     protected var mediaCodec: MediaCodec? = null
@@ -62,21 +62,23 @@ abstract class MediaCodecEncoder(
                 mediaCodec?.let { mediaCodec ->
                     mediaCodec.getOutputBuffer(index)?.let { buffer ->
                         val extra = onGenerateExtra(buffer, codec.outputFormat)
-                        Frame(
-                            buffer,
-                            codec.outputFormat.getString(MediaFormat.KEY_MIME)!!,
-                            info.presentationTimeUs, // pts
-                            null, // dts
-                            info.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME,
-                            info.flags == MediaCodec.BUFFER_FLAG_CODEC_CONFIG,
-                            extra
-                            /**
-                             * Drop codec data. They are already pass in the extra buffer.
-                             */
-                        ).takeUnless { it.isCodecData }?.let {
-                            encoderListener.onOutputFrame(
-                                it
-                            )
+                        /**
+                         * Drops codec data. They are already passed in the extra buffer.
+                         */
+                        if (info.flags != MediaCodec.BUFFER_FLAG_CODEC_CONFIG) {
+                            Frame(
+                                buffer,
+                                codec.outputFormat.getString(MediaFormat.KEY_MIME)!!,
+                                info.presentationTimeUs, // pts
+                                null, // dts
+                                info.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME,
+
+                                extra
+                            ).let {
+                                encoderListener.onOutputFrame(
+                                    it
+                                )
+                            }
                         }
 
                         mediaCodec.releaseOutputBuffer(index, false)

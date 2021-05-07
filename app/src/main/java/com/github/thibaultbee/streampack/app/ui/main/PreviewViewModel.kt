@@ -34,13 +34,13 @@ import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer
 import com.github.thibaultbee.streampack.streamer.CaptureFileStreamer
 import com.github.thibaultbee.streampack.streamer.CaptureSrtLiveStreamer
-import com.github.thibaultbee.streampack.utils.Logger
+import com.github.thibaultbee.streampack.app.utils.StreamPackLogger
 import java.io.File
 
 class PreviewViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = this::class.java.simpleName
 
-    private val logger = Logger()
+    private val logger = StreamPackLogger()
 
     private val configuration = Configuration(getApplication())
 
@@ -122,7 +122,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
             startBitrate = configuration.audio.bitrate,
             sampleRate = configuration.audio.sampleRate,
             channelConfig = configuration.audio.channelConfiguration,
-            audioByteFormat = configuration.audio.byteFormat
+            byteFormat = configuration.audio.byteFormat
         )
 
         try {

@@ -35,19 +35,29 @@ import com.github.thibaultbee.streampack.muxers.ts.TSMuxer
 import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.sources.AudioCapture
 import com.github.thibaultbee.streampack.sources.CameraCapture
-import com.github.thibaultbee.streampack.utils.Error
-import com.github.thibaultbee.streampack.utils.EventHandlerManager
-import com.github.thibaultbee.streampack.utils.Logger
-import com.github.thibaultbee.streampack.utils.getCameraList
+import com.github.thibaultbee.streampack.utils.*
 
 import java.nio.ByteBuffer
 
+/**
+ * Base class of CaptureStreamer: [CaptureFileStreamer] or [CaptureSrtLiveStreamer]
+ * Use this class, only if you want to implement a custom [IEndpoint].
+ *
+ * @param context application context
+ * @param tsServiceInfo MPEG-TS service description
+ * @param endpoint a [IEndpoint] implementation
+ * @param logger a [ILogger] implementation
+ */
 open class BaseCaptureStreamer(
     private val context: Context,
     private val tsServiceInfo: ServiceInfo,
     protected val endpoint: IEndpoint,
-    logger: Logger
+    logger: ILogger
 ) : EventHandlerManager() {
+    /**
+     * Listener that reports streamer error.
+     * Supports only one listener.
+     */
     override var onErrorListener: OnErrorListener? = null
 
     /**
@@ -67,7 +77,7 @@ open class BaseCaptureStreamer(
          */
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
-            changeVideoSource(value)
+            setCameraId(value)
         }
 
     private var audioTsStreamId: Short? = null
@@ -145,6 +155,22 @@ open class BaseCaptureStreamer(
 
     private val tsMux = TSMuxer(muxListener)
 
+    /**
+     * Configures both video and audio settings.
+     * It is the first method to call after a [BaseCaptureStreamer] instantiation.
+     * It must be call when both stream and capture are not running.
+     *
+     * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
+     * to video encoder default level and default profile.
+     *
+     * Inside, it creates most of record and encoders object.
+     *
+     * @param audioConfig Audio configuration to set
+     * @param videoConfig Video configuration to set
+     *
+     * @throws Exception if configuration can not be applied.
+     * @see [release]
+     */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun configure(audioConfig: AudioConfig, videoConfig: VideoConfig) {
         // Keep settings when we need to reconfigure
@@ -164,10 +190,22 @@ open class BaseCaptureStreamer(
         }
     }
 
+    /**
+     * Starts audio and video capture.
+     * [BaseCaptureStreamer.configure] must have been called at least once.
+     *
+     * Inside, it launches both camera and microphone capture.
+     *
+     * @param previewSurface Where to display camera capture
+     * @param cameraId camera id (get camera id list from [Context.getCameraList])
+     *
+     * @throws Exception if audio or video capture couldn't be launch
+     * @see [stopCapture]
+     */
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun startCapture(previewSurface: Surface, cameraId: String = "0") {
-        require(audioConfig != null)
-        require(videoConfig != null)
+        require(audioConfig != null) { "Audio has not been configured!" }
+        require(videoConfig != null) { "Video has not been configured!" }
 
         try {
             videoSource.previewSurface = previewSurface
@@ -181,24 +219,44 @@ open class BaseCaptureStreamer(
         }
     }
 
+    /**
+     * Stops capture.
+     * It also stops stream if the stream is running.
+     *
+     * @see [startCapture]
+     */
     fun stopCapture() {
         stopStreamImpl()
         videoSource.stopPreview()
         audioSource.stopStream()
     }
 
+    /**
+     * Set camera id implementation.
+     * It restarts camera if camera was already running.
+     *
+     * @see [cameraId]
+     */
     @RequiresPermission(Manifest.permission.CAMERA)
-    private fun changeVideoSource(cameraId: String = "0") {
+    private fun setCameraId(cameraId: String) {
         val restartStream = videoSource.isStreaming
         videoSource.stopPreview()
         videoSource.startPreview(cameraId, restartStream)
     }
 
+    /**
+     * Starts audio/video stream.
+     * Stream depends of the endpoint: Audio/video could be write to a file or send to a remote
+     * device.
+     * To avoid creating an unresponsive UI, do not call on main thread.
+     *
+     * @see [stopStream]
+     */
     open fun startStream() {
-        require(audioConfig != null)
-        require(videoConfig != null)
-        require(videoEncoder.mimeType != null)
-        require(audioEncoder.mimeType != null)
+        require(audioConfig != null) { "Audio has not been configured!" }
+        require(videoConfig != null) { "Video has not been configured!" }
+        require(videoEncoder.mimeType != null) { "Missing video encoder mime type! Encoder not configured?" }
+        require(audioEncoder.mimeType != null) { "Missing audio encoder mime type! Encoder not configured?" }
 
         try {
             endpoint.startStream()
@@ -221,6 +279,14 @@ open class BaseCaptureStreamer(
         }
     }
 
+    /**
+     * Stops audio/video stream.
+     *
+     * Internally, it resets audio and video recorders and encoders to get them ready for another
+     * [startStream] session. It explains why camera is restarted when calling this method.
+     *
+     * @see [startStream]
+     */
     fun stopStream() {
         stopStreamImpl()
 
@@ -236,6 +302,11 @@ open class BaseCaptureStreamer(
         }
     }
 
+    /**
+     * Stops audio/video stream implementation.
+     *
+     * @see [stopStream]
+     */
     private fun stopStreamImpl() {
         videoSource.stopStream()
         videoEncoder.stopStream()
@@ -246,8 +317,13 @@ open class BaseCaptureStreamer(
         endpoint.stopStream()
     }
 
+    /**
+     * Prepares audio encoder for another session
+     *
+     * @see [stopStream]
+     */
     private fun resetAudio(): Error {
-        require(audioConfig != null)
+        require(audioConfig != null) { "Audio has not been configured!" }
 
         audioEncoder.release()
 
@@ -256,9 +332,14 @@ open class BaseCaptureStreamer(
         return Error.SUCCESS
     }
 
+    /**
+     * Prepares camera and video encoder for another session
+     *
+     * @see [stopStream]
+     */
     @RequiresPermission(Manifest.permission.CAMERA)
     private fun resetVideo() {
-        require(videoConfig != null)
+        require(audioConfig != null) { "Video has not been configured!" }
 
         videoSource.stopPreview()
         videoEncoder.release()
@@ -269,6 +350,11 @@ open class BaseCaptureStreamer(
         videoSource.startPreview()
     }
 
+    /**
+     * Releases recorders and encoders object.
+     *
+     * @see [configure]
+     */
     fun release() {
         audioEncoder.release()
         videoEncoder.release()

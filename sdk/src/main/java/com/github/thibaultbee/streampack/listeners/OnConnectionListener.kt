@@ -15,6 +15,9 @@
  */
 package com.github.thibaultbee.streampack.listeners
 
+/**
+ * Interface of Secure Reliable Transport (SRT) Protocol listener
+ */
 interface OnConnectionListener {
     /**
      * Called when a successful connection has been lost. Could because peer device closes the

@@ -1,0 +1,47 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>OnConnectionListener - sdk</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">sdk</a>&nbsp;/&nbsp;<a href="../index.html">com.github.thibaultbee.streampack.listeners</a>&nbsp;/&nbsp;<a href="./index.html">OnConnectionListener</a><br/>
+<br/>
+<h1>OnConnectionListener</h1>
+<code><span class="keyword">interface </span><span class="identifier">OnConnectionListener</span></code>
+<p>Interface of Secure Reliable Transport (SRT) Protocol listener</p>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="on-failed.html">onFailed</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">onFailed</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.listeners.OnConnectionListener$onFailed(kotlin.String)/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Called when a connection failed.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="on-lost.html">onLost</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">onLost</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.listeners.OnConnectionListener$onLost(kotlin.String)/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Called when a successful connection has been lost. Could because peer device closes the
+connection or that the connection has been lost.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="on-success.html">onSuccess</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">onSuccess</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Called when a connection just succeeded.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

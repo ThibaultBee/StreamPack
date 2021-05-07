@@ -1,0 +1,175 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>BaseCaptureStreamer - sdk</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">sdk</a>&nbsp;/&nbsp;<a href="../index.html">com.github.thibaultbee.streampack.streamer</a>&nbsp;/&nbsp;<a href="./index.html">BaseCaptureStreamer</a><br/>
+<br/>
+<h1>BaseCaptureStreamer</h1>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">BaseCaptureStreamer</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.utils/-event-handler-manager/index.html"><span class="identifier">EventHandlerManager</span></a></code>
+<p>Base class of CaptureStreamer: <a href="../-capture-file-streamer/index.html">CaptureFileStreamer</a> or <a href="../-capture-srt-live-streamer/index.html">CaptureSrtLiveStreamer</a>
+Use this class, only if you want to implement a custom <a href="../../com.github.thibaultbee.streampack.endpoints/-i-endpoint/index.html">IEndpoint</a>.</p>
+<h3>Parameters</h3>
+<p><a name="context"></a>
+<code>context</code> - application context</p>
+<p><a name="tsServiceInfo"></a>
+<code>tsServiceInfo</code> - MPEG-TS service description</p>
+<p><a name="endpoint"></a>
+<code>endpoint</code> - a <a href="../../com.github.thibaultbee.streampack.endpoints/-i-endpoint/index.html">IEndpoint</a> implementation</p>
+<p><a name="logger"></a>
+<code>logger</code> - a <a href="../../com.github.thibaultbee.streampack.utils/-i-logger/index.html">ILogger</a> implementation</p>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-init-.html">&lt;init&gt;</a></p>
+</td>
+<td>
+<code><span class="identifier">BaseCaptureStreamer</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.endpoints.IEndpoint, com.github.thibaultbee.streampack.utils.ILogger)/context">context</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/content/Context.html"><span class="identifier">Context</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.endpoints.IEndpoint, com.github.thibaultbee.streampack.utils.ILogger)/tsServiceInfo">tsServiceInfo</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.muxers.ts.data/-service-info/index.html"><span class="identifier">ServiceInfo</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.endpoints.IEndpoint, com.github.thibaultbee.streampack.utils.ILogger)/endpoint">endpoint</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.endpoints/-i-endpoint/index.html"><span class="identifier">IEndpoint</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.endpoints.IEndpoint, com.github.thibaultbee.streampack.utils.ILogger)/logger">logger</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.utils/-i-logger/index.html"><span class="identifier">ILogger</span></a><span class="symbol">)</span></code>
+<p>Base class of CaptureStreamer: <a href="../-capture-file-streamer/index.html">CaptureFileStreamer</a> or <a href="../-capture-srt-live-streamer/index.html">CaptureSrtLiveStreamer</a>
+Use this class, only if you want to implement a custom <a href="../../com.github.thibaultbee.streampack.endpoints/-i-endpoint/index.html">IEndpoint</a>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="camera.html">camera</a></p>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">camera</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code>
+<p>Get/Set current camera id.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="endpoint.html">endpoint</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">endpoint</span><span class="symbol">: </span><a href="../../com.github.thibaultbee.streampack.endpoints/-i-endpoint/index.html"><span class="identifier">IEndpoint</span></a></code>
+<p>a <a href="../../com.github.thibaultbee.streampack.endpoints/-i-endpoint/index.html">IEndpoint</a> implementation</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="on-error-listener.html">onErrorListener</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">var </span><span class="identifier">onErrorListener</span><span class="symbol">: </span><a href="../../com.github.thibaultbee.streampack.listeners/-on-error-listener/index.html"><span class="identifier">OnErrorListener</span></a><span class="symbol">?</span></code>
+<p>Listener that reports streamer error.
+Supports only one listener.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="configure.html">configure</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">configure</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$configure(com.github.thibaultbee.streampack.data.AudioConfig, com.github.thibaultbee.streampack.data.VideoConfig)/audioConfig">audioConfig</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.data/-audio-config/index.html"><span class="identifier">AudioConfig</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$configure(com.github.thibaultbee.streampack.data.AudioConfig, com.github.thibaultbee.streampack.data.VideoConfig)/videoConfig">videoConfig</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.data/-video-config/index.html"><span class="identifier">VideoConfig</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Configures both video and audio settings.
+It is the first method to call after a <a href="./index.html">BaseCaptureStreamer</a> instantiation.
+It must be call when both stream and capture are not running.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="release.html">release</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">release</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Releases recorders and encoders object.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="start-capture.html">startCapture</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">startCapture</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$startCapture(android.view.Surface, kotlin.String)/previewSurface">previewSurface</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/view/Surface.html"><span class="identifier">Surface</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$startCapture(android.view.Surface, kotlin.String)/cameraId">cameraId</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a>&nbsp;<span class="symbol">=</span>&nbsp;"0"<span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Starts audio and video capture.
+<a href="configure.html">BaseCaptureStreamer.configure</a> must have been called at least once.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="start-stream.html">startStream</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">startStream</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Starts audio/video stream.
+Stream depends of the endpoint: Audio/video could be write to a file or send to a remote
+device.
+To avoid creating an unresponsive UI, do not call on main thread.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="stop-capture.html">stopCapture</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">stopCapture</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Stops capture.
+It also stops stream if the stream is running.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="stop-stream.html">stopStream</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">stopStream</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Stops audio/video stream.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Inherited Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="../../com.github.thibaultbee.streampack.utils/-event-handler-manager/report-error.html">reportError</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">reportError</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.utils.EventHandlerManager$reportError(com.github.thibaultbee.streampack.utils.Error)/error">error</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.utils/-error/index.html"><span class="identifier">Error</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code><br/>
+<code><span class="keyword">fun </span><span class="identifier">reportError</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.utils.EventHandlerManager$reportError(java.lang.Exception)/error">error</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Inheritors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="../-capture-file-streamer/index.html">CaptureFileStreamer</a></p>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">CaptureFileStreamer</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">BaseCaptureStreamer</span></a></code>
+<p><a href="./index.html">BaseCaptureStreamer</a> that sends audio/video frames to a <a href="https://developer.android.com/reference/java/io/File.html">File</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="../-capture-srt-live-streamer/index.html">CaptureSrtLiveStreamer</a></p>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">CaptureSrtLiveStreamer</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">BaseCaptureStreamer</span></a></code>
+<p><a href="./index.html">BaseCaptureStreamer</a> that sends audio/video frames to a remote device p, Secure Reliable
+Transport (SRT) Protocol.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

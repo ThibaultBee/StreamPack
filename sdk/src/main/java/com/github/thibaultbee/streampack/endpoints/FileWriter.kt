@@ -16,12 +16,12 @@
 package com.github.thibaultbee.streampack.endpoints
 
 import com.github.thibaultbee.streampack.data.Packet
-import com.github.thibaultbee.streampack.utils.Logger
+import com.github.thibaultbee.streampack.utils.ILogger
 import java.io.File
 import java.io.FileOutputStream
 
 
-class FileWriter(val logger: Logger? = null) : IEndpoint {
+class FileWriter(val logger: ILogger) : IEndpoint {
     var file: File = File.createTempFile("defaultFile", ".ts")
         set(value) {
             fileOutputStream = FileOutputStream(value, false)

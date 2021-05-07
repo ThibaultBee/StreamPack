@@ -55,7 +55,7 @@ class TSMuxer(
 
     init {
         if (initialStreams != null) {
-            require(firstServiceInfo != null)
+            require(firstServiceInfo != null) { "If streams are specified, a service info must be specified too" }
         }
         firstServiceInfo?.let { addService(it) }
         initialStreams?.let { addStreams(tsServices[0], it) }
@@ -189,7 +189,7 @@ class TSMuxer(
      * @param serviceInfo new service to add to service list
      */
     fun addService(serviceInfo: ServiceInfo) {
-        require(tsServices.none { it.info == serviceInfo })
+        require(tsServices.none { it.info == serviceInfo }) { "Service already exists" }
 
         tsServices.add(Service(serviceInfo))
     }
@@ -205,7 +205,7 @@ class TSMuxer(
      * @param service service to remove
      */
     private fun removeService(service: Service) {
-        require(tsServices.contains(service))
+        require(tsServices.contains(service)) { "Unknown service" }
         tsServices.remove(service)
 
         if (service.streams.isNotEmpty()) {

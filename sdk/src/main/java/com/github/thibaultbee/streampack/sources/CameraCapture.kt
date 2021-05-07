@@ -25,17 +25,14 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.interfaces.Controllable
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
-import com.github.thibaultbee.streampack.utils.Error
-import com.github.thibaultbee.streampack.utils.EventHandlerManager
-import com.github.thibaultbee.streampack.utils.Logger
-import com.github.thibaultbee.streampack.utils.getFpsList
+import com.github.thibaultbee.streampack.utils.*
 import java.security.InvalidParameterException
 
 
 class CameraCapture(
     private val context: Context,
     override var onErrorListener: OnErrorListener?,
-    val logger: Logger
+    val logger: ILogger
 ) : EventHandlerManager(), Controllable {
     var fpsRange = Range(0, 30)
 
@@ -122,7 +119,7 @@ class CameraCapture(
     }
 
     private fun getClosestFpsRange(fps: Int): Range<Int> {
-        var fpsRangeList = context.getFpsList(cameraId)
+        var fpsRangeList = context.getCameraFpsList(cameraId)
         // Get range that contains FPS
         fpsRangeList =
             fpsRangeList.filter { it.contains(fps) or it.contains(fps * 1000) } // On Samsung S4 fps range is [4000-30000] instead of [4-30]

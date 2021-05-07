@@ -25,11 +25,11 @@ import com.github.thibaultbee.srtdroid.models.MsgCtrl
 import com.github.thibaultbee.srtdroid.models.Socket
 import com.github.thibaultbee.streampack.data.Packet
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
-import com.github.thibaultbee.streampack.utils.Logger
+import com.github.thibaultbee.streampack.utils.ILogger
 import java.net.ConnectException
 import java.net.InetSocketAddress
 
-class SrtProducer(val logger: Logger) : IEndpoint {
+class SrtProducer(val logger: ILogger) : IEndpoint {
     var onConnectionListener: OnConnectionListener? = null
 
     private var socket = Socket()
