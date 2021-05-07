@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack
+package com.github.thibaultbee.streampack.streamer
 
 import android.Manifest
 import android.content.Context
@@ -23,11 +23,11 @@ import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.utils.Logger
 import java.io.File
 
-class CaptureFileStream(
+class CaptureFileStreamer(
     context: Context,
     tsServiceInfo: ServiceInfo,
     val logger: Logger
-) : BaseCaptureStream(context, tsServiceInfo, FileWriter(logger), logger) {
+) : BaseCaptureStreamer(context, tsServiceInfo, FileWriter(logger), logger) {
     private val fileWriter = endpoint as FileWriter
 
     /**

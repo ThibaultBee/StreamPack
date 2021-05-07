@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack
+package com.github.thibaultbee.streampack.streamer
 
 import android.Manifest
 import android.content.Context
@@ -42,7 +42,7 @@ import com.github.thibaultbee.streampack.utils.getCameraList
 
 import java.nio.ByteBuffer
 
-open class BaseCaptureStream(
+open class BaseCaptureStreamer(
     private val context: Context,
     private val tsServiceInfo: ServiceInfo,
     protected val endpoint: IEndpoint,

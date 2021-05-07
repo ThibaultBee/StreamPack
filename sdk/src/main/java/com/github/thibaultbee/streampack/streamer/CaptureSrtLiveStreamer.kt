@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack
+package com.github.thibaultbee.streampack.streamer
 
 import android.Manifest
 import android.content.Context
@@ -24,11 +24,11 @@ import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.utils.Logger
 import java.net.SocketException
 
-class CaptureSrtLiveStream(
+class CaptureSrtLiveStreamer(
     context: Context,
     tsServiceInfo: ServiceInfo,
     logger: Logger
-) : BaseCaptureStream(context, tsServiceInfo, SrtProducer(logger), logger) {
+) : BaseCaptureStreamer(context, tsServiceInfo, SrtProducer(logger), logger) {
     /**
      * Listener to manage SRT connection.
      */

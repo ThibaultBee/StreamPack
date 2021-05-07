@@ -24,9 +24,6 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.github.thibaultbee.streampack.BaseCaptureStream
-import com.github.thibaultbee.streampack.CaptureFileStream
-import com.github.thibaultbee.streampack.CaptureSrtLiveStream
 import com.github.thibaultbee.streampack.app.configuration.Configuration
 import com.github.thibaultbee.streampack.app.configuration.Configuration.Endpoint.EndpointType
 import com.github.thibaultbee.streampack.data.AudioConfig
@@ -34,6 +31,9 @@ import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
+import com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer
+import com.github.thibaultbee.streampack.streamer.CaptureFileStreamer
+import com.github.thibaultbee.streampack.streamer.CaptureSrtLiveStreamer
 import com.github.thibaultbee.streampack.utils.Logger
 import java.io.File
 
@@ -44,10 +44,10 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
 
     private val configuration = Configuration(getApplication())
 
-    private lateinit var captureStream: BaseCaptureStream
+    private lateinit var captureStreamer: BaseCaptureStreamer
 
     val cameraId: String
-        get() = captureStream.camera
+        get() = captureStreamer.camera
 
     val error = MutableLiveData<String>()
 
@@ -57,7 +57,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
                 Manifest.permission.CAMERA,
                 Manifest.permission.RECORD_AUDIO
             )
-            if (captureStream is CaptureFileStream) {
+            if (captureStreamer is CaptureFileStreamer) {
                 permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             }
             return permissions
@@ -72,20 +72,20 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
         )
 
         try {
-            captureStream = if (configuration.endpoint.enpointType == EndpointType.SRT) {
-                CaptureSrtLiveStream(getApplication(), tsServiceInfo, logger)
+            captureStreamer = if (configuration.endpoint.enpointType == EndpointType.SRT) {
+                CaptureSrtLiveStreamer(getApplication(), tsServiceInfo, logger)
             } else {
-                CaptureFileStream(getApplication(), tsServiceInfo, logger)
+                CaptureFileStreamer(getApplication(), tsServiceInfo, logger)
             }
 
-            captureStream.onErrorListener = object : OnErrorListener {
+            captureStreamer.onErrorListener = object : OnErrorListener {
                 override fun onError(source: String, message: String) {
                     error.postValue("$source: $message")
                 }
             }
 
-            if (captureStream is CaptureSrtLiveStream) {
-                (captureStream as CaptureSrtLiveStream).onConnectionListener =
+            if (captureStreamer is CaptureSrtLiveStreamer) {
+                (captureStreamer as CaptureSrtLiveStreamer).onConnectionListener =
                     object : OnConnectionListener {
                         override fun onLost(message: String) {
                             error.postValue("Connection lost: $message")
@@ -126,7 +126,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
         )
 
         try {
-            captureStream.configure(audioConfig, videoConfig)
+            captureStreamer.configure(audioConfig, videoConfig)
             Log.d(TAG, "Streamer is configured")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to configure streamer", e)
@@ -137,7 +137,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun startCapture(previewSurface: Surface) {
         try {
-            captureStream.startCapture(previewSurface)
+            captureStreamer.startCapture(previewSurface)
         } catch (e: Exception) {
             Log.e(TAG, "startCapture failed", e)
             error.postValue("startCapture: ${e.message ?: "Unknown error"}")
@@ -145,23 +145,23 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun stopCapture() {
-        captureStream.stopCapture()
+        captureStreamer.stopCapture()
     }
 
     fun startStream() {
         try {
-            if (captureStream is CaptureSrtLiveStream) {
-                (captureStream as CaptureSrtLiveStream).connect(
+            if (captureStreamer is CaptureSrtLiveStreamer) {
+                (captureStreamer as CaptureSrtLiveStreamer).connect(
                     configuration.endpoint.connection.ip,
                     configuration.endpoint.connection.port
                 )
-            } else if (captureStream is CaptureFileStream) {
-                (captureStream as CaptureFileStream).file = File(
+            } else if (captureStreamer is CaptureFileStreamer) {
+                (captureStreamer as CaptureFileStreamer).file = File(
                     (getApplication() as Context).getExternalFilesDir(Environment.DIRECTORY_DCIM),
                     configuration.endpoint.file.filename
                 )
             }
-            captureStream.startStream()
+            captureStreamer.startStream()
         } catch (e: Exception) {
             Log.e(TAG, "startStream failed", e)
             error.postValue("startStream: ${e.message ?: "Unknown error"}")
@@ -170,23 +170,23 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun stopStream() {
-        captureStream.stopStream()
-        if (captureStream is CaptureSrtLiveStream) {
-            (captureStream as CaptureSrtLiveStream).disconnect()
+        captureStreamer.stopStream()
+        if (captureStreamer is CaptureSrtLiveStreamer) {
+            (captureStreamer as CaptureSrtLiveStreamer).disconnect()
         }
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
     fun toggleVideoSource() {
-        if (captureStream.camera == "0") {
-            captureStream.camera = "1"
+        if (captureStreamer.camera == "0") {
+            captureStreamer.camera = "1"
         } else {
-            captureStream.camera = "0"
+            captureStreamer.camera = "0"
         }
     }
 
     override fun onCleared() {
         super.onCleared()
-        captureStream.release()
+        captureStreamer.release()
     }
 }
