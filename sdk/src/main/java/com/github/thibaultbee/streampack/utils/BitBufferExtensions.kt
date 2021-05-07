@@ -30,3 +30,23 @@ fun BitBuffer.put(pesHeader: PesHeader) {
 fun BitBuffer.put(tableHeader: TableHeader) {
     this.put(tableHeader.toByteBuffer())
 }
+
+/**
+ * Write h264 ue
+ * @param value to write
+ */
+fun BitBuffer.putUE(value: Int) {
+    var bits = 0
+    var cumul = 0
+    for (i in 0..14) {
+        if (value < cumul + (1 shl i)) {
+            bits = i
+            break
+        }
+        cumul += 1 shl i
+    }
+    put(0, bits)
+    put(true)
+    put(value - cumul, bits)
+}
+

@@ -24,6 +24,7 @@ import android.os.Build
 import android.util.Size
 import android.view.Surface
 import com.github.thibaultbee.streampack.data.VideoConfig
+import com.github.thibaultbee.streampack.encoders.format.avc.Sei
 import com.github.thibaultbee.streampack.gl.EGlSurface
 import com.github.thibaultbee.streampack.gl.FullFrameRect
 import com.github.thibaultbee.streampack.gl.Texture2DProgram
@@ -105,13 +106,19 @@ class VideoMediaCodecEncoder(
     override fun onGenerateExtra(buffer: ByteBuffer, format: MediaFormat): ByteBuffer {
         val csd0 = format.getByteBuffer("csd-0")
         val csd1 = format.getByteBuffer("csd-1")
+        val sei = when (format.getString(MediaFormat.KEY_MIME)) {
+            MediaFormat.MIMETYPE_VIDEO_AVC -> Sei(90).toByteBuffer() //TODO - replace 90
+            else -> null
+        }
 
         var byteBufferSize = csd0?.limit() ?: 0
         byteBufferSize += csd1?.limit() ?: 0
+        byteBufferSize += sei?.limit() ?: 0
 
         val extra = ByteBuffer.allocate(byteBufferSize)
         csd0?.let { extra.put(it) }
         csd1?.let { extra.put(it) }
+        sei?.let { extra.put(it) }
 
         extra.rewind()
         return extra
