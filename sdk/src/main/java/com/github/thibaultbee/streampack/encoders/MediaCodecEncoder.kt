@@ -59,31 +59,29 @@ abstract class MediaCodecEncoder(
                     return
                 }
 
-                mediaCodec?.let { mediaCodec ->
-                    mediaCodec.getOutputBuffer(index)?.let { buffer ->
-                        val extra = onGenerateExtra(buffer, codec.outputFormat)
-                        /**
-                         * Drops codec data. They are already passed in the extra buffer.
-                         */
-                        if (info.flags != MediaCodec.BUFFER_FLAG_CODEC_CONFIG) {
-                            Frame(
-                                buffer,
-                                codec.outputFormat.getString(MediaFormat.KEY_MIME)!!,
-                                info.presentationTimeUs, // pts
-                                null, // dts
-                                info.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME,
+                mediaCodec?.getOutputBuffer(index)?.let { buffer ->
+                    val extra = onGenerateExtra(buffer, codec.outputFormat)
+                    /**
+                     * Drops codec data. They are already passed in the extra buffer.
+                     */
+                    if (info.flags != MediaCodec.BUFFER_FLAG_CODEC_CONFIG) {
+                        Frame(
+                            buffer,
+                            codec.outputFormat.getString(MediaFormat.KEY_MIME)!!,
+                            info.presentationTimeUs, // pts
+                            null, // dts
+                            info.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME,
 
-                                extra
-                            ).let {
-                                encoderListener.onOutputFrame(
-                                    it
-                                )
-                            }
+                            extra
+                        ).let { frame ->
+                            encoderListener.onOutputFrame(
+                                frame
+                            )
                         }
+                    }
 
-                        mediaCodec.releaseOutputBuffer(index, false)
-                    } ?: reportError(Error.INVALID_BUFFER)
-                }
+                    mediaCodec?.releaseOutputBuffer(index, false)
+                } ?: reportError(Error.INVALID_BUFFER)
             }
         }
 
@@ -96,20 +94,17 @@ abstract class MediaCodecEncoder(
                     return
                 }
 
-                mediaCodec?.let { mediaCodec ->
-                    mediaCodec.getInputBuffer(index)?.let { buffer ->
-                        val frame = encoderListener.onInputFrame(buffer)
-                        frame.let {
-                            mediaCodec.queueInputBuffer(
-                                index,
-                                0,
-                                it.buffer.remaining(),
-                                it.pts /* in us */,
-                                0
-                            )
-                        }
-                    } ?: reportError(Error.INVALID_BUFFER)
-                }
+                mediaCodec?.getInputBuffer(index)?.let { buffer ->
+                    encoderListener.onInputFrame(buffer).let { frame ->
+                        mediaCodec?.queueInputBuffer(
+                            index,
+                            0,
+                            frame.buffer.remaining(),
+                            frame.pts /* in us */,
+                            0
+                        )
+                    }
+                } ?: reportError(Error.INVALID_BUFFER)
             }
         }
 
