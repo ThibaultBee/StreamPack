@@ -49,7 +49,7 @@ Captures your camera and microphone frames. Streams them to a SRT server. It is 
 val streamer = CaptureSrtLiveStream(...)
 // Configures audio and video settings (encoder, resolution, bitrates,...)
 streamer.configure(audioConfig, videoConfig)
-streamer.startCapture(surface) // where to display preview
+streamer.startPreview(surface) // where to display preview
 ...
 // Connect to a SRT server
 streamer.connect(ip, port)
@@ -61,7 +61,7 @@ streamer.stopStream()
 ...
 streamer.disconnect()
 ...
-streamer.stopCapture()
+streamer.stopPreview()
 ...
 streamer.release()
 ```

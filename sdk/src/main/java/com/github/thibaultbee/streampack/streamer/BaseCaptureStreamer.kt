@@ -35,8 +35,10 @@ import com.github.thibaultbee.streampack.muxers.ts.TSMuxer
 import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.sources.AudioCapture
 import com.github.thibaultbee.streampack.sources.CameraCapture
-import com.github.thibaultbee.streampack.utils.*
-
+import com.github.thibaultbee.streampack.utils.Error
+import com.github.thibaultbee.streampack.utils.EventHandlerManager
+import com.github.thibaultbee.streampack.utils.ILogger
+import com.github.thibaultbee.streampack.utils.getCameraList
 import java.nio.ByteBuffer
 
 /**
@@ -97,7 +99,7 @@ open class BaseCaptureStreamer(
     private val onCaptureErrorListener = object : OnErrorListener {
         override fun onError(source: String, message: String) {
             stopStreamImpl()
-            stopCapture()
+            stopPreview()
             onErrorListener?.onError(source, message)
         }
     }
@@ -200,10 +202,10 @@ open class BaseCaptureStreamer(
      * @param cameraId camera id (get camera id list from [Context.getCameraList])
      *
      * @throws Exception if audio or video capture couldn't be launch
-     * @see [stopCapture]
+     * @see [stopPreview]
      */
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-    fun startCapture(previewSurface: Surface, cameraId: String = "0") {
+    fun startPreview(previewSurface: Surface, cameraId: String = "0") {
         require(audioConfig != null) { "Audio has not been configured!" }
         require(videoConfig != null) { "Video has not been configured!" }
 
@@ -214,7 +216,7 @@ open class BaseCaptureStreamer(
 
             audioSource.startStream()
         } catch (e: Exception) {
-            stopCapture()
+            stopPreview()
             throw e
         }
     }
@@ -223,9 +225,9 @@ open class BaseCaptureStreamer(
      * Stops capture.
      * It also stops stream if the stream is running.
      *
-     * @see [startCapture]
+     * @see [startPreview]
      */
-    fun stopCapture() {
+    fun stopPreview() {
         stopStreamImpl()
         videoSource.stopPreview()
         audioSource.stopStream()

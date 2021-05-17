@@ -93,10 +93,22 @@ It must be call when both stream and capture are not running.</p>
 </tr>
 <tr>
 <td>
-<p><a href="start-capture.html">startCapture</a></p>
+<p><a href="start-preview.html">startPreview</a></p>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">startCapture</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$startCapture(android.view.Surface, kotlin.String)/previewSurface">previewSurface</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/view/Surface.html"><span class="identifier">Surface</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$startCapture(android.view.Surface, kotlin.String)/cameraId">cameraId</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a>&nbsp;<span class="symbol">=</span>&nbsp;"0"<span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<code><span class="keyword">fun </span><span class="identifier">startPreview</span><span
+        class="symbol">(</span><span class="identifier"
+                                     id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$startPreview(android.view.Surface, kotlin.String)/previewSurface">previewSurface</span><span
+        class="symbol">:</span>&nbsp;<a
+        href="https://developer.android.com/reference/android/view/Surface.html"><span
+        class="identifier">Surface</span></a><span class="symbol">, </span><span class="identifier"
+                                                                                 id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$startPreview(android.view.Surface, kotlin.String)/cameraId">cameraId</span><span
+        class="symbol">:</span>&nbsp;<a
+        href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span
+        class="identifier">String</span></a>&nbsp;<span class="symbol">=</span>&nbsp;"0"<span
+        class="symbol">)</span><span class="symbol">: </span><a
+        href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span
+        class="identifier">Unit</span></a></code>
 <p>Starts audio and video capture.
 <a href="configure.html">BaseCaptureStreamer.configure</a> must have been called at least once.</p>
 </td>
@@ -115,10 +127,13 @@ To avoid creating an unresponsive UI, do not call on main thread.</p>
 </tr>
 <tr>
 <td>
-<p><a href="stop-capture.html">stopCapture</a></p>
+    <p><a href="stop-preview.html">stopPreview</a></p>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">stopCapture</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+    <code><span class="keyword">fun </span><span class="identifier">stopPreview</span><span
+            class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a
+            href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span
+            class="identifier">Unit</span></a></code>
 <p>Stops capture.
 It also stops stream if the stream is running.</p>
 </td>

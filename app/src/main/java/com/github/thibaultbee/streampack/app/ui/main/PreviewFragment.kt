@@ -153,7 +153,7 @@ class PreviewFragment : Fragment() {
 
             nbOnSurfaceChange++
             if (nbOnSurfaceChange == 2) {
-                viewModel.startCapture(holder.surface)
+                viewModel.startPreview(holder.surface)
             } else {
                 val choices = context!!.getCameraOutputSizes(
                     SurfaceHolder::class.java,
@@ -167,7 +167,7 @@ class PreviewFragment : Fragment() {
         }
 
         override fun surfaceDestroyed(holder: SurfaceHolder) {
-            viewModel.stopCapture()
+            viewModel.stopPreview()
             binding.surfaceView.holder.removeCallback(this)
         }
 

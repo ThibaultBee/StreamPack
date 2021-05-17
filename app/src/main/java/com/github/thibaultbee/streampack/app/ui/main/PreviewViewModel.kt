@@ -26,6 +26,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.github.thibaultbee.streampack.app.configuration.Configuration
 import com.github.thibaultbee.streampack.app.configuration.Configuration.Endpoint.EndpointType
+import com.github.thibaultbee.streampack.app.utils.StreamPackLogger
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
@@ -34,7 +35,6 @@ import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer
 import com.github.thibaultbee.streampack.streamer.CaptureFileStreamer
 import com.github.thibaultbee.streampack.streamer.CaptureSrtLiveStreamer
-import com.github.thibaultbee.streampack.app.utils.StreamPackLogger
 import java.io.File
 
 class PreviewViewModel(application: Application) : AndroidViewModel(application) {
@@ -135,17 +135,17 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-    fun startCapture(previewSurface: Surface) {
+    fun startPreview(previewSurface: Surface) {
         try {
-            captureStreamer.startCapture(previewSurface)
+            captureStreamer.startPreview(previewSurface)
         } catch (e: Exception) {
-            Log.e(TAG, "startCapture failed", e)
-            error.postValue("startCapture: ${e.message ?: "Unknown error"}")
+            Log.e(TAG, "startPreview failed", e)
+            error.postValue("startPreview: ${e.message ?: "Unknown error"}")
         }
     }
 
-    fun stopCapture() {
-        captureStreamer.stopCapture()
+    fun stopPreview() {
+        captureStreamer.stopPreview()
     }
 
     fun startStream() {
