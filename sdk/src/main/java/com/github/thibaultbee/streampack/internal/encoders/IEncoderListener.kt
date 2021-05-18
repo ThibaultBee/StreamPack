@@ -13,25 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.utils
+package com.github.thibaultbee.streampack.internal.encoders
 
 import com.github.thibaultbee.streampack.internal.data.Frame
 import java.nio.ByteBuffer
-import kotlin.random.Random
 
-object FakeFrames {
-    fun createFakeKeyFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = true,
-        extra = ByteBuffer.wrap(Random.nextBytes(10))
-    )
+interface IEncoderListener {
+    /**
+     * Calls when an encoder needs an input frame.
+     * @param buffer ByteBuffer to fill. It comes from MediaCodec
+     * @return frame with correct pts and buffer filled with an input buffer
+     */
+    fun onInputFrame(buffer: ByteBuffer): Frame
 
-    fun createFakeFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = false
-    )
+    /**
+     * Calls when an encoder has generated an output frame.
+     * @param frame Output frame with correct parameters and buffers
+     */
+    fun onOutputFrame(frame: Frame)
 }

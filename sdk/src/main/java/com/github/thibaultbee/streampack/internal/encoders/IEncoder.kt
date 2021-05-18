@@ -13,25 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.utils
+package com.github.thibaultbee.streampack.internal.encoders
 
-import com.github.thibaultbee.streampack.internal.data.Frame
-import java.nio.ByteBuffer
-import kotlin.random.Random
+import com.github.thibaultbee.streampack.internal.interfaces.Controllable
 
-object FakeFrames {
-    fun createFakeKeyFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = true,
-        extra = ByteBuffer.wrap(Random.nextBytes(10))
-    )
+interface IEncoder : Controllable {
+    /**
+     * Input and output of an async encoder
+     */
+    val encoderListener: IEncoderListener
 
-    fun createFakeFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = false
-    )
+    /**
+     * Get encoder mime type
+     * @return a string corresponding to a media mime type
+     * @see List of audio/video mime type on <a href="https://developer.android.com/reference/android/media/MediaFormat">Android developer guide</a>
+     */
+    val mimeType: String?
 }

@@ -29,9 +29,9 @@ import com.github.thibaultbee.streampack.app.configuration.Configuration.Endpoin
 import com.github.thibaultbee.streampack.app.utils.StreamPackLogger
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
+import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
-import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer
 import com.github.thibaultbee.streampack.streamer.CaptureFileStreamer
 import com.github.thibaultbee.streampack.streamer.CaptureSrtLiveStreamer

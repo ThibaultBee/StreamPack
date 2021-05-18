@@ -13,25 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.utils
+package com.github.thibaultbee.streampack.internal.data
 
-import com.github.thibaultbee.streampack.internal.data.Frame
 import java.nio.ByteBuffer
-import kotlin.random.Random
 
-object FakeFrames {
-    fun createFakeKeyFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = true,
-        extra = ByteBuffer.wrap(Random.nextBytes(10))
-    )
-
-    fun createFakeFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = false
-    )
-}
+/**
+ * Packet internal representation.
+ * A [Frame] is composed by multiple packets.
+ */
+data class Packet(
+    /**
+     * Contains data.
+     */
+    var buffer: ByteBuffer,
+    /**
+     * [Boolean.true] if this is the first packet that describes a frame.
+     */
+    var isFirstPacketFrame: Boolean,
+    /**
+     * [Boolean.true] if this is the last packet that describes a frame.
+     */
+    var isLastPacketFrame: Boolean,
+    /**
+     * Frame timestamp in µs.
+     */
+    var ts: Long, // in µs
+)

@@ -13,25 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.utils
+package com.github.thibaultbee.streampack.internal.interfaces
 
-import com.github.thibaultbee.streampack.internal.data.Frame
-import java.nio.ByteBuffer
-import kotlin.random.Random
+interface Controllable {
+    /**
+     * Starts frames or data stream generation
+     * Throw an exception if not ready for live stream
+     */
+    fun startStream()
 
-object FakeFrames {
-    fun createFakeKeyFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = true,
-        extra = ByteBuffer.wrap(Random.nextBytes(10))
-    )
+    /**
+     * Stops frames or data stream generation
+     */
+    fun stopStream()
 
-    fun createFakeFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = false
-    )
+    /**
+     * Closes and releases resources
+     */
+    fun release()
 }

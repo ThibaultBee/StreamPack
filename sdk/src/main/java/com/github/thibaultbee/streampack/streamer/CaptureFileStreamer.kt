@@ -18,8 +18,8 @@ package com.github.thibaultbee.streampack.streamer
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
-import com.github.thibaultbee.streampack.endpoints.FileWriter
-import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
+import com.github.thibaultbee.streampack.internal.endpoints.FileWriter
+import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.utils.ILogger
 import java.io.File
 

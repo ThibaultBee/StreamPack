@@ -13,25 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.utils
+package com.github.thibaultbee.streampack.internal.muxers.ts.data
 
-import com.github.thibaultbee.streampack.internal.data.Frame
 import java.nio.ByteBuffer
-import kotlin.random.Random
 
-object FakeFrames {
-    fun createFakeKeyFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = true,
-        extra = ByteBuffer.wrap(Random.nextBytes(10))
-    )
+interface ITSElement {
+    val size: Int
+    val bitSize: Int
 
-    fun createFakeFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = false
-    )
+    fun toByteBuffer(): ByteBuffer
 }

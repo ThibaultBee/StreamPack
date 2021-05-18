@@ -13,25 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.utils
+package com.github.thibaultbee.streampack.internal.muxers.ts.utils
 
-import com.github.thibaultbee.streampack.internal.data.Frame
-import java.nio.ByteBuffer
-import kotlin.random.Random
+import com.github.thibaultbee.streampack.internal.data.Packet
+import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 
-object FakeFrames {
-    fun createFakeKeyFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = true,
-        extra = ByteBuffer.wrap(Random.nextBytes(10))
-    )
-
-    fun createFakeFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = false
-    )
+open class TSOutputCallback(private val muxerListener: IMuxerListener) {
+    protected fun writePacket(packet: Packet) {
+        packet.buffer.rewind()
+        return muxerListener.onOutputFrame(packet)
+    }
 }

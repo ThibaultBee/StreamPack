@@ -13,25 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.utils
+package com.github.thibaultbee.streampack.internal.sources
 
 import com.github.thibaultbee.streampack.internal.data.Frame
+import com.github.thibaultbee.streampack.internal.interfaces.Controllable
 import java.nio.ByteBuffer
-import kotlin.random.Random
 
-object FakeFrames {
-    fun createFakeKeyFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = true,
-        extra = ByteBuffer.wrap(Random.nextBytes(10))
-    )
+interface ICapture : Controllable {
 
-    fun createFakeFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = false
-    )
+    /**
+     * Generate a frame from capture device
+     * @param buffer buffer where to write data. Must be set as buffer of returned Frame
+     * @return frame with correct infos (at least buffer, mime type and pts)
+     */
+    fun getFrame(buffer: ByteBuffer): Frame
 }

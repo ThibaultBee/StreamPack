@@ -13,25 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.utils
+package com.github.thibaultbee.streampack.internal.muxers.ts.utils
 
-import com.github.thibaultbee.streampack.internal.data.Frame
-import java.nio.ByteBuffer
-import kotlin.random.Random
+import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 
-object FakeFrames {
-    fun createFakeKeyFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = true,
-        extra = ByteBuffer.wrap(Random.nextBytes(10))
-    )
-
-    fun createFakeFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = false
+object Utils {
+    fun fakeServiceInfo() = ServiceInfo(
+        ServiceInfo.ServiceType.DIGITAL_TV,
+        0x4698,
+        "ServiceName",
+        "ProviderName"
     )
 }

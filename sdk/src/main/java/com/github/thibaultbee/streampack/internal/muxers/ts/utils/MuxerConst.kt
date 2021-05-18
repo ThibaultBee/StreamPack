@@ -13,25 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.utils
+package com.github.thibaultbee.streampack.internal.muxers.ts.utils
 
-import com.github.thibaultbee.streampack.internal.data.Frame
-import java.nio.ByteBuffer
-import kotlin.random.Random
+import com.github.thibaultbee.streampack.internal.data.Packet
+import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 
-object FakeFrames {
-    fun createFakeKeyFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = true,
-        extra = ByteBuffer.wrap(Random.nextBytes(10))
-    )
+object MuxerConst {
+    const val PAT_PACKET_PERIOD = 40
+    const val SDT_PACKET_PERIOD = 200
 
-    fun createFakeFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = false
-    )
+    /**
+     * Number of MPEG-TS packet stream in output [Packet] returns by [IMuxerListener.onOutputFrame]
+     */
+    const val MAX_OUTPUT_PACKET_NUMBER = 7
 }

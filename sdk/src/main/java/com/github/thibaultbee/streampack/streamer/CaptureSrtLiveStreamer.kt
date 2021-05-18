@@ -18,10 +18,9 @@ package com.github.thibaultbee.streampack.streamer
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
-import com.github.thibaultbee.streampack.endpoints.IEndpoint
-import com.github.thibaultbee.streampack.endpoints.SrtProducer
+import com.github.thibaultbee.streampack.internal.endpoints.SrtProducer
+import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
-import com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.utils.ILogger
 import java.net.SocketException
 
