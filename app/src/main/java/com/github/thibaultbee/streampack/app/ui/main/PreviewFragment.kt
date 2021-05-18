@@ -86,7 +86,7 @@ class PreviewFragment : Fragment() {
             }
             .let(fragmentDisposables::add)
 
-        viewModel.error.observe(viewLifecycleOwner) {
+        viewModel.streamerError.observe(viewLifecycleOwner) {
             showError("Oops", it)
         }
     }

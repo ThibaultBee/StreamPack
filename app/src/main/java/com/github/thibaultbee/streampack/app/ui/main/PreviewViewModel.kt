@@ -29,6 +29,7 @@ import com.github.thibaultbee.streampack.app.configuration.Configuration.Endpoin
 import com.github.thibaultbee.streampack.app.utils.StreamPackLogger
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
+import com.github.thibaultbee.streampack.error.StreamPackError
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
@@ -49,7 +50,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
     val cameraId: String
         get() = captureStreamer.camera
 
-    val error = MutableLiveData<String>()
+    val streamerError = MutableLiveData<String>()
 
     val streamAdditionalPermissions: List<String>
         get() {
@@ -79,8 +80,8 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
             }
 
             captureStreamer.onErrorListener = object : OnErrorListener {
-                override fun onError(source: String, message: String) {
-                    error.postValue("$source: $message")
+                override fun onError(error: StreamPackError) {
+                    streamerError.postValue("${error.javaClass.simpleName}: ${error.message}")
                 }
             }
 
@@ -88,11 +89,11 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
                 (captureStreamer as CaptureSrtLiveStreamer).onConnectionListener =
                     object : OnConnectionListener {
                         override fun onLost(message: String) {
-                            error.postValue("Connection lost: $message")
+                            streamerError.postValue("Connection lost: $message")
                         }
 
                         override fun onFailed(message: String) {
-                            error.postValue("Connection failed: $message")
+                            streamerError.postValue("Connection failed: $message")
                         }
 
                         override fun onSuccess() {
@@ -103,7 +104,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
             Log.d(TAG, "Streamer is created")
         } catch (e: Exception) {
             Log.e(TAG, "createStreamer failed", e)
-            error.postValue("createStreamer: ${e.message ?: "Unknown error"}")
+            streamerError.postValue("createStreamer: ${e.message ?: "Unknown error"}")
         }
     }
 
@@ -130,7 +131,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
             Log.d(TAG, "Streamer is configured")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to configure streamer", e)
-            error.postValue("Failed to create CaptureLiveStream: ${e.message ?: "Unknown error"}")
+            streamerError.postValue("Failed to create CaptureLiveStream: ${e.message ?: "Unknown error"}")
         }
     }
 
@@ -140,7 +141,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
             captureStreamer.startPreview(previewSurface)
         } catch (e: Exception) {
             Log.e(TAG, "startPreview failed", e)
-            error.postValue("startPreview: ${e.message ?: "Unknown error"}")
+            streamerError.postValue("startPreview: ${e.message ?: "Unknown error"}")
         }
     }
 
@@ -164,7 +165,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
             captureStreamer.startStream()
         } catch (e: Exception) {
             Log.e(TAG, "startStream failed", e)
-            error.postValue("startStream: ${e.message ?: "Unknown error"}")
+            streamerError.postValue("startStream: ${e.message ?: "Unknown error"}")
         }
     }
 

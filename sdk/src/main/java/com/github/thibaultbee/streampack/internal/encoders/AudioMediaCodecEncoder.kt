@@ -29,7 +29,7 @@ import java.security.InvalidParameterException
 
 class AudioMediaCodecEncoder(
     encoderListener: IEncoderListener,
-    override var onErrorListener: OnErrorListener?,
+    override val onInternalErrorListener: OnErrorListener,
     logger: ILogger
 ) :
     MediaCodecEncoder(encoderListener, logger) {

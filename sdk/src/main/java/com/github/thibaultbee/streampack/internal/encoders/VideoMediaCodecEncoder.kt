@@ -36,7 +36,7 @@ import java.util.concurrent.Executors
 
 class VideoMediaCodecEncoder(
     encoderListener: IEncoderListener,
-    override var onErrorListener: OnErrorListener?,
+    override val onInternalErrorListener: OnErrorListener,
     private val context: Context,
     logger: ILogger
 ) :

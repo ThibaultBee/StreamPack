@@ -23,7 +23,8 @@ import android.os.HandlerThread
 import android.util.Range
 import android.view.Surface
 import androidx.annotation.RequiresPermission
-import com.github.thibaultbee.streampack.internal.events.EventHandlerManager
+import com.github.thibaultbee.streampack.error.CameraError
+import com.github.thibaultbee.streampack.internal.events.EventHandler
 import com.github.thibaultbee.streampack.internal.interfaces.Controllable
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.utils.*
@@ -32,9 +33,9 @@ import java.security.InvalidParameterException
 
 class CameraCapture(
     private val context: Context,
-    override var onErrorListener: OnErrorListener?,
+    override val onInternalErrorListener: OnErrorListener,
     val logger: ILogger
-) : EventHandlerManager(), Controllable {
+) : EventHandler(), Controllable {
     var fpsRange = Range(0, 30)
 
     lateinit var previewSurface: Surface
@@ -51,7 +52,7 @@ class CameraCapture(
         override fun onConfigureFailed(session: CameraCaptureSession) {
             logger.e(this, "Camera Session configuration failed")
             session.close()
-            reportError(Error.INVALID_OPERATION)
+            reportError(CameraError("Camera: failed to configure the capture session"))
         }
 
         override fun onConfigured(session: CameraCaptureSession) {
@@ -94,12 +95,12 @@ class CameraCapture(
             logger.e(this, "Camera ${camera.id} is in error $error")
             reportError(
                 when (error) {
-                    ERROR_CAMERA_IN_USE -> Error.DEVICE_ALREADY_IN_USE
-                    ERROR_MAX_CAMERAS_IN_USE -> Error.DEVICE_MAX_IN_USE
-                    ERROR_CAMERA_DISABLED -> Error.DEVICE_DISABLED
-                    ERROR_CAMERA_DEVICE -> Error.UNKNOWN
-                    ERROR_CAMERA_SERVICE -> Error.UNKNOWN
-                    else -> Error.UNKNOWN
+                    ERROR_CAMERA_IN_USE -> CameraError("Camera already in use")
+                    ERROR_MAX_CAMERAS_IN_USE -> CameraError("Max cameras in use")
+                    ERROR_CAMERA_DISABLED -> CameraError("Camera has been disabled")
+                    ERROR_CAMERA_DEVICE -> CameraError("Camera device has crashed")
+                    ERROR_CAMERA_SERVICE -> CameraError("Camera service has crashed")
+                    else -> CameraError("Unknown error")
                 }
             )
             this@CameraCapture.camera = null
@@ -176,7 +177,7 @@ class CameraCapture(
             captureSession?.setRepeatingRequest(
                 it.build(),
                 null,
-                null
+                backgroundHandler
             )
         } ?: throw IllegalStateException("Camera is not ready for stream")
         isStreaming = true
@@ -189,7 +190,7 @@ class CameraCapture(
             captureSession?.setRepeatingRequest(
                 it.build(),
                 null,
-                null
+                backgroundHandler
             )
         }
     }

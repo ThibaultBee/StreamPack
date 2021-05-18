@@ -23,20 +23,20 @@ import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
+import com.github.thibaultbee.streampack.error.StreamPackError
 import com.github.thibaultbee.streampack.internal.data.Frame
 import com.github.thibaultbee.streampack.internal.data.Packet
 import com.github.thibaultbee.streampack.internal.encoders.AudioMediaCodecEncoder
 import com.github.thibaultbee.streampack.internal.encoders.IEncoderListener
 import com.github.thibaultbee.streampack.internal.encoders.VideoMediaCodecEncoder
 import com.github.thibaultbee.streampack.internal.endpoints.IEndpoint
-import com.github.thibaultbee.streampack.internal.events.EventHandlerManager
+import com.github.thibaultbee.streampack.internal.events.EventHandler
 import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.internal.sources.AudioCapture
 import com.github.thibaultbee.streampack.internal.sources.CameraCapture
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
-import com.github.thibaultbee.streampack.utils.Error
 import com.github.thibaultbee.streampack.utils.ILogger
 import com.github.thibaultbee.streampack.utils.getCameraList
 import java.nio.ByteBuffer
@@ -54,13 +54,13 @@ open class BaseCaptureStreamer(
     private val context: Context,
     private val tsServiceInfo: ServiceInfo,
     protected val endpoint: IEndpoint,
-    logger: ILogger
-) : EventHandlerManager() {
+    private val logger: ILogger
+) : EventHandler() {
     /**
      * Listener that reports streamer error.
      * Supports only one listener.
      */
-    override var onErrorListener: OnErrorListener? = null
+    var onErrorListener: OnErrorListener? = null
 
     /**
      * Get/Set current camera id.
@@ -89,18 +89,22 @@ open class BaseCaptureStreamer(
     private var videoConfig: VideoConfig? = null
     private var audioConfig: AudioConfig? = null
 
-    private val onCodecErrorListener = object : OnErrorListener {
-        override fun onError(source: String, message: String) {
-            stopStream()
-            onErrorListener?.onError(source, message)
+    // Only handle stream error (error on muxer, endpoint,...)
+    override var onInternalErrorListener = object : OnErrorListener {
+        override fun onError(error: StreamPackError) {
+            onStreamError(error)
         }
     }
 
-    private val onCaptureErrorListener = object : OnErrorListener {
-        override fun onError(source: String, message: String) {
-            stopStreamImpl()
-            stopPreview()
-            onErrorListener?.onError(source, message)
+    private val onInternalCodecErrorListener = object : OnErrorListener {
+        override fun onError(error: StreamPackError) {
+            onStreamError(error)
+        }
+    }
+
+    private val onInternalCaptureErrorListener = object : OnErrorListener {
+        override fun onError(error: StreamPackError) {
+            onPreviewError(error)
         }
     }
 
@@ -114,7 +118,7 @@ open class BaseCaptureStreamer(
                 try {
                     tsMux.encode(frame, it)
                 } catch (e: Exception) {
-                    reportError(e)
+                    throw StreamPackError(e)
                 }
             }
         }
@@ -123,7 +127,7 @@ open class BaseCaptureStreamer(
     private val videoEncoderListener = object : IEncoderListener {
         override fun onInputFrame(buffer: ByteBuffer): Frame {
             // Not needed for video
-            throw RuntimeException("No video input on VideoEncoder")
+            throw StreamPackError(RuntimeException("No video input on VideoEncoder"))
         }
 
         override fun onOutputFrame(frame: Frame) {
@@ -131,7 +135,8 @@ open class BaseCaptureStreamer(
                 try {
                     tsMux.encode(frame, it)
                 } catch (e: Exception) {
-                    reportError(e)
+                    // Send exception to encoder
+                    throw StreamPackError(e)
                 }
             }
         }
@@ -142,18 +147,50 @@ open class BaseCaptureStreamer(
             try {
                 endpoint.write(packet)
             } catch (e: Exception) {
-                stopStream()
+                // Send exception to encoder
+                throw StreamPackError(e)
             }
         }
     }
 
+    /**
+     * Manages error on preview.
+     * Stops both stream and preview.
+     *
+     * @param error triggered [StreamPackError]
+     */
+    private fun onPreviewError(error: StreamPackError) {
+        try {
+            stopPreview()
+            onErrorListener?.onError(error)
+        } catch (e: Exception) {
+            logger.e(this, "onPreviewError: Can't stop preview")
+        }
+    }
+
+
+    /**
+     * Manages error on stream.
+     * Stops only stream.
+     *
+     * @param error triggered [StreamPackError]
+     */
+    private fun onStreamError(error: StreamPackError) {
+        try {
+            stopStream()
+            onErrorListener?.onError(error)
+        } catch (e: Exception) {
+            logger.e(this, "onStreamError: Can't stop stream")
+        }
+    }
+
     private val audioSource = AudioCapture(logger)
-    private val videoSource = CameraCapture(context, onCaptureErrorListener, logger)
+    private val videoSource = CameraCapture(context, onInternalCaptureErrorListener, logger)
 
     private var audioEncoder =
-        AudioMediaCodecEncoder(audioEncoderListener, onCodecErrorListener, logger)
+        AudioMediaCodecEncoder(audioEncoderListener, onInternalCodecErrorListener, logger)
     private var videoEncoder =
-        VideoMediaCodecEncoder(videoEncoderListener, onCodecErrorListener, context, logger)
+        VideoMediaCodecEncoder(videoEncoderListener, onInternalCodecErrorListener, context, logger)
 
     private val tsMux = TSMuxer(muxListener)
 
@@ -170,7 +207,7 @@ open class BaseCaptureStreamer(
      * @param audioConfig Audio configuration to set
      * @param videoConfig Video configuration to set
      *
-     * @throws Exception if configuration can not be applied.
+     * @throws [StreamPackError] if configuration can not be applied.
      * @see [release]
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
@@ -188,7 +225,7 @@ open class BaseCaptureStreamer(
             endpoint.configure(videoConfig.startBitrate + audioConfig.startBitrate)
         } catch (e: Exception) {
             release()
-            throw e
+            throw StreamPackError(e)
         }
     }
 
@@ -201,7 +238,7 @@ open class BaseCaptureStreamer(
      * @param previewSurface Where to display camera capture
      * @param cameraId camera id (get camera id list from [Context.getCameraList])
      *
-     * @throws Exception if audio or video capture couldn't be launch
+     * @throws [StreamPackError] if audio or video capture couldn't be launch
      * @see [stopPreview]
      */
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
@@ -217,7 +254,7 @@ open class BaseCaptureStreamer(
             audioSource.startStream()
         } catch (e: Exception) {
             stopPreview()
-            throw e
+            throw StreamPackError(e)
         }
     }
 
@@ -277,7 +314,7 @@ open class BaseCaptureStreamer(
             videoEncoder.startStream()
         } catch (e: Exception) {
             stopStream()
-            throw e
+            throw StreamPackError(e)
         }
     }
 
@@ -324,14 +361,13 @@ open class BaseCaptureStreamer(
      *
      * @see [stopStream]
      */
-    private fun resetAudio(): Error {
+    private fun resetAudio() {
         require(audioConfig != null) { "Audio has not been configured!" }
 
         audioEncoder.release()
 
         // Reconfigure
         audioEncoder.configure(audioConfig!!)
-        return Error.SUCCESS
     }
 
     /**

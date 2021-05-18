@@ -18,38 +18,32 @@ package com.github.thibaultbee.streampack.internal.events
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import com.github.thibaultbee.streampack.error.StreamPackError
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
-import com.github.thibaultbee.streampack.utils.Error
 
-open class EventHandlerManager {
+abstract class EventHandler {
     private val eventHandler by lazy {
-        EventHandler(this.javaClass.simpleName)
-    }
-    open var onErrorListener: OnErrorListener? = null
-
-    fun reportError(error: Error) {
-        val msg = eventHandler.obtainMessage(BASE_ERROR, error.toString())
-        eventHandler.sendMessage(msg)
+        EventHandler()
     }
 
-    fun reportError(error: Exception) {
-        val msg = eventHandler.obtainMessage(BASE_ERROR, error.message)
+    abstract val onInternalErrorListener: OnErrorListener
+
+    fun reportError(error: StreamPackError) {
+        val msg = eventHandler.obtainMessage(MSG_ERROR, error)
         eventHandler.sendMessage(msg)
     }
 
     companion object {
-        private const val BASE_ERROR = 0
+        private const val MSG_ERROR = 0
     }
 
     open inner class EventHandler(
-        private val source: String,
         looper: Looper = Looper.myLooper() ?: Looper.getMainLooper()
     ) : Handler(looper) {
         override fun handleMessage(msg: Message) {
             when (msg.what) {
-                BASE_ERROR -> onErrorListener?.onError(
-                    source,
-                    msg.obj.toString()
+                MSG_ERROR -> onInternalErrorListener.onError(
+                    msg.obj as StreamPackError
                 )
             }
         }

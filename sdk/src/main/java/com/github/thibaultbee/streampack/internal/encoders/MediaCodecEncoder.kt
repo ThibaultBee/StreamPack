@@ -21,9 +21,9 @@ import android.media.MediaFormat
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
+import com.github.thibaultbee.streampack.error.StreamPackError
 import com.github.thibaultbee.streampack.internal.data.Frame
-import com.github.thibaultbee.streampack.internal.events.EventHandlerManager
-import com.github.thibaultbee.streampack.utils.Error
+import com.github.thibaultbee.streampack.internal.events.EventHandler
 import com.github.thibaultbee.streampack.utils.ILogger
 import java.nio.ByteBuffer
 import java.security.InvalidParameterException
@@ -32,12 +32,13 @@ abstract class MediaCodecEncoder(
     override val encoderListener: IEncoderListener,
     val logger: ILogger
 ) :
-    EventHandlerManager(), IEncoder {
+    EventHandler(), IEncoder {
     protected var mediaCodec: MediaCodec? = null
     private var callbackThread: HandlerThread? = null
     protected var handler: Handler? = null
     private val lock = Object()
     private var isStopped = true
+    private var isOnError = false
 
     var bitrate = 0
         set(value) {
@@ -57,30 +58,39 @@ abstract class MediaCodecEncoder(
                 if (isStopped) {
                     return
                 }
+                if (isOnError) {
+                    return
+                }
 
-                mediaCodec?.getOutputBuffer(index)?.let { buffer ->
-                    val extra = onGenerateExtra(buffer, codec.outputFormat)
-                    /**
-                     * Drops codec data. They are already passed in the extra buffer.
-                     */
-                    if (info.flags != MediaCodec.BUFFER_FLAG_CODEC_CONFIG) {
-                        Frame(
-                            buffer,
-                            codec.outputFormat.getString(MediaFormat.KEY_MIME)!!,
-                            info.presentationTimeUs, // pts
-                            null, // dts
-                            info.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME,
+                try {
+                    mediaCodec?.getOutputBuffer(index)?.let { buffer ->
+                        val extra = onGenerateExtra(buffer, codec.outputFormat)
+                        /**
+                         * Drops codec data. They are already passed in the extra buffer.
+                         */
+                        if (info.flags != MediaCodec.BUFFER_FLAG_CODEC_CONFIG) {
+                            Frame(
+                                buffer,
+                                codec.outputFormat.getString(MediaFormat.KEY_MIME)!!,
+                                info.presentationTimeUs, // pts
+                                null, // dts
+                                info.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME,
 
-                            extra
-                        ).let { frame ->
-                            encoderListener.onOutputFrame(
-                                frame
-                            )
+                                extra
+                            ).let { frame ->
+                                encoderListener.onOutputFrame(
+                                    frame
+                                )
+                            }
                         }
-                    }
 
-                    mediaCodec?.releaseOutputBuffer(index, false)
-                } ?: reportError(Error.INVALID_BUFFER)
+                        mediaCodec?.releaseOutputBuffer(index, false)
+                    }
+                        ?: reportError(StreamPackError(UnsupportedOperationException("MediaCodecEncoder: can't get output buffer")))
+                } catch (e: StreamPackError) {
+                    isOnError = true
+                    reportError(e)
+                }
             }
         }
 
@@ -103,7 +113,8 @@ abstract class MediaCodecEncoder(
                             0
                         )
                     }
-                } ?: reportError(Error.INVALID_BUFFER)
+                }
+                    ?: reportError(StreamPackError(UnsupportedOperationException("MediaCodecEncoder: can't get input buffer")))
             }
         }
 
@@ -112,7 +123,7 @@ abstract class MediaCodecEncoder(
         }
 
         override fun onError(codec: MediaCodec, e: MediaCodec.CodecException) {
-            reportError(e)
+            reportError(StreamPackError(e))
         }
     }
 
@@ -137,6 +148,7 @@ abstract class MediaCodecEncoder(
 
     override fun startStream() {
         synchronized(lock) {
+            isOnError = false
             isStopped = false
             mediaCodec?.start() ?: throw IllegalStateException("Can't start without configuration")
         }
