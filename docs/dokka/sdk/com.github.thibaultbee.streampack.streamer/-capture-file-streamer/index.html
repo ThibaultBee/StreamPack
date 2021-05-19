@@ -25,7 +25,7 @@
 <p><a href="-init-.html">&lt;init&gt;</a></p>
 </td>
 <td>
-<code><span class="identifier">CaptureFileStreamer</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.CaptureFileStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.utils.ILogger)/context">context</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/content/Context.html"><span class="identifier">Context</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.CaptureFileStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.utils.ILogger)/tsServiceInfo">tsServiceInfo</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.muxers.ts.data/-service-info/index.html"><span class="identifier">ServiceInfo</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.CaptureFileStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.utils.ILogger)/logger">logger</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.utils/-i-logger/index.html"><span class="identifier">ILogger</span></a><span class="symbol">)</span></code>
+<code><span class="identifier">CaptureFileStreamer</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.CaptureFileStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.utils.ILogger)/context">context</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/content/Context.html"><span class="identifier">Context</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.CaptureFileStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.utils.ILogger)/tsServiceInfo">tsServiceInfo</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.internal.muxers.ts.data/-service-info/index.html"><span class="identifier">ServiceInfo</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.CaptureFileStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.utils.ILogger)/logger">logger</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.utils/-i-logger/index.html"><span class="identifier">ILogger</span></a><span class="symbol">)</span></code>
 <p><a href="../-base-capture-streamer/index.html">BaseCaptureStreamer</a> that sends audio/video frames to a <a href="https://developer.android.com/reference/java/io/File.html">File</a>.</p>
 </td>
 </tr>
@@ -40,7 +40,7 @@
 </td>
 <td>
 <code><span class="keyword">var </span><span class="identifier">file</span><span class="symbol">: </span><a href="https://developer.android.com/reference/java/io/File.html"><span class="identifier">File</span></a></code>
-<p>Get/Set <a href="../../com.github.thibaultbee.streampack.endpoints/-file-writer/index.html">FileWriter</a> file. If no file has been set. <a href="../../com.github.thibaultbee.streampack.endpoints/-file-writer/index.html">FileWriter</a> uses a default temporary file.</p>
+<p>Get/Set <a href="../../com.github.thibaultbee.streampack.internal.endpoints/-file-writer/index.html">FileWriter</a> file. If no file has been set. <a href="../../com.github.thibaultbee.streampack.internal.endpoints/-file-writer/index.html">FileWriter</a> uses a default temporary file.</p>
 </td>
 </tr>
 <tr>
@@ -71,8 +71,8 @@
 <p><a href="../-base-capture-streamer/endpoint.html">endpoint</a></p>
 </td>
 <td>
-<code><span class="keyword">val </span><span class="identifier">endpoint</span><span class="symbol">: </span><a href="../../com.github.thibaultbee.streampack.endpoints/-i-endpoint/index.html"><span class="identifier">IEndpoint</span></a></code>
-<p>a <a href="../../com.github.thibaultbee.streampack.endpoints/-i-endpoint/index.html">IEndpoint</a> implementation</p>
+<code><span class="keyword">val </span><span class="identifier">endpoint</span><span class="symbol">: </span><a href="../../com.github.thibaultbee.streampack.internal.endpoints/-i-endpoint/index.html"><span class="identifier">IEndpoint</span></a></code>
+<p>a <a href="../../com.github.thibaultbee.streampack.internal.endpoints/-i-endpoint/index.html">IEndpoint</a> implementation</p>
 </td>
 </tr>
 <tr>
@@ -80,10 +80,17 @@
 <p><a href="../-base-capture-streamer/on-error-listener.html">onErrorListener</a></p>
 </td>
 <td>
-<code><span class="keyword">open</span> <span class="keyword">var </span><span class="identifier">onErrorListener</span><span class="symbol">: </span><a href="../../com.github.thibaultbee.streampack.listeners/-on-error-listener/index.html"><span class="identifier">OnErrorListener</span></a><span class="symbol">?</span></code>
+<code><span class="keyword">var </span><span class="identifier">onErrorListener</span><span class="symbol">: </span><a href="../../com.github.thibaultbee.streampack.listeners/-on-error-listener/index.html"><span class="identifier">OnErrorListener</span></a><span class="symbol">?</span></code>
 <p>Listener that reports streamer error.
 Supports only one listener.</p>
 </td>
+</tr>
+<tr>
+<td>
+<p><a href="../-base-capture-streamer/on-internal-error-listener.html">onInternalErrorListener</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">var </span><span class="identifier">onInternalErrorListener</span><span class="symbol">: </span><a href="../../com.github.thibaultbee.streampack.listeners/-on-error-listener/index.html"><span class="identifier">OnErrorListener</span></a></code></td>
 </tr>
 </tbody>
 </table>
@@ -130,32 +137,17 @@ It must be call when both stream and capture are not running.</p>
 <p><a href="../-base-capture-streamer/start-preview.html">startPreview</a></p>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">startPreview</span><span
-        class="symbol">(</span><span class="identifier"
-                                     id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$startPreview(android.view.Surface, kotlin.String)/previewSurface">previewSurface</span><span
-        class="symbol">:</span>&nbsp;<a
-        href="https://developer.android.com/reference/android/view/Surface.html"><span
-        class="identifier">Surface</span></a><span class="symbol">, </span><span class="identifier"
-                                                                                 id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$startPreview(android.view.Surface, kotlin.String)/cameraId">cameraId</span><span
-        class="symbol">:</span>&nbsp;<a
-        href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span
-        class="identifier">String</span></a>&nbsp;<span class="symbol">=</span>&nbsp;"0"<span
-        class="symbol">)</span><span class="symbol">: </span><a
-        href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span
-        class="identifier">Unit</span></a></code>
+<code><span class="keyword">fun </span><span class="identifier">startPreview</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$startPreview(android.view.Surface, kotlin.String)/previewSurface">previewSurface</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/view/Surface.html"><span class="identifier">Surface</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$startPreview(android.view.Surface, kotlin.String)/cameraId">cameraId</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a>&nbsp;<span class="symbol">=</span>&nbsp;"0"<span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
 <p>Starts audio and video capture.
 <a href="../-base-capture-streamer/configure.html">BaseCaptureStreamer.configure</a> must have been called at least once.</p>
 </td>
 </tr>
 <tr>
 <td>
-    <p><a href="../-base-capture-streamer/stop-preview.html">stopPreview</a></p>
+<p><a href="../-base-capture-streamer/stop-preview.html">stopPreview</a></p>
 </td>
 <td>
-    <code><span class="keyword">fun </span><span class="identifier">stopPreview</span><span
-            class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a
-            href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span
-            class="identifier">Unit</span></a></code>
+<code><span class="keyword">fun </span><span class="identifier">stopPreview</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
 <p>Stops capture.
 It also stops stream if the stream is running.</p>
 </td>

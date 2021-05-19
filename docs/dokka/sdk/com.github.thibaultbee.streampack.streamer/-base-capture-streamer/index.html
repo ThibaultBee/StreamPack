@@ -8,16 +8,16 @@
 <a href="../../index.html">sdk</a>&nbsp;/&nbsp;<a href="../index.html">com.github.thibaultbee.streampack.streamer</a>&nbsp;/&nbsp;<a href="./index.html">BaseCaptureStreamer</a><br/>
 <br/>
 <h1>BaseCaptureStreamer</h1>
-<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">BaseCaptureStreamer</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.utils/-event-handler-manager/index.html"><span class="identifier">EventHandlerManager</span></a></code>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">BaseCaptureStreamer</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.internal.events/-event-handler/index.html"><span class="identifier">EventHandler</span></a></code>
 <p>Base class of CaptureStreamer: <a href="../-capture-file-streamer/index.html">CaptureFileStreamer</a> or <a href="../-capture-srt-live-streamer/index.html">CaptureSrtLiveStreamer</a>
-Use this class, only if you want to implement a custom <a href="../../com.github.thibaultbee.streampack.endpoints/-i-endpoint/index.html">IEndpoint</a>.</p>
+Use this class, only if you want to implement a custom <a href="../../com.github.thibaultbee.streampack.internal.endpoints/-i-endpoint/index.html">IEndpoint</a>.</p>
 <h3>Parameters</h3>
 <p><a name="context"></a>
 <code>context</code> - application context</p>
 <p><a name="tsServiceInfo"></a>
 <code>tsServiceInfo</code> - MPEG-TS service description</p>
 <p><a name="endpoint"></a>
-<code>endpoint</code> - a <a href="../../com.github.thibaultbee.streampack.endpoints/-i-endpoint/index.html">IEndpoint</a> implementation</p>
+<code>endpoint</code> - a <a href="../../com.github.thibaultbee.streampack.internal.endpoints/-i-endpoint/index.html">IEndpoint</a> implementation</p>
 <p><a name="logger"></a>
 <code>logger</code> - a <a href="../../com.github.thibaultbee.streampack.utils/-i-logger/index.html">ILogger</a> implementation</p>
 <h3>Constructors</h3>
@@ -28,9 +28,9 @@ Use this class, only if you want to implement a custom <a href="../../com.github
 <p><a href="-init-.html">&lt;init&gt;</a></p>
 </td>
 <td>
-<code><span class="identifier">BaseCaptureStreamer</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.endpoints.IEndpoint, com.github.thibaultbee.streampack.utils.ILogger)/context">context</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/content/Context.html"><span class="identifier">Context</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.endpoints.IEndpoint, com.github.thibaultbee.streampack.utils.ILogger)/tsServiceInfo">tsServiceInfo</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.muxers.ts.data/-service-info/index.html"><span class="identifier">ServiceInfo</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.endpoints.IEndpoint, com.github.thibaultbee.streampack.utils.ILogger)/endpoint">endpoint</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.endpoints/-i-endpoint/index.html"><span class="identifier">IEndpoint</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.endpoints.IEndpoint, com.github.thibaultbee.streampack.utils.ILogger)/logger">logger</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.utils/-i-logger/index.html"><span class="identifier">ILogger</span></a><span class="symbol">)</span></code>
+<code><span class="identifier">BaseCaptureStreamer</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.internal.endpoints.IEndpoint, com.github.thibaultbee.streampack.utils.ILogger)/context">context</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/content/Context.html"><span class="identifier">Context</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.internal.endpoints.IEndpoint, com.github.thibaultbee.streampack.utils.ILogger)/tsServiceInfo">tsServiceInfo</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.internal.muxers.ts.data/-service-info/index.html"><span class="identifier">ServiceInfo</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.internal.endpoints.IEndpoint, com.github.thibaultbee.streampack.utils.ILogger)/endpoint">endpoint</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.internal.endpoints/-i-endpoint/index.html"><span class="identifier">IEndpoint</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.internal.endpoints.IEndpoint, com.github.thibaultbee.streampack.utils.ILogger)/logger">logger</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.utils/-i-logger/index.html"><span class="identifier">ILogger</span></a><span class="symbol">)</span></code>
 <p>Base class of CaptureStreamer: <a href="../-capture-file-streamer/index.html">CaptureFileStreamer</a> or <a href="../-capture-srt-live-streamer/index.html">CaptureSrtLiveStreamer</a>
-Use this class, only if you want to implement a custom <a href="../../com.github.thibaultbee.streampack.endpoints/-i-endpoint/index.html">IEndpoint</a>.</p>
+Use this class, only if you want to implement a custom <a href="../../com.github.thibaultbee.streampack.internal.endpoints/-i-endpoint/index.html">IEndpoint</a>.</p>
 </td>
 </tr>
 </tbody>
@@ -52,8 +52,8 @@ Use this class, only if you want to implement a custom <a href="../../com.github
 <p><a href="endpoint.html">endpoint</a></p>
 </td>
 <td>
-<code><span class="keyword">val </span><span class="identifier">endpoint</span><span class="symbol">: </span><a href="../../com.github.thibaultbee.streampack.endpoints/-i-endpoint/index.html"><span class="identifier">IEndpoint</span></a></code>
-<p>a <a href="../../com.github.thibaultbee.streampack.endpoints/-i-endpoint/index.html">IEndpoint</a> implementation</p>
+<code><span class="keyword">val </span><span class="identifier">endpoint</span><span class="symbol">: </span><a href="../../com.github.thibaultbee.streampack.internal.endpoints/-i-endpoint/index.html"><span class="identifier">IEndpoint</span></a></code>
+<p>a <a href="../../com.github.thibaultbee.streampack.internal.endpoints/-i-endpoint/index.html">IEndpoint</a> implementation</p>
 </td>
 </tr>
 <tr>
@@ -61,10 +61,17 @@ Use this class, only if you want to implement a custom <a href="../../com.github
 <p><a href="on-error-listener.html">onErrorListener</a></p>
 </td>
 <td>
-<code><span class="keyword">open</span> <span class="keyword">var </span><span class="identifier">onErrorListener</span><span class="symbol">: </span><a href="../../com.github.thibaultbee.streampack.listeners/-on-error-listener/index.html"><span class="identifier">OnErrorListener</span></a><span class="symbol">?</span></code>
+<code><span class="keyword">var </span><span class="identifier">onErrorListener</span><span class="symbol">: </span><a href="../../com.github.thibaultbee.streampack.listeners/-on-error-listener/index.html"><span class="identifier">OnErrorListener</span></a><span class="symbol">?</span></code>
 <p>Listener that reports streamer error.
 Supports only one listener.</p>
 </td>
+</tr>
+<tr>
+<td>
+<p><a href="on-internal-error-listener.html">onInternalErrorListener</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">var </span><span class="identifier">onInternalErrorListener</span><span class="symbol">: </span><a href="../../com.github.thibaultbee.streampack.listeners/-on-error-listener/index.html"><span class="identifier">OnErrorListener</span></a></code></td>
 </tr>
 </tbody>
 </table>
@@ -96,19 +103,7 @@ It must be call when both stream and capture are not running.</p>
 <p><a href="start-preview.html">startPreview</a></p>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">startPreview</span><span
-        class="symbol">(</span><span class="identifier"
-                                     id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$startPreview(android.view.Surface, kotlin.String)/previewSurface">previewSurface</span><span
-        class="symbol">:</span>&nbsp;<a
-        href="https://developer.android.com/reference/android/view/Surface.html"><span
-        class="identifier">Surface</span></a><span class="symbol">, </span><span class="identifier"
-                                                                                 id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$startPreview(android.view.Surface, kotlin.String)/cameraId">cameraId</span><span
-        class="symbol">:</span>&nbsp;<a
-        href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span
-        class="identifier">String</span></a>&nbsp;<span class="symbol">=</span>&nbsp;"0"<span
-        class="symbol">)</span><span class="symbol">: </span><a
-        href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span
-        class="identifier">Unit</span></a></code>
+<code><span class="keyword">fun </span><span class="identifier">startPreview</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$startPreview(android.view.Surface, kotlin.String)/previewSurface">previewSurface</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/view/Surface.html"><span class="identifier">Surface</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer$startPreview(android.view.Surface, kotlin.String)/cameraId">cameraId</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a>&nbsp;<span class="symbol">=</span>&nbsp;"0"<span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
 <p>Starts audio and video capture.
 <a href="configure.html">BaseCaptureStreamer.configure</a> must have been called at least once.</p>
 </td>
@@ -127,13 +122,10 @@ To avoid creating an unresponsive UI, do not call on main thread.</p>
 </tr>
 <tr>
 <td>
-    <p><a href="stop-preview.html">stopPreview</a></p>
+<p><a href="stop-preview.html">stopPreview</a></p>
 </td>
 <td>
-    <code><span class="keyword">fun </span><span class="identifier">stopPreview</span><span
-            class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a
-            href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span
-            class="identifier">Unit</span></a></code>
+<code><span class="keyword">fun </span><span class="identifier">stopPreview</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
 <p>Stops capture.
 It also stops stream if the stream is running.</p>
 </td>
@@ -154,11 +146,10 @@ It also stops stream if the stream is running.</p>
 <tbody>
 <tr>
 <td>
-<p><a href="../../com.github.thibaultbee.streampack.utils/-event-handler-manager/report-error.html">reportError</a></p>
+<p><a href="../../com.github.thibaultbee.streampack.internal.events/-event-handler/report-error.html">reportError</a></p>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">reportError</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.utils.EventHandlerManager$reportError(com.github.thibaultbee.streampack.utils.Error)/error">error</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.utils/-error/index.html"><span class="identifier">Error</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code><br/>
-<code><span class="keyword">fun </span><span class="identifier">reportError</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.utils.EventHandlerManager$reportError(java.lang.Exception)/error">error</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+<code><span class="keyword">fun </span><span class="identifier">reportError</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.internal.events.EventHandler$reportError(com.github.thibaultbee.streampack.error.StreamPackError)/error">error</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.error/-stream-pack-error/index.html"><span class="identifier">StreamPackError</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
 </tr>
 </tbody>
 </table>

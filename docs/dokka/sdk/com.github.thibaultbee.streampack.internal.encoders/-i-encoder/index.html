@@ -1,0 +1,81 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>IEncoder - sdk</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">sdk</a>&nbsp;/&nbsp;<a href="../index.html">com.github.thibaultbee.streampack.internal.encoders</a>&nbsp;/&nbsp;<a href="./index.html">IEncoder</a><br/>
+<br/>
+<h1>IEncoder</h1>
+<code><span class="keyword">interface </span><span class="identifier">IEncoder</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.internal.interfaces/-controllable/index.html"><span class="identifier">Controllable</span></a></code>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="encoder-listener.html">encoderListener</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">encoderListener</span><span class="symbol">: </span><a href="../-i-encoder-listener/index.html"><span class="identifier">IEncoderListener</span></a></code>
+<p>Input and output of an async encoder</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="mime-type.html">mimeType</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">mimeType</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">?</span></code>
+<p>Get encoder mime type</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Inherited Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="../../com.github.thibaultbee.streampack.internal.interfaces/-controllable/release.html">release</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">release</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Closes and releases resources</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="../../com.github.thibaultbee.streampack.internal.interfaces/-controllable/start-stream.html">startStream</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">startStream</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Starts frames or data stream generation
+Throw an exception if not ready for live stream</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="../../com.github.thibaultbee.streampack.internal.interfaces/-controllable/stop-stream.html">stopStream</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">stopStream</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Stops frames or data stream generation</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Inheritors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="../-media-codec-encoder/index.html">MediaCodecEncoder</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">MediaCodecEncoder</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.internal.events/-event-handler/index.html"><span class="identifier">EventHandler</span></a><span class="symbol">, </span><a href="./index.html"><span class="identifier">IEncoder</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

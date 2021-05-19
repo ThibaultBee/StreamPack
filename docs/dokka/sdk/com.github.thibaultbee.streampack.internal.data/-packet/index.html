@@ -1,0 +1,71 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Packet - sdk</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">sdk</a>&nbsp;/&nbsp;<a href="../index.html">com.github.thibaultbee.streampack.internal.data</a>&nbsp;/&nbsp;<a href="./index.html">Packet</a><br/>
+<br/>
+<h1>Packet</h1>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">Packet</span></code>
+<p>Packet internal representation.
+A <a href="../-frame/index.html">Frame</a> is composed by multiple packets.</p>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-init-.html">&lt;init&gt;</a></p>
+</td>
+<td>
+<code><span class="identifier">Packet</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.internal.data.Packet$<init>(java.nio.ByteBuffer, kotlin.Boolean, kotlin.Boolean, kotlin.Long)/buffer">buffer</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/nio/ByteBuffer.html"><span class="identifier">ByteBuffer</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.internal.data.Packet$<init>(java.nio.ByteBuffer, kotlin.Boolean, kotlin.Boolean, kotlin.Long)/isFirstPacketFrame">isFirstPacketFrame</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.internal.data.Packet$<init>(java.nio.ByteBuffer, kotlin.Boolean, kotlin.Boolean, kotlin.Long)/isLastPacketFrame">isLastPacketFrame</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.internal.data.Packet$<init>(java.nio.ByteBuffer, kotlin.Boolean, kotlin.Boolean, kotlin.Long)/ts">ts</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">)</span></code>
+<p>Packet internal representation.
+A <a href="../-frame/index.html">Frame</a> is composed by multiple packets.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="buffer.html">buffer</a></p>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">buffer</span><span class="symbol">: </span><a href="https://developer.android.com/reference/java/nio/ByteBuffer.html"><span class="identifier">ByteBuffer</span></a></code>
+<p>Contains data.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="is-first-packet-frame.html">isFirstPacketFrame</a></p>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">isFirstPacketFrame</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code>
+<p><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean.true</a> if this is the first packet that describes a frame.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="is-last-packet-frame.html">isLastPacketFrame</a></p>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">isLastPacketFrame</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code>
+<p><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean.true</a> if this is the last packet that describes a frame.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="ts.html">ts</a></p>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">ts</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a></code>
+<p>Frame timestamp in µs.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

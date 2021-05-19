@@ -1,0 +1,126 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>BitBuffer.put - sdk</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">sdk</a>&nbsp;/&nbsp;<a href="../index.html">com.github.thibaultbee.streampack.internal.bitbuffer</a>&nbsp;/&nbsp;<a href="index.html">BitBuffer</a>&nbsp;/&nbsp;<a href="./put.html">put</a><br/>
+<br/>
+<h1>put</h1>
+<a name="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Boolean)"></a>
+<code><span class="keyword">fun </span><span class="identifier">put</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Boolean)/b">b</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="index.html"><span class="identifier">BitBuffer</span></a></code>
+<p>Writes a bit to this <a href="index.html">BitBuffer</a>.</p>
+<h3>Parameters</h3>
+<p><a name="b"></a>
+<code>b</code> - the <code>boolean</code> to write.</p>
+<p><strong>Return</strong><br/>
+this <a href="index.html">BitBuffer</a> to allow for the convenience of method-chaining.</p>
+<a name="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Byte, kotlin.Int)"></a>
+<code><span class="keyword">fun </span><span class="identifier">put</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Byte, kotlin.Int)/b">b</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html"><span class="identifier">Byte</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Byte, kotlin.Int)/numBits">numBits</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a>&nbsp;<span class="symbol">=</span>&nbsp;Byte.SIZE_BITS<span class="symbol">)</span><span class="symbol">: </span><a href="index.html"><span class="identifier">BitBuffer</span></a></code>
+<p>Writes a value to this <a href="index.html">BitBuffer</a> using <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/-companion/-s-i-z-e_-b-i-t-s.html">Byte.SIZE_BITS</a> bits.</p>
+<h3>Parameters</h3>
+<p><a name="b"></a>
+<code>b</code> - the <code>byte</code> to write.</p>
+<p><a name="numBits"></a>
+<code>numBits</code> - number of bits to write</p>
+<p><strong>Return</strong><br/>
+this <a href="index.html">BitBuffer</a> to allow for the convenience of method-chaining.</p>
+<a name="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Char, kotlin.Int, java.nio.ByteOrder)"></a>
+<code><span class="keyword">fun </span><span class="identifier">put</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Char, kotlin.Int, java.nio.ByteOrder)/c">c</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-char/index.html"><span class="identifier">Char</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Char, kotlin.Int, java.nio.ByteOrder)/numBits">numBits</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a>&nbsp;<span class="symbol">=</span>&nbsp;Char.SIZE_BITS<span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Char, kotlin.Int, java.nio.ByteOrder)/order">order</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/nio/ByteOrder.html"><span class="identifier">ByteOrder</span></a>&nbsp;<span class="symbol">=</span>&nbsp;ByteOrder.LITTLE_ENDIAN<span class="symbol">)</span><span class="symbol">: </span><a href="index.html"><span class="identifier">BitBuffer</span></a></code>
+<p>Writes a value with <a href="https://developer.android.com/reference/java/nio/ByteOrder.html#BIG_ENDIAN">ByteOrder.BIG_ENDIAN</a> order to this <a href="index.html">BitBuffer</a> using <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-char/-companion/-s-i-z-e_-b-i-t-s.html">Char.SIZE_BITS</a> bits.</p>
+<h3>Parameters</h3>
+<p><a name="c"></a>
+<code>c</code> - the <code>char</code> to write.</p>
+<p><a name="numBits"></a>
+<code>numBits</code> - number of bits to write</p>
+<p><a name="order"></a>
+<code>order</code> - byte order</p>
+<p><strong>Return</strong><br/>
+this <a href="index.html">BitBuffer</a> to allow for the convenience of method-chaining.</p>
+<a name="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Double, kotlin.Int, java.nio.ByteOrder)"></a>
+<code><span class="keyword">fun </span><span class="identifier">put</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Double, kotlin.Int, java.nio.ByteOrder)/d">d</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html"><span class="identifier">Double</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Double, kotlin.Int, java.nio.ByteOrder)/numBits">numBits</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a>&nbsp;<span class="symbol">=</span>&nbsp;Double.SIZE_BITS<span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Double, kotlin.Int, java.nio.ByteOrder)/order">order</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/nio/ByteOrder.html"><span class="identifier">ByteOrder</span></a>&nbsp;<span class="symbol">=</span>&nbsp;ByteOrder.LITTLE_ENDIAN<span class="symbol">)</span><span class="symbol">: </span><a href="index.html"><span class="identifier">BitBuffer</span></a></code>
+<p>Writes a value with <a href="https://developer.android.com/reference/java/nio/ByteOrder.html#BIG_ENDIAN">ByteOrder.BIG_ENDIAN</a> order to this <a href="index.html">BitBuffer</a> using <a href="#">Double.SIZE_BITS</a> bits.</p>
+<h3>Parameters</h3>
+<p><a name="d"></a>
+<code>d</code> - the <code>double</code> to write.</p>
+<p><a name="numBits"></a>
+<code>numBits</code> - number of bits to write</p>
+<p><a name="order"></a>
+<code>order</code> - byte order</p>
+<p><strong>Return</strong><br/>
+this <a href="index.html">BitBuffer</a> to allow for the convenience of method-chaining.</p>
+<a name="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Float, kotlin.Int, java.nio.ByteOrder)"></a>
+<code><span class="keyword">fun </span><span class="identifier">put</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Float, kotlin.Int, java.nio.ByteOrder)/f">f</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html"><span class="identifier">Float</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Float, kotlin.Int, java.nio.ByteOrder)/numBits">numBits</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a>&nbsp;<span class="symbol">=</span>&nbsp;Float.SIZE_BITS<span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Float, kotlin.Int, java.nio.ByteOrder)/order">order</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/nio/ByteOrder.html"><span class="identifier">ByteOrder</span></a>&nbsp;<span class="symbol">=</span>&nbsp;ByteOrder.LITTLE_ENDIAN<span class="symbol">)</span><span class="symbol">: </span><a href="index.html"><span class="identifier">BitBuffer</span></a></code>
+<p>Writes a value with <a href="https://developer.android.com/reference/java/nio/ByteOrder.html#BIG_ENDIAN">ByteOrder.BIG_ENDIAN</a> order to this <a href="index.html">BitBuffer</a> using <a href="#">Float.SIZE_BITS</a> bits.</p>
+<h3>Parameters</h3>
+<p><a name="f"></a>
+<code>f</code> - the <code>float</code> to write.</p>
+<p><a name="numBits"></a>
+<code>numBits</code> - number of bits to write</p>
+<p><a name="order"></a>
+<code>order</code> - byte order</p>
+<p><strong>Return</strong><br/>
+this <a href="index.html">BitBuffer</a> to allow for the convenience of method-chaining.</p>
+<a name="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Int, kotlin.Int, java.nio.ByteOrder)"></a>
+<code><span class="keyword">fun </span><span class="identifier">put</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Int, kotlin.Int, java.nio.ByteOrder)/i">i</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Int, kotlin.Int, java.nio.ByteOrder)/numBits">numBits</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a>&nbsp;<span class="symbol">=</span>&nbsp;Int.SIZE_BITS<span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Int, kotlin.Int, java.nio.ByteOrder)/order">order</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/nio/ByteOrder.html"><span class="identifier">ByteOrder</span></a>&nbsp;<span class="symbol">=</span>&nbsp;ByteOrder.LITTLE_ENDIAN<span class="symbol">)</span><span class="symbol">: </span><a href="index.html"><span class="identifier">BitBuffer</span></a></code>
+<p>Writes a value with <a href="https://developer.android.com/reference/java/nio/ByteOrder.html#BIG_ENDIAN">ByteOrder.BIG_ENDIAN</a> order to this <a href="index.html">BitBuffer</a> using <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/-companion/-s-i-z-e_-b-i-t-s.html">Int.SIZE_BITS</a> bits.</p>
+<h3>Parameters</h3>
+<p><a name="i"></a>
+<code>i</code> - the <code>int</code> to write.</p>
+<p><a name="numBits"></a>
+<code>numBits</code> - number of bits to write</p>
+<p><a name="order"></a>
+<code>order</code> - byte order</p>
+<p><strong>Return</strong><br/>
+this <a href="index.html">BitBuffer</a> to allow for the convenience of method-chaining.</p>
+<a name="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Long, kotlin.Int, java.nio.ByteOrder)"></a>
+<code><span class="keyword">fun </span><span class="identifier">put</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Long, kotlin.Int, java.nio.ByteOrder)/l">l</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Long, kotlin.Int, java.nio.ByteOrder)/numBits">numBits</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a>&nbsp;<span class="symbol">=</span>&nbsp;Long.SIZE_BITS<span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Long, kotlin.Int, java.nio.ByteOrder)/order">order</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/nio/ByteOrder.html"><span class="identifier">ByteOrder</span></a>&nbsp;<span class="symbol">=</span>&nbsp;ByteOrder.LITTLE_ENDIAN<span class="symbol">)</span><span class="symbol">: </span><a href="index.html"><span class="identifier">BitBuffer</span></a></code>
+<p>Writes a value with <a href="https://developer.android.com/reference/java/nio/ByteOrder.html#BIG_ENDIAN">ByteOrder.BIG_ENDIAN</a> order to this <a href="index.html">BitBuffer</a> using <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/-companion/-s-i-z-e_-b-i-t-s.html">Long.SIZE_BITS</a> bits.</p>
+<h3>Parameters</h3>
+<p><a name="l"></a>
+<code>l</code> - the <code>int</code> to write.</p>
+<p><a name="numBits"></a>
+<code>numBits</code> - number of bits to write</p>
+<p><a name="order"></a>
+<code>order</code> - byte order</p>
+<p><strong>Return</strong><br/>
+this <a href="index.html">BitBuffer</a> to allow for the convenience of method-chaining.</p>
+<a name="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Short, kotlin.Int, java.nio.ByteOrder)"></a>
+<code><span class="keyword">fun </span><span class="identifier">put</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Short, kotlin.Int, java.nio.ByteOrder)/s">s</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-short/index.html"><span class="identifier">Short</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Short, kotlin.Int, java.nio.ByteOrder)/numBits">numBits</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a>&nbsp;<span class="symbol">=</span>&nbsp;Short.SIZE_BITS<span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.Short, kotlin.Int, java.nio.ByteOrder)/order">order</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/nio/ByteOrder.html"><span class="identifier">ByteOrder</span></a>&nbsp;<span class="symbol">=</span>&nbsp;ByteOrder.LITTLE_ENDIAN<span class="symbol">)</span><span class="symbol">: </span><a href="index.html"><span class="identifier">BitBuffer</span></a></code>
+<p>Writes a value with <a href="https://developer.android.com/reference/java/nio/ByteOrder.html#BIG_ENDIAN">ByteOrder.BIG_ENDIAN</a> order to this <a href="index.html">BitBuffer</a> using <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-short/-companion/-s-i-z-e_-b-i-t-s.html">Short.SIZE_BITS</a> bits.</p>
+<h3>Parameters</h3>
+<p><a name="s"></a>
+<code>s</code> - the <code>short</code> to write as an <code>int</code> for ease-of-use, but internally down-casted to a <code>short</code>.</p>
+<p><a name="numBits"></a>
+<code>numBits</code> - number of bits to write</p>
+<p><a name="order"></a>
+<code>order</code> - byte order</p>
+<p><strong>Return</strong><br/>
+this <a href="index.html">BitBuffer</a> to allow for the convenience of method-chaining.</p>
+<a name="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.String)"></a>
+<code><span class="keyword">fun </span><span class="identifier">put</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.String)/s">s</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="index.html"><span class="identifier">BitBuffer</span></a></code>
+<p>Writes a String to this <a href="index.html">BitBuffer</a> using <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/-companion/-s-i-z-e_-b-i-t-s.html">Byte.SIZE_BITS</a> bits for each <code>byte</code>.</p>
+<h3>Parameters</h3>
+<p><a name="src"></a>
+<code>src</code> - the string to write.</p>
+<p><strong>Return</strong><br/>
+this <a href="index.html">BitBuffer</a> to allow for the convenience of method-chaining.</p>
+<a name="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.ByteArray)"></a>
+<code><span class="keyword">fun </span><span class="identifier">put</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(kotlin.ByteArray)/src">src</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="index.html"><span class="identifier">BitBuffer</span></a></code>
+<p>Writes an array of <code>byte</code>s to this <a href="index.html">BitBuffer</a> using <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/-companion/-s-i-z-e_-b-i-t-s.html">Byte.SIZE_BITS</a> bits for each <code>byte</code>.</p>
+<h3>Parameters</h3>
+<p><a name="src"></a>
+<code>src</code> - the array of <code>byte</code>s to write.</p>
+<p><strong>Return</strong><br/>
+this <a href="index.html">BitBuffer</a> to allow for the convenience of method-chaining.</p>
+<a name="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(java.nio.ByteBuffer)"></a>
+<code><span class="keyword">fun </span><span class="identifier">put</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer$put(java.nio.ByteBuffer)/src">src</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/nio/ByteBuffer.html"><span class="identifier">ByteBuffer</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="index.html"><span class="identifier">BitBuffer</span></a></code>
+<p>Writes a ByteBuffer to this <a href="index.html">BitBuffer</a> using <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/-companion/-s-i-z-e_-b-i-t-s.html">Byte.SIZE_BITS</a> bits for each <code>byte</code>.</p>
+<h3>Parameters</h3>
+<p><a name="src"></a>
+<code>src</code> - the array of <code>byte</code>s to write.</p>
+<p><strong>Return</strong><br/>
+this <a href="index.html">BitBuffer</a> to allow for the convenience of method-chaining.</p>
+</BODY>
+</HTML>

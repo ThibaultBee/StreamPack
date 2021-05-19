@@ -8,13 +8,11 @@
 <a href="../../index.html">sdk</a>&nbsp;/&nbsp;<a href="../index.html">com.github.thibaultbee.streampack.listeners</a>&nbsp;/&nbsp;<a href="index.html">OnErrorListener</a>&nbsp;/&nbsp;<a href="./on-error.html">onError</a><br/>
 <br/>
 <h1>onError</h1>
-<a name="com.github.thibaultbee.streampack.listeners.OnErrorListener$onError(kotlin.String, kotlin.String)"></a>
-<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">onError</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.listeners.OnErrorListener$onError(kotlin.String, kotlin.String)/source">source</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.listeners.OnErrorListener$onError(kotlin.String, kotlin.String)/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<a name="com.github.thibaultbee.streampack.listeners.OnErrorListener$onError(com.github.thibaultbee.streampack.error.StreamPackError)"></a>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">onError</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.listeners.OnErrorListener$onError(com.github.thibaultbee.streampack.error.StreamPackError)/error">error</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.error/-stream-pack-error/index.html"><span class="identifier">StreamPackError</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
 <p>Called when an error occurs in a Streamer.</p>
 <h3>Parameters</h3>
-<p><a name="source"></a>
-<code>source</code> - a string to identify the error sender.</p>
-<p><a name="message"></a>
-<code>message</code> - message that described the reason why the connection has failed.</p>
+<p><a name="error"></a>
+<code>error</code> - a <a href="../../com.github.thibaultbee.streampack.error/-stream-pack-error/index.html">StreamPackError</a> describing what happened</p>
 </BODY>
 </HTML>

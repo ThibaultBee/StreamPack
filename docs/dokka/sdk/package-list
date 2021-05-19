@@ -1,6 +1,6 @@
 $dokka.format:html
 $dokka.linkExtension:html
-$dokka.location:com.github.thibaultbee.streampack.utils$extractArray(java.nio.ByteBuffer)com.github.thibaultbee.streampack.utils/java.nio.-byte-buffer/extract-array.html
+$dokka.location:com.github.thibaultbee.streampack.internal.muxers.ts.utils$toInt(kotlin.Boolean)com.github.thibaultbee.streampack.internal.muxers.ts.utils/kotlin.-boolean/to-int.html
 $dokka.location:com.github.thibaultbee.streampack.utils$getCameraCharacteristics(android.content.Context, kotlin.String)com.github.thibaultbee.streampack.utils/android.content.-context/get-camera-characteristics.html
 $dokka.location:com.github.thibaultbee.streampack.utils$getCameraFpsList(android.content.Context, kotlin.String)com.github.thibaultbee.streampack.utils/android.content.-context/get-camera-fps-list.html
 $dokka.location:com.github.thibaultbee.streampack.utils$getCameraList(android.content.Context)com.github.thibaultbee.streampack.utils/android.content.-context/get-camera-list.html
@@ -11,21 +11,25 @@ $dokka.location:com.github.thibaultbee.streampack.utils$getCameraOutputStreamSiz
 $dokka.location:com.github.thibaultbee.streampack.utils$isAudio(kotlin.String)com.github.thibaultbee.streampack.utils/kotlin.-string/is-audio.html
 $dokka.location:com.github.thibaultbee.streampack.utils$isCameraPortrait(android.content.Context)com.github.thibaultbee.streampack.utils/android.content.-context/is-camera-portrait.html
 $dokka.location:com.github.thibaultbee.streampack.utils$isVideo(kotlin.String)com.github.thibaultbee.streampack.utils/kotlin.-string/is-video.html
-$dokka.location:com.github.thibaultbee.streampack.utils$toInt(kotlin.Boolean)com.github.thibaultbee.streampack.utils/kotlin.-boolean/to-int.html
 com.github.thibaultbee.streampack.data
-com.github.thibaultbee.streampack.encoders
-com.github.thibaultbee.streampack.encoders.format.aac
-com.github.thibaultbee.streampack.endpoints
-com.github.thibaultbee.streampack.gl
-com.github.thibaultbee.streampack.interfaces
+com.github.thibaultbee.streampack.error
+com.github.thibaultbee.streampack.internal.bitbuffer
+com.github.thibaultbee.streampack.internal.data
+com.github.thibaultbee.streampack.internal.encoders
+com.github.thibaultbee.streampack.internal.encoders.format.aac
+com.github.thibaultbee.streampack.internal.endpoints
+com.github.thibaultbee.streampack.internal.events
+com.github.thibaultbee.streampack.internal.gl
+com.github.thibaultbee.streampack.internal.interfaces
+com.github.thibaultbee.streampack.internal.muxers
+com.github.thibaultbee.streampack.internal.muxers.ts
+com.github.thibaultbee.streampack.internal.muxers.ts.data
+com.github.thibaultbee.streampack.internal.muxers.ts.descriptors
+com.github.thibaultbee.streampack.internal.muxers.ts.packets
+com.github.thibaultbee.streampack.internal.muxers.ts.tables
+com.github.thibaultbee.streampack.internal.muxers.ts.utils
+com.github.thibaultbee.streampack.internal.sources
+com.github.thibaultbee.streampack.internal.utils
 com.github.thibaultbee.streampack.listeners
-com.github.thibaultbee.streampack.muxers
-com.github.thibaultbee.streampack.muxers.ts
-com.github.thibaultbee.streampack.muxers.ts.data
-com.github.thibaultbee.streampack.muxers.ts.descriptors
-com.github.thibaultbee.streampack.muxers.ts.packets
-com.github.thibaultbee.streampack.muxers.ts.tables
-com.github.thibaultbee.streampack.muxers.ts.utils
-com.github.thibaultbee.streampack.sources
 com.github.thibaultbee.streampack.streamer
 com.github.thibaultbee.streampack.utils
