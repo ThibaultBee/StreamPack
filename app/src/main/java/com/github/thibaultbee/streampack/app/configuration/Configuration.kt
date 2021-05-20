@@ -18,6 +18,7 @@ package com.github.thibaultbee.streampack.app.configuration
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Resources
+import android.media.MediaFormat
 import android.util.Size
 import androidx.preference.PreferenceManager
 import com.github.thibaultbee.streampack.app.R
@@ -31,7 +32,7 @@ class Configuration(context: Context) {
     val endpoint = Endpoint(sharedPref, resources)
 
     class Video(private val sharedPref: SharedPreferences, private val resources: Resources) {
-        var encoder: String = resources.getString(R.string.default_video_encoder)
+        var encoder: String = MediaFormat.MIMETYPE_VIDEO_AVC
             get() = sharedPref.getString(resources.getString(R.string.video_encoder_key), field)!!
 
 
@@ -61,7 +62,7 @@ class Configuration(context: Context) {
     }
 
     class Audio(private val sharedPref: SharedPreferences, private val resources: Resources) {
-        var encoder: String = resources.getString(R.string.default_audio_encoder)
+        var encoder: String = MediaFormat.MIMETYPE_AUDIO_AAC
             get() = sharedPref.getString(resources.getString(R.string.audio_encoder_key), field)!!
 
         var channelConfiguration: Int = 12

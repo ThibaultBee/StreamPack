@@ -2,9 +2,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory app:title="@string/video">
         <ListPreference
-            app:defaultValue="@string/default_video_encoder"
-            app:entries="@array/VideoEncoderEntries"
-            app:entryValues="@array/VideoEncoderEntryValues"
             app:key="@string/video_encoder_key"
             app:title="@string/video_encoder"
             app:useSimpleSummaryProvider="true" />
@@ -36,9 +33,6 @@
 
     <PreferenceCategory app:title="@string/audio">
         <ListPreference
-            app:defaultValue="@string/default_audio_encoder"
-            app:entries="@array/AudioEncoderEntries"
-            app:entryValues="@array/AudioEncoderEntryValues"
             app:key="@string/audio_encoder_key"
             app:title="@string/audio_encoder"
             app:useSimpleSummaryProvider="true" />

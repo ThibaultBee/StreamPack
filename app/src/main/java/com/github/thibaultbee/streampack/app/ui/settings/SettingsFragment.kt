@@ -15,16 +15,26 @@
  */
 package com.github.thibaultbee.streampack.app.ui.settings
 
+import android.media.MediaFormat
 import android.os.Bundle
 import android.text.InputFilter
 import android.text.InputType
 import androidx.preference.*
 import com.github.thibaultbee.streampack.app.R
 import com.github.thibaultbee.streampack.app.configuration.ConfigurationHelper
+import com.github.thibaultbee.streampack.utils.CodecUtils
 
 class SettingsFragment : PreferenceFragmentCompat() {
     private val configHelper: ConfigurationHelper by lazy {
         ConfigurationHelper(requireContext())
+    }
+
+    private val videoEncoderListPreference: ListPreference by lazy {
+        this.findPreference(getString(R.string.video_encoder_key))!!
+    }
+
+    private val audioEncoderListPreference: ListPreference by lazy {
+        this.findPreference(getString(R.string.audio_encoder_key))!!
     }
 
     private val resolutionListPreference: ListPreference by lazy {
@@ -61,11 +71,33 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun loadPreferences() {
+        // Inflates video resolutions
         configHelper.resolutionEntries.map { it.toString() }.toTypedArray().run {
             resolutionListPreference.entries = this
             resolutionListPreference.entryValues = this
         }
 
+        // Inflates video encoders
+        val supportedVideoEncoderName =
+            mapOf(MediaFormat.MIMETYPE_VIDEO_AVC to getString(R.string.video_encoder_h264))
+
+        val supportedVideoEncoder = CodecUtils.supportedVideoEncoder
+        videoEncoderListPreference.setDefaultValue(MediaFormat.MIMETYPE_VIDEO_AVC)
+        videoEncoderListPreference.entryValues = supportedVideoEncoder.toTypedArray()
+        videoEncoderListPreference.entries =
+            supportedVideoEncoder.map { supportedVideoEncoderName[it] }.toTypedArray()
+
+        // Inflates audio encoders
+        val supportedAudioEncoderName =
+            mapOf(MediaFormat.MIMETYPE_AUDIO_AAC to getString(R.string.audio_encoder_aac))
+
+        val supportedAudioEncoder = CodecUtils.supportedAudioEncoder
+        audioEncoderListPreference.setDefaultValue(MediaFormat.MIMETYPE_AUDIO_AAC)
+        audioEncoderListPreference.entryValues = supportedAudioEncoder.toTypedArray()
+        audioEncoderListPreference.entries =
+            supportedAudioEncoder.map { supportedAudioEncoderName[it] }.toTypedArray()
+
+        // Inflates endpoint
         serverEndpointPreference.isVisible = endpointTypePreference.isChecked
         fileEndpointPreference.isVisible = !endpointTypePreference.isChecked
         endpointTypePreference.setOnPreferenceChangeListener { _, newValue ->
