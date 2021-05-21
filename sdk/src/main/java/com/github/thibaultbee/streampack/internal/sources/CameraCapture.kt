@@ -18,6 +18,9 @@ package com.github.thibaultbee.streampack.internal.sources
 import android.Manifest
 import android.content.Context
 import android.hardware.camera2.*
+import android.hardware.camera2.params.OutputConfiguration
+import android.hardware.camera2.params.SessionConfiguration
+import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Range
@@ -29,6 +32,7 @@ import com.github.thibaultbee.streampack.internal.interfaces.Controllable
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.utils.*
 import java.security.InvalidParameterException
+import java.util.concurrent.Executors
 
 
 class CameraCapture(
@@ -112,13 +116,32 @@ class CameraCapture(
         }
     }
 
+    // Before Android 28
     private var backgroundThread: HandlerThread? = null
     private var backgroundHandler: Handler? = null
 
+    // After Android 28
+    private var executor = Executors.newSingleThreadExecutor()
+
     private fun createCaptureSession() {
         val surfaceList = mutableListOf(previewSurface, encoderSurface)
-        camera?.createCaptureSession(surfaceList, captureSessionCallback, backgroundHandler)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val outputs = mutableListOf<OutputConfiguration>()
+            surfaceList.forEach { outputs.add(OutputConfiguration(it)) }
+            SessionConfiguration(
+                SessionConfiguration.SESSION_REGULAR,
+                outputs,
+                executor,
+                captureSessionCallback
+            ).also { sessionConfig ->
+                camera?.createCaptureSession(sessionConfig)
+            }
+        } else {
+            @Suppress("deprecation")
+            camera?.createCaptureSession(surfaceList, captureSessionCallback, backgroundHandler)
+        }
     }
+
 
     private fun getClosestFpsRange(fps: Int): Range<Int> {
         var fpsRangeList = context.getCameraFpsList(cameraId)
@@ -147,11 +170,14 @@ class CameraCapture(
 
     @RequiresPermission(Manifest.permission.CAMERA)
     fun startPreview(cameraId: String, restartStream: Boolean = false) {
-        startBackgroundThread()
-
         this.restartStream = restartStream
         val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        cameraManager.openCamera(cameraId, cameraDeviceCallback, backgroundHandler!!)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            cameraManager.openCamera(cameraId, executor, cameraDeviceCallback)
+        } else {
+            startBackgroundThread()
+            cameraManager.openCamera(cameraId, cameraDeviceCallback, backgroundHandler!!)
+        }
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
@@ -171,14 +197,33 @@ class CameraCapture(
         stopBackgroundThread()
     }
 
+    private val captureCallback = object : CameraCaptureSession.CaptureCallback() {
+        override fun onCaptureFailed(
+            session: CameraCaptureSession,
+            request: CaptureRequest,
+            failure: CaptureFailure
+        ) {
+            super.onCaptureFailed(session, request, failure)
+            logger.e(this, "Capture failed  with code ${failure.reason}")
+        }
+    }
+
     override fun startStream() {
         captureRequestBuilder?.let {
             it.addTarget(encoderSurface)
-            captureSession?.setRepeatingRequest(
-                it.build(),
-                null,
-                backgroundHandler
-            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                captureSession?.setSingleRepeatingRequest(
+                    it.build(),
+                    executor,
+                    captureCallback
+                )
+            } else {
+                captureSession?.setRepeatingRequest(
+                    it.build(),
+                    captureCallback,
+                    backgroundHandler
+                )
+            }
         } ?: throw IllegalStateException("Camera is not ready for stream")
         isStreaming = true
     }
