@@ -66,7 +66,7 @@ streamer.stopPreview()
 streamer.release()
 ```
 
-For more detailed explanation, check out the [API documentation](https://thibaultbee.github.io/StreamPack/dokka/lib).
+For more detailed explanation, check out the [API documentation](https://thibaultbee.github.io/StreamPack/dokka/sdk).
 
 ## Permissions
 
