@@ -33,9 +33,9 @@ import com.github.thibaultbee.streampack.error.StreamPackError
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
-import com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer
-import com.github.thibaultbee.streampack.streamer.CaptureFileStreamer
-import com.github.thibaultbee.streampack.streamer.CaptureSrtLiveStreamer
+import com.github.thibaultbee.streampack.streamers.BaseCaptureStreamer
+import com.github.thibaultbee.streampack.streamers.CaptureFileStreamer
+import com.github.thibaultbee.streampack.streamers.CaptureSrtLiveStreamer
 import java.io.File
 
 class PreviewViewModel(application: Application) : AndroidViewModel(application) {

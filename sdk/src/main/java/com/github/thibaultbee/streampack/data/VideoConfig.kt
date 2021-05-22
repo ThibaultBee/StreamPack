@@ -18,7 +18,7 @@ package com.github.thibaultbee.streampack.data
 import android.media.MediaCodecInfo.CodecProfileLevel
 import android.media.MediaFormat
 import android.util.Size
-import com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer
+import com.github.thibaultbee.streampack.streamers.BaseCaptureStreamer
 import com.github.thibaultbee.streampack.utils.isVideo
 
 /**

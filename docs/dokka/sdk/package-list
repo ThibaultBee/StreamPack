@@ -1,6 +1,5 @@
 $dokka.format:html
 $dokka.linkExtension:html
-$dokka.location:com.github.thibaultbee.streampack.internal.muxers.ts.utils$toInt(kotlin.Boolean)com.github.thibaultbee.streampack.internal.muxers.ts.utils/kotlin.-boolean/to-int.html
 $dokka.location:com.github.thibaultbee.streampack.utils$getCameraCharacteristics(android.content.Context, kotlin.String)com.github.thibaultbee.streampack.utils/android.content.-context/get-camera-characteristics.html
 $dokka.location:com.github.thibaultbee.streampack.utils$getCameraFpsList(android.content.Context, kotlin.String)com.github.thibaultbee.streampack.utils/android.content.-context/get-camera-fps-list.html
 $dokka.location:com.github.thibaultbee.streampack.utils$getCameraList(android.content.Context)com.github.thibaultbee.streampack.utils/android.content.-context/get-camera-list.html
@@ -13,23 +12,6 @@ $dokka.location:com.github.thibaultbee.streampack.utils$isCameraPortrait(android
 $dokka.location:com.github.thibaultbee.streampack.utils$isVideo(kotlin.String)com.github.thibaultbee.streampack.utils/kotlin.-string/is-video.html
 com.github.thibaultbee.streampack.data
 com.github.thibaultbee.streampack.error
-com.github.thibaultbee.streampack.internal.bitbuffer
-com.github.thibaultbee.streampack.internal.data
-com.github.thibaultbee.streampack.internal.encoders
-com.github.thibaultbee.streampack.internal.encoders.format.aac
-com.github.thibaultbee.streampack.internal.endpoints
-com.github.thibaultbee.streampack.internal.events
-com.github.thibaultbee.streampack.internal.gl
-com.github.thibaultbee.streampack.internal.interfaces
-com.github.thibaultbee.streampack.internal.muxers
-com.github.thibaultbee.streampack.internal.muxers.ts
-com.github.thibaultbee.streampack.internal.muxers.ts.data
-com.github.thibaultbee.streampack.internal.muxers.ts.descriptors
-com.github.thibaultbee.streampack.internal.muxers.ts.packets
-com.github.thibaultbee.streampack.internal.muxers.ts.tables
-com.github.thibaultbee.streampack.internal.muxers.ts.utils
-com.github.thibaultbee.streampack.internal.sources
-com.github.thibaultbee.streampack.internal.utils
 com.github.thibaultbee.streampack.listeners
-com.github.thibaultbee.streampack.streamer
+com.github.thibaultbee.streampack.streamers
 com.github.thibaultbee.streampack.utils

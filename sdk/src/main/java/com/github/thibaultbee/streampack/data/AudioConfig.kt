@@ -17,7 +17,7 @@ package com.github.thibaultbee.streampack.data
 
 import android.media.AudioFormat
 import android.media.MediaFormat
-import com.github.thibaultbee.streampack.streamer.BaseCaptureStreamer
+import com.github.thibaultbee.streampack.streamers.BaseCaptureStreamer
 import com.github.thibaultbee.streampack.utils.isAudio
 import java.security.InvalidParameterException
 

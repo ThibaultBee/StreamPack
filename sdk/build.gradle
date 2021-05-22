@@ -29,6 +29,11 @@ dokka {
     // Warning: outputDirectory is used by script/generate_lib_kdoc.sh
     outputFormat = 'html' // use 'javadoc' to get standard java docs
     includeNonPublic = false
+
+    packageOptions {
+        prefix = "com.github.thibaultbee.streampack.internal"
+        suppress = true
+    }
 }
 
 dependencies {
