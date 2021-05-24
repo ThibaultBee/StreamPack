@@ -362,7 +362,10 @@ open class BaseCaptureStreamer(
      * @see [stopStream]
      */
     private fun resetAudio() {
-        require(audioConfig != null) { "Audio has not been configured!" }
+        if (audioConfig == null) {
+            logger.w(this, "Audio has not been configured!")
+            return
+        }
 
         audioEncoder.release()
 
@@ -377,7 +380,10 @@ open class BaseCaptureStreamer(
      */
     @RequiresPermission(Manifest.permission.CAMERA)
     private fun resetVideo() {
-        require(audioConfig != null) { "Video has not been configured!" }
+        if (videoConfig == null) {
+            logger.w(this, "Video has not been configured!")
+            return
+        }
 
         videoSource.stopPreview()
         videoEncoder.release()
@@ -390,10 +396,12 @@ open class BaseCaptureStreamer(
 
     /**
      * Releases recorders and encoders object.
+     * It also stops preview if needed
      *
      * @see [configure]
      */
     fun release() {
+        stopPreview()
         audioEncoder.release()
         videoEncoder.release()
         audioSource.release()
