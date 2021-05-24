@@ -42,8 +42,8 @@ class CameraCapture(
 ) : EventHandler(), Controllable {
     var fpsRange = Range(0, 30)
 
-    lateinit var previewSurface: Surface
-    lateinit var encoderSurface: Surface
+    var previewSurface: Surface? = null
+    var encoderSurface: Surface? = null
 
     var cameraId: String = "0"
     var isStreaming = false
@@ -62,15 +62,14 @@ class CameraCapture(
         override fun onConfigured(session: CameraCaptureSession) {
             captureSession = session
             captureRequestBuilder = camera?.createCaptureRequest(CameraDevice.TEMPLATE_RECORD)
-            captureRequestBuilder?.let {
-                it.addTarget(previewSurface)
+            captureRequestBuilder?.let { captureRequest ->
+                previewSurface?.let { surface -> captureRequest.addTarget(surface) }
                 if (restartStream) {
-                    it.addTarget(encoderSurface)
-                    restartStream = false
+                    encoderSurface?.let { surface -> captureRequest.addTarget(surface) }
                 }
-                it.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
+                captureRequest.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
                 captureSession?.setRepeatingRequest(
-                    it.build(),
+                    captureRequest.build(),
                     null,
                     null
                 )
@@ -124,7 +123,10 @@ class CameraCapture(
     private var executor = Executors.newSingleThreadExecutor()
 
     private fun createCaptureSession() {
-        val surfaceList = mutableListOf(previewSurface, encoderSurface)
+        val surfaceList = mutableListOf<Surface>()
+        previewSurface?.let { surfaceList.add(it) }
+        encoderSurface?.let { surfaceList.add(it) }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             val outputs = mutableListOf<OutputConfiguration>()
             surfaceList.forEach { outputs.add(OutputConfiguration(it)) }
@@ -210,7 +212,7 @@ class CameraCapture(
 
     override fun startStream() {
         captureRequestBuilder?.let {
-            it.addTarget(encoderSurface)
+            it.addTarget(encoderSurface!!)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 captureSession?.setSingleRepeatingRequest(
                     it.build(),
@@ -231,7 +233,7 @@ class CameraCapture(
     override fun stopStream() {
         isStreaming = false
         captureRequestBuilder?.let {
-            it.removeTarget(encoderSurface)
+            it.removeTarget(encoderSurface!!)
             captureSession?.setRepeatingRequest(
                 it.build(),
                 null,
