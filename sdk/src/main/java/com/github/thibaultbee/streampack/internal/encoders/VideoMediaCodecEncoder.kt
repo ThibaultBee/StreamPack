@@ -31,7 +31,6 @@ import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.utils.ILogger
 import com.github.thibaultbee.streampack.utils.getCameraOrientation
 import java.nio.ByteBuffer
-import java.security.InvalidParameterException
 import java.util.concurrent.Executors
 
 class VideoMediaCodecEncoder(
@@ -44,14 +43,17 @@ class VideoMediaCodecEncoder(
     var codecSurface: CodecSurface? = null
 
     fun configure(videoConfig: VideoConfig) {
-        try {
-            configureVideoCodec(videoConfig, true)
+        mediaCodec = try {
+            createVideoCodec(videoConfig, true)
         } catch (e: MediaCodec.CodecException) {
-            configureVideoCodec(videoConfig, false)
+            createVideoCodec(videoConfig, false)
         }
     }
 
-    private fun configureVideoCodec(videoConfig: VideoConfig, useConfigProfileLevel: Boolean) {
+    private fun createVideoCodec(
+        videoConfig: VideoConfig,
+        useConfigProfileLevel: Boolean
+    ): MediaCodec {
         val videoFormat = MediaFormat.createVideoFormat(
             videoConfig.mimeType,
             videoConfig.resolution.width,
@@ -60,7 +62,6 @@ class VideoMediaCodecEncoder(
 
         // Create codec
         val codec = createCodec(videoFormat)
-        mediaCodec = codec
 
         // Extended video format
         videoFormat.setInteger(MediaFormat.KEY_BIT_RATE, videoConfig.startBitrate)
@@ -79,17 +80,20 @@ class VideoMediaCodecEncoder(
         }
 
         // Apply configuration
-        mediaCodec?.let {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                createHandler("VMediaCodecThread")
-                it.setCallback(encoderCallback, handler)
-            } else {
-                it.setCallback(encoderCallback)
-            }
-            it.configure(videoFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-
-            codecSurface = CodecSurface(it.createInputSurface(), context)
-        } ?: throw InvalidParameterException("Can't start video MediaCodec")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            createHandler("VMediaCodecThread")
+            codec.setCallback(encoderCallback, handler)
+        } else {
+            codec.setCallback(encoderCallback)
+        }
+        try {
+            codec.configure(videoFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+            codecSurface = CodecSurface(codec.createInputSurface(), context)
+            return codec
+        } catch (e: Exception) {
+            codec.release()
+            throw e
+        }
     }
 
     override fun startStream() {
@@ -100,6 +104,7 @@ class VideoMediaCodecEncoder(
     override fun release() {
         super.release()
         codecSurface?.release()
+        codecSurface = null
     }
 
     override fun onGenerateExtra(buffer: ByteBuffer, format: MediaFormat): ByteBuffer {

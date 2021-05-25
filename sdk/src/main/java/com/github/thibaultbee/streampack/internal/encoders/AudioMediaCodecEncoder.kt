@@ -35,6 +35,10 @@ class AudioMediaCodecEncoder(
     MediaCodecEncoder(encoderListener, logger) {
 
     fun configure(audioConfig: AudioConfig) {
+        mediaCodec = createAudioCodec(audioConfig)
+    }
+
+    private fun createAudioCodec(audioConfig: AudioConfig): MediaCodec {
         val audioFormat = MediaFormat.createAudioFormat(
             audioConfig.mimeType,
             audioConfig.sampleRate,
@@ -43,7 +47,6 @@ class AudioMediaCodecEncoder(
 
         // Create codec
         val codec = createCodec(audioFormat)
-        mediaCodec = codec
 
         // Extended audio format
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -62,15 +65,19 @@ class AudioMediaCodecEncoder(
         audioFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 0)
 
         // Apply configuration
-        mediaCodec?.let {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                createHandler("AMediaCodecThread")
-                it.setCallback(encoderCallback, handler)
-            } else {
-                it.setCallback(encoderCallback)
-            }
-            it.configure(audioFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-        } ?: throw InvalidParameterException("Can't start audio MediaCodec")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            createHandler("AMediaCodecThread")
+            codec.setCallback(encoderCallback, handler)
+        } else {
+            codec.setCallback(encoderCallback)
+        }
+        try {
+            codec.configure(audioFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+            return codec
+        } catch (e: Exception) {
+            codec.release()
+            throw e
+        }
     }
 
     override fun onGenerateExtra(buffer: ByteBuffer, format: MediaFormat): ByteBuffer {
