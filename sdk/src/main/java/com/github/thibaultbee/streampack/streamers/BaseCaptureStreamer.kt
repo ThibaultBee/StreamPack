@@ -39,6 +39,7 @@ import com.github.thibaultbee.streampack.internal.sources.CameraCapture
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.utils.ILogger
 import com.github.thibaultbee.streampack.utils.getCameraList
+import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
 
 /**
@@ -79,7 +80,7 @@ open class BaseCaptureStreamer(
          */
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
-            setCameraId(value)
+            videoSource.cameraId = value
         }
 
     private var audioTsStreamId: Short? = null
@@ -246,15 +247,17 @@ open class BaseCaptureStreamer(
         require(audioConfig != null) { "Audio has not been configured!" }
         require(videoConfig != null) { "Video has not been configured!" }
 
-        try {
-            videoSource.previewSurface = previewSurface
-            videoSource.encoderSurface = videoEncoder.inputSurface
-            videoSource.startPreview(cameraId)
+        runBlocking {
+            try {
+                videoSource.previewSurface = previewSurface
+                videoSource.encoderSurface = videoEncoder.inputSurface
+                videoSource.startPreviewAsync(cameraId).await()
 
-            audioSource.startStream()
-        } catch (e: Exception) {
-            stopPreview()
-            throw StreamPackError(e)
+                audioSource.startStream()
+            } catch (e: Exception) {
+                stopPreview()
+                throw StreamPackError(e)
+            }
         }
     }
 
@@ -268,19 +271,6 @@ open class BaseCaptureStreamer(
         stopStreamImpl()
         videoSource.stopPreview()
         audioSource.stopStream()
-    }
-
-    /**
-     * Set camera id implementation.
-     * It restarts camera if camera was already running.
-     *
-     * @see [cameraId]
-     */
-    @RequiresPermission(Manifest.permission.CAMERA)
-    private fun setCameraId(cameraId: String) {
-        val restartStream = videoSource.isStreaming
-        videoSource.stopPreview()
-        videoSource.startPreview(cameraId, restartStream)
     }
 
     /**
@@ -389,9 +379,11 @@ open class BaseCaptureStreamer(
         videoEncoder.release()
 
         // And restart...
-        videoEncoder.configure(videoConfig!!)
-        videoSource.encoderSurface = videoEncoder.inputSurface
-        videoSource.startPreview()
+        runBlocking {
+            videoEncoder.configure(videoConfig!!)
+            videoSource.encoderSurface = videoEncoder.inputSurface
+            videoSource.startPreviewAsync().await()
+        }
     }
 
     /**

@@ -18,132 +18,52 @@ package com.github.thibaultbee.streampack.internal.sources
 import android.Manifest
 import android.content.Context
 import android.hardware.camera2.*
-import android.hardware.camera2.params.OutputConfiguration
-import android.hardware.camera2.params.SessionConfiguration
 import android.os.Build
-import android.os.Handler
-import android.os.HandlerThread
 import android.util.Range
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.error.CameraError
 import com.github.thibaultbee.streampack.internal.events.EventHandler
 import com.github.thibaultbee.streampack.internal.interfaces.Controllable
+import com.github.thibaultbee.streampack.internal.sources.camera.CameraExecutorManager
+import com.github.thibaultbee.streampack.internal.sources.camera.CameraHandlerManager
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
-import com.github.thibaultbee.streampack.utils.*
+import com.github.thibaultbee.streampack.utils.ILogger
+import com.github.thibaultbee.streampack.utils.getCameraFpsList
+import kotlinx.coroutines.*
 import java.security.InvalidParameterException
-import java.util.concurrent.Executors
-
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 class CameraCapture(
     private val context: Context,
     override val onInternalErrorListener: OnErrorListener,
     val logger: ILogger
 ) : EventHandler(), Controllable {
-    var fpsRange = Range(0, 30)
-
     var previewSurface: Surface? = null
     var encoderSurface: Surface? = null
+    var cameraId: String
+        get() = camera?.id ?: "0"
+        @RequiresPermission(Manifest.permission.CAMERA)
+        set(value) {
+            val restartStream = isStreaming
+            stopPreview()
+            startPreviewAsync(value, restartStream)
+        }
 
-    var cameraId: String = "0"
-    var isStreaming = false
-    private var restartStream = false
+    private var fpsRange = Range(0, 30)
+    private var isStreaming = false
+
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     private var camera: CameraDevice? = null
     private var captureSession: CameraCaptureSession? = null
-    private var captureRequestBuilder: CaptureRequest.Builder? = null
-    private val captureSessionCallback = object : CameraCaptureSession.StateCallback() {
-        override fun onConfigureFailed(session: CameraCaptureSession) {
-            logger.e(this, "Camera Session configuration failed")
-            session.close()
-            reportError(CameraError("Camera: failed to configure the capture session"))
-        }
 
-        override fun onConfigured(session: CameraCaptureSession) {
-            captureSession = session
-            captureRequestBuilder = camera?.createCaptureRequest(CameraDevice.TEMPLATE_RECORD)
-            captureRequestBuilder?.let { captureRequest ->
-                previewSurface?.let { surface -> captureRequest.addTarget(surface) }
-                if (restartStream) {
-                    encoderSurface?.let { surface -> captureRequest.addTarget(surface) }
-                }
-                captureRequest.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
-                captureSession?.setRepeatingRequest(
-                    captureRequest.build(),
-                    null,
-                    null
-                )
-            }
-        }
-
-        override fun onClosed(session: CameraCaptureSession) {
-            captureRequestBuilder = null
-            captureSession = null
-        }
+    private val threadManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        CameraExecutorManager()
+    } else {
+        CameraHandlerManager()
     }
-
-    private val cameraDeviceCallback = object : CameraDevice.StateCallback() {
-        override fun onOpened(camera: CameraDevice) {
-            this@CameraCapture.camera = camera
-            cameraId = camera.id
-            createCaptureSession()
-        }
-
-        override fun onDisconnected(camera: CameraDevice) {
-            camera.close()
-        }
-
-        override fun onError(camera: CameraDevice, error: Int) {
-            camera.close()
-            logger.e(this, "Camera ${camera.id} is in error $error")
-            reportError(
-                when (error) {
-                    ERROR_CAMERA_IN_USE -> CameraError("Camera already in use")
-                    ERROR_MAX_CAMERAS_IN_USE -> CameraError("Max cameras in use")
-                    ERROR_CAMERA_DISABLED -> CameraError("Camera has been disabled")
-                    ERROR_CAMERA_DEVICE -> CameraError("Camera device has crashed")
-                    ERROR_CAMERA_SERVICE -> CameraError("Camera service has crashed")
-                    else -> CameraError("Unknown error")
-                }
-            )
-            this@CameraCapture.camera = null
-        }
-
-        override fun onClosed(camera: CameraDevice) {
-            this@CameraCapture.camera = null
-            logger.d(this, "Camera ${camera.id} is closed")
-        }
-    }
-
-    // Before Android 28
-    private var backgroundThread: HandlerThread? = null
-    private var backgroundHandler: Handler? = null
-
-    // After Android 28
-    private var executor = Executors.newSingleThreadExecutor()
-
-    private fun createCaptureSession() {
-        val surfaceList = mutableListOf<Surface>()
-        previewSurface?.let { surfaceList.add(it) }
-        encoderSurface?.let { surfaceList.add(it) }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val outputs = mutableListOf<OutputConfiguration>()
-            surfaceList.forEach { outputs.add(OutputConfiguration(it)) }
-            SessionConfiguration(
-                SessionConfiguration.SESSION_REGULAR,
-                outputs,
-                executor,
-                captureSessionCallback
-            ).also { sessionConfig ->
-                camera?.createCaptureSession(sessionConfig)
-            }
-        } else {
-            @Suppress("deprecation")
-            camera?.createCaptureSession(surfaceList, captureSessionCallback, backgroundHandler)
-        }
-    }
-
 
     private fun getClosestFpsRange(fps: Int): Range<Int> {
         var fpsRangeList = context.getCameraFpsList(cameraId)
@@ -171,32 +91,138 @@ class CameraCapture(
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    fun startPreview(cameraId: String, restartStream: Boolean = false) {
-        this.restartStream = restartStream
-        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            cameraManager.openCamera(cameraId, executor, cameraDeviceCallback)
-        } else {
-            startBackgroundThread()
-            cameraManager.openCamera(cameraId, cameraDeviceCallback, backgroundHandler!!)
+    private suspend fun openCamera(
+        manager: CameraManager,
+        cameraId: String
+    ): CameraDevice = suspendCancellableCoroutine { cont ->
+        threadManager.openCamera(manager, cameraId, CameraDeviceCallback(cont, logger))
+    }
+
+    private suspend fun createCaptureSession(
+        camera: CameraDevice,
+        targets: List<Surface>
+    ): CameraCaptureSession = suspendCancellableCoroutine { cont ->
+        threadManager.createCaptureSession(
+            camera,
+            targets,
+            CameraCaptureSessionCallback(cont, logger)
+        )
+    }
+
+    private fun createRequestSession(
+        camera: CameraDevice,
+        captureSession: CameraCaptureSession,
+        surfaces: List<Surface>
+    ) {
+        if (surfaces.isEmpty()) {
+            logger.w(this, "No target surface set")
+            return
+        }
+
+        camera.createCaptureRequest(CameraDevice.TEMPLATE_RECORD).apply {
+            surfaces.forEach { addTarget(it) }
+            set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
+            threadManager.setRepeatingRequest(captureSession, build(), captureCallback)
         }
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    fun startPreview() {
-        startPreview(cameraId)
+    private suspend fun startPreview(cameraId: String, restartStream: Boolean = false) {
+        val manager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        camera = openCamera(manager, cameraId)
+
+        var targets = mutableListOf<Surface>()
+        previewSurface?.let { targets.add(it) }
+        encoderSurface?.let { targets.add(it) }
+
+        camera?.let {
+            captureSession = createCaptureSession(it, targets)
+
+            targets = mutableListOf()
+            previewSurface?.let { targets.add(it) }
+            if (restartStream) {
+                encoderSurface?.let { targets.add(it) }
+            }
+            createRequestSession(it, captureSession!!, targets)
+        }
     }
 
-    fun stopPreview() {
-        captureRequestBuilder = null
+    @RequiresPermission(Manifest.permission.CAMERA)
+    fun startPreviewAsync(cameraId: String, restartStream: Boolean = false) = scope.async {
+        startPreview(cameraId, restartStream)
+    }
 
+    @RequiresPermission(Manifest.permission.CAMERA)
+    fun startPreviewAsync() = startPreviewAsync(cameraId)
+
+    fun stopPreview() {
         captureSession?.close()
         captureSession = null
 
         camera?.close()
         camera = null
+    }
 
-        stopBackgroundThread()
+    override fun startStream() {
+        if ((camera != null) && (captureSession != null)) {
+            val targets = mutableListOf<Surface>()
+            previewSurface?.let { targets.add(it) }
+            encoderSurface?.let { targets.add(it) }
+            createRequestSession(camera!!, captureSession!!, targets)
+            isStreaming = true
+        } else {
+            throw IllegalStateException("Camera is not ready for stream")
+        }
+    }
+
+    override fun stopStream() {
+        isStreaming = false
+        if ((camera != null) && (captureSession != null)) {
+            val targets = mutableListOf<Surface>()
+            previewSurface?.let { targets.add(it) }
+            createRequestSession(camera!!, captureSession!!, targets)
+        }
+    }
+
+    override fun release() {
+        threadManager.release()
+    }
+
+    private class CameraDeviceCallback(
+        private val cont: CancellableContinuation<CameraDevice>,
+        private val logger: ILogger
+    ) : CameraDevice.StateCallback() {
+        override fun onOpened(device: CameraDevice) = cont.resume(device)
+
+        override fun onDisconnected(camera: CameraDevice) {
+            logger.w(this, "Camera ${camera.id} has been disconnected")
+        }
+
+        override fun onError(camera: CameraDevice, error: Int) {
+            logger.e(this, "Camera ${camera.id} is in error $error")
+
+            val exc = when (error) {
+                ERROR_CAMERA_IN_USE -> CameraError("Camera already in use")
+                ERROR_MAX_CAMERAS_IN_USE -> CameraError("Max cameras in use")
+                ERROR_CAMERA_DISABLED -> CameraError("Camera has been disabled")
+                ERROR_CAMERA_DEVICE -> CameraError("Camera device has crashed")
+                ERROR_CAMERA_SERVICE -> CameraError("Camera service has crashed")
+                else -> CameraError("Unknown error")
+            }
+            if (cont.isActive) cont.resumeWithException(exc)
+        }
+    }
+
+    private class CameraCaptureSessionCallback(
+        private val cont: CancellableContinuation<CameraCaptureSession>,
+        private val logger: ILogger
+    ) : CameraCaptureSession.StateCallback() {
+        override fun onConfigured(session: CameraCaptureSession) = cont.resume(session)
+
+        override fun onConfigureFailed(session: CameraCaptureSession) {
+            logger.e(this, "Camera Session configuration failed")
+            cont.resumeWithException(CameraError("Camera: failed to configure the capture session"))
+        }
     }
 
     private val captureCallback = object : CameraCaptureSession.CaptureCallback() {
@@ -207,61 +233,6 @@ class CameraCapture(
         ) {
             super.onCaptureFailed(session, request, failure)
             logger.e(this, "Capture failed  with code ${failure.reason}")
-        }
-    }
-
-    override fun startStream() {
-        captureRequestBuilder?.let {
-            it.addTarget(encoderSurface!!)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                captureSession?.setSingleRepeatingRequest(
-                    it.build(),
-                    executor,
-                    captureCallback
-                )
-            } else {
-                captureSession?.setRepeatingRequest(
-                    it.build(),
-                    captureCallback,
-                    backgroundHandler
-                )
-            }
-        } ?: throw IllegalStateException("Camera is not ready for stream")
-        isStreaming = true
-    }
-
-    override fun stopStream() {
-        isStreaming = false
-        captureRequestBuilder?.let {
-            it.removeTarget(encoderSurface!!)
-            captureSession?.setRepeatingRequest(
-                it.build(),
-                null,
-                backgroundHandler
-            )
-        }
-    }
-
-    override fun release() {
-    }
-
-    /**
-     * Starts a background thread and its [Handler].
-     */
-    private fun startBackgroundThread() {
-        backgroundThread = HandlerThread("BackgroundCamera").also { it.start() }
-        backgroundHandler = Handler(backgroundThread!!.looper)
-    }
-
-    /**
-     * Stops the background thread and its [Handler].
-     */
-    private fun stopBackgroundThread() {
-        backgroundThread?.quitSafely()
-        try {
-            backgroundThread?.join()
-        } catch (e: InterruptedException) {
-            e.printStackTrace()
         }
     }
 }
