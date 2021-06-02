@@ -26,10 +26,16 @@ import com.github.thibaultbee.srtdroid.models.Socket
 import com.github.thibaultbee.streampack.internal.data.Packet
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.utils.ILogger
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.net.ConnectException
 import java.net.InetSocketAddress
 
-class SrtProducer(val logger: ILogger) : IEndpoint {
+class SrtProducer(
+    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    val logger: ILogger
+) : IEndpoint {
     var onConnectionListener: OnConnectionListener? = null
 
     private var socket = Socket()
@@ -44,7 +50,7 @@ class SrtProducer(val logger: ILogger) : IEndpoint {
         this.bitrate = startBitrate.toLong()
     }
 
-    fun connect(ip: String, port: Int) {
+    suspend fun connect(ip: String, port: Int) = withContext(coroutineDispatcher) {
         try {
             socket = Socket()
             socket.listener = object : SocketListener {

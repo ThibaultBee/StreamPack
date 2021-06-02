@@ -24,6 +24,7 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.github.thibaultbee.streampack.app.configuration.Configuration
 import com.github.thibaultbee.streampack.app.configuration.Configuration.Endpoint.EndpointType
 import com.github.thibaultbee.streampack.app.utils.StreamPackLogger
@@ -36,6 +37,7 @@ import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.streamers.BaseCaptureStreamer
 import com.github.thibaultbee.streampack.streamers.CaptureFileStreamer
 import com.github.thibaultbee.streampack.streamers.CaptureSrtLiveStreamer
+import kotlinx.coroutines.launch
 import java.io.File
 
 class PreviewViewModel(application: Application) : AndroidViewModel(application) {
@@ -65,115 +67,127 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
         }
 
     fun createStreamer() {
-        val tsServiceInfo = ServiceInfo(
-            ServiceInfo.ServiceType.DIGITAL_TV,
-            0x4698,
-            configuration.muxer.service,
-            configuration.muxer.provider
-        )
+        viewModelScope.launch {
+            val tsServiceInfo = ServiceInfo(
+                ServiceInfo.ServiceType.DIGITAL_TV,
+                0x4698,
+                configuration.muxer.service,
+                configuration.muxer.provider
+            )
 
-        try {
-            captureStreamer = if (configuration.endpoint.enpointType == EndpointType.SRT) {
-                CaptureSrtLiveStreamer(getApplication(), tsServiceInfo, logger)
-            } else {
-                CaptureFileStreamer(getApplication(), tsServiceInfo, logger)
-            }
-
-            captureStreamer.onErrorListener = object : OnErrorListener {
-                override fun onError(error: StreamPackError) {
-                    streamerError.postValue("${error.javaClass.simpleName}: ${error.message}")
+            try {
+                captureStreamer = if (configuration.endpoint.enpointType == EndpointType.SRT) {
+                    CaptureSrtLiveStreamer(getApplication(), tsServiceInfo, logger = logger)
+                } else {
+                    CaptureFileStreamer(getApplication(), tsServiceInfo, logger)
                 }
-            }
 
-            if (captureStreamer is CaptureSrtLiveStreamer) {
-                (captureStreamer as CaptureSrtLiveStreamer).onConnectionListener =
-                    object : OnConnectionListener {
-                        override fun onLost(message: String) {
-                            streamerError.postValue("Connection lost: $message")
-                        }
-
-                        override fun onFailed(message: String) {
-                            streamerError.postValue("Connection failed: $message")
-                        }
-
-                        override fun onSuccess() {
-                            Log.i(TAG, "Connection succeeded")
-                        }
+                captureStreamer.onErrorListener = object : OnErrorListener {
+                    override fun onError(error: StreamPackError) {
+                        streamerError.postValue("${error.javaClass.simpleName}: ${error.message}")
                     }
+                }
+
+                if (captureStreamer is CaptureSrtLiveStreamer) {
+                    (captureStreamer as CaptureSrtLiveStreamer).onConnectionListener =
+                        object : OnConnectionListener {
+                            override fun onLost(message: String) {
+                                streamerError.postValue("Connection lost: $message")
+                            }
+
+                            override fun onFailed(message: String) {
+                                // Not needed as we catch startStream
+                            }
+
+                            override fun onSuccess() {
+                                Log.i(TAG, "Connection succeeded")
+                            }
+                        }
+                }
+                Log.d(TAG, "Streamer is created")
+            } catch (e: Throwable) {
+                Log.e(TAG, "createStreamer failed", e)
+                streamerError.postValue("createStreamer: ${e.message ?: "Unknown error"}")
             }
-            Log.d(TAG, "Streamer is created")
-        } catch (e: Exception) {
-            Log.e(TAG, "createStreamer failed", e)
-            streamerError.postValue("createStreamer: ${e.message ?: "Unknown error"}")
         }
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun configureStreamer() {
-        val videoConfig =
-            VideoConfig(
-                mimeType = configuration.video.encoder,
-                startBitrate = configuration.video.bitrate * 1000, // to b/s
-                resolution = configuration.video.resolution,
-                fps = configuration.video.fps
+        viewModelScope.launch {
+            val videoConfig =
+                VideoConfig(
+                    mimeType = configuration.video.encoder,
+                    startBitrate = configuration.video.bitrate * 1000, // to b/s
+                    resolution = configuration.video.resolution,
+                    fps = configuration.video.fps
+                )
+
+            val audioConfig = AudioConfig(
+                mimeType = configuration.audio.encoder,
+                startBitrate = configuration.audio.bitrate,
+                sampleRate = configuration.audio.sampleRate,
+                channelConfig = configuration.audio.channelConfiguration,
+                byteFormat = configuration.audio.byteFormat
             )
 
-        val audioConfig = AudioConfig(
-            mimeType = configuration.audio.encoder,
-            startBitrate = configuration.audio.bitrate,
-            sampleRate = configuration.audio.sampleRate,
-            channelConfig = configuration.audio.channelConfiguration,
-            byteFormat = configuration.audio.byteFormat
-        )
-
-        try {
-            captureStreamer.configure(audioConfig, videoConfig)
-            Log.d(TAG, "Streamer is configured")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to configure streamer", e)
-            streamerError.postValue("Failed to create CaptureLiveStream: ${e.message ?: "Unknown error"}")
+            try {
+                captureStreamer.configure(audioConfig, videoConfig)
+                Log.d(TAG, "Streamer is configured")
+            } catch (e: Throwable) {
+                Log.e(TAG, "Failed to configure streamer", e)
+                streamerError.postValue("Failed to create CaptureLiveStream: ${e.message ?: "Unknown error"}")
+            }
         }
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun startPreview(previewSurface: Surface) {
-        try {
-            captureStreamer.startPreview(previewSurface)
-        } catch (e: Exception) {
-            Log.e(TAG, "startPreview failed", e)
-            streamerError.postValue("startPreview: ${e.message ?: "Unknown error"}")
+        viewModelScope.launch {
+            try {
+                captureStreamer.startPreview(previewSurface)
+            } catch (e: Throwable) {
+                Log.e(TAG, "startPreview failed", e)
+                streamerError.postValue("startPreview: ${e.message ?: "Unknown error"}")
+            }
         }
     }
 
     fun stopPreview() {
-        captureStreamer.stopPreview()
+        viewModelScope.launch {
+            captureStreamer.stopPreview()
+        }
     }
 
     fun startStream() {
-        try {
-            if (captureStreamer is CaptureSrtLiveStreamer) {
-                (captureStreamer as CaptureSrtLiveStreamer).connect(
-                    configuration.endpoint.connection.ip,
-                    configuration.endpoint.connection.port
-                )
-            } else if (captureStreamer is CaptureFileStreamer) {
-                (captureStreamer as CaptureFileStreamer).file = File(
-                    (getApplication() as Context).getExternalFilesDir(Environment.DIRECTORY_DCIM),
-                    configuration.endpoint.file.filename
-                )
+        viewModelScope.launch {
+            try {
+                if (captureStreamer is CaptureSrtLiveStreamer) {
+                    (captureStreamer as CaptureSrtLiveStreamer).connect(
+                        configuration.endpoint.connection.ip,
+                        configuration.endpoint.connection.port
+                    )
+                } else if (captureStreamer is CaptureFileStreamer) {
+                    (captureStreamer as CaptureFileStreamer).file = File(
+                        (getApplication() as Context).getExternalFilesDir(Environment.DIRECTORY_DCIM),
+                        configuration.endpoint.file.filename
+                    )
+                }
+                captureStreamer.startStream()
+            } catch (e: Throwable) {
+                Log.e(TAG, "startStream failed", e)
+                streamerError.postValue("startStream: ${e.message ?: "Unknown error"}")
             }
-            captureStreamer.startStream()
-        } catch (e: Exception) {
-            Log.e(TAG, "startStream failed", e)
-            streamerError.postValue("startStream: ${e.message ?: "Unknown error"}")
         }
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun stopStream() {
-        captureStreamer.stopStream()
-        if (captureStreamer is CaptureSrtLiveStreamer) {
-            (captureStreamer as CaptureSrtLiveStreamer).disconnect()
+        viewModelScope.launch {
+            captureStreamer.stopStream()
+            if (captureStreamer is CaptureSrtLiveStreamer) {
+                (captureStreamer as CaptureSrtLiveStreamer).disconnect()
+            }
         }
     }
 
