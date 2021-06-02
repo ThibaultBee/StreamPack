@@ -36,7 +36,7 @@ class CaptureSrtLiveStreamer(
     context: Context,
     tsServiceInfo: ServiceInfo,
     logger: ILogger
-) : BaseCaptureStreamer(context, tsServiceInfo, SrtProducer(logger), logger) {
+) : BaseCaptureStreamer(context, tsServiceInfo, SrtProducer(logger = logger), logger) {
     /**
      * Listener to manage SRT connection.
      */
@@ -56,7 +56,7 @@ class CaptureSrtLiveStreamer(
      * @param port server port
      * @throws Exception if connection has failed or configuration has failed
      */
-    fun connect(ip: String, port: Int) {
+    suspend fun connect(ip: String, port: Int) {
         srtProducer.connect(ip, port)
     }
 
@@ -79,7 +79,7 @@ class CaptureSrtLiveStreamer(
      * @throws Exception if connection has failed or configuration has failed or [startStream] has failed too.
      */
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-    fun startStream(ip: String, port: Int) {
+    suspend fun startStream(ip: String, port: Int) {
         connect(ip, port)
         startStream()
     }
