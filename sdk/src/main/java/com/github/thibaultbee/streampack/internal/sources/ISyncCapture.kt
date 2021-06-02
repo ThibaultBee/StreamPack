@@ -13,22 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.internal.interfaces
+package com.github.thibaultbee.streampack.internal.sources
 
-interface Controllable {
-    /**
-     * Starts frames or data stream generation
-     * Throw an exception if not ready for live stream
-     */
-    fun startStream()
+import com.github.thibaultbee.streampack.internal.data.Frame
+import com.github.thibaultbee.streampack.internal.interfaces.Streamable
+import java.nio.ByteBuffer
 
-    /**
-     * Stops frames or data stream generation
-     */
-    fun stopStream()
+interface ISyncCapture<T> : Streamable<T> {
 
     /**
-     * Closes and releases resources
+     * Generate a frame from capture device
+     * @param buffer buffer where to write data. Must be set as buffer of returned Frame
+     * @return frame with correct infos (at least buffer, mime type and pts)
      */
-    fun release()
+    fun getFrame(buffer: ByteBuffer): Frame
 }

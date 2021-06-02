@@ -28,15 +28,15 @@ import com.github.thibaultbee.streampack.internal.utils.TimeUtils
 import com.github.thibaultbee.streampack.utils.ILogger
 import java.nio.ByteBuffer
 
-class AudioCapture(val logger: ILogger) : ICapture {
+class AudioCapture(val logger: ILogger) : ISyncCapture<AudioConfig> {
     private var audioRecord: AudioRecord? = null
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    fun configure(audioConfig: AudioConfig) {
+    override fun configure(config: AudioConfig) {
         val bufferSize = AudioRecord.getMinBufferSize(
-            audioConfig.sampleRate,
-            audioConfig.channelConfig,
-            audioConfig.byteFormat
+            config.sampleRate,
+            config.channelConfig,
+            config.byteFormat
         )
 
         if (bufferSize <= 0) {
@@ -44,8 +44,8 @@ class AudioCapture(val logger: ILogger) : ICapture {
         }
 
         audioRecord = AudioRecord(
-            MediaRecorder.AudioSource.DEFAULT, audioConfig.sampleRate,
-            audioConfig.channelConfig, audioConfig.byteFormat, bufferSize
+            MediaRecorder.AudioSource.DEFAULT, config.sampleRate,
+            config.channelConfig, config.byteFormat, bufferSize
         )
 
         if (audioRecord?.state != AudioRecord.STATE_INITIALIZED) {

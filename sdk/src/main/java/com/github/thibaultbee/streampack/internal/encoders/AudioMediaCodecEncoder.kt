@@ -32,10 +32,10 @@ class AudioMediaCodecEncoder(
     override val onInternalErrorListener: OnErrorListener,
     logger: ILogger
 ) :
-    MediaCodecEncoder(encoderListener, logger) {
+    MediaCodecEncoder<AudioConfig>(encoderListener, logger) {
 
-    fun configure(audioConfig: AudioConfig) {
-        mediaCodec = createAudioCodec(audioConfig)
+    override fun configure(config: AudioConfig) {
+        mediaCodec = createAudioCodec(config)
     }
 
     private fun createAudioCodec(audioConfig: AudioConfig): MediaCodec {

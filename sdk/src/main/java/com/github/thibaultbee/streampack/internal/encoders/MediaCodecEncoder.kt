@@ -28,11 +28,11 @@ import com.github.thibaultbee.streampack.utils.ILogger
 import java.nio.ByteBuffer
 import java.security.InvalidParameterException
 
-abstract class MediaCodecEncoder(
+abstract class MediaCodecEncoder<T>(
     override val encoderListener: IEncoderListener,
     val logger: ILogger
 ) :
-    EventHandler(), IEncoder {
+    EventHandler(), IEncoder<T> {
     protected var mediaCodec: MediaCodec? = null
     private var callbackThread: HandlerThread? = null
     protected var handler: Handler? = null

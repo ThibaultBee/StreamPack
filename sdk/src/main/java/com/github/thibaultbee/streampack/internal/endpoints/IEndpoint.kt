@@ -16,15 +16,15 @@
 package com.github.thibaultbee.streampack.internal.endpoints
 
 import com.github.thibaultbee.streampack.internal.data.Packet
-import com.github.thibaultbee.streampack.internal.interfaces.Controllable
+import com.github.thibaultbee.streampack.internal.interfaces.Streamable
 
-interface IEndpoint : Controllable {
+interface IEndpoint : Streamable<Int> {
 
     /**
      * Configure endpoint bitrate, mainly for network endpoint.
      * @param startBitrate bitrate at the beginning of the communication
      */
-    fun configure(startBitrate: Int)
+    override fun configure(startBitrate: Int)
 
     /**
      * Writes a buffer to endpoint.

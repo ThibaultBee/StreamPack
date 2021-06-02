@@ -24,7 +24,7 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.error.CameraError
 import com.github.thibaultbee.streampack.internal.events.EventHandler
-import com.github.thibaultbee.streampack.internal.interfaces.Controllable
+import com.github.thibaultbee.streampack.internal.interfaces.Streamable
 import com.github.thibaultbee.streampack.internal.sources.camera.CameraExecutorManager
 import com.github.thibaultbee.streampack.internal.sources.camera.CameraHandlerManager
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
@@ -40,7 +40,7 @@ class CameraCapture(
     override val onInternalErrorListener: OnErrorListener,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
     val logger: ILogger
-) : EventHandler(), Controllable {
+) : EventHandler(), Streamable<Int> {
     var previewSurface: Surface? = null
     var encoderSurface: Surface? = null
     var cameraId: String
@@ -87,7 +87,7 @@ class CameraCapture(
         return selectedFpsRange
     }
 
-    fun configure(fps: Int) {
+    override fun configure(fps: Int) {
         fpsRange = getClosestFpsRange(fps)
     }
 

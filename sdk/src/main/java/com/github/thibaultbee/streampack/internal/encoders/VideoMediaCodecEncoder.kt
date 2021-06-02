@@ -39,14 +39,14 @@ class VideoMediaCodecEncoder(
     private val context: Context,
     logger: ILogger
 ) :
-    MediaCodecEncoder(encoderListener, logger) {
+    MediaCodecEncoder<VideoConfig>(encoderListener, logger) {
     var codecSurface: CodecSurface? = null
 
-    fun configure(videoConfig: VideoConfig) {
+    override fun configure(config: VideoConfig) {
         mediaCodec = try {
-            createVideoCodec(videoConfig, true)
+            createVideoCodec(config, true)
         } catch (e: MediaCodec.CodecException) {
-            createVideoCodec(videoConfig, false)
+            createVideoCodec(config, false)
         }
     }
 

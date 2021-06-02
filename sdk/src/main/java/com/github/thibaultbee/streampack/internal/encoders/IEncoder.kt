@@ -15,9 +15,9 @@
  */
 package com.github.thibaultbee.streampack.internal.encoders
 
-import com.github.thibaultbee.streampack.internal.interfaces.Controllable
+import com.github.thibaultbee.streampack.internal.interfaces.Streamable
 
-interface IEncoder : Controllable {
+interface IEncoder<T> : Streamable<T> {
     /**
      * Input and output of an async encoder
      */

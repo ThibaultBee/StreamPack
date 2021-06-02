@@ -13,18 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.internal.sources
+package com.github.thibaultbee.streampack.internal.interfaces
 
-import com.github.thibaultbee.streampack.internal.data.Frame
-import com.github.thibaultbee.streampack.internal.interfaces.Controllable
-import java.nio.ByteBuffer
-
-interface ICapture : Controllable {
+interface Streamable<T> {
+    /**
+     * Configure the [Streamable] implementation.
+     *
+     * @param config [Streamable] implementation configuration
+     */
+    fun configure(config: T)
 
     /**
-     * Generate a frame from capture device
-     * @param buffer buffer where to write data. Must be set as buffer of returned Frame
-     * @return frame with correct infos (at least buffer, mime type and pts)
+     * Starts frames or data stream generation
+     * Throws an exception if not ready for live stream
      */
-    fun getFrame(buffer: ByteBuffer): Frame
+    fun startStream()
+
+    /**
+     * Stops frames or data stream generation
+     */
+    fun stopStream()
+
+    /**
+     * Closes and releases resources
+     */
+    fun release()
 }
