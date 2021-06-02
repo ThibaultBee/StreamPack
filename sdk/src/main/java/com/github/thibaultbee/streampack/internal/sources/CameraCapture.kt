@@ -38,6 +38,7 @@ import kotlin.coroutines.resumeWithException
 class CameraCapture(
     private val context: Context,
     override val onInternalErrorListener: OnErrorListener,
+    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
     val logger: ILogger
 ) : EventHandler(), Controllable {
     var previewSurface: Surface? = null
@@ -46,15 +47,15 @@ class CameraCapture(
         get() = camera?.id ?: "0"
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
-            val restartStream = isStreaming
-            stopPreview()
-            startPreviewAsync(value, restartStream)
+            runBlocking {
+                val restartStream = isStreaming
+                stopPreview()
+                startPreview(value, restartStream)
+            }
         }
 
     private var fpsRange = Range(0, 30)
     private var isStreaming = false
-
-    private val scope = CoroutineScope(Dispatchers.IO)
 
     private var camera: CameraDevice? = null
     private var captureSession: CameraCaptureSession? = null
@@ -127,33 +128,27 @@ class CameraCapture(
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    private suspend fun startPreview(cameraId: String, restartStream: Boolean = false) {
-        val manager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        camera = openCamera(manager, cameraId)
+    suspend fun startPreview(cameraId: String = this.cameraId, restartStream: Boolean = false) {
+        withContext(coroutineDispatcher) {
+            val manager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            camera = openCamera(manager, cameraId)
 
-        var targets = mutableListOf<Surface>()
-        previewSurface?.let { targets.add(it) }
-        encoderSurface?.let { targets.add(it) }
-
-        camera?.let {
-            captureSession = createCaptureSession(it, targets)
-
-            targets = mutableListOf()
+            var targets = mutableListOf<Surface>()
             previewSurface?.let { targets.add(it) }
-            if (restartStream) {
-                encoderSurface?.let { targets.add(it) }
+            encoderSurface?.let { targets.add(it) }
+
+            camera?.let {
+                captureSession = createCaptureSession(it, targets)
+
+                targets = mutableListOf()
+                previewSurface?.let { targets.add(it) }
+                if (restartStream) {
+                    encoderSurface?.let { targets.add(it) }
+                }
+                createRequestSession(it, captureSession!!, targets)
             }
-            createRequestSession(it, captureSession!!, targets)
         }
     }
-
-    @RequiresPermission(Manifest.permission.CAMERA)
-    fun startPreviewAsync(cameraId: String, restartStream: Boolean = false) = scope.async {
-        startPreview(cameraId, restartStream)
-    }
-
-    @RequiresPermission(Manifest.permission.CAMERA)
-    fun startPreviewAsync() = startPreviewAsync(cameraId)
 
     fun stopPreview() {
         captureSession?.close()

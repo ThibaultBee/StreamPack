@@ -186,7 +186,8 @@ open class BaseCaptureStreamer(
     }
 
     private val audioSource = AudioCapture(logger)
-    private val videoSource = CameraCapture(context, onInternalCaptureErrorListener, logger)
+    private val videoSource =
+        CameraCapture(context, onInternalCaptureErrorListener, logger = logger)
 
     private var audioEncoder =
         AudioMediaCodecEncoder(audioEncoderListener, onInternalCodecErrorListener, logger)
@@ -251,7 +252,7 @@ open class BaseCaptureStreamer(
             try {
                 videoSource.previewSurface = previewSurface
                 videoSource.encoderSurface = videoEncoder.inputSurface
-                videoSource.startPreviewAsync(cameraId).await()
+                videoSource.startPreview(cameraId)
 
                 audioSource.startStream()
             } catch (e: Exception) {
@@ -382,7 +383,7 @@ open class BaseCaptureStreamer(
         runBlocking {
             videoEncoder.configure(videoConfig!!)
             videoSource.encoderSurface = videoEncoder.inputSurface
-            videoSource.startPreviewAsync().await()
+            videoSource.startPreview()
         }
     }
 
