@@ -35,7 +35,7 @@ import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.internal.sources.AudioCapture
-import com.github.thibaultbee.streampack.internal.sources.CameraCapture
+import com.github.thibaultbee.streampack.internal.sources.camera.CameraCapture
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.utils.ILogger
 import com.github.thibaultbee.streampack.utils.getCameraList
@@ -103,12 +103,6 @@ open class BaseCaptureStreamer(
         }
     }
 
-    private val onInternalCaptureErrorListener = object : OnErrorListener {
-        override fun onError(error: StreamPackError) {
-            onPreviewError(error)
-        }
-    }
-
     private val audioEncoderListener = object : IEncoderListener {
         override fun onInputFrame(buffer: ByteBuffer): Frame {
             return audioSource.getFrame(buffer)
@@ -155,22 +149,6 @@ open class BaseCaptureStreamer(
     }
 
     /**
-     * Manages error on preview.
-     * Stops both stream and preview.
-     *
-     * @param error triggered [StreamPackError]
-     */
-    private fun onPreviewError(error: StreamPackError) {
-        try {
-            stopPreview()
-            onErrorListener?.onError(error)
-        } catch (e: Exception) {
-            logger.e(this, "onPreviewError: Can't stop preview")
-        }
-    }
-
-
-    /**
      * Manages error on stream.
      * Stops only stream.
      *
@@ -187,7 +165,7 @@ open class BaseCaptureStreamer(
 
     private val audioSource = AudioCapture(logger)
     private val videoSource =
-        CameraCapture(context, onInternalCaptureErrorListener, logger = logger)
+        CameraCapture(context, logger = logger)
 
     private var audioEncoder =
         AudioMediaCodecEncoder(audioEncoderListener, onInternalCodecErrorListener, logger)
@@ -376,6 +354,7 @@ open class BaseCaptureStreamer(
             return
         }
 
+        val restartPreview = videoSource.isPreviewing
         videoSource.stopPreview()
         videoEncoder.release()
 
@@ -383,7 +362,9 @@ open class BaseCaptureStreamer(
         runBlocking {
             videoEncoder.configure(videoConfig!!)
             videoSource.encoderSurface = videoEncoder.inputSurface
-            videoSource.startPreview()
+            if (restartPreview) {
+                videoSource.startPreview()
+            }
         }
     }
 
