@@ -86,6 +86,11 @@ class PreviewFragment : Fragment() {
             }
             .let(fragmentDisposables::add)
 
+        binding.flashButton.clicks()
+            .subscribe {
+                viewModel.toggleFlash()
+            }
+
         viewModel.streamerError.observe(viewLifecycleOwner) {
             showError("Oops", it)
         }

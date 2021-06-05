@@ -200,6 +200,11 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun toggleFlash() {
+        val settings = captureStreamer.cameraSettings
+        settings.flashEnable = !settings.flashEnable
+    }
+
     override fun onCleared() {
         super.onCleared()
         captureStreamer.release()

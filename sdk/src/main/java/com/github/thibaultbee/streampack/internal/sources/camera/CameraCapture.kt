@@ -17,18 +17,16 @@ package com.github.thibaultbee.streampack.internal.sources.camera
 
 import android.Manifest
 import android.content.Context
-import android.util.Range
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.internal.interfaces.Streamable
+import com.github.thibaultbee.streampack.utils.CameraSettings
 import com.github.thibaultbee.streampack.utils.ILogger
-import com.github.thibaultbee.streampack.utils.getCameraFpsList
 import kotlinx.coroutines.runBlocking
-import java.security.InvalidParameterException
 
 class CameraCapture(
-    private val context: Context,
-    private val logger: ILogger
+    context: Context,
+    logger: ILogger
 ) : Streamable<Int> {
     var previewSurface: Surface? = null
     var encoderSurface: Surface? = null
@@ -43,39 +41,15 @@ class CameraCapture(
             }
             field = value
         }
+    private var cameraController = CameraController(context, logger = logger)
+    var settings = CameraSettings(cameraController)
 
-    private var fpsRange = Range(0, 30)
+    private var fps: Int = 30
     private var isStreaming = false
     internal var isPreviewing = false
 
-    private var cameraController = CameraController(context, logger = logger)
-
-    private fun getClosestFpsRange(fps: Int): Range<Int> {
-        var fpsRangeList = context.getCameraFpsList(cameraId)
-        logger.d(this, "$fpsRangeList")
-
-        // Get range that contains FPS
-        fpsRangeList =
-            fpsRangeList.filter { it.contains(fps) or it.contains(fps * 1000) } // On Samsung S4 fps range is [4000-30000] instead of [4-30]
-        if (fpsRangeList.isEmpty()) {
-            throw InvalidParameterException("Failed to find a single FPS range that contains $fps")
-        }
-
-        // Get smaller range
-        var selectedFpsRange = fpsRangeList[0]
-        fpsRangeList = fpsRangeList.drop(0)
-        fpsRangeList.forEach {
-            if ((it.upper - it.lower) < (selectedFpsRange.upper - selectedFpsRange.lower)) {
-                selectedFpsRange = it
-            }
-        }
-
-        logger.d(this, "Selected Fps range $selectedFpsRange")
-        return selectedFpsRange
-    }
-
     override fun configure(fps: Int) {
-        fpsRange = getClosestFpsRange(fps)
+        this.fps = fps
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
@@ -90,7 +64,7 @@ class CameraCapture(
         if (restartStream) {
             encoderSurface?.let { targets.add(it) }
         }
-        cameraController.startRequestSession(fpsRange, targets)
+        cameraController.startRequestSession(fps, targets)
         isPreviewing = true
     }
 

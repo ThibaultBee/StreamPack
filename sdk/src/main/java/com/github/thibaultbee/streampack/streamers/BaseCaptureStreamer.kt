@@ -37,6 +37,7 @@ import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.internal.sources.AudioCapture
 import com.github.thibaultbee.streampack.internal.sources.camera.CameraCapture
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
+import com.github.thibaultbee.streampack.utils.CameraSettings
 import com.github.thibaultbee.streampack.utils.ILogger
 import com.github.thibaultbee.streampack.utils.getCameraList
 import kotlinx.coroutines.runBlocking
@@ -82,6 +83,12 @@ open class BaseCaptureStreamer(
         set(value) {
             videoSource.cameraId = value
         }
+
+    /**
+     * Get the object that manipulate camera settings.
+     */
+    val cameraSettings: CameraSettings
+        get() = videoSource.settings
 
     private var audioTsStreamId: Short? = null
     private var videoTsStreamId: Short? = null

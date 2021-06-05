@@ -9,7 +9,9 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.error.CameraError
 import com.github.thibaultbee.streampack.utils.ILogger
+import com.github.thibaultbee.streampack.utils.getCameraFpsList
 import kotlinx.coroutines.*
+import java.security.InvalidParameterException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -26,6 +28,30 @@ class CameraController(
         CameraExecutorManager()
     } else {
         CameraHandlerManager()
+    }
+
+    private fun getClosestFpsRange(cameraId: String, fps: Int): Range<Int> {
+        var fpsRangeList = context.getCameraFpsList(cameraId)
+        logger.d(this, "$fpsRangeList")
+
+        // Get range that contains FPS
+        fpsRangeList =
+            fpsRangeList.filter { it.contains(fps) or it.contains(fps * 1000) } // On Samsung S4 fps range is [4000-30000] instead of [4-30]
+        if (fpsRangeList.isEmpty()) {
+            throw InvalidParameterException("Failed to find a single FPS range that contains $fps")
+        }
+
+        // Get smaller range
+        var selectedFpsRange = fpsRangeList[0]
+        fpsRangeList = fpsRangeList.drop(0)
+        fpsRangeList.forEach {
+            if ((it.upper - it.lower) < (selectedFpsRange.upper - selectedFpsRange.lower)) {
+                selectedFpsRange = it
+            }
+        }
+
+        logger.d(this, "Selected Fps range $selectedFpsRange")
+        return selectedFpsRange
     }
 
     private class CameraDeviceCallback(
@@ -135,7 +161,7 @@ class CameraController(
         }
     }
 
-    fun startRequestSession(fpsRange: Range<Int>, targets: List<Surface>) {
+    fun startRequestSession(fps: Int, targets: List<Surface>) {
         require(camera != null) { "Camera must not be null" }
         require(captureSession != null) { "Capture session must not be null" }
         require(targets.isNotEmpty()) { " At least one target is required" }
@@ -144,7 +170,7 @@ class CameraController(
             createRequestSession(
                 camera!!,
                 captureSession!!,
-                fpsRange,
+                getClosestFpsRange(camera!!.id, fps),
                 targets
             )
     }
@@ -198,4 +224,12 @@ class CameraController(
             captureCallback
         )
     }
+
+    fun setFlash(mode: Int) {
+        captureRequest?.set(CaptureRequest.FLASH_MODE, mode)
+        updateCaptureSession()
+    }
+
+    fun getFlash(): Int =
+        captureRequest?.get(CaptureRequest.FLASH_MODE) ?: CaptureResult.FLASH_MODE_OFF
 }
