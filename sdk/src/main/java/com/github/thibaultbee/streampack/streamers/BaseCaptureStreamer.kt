@@ -44,7 +44,7 @@ import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
 
 /**
- * Base class of CaptureStreamer: [CaptureFileStreamer] or [CaptureSrtLiveStreamer]
+ * Base class of CaptureStreamer: [CaptureTsFileStreamer] or [CaptureSrtLiveStreamer]
  * Use this class, only if you want to implement a custom endpoint.
  *
  * @param context application context

@@ -9,8 +9,9 @@
 <br/>
 <h1>BaseCaptureStreamer</h1>
 <code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">BaseCaptureStreamer</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">EventHandler</span></code>
-<p>Base class of CaptureStreamer: <a href="../-capture-file-streamer/index.html">CaptureFileStreamer</a> or <a href="../-capture-srt-live-streamer/index.html">CaptureSrtLiveStreamer</a>
-Use this class, only if you want to implement a custom endpoint.</p>
+<p>Base class of CaptureStreamer: <a href="../-capture-ts-file-streamer/index.html">CaptureTsFileStreamer</a>
+    or <a href="../-capture-srt-live-streamer/index.html">CaptureSrtLiveStreamer</a>
+    Use this class, only if you want to implement a custom endpoint.</p>
 <h3>Parameters</h3>
 <p><a name="context"></a>
 <code>context</code> - application context</p>
@@ -29,8 +30,9 @@ Use this class, only if you want to implement a custom endpoint.</p>
 </td>
 <td>
 <code><span class="identifier">BaseCaptureStreamer</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.streamers.BaseCaptureStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.internal.endpoints.IEndpoint, com.github.thibaultbee.streampack.utils.ILogger)/context">context</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/content/Context.html"><span class="identifier">Context</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamers.BaseCaptureStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.internal.endpoints.IEndpoint, com.github.thibaultbee.streampack.utils.ILogger)/tsServiceInfo">tsServiceInfo</span><span class="symbol">:</span>&nbsp;<span class="identifier">ServiceInfo</span><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamers.BaseCaptureStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.internal.endpoints.IEndpoint, com.github.thibaultbee.streampack.utils.ILogger)/endpoint">endpoint</span><span class="symbol">:</span>&nbsp;<span class="identifier">IEndpoint</span><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamers.BaseCaptureStreamer$<init>(android.content.Context, com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo, com.github.thibaultbee.streampack.internal.endpoints.IEndpoint, com.github.thibaultbee.streampack.utils.ILogger)/logger">logger</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.utils/-i-logger/index.html"><span class="identifier">ILogger</span></a><span class="symbol">)</span></code>
-<p>Base class of CaptureStreamer: <a href="../-capture-file-streamer/index.html">CaptureFileStreamer</a> or <a href="../-capture-srt-live-streamer/index.html">CaptureSrtLiveStreamer</a>
-Use this class, only if you want to implement a custom endpoint.</p>
+    <p>Base class of CaptureStreamer: <a href="../-capture-ts-file-streamer/index.html">CaptureTsFileStreamer</a>
+        or <a href="../-capture-srt-live-streamer/index.html">CaptureSrtLiveStreamer</a>
+        Use this class, only if you want to implement a custom endpoint.</p>
 </td>
 </tr>
 </tbody>
@@ -75,7 +77,7 @@ Use this class, only if you want to implement a custom endpoint.</p>
 <tr>
     <td>
         <p><a href="on-error-listener.html">onErrorListener</a></p>
-</td>
+    </td>
 <td>
 <code><span class="keyword">var </span><span class="identifier">onErrorListener</span><span class="symbol">: </span><a href="../../com.github.thibaultbee.streampack.listeners/-on-error-listener/index.html"><span class="identifier">OnErrorListener</span></a><span class="symbol">?</span></code>
 <p>Listener that reports streamer error.
@@ -163,22 +165,28 @@ It also stops stream if the stream is running.</p>
 <tbody>
 <tr>
 <td>
-<p><a href="../-capture-file-streamer/index.html">CaptureFileStreamer</a></p>
+    <p><a href="../-capture-srt-live-streamer/index.html">CaptureSrtLiveStreamer</a></p>
 </td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">CaptureFileStreamer</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">BaseCaptureStreamer</span></a></code>
-<p><a href="./index.html">BaseCaptureStreamer</a> that sends audio/video frames to a <a href="https://developer.android.com/reference/java/io/File.html">File</a>.</p>
-</td>
+    <td>
+        <code><span class="keyword">class </span><span
+                class="identifier">CaptureSrtLiveStreamer</span>&nbsp;<span class="symbol">:</span>&nbsp;<a
+                href="./index.html"><span class="identifier">BaseCaptureStreamer</span></a></code>
+        <p><a href="./index.html">BaseCaptureStreamer</a> that sends audio/video frames to a remote
+            device p, Secure Reliable
+            Transport (SRT) Protocol.</p>
+    </td>
 </tr>
 <tr>
 <td>
-<p><a href="../-capture-srt-live-streamer/index.html">CaptureSrtLiveStreamer</a></p>
+    <p><a href="../-capture-ts-file-streamer/index.html">CaptureTsFileStreamer</a></p>
 </td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">CaptureSrtLiveStreamer</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">BaseCaptureStreamer</span></a></code>
-<p><a href="./index.html">BaseCaptureStreamer</a> that sends audio/video frames to a remote device p, Secure Reliable
-Transport (SRT) Protocol.</p>
-</td>
+    <td>
+        <code><span class="keyword">class </span><span
+                class="identifier">CaptureTsFileStreamer</span>&nbsp;<span class="symbol">:</span>&nbsp;<a
+                href="./index.html"><span class="identifier">BaseCaptureStreamer</span></a></code>
+        <p><a href="./index.html">BaseCaptureStreamer</a> that sends audio/video frames to a <a
+                href="https://developer.android.com/reference/java/io/File.html">File</a>.</p>
+    </td>
 </tr>
 </tbody>
 </table>

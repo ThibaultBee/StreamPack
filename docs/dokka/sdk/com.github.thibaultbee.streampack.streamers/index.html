@@ -17,28 +17,36 @@
 </td>
 <td>
 <code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">BaseCaptureStreamer</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">EventHandler</span></code>
-<p>Base class of CaptureStreamer: <a href="-capture-file-streamer/index.html">CaptureFileStreamer</a> or <a href="-capture-srt-live-streamer/index.html">CaptureSrtLiveStreamer</a>
-Use this class, only if you want to implement a custom endpoint.</p>
+<p>Base class of CaptureStreamer: <a href="-capture-ts-file-streamer/index.html">CaptureTsFileStreamer</a>
+    or <a href="-capture-srt-live-streamer/index.html">CaptureSrtLiveStreamer</a>
+    Use this class, only if you want to implement a custom endpoint.</p>
 </td>
 </tr>
 <tr>
 <td>
-<p><a href="-capture-file-streamer/index.html">CaptureFileStreamer</a></p>
+    <p><a href="-capture-srt-live-streamer/index.html">CaptureSrtLiveStreamer</a></p>
 </td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">CaptureFileStreamer</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-base-capture-streamer/index.html"><span class="identifier">BaseCaptureStreamer</span></a></code>
-<p><a href="-base-capture-streamer/index.html">BaseCaptureStreamer</a> that sends audio/video frames to a <a href="https://developer.android.com/reference/java/io/File.html">File</a>.</p>
-</td>
+    <td>
+        <code><span class="keyword">class </span><span
+                class="identifier">CaptureSrtLiveStreamer</span>&nbsp;<span class="symbol">:</span>&nbsp;<a
+                href="-base-capture-streamer/index.html"><span class="identifier">BaseCaptureStreamer</span></a></code>
+        <p><a href="-base-capture-streamer/index.html">BaseCaptureStreamer</a> that sends
+            audio/video frames to a remote device p, Secure Reliable
+            Transport (SRT) Protocol.</p>
+    </td>
 </tr>
 <tr>
 <td>
-<p><a href="-capture-srt-live-streamer/index.html">CaptureSrtLiveStreamer</a></p>
+    <p><a href="-capture-ts-file-streamer/index.html">CaptureTsFileStreamer</a></p>
 </td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">CaptureSrtLiveStreamer</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-base-capture-streamer/index.html"><span class="identifier">BaseCaptureStreamer</span></a></code>
-<p><a href="-base-capture-streamer/index.html">BaseCaptureStreamer</a> that sends audio/video frames to a remote device p, Secure Reliable
-Transport (SRT) Protocol.</p>
-</td>
+    <td>
+        <code><span class="keyword">class </span><span
+                class="identifier">CaptureTsFileStreamer</span>&nbsp;<span class="symbol">:</span>&nbsp;<a
+                href="-base-capture-streamer/index.html"><span class="identifier">BaseCaptureStreamer</span></a></code>
+        <p><a href="-base-capture-streamer/index.html">BaseCaptureStreamer</a> that sends
+            audio/video frames to a <a
+                    href="https://developer.android.com/reference/java/io/File.html">File</a>.</p>
+    </td>
 </tr>
 </tbody>
 </table>

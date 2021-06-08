@@ -35,8 +35,8 @@ import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.streamers.BaseCaptureStreamer
-import com.github.thibaultbee.streampack.streamers.CaptureFileStreamer
 import com.github.thibaultbee.streampack.streamers.CaptureSrtLiveStreamer
+import com.github.thibaultbee.streampack.streamers.CaptureTsFileStreamer
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -60,7 +60,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
                 Manifest.permission.CAMERA,
                 Manifest.permission.RECORD_AUDIO
             )
-            if (captureStreamer is CaptureFileStreamer) {
+            if (captureStreamer is CaptureTsFileStreamer) {
                 permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             }
             return permissions
@@ -79,7 +79,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
                 captureStreamer = if (configuration.endpoint.enpointType == EndpointType.SRT) {
                     CaptureSrtLiveStreamer(getApplication(), tsServiceInfo, logger = logger)
                 } else {
-                    CaptureFileStreamer(getApplication(), tsServiceInfo, logger)
+                    CaptureTsFileStreamer(getApplication(), tsServiceInfo, logger)
                 }
 
                 captureStreamer.onErrorListener = object : OnErrorListener {
@@ -167,8 +167,8 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
                         configuration.endpoint.connection.ip,
                         configuration.endpoint.connection.port
                     )
-                } else if (captureStreamer is CaptureFileStreamer) {
-                    (captureStreamer as CaptureFileStreamer).file = File(
+                } else if (captureStreamer is CaptureTsFileStreamer) {
+                    (captureStreamer as CaptureTsFileStreamer).file = File(
                         (getApplication() as Context).getExternalFilesDir(Environment.DIRECTORY_DCIM),
                         configuration.endpoint.file.filename
                     )

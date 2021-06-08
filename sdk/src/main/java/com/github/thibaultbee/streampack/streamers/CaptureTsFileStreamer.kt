@@ -30,7 +30,7 @@ import java.io.File
  * @param tsServiceInfo MPEG-TS service description
  * @param logger a [ILogger] implementation
  */
-class CaptureFileStreamer(
+class CaptureTsFileStreamer(
     context: Context,
     tsServiceInfo: ServiceInfo,
     val logger: ILogger
