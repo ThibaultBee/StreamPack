@@ -44,6 +44,12 @@ class CameraCapture(
     private var cameraController = CameraController(context, logger = logger)
     var settings = CameraSettings(cameraController)
 
+    /**
+     * As timestamp source differs from one camera to another. Computes an offset.
+     */
+    val timestampOffset = CameraHelper.getTimeOffsetToMonoClock(context, cameraId)
+
+
     private var fps: Int = 30
     private var isStreaming = false
     internal var isPreviewing = false

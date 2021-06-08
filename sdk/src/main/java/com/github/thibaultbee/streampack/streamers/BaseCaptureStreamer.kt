@@ -135,6 +135,12 @@ open class BaseCaptureStreamer(
         override fun onOutputFrame(frame: Frame) {
             videoTsStreamId?.let {
                 try {
+                    frame.pts += videoSource.timestampOffset
+                    frame.dts = if (frame.dts != null) {
+                        frame.dts!! + videoSource.timestampOffset
+                    } else {
+                        null
+                    }
                     tsMux.encode(frame, it)
                 } catch (e: Exception) {
                     // Send exception to encoder
