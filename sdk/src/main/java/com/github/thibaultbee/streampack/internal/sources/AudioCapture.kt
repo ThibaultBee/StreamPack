@@ -89,7 +89,7 @@ class AudioCapture(val logger: ILogger) : ISyncCapture<AudioConfig> {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             if (audioRecord.getTimestamp(
                     timestampOut,
-                    AudioTimestamp.TIMEBASE_BOOTTIME
+                    AudioTimestamp.TIMEBASE_MONOTONIC
                 ) == AudioRecord.SUCCESS
             ) {
                 timestamp = timestampOut.nanoTime / 1000 // to us
