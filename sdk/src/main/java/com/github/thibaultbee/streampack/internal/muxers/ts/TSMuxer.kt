@@ -321,7 +321,7 @@ class TSMuxer(
             tsServices.flatMap { it.streams }.map { it.pid } + tsServices.filter { it.pmt != null }
                 .map { it.pmt?.pid }
 
-        for (i in 0x10 until 0x1FFE) {
+        for (i in 0x20 until 0x1FFA) {
             if (!currentPids.contains(i.toShort())) {
                 return i.toShort()
             }
