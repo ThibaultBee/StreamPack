@@ -61,4 +61,23 @@ class PesTest {
             write(frame)
         }
     }
+
+    @Test
+    fun testSimpleAudioFrame() {
+        val rawData = ByteBuffer.wrap(
+            this.javaClass.classLoader!!.getResource("test-samples/pes-audio1/raw.aac")!!
+                .readBytes()
+        )
+        val frame =
+            Frame(rawData, MediaFormat.MIMETYPE_AUDIO_AAC, 1400000, null, isKeyFrame = true)
+
+        val expectedBuffers = readFrames("test-samples/pes-audio1")
+        Pes(
+            AssertEqualsBuffersMockMuxerListener(expectedBuffers),
+            Stream(MediaFormat.MIMETYPE_AUDIO_AAC, 256),
+            true
+        ).run {
+            write(frame)
+        }
+    }
 }
