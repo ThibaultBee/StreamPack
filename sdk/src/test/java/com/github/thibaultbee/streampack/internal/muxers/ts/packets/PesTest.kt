@@ -46,13 +46,13 @@ class PesTest {
     @Test
     fun testSimpleVideoFrame() {
         val rawData = ByteBuffer.wrap(
-            this.javaClass.classLoader!!.getResource("test-samples/pes-video1/raw")!!
+            this.javaClass.classLoader!!.getResource("test-samples/muxer/pes-video1/raw")!!
                 .readBytes()
         )
         val frame =
             Frame(rawData, MediaFormat.MIMETYPE_VIDEO_AVC, 1433334, 1400000, isKeyFrame = true)
 
-        val expectedBuffers = readFrames("test-samples/pes-video1")
+        val expectedBuffers = readFrames("test-samples/muxer/pes-video1")
         Pes(
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
             Stream(MediaFormat.MIMETYPE_VIDEO_AVC, 256),
@@ -65,13 +65,13 @@ class PesTest {
     @Test
     fun testSimpleAudioFrame() {
         val rawData = ByteBuffer.wrap(
-            this.javaClass.classLoader!!.getResource("test-samples/pes-audio1/raw.aac")!!
+            this.javaClass.classLoader!!.getResource("test-samples/muxer/pes-audio1/raw.aac")!!
                 .readBytes()
         )
         val frame =
             Frame(rawData, MediaFormat.MIMETYPE_AUDIO_AAC, 1400000, null, isKeyFrame = true)
 
-        val expectedBuffers = readFrames("test-samples/pes-audio1")
+        val expectedBuffers = readFrames("test-samples/muxer/pes-audio1")
         Pes(
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
             Stream(MediaFormat.MIMETYPE_AUDIO_AAC, 256),
