@@ -107,7 +107,7 @@ open class TS(
                         buffer.position(currentPacketFirstPosition + 4)
                         val stuffingLength = PACKET_SIZE - it.remaining() - headerSize - 1
                         buffer.put(stuffingLength.toByte())
-                        if (stuffingLength >= 2) {
+                        if (stuffingLength >= 1) {
                             buffer.put(0.toByte())
                             for (i in 0..stuffingLength - 2) {
                                 buffer.put(0xFF.toByte()) // Stuffing
