@@ -67,7 +67,7 @@ class AssertEqualsBuffersMockMuxerListener(private val expectedBuffers: List<Byt
             expectedBufferIndex++
             i++
 
-            if (expectedBufferIndex >= expectedBuffers.size - 1) {
+            if (expectedBufferIndex >= expectedBuffers.size) {
                 return
             }
         }
