@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.internal.muxers.ts.tables
+package com.github.thibaultbee.streampack.internal.muxers.ts.packets
 
 import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
-import com.github.thibaultbee.streampack.internal.muxers.ts.packets.TS
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.CRC32
 import java.nio.ByteBuffer
 

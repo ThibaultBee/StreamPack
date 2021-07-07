@@ -21,10 +21,10 @@ import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Service
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Stream
+import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Pat
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Pes
-import com.github.thibaultbee.streampack.internal.muxers.ts.tables.Pat
-import com.github.thibaultbee.streampack.internal.muxers.ts.tables.Pmt
-import com.github.thibaultbee.streampack.internal.muxers.ts.tables.Sdt
+import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Pmt
+import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Sdt
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.MuxerConst
 import com.github.thibaultbee.streampack.utils.isVideo
 import java.nio.ByteBuffer

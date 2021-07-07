@@ -15,7 +15,7 @@
  */
 package com.github.thibaultbee.streampack.internal.muxers.ts.data
 
-import com.github.thibaultbee.streampack.internal.muxers.ts.tables.Pmt
+import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Pmt
 
 class Service(
     val info: ServiceInfo,

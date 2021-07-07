@@ -17,6 +17,7 @@ package com.github.thibaultbee.streampack.internal.muxers.ts.tables
 
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Service
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
+import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Sdt
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.AssertEqualsSingleBufferMockMuxerListener
 import org.junit.Test
 import java.nio.ByteBuffer
