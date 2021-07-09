@@ -50,20 +50,13 @@ class AssertEqualsBuffersMockMuxerListener(private val expectedBuffers: List<Byt
 
             Assert.assertArrayEquals(
                 "Headers not equal at index $expectedBufferIndex",
-                expectedArray.copyOfRange(0, 6),
+                expectedArray,
                 actualArray.copyOfRange(
                     i * TS.PACKET_SIZE,
-                    6 + i * TS.PACKET_SIZE
-                )
-            )
-            Assert.assertArrayEquals(
-                "Payloads not equal at index $expectedBufferIndex",
-                expectedArray.copyOfRange(12, expectedBuffers[expectedBufferIndex].limit()),
-                actualArray.copyOfRange(
-                    12 + i * TS.PACKET_SIZE,
                     (i + 1) * TS.PACKET_SIZE
                 )
             )
+
             expectedBufferIndex++
             i++
 

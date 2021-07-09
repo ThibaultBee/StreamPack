@@ -19,6 +19,9 @@ import android.media.MediaFormat
 import com.github.thibaultbee.streampack.internal.data.Frame
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Stream
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.AssertEqualsBuffersMockMuxerListener
+import com.github.thibaultbee.streampack.internal.utils.TimeUtils
+import io.mockk.every
+import io.mockk.mockkObject
 import org.junit.Test
 import java.io.File
 import java.nio.ByteBuffer
@@ -45,6 +48,9 @@ class PesTest {
 
     @Test
     fun testSimpleVideoFrame() {
+        mockkObject(TimeUtils)
+        every { TimeUtils.currentTime() } returns 1433034
+
         val rawData = ByteBuffer.wrap(
             this.javaClass.classLoader!!.getResource("test-samples/muxer/pes-video1/raw")!!
                 .readBytes()
@@ -64,6 +70,9 @@ class PesTest {
 
     @Test
     fun testSimpleAudioFrame() {
+        mockkObject(TimeUtils)
+        every { TimeUtils.currentTime() } returns 700000
+
         val rawData = ByteBuffer.wrap(
             this.javaClass.classLoader!!.getResource("test-samples/muxer/pes-audio1/raw.aac")!!
                 .readBytes()
@@ -83,6 +92,9 @@ class PesTest {
 
     @Test
     fun testSimpleAudioFrameWith1StuffingLength() {
+        mockkObject(TimeUtils)
+        every { TimeUtils.currentTime() } returns 700000
+
         val rawData = ByteBuffer.wrap(
             this.javaClass.classLoader!!.getResource("test-samples/muxer/pes-audio2/raw.aac")!!
                 .readBytes()
