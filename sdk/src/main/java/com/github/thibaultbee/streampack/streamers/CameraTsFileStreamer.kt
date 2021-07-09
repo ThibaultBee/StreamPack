@@ -24,17 +24,17 @@ import com.github.thibaultbee.streampack.utils.ILogger
 import java.io.File
 
 /**
- * [BaseCaptureStreamer] that sends audio/video frames to a [File].
+ * [BaseCameraStreamer] that sends audio/video frames to a [File].
  *
  * @param context application context
  * @param tsServiceInfo MPEG-TS service description
  * @param logger a [ILogger] implementation
  */
-class CaptureTsFileStreamer(
+class CameraTsFileStreamer(
     context: Context,
     tsServiceInfo: ServiceInfo,
-    val logger: ILogger
-) : BaseCaptureStreamer(context, tsServiceInfo, FileWriter(logger), logger) {
+    logger: ILogger
+) : BaseCameraStreamer(context, tsServiceInfo, FileWriter(logger), logger) {
     private val fileWriter = endpoint as FileWriter
 
     /**
@@ -57,7 +57,7 @@ class CaptureTsFileStreamer(
         }
 
     /**
-     * Same as [BaseCaptureStreamer.startStream] with RequiresPermission annotation for
+     * Same as [BaseCameraStreamer.startStream] with RequiresPermission annotation for
      * Manifest.permission.WRITE_EXTERNAL_STORAGE.
      */
     @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
