@@ -111,6 +111,12 @@
                 app:title="@string/server_port"
                 app:useSimpleSummaryProvider="true" />
 
+            <EditTextPreference
+                app:defaultValue="@string/default_server_stream_id"
+                app:key="@string/server_stream_id_key"
+                app:title="@string/server_stream_id"
+                app:useSimpleSummaryProvider="true" />
+
         </PreferenceCategory>
 
         <PreferenceCategory

@@ -151,6 +151,11 @@ class Configuration(context: Context) {
                     field.toString()
                 )!!.toInt()
 
+            var streamID: String = ""
+                get() = sharedPref.getString(
+                    resources.getString(R.string.server_stream_id_key),
+                    field
+                )!!
         }
     }
 

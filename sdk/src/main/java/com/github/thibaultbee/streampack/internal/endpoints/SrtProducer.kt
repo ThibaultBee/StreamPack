@@ -45,6 +45,12 @@ class SrtProducer(
         private const val PAYLOAD_SIZE = 1316
     }
 
+    /**
+     * Get/set SRT stream ID
+     */
+    var streamId: String
+        get() = socket.getSockFlag(SockOpt.STREAMID) as String
+        set(value) = socket.setSockFlag(SockOpt.STREAMID, value)
 
     override fun configure(startBitrate: Int) {
         this.bitrate = startBitrate.toLong()
@@ -52,7 +58,6 @@ class SrtProducer(
 
     suspend fun connect(ip: String, port: Int) = withContext(coroutineDispatcher) {
         try {
-            socket = Socket()
             socket.listener = object : SocketListener {
                 override fun onConnectionLost(
                     ns: Socket,
@@ -82,6 +87,7 @@ class SrtProducer(
 
     fun disconnect() {
         socket.close()
+        socket = Socket()
     }
 
     override fun write(packet: Packet) {

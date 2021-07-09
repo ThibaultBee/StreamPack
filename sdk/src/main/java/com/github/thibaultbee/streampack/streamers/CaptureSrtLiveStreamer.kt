@@ -49,6 +49,23 @@ class CaptureSrtLiveStreamer(
     private val srtProducer = endpoint as SrtProducer
 
     /**
+     * Get/set SRT stream ID.
+     * **See:** [SRT Socket Options](https://github.com/Haivision/srt/blob/master/docs/API/API-socket-options.md#srto_streamid)
+     */
+    var streamId: String
+        /**
+         * Get SRT stream ID
+         * @return stream ID
+         */
+        get() = srtProducer.streamId
+        /**
+         * @param value stream ID
+         */
+        set(value) {
+            srtProducer.streamId = value
+        }
+
+    /**
      * Connect to an SRT server with correct Live streaming parameters.
      * To avoid creating an unresponsive UI, do not call on main thread.
      *

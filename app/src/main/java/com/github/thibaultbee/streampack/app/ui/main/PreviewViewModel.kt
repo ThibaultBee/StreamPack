@@ -163,7 +163,9 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             try {
                 if (captureStreamer is CaptureSrtLiveStreamer) {
-                    (captureStreamer as CaptureSrtLiveStreamer).connect(
+                    val captureSrtLiveStreamer = captureStreamer as CaptureSrtLiveStreamer
+                    captureSrtLiveStreamer.streamId = configuration.endpoint.connection.streamID
+                    captureSrtLiveStreamer.connect(
                         configuration.endpoint.connection.ip,
                         configuration.endpoint.connection.port
                     )
