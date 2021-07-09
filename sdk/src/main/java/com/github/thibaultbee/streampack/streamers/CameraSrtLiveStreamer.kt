@@ -25,18 +25,18 @@ import com.github.thibaultbee.streampack.utils.ILogger
 import java.net.SocketException
 
 /**
- * [BaseCaptureStreamer] that sends audio/video frames to a remote device p, Secure Reliable
+ * [BaseCameraStreamer] that sends audio/video frames to a remote device p, Secure Reliable
  * Transport (SRT) Protocol.
  *
  * @param context application context
  * @param tsServiceInfo MPEG-TS service description
  * @param logger a [ILogger] implementation
  */
-class CaptureSrtLiveStreamer(
+class CameraSrtLiveStreamer(
     context: Context,
     tsServiceInfo: ServiceInfo,
     logger: ILogger
-) : BaseCaptureStreamer(context, tsServiceInfo, SrtProducer(logger = logger), logger) {
+) : BaseCameraStreamer(context, tsServiceInfo, SrtProducer(logger = logger), logger) {
     /**
      * Listener to manage SRT connection.
      */

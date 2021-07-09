@@ -44,7 +44,7 @@ import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
 
 /**
- * Base class of CaptureStreamer: [CaptureTsFileStreamer] or [CaptureSrtLiveStreamer]
+ * Base class of CaptureStreamer: [CameraTsFileStreamer] or [CameraSrtLiveStreamer]
  * Use this class, only if you want to implement a custom endpoint.
  *
  * @param context application context
@@ -52,7 +52,7 @@ import java.nio.ByteBuffer
  * @param endpoint a [IEndpoint] implementation
  * @param logger a [ILogger] implementation
  */
-open class BaseCaptureStreamer(
+open class BaseCameraStreamer(
     private val context: Context,
     private val tsServiceInfo: ServiceInfo,
     protected val endpoint: IEndpoint,
@@ -189,7 +189,7 @@ open class BaseCaptureStreamer(
 
     /**
      * Configures both video and audio settings.
-     * It is the first method to call after a [BaseCaptureStreamer] instantiation.
+     * It is the first method to call after a [BaseCameraStreamer] instantiation.
      * It must be call when both stream and capture are not running.
      *
      * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
@@ -224,7 +224,7 @@ open class BaseCaptureStreamer(
 
     /**
      * Starts audio and video capture.
-     * [BaseCaptureStreamer.configure] must have been called at least once.
+     * [BaseCameraStreamer.configure] must have been called at least once.
      *
      * Inside, it launches both camera and microphone capture.
      *

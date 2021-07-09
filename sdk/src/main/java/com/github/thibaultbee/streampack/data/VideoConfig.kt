@@ -18,14 +18,14 @@ package com.github.thibaultbee.streampack.data
 import android.media.MediaCodecInfo.CodecProfileLevel
 import android.media.MediaFormat
 import android.util.Size
-import com.github.thibaultbee.streampack.streamers.BaseCaptureStreamer
+import com.github.thibaultbee.streampack.streamers.BaseCameraStreamer
 import com.github.thibaultbee.streampack.utils.isVideo
 
 /**
  * Video configuration class.
  * If you don't know how to set class members, [Video encoding recommendations](https://developer.android.com/guide/topics/media/media-formats#video-encoding) should give you hints.
  *
- * @see [BaseCaptureStreamer.configure]
+ * @see [BaseCameraStreamer.configure]
  */
 data class VideoConfig(
     /**
