@@ -26,6 +26,7 @@ import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Pes
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Pmt
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Sdt
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.MuxerConst
+import com.github.thibaultbee.streampack.internal.muxers.ts.utils.TSConst
 import com.github.thibaultbee.streampack.utils.isVideo
 import java.nio.ByteBuffer
 import java.util.*
@@ -321,7 +322,7 @@ class TSMuxer(
             tsServices.flatMap { it.streams }.map { it.pid } + tsServices.filter { it.pmt != null }
                 .map { it.pmt?.pid }
 
-        for (i in 0x20 until 0x1FFA) {
+        for (i in TSConst.BASE_PID until 0x1FFA) {
             if (!currentPids.contains(i.toShort())) {
                 return i.toShort()
             }
