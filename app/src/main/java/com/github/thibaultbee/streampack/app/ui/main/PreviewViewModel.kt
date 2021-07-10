@@ -115,13 +115,12 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun configureStreamer() {
         viewModelScope.launch {
-            val videoConfig =
-                VideoConfig(
-                    mimeType = configuration.video.encoder,
-                    startBitrate = configuration.video.bitrate * 1000, // to b/s
-                    resolution = configuration.video.resolution,
-                    fps = configuration.video.fps
-                )
+            val videoConfig = VideoConfig.Builder()
+                .setMimeType(configuration.video.encoder)
+                .setStartBitrate(configuration.video.bitrate * 1000)  // to b/s
+                .setResolution(configuration.video.resolution)
+                .setFps(configuration.video.fps)
+                .build()
 
             val audioConfig = AudioConfig.Builder()
                 .setMimeType(configuration.audio.encoder)

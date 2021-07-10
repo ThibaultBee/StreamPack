@@ -17,6 +17,7 @@ package com.github.thibaultbee.streampack.data
 
 import android.media.MediaCodecInfo.CodecProfileLevel
 import android.media.MediaFormat
+import android.os.Build
 import android.util.Size
 import com.github.thibaultbee.streampack.streamers.BaseCameraStreamer
 import com.github.thibaultbee.streampack.utils.isVideo
@@ -49,16 +50,84 @@ data class VideoConfig(
      */
     val fps: Int,
     /**
-     * Video encoder profile.
+     * Video encoder profile. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile.
+     * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
      */
-    val profile: Int = CodecProfileLevel.AVCProfileHigh,
+    val profile: Int,
     /**
-     * Video encoder level.
+     * Video encoder level. Encoders may not support requested level. In this case, StreamPack fallbacks to default level.
+     * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
      */
-    val level: Int = CodecProfileLevel.AVCLevel52,
+    val level: Int,
 ) {
     init {
-        require(mimeType.isVideo()) { "Mime Type must be video"}
+        require(mimeType.isVideo()) { "Mime Type must be video" }
+    }
+
+    /**
+     * Builder class for [VideoConfig] objects. Use this class to configure and create an [VideoConfig] instance.
+     */
+    data class Builder(
+        private var mimeType: String = MediaFormat.MIMETYPE_VIDEO_AVC,
+        private var startBitrate: Int = 2000000,
+        private var resolution: Size = Size(1280, 720),
+        private var fps: Int = 30,
+        private var profile: Int = CodecProfileLevel.AVCProfileHigh,
+        private var level: Int = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            CodecProfileLevel.AVCLevel62
+        } else {
+            CodecProfileLevel.AVCLevel52
+        },
+    ) {
+        /**
+         * Set video encoder mime type.
+         *
+         * @param mimeType video encoder mime type from [MediaFormat MIMETYPE_VIDEO_*](https://developer.android.com/reference/android/media/MediaFormat)
+         */
+        fun setMimeType(mimeType: String) = apply { this.mimeType = mimeType }
+
+        /**
+         * Set video encoder bitrate.
+         *
+         * @param startBitrate video encoder bitrate in bits/s.
+         */
+        fun setStartBitrate(startBitrate: Int) = apply { this.startBitrate = startBitrate }
+
+        /**
+         * Set video resolution.
+         *
+         * @param resolution video resolution
+         */
+        fun setResolution(resolution: Size) = apply { this.resolution = resolution }
+
+        /**
+         * Set video frame rate.
+         *
+         * @param fps video frame rate
+         */
+        fun setFps(fps: Int) = apply { this.fps = fps }
+
+        /**
+         * Set encoder profile.
+         *
+         * @param profile encoder profile from [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
+         */
+        fun setEncoderProfile(profile: Int) = apply { this.profile = profile }
+
+        /**
+         * Set encoder level.
+         *
+         * @param level encoder level from [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
+         */
+        fun setEncoderLevel(level: Int) = apply { this.level = level }
+
+        /**
+         * Combines all of the characteristics that have been set and return a new [VideoConfig] object.
+         *
+         * @return a new [VideoConfig] object
+         */
+        fun build() =
+            VideoConfig(mimeType, startBitrate, resolution, fps, profile, level)
     }
 }
 
