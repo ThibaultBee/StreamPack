@@ -42,7 +42,7 @@ class AudioMediaCodecEncoder(
         val audioFormat = MediaFormat.createAudioFormat(
             audioConfig.mimeType,
             audioConfig.sampleRate,
-            AudioConfig.getChannelNumber(audioConfig.channelConfig)
+            AudioConfig.getNumberOfChannels(audioConfig.channelConfig)
         )
 
         // Create codec

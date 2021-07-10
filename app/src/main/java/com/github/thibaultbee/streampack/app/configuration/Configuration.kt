@@ -65,9 +65,9 @@ class Configuration(context: Context) {
         var encoder: String = MediaFormat.MIMETYPE_AUDIO_AAC
             get() = sharedPref.getString(resources.getString(R.string.audio_encoder_key), field)!!
 
-        var channelConfiguration: Int = 12
+        var numberOfChannels: Int = 2
             get() = sharedPref.getString(
-                resources.getString(R.string.audio_channel_configuration_key),
+                resources.getString(R.string.audio_number_of_channels_configuration_key),
                 field.toString()
             )!!.toInt()
 
