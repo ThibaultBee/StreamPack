@@ -20,6 +20,7 @@ import android.content.Context
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.internal.endpoints.FileWriter
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
+import com.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
 import com.github.thibaultbee.streampack.utils.ILogger
 import java.io.File
 
@@ -34,13 +35,13 @@ class CameraTsFileStreamer(
     context: Context,
     tsServiceInfo: ServiceInfo,
     logger: ILogger
-) : BaseCameraStreamer(context, tsServiceInfo, FileWriter(logger), logger) {
+) : BaseCameraStreamer(context, tsServiceInfo, FileWriter(logger), logger), IFileStreamer {
     private val fileWriter = endpoint as FileWriter
 
     /**
      * Get/Set [FileWriter] file. If no file has been set. [FileWriter] uses a default temporary file.
      */
-    var file: File
+    override var file: File
         /**
          * Get file writer file.
          *

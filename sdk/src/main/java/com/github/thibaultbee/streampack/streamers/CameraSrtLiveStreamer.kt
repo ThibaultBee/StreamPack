@@ -21,6 +21,7 @@ import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.internal.endpoints.SrtProducer
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
+import com.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 import com.github.thibaultbee.streampack.utils.ILogger
 import java.net.SocketException
 
@@ -36,7 +37,8 @@ class CameraSrtLiveStreamer(
     context: Context,
     tsServiceInfo: ServiceInfo,
     logger: ILogger
-) : BaseCameraStreamer(context, tsServiceInfo, SrtProducer(logger = logger), logger) {
+) : BaseCameraStreamer(context, tsServiceInfo, SrtProducer(logger = logger), logger),
+    ILiveStreamer {
     /**
      * Listener to manage SRT connection.
      */
@@ -73,7 +75,7 @@ class CameraSrtLiveStreamer(
      * @param port server port
      * @throws Exception if connection has failed or configuration has failed
      */
-    suspend fun connect(ip: String, port: Int) {
+    override suspend fun connect(ip: String, port: Int) {
         srtProducer.connect(ip, port)
     }
 
@@ -82,7 +84,7 @@ class CameraSrtLiveStreamer(
      *
      * @throws SocketException is not connected
      */
-    fun disconnect() {
+    override fun disconnect() {
         srtProducer.disconnect()
     }
 
@@ -96,7 +98,7 @@ class CameraSrtLiveStreamer(
      * @throws Exception if connection has failed or configuration has failed or [startStream] has failed too.
      */
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-    suspend fun startStream(ip: String, port: Int) {
+    override suspend fun startStream(ip: String, port: Int) {
         connect(ip, port)
         startStream()
     }
