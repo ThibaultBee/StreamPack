@@ -37,6 +37,7 @@ import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.internal.sources.AudioCapture
 import com.github.thibaultbee.streampack.internal.sources.camera.CameraCapture
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
+import com.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import com.github.thibaultbee.streampack.utils.CameraSettings
 import com.github.thibaultbee.streampack.utils.ILogger
 import com.github.thibaultbee.streampack.utils.getCameraList
@@ -57,7 +58,7 @@ open class BaseCameraStreamer(
     private val tsServiceInfo: ServiceInfo,
     protected val endpoint: IEndpoint,
     private val logger: ILogger
-) : EventHandler() {
+) : EventHandler(), IStreamer {
     /**
      * Listener that reports streamer error.
      * Supports only one listener.
@@ -273,7 +274,7 @@ open class BaseCameraStreamer(
      *
      * @see [stopStream]
      */
-    open fun startStream() {
+    override fun startStream() {
         require(audioConfig != null) { "Audio has not been configured!" }
         require(videoConfig != null) { "Video has not been configured!" }
         require(videoEncoder.mimeType != null) { "Missing video encoder mime type! Encoder not configured?" }
@@ -308,7 +309,7 @@ open class BaseCameraStreamer(
      *
      * @see [startStream]
      */
-    fun stopStream() {
+    override fun stopStream() {
         stopStreamImpl()
 
         // Encoder does not return to CONFIGURED state... so we have to reset everything for video...
