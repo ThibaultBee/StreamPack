@@ -58,7 +58,6 @@ data class AudioConfig(
 
     /**
      * Audio byte format.
-     * From [AudioRecord API](https://developer.android.com/reference/android/media/AudioRecord?hl=en#AudioRecord(int,%20int,%20int,%20int,%20int)): " AudioFormat#CHANNEL_IN_MONO is guaranteed to work on all devices."
      *
      * @see [AudioFormat.ENCODING_PCM_8BIT]
      * @see [AudioFormat.ENCODING_PCM_16BIT]
@@ -77,10 +76,76 @@ data class AudioConfig(
          * @param channelConfig [AudioFormat.CHANNEL_IN_MONO] or [AudioFormat.CHANNEL_IN_STEREO]
          * @return number of channels
          */
-        fun getChannelNumber(channelConfig: Int) = when (channelConfig) {
+        fun getNumberOfChannels(channelConfig: Int) = when (channelConfig) {
             AudioFormat.CHANNEL_IN_MONO -> 1
             AudioFormat.CHANNEL_IN_STEREO -> 2
-            else -> throw InvalidParameterException("Unknown audio format: $channelConfig")
+            else -> throw InvalidParameterException("Audio format not supported: $channelConfig")
         }
+
+        /**
+         * Returns channel configuration from the number of channels.
+         *
+         * @param nChannel 1 for mono, 2 for stereo
+         * @return channel configuration (either [AudioFormat.CHANNEL_IN_MONO] or [AudioFormat.CHANNEL_IN_STEREO])
+         */
+        fun getChannelConfig(nChannel: Int) = when (nChannel) {
+            1 -> AudioFormat.CHANNEL_IN_MONO
+            2 -> AudioFormat.CHANNEL_IN_STEREO
+            else -> throw InvalidParameterException("Number of channels not supported: $nChannel")
+        }
+    }
+
+    /**
+     * Builder class for [AudioConfig] objects. Use this class to configure and create an [AudioConfig] instance.
+     */
+    data class Builder(
+        private var mimeType: String = MediaFormat.MIMETYPE_AUDIO_AAC,
+        private var startBitrate: Int = 128000,
+        private var sampleRate: Int = 44100,
+        private var nChannel: Int = 2,
+        private var byteFormat: Int = AudioFormat.ENCODING_PCM_16BIT
+    ) {
+        /**
+         * Set audio encoder mime type.
+         *
+         * @param mimeType audio encoder mime type from [MediaFormat MIMETYPE_AUDIO_*](https://developer.android.com/reference/android/media/MediaFormat)
+         */
+        fun setMimeType(mimeType: String) = apply { this.mimeType = mimeType }
+
+        /**
+         * Set audio encoder bitrate.
+         *
+         * @param startBitrate audio encoder bitrate in bits/s.
+         */
+        fun setStartBitrate(startBitrate: Int) = apply { this.startBitrate = startBitrate }
+
+        /**
+         * Set sample rate.
+         *
+         * @param sampleRate audio capture sample rate (example: 44100, 48000,...)
+         */
+        fun setSampleRate(sampleRate: Int) = apply { this.sampleRate = sampleRate }
+
+        /**
+         * Set number of channels.
+         *
+         * @param nChannel 1 for mono, 2 for stereo
+         */
+        fun setNumberOfChannel(nChannel: Int) = apply { this.nChannel = nChannel }
+
+        /**
+         * Set audio capture byte format.
+         *
+         * @param byteFormat [AudioFormat.ENCODING_PCM_8BIT], [AudioFormat.ENCODING_PCM_16BIT] or [AudioFormat.ENCODING_PCM_FLOAT]
+         */
+        fun setByteFormat(byteFormat: Int) = apply { this.byteFormat = byteFormat }
+
+        /**
+         * Combines all of the characteristics that have been set and return a new [AudioConfig] object.
+         *
+         * @return a new [AudioConfig] object
+         */
+        fun build() =
+            AudioConfig(mimeType, startBitrate, sampleRate, getChannelConfig(nChannel), byteFormat)
     }
 }

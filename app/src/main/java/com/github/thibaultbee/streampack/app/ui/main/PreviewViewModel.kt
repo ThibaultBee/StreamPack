@@ -123,13 +123,13 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
                     fps = configuration.video.fps
                 )
 
-            val audioConfig = AudioConfig(
-                mimeType = configuration.audio.encoder,
-                startBitrate = configuration.audio.bitrate,
-                sampleRate = configuration.audio.sampleRate,
-                channelConfig = configuration.audio.channelConfiguration,
-                byteFormat = configuration.audio.byteFormat
-            )
+            val audioConfig = AudioConfig.Builder()
+                .setMimeType(configuration.audio.encoder)
+                .setStartBitrate(configuration.audio.bitrate)
+                .setSampleRate(configuration.audio.sampleRate)
+                .setNumberOfChannel(configuration.audio.numberOfChannels)
+                .setByteFormat(configuration.audio.byteFormat)
+                .build()
 
             try {
                 cameraStreamer.configure(audioConfig, videoConfig)

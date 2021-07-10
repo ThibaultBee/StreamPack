@@ -38,11 +38,11 @@
             app:useSimpleSummaryProvider="true" />
 
         <ListPreference
-            app:defaultValue="12"
-            app:entries="@array/AudioChannelEntries"
-            app:entryValues="@array/AudioChannelEntryValues"
-            app:key="@string/audio_channel_configuration_key"
-            app:title="@string/audio_channel_configuration"
+            app:defaultValue="2"
+            app:entries="@array/AudioNumberOfChannelsEntries"
+            app:entryValues="@array/AudioNumberOfChannelsEntryValues"
+            app:key="@string/audio_number_of_channels_configuration_key"
+            app:title="@string/audio_number_of_channels_configuration"
             app:useSimpleSummaryProvider="true" />
 
         <ListPreference
