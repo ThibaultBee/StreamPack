@@ -80,6 +80,7 @@ class SrtProducer(
             socket.connect(ip, port)
             onConnectionListener?.onSuccess()
         } catch (e: Exception) {
+            socket = Socket()
             onConnectionListener?.onFailed(e.message ?: "Unknown error")
             throw e
         }
