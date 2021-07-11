@@ -128,7 +128,6 @@ class PreviewFragment : Fragment() {
                     showPermissionErrorAndFinish()
                 } else {
                     viewModel.createStreamer()
-                    viewModel.configureStreamer()
                     // Wait till streamer exists to create the SurfaceView (and call startCapture).
                     binding.surfaceView.visibility = View.VISIBLE
                 }

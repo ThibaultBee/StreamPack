@@ -14,4 +14,6 @@ com.github.thibaultbee.streampack.data
 com.github.thibaultbee.streampack.error
 com.github.thibaultbee.streampack.listeners
 com.github.thibaultbee.streampack.streamers
+com.github.thibaultbee.streampack.streamers.interfaces
+com.github.thibaultbee.streampack.streamers.interfaces.builders
 com.github.thibaultbee.streampack.utils

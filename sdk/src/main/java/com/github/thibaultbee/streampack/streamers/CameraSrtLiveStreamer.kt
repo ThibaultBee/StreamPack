@@ -17,12 +17,17 @@ package com.github.thibaultbee.streampack.streamers
 
 import android.Manifest
 import android.content.Context
+import android.view.Surface
 import androidx.annotation.RequiresPermission
+import com.github.thibaultbee.streampack.data.AudioConfig
+import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.internal.endpoints.SrtProducer
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
+import com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
 import com.github.thibaultbee.streampack.utils.ILogger
+import com.github.thibaultbee.streampack.utils.StreamPackLogger
 import java.net.SocketException
 
 /**
@@ -101,5 +106,95 @@ class CameraSrtLiveStreamer(
     override suspend fun startStream(ip: String, port: Int) {
         connect(ip, port)
         startStream()
+    }
+
+    /**
+     * Builder class for [CameraSrtLiveStreamer] objects. Use this class to configure and create an [CameraSrtLiveStreamer] instance.
+     */
+    data class Builder(
+        private var logger: ILogger = StreamPackLogger(),
+        private var audioConfig: AudioConfig? = null,
+        private var videoConfig: VideoConfig? = null,
+        private var previewSurface: Surface? = null,
+        private var streamId: String? = null
+    ) : IStreamerBuilder {
+        private lateinit var context: Context
+        private lateinit var serviceInfo: ServiceInfo
+
+        /**
+         * Set application context. It is mandatory to set context.
+         *
+         * @param context application context.
+         */
+        override fun setContext(context: Context) = apply { this.context = context }
+
+        /**
+         * Set TS service info. It is mandatory to set TS service info.
+         *
+         * @param serviceInfo TS service info.
+         */
+        override fun setServiceInfo(serviceInfo: ServiceInfo) =
+            apply { this.serviceInfo = serviceInfo }
+
+        /**
+         * Set logger.
+         *
+         * @param logger [ILogger] implementation
+         */
+        override fun setLogger(logger: ILogger) = apply { this.logger = logger }
+
+        /**
+         * Set both audio and video configuration. Can be change with [configure].
+         *
+         * @param audioConfig audio configuration
+         * @param videoConfig video configuration
+         */
+        override fun setConfiguration(audioConfig: AudioConfig, videoConfig: VideoConfig) = apply {
+            this.audioConfig = audioConfig
+            this.videoConfig = videoConfig
+        }
+
+        /**
+         * Set preview surface.
+         * If provided, it starts preview.
+         *
+         * @param previewSurface surface where to display preview
+         */
+        override fun setPreviewSurface(previewSurface: Surface) = apply {
+            this.previewSurface = previewSurface
+        }
+
+        /**
+         * Set SRT stream id.
+         *
+         * @param previewSurface surface where to display preview
+         */
+        fun setStreamId(streamId: String) = apply {
+            this.streamId = streamId
+        }
+
+        /**
+         * Combines all of the characteristics that have been set and return a new [CameraSrtLiveStreamer] object.
+         *
+         * @return a new [CameraSrtLiveStreamer] object
+         */
+        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
+        override fun build(): CameraSrtLiveStreamer {
+            val streamer = CameraSrtLiveStreamer(context, serviceInfo, logger)
+
+            if ((audioConfig != null) && (videoConfig != null)) {
+                streamer.configure(audioConfig!!, videoConfig!!)
+            }
+
+            previewSurface?.let {
+                streamer.startPreview(it)
+            }
+
+            streamId?.let {
+                streamer.streamId = it
+            }
+
+            return streamer
+        }
     }
 }

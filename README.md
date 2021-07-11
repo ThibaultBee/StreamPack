@@ -46,10 +46,27 @@ side, you should be able to watch this stream.
 Captures your camera and microphone frames. Streams them to a SRT server. It is that simple:
 
 ```
-val streamer = CaptureSrtLiveStream(...)
-// Configures audio and video settings (encoder, resolution, bitrates,...)
-streamer.configure(audioConfig, videoConfig)
-streamer.startPreview(surface) // where to display preview
+// Prepare A/V configurations
+val audioConfig = AudioConfig.Builder()
+                      .setStartBitrate(128000)
+                      .setSampleRate(48000)
+                      .setNumberOfChannel(2)
+                      .build()
+
+val videoConfig = VideoConfig.Builder()
+                    .setStartBitrate(1000000) // 1 Mb/s
+                    .setResolution(Size(1280,720))
+                    .setFps(30)
+                    .build()
+
+val streamer = CameraTsFileStreamer.Builder()
+                .setContext(getApplication())
+                .setServiceInfo(tsServiceInfo)
+                .setConfiguration(audioConfig, videoConfig)
+                .build()
+...
+// where to display preview
+streamer.startPreview(surface)
 ...
 // Connect to a SRT server
 streamer.connect(ip, port)
