@@ -1,0 +1,88 @@
+<HTML>
+<HEAD>
+    <meta charset="UTF-8">
+    <title>IFileStreamer - sdk</title>
+    <link href="../../../style.css" rel="stylesheet">
+</HEAD>
+<BODY>
+<a href="../../index.html">sdk</a>&nbsp;/&nbsp;<a href="../index.html">com.github.thibaultbee.streampack.streamers.interfaces</a>&nbsp;/&nbsp;<a
+        href="./index.html">IFileStreamer</a><br/>
+<br/>
+<h1>IFileStreamer</h1>
+<code><span class="keyword">interface </span><span
+        class="identifier">IFileStreamer</span>&nbsp;<span class="symbol">:</span>&nbsp;<a
+        href="../-i-streamer/index.html"><span class="identifier">IStreamer</span></a></code>
+<h3>Properties</h3>
+<table>
+    <tbody>
+    <tr>
+        <td>
+            <p><a href="file.html">file</a></p>
+        </td>
+        <td>
+            <code><span class="keyword">abstract</span> <span class="keyword">var </span><span
+                    class="identifier">file</span><span class="symbol">: </span><a
+                    href="https://developer.android.com/reference/java/io/File.html"><span
+                    class="identifier">File</span></a></code>
+            <p>Streamer file.</p>
+        </td>
+    </tr>
+    </tbody>
+</table>
+<h3>Inherited Functions</h3>
+<table>
+    <tbody>
+    <tr>
+        <td>
+            <p><a href="../-i-streamer/start-stream.html">startStream</a></p>
+        </td>
+        <td>
+            <code><span class="keyword">abstract</span> <span class="keyword">fun </span><span
+                    class="identifier">startStream</span><span class="symbol">(</span><span
+                    class="symbol">)</span><span class="symbol">: </span><a
+                    href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span
+                    class="identifier">Unit</span></a></code>
+            <p>Starts audio/video stream.</p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <p><a href="../-i-streamer/stop-stream.html">stopStream</a></p>
+        </td>
+        <td>
+            <code><span class="keyword">abstract</span> <span class="keyword">fun </span><span
+                    class="identifier">stopStream</span><span class="symbol">(</span><span
+                    class="symbol">)</span><span class="symbol">: </span><a
+                    href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span
+                    class="identifier">Unit</span></a></code>
+            <p>Stops audio/video stream.</p>
+        </td>
+    </tr>
+    </tbody>
+</table>
+<h3>Inheritors</h3>
+<table>
+    <tbody>
+    <tr>
+        <td>
+            <p>
+                <a href="../../com.github.thibaultbee.streampack.streamers/-camera-ts-file-streamer/index.html">CameraTsFileStreamer</a>
+            </p>
+        </td>
+        <td>
+            <code><span class="keyword">class </span><span
+                    class="identifier">CameraTsFileStreamer</span>&nbsp;<span
+                    class="symbol">:</span>&nbsp;<a
+                    href="../../com.github.thibaultbee.streampack.streamers/-base-camera-streamer/index.html"><span
+                    class="identifier">BaseCameraStreamer</span></a><span class="symbol">, </span><a
+                    href="./index.html"><span class="identifier">IFileStreamer</span></a></code>
+            <p>
+                <a href="../../com.github.thibaultbee.streampack.streamers/-base-camera-streamer/index.html">BaseCameraStreamer</a>
+                that sends audio/video frames to a <a
+                    href="https://developer.android.com/reference/java/io/File.html">File</a>.</p>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</BODY>
+</HTML>

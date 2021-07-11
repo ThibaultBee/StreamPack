@@ -10,6 +10,10 @@
 <h1>profile</h1>
 <a name="com.github.thibaultbee.streampack.data.VideoConfig$profile"></a>
 <code><span class="keyword">val </span><span class="identifier">profile</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code>
-<p>Video encoder profile.</p>
+<p>Video encoder profile. Encoders may not support requested profile. In this case, StreamPack
+    fallbacks to default profile.
+    ** See ** <a
+            href="https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel">MediaCodecInfo.CodecProfileLevel</a>
+</p>
 </BODY>
 </HTML>

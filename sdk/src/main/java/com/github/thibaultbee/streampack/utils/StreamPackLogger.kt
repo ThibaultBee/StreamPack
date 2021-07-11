@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.app.utils
+package com.github.thibaultbee.streampack.utils
 
 import android.util.Log
-import com.github.thibaultbee.streampack.utils.ILogger
 
 class StreamPackLogger: ILogger {
     override fun e(obj: Any, message: String, tr: Throwable?) {

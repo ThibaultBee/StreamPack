@@ -27,7 +27,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.github.thibaultbee.streampack.app.configuration.Configuration
 import com.github.thibaultbee.streampack.app.configuration.Configuration.Endpoint.EndpointType
-import com.github.thibaultbee.streampack.app.utils.StreamPackLogger
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.error.StreamPackError
@@ -43,14 +42,12 @@ import java.io.File
 class PreviewViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = this::class.java.simpleName
 
-    private val logger = StreamPackLogger()
-
     private val configuration = Configuration(getApplication())
 
-    private lateinit var cameraStreamer: BaseCameraStreamer
+    private lateinit var streamer: BaseCameraStreamer
 
     val cameraId: String
-        get() = cameraStreamer.camera
+        get() = streamer.camera
 
     val streamerError = MutableLiveData<String>()
 
@@ -60,7 +57,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
                 Manifest.permission.CAMERA,
                 Manifest.permission.RECORD_AUDIO
             )
-            if (cameraStreamer is CameraTsFileStreamer) {
+            if (streamer is CameraTsFileStreamer) {
                 permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             }
             return permissions
@@ -76,20 +73,41 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
             )
 
             try {
-                cameraStreamer = if (configuration.endpoint.enpointType == EndpointType.SRT) {
-                    CameraSrtLiveStreamer(getApplication(), tsServiceInfo, logger = logger)
+                val streamerBuilder = if (configuration.endpoint.enpointType == EndpointType.SRT) {
+                    CameraSrtLiveStreamer.Builder()
                 } else {
-                    CameraTsFileStreamer(getApplication(), tsServiceInfo, logger)
+                    CameraTsFileStreamer.Builder()
                 }
 
-                cameraStreamer.onErrorListener = object : OnErrorListener {
+                val videoConfig = VideoConfig.Builder()
+                    .setMimeType(configuration.video.encoder)
+                    .setStartBitrate(configuration.video.bitrate * 1000)  // to b/s
+                    .setResolution(configuration.video.resolution)
+                    .setFps(configuration.video.fps)
+                    .build()
+
+                val audioConfig = AudioConfig.Builder()
+                    .setMimeType(configuration.audio.encoder)
+                    .setStartBitrate(configuration.audio.bitrate)
+                    .setSampleRate(configuration.audio.sampleRate)
+                    .setNumberOfChannel(configuration.audio.numberOfChannels)
+                    .setByteFormat(configuration.audio.byteFormat)
+                    .build()
+
+                streamer = streamerBuilder
+                    .setContext(getApplication())
+                    .setServiceInfo(tsServiceInfo)
+                    .setConfiguration(audioConfig, videoConfig)
+                    .build()
+
+                streamer.onErrorListener = object : OnErrorListener {
                     override fun onError(error: StreamPackError) {
                         streamerError.postValue("${error.javaClass.simpleName}: ${error.message}")
                     }
                 }
 
-                if (cameraStreamer is CameraSrtLiveStreamer) {
-                    (cameraStreamer as CameraSrtLiveStreamer).onConnectionListener =
+                if (streamer is CameraSrtLiveStreamer) {
+                    (streamer as CameraSrtLiveStreamer).onConnectionListener =
                         object : OnConnectionListener {
                             override fun onLost(message: String) {
                                 streamerError.postValue("Connection lost: $message")
@@ -113,38 +131,10 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-    fun configureStreamer() {
-        viewModelScope.launch {
-            val videoConfig = VideoConfig.Builder()
-                .setMimeType(configuration.video.encoder)
-                .setStartBitrate(configuration.video.bitrate * 1000)  // to b/s
-                .setResolution(configuration.video.resolution)
-                .setFps(configuration.video.fps)
-                .build()
-
-            val audioConfig = AudioConfig.Builder()
-                .setMimeType(configuration.audio.encoder)
-                .setStartBitrate(configuration.audio.bitrate)
-                .setSampleRate(configuration.audio.sampleRate)
-                .setNumberOfChannel(configuration.audio.numberOfChannels)
-                .setByteFormat(configuration.audio.byteFormat)
-                .build()
-
-            try {
-                cameraStreamer.configure(audioConfig, videoConfig)
-                Log.d(TAG, "Streamer is configured")
-            } catch (e: Throwable) {
-                Log.e(TAG, "Failed to configure streamer", e)
-                streamerError.postValue("Failed to create CaptureLiveStream: ${e.message ?: "Unknown error"}")
-            }
-        }
-    }
-
-    @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun startPreview(previewSurface: Surface) {
         viewModelScope.launch {
             try {
-                cameraStreamer.startPreview(previewSurface)
+                streamer.startPreview(previewSurface)
             } catch (e: Throwable) {
                 Log.e(TAG, "startPreview failed", e)
                 streamerError.postValue("startPreview: ${e.message ?: "Unknown error"}")
@@ -154,27 +144,27 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
 
     fun stopPreview() {
         viewModelScope.launch {
-            cameraStreamer.stopPreview()
+            streamer.stopPreview()
         }
     }
 
     fun startStream() {
         viewModelScope.launch {
             try {
-                if (cameraStreamer is CameraSrtLiveStreamer) {
-                    val captureSrtLiveStreamer = cameraStreamer as CameraSrtLiveStreamer
+                if (streamer is CameraSrtLiveStreamer) {
+                    val captureSrtLiveStreamer = streamer as CameraSrtLiveStreamer
                     captureSrtLiveStreamer.streamId = configuration.endpoint.connection.streamID
                     captureSrtLiveStreamer.connect(
                         configuration.endpoint.connection.ip,
                         configuration.endpoint.connection.port
                     )
-                } else if (cameraStreamer is CameraTsFileStreamer) {
-                    (cameraStreamer as CameraTsFileStreamer).file = File(
+                } else if (streamer is CameraTsFileStreamer) {
+                    (streamer as CameraTsFileStreamer).file = File(
                         (getApplication() as Context).getExternalFilesDir(Environment.DIRECTORY_DCIM),
                         configuration.endpoint.file.filename
                     )
                 }
-                cameraStreamer.startStream()
+                streamer.startStream()
             } catch (e: Throwable) {
                 Log.e(TAG, "startStream failed", e)
                 streamerError.postValue("startStream: ${e.message ?: "Unknown error"}")
@@ -185,29 +175,29 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun stopStream() {
         viewModelScope.launch {
-            cameraStreamer.stopStream()
-            if (cameraStreamer is CameraSrtLiveStreamer) {
-                (cameraStreamer as CameraSrtLiveStreamer).disconnect()
+            streamer.stopStream()
+            if (streamer is CameraSrtLiveStreamer) {
+                (streamer as CameraSrtLiveStreamer).disconnect()
             }
         }
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
     fun toggleVideoSource() {
-        if (cameraStreamer.camera == "0") {
-            cameraStreamer.camera = "1"
+        if (streamer.camera == "0") {
+            streamer.camera = "1"
         } else {
-            cameraStreamer.camera = "0"
+            streamer.camera = "0"
         }
     }
 
     fun toggleFlash() {
-        val settings = cameraStreamer.cameraSettings
+        val settings = streamer.cameraSettings
         settings.flashEnable = !settings.flashEnable
     }
 
     override fun onCleared() {
         super.onCleared()
-        cameraStreamer.release()
+        streamer.release()
     }
 }
