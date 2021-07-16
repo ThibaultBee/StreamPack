@@ -1,18 +1,13 @@
 $dokka.format:html
 $dokka.linkExtension:html
-$dokka.location:com.github.thibaultbee.streampack.utils$getCameraCharacteristics(android.content.Context, kotlin.String)com.github.thibaultbee.streampack.utils/android.content.-context/get-camera-characteristics.html
-$dokka.location:com.github.thibaultbee.streampack.utils$getCameraFpsList(android.content.Context, kotlin.String)com.github.thibaultbee.streampack.utils/android.content.-context/get-camera-fps-list.html
 $dokka.location:com.github.thibaultbee.streampack.utils$getCameraList(android.content.Context)com.github.thibaultbee.streampack.utils/android.content.-context/get-camera-list.html
-$dokka.location:com.github.thibaultbee.streampack.utils$getCameraOrientation(android.content.Context)com.github.thibaultbee.streampack.utils/android.content.-context/get-camera-orientation.html
 $dokka.location:com.github.thibaultbee.streampack.utils$getCameraOutputSizes(android.content.Context, java.lang.Class((com.github.thibaultbee.streampack.utils.getCameraOutputSizes.T)), kotlin.String)com.github.thibaultbee.streampack.utils/android.content.-context/get-camera-output-sizes.html
-$dokka.location:com.github.thibaultbee.streampack.utils$getCameraOutputStreamSizes(android.content.Context)com.github.thibaultbee.streampack.utils/android.content.-context/get-camera-output-stream-sizes.html
-$dokka.location:com.github.thibaultbee.streampack.utils$getCameraOutputStreamSizes(android.content.Context, kotlin.String)com.github.thibaultbee.streampack.utils/android.content.-context/get-camera-output-stream-sizes.html
 $dokka.location:com.github.thibaultbee.streampack.utils$isAudio(kotlin.String)com.github.thibaultbee.streampack.utils/kotlin.-string/is-audio.html
-$dokka.location:com.github.thibaultbee.streampack.utils$isCameraPortrait(android.content.Context)com.github.thibaultbee.streampack.utils/android.content.-context/is-camera-portrait.html
 $dokka.location:com.github.thibaultbee.streampack.utils$isVideo(kotlin.String)com.github.thibaultbee.streampack.utils/kotlin.-string/is-video.html
 com.github.thibaultbee.streampack.data
 com.github.thibaultbee.streampack.error
 com.github.thibaultbee.streampack.listeners
+com.github.thibaultbee.streampack.logger
 com.github.thibaultbee.streampack.streamers
 com.github.thibaultbee.streampack.streamers.interfaces
 com.github.thibaultbee.streampack.streamers.interfaces.builders
