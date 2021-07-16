@@ -8,8 +8,7 @@ import android.util.Range
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.error.CameraError
-import com.github.thibaultbee.streampack.utils.ILogger
-import com.github.thibaultbee.streampack.utils.getCameraFpsList
+import com.github.thibaultbee.streampack.logger.ILogger
 import kotlinx.coroutines.*
 import java.security.InvalidParameterException
 import kotlin.coroutines.resume

@@ -13,11 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.app.configuration
+package com.github.thibaultbee.streampack.internal.muxers.ts
 
-import android.content.Context
-import com.github.thibaultbee.streampack.utils.getCameraOutputStreamSizes
+import android.media.MediaFormat
 
-class ConfigurationHelper(context: Context) {
-    val resolutionEntries = context.getCameraOutputStreamSizes()
+object TSMuxerHelper {
+    object Video {
+        /**
+         * Get TS Muxer supported video encoders list
+         */
+        val supportedEncoders = listOf(MediaFormat.MIMETYPE_VIDEO_AVC)
+    }
+
+    object Audio {
+        /**
+         * Get TS Muxer supported audio encoders list
+         */
+        val supportedEncoders = listOf(MediaFormat.MIMETYPE_AUDIO_AAC)
+    }
 }

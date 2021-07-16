@@ -21,24 +21,39 @@ import android.text.InputFilter
 import android.text.InputType
 import androidx.preference.*
 import com.github.thibaultbee.streampack.app.R
-import com.github.thibaultbee.streampack.app.configuration.ConfigurationHelper
-import com.github.thibaultbee.streampack.utils.CodecUtils
+import com.github.thibaultbee.streampack.utils.CameraStreamerConfigurationHelper
 
 class SettingsFragment : PreferenceFragmentCompat() {
-    private val configHelper: ConfigurationHelper by lazy {
-        ConfigurationHelper(requireContext())
-    }
-
     private val videoEncoderListPreference: ListPreference by lazy {
         this.findPreference(getString(R.string.video_encoder_key))!!
+    }
+
+    private val videoResolutionListPreference: ListPreference by lazy {
+        this.findPreference(getString(R.string.video_resolution_key))!!
+    }
+
+    private val videoFpsListPreference: ListPreference by lazy {
+        this.findPreference(getString(R.string.video_fps_key))!!
+    }
+
+    private val videoBitrateSeekBar: SeekBarPreference by lazy {
+        this.findPreference(getString(R.string.video_bitrate_key))!!
     }
 
     private val audioEncoderListPreference: ListPreference by lazy {
         this.findPreference(getString(R.string.audio_encoder_key))!!
     }
 
-    private val resolutionListPreference: ListPreference by lazy {
-        this.findPreference(getString(R.string.video_resolution_key))!!
+    private val audioNumberOfChannelListPreference: ListPreference by lazy {
+        this.findPreference(getString(R.string.audio_number_of_channels_key))!!
+    }
+
+    private val audioBitrateListPreference: ListPreference by lazy {
+        this.findPreference(getString(R.string.audio_bitrate_key))!!
+    }
+
+    private val audioSampleRateListPreference: ListPreference by lazy {
+        this.findPreference(getString(R.string.audio_sample_rate_key))!!
     }
 
     private val endpointTypePreference: SwitchPreference by lazy {
@@ -70,32 +85,97 @@ class SettingsFragment : PreferenceFragmentCompat() {
         loadPreferences()
     }
 
-    private fun loadPreferences() {
+    private fun setVideoEncoderSettings(encoder: String) {
         // Inflates video resolutions
-        configHelper.resolutionEntries.map { it.toString() }.toTypedArray().run {
-            resolutionListPreference.entries = this
-            resolutionListPreference.entryValues = this
+        CameraStreamerConfigurationHelper.Video.getSupportedResolutions(
+            requireContext(),
+            encoder
+        ).map { it.toString() }.toTypedArray().run {
+            videoResolutionListPreference.entries = this
+            videoResolutionListPreference.entryValues = this
         }
 
+        // Inflates video fps
+        val supportedFramerates = CameraStreamerConfigurationHelper.Video.getSupportedFramerates(
+            requireContext(),
+            encoder,
+            "0"
+        )
+        videoFpsListPreference.entryValues.filter { fps ->
+            supportedFramerates.any { it.contains(fps.toString().toInt()) }
+        }.toTypedArray().run {
+            videoFpsListPreference.entries = this
+            videoFpsListPreference.entryValues = this
+        }
+
+        // Inflates video bitrate
+        CameraStreamerConfigurationHelper.Video.getSupportedBitrates(encoder).run {
+            videoBitrateSeekBar.min = maxOf(videoBitrateSeekBar.min, lower / 1000) // to kb/s
+            videoBitrateSeekBar.max = minOf(videoBitrateSeekBar.max, upper / 1000) // to kb/s
+        }
+    }
+
+
+    private fun setAudioEncoderSettings(encoder: String) {
+        // Inflates audio number of channel
+        val inputChannelRange =
+            CameraStreamerConfigurationHelper.Audio.getSupportedInputChannelRange(encoder)
+        audioNumberOfChannelListPreference.entryValues.filter {
+            inputChannelRange.contains(it.toString().toInt())
+        }.toTypedArray().run {
+            audioNumberOfChannelListPreference.entries = this
+            audioNumberOfChannelListPreference.entryValues = this
+        }
+
+        // Inflates audio bitrate
+        val bitrateRange = CameraStreamerConfigurationHelper.Audio.getSupportedBitrates(encoder)
+        audioBitrateListPreference.entryValues.filter {
+            bitrateRange.contains(
+                it.toString().toInt()
+            )
+        }.toTypedArray().run {
+            audioBitrateListPreference.entries =
+                this.map { "${it.toString().toInt() / 1000} Kbps" }.toTypedArray()
+            audioBitrateListPreference.entryValues = this
+        }
+
+        // Inflates audio sample rate
+        val sampleRates = CameraStreamerConfigurationHelper.Audio.getSupportedSampleRates(encoder)
+        audioSampleRateListPreference.entryValues.filter {
+            sampleRates.contains(
+                it.toString().toInt()
+            )
+        }.toTypedArray().run {
+            audioSampleRateListPreference.entries =
+                this.map { "${"%.1f".format(it.toString().toFloat() / 1000)} kHz" }.toTypedArray()
+            audioSampleRateListPreference.entryValues = this
+        }
+    }
+
+    private fun loadPreferences() {
         // Inflates video encoders
         val supportedVideoEncoderName =
             mapOf(MediaFormat.MIMETYPE_VIDEO_AVC to getString(R.string.video_encoder_h264))
 
-        val supportedVideoEncoder = CodecUtils.supportedVideoEncoder
+        val supportedVideoEncoder = CameraStreamerConfigurationHelper.Video.supportedEncoders
         videoEncoderListPreference.setDefaultValue(MediaFormat.MIMETYPE_VIDEO_AVC)
         videoEncoderListPreference.entryValues = supportedVideoEncoder.toTypedArray()
         videoEncoderListPreference.entries =
             supportedVideoEncoder.map { supportedVideoEncoderName[it] }.toTypedArray()
 
+        setVideoEncoderSettings(videoEncoderListPreference.value)
+
         // Inflates audio encoders
         val supportedAudioEncoderName =
             mapOf(MediaFormat.MIMETYPE_AUDIO_AAC to getString(R.string.audio_encoder_aac))
 
-        val supportedAudioEncoder = CodecUtils.supportedAudioEncoder
+        val supportedAudioEncoder = CameraStreamerConfigurationHelper.Audio.supportedEncoders
         audioEncoderListPreference.setDefaultValue(MediaFormat.MIMETYPE_AUDIO_AAC)
         audioEncoderListPreference.entryValues = supportedAudioEncoder.toTypedArray()
         audioEncoderListPreference.entries =
             supportedAudioEncoder.map { supportedAudioEncoderName[it] }.toTypedArray()
+
+        setAudioEncoderSettings(audioEncoderListPreference.value)
 
         // Inflates endpoint
         serverEndpointPreference.isVisible = endpointTypePreference.isChecked

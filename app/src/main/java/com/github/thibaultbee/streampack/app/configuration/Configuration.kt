@@ -67,7 +67,7 @@ class Configuration(context: Context) {
 
         var numberOfChannels: Int = 2
             get() = sharedPref.getString(
-                resources.getString(R.string.audio_number_of_channels_configuration_key),
+                resources.getString(R.string.audio_number_of_channels_key),
                 field.toString()
             )!!.toInt()
 

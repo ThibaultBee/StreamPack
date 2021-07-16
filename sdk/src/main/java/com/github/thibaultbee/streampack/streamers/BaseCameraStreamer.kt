@@ -39,7 +39,8 @@ import com.github.thibaultbee.streampack.internal.sources.camera.CameraCapture
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import com.github.thibaultbee.streampack.utils.CameraSettings
-import com.github.thibaultbee.streampack.utils.ILogger
+import com.github.thibaultbee.streampack.utils.CameraStreamerConfigurationHelper
+import com.github.thibaultbee.streampack.logger.ILogger
 import com.github.thibaultbee.streampack.utils.getCameraList
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
@@ -192,6 +193,8 @@ open class BaseCameraStreamer(
      * Configures both video and audio settings.
      * It is the first method to call after a [BaseCameraStreamer] instantiation.
      * It must be call when both stream and capture are not running.
+     *
+     * Use [CameraStreamerConfigurationHelper] to get value limits.
      *
      * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
      * to video encoder default level and default profile.

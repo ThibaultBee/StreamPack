@@ -25,7 +25,7 @@ import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.internal.data.Frame
 import com.github.thibaultbee.streampack.internal.utils.TimeUtils
-import com.github.thibaultbee.streampack.utils.ILogger
+import com.github.thibaultbee.streampack.logger.ILogger
 import java.nio.ByteBuffer
 
 class AudioCapture(val logger: ILogger) : ISyncCapture<AudioConfig> {

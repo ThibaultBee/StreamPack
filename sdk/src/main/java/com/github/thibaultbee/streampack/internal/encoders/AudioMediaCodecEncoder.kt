@@ -22,7 +22,7 @@ import android.os.Build
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.internal.encoders.format.aac.Adts
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
-import com.github.thibaultbee.streampack.utils.ILogger
+import com.github.thibaultbee.streampack.logger.ILogger
 import java.nio.ByteBuffer
 import java.security.InvalidParameterException
 

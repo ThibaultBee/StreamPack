@@ -15,6 +15,8 @@
  */
 package com.github.thibaultbee.streampack.utils
 
+import com.github.thibaultbee.streampack.logger.ILogger
+
 class FakeLogger : ILogger {
     override fun e(obj: Any, message: String, tr: Throwable?) = println("E:$message")
     override fun w(obj: Any, message: String, tr: Throwable?) = println("W:$message")

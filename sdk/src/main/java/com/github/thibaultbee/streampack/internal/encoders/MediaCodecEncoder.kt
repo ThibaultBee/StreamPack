@@ -24,7 +24,7 @@ import android.os.HandlerThread
 import com.github.thibaultbee.streampack.error.StreamPackError
 import com.github.thibaultbee.streampack.internal.data.Frame
 import com.github.thibaultbee.streampack.internal.events.EventHandler
-import com.github.thibaultbee.streampack.utils.ILogger
+import com.github.thibaultbee.streampack.logger.ILogger
 import java.nio.ByteBuffer
 import java.security.InvalidParameterException
 
