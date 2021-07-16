@@ -1,6 +1,21 @@
 Change Log
 ==========
 
+Version 1.0.0
+-------------
+
+## Bug fixes:
+- App: catch exception on stopStream, stopPreview, release,... to avoid crash when a streamer cannot be created.
+
+## Features:
+- Add a SRT stream Id set/get API
+- Add Audio and Video configuration builder API
+- Add streamers builder
+- Add a configuration helper `CameraStreamerConfigurationHelper` for `BaseCameraStreamer`. It replaces `CodecUtils` and most configuration classes.
+
+## API changes:
+- `BaseCaptureStreamer` has been renamed `BaseCameraStreamer` (`CaptureSrtLiveStreamer` -> `CameraSrtLiveStreamer`,...)
+
 Version 0.8.0
 -------------
 
