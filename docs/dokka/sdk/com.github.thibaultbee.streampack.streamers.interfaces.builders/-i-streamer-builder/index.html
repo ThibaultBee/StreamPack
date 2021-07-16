@@ -1,151 +1,94 @@
 <HTML>
 <HEAD>
-    <meta charset="UTF-8">
-    <title>IStreamerBuilder - sdk</title>
-    <link href="../../../style.css" rel="stylesheet">
+<meta charset="UTF-8">
+<title>IStreamerBuilder - sdk</title>
+<link rel="stylesheet" href="../../../style.css">
 </HEAD>
 <BODY>
-<a href="../../index.html">sdk</a>&nbsp;/&nbsp;<a href="../index.html">com.github.thibaultbee.streampack.streamers.interfaces.builders</a>&nbsp;/&nbsp;<a
-        href="./index.html">IStreamerBuilder</a><br/>
+<a href="../../index.html">sdk</a>&nbsp;/&nbsp;<a href="../index.html">com.github.thibaultbee.streampack.streamers.interfaces.builders</a>&nbsp;/&nbsp;<a href="./index.html">IStreamerBuilder</a><br/>
 <br/>
 <h1>IStreamerBuilder</h1>
 <code><span class="keyword">interface </span><span class="identifier">IStreamerBuilder</span></code>
 <h3>Functions</h3>
 <table>
-    <tbody>
-    <tr>
-        <td>
-            <p><a href="build.html">build</a></p>
-        </td>
-        <td>
-            <code><span class="keyword">abstract</span> <span class="keyword">fun </span><span
-                    class="identifier">build</span><span class="symbol">(</span><span
-                    class="symbol">)</span><span class="symbol">: </span><a
-                    href="../../com.github.thibaultbee.streampack.streamers/-base-camera-streamer/index.html"><span
-                    class="identifier">BaseCameraStreamer</span></a></code>
-            <p>Combines all of the characteristics that have been set and return a new <a
-                    href="../../com.github.thibaultbee.streampack.streamers/-base-camera-streamer/index.html">BaseCameraStreamer</a>
-                object.</p>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <p><a href="set-configuration.html">setConfiguration</a></p>
-        </td>
-        <td>
-            <code><span class="keyword">abstract</span> <span class="keyword">fun </span><span
-                    class="identifier">setConfiguration</span><span class="symbol">(</span><span
-                    class="identifier"
-                    id="com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder$setConfiguration(com.github.thibaultbee.streampack.data.AudioConfig, com.github.thibaultbee.streampack.data.VideoConfig)/audioConfig">audioConfig</span><span
-                    class="symbol">:</span>&nbsp;<a
-                    href="../../com.github.thibaultbee.streampack.data/-audio-config/index.html"><span
-                    class="identifier">AudioConfig</span></a><span class="symbol">, </span><span
-                    class="identifier"
-                    id="com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder$setConfiguration(com.github.thibaultbee.streampack.data.AudioConfig, com.github.thibaultbee.streampack.data.VideoConfig)/videoConfig">videoConfig</span><span
-                    class="symbol">:</span>&nbsp;<a
-                    href="../../com.github.thibaultbee.streampack.data/-video-config/index.html"><span
-                    class="identifier">VideoConfig</span></a><span class="symbol">)</span><span
-                    class="symbol">: </span><a href="./index.html"><span class="identifier">IStreamerBuilder</span></a></code>
-            <p>Set both audio and video configuration. Can be change with <a href="#">configure</a>.
-            </p>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <p><a href="set-context.html">setContext</a></p>
-        </td>
-        <td>
-            <code><span class="keyword">abstract</span> <span class="keyword">fun </span><span
-                    class="identifier">setContext</span><span class="symbol">(</span><span
-                    class="identifier"
-                    id="com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder$setContext(android.content.Context)/context">context</span><span
-                    class="symbol">:</span>&nbsp;<a
-                    href="https://developer.android.com/reference/android/content/Context.html"><span
-                    class="identifier">Context</span></a><span class="symbol">)</span><span
-                    class="symbol">: </span><a href="./index.html"><span class="identifier">IStreamerBuilder</span></a></code>
-            <p>Set application context. It is mandatory to set context.</p>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <p><a href="set-logger.html">setLogger</a></p>
-        </td>
-        <td>
-            <code><span class="keyword">abstract</span> <span class="keyword">fun </span><span
-                    class="identifier">setLogger</span><span class="symbol">(</span><span
-                    class="identifier"
-                    id="com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder$setLogger(com.github.thibaultbee.streampack.utils.ILogger)/logger">logger</span><span
-                    class="symbol">:</span>&nbsp;<a
-                    href="../../com.github.thibaultbee.streampack.utils/-i-logger/index.html"><span
-                    class="identifier">ILogger</span></a><span class="symbol">)</span><span
-                    class="symbol">: </span><a href="./index.html"><span class="identifier">IStreamerBuilder</span></a></code>
-            <p>Set logger.</p>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <p><a href="set-preview-surface.html">setPreviewSurface</a></p>
-        </td>
-        <td>
-            <code><span class="keyword">abstract</span> <span class="keyword">fun </span><span
-                    class="identifier">setPreviewSurface</span><span class="symbol">(</span><span
-                    class="identifier"
-                    id="com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder$setPreviewSurface(android.view.Surface)/previewSurface">previewSurface</span><span
-                    class="symbol">:</span>&nbsp;<a
-                    href="https://developer.android.com/reference/android/view/Surface.html"><span
-                    class="identifier">Surface</span></a><span class="symbol">)</span><span
-                    class="symbol">: </span><a href="./index.html"><span class="identifier">IStreamerBuilder</span></a></code>
-            <p>Set preview surface.
-                If provided, it starts preview.</p>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <p><a href="set-service-info.html">setServiceInfo</a></p>
-        </td>
-        <td>
-            <code><span class="keyword">abstract</span> <span class="keyword">fun </span><span
-                    class="identifier">setServiceInfo</span><span class="symbol">(</span><span
-                    class="identifier"
-                    id="com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder$setServiceInfo(com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo)/serviceInfo">serviceInfo</span><span
-                    class="symbol">:</span>&nbsp;<span class="identifier">ServiceInfo</span><span
-                    class="symbol">)</span><span class="symbol">: </span><a
-                    href="./index.html"><span class="identifier">IStreamerBuilder</span></a></code>
-            <p>Set TS service info. It is mandatory to set TS service info.</p>
-        </td>
-    </tr>
-    </tbody>
+<tbody>
+<tr>
+<td>
+<p><a href="build.html">build</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">build</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="../../com.github.thibaultbee.streampack.streamers/-base-camera-streamer/index.html"><span class="identifier">BaseCameraStreamer</span></a></code>
+<p>Combines all of the characteristics that have been set and return a new <a href="../../com.github.thibaultbee.streampack.streamers/-base-camera-streamer/index.html">BaseCameraStreamer</a> object.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="set-configuration.html">setConfiguration</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">setConfiguration</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder$setConfiguration(com.github.thibaultbee.streampack.data.AudioConfig, com.github.thibaultbee.streampack.data.VideoConfig)/audioConfig">audioConfig</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.data/-audio-config/index.html"><span class="identifier">AudioConfig</span></a><span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder$setConfiguration(com.github.thibaultbee.streampack.data.AudioConfig, com.github.thibaultbee.streampack.data.VideoConfig)/videoConfig">videoConfig</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.data/-video-config/index.html"><span class="identifier">VideoConfig</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">IStreamerBuilder</span></a></code>
+<p>Set both audio and video configuration. Can be change with <a href="#">configure</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="set-context.html">setContext</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">setContext</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder$setContext(android.content.Context)/context">context</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/content/Context.html"><span class="identifier">Context</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">IStreamerBuilder</span></a></code>
+<p>Set application context. It is mandatory to set context.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="set-logger.html">setLogger</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">setLogger</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder$setLogger(com.github.thibaultbee.streampack.logger.ILogger)/logger">logger</span><span class="symbol">:</span>&nbsp;<a href="../../com.github.thibaultbee.streampack.logger/-i-logger/index.html"><span class="identifier">ILogger</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">IStreamerBuilder</span></a></code>
+<p>Set logger.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="set-preview-surface.html">setPreviewSurface</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">setPreviewSurface</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder$setPreviewSurface(android.view.Surface)/previewSurface">previewSurface</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/android/view/Surface.html"><span class="identifier">Surface</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">IStreamerBuilder</span></a></code>
+<p>Set preview surface.
+If provided, it starts preview.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="set-service-info.html">setServiceInfo</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">setServiceInfo</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder$setServiceInfo(com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo)/serviceInfo">serviceInfo</span><span class="symbol">:</span>&nbsp;<span class="identifier">ServiceInfo</span><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">IStreamerBuilder</span></a></code>
+<p>Set TS service info. It is mandatory to set TS service info.</p>
+</td>
+</tr>
+</tbody>
 </table>
 <h3>Inheritors</h3>
 <table>
-    <tbody>
-    <tr>
-        <td>
-            <p>
-                <a href="../../com.github.thibaultbee.streampack.streamers/-camera-srt-live-streamer/-builder/index.html">Builder</a>
-            </p>
-        </td>
-        <td>
-            <code><span class="keyword">data</span> <span class="keyword">class </span><span
-                    class="identifier">Builder</span>&nbsp;<span class="symbol">:</span>&nbsp;<a
-                    href="./index.html"><span class="identifier">IStreamerBuilder</span></a></code>
-            <p>Builder class for <a
-                    href="../../com.github.thibaultbee.streampack.streamers/-camera-srt-live-streamer/index.html">CameraSrtLiveStreamer</a>
-                objects. Use this class to configure and create an <a
-                        href="../../com.github.thibaultbee.streampack.streamers/-camera-srt-live-streamer/index.html">CameraSrtLiveStreamer</a>
-                instance.</p>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <p><a href="../-i-file-streamer-builder/index.html">IFileStreamerBuilder</a></p>
-        </td>
-        <td>
-            <code><span class="keyword">interface </span><span class="identifier">IFileStreamerBuilder</span>&nbsp;<span
-                    class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">IStreamerBuilder</span></a></code>
-        </td>
-    </tr>
-    </tbody>
+<tbody>
+<tr>
+<td>
+<p><a href="../../com.github.thibaultbee.streampack.streamers/-camera-srt-live-streamer/-builder/index.html">Builder</a></p>
+</td>
+<td>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">Builder</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">IStreamerBuilder</span></a></code>
+<p>Builder class for <a href="../../com.github.thibaultbee.streampack.streamers/-camera-srt-live-streamer/index.html">CameraSrtLiveStreamer</a> objects. Use this class to configure and create an <a href="../../com.github.thibaultbee.streampack.streamers/-camera-srt-live-streamer/index.html">CameraSrtLiveStreamer</a> instance.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="../-i-file-streamer-builder/index.html">IFileStreamerBuilder</a></p>
+</td>
+<td>
+<code><span class="keyword">interface </span><span class="identifier">IFileStreamerBuilder</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">IStreamerBuilder</span></a></code></td>
+</tr>
+</tbody>
 </table>
 </BODY>
 </HTML>
