@@ -19,6 +19,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.SurfaceHolder
 import android.view.View
@@ -155,18 +156,22 @@ class PreviewFragment : Fragment() {
         override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
             require(context != null)
 
-            nbOnSurfaceChange++
-            if (nbOnSurfaceChange == 2) {
-                viewModel.startPreview(holder.surface)
-            } else {
-                val choices = context!!.getCameraOutputSizes(
-                    SurfaceHolder::class.java,
-                    viewModel.cameraId
-                )
+            try {
+                nbOnSurfaceChange++
+                if (nbOnSurfaceChange == 2) {
+                    viewModel.startPreview(holder.surface)
+                } else {
+                    val choices = context!!.getCameraOutputSizes(
+                        SurfaceHolder::class.java,
+                        viewModel.cameraId
+                    )
 
-                chooseBigEnoughSize(choices, width, height)?.let { size ->
-                    holder.setFixedSize(size.width, size.height)
+                    chooseBigEnoughSize(choices, width, height)?.let { size ->
+                        holder.setFixedSize(size.width, size.height)
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "Can't start preview due to ${e.message}", e)
             }
         }
 

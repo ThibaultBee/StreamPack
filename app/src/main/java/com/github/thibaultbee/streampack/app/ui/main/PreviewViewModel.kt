@@ -144,7 +144,11 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
 
     fun stopPreview() {
         viewModelScope.launch {
-            streamer.stopPreview()
+            try {
+                streamer.stopPreview()
+            } catch (e: Throwable) {
+                Log.e(TAG, "stopPreview failed", e)
+            }
         }
     }
 
@@ -175,9 +179,13 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun stopStream() {
         viewModelScope.launch {
-            streamer.stopStream()
-            if (streamer is CameraSrtLiveStreamer) {
-                (streamer as CameraSrtLiveStreamer).disconnect()
+            try {
+                streamer.stopStream()
+                if (streamer is CameraSrtLiveStreamer) {
+                    (streamer as CameraSrtLiveStreamer).disconnect()
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, "stopStream failed", e)
             }
         }
     }
@@ -198,6 +206,10 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
 
     override fun onCleared() {
         super.onCleared()
-        streamer.release()
+        try {
+            streamer.release()
+        } catch (e: Exception) {
+            Log.e(TAG, "streamer.release failed", e)
+        }
     }
 }
