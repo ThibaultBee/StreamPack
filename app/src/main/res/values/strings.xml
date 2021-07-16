@@ -24,9 +24,11 @@
     <string name="video_fps_key">video_fps_key</string>
     <string name="video_encoder">Encoder</string>
     <string name="video_encoder_key">video_encoder_key</string>
+    <string name="default_video_encoder">video/avc</string>
     <string name="video">Video</string>
     <string name="audio">Audio</string>
     <string name="audio_encoder_key">audio_encoder_key</string>
+    <string name="default_audio_encoder">audio/mp4a-latm</string>
     <string name="audio_encoder">Encoder</string>
     <string name="endpoint_type_key">endpoint_type_key</string>
     <string name="tofile">Write to a file</string>
@@ -45,8 +47,8 @@
     <string name="default_muxer_provider">StreamPack Inc</string>
     <string name="muxer_provider">Provider name</string>
     <string name="default_video_resolution">1280x720</string>
-    <string name="audio_number_of_channels_configuration">Number of channels</string>
-    <string name="audio_number_of_channels_configuration_key">audio_number_of_channels_configuration_key</string>
+    <string name="audio_number_of_channels">Number of channels</string>
+    <string name="audio_number_of_channels_key">audio_number_of_channels_configuration_key</string>
     <string name="audio_bitrate_key">audio_bitrate_key</string>
     <string name="audio_bitrate">Bitrate</string>
     <string name="audio_sample_rate_key">audio_sample_rate_key</string>

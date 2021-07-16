@@ -16,6 +16,7 @@
 package com.github.thibaultbee.streampack.utils
 
 import android.util.Log
+import com.github.thibaultbee.streampack.logger.ILogger
 
 class FakeAndroidLogger : ILogger {
     override fun e(obj: Any, message: String, tr: Throwable?) {

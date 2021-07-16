@@ -21,7 +21,7 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.internal.interfaces.Streamable
 import com.github.thibaultbee.streampack.utils.CameraSettings
-import com.github.thibaultbee.streampack.utils.ILogger
+import com.github.thibaultbee.streampack.logger.ILogger
 import kotlinx.coroutines.runBlocking
 
 class CameraCapture(

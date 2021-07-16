@@ -16,7 +16,7 @@
 package com.github.thibaultbee.streampack.internal.endpoints
 
 import com.github.thibaultbee.streampack.internal.data.Packet
-import com.github.thibaultbee.streampack.utils.ILogger
+import com.github.thibaultbee.streampack.logger.ILogger
 import java.io.File
 import java.io.FileOutputStream
 

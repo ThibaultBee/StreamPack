@@ -1,4 +1,4 @@
-package com.github.thibaultbee.streampack.utils
+package com.github.thibaultbee.streampack.logger
 
 /**
  * Classic logger interface

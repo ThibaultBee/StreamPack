@@ -25,8 +25,8 @@ import com.github.thibaultbee.streampack.internal.endpoints.FileWriter
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.builders.IFileStreamerBuilder
-import com.github.thibaultbee.streampack.utils.ILogger
-import com.github.thibaultbee.streampack.utils.StreamPackLogger
+import com.github.thibaultbee.streampack.logger.ILogger
+import com.github.thibaultbee.streampack.logger.StreamPackLogger
 import java.io.File
 
 /**

@@ -6,7 +6,7 @@ import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.streamers.BaseCameraStreamer
-import com.github.thibaultbee.streampack.utils.ILogger
+import com.github.thibaultbee.streampack.logger.ILogger
 
 interface IStreamerBuilder {
 

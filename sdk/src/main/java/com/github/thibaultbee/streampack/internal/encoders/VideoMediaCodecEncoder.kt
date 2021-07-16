@@ -27,9 +27,9 @@ import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.internal.gl.EGlSurface
 import com.github.thibaultbee.streampack.internal.gl.FullFrameRect
 import com.github.thibaultbee.streampack.internal.gl.Texture2DProgram
+import com.github.thibaultbee.streampack.internal.sources.camera.getCameraOrientation
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
-import com.github.thibaultbee.streampack.utils.ILogger
-import com.github.thibaultbee.streampack.utils.getCameraOrientation
+import com.github.thibaultbee.streampack.logger.ILogger
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 

@@ -2,6 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory app:title="@string/video">
         <ListPreference
+            app:defaultValue="@string/default_video_encoder"
             app:key="@string/video_encoder_key"
             app:title="@string/video_encoder"
             app:useSimpleSummaryProvider="true" />
@@ -33,6 +34,7 @@
 
     <PreferenceCategory app:title="@string/audio">
         <ListPreference
+            app:defaultValue="@string/default_audio_encoder"
             app:key="@string/audio_encoder_key"
             app:title="@string/audio_encoder"
             app:useSimpleSummaryProvider="true" />
@@ -41,8 +43,8 @@
             app:defaultValue="2"
             app:entries="@array/AudioNumberOfChannelsEntries"
             app:entryValues="@array/AudioNumberOfChannelsEntryValues"
-            app:key="@string/audio_number_of_channels_configuration_key"
-            app:title="@string/audio_number_of_channels_configuration"
+            app:key="@string/audio_number_of_channels_key"
+            app:title="@string/audio_number_of_channels"
             app:useSimpleSummaryProvider="true" />
 
         <ListPreference
@@ -54,7 +56,7 @@
             app:useSimpleSummaryProvider="true" />
 
         <ListPreference
-            app:defaultValue="48000"
+            app:defaultValue="44100"
             app:entries="@array/AudioSampleRateEntries"
             app:entryValues="@array/AudioSampleRateEntryValues"
             app:key="@string/audio_sample_rate_key"

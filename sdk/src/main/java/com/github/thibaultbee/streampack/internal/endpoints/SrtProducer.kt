@@ -25,7 +25,7 @@ import com.github.thibaultbee.srtdroid.models.MsgCtrl
 import com.github.thibaultbee.srtdroid.models.Socket
 import com.github.thibaultbee.streampack.internal.data.Packet
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
-import com.github.thibaultbee.streampack.utils.ILogger
+import com.github.thibaultbee.streampack.logger.ILogger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
