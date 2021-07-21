@@ -1,7 +1,5 @@
 # StreamPack: live streaming SDK based on Secure Reliable Transport ([SRT](https://github.com/Haivision/srt)) 
 
-**/!\\/!\WARNING: StreamPack is a Work In Progress/!\\/!\\**
-
 Brings the best audio/video live technologies together in order to achieve low-latency & high quality
 live streaming on Android.
 
