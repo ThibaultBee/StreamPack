@@ -24,10 +24,10 @@ import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.internal.endpoints.SrtProducer
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
-import com.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
-import com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
 import com.github.thibaultbee.streampack.logger.ILogger
 import com.github.thibaultbee.streampack.logger.StreamPackLogger
+import com.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
+import com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
 import java.net.SocketException
 
 /**
@@ -70,6 +70,23 @@ class CameraSrtLiveStreamer(
          */
         set(value) {
             srtProducer.streamId = value
+        }
+
+    /**
+     * Get/set SRT passphrase.
+     * **See:** [SRT Socket Options](https://github.com/Haivision/srt/blob/master/docs/API/API-socket-options.md#srto_passphrase)
+     */
+    var passPhrase: String
+        /**
+         * Get SRT passphrase
+         * @return passphrase
+         */
+        get() = srtProducer.passPhrase
+        /**
+         * @param value passphrase
+         */
+        set(value) {
+            srtProducer.passPhrase = value
         }
 
     /**

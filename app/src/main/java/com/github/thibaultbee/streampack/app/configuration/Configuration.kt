@@ -168,6 +168,12 @@ class Configuration(context: Context) {
                     resources.getString(R.string.server_stream_id_key),
                     field
                 )!!
+
+            var passPhrase: String = ""
+                get() = sharedPref.getString(
+                    resources.getString(R.string.server_passphrase_key),
+                    field
+                )!!
         }
     }
 
