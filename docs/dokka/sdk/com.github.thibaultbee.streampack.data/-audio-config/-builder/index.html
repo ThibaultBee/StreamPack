@@ -1,87 +1,157 @@
-<HTML>
-<HEAD>
-<meta charset="UTF-8">
-<title>AudioConfig.Builder - sdk</title>
-<link rel="stylesheet" href="../../../../style.css">
-</HEAD>
-<BODY>
-<a href="../../../index.html">sdk</a>&nbsp;/&nbsp;<a href="../../index.html">com.github.thibaultbee.streampack.data</a>&nbsp;/&nbsp;<a href="../index.html">AudioConfig</a>&nbsp;/&nbsp;<a href="./index.html">Builder</a><br/>
-<br/>
-<h1>Builder</h1>
-<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">Builder</span></code>
-<p>Builder class for <a href="../index.html">AudioConfig</a> objects. Use this class to configure and create an <a href="../index.html">AudioConfig</a> instance.</p>
-<h3>Constructors</h3>
-<table>
-<tbody>
-<tr>
-<td>
-<p><a href="-init-.html">&lt;init&gt;</a></p>
-</td>
-<td>
-<code><span class="identifier">Builder</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.data.AudioConfig.Builder$<init>(kotlin.String, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.Int)/mimeType">mimeType</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a>&nbsp;<span class="symbol">=</span>&nbsp;MediaFormat.MIMETYPE_AUDIO_AAC<span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.data.AudioConfig.Builder$<init>(kotlin.String, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.Int)/startBitrate">startBitrate</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a>&nbsp;<span class="symbol">=</span>&nbsp;128000<span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.data.AudioConfig.Builder$<init>(kotlin.String, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.Int)/sampleRate">sampleRate</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a>&nbsp;<span class="symbol">=</span>&nbsp;44100<span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.data.AudioConfig.Builder$<init>(kotlin.String, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.Int)/nChannel">nChannel</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a>&nbsp;<span class="symbol">=</span>&nbsp;2<span class="symbol">, </span><span class="identifier" id="com.github.thibaultbee.streampack.data.AudioConfig.Builder$<init>(kotlin.String, kotlin.Int, kotlin.Int, kotlin.Int, kotlin.Int)/byteFormat">byteFormat</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a>&nbsp;<span class="symbol">=</span>&nbsp;AudioFormat.ENCODING_PCM_16BIT<span class="symbol">)</span></code>
-<p>Builder class for <a href="../index.html">AudioConfig</a> objects. Use this class to configure and create an <a href="../index.html">AudioConfig</a> instance.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<h3>Functions</h3>
-<table>
-<tbody>
-<tr>
-<td>
-<p><a href="build.html">build</a></p>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">build</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="../index.html"><span class="identifier">AudioConfig</span></a></code>
-<p>Combines all of the characteristics that have been set and return a new <a href="../index.html">AudioConfig</a> object.</p>
-</td>
-</tr>
-<tr>
-<td>
-<p><a href="set-byte-format.html">setByteFormat</a></p>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">setByteFormat</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.data.AudioConfig.Builder$setByteFormat(kotlin.Int)/byteFormat">byteFormat</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">&lt;ERROR CLASS&gt;</span></code>
-<p>Set audio capture byte format.</p>
-</td>
-</tr>
-<tr>
-<td>
-<p><a href="set-mime-type.html">setMimeType</a></p>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">setMimeType</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.data.AudioConfig.Builder$setMimeType(kotlin.String)/mimeType">mimeType</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">&lt;ERROR CLASS&gt;</span></code>
-<p>Set audio encoder mime type.</p>
-</td>
-</tr>
-<tr>
-<td>
-<p><a href="set-number-of-channel.html">setNumberOfChannel</a></p>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">setNumberOfChannel</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.data.AudioConfig.Builder$setNumberOfChannel(kotlin.Int)/nChannel">nChannel</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">&lt;ERROR CLASS&gt;</span></code>
-<p>Set number of channels.</p>
-</td>
-</tr>
-<tr>
-<td>
-<p><a href="set-sample-rate.html">setSampleRate</a></p>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">setSampleRate</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.data.AudioConfig.Builder$setSampleRate(kotlin.Int)/sampleRate">sampleRate</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">&lt;ERROR CLASS&gt;</span></code>
-<p>Set sample rate.</p>
-</td>
-</tr>
-<tr>
-<td>
-<p><a href="set-start-bitrate.html">setStartBitrate</a></p>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">setStartBitrate</span><span class="symbol">(</span><span class="identifier" id="com.github.thibaultbee.streampack.data.AudioConfig.Builder$setStartBitrate(kotlin.Int)/startBitrate">startBitrate</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">&lt;ERROR CLASS&gt;</span></code>
-<p>Set audio encoder bitrate.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</BODY>
-</HTML>
+<html>
+  <head>
+    <meta charset="UTF-8" content="width=device-width, initial-scale=1" name="viewport">
+    <title>Builder</title>
+<link href="../../../../../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script><script async="async" src="../../../../scripts/sourceset_dependencies.js" type="text/javascript"></script><link href="../../../../styles/style.css" rel="Stylesheet"><link href="../../../../styles/logo-styles.css" rel="Stylesheet"><link href="../../../../styles/jetbrains-mono.css" rel="Stylesheet"><link href="../../../../styles/main.css" rel="Stylesheet"><script async="async" src="../../../../scripts/clipboard.js" type="text/javascript"></script><script async="async" src="../../../../scripts/navigation-loader.js" type="text/javascript"></script><script async="async" src="../../../../scripts/platform-content-handler.js" type="text/javascript"></script><script async="async" src="../../../../scripts/main.js" type="text/javascript"></script>  </head>
+  <body>
+    <div id="container">
+      <div id="leftColumn"><a href="../../../../index.html">
+          <div id="logo"></div>
+        </a>
+        <div id="paneSearch"></div>
+        <div id="sideMenu"></div>
+      </div>
+      <div id="main">
+        <div id="leftToggler"><span class="icon-toggler"></span></div>
+<script src="../../../../scripts/main.js" type="text/javascript"></script>        <div class="main-content" id="content" pageIds="sdk::com.github.thibaultbee.streampack.data/AudioConfig.Builder///PointingToDeclaration//165651098">
+          <div class="navigation-wrapper" id="navigation-wrapper">
+            <div class="breadcrumbs"><a href="../../../../index.html">sdk</a>/<a href="../../index.html">com.github.thibaultbee.streampack.data</a>/<a href="../index.html">AudioConfig</a>/<a href="index.html">Builder</a></div>
+            <div class="pull-right d-flex">
+              <div id="searchBar"></div>
+            </div>
+          </div>
+          <div class="cover ">
+            <h1 class="cover"><span>Builder</span></h1>
+            <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">data class <a href="index.html">Builder</a>(mimeType: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, startBitrate: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, sampleRate: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, nChannel: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, byteFormat: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph">Builder class for <a href="../index.html">AudioConfig</a> objects. Use this class to configure and create an <a href="../index.html">AudioConfig</a> instance.</p></div></div>
+          </div>
+          <div class="tabbedcontent">
+            <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="Constructors">Constructors</button><button class="section-tab" data-togglable="Functions">Functions</button></div>
+            <div class="tabs-section-body">
+              <h2 class="tabbedcontent">Constructors</h2>
+              <div class="table" data-togglable="Constructors"><a anchor-label="Builder" data-filterable-set=":sdk:dokkaHtml/release" data-name="-71381451%2FConstructors%2F165651098" id="-71381451%2FConstructors%2F165651098"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue TabbedContent">
+                    <div class=""><span class="inline-flex"><a href="-builder.html">Builder</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-71381451%2FConstructors%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="-builder.html">Builder</a>(mimeType: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a> = MediaFormat.MIMETYPE_AUDIO_AAC, startBitrate: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 128000, sampleRate: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 44100, nChannel: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 2, byteFormat: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = AudioFormat.ENCODING_PCM_16BIT)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <h2 class="">Functions</h2>
+              <div class="table" data-togglable="Functions"><a anchor-label="build" data-filterable-set=":sdk:dokkaHtml/release" data-name="905751324%2FFunctions%2F165651098" id="905751324%2FFunctions%2F165651098"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="build.html">build</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="905751324%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="build.html">build</a>(): <a href="../index.html">AudioConfig</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a anchor-label="build" data-filterable-set=":sdk:dokkaHtml/release" data-name="905751324%2FFunctions%2F165651098" id="905751324%2FFunctions%2F165651098"></a><div class="brief "><a anchor-label="build" data-filterable-set=":sdk:dokkaHtml/release" data-name="905751324%2FFunctions%2F165651098" id="905751324%2FFunctions%2F165651098"></a>Combines all of the characteristics that have been set and return a new <a href="../index.html">AudioConfig</a> object.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a anchor-label="setByteFormat" data-filterable-set=":sdk:dokkaHtml/release" data-name="-1461821145%2FFunctions%2F165651098" id="-1461821145%2FFunctions%2F165651098"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="set-byte-format.html">setByteFormat</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1461821145%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="set-byte-format.html">setByteFormat</a>(byteFormat: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="index.html">AudioConfig.Builder</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a anchor-label="setByteFormat" data-filterable-set=":sdk:dokkaHtml/release" data-name="-1461821145%2FFunctions%2F165651098" id="-1461821145%2FFunctions%2F165651098"></a><div class="brief "><a anchor-label="setByteFormat" data-filterable-set=":sdk:dokkaHtml/release" data-name="-1461821145%2FFunctions%2F165651098" id="-1461821145%2FFunctions%2F165651098"></a>Set audio capture byte format.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a anchor-label="setMimeType" data-filterable-set=":sdk:dokkaHtml/release" data-name="-458623670%2FFunctions%2F165651098" id="-458623670%2FFunctions%2F165651098"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="set-mime-type.html">setMimeType</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-458623670%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="set-mime-type.html">setMimeType</a>(mimeType: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="index.html">AudioConfig.Builder</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a anchor-label="setMimeType" data-filterable-set=":sdk:dokkaHtml/release" data-name="-458623670%2FFunctions%2F165651098" id="-458623670%2FFunctions%2F165651098"></a><div class="brief "><a anchor-label="setMimeType" data-filterable-set=":sdk:dokkaHtml/release" data-name="-458623670%2FFunctions%2F165651098" id="-458623670%2FFunctions%2F165651098"></a>Set audio encoder mime type.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a anchor-label="setNumberOfChannel" data-filterable-set=":sdk:dokkaHtml/release" data-name="-1497810003%2FFunctions%2F165651098" id="-1497810003%2FFunctions%2F165651098"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="set-number-of-channel.html">setNumberOfChannel</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1497810003%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="set-number-of-channel.html">setNumberOfChannel</a>(nChannel: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="index.html">AudioConfig.Builder</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a anchor-label="setNumberOfChannel" data-filterable-set=":sdk:dokkaHtml/release" data-name="-1497810003%2FFunctions%2F165651098" id="-1497810003%2FFunctions%2F165651098"></a><div class="brief "><a anchor-label="setNumberOfChannel" data-filterable-set=":sdk:dokkaHtml/release" data-name="-1497810003%2FFunctions%2F165651098" id="-1497810003%2FFunctions%2F165651098"></a>Set number of channels.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a anchor-label="setSampleRate" data-filterable-set=":sdk:dokkaHtml/release" data-name="575523516%2FFunctions%2F165651098" id="575523516%2FFunctions%2F165651098"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="set-sample-rate.html">setSampleRate</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="575523516%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="set-sample-rate.html">setSampleRate</a>(sampleRate: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="index.html">AudioConfig.Builder</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a anchor-label="setSampleRate" data-filterable-set=":sdk:dokkaHtml/release" data-name="575523516%2FFunctions%2F165651098" id="575523516%2FFunctions%2F165651098"></a><div class="brief "><a anchor-label="setSampleRate" data-filterable-set=":sdk:dokkaHtml/release" data-name="575523516%2FFunctions%2F165651098" id="575523516%2FFunctions%2F165651098"></a>Set sample rate.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a anchor-label="setStartBitrate" data-filterable-set=":sdk:dokkaHtml/release" data-name="-522665637%2FFunctions%2F165651098" id="-522665637%2FFunctions%2F165651098"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="set-start-bitrate.html">setStartBitrate</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-522665637%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="set-start-bitrate.html">setStartBitrate</a>(startBitrate: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="index.html">AudioConfig.Builder</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a anchor-label="setStartBitrate" data-filterable-set=":sdk:dokkaHtml/release" data-name="-522665637%2FFunctions%2F165651098" id="-522665637%2FFunctions%2F165651098"></a><div class="brief "><a anchor-label="setStartBitrate" data-filterable-set=":sdk:dokkaHtml/release" data-name="-522665637%2FFunctions%2F165651098" id="-522665637%2FFunctions%2F165651098"></a>Set audio encoder bitrate.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span class="go-to-top-icon"><a href="#content"></a></span><span>© 2021 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span></div>
+      </div>
+    </div>
+  </body>
+</html>
+

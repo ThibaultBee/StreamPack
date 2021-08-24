@@ -1,6 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'org.jetbrains.dokka-android'
+apply plugin: 'org.jetbrains.dokka'
 
 android {
     compileSdkVersion 30
@@ -23,14 +23,24 @@ android {
 
 }
 
-dokka {
-    // Warning: outputDirectory is used by script/generate_lib_kdoc.sh
-    outputFormat = 'html' // use 'javadoc' to get standard java docs
-    includeNonPublic = false
+dokkaHtml {
+    configure {
+        outputDirectory.set(file("$rootDir/docs/dokka"))
+    }
 
-    packageOptions {
-        prefix = "com.github.thibaultbee.streampack.internal"
-        suppress = true
+    dokkaSourceSets {
+        named("main") {
+            noAndroidSdkLink.set(false)
+            skipDeprecated.set(true)
+            includeNonPublic.set(false)
+            skipEmptyPackages.set(true)
+
+            // Remove internal package
+            perPackageOption {
+                matchingRegex.set(".*\\.internal.*")
+                suppress.set(true)
+            }
+        }
     }
 }
 
