@@ -6,5 +6,5 @@ interface IFileStreamer : IStreamer {
     /**
      * Streamer file.
      */
-    var file: File
+    var file: File?
 }

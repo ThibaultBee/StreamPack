@@ -46,7 +46,7 @@ class CameraTsFileStreamer(
     /**
      * Get/Set [FileWriter] file. If no file has been set. [FileWriter] uses a default temporary file.
      */
-    override var file: File
+    override var file: File?
         /**
          * Get file writer file.
          *

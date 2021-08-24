@@ -18,8 +18,7 @@ package com.github.thibaultbee.streampack.internal.endpoints
 import com.github.thibaultbee.streampack.internal.data.Packet
 import com.github.thibaultbee.streampack.utils.FakeLogger
 import com.github.thibaultbee.streampack.utils.Utils
-import org.junit.Assert.assertArrayEquals
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.Test
 import java.io.File
 import java.nio.ByteBuffer
@@ -32,13 +31,6 @@ class FileWriterTest {
     }
 
     @Test
-    fun defaultFileExistTest() {
-        val filePublisher = FileWriter(FakeLogger())
-        assertTrue(filePublisher.file.exists())
-        filePublisher.release()
-    }
-
-    @Test
     fun fileExistTest() {
         val tmpFile = createTempFile()
         val filePublisher = FileWriter(FakeLogger())
@@ -48,20 +40,57 @@ class FileWriterTest {
     }
 
     @Test
+    fun startStreamWithNullFileTest() {
+        val filePublisher = FileWriter(FakeLogger())
+        try {
+            filePublisher.startStream()
+            fail("Null file must not be streamable")
+        } catch (e: Exception) {
+
+        }
+    }
+
+    @Test
+    fun writeToNullFileTest() {
+        val filePublisher = FileWriter(FakeLogger())
+        try {
+            val randomArray = Utils.generateRandomArray(1024)
+            filePublisher.startStream()
+            filePublisher.write(
+                Packet(
+                    ByteBuffer.wrap(randomArray),
+                    isFirstPacketFrame = true,
+                    isLastPacketFrame = true,
+                    ts = 0
+                )
+            )
+            fail("Null file must not be writable")
+        } catch (e: Exception) {
+
+        }
+    }
+
+    @Test
     fun writeToFileTest() {
         val tmpFile = createTempFile()
         val filePublisher = FileWriter(FakeLogger())
         filePublisher.file = tmpFile
         val randomArray = Utils.generateRandomArray(1024)
-        filePublisher.write(
-            Packet(
-                ByteBuffer.wrap(randomArray),
-                isFirstPacketFrame = true,
-                isLastPacketFrame = true,
-                ts = 0
+        try {
+            filePublisher.startStream()
+            filePublisher.write(
+                Packet(
+                    ByteBuffer.wrap(randomArray),
+                    isFirstPacketFrame = true,
+                    isLastPacketFrame = true,
+                    ts = 0
+                )
             )
-        )
-        assertArrayEquals(randomArray, tmpFile.readBytes())
+            assertArrayEquals(randomArray, tmpFile.readBytes())
+            filePublisher.stopStream()
+        } catch (e: Exception) {
+            fail()
+        }
         filePublisher.release()
     }
 }

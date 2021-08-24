@@ -19,28 +19,33 @@ import com.github.thibaultbee.streampack.internal.data.Packet
 import com.github.thibaultbee.streampack.logger.ILogger
 import java.io.File
 import java.io.FileOutputStream
+import java.net.ConnectException
 
 
 class FileWriter(val logger: ILogger) : IEndpoint {
-    var file: File = File.createTempFile("defaultFile", ".ts")
+    var file: File? = null
         set(value) {
             fileOutputStream = FileOutputStream(value, false)
             field = value
         }
 
-    private var fileOutputStream = FileOutputStream(file)
+    private var fileOutputStream: FileOutputStream? = null
 
     override fun startStream() {
+        if (fileOutputStream == null) {
+            throw UnsupportedOperationException("Set a file before trying to write it")
+        }
     }
 
     override fun configure(startBitrate: Int) {} // Nothing to configure
 
     override fun write(packet: Packet) {
-        fileOutputStream.channel.write(packet.buffer)
+        fileOutputStream?.channel?.write(packet.buffer)
+            ?: throw UnsupportedOperationException("Set a file before trying to write it")
     }
 
     override fun stopStream() {
-        fileOutputStream.channel.close()
+        fileOutputStream?.channel?.close()
     }
 
     override fun release() {

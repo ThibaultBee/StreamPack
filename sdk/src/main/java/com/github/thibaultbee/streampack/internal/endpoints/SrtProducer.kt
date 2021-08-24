@@ -109,8 +109,9 @@ class SrtProducer(
     }
 
     override fun startStream() {
-        if (!socket.isConnected)
+        if (!socket.isConnected) {
             throw ConnectException("SrtEndpoint should be connected at this point")
+        }
 
         socket.setSockFlag(SockOpt.MAXBW, 0L)
         socket.setSockFlag(SockOpt.INPUTBW, bitrate)
