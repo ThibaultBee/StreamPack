@@ -129,6 +129,12 @@
                 app:title="@string/server_stream_id"
                 app:useSimpleSummaryProvider="true" />
 
+            <EditTextPreference
+                app:defaultValue="@string/default_server_passphrase_id"
+                app:key="@string/server_passphrase_key"
+                app:title="@string/server_passphrase"
+                app:useSimpleSummaryProvider="true" />
+
         </PreferenceCategory>
 
         <PreferenceCategory

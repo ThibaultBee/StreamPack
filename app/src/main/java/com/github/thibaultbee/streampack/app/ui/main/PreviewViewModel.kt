@@ -160,6 +160,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
                 if (streamer is CameraSrtLiveStreamer) {
                     val captureSrtLiveStreamer = streamer as CameraSrtLiveStreamer
                     captureSrtLiveStreamer.streamId = configuration.endpoint.connection.streamID
+                    captureSrtLiveStreamer.passPhrase = configuration.endpoint.connection.passPhrase
                     captureSrtLiveStreamer.connect(
                         configuration.endpoint.connection.ip,
                         configuration.endpoint.connection.port

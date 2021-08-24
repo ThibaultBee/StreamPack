@@ -48,7 +48,17 @@ class SrtProducer(
     /**
      * Get/set SRT stream ID
      */
-    var streamId = ""
+    var streamId: String
+        get() = socket.getSockFlag(SockOpt.STREAMID) as String
+        set(value) = socket.setSockFlag(SockOpt.STREAMID, value)
+
+    /**
+     * Get/set SRT stream passPhrase
+     */
+    var passPhrase: String
+        get() = socket.getSockFlag(SockOpt.PASSPHRASE) as String
+        set(value) = socket.setSockFlag(SockOpt.PASSPHRASE, value)
+
 
     override fun configure(startBitrate: Int) {
         this.bitrate = startBitrate.toLong()
@@ -56,7 +66,6 @@ class SrtProducer(
 
     suspend fun connect(ip: String, port: Int) = withContext(coroutineDispatcher) {
         try {
-            socket = Socket()
             socket.listener = object : SocketListener {
                 override fun onConnectionLost(
                     ns: Socket,
@@ -64,6 +73,7 @@ class SrtProducer(
                     peerAddress: InetSocketAddress,
                     token: Int
                 ) {
+                    socket = Socket()
                     onConnectionListener?.onLost(error.toString())
                 }
 
@@ -74,12 +84,12 @@ class SrtProducer(
                     streamId: String
                 ) = 0 // Only for server - not needed here
             }
-            socket.setSockFlag(SockOpt.STREAMID, streamId)
             socket.setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
             socket.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
             socket.connect(ip, port)
             onConnectionListener?.onSuccess()
         } catch (e: Exception) {
+            socket = Socket()
             onConnectionListener?.onFailed(e.message ?: "Unknown error")
             throw e
         }
@@ -87,6 +97,7 @@ class SrtProducer(
 
     fun disconnect() {
         socket.close()
+        socket = Socket()
     }
 
     override fun write(packet: Packet) {

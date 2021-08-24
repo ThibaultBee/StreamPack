@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+Version 1.X.X
+-------------
+
+## Features:
+- Add a SRT passphrase set/get API
+
+## API changes:
+- `CaptureSrtLiveStreamer` `streamId` behavior has been changed. Set `streamId` field each time you try a new connection.
+
 Version 1.0.0
 -------------
 
