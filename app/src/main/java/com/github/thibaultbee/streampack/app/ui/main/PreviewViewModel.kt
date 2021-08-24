@@ -92,6 +92,8 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
                     .setSampleRate(configuration.audio.sampleRate)
                     .setNumberOfChannel(configuration.audio.numberOfChannels)
                     .setByteFormat(configuration.audio.byteFormat)
+                    .setEchoCanceler(configuration.audio.enableEchoCanceler)
+                    .setNoiseSuppressor(configuration.audio.enableNoiseSuppressor)
                     .build()
 
                 streamer = streamerBuilder

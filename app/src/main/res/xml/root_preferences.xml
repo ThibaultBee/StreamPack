@@ -71,6 +71,16 @@
             app:title="@string/audio_byte_format"
             app:useSimpleSummaryProvider="true" />
 
+        <SwitchPreference
+            android:defaultValue="false"
+            app:key="@string/audio_enable_echo_canceler_key"
+            app:title="@string/audio_enable_echo_canceler" />
+
+        <SwitchPreference
+            android:defaultValue="false"
+            app:key="@string/audio_enable_noise_suppressor_key"
+            app:title="@string/audio_enable_noise_suppressor" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/muxer">

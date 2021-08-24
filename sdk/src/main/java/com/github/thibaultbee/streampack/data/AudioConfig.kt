@@ -63,7 +63,19 @@ data class AudioConfig(
      * @see [AudioFormat.ENCODING_PCM_16BIT]
      * @see [AudioFormat.ENCODING_PCM_FLOAT]
      */
-    val byteFormat: Int
+    val byteFormat: Int,
+
+    /**
+     * Enable/disable audio echo canceller.
+     * If device does not have an echo canceller, it does nothing.
+     */
+    val enableEchoCanceler: Boolean,
+
+    /**
+     * Enable/disable audio noise suppressor.
+     * If device does not have a noise suppressor, it does nothing.
+     */
+    val enableNoiseSuppressor: Boolean
 ) {
     init {
         require(mimeType.isAudio()) { "Mime Type must be audio" }
@@ -103,7 +115,9 @@ data class AudioConfig(
         private var startBitrate: Int = 128000,
         private var sampleRate: Int = 44100,
         private var nChannel: Int = 2,
-        private var byteFormat: Int = AudioFormat.ENCODING_PCM_16BIT
+        private var byteFormat: Int = AudioFormat.ENCODING_PCM_16BIT,
+        private var enableEchoCanceler: Boolean = false,
+        private var enableNoiseSuppressor: Boolean = false
     ) {
         /**
          * Set audio encoder mime type.
@@ -141,11 +155,47 @@ data class AudioConfig(
         fun setByteFormat(byteFormat: Int) = apply { this.byteFormat = byteFormat }
 
         /**
+         * Enable echo canceller.
+         * If device does not have an echo canceller, it does nothing.
+         * @see [setEchoCanceler]
+         */
+        fun enableEchoCanceler() = apply { this.enableEchoCanceler = true }
+
+        /**
+         * Enable/disable echo canceller.
+         * If device does not have an echo canceller, it does nothing.
+         * @see [enableEchoCanceler]
+         */
+        fun setEchoCanceler(enable: Boolean) = apply { this.enableEchoCanceler = enable }
+
+        /**
+         * Enable noise suppressor.
+         * If device does not have a noise suppressor, it does nothing.
+         * @see [setNoiseSuppressor]
+         */
+        fun enableNoiseSuppressor() = apply { this.enableNoiseSuppressor = true }
+
+        /**
+         * Enable/disable noise suppressor.
+         * If device does not have a noise suppressor, it does nothing.
+         * @see [enableNoiseSuppressor]
+         */
+        fun setNoiseSuppressor(enable: Boolean) = apply { this.enableNoiseSuppressor = enable }
+
+        /**
          * Combines all of the characteristics that have been set and return a new [AudioConfig] object.
          *
          * @return a new [AudioConfig] object
          */
         fun build() =
-            AudioConfig(mimeType, startBitrate, sampleRate, getChannelConfig(nChannel), byteFormat)
+            AudioConfig(
+                mimeType,
+                startBitrate,
+                sampleRate,
+                getChannelConfig(nChannel),
+                byteFormat,
+                enableEchoCanceler,
+                enableNoiseSuppressor
+            )
     }
 }

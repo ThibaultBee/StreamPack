@@ -20,6 +20,8 @@ import android.media.AudioRecord
 import android.media.AudioTimestamp
 import android.media.MediaFormat
 import android.media.MediaRecorder
+import android.media.audiofx.AcousticEchoCanceler
+import android.media.audiofx.NoiseSuppressor
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.data.AudioConfig
@@ -46,7 +48,14 @@ class AudioCapture(val logger: ILogger) : ISyncCapture<AudioConfig> {
         audioRecord = AudioRecord(
             MediaRecorder.AudioSource.DEFAULT, config.sampleRate,
             config.channelConfig, config.byteFormat, bufferSize
-        )
+        ).also {
+            if (config.enableEchoCanceler && AcousticEchoCanceler.isAvailable()) {
+                AcousticEchoCanceler.create(it.audioSessionId).enabled = true
+            }
+            if (config.enableNoiseSuppressor && NoiseSuppressor.isAvailable()) {
+                NoiseSuppressor.create(it.audioSessionId).enabled = true
+            }
+        }
 
         if (audioRecord?.state != AudioRecord.STATE_INITIALIZED) {
             throw IllegalArgumentException("Failed to initialized AudioRecord")
