@@ -19,6 +19,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Resources
 import android.media.MediaFormat
+import android.util.Range
 import android.util.Size
 import androidx.preference.PreferenceManager
 import com.github.thibaultbee.streampack.app.R
@@ -35,13 +36,11 @@ class Configuration(context: Context) {
         var encoder: String = MediaFormat.MIMETYPE_VIDEO_AVC
             get() = sharedPref.getString(resources.getString(R.string.video_encoder_key), field)!!
 
-
         var fps: Int = 30
             get() = sharedPref.getString(
                 resources.getString(R.string.video_fps_key),
                 field.toString()
             )!!.toInt()
-
 
         var resolution: Size = Size(1280, 720)
             get() {
@@ -56,8 +55,7 @@ class Configuration(context: Context) {
                 )
             }
 
-
-        var bitrate: Int = 1500
+        var bitrate: Int = 2000
             get() = sharedPref.getInt(resources.getString(R.string.video_bitrate_key), field)
     }
 
@@ -174,6 +172,24 @@ class Configuration(context: Context) {
                     resources.getString(R.string.server_passphrase_key),
                     field
                 )!!
+
+            var enableBitrateRegulation: Boolean = false
+                get() = sharedPref.getBoolean(
+                    resources.getString(R.string.server_enable_bitrate_regulation_key),
+                    field
+                )
+
+            var videoBitrateRange: Range<Int> = Range(300, 5000000)
+                get() = Range(
+                    sharedPref.getInt(
+                        resources.getString(R.string.server_video_min_bitrate_key),
+                        field.lower
+                    ) * 1000,  // to b/s
+                    sharedPref.getInt(
+                        resources.getString(R.string.server_video_target_bitrate_key),
+                        field.upper
+                    ) * 1000,  // to b/s
+                )
         }
     }
 

@@ -37,10 +37,10 @@ import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.internal.sources.AudioCapture
 import com.github.thibaultbee.streampack.internal.sources.camera.CameraCapture
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
+import com.github.thibaultbee.streampack.logger.ILogger
 import com.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import com.github.thibaultbee.streampack.utils.CameraSettings
 import com.github.thibaultbee.streampack.utils.CameraStreamerConfigurationHelper
-import com.github.thibaultbee.streampack.logger.ILogger
 import com.github.thibaultbee.streampack.utils.getCameraList
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
@@ -186,6 +186,14 @@ open class BaseCameraStreamer(
         AudioMediaCodecEncoder(audioEncoderListener, onInternalCodecErrorListener, logger)
     private var videoEncoder =
         VideoMediaCodecEncoder(videoEncoderListener, onInternalCodecErrorListener, context, logger)
+
+    protected var audioBitrate: Int
+        get() = audioEncoder.bitrate
+        set(value) { audioEncoder.bitrate = value }
+    protected var videoBitrate: Int
+        get() = videoEncoder.bitrate
+        set(value) { videoEncoder.bitrate = value }
+
 
     private val tsMux = TSMuxer(muxListener)
 

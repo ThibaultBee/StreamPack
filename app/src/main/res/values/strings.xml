@@ -11,7 +11,7 @@
     <string name="endpoint_type_file">to File</string>
     <string name="endpoint_type">Type</string>
     <string name="resolution">Resolution</string>
-    <string name="video_bitrate">Video bitrate (kb/s)</string>
+    <string name="video_bitrate">Video start bitrate (kb/s)</string>
     <string name="video_resolution_key">video_resolution_key</string>
     <string name="server_ip_key">server_ip_key</string>
     <string name="server_ip">IP</string>
@@ -69,4 +69,10 @@
     <string name="audio_enable_noise_suppressor">Enable noise suppressor</string>
     <string name="switch_camera_source">Switch camera source</string>
     <string name="turn_on_off_torch">Turn on/off torch</string>
+    <string name="server_enable_bitrate_regulation_key">server_enable_bitrate_regulation_key</string>
+    <string name="server_enable_bitrate_regulation">Enable bitrate regulation</string>
+    <string name="server_video_target_bitrate_key">server_video_target_bitrate_key</string>
+    <string name="server_video_target_bitrate">Video target bitrate (kb/s)</string>
+    <string name="server_video_min_bitrate_key">server_video_min_bitrate_key</string>
+    <string name="server_video_min_bitrate">Video minimum bitrate (kb/s)</string>
 </resources>

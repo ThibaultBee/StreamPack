@@ -65,6 +65,8 @@ class VideoMediaCodecEncoder(
 
         // Extended video format
         videoFormat.setInteger(MediaFormat.KEY_BIT_RATE, videoConfig.startBitrate)
+        _bitrate = videoConfig.startBitrate
+
         videoFormat.setInteger(MediaFormat.KEY_FRAME_RATE, videoConfig.fps)
         videoFormat.setInteger(
             MediaFormat.KEY_COLOR_FORMAT,
