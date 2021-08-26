@@ -135,6 +135,29 @@
                 app:title="@string/server_passphrase"
                 app:useSimpleSummaryProvider="true" />
 
+            <SwitchPreference
+                android:defaultValue="false"
+                app:key="@string/server_enable_bitrate_regulation_key"
+                app:title="@string/server_enable_bitrate_regulation" />
+
+            <SeekBarPreference
+                android:max="10000"
+                app:defaultValue="5000"
+                app:key="@string/server_video_target_bitrate_key"
+                app:min="500"
+                app:showSeekBarValue="true"
+                app:title="@string/server_video_target_bitrate"
+                app:useSimpleSummaryProvider="true" />
+
+            <SeekBarPreference
+                android:max="10000"
+                app:defaultValue="300"
+                app:key="@string/server_video_min_bitrate_key"
+                app:min="100"
+                app:showSeekBarValue="true"
+                app:title="@string/server_video_min_bitrate"
+                app:useSimpleSummaryProvider="true" />
+
         </PreferenceCategory>
 
         <PreferenceCategory

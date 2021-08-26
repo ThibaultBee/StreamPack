@@ -23,6 +23,7 @@ import com.github.thibaultbee.srtdroid.enums.Transtype
 import com.github.thibaultbee.srtdroid.listeners.SocketListener
 import com.github.thibaultbee.srtdroid.models.MsgCtrl
 import com.github.thibaultbee.srtdroid.models.Socket
+import com.github.thibaultbee.srtdroid.models.Stats
 import com.github.thibaultbee.streampack.internal.data.Packet
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.logger.ILogger
@@ -59,6 +60,12 @@ class SrtProducer(
         get() = socket.getSockFlag(SockOpt.PASSPHRASE) as String
         set(value) = socket.setSockFlag(SockOpt.PASSPHRASE, value)
 
+
+    /**
+     * Get SRT stats
+     */
+    val stats: Stats
+        get() = socket.bistats(clear = true, instantaneous = true)
 
     override fun configure(startBitrate: Int) {
         this.bitrate = startBitrate.toLong()
@@ -112,6 +119,7 @@ class SrtProducer(
                 MsgCtrl(boundary = boundary)
             } else {
                 MsgCtrl(
+                    ttl = 500,
                     srcTime = packet.ts,
                     boundary = boundary
                 )

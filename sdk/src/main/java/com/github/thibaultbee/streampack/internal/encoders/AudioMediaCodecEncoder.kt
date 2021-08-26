@@ -56,6 +56,8 @@ class AudioMediaCodecEncoder(
             )
         }
         audioFormat.setInteger(MediaFormat.KEY_BIT_RATE, audioConfig.startBitrate)
+        _bitrate = audioConfig.startBitrate
+
         if (audioConfig.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
             audioFormat.setInteger(
                 MediaFormat.KEY_AAC_PROFILE,

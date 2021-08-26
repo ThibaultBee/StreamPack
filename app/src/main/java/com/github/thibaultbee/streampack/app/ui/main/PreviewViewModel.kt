@@ -20,6 +20,7 @@ import android.app.Application
 import android.content.Context
 import android.os.Environment
 import android.util.Log
+import android.util.Range
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.AndroidViewModel
@@ -28,11 +29,13 @@ import androidx.lifecycle.viewModelScope
 import com.github.thibaultbee.streampack.app.configuration.Configuration
 import com.github.thibaultbee.streampack.app.configuration.Configuration.Endpoint.EndpointType
 import com.github.thibaultbee.streampack.data.AudioConfig
+import com.github.thibaultbee.streampack.data.BitrateRegulatorConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.error.StreamPackError
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
+import com.github.thibaultbee.streampack.regulator.DefaultSrtBitrateRegulatorFactory
 import com.github.thibaultbee.streampack.streamers.BaseCameraStreamer
 import com.github.thibaultbee.streampack.streamers.CameraSrtLiveStreamer
 import com.github.thibaultbee.streampack.streamers.CameraTsFileStreamer
@@ -74,7 +77,26 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
 
             try {
                 val streamerBuilder = if (configuration.endpoint.enpointType == EndpointType.SRT) {
-                    CameraSrtLiveStreamer.Builder()
+                    CameraSrtLiveStreamer.Builder().setBitrateRegulator(
+                        if (configuration.endpoint.connection.enableBitrateRegulation) {
+                            DefaultSrtBitrateRegulatorFactory()
+                        } else {
+                            null
+                        },
+                        if (configuration.endpoint.connection.enableBitrateRegulation) {
+                            BitrateRegulatorConfig.Builder()
+                                .setVideoBitrateRange(configuration.endpoint.connection.videoBitrateRange)
+                                .setAudioBitrateRange(
+                                    Range(
+                                        configuration.audio.bitrate,
+                                        configuration.audio.bitrate
+                                    )
+                                )
+                                .build()
+                        } else {
+                            null
+                        },
+                    )
                 } else {
                     CameraTsFileStreamer.Builder()
                 }

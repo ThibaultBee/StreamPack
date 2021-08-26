@@ -76,6 +76,18 @@ class SettingsFragment : PreferenceFragmentCompat() {
         this.findPreference(getString(R.string.server_port_key))!!
     }
 
+    private val serverEnableBitrateRegulationPreference: SwitchPreference by lazy {
+        this.findPreference(getString(R.string.server_enable_bitrate_regulation_key))!!
+    }
+
+    private val serverTargetVideoBitratePreference: SeekBarPreference by lazy {
+        this.findPreference(getString(R.string.server_video_target_bitrate_key))!!
+    }
+
+    private val serverMinVideoBitratePreference: SeekBarPreference by lazy {
+        this.findPreference(getString(R.string.server_video_min_bitrate_key))!!
+    }
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
     }
@@ -193,6 +205,28 @@ class SettingsFragment : PreferenceFragmentCompat() {
         serverPortPreference.setOnBindEditTextListener { editText ->
             editText.inputType = InputType.TYPE_CLASS_NUMBER
             editText.filters = arrayOf(InputFilter.LengthFilter(5))
+        }
+
+        serverTargetVideoBitratePreference.isVisible = serverEnableBitrateRegulationPreference.isChecked
+        serverMinVideoBitratePreference.isVisible = serverEnableBitrateRegulationPreference.isChecked
+        serverEnableBitrateRegulationPreference.setOnPreferenceChangeListener { _, newValue ->
+            serverTargetVideoBitratePreference.isVisible = newValue as Boolean
+            serverMinVideoBitratePreference.isVisible = newValue
+            true
+        }
+
+        serverTargetVideoBitratePreference.setOnPreferenceChangeListener { _, newValue ->
+            if ((newValue as Int) < serverMinVideoBitratePreference.value) {
+                serverMinVideoBitratePreference.value = newValue
+            }
+            true
+        }
+
+        serverMinVideoBitratePreference.setOnPreferenceChangeListener { _, newValue ->
+            if ((newValue as Int) > serverTargetVideoBitratePreference.value) {
+                serverTargetVideoBitratePreference.value = newValue
+            }
+            true
         }
     }
 }
