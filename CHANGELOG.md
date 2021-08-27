@@ -1,14 +1,23 @@
 Change Log
 ==========
 
-Version 1.X.X
+Version 1.1.0
 -------------
 
+## Bug fixes:
+
+- Do not create a tmp file each time a `FileWriter` is instantiated
+
 ## Features:
+
 - Add a SRT passphrase set/get API
+- Add an API to enable/disable audio effects: a noise suppressor and an echo canceler (
+  check `AudioConfig` and `AudioConfig.buildr()`)
 
 ## API changes:
-- `CaptureSrtLiveStreamer` `streamId` behavior has been changed. Set `streamId` field each time you try a new connection.
+
+- `CaptureSrtLiveStreamer` `streamId` behavior has been changed. Set `streamId` field each time you
+  try a new connection
 
 Version 1.0.0
 -------------
