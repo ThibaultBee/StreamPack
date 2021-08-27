@@ -1,7 +1,7 @@
-# StreamPack: live streaming SDK based on Secure Reliable Transport ([SRT](https://github.com/Haivision/srt)) 
+# StreamPack: live streaming SDK for Android based on Secure Reliable Transport ([SRT](https://github.com/Haivision/srt))
 
-Brings the best audio/video live technologies together in order to achieve low-latency & high quality
-live streaming on Android.
+StreamPack brings the best audio/video live technologies together in order to achieve low-latency &
+high quality live streaming for Android.
 
 ## Setup
 
@@ -57,7 +57,7 @@ val videoConfig = VideoConfig.Builder()
                     .setFps(30)
                     .build()
 
-val streamer = CameraTsFileStreamer.Builder()
+val streamer = CameraSrtLiveStreamer.Builder()
                 .setContext(getApplication())
                 .setServiceInfo(tsServiceInfo)
                 .setConfiguration(audioConfig, videoConfig)
