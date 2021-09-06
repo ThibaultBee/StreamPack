@@ -49,11 +49,19 @@ class AudioCapture(val logger: ILogger) : ISyncCapture<AudioConfig> {
             MediaRecorder.AudioSource.DEFAULT, config.sampleRate,
             config.channelConfig, config.byteFormat, bufferSize
         ).also {
-            if (config.enableEchoCanceler && AcousticEchoCanceler.isAvailable()) {
-                AcousticEchoCanceler.create(it.audioSessionId).enabled = true
+            if (config.enableEchoCanceler) {
+                if (AcousticEchoCanceler.isAvailable()) {
+                    AcousticEchoCanceler.create(it.audioSessionId).enabled = true
+                } else {
+                    logger.e(this, "Acoustic echo canceler is not available")
+                }
             }
-            if (config.enableNoiseSuppressor && NoiseSuppressor.isAvailable()) {
-                NoiseSuppressor.create(it.audioSessionId).enabled = true
+            if (config.enableNoiseSuppressor) {
+                if (NoiseSuppressor.isAvailable()) {
+                    NoiseSuppressor.create(it.audioSessionId).enabled = true
+                } else {
+                    logger.e(this, "Noise suppressor is not available")
+                }
             }
         }
 
