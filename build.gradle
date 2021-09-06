@@ -3,6 +3,11 @@
 buildscript {
     ext.kotlin_version = '1.5.20'
     ext.dokka_version = '1.5.0'
+
+    // Upgrade Streampack version here
+    ext.streampack_code = '2'
+    ext.streampack_version = '1.1.0'
+
     repositories {
         google()
         jcenter()

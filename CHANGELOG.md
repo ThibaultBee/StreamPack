@@ -17,7 +17,7 @@ Version 1.1.0
 
 - Add a SRT passphrase set/get API
 - Add an API to enable/disable audio effects: a noise suppressor and an echo canceler (
-  check `AudioConfig` and `AudioConfig.buildr()`)
+  check `AudioConfig` and `AudioConfig.Builder()`)
 
 ## API changes:
 

@@ -16,7 +16,7 @@ allprojects {
 }
 
 dependencies {
-    implementation 'com.github.ThibaultBee:StreamPack:1.0.0'
+    implementation 'com.github.ThibaultBee:StreamPack:1.1.0'
 }
 ```
 
