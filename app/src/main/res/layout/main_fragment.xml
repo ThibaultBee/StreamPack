@@ -19,9 +19,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_switch_camera_24px"
-        android:tint="@android:color/white"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:contentDescription="@string/switch_camera_source"
+        app:layout_constraintStart_toStartOf="parent"
+        app:tint="@android:color/white" />
 
     <ToggleButton
         android:id="@+id/liveButton"
@@ -48,7 +49,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_baseline_flash_on_24"
-            android:tint="@android:color/white" />
+            android:contentDescription="@string/turn_on_off_torch"
+            app:tint="@android:color/white" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
