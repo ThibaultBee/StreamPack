@@ -17,6 +17,10 @@ package com.github.thibaultbee.streampack.logger
 
 import android.util.Log
 
+/**
+ * Implementation of [ILogger]. Use as default logger in StreamPack.
+ * It calls Android [Log].
+ */
 class StreamPackLogger: ILogger {
     override fun e(obj: Any, message: String, tr: Throwable?) {
         Log.e(obj.javaClass.simpleName, message, tr)
