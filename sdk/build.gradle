@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'org.jetbrains.dokka'
+apply plugin: 'maven-publish'
 
 android {
     compileSdkVersion 30
@@ -39,6 +40,15 @@ dokkaHtml {
             perPackageOption {
                 matchingRegex.set(".*\\.internal.*")
                 suppress.set(true)
+            }
+        }
+    }
+}
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
             }
         }
     }
