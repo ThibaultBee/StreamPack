@@ -167,7 +167,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private fun loadPreferences() {
         // Inflates video encoders
         val supportedVideoEncoderName =
-            mapOf(MediaFormat.MIMETYPE_VIDEO_AVC to getString(R.string.video_encoder_h264))
+            mapOf(
+                MediaFormat.MIMETYPE_VIDEO_AVC to getString(R.string.video_encoder_h264),
+                MediaFormat.MIMETYPE_VIDEO_HEVC to getString(R.string.video_encoder_h265)
+            )
 
         val supportedVideoEncoder = CameraStreamerConfigurationHelper.Video.supportedEncoders
         videoEncoderListPreference.setDefaultValue(MediaFormat.MIMETYPE_VIDEO_AVC)

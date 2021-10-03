@@ -56,6 +56,7 @@
     <string name="audio_byte_format">Byte format</string>
     <string name="audio_byte_format_key">audio_byte_format_key</string>
     <string name="video_encoder_h264">AVC/H.264</string>
+    <string name="video_encoder_h265">HEVC/H.265</string>
     <string name="audio_encoder_aac">AAC</string>
     <string name="server_stream_id_key">server_stream_id_key</string>
     <string name="server_stream_id">Stream ID</string>

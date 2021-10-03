@@ -22,7 +22,11 @@ object TSMuxerHelper {
         /**
          * Get TS Muxer supported video encoders list
          */
-        val supportedEncoders = listOf(MediaFormat.MIMETYPE_VIDEO_AVC)
+        val supportedEncoders =
+            listOf(
+                MediaFormat.MIMETYPE_VIDEO_AVC,
+                MediaFormat.MIMETYPE_VIDEO_HEVC
+            )
     }
 
     object Audio {

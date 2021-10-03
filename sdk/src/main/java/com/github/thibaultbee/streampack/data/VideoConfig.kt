@@ -20,7 +20,9 @@ import android.media.MediaFormat
 import android.os.Build
 import android.util.Size
 import com.github.thibaultbee.streampack.streamers.BaseCameraStreamer
+import com.github.thibaultbee.streampack.utils.CameraStreamerConfigurationHelper
 import com.github.thibaultbee.streampack.utils.isVideo
+import java.io.IOException
 
 /**
  * Video configuration class.
@@ -72,15 +74,24 @@ data class VideoConfig(
         private var startBitrate: Int = 2000000,
         private var resolution: Size = Size(1280, 720),
         private var fps: Int = 30,
-        private var profile: Int = CodecProfileLevel.AVCProfileHigh,
-        private var level: Int = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            CodecProfileLevel.AVCLevel62
-        } else {
-            CodecProfileLevel.AVCLevel52
+        private var profile: Int = when (mimeType) {
+            MediaFormat.MIMETYPE_VIDEO_AVC -> CodecProfileLevel.AVCProfileHigh
+            MediaFormat.MIMETYPE_VIDEO_HEVC -> CodecProfileLevel.HEVCProfileMain
+            else -> throw IOException("Not supported mime type: $mimeType")
+        },
+        private var level: Int = when (mimeType) {
+            MediaFormat.MIMETYPE_VIDEO_AVC -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                CodecProfileLevel.AVCLevel62
+            } else {
+                CodecProfileLevel.AVCLevel52
+            }
+            MediaFormat.MIMETYPE_VIDEO_HEVC -> CodecProfileLevel.HEVCMainTierLevel62
+            else -> throw IOException("Not supported mime type: $mimeType")
         },
     ) {
         /**
          * Set video encoder mime type.
+         * Get supported video encoder mime type with [CameraStreamerConfigurationHelper.Video.supportedEncoders].
          *
          * @param mimeType video encoder mime type from [MediaFormat MIMETYPE_VIDEO_*](https://developer.android.com/reference/android/media/MediaFormat)
          */

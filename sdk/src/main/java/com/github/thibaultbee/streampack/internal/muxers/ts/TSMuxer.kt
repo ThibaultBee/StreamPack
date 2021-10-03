@@ -71,7 +71,7 @@ class TSMuxer(
     fun encode(frame: Frame, streamPid: Short) {
         when (frame.mimeType) {
             MediaFormat.MIMETYPE_VIDEO_AVC -> {
-                // Copy sps & pss before buffer
+                // Copy sps & pps before buffer
                 if (frame.isKeyFrame) {
                     if (frame.extra == null) {
                         throw MissingFormatArgumentException("Missing extra for AVC")
@@ -83,7 +83,27 @@ class TSMuxer(
                     buffer.putInt(0x00000001)
                     buffer.put(0x09.toByte())
                     buffer.put(0xf0.toByte())
-                    frame.extra.let { buffer.put(it) }
+                    buffer.put(frame.extra)
+                    buffer.put(frame.buffer)
+                    buffer.rewind()
+                    frame.buffer = buffer
+                }
+            }
+            MediaFormat.MIMETYPE_VIDEO_HEVC -> {
+                // Copy sps & pps & vps before buffer
+                if (frame.isKeyFrame) {
+                    if (frame.extra == null) {
+                        throw MissingFormatArgumentException("Missing extra for HEVC")
+                    }
+                    val buffer =
+                        ByteBuffer.allocate(
+                            7 + frame.extra.limit() + frame.buffer.limit()
+                        )
+                    buffer.putInt(0x00000001)
+                    buffer.put(0x46.toByte())
+                    buffer.put(0x01.toByte())
+                    buffer.put(0x50.toByte())
+                    buffer.put(frame.extra)
                     buffer.put(frame.buffer)
                     buffer.rewind()
                     frame.buffer = buffer
