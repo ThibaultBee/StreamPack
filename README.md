@@ -3,6 +3,19 @@
 StreamPack brings the best audio/video live technologies together in order to achieve low-latency &
 high quality live streaming for Android.
 
+## Features
+
+* Network:
+  * Ultra low-latency based on [SRT](https://github.com/Haivision/srt)
+  * Network adaptive bitrate mechanism
+* Video:
+  * Codec: HEVC/H.265 or AVC/H.264
+  * Configurable bitrate, resolution, framerate (tested up to 60), encoder level, encoder profile
+* Audio:
+  * Codec: AAC-LC
+  * Configurable bitrate, sample rate, stereo/mono, data format
+  * Processing: Noise suppressor or echo cancellation
+
 ## Setup
 
 Get StreamPack latest artifacts on [jitpack.io](https://jitpack.io/#ThibaultBee/StreamPack)
