@@ -92,6 +92,8 @@ data class VideoConfig(
         /**
          * Set video encoder mime type.
          * Get supported video encoder mime type with [CameraStreamerConfigurationHelper.Video.supportedEncoders].
+         * Warning: If you set to another codec than the one specified in [Builder] constructor, you
+         * must explicit set both [level] and [profile].
          *
          * @param mimeType video encoder mime type from [MediaFormat MIMETYPE_VIDEO_*](https://developer.android.com/reference/android/media/MediaFormat)
          */
