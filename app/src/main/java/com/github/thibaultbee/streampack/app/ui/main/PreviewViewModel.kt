@@ -39,6 +39,9 @@ import com.github.thibaultbee.streampack.regulator.DefaultSrtBitrateRegulatorFac
 import com.github.thibaultbee.streampack.streamers.BaseCameraStreamer
 import com.github.thibaultbee.streampack.streamers.CameraSrtLiveStreamer
 import com.github.thibaultbee.streampack.streamers.CameraTsFileStreamer
+import com.github.thibaultbee.streampack.utils.getBackCameraList
+import com.github.thibaultbee.streampack.utils.getFrontCameraList
+import com.github.thibaultbee.streampack.utils.isBackCamera
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -216,10 +219,11 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
 
     @RequiresPermission(Manifest.permission.CAMERA)
     fun toggleVideoSource() {
-        if (streamer.camera == "0") {
-            streamer.camera = "1"
+        val context = (getApplication() as Context)
+        if (context.isBackCamera(streamer.camera)) {
+            streamer.camera = context.getFrontCameraList()[0]
         } else {
-            streamer.camera = "0"
+            streamer.camera = context.getBackCameraList()[0]
         }
     }
 

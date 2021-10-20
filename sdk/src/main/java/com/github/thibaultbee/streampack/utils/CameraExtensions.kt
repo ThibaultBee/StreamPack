@@ -16,13 +16,9 @@
 package com.github.thibaultbee.streampack.utils
 
 import android.content.Context
-import android.graphics.ImageFormat
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
-import android.util.Range
 import android.util.Size
-import android.view.Surface
-import android.view.WindowManager
 import com.github.thibaultbee.streampack.internal.sources.camera.getCameraCharacteristics
 
 /**
@@ -31,9 +27,51 @@ import com.github.thibaultbee.streampack.internal.sources.camera.getCameraCharac
  * @return List of camera ids
  */
 fun Context.getCameraList(): List<String> {
-    val cameraManager = this.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+    val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
     return cameraManager.cameraIdList.toList()
 }
+
+/**
+ * Gets back camera id list.
+ *
+ * @return List of back camera ids
+ */
+fun Context.getBackCameraList() =
+    getCameraList().filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_BACK }
+
+/**
+ * Gets back camera id list.
+ *
+ * @return List of front camera ids
+ */
+fun Context.getFrontCameraList() =
+    getCameraList().filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_FRONT }
+
+/**
+ * Check if string is a back camera id
+ *
+ * @return true if string is a back camera id, otherwise false
+ */
+fun Context.isBackCamera(cameraId: String) =
+    getFacingDirection(cameraId) == CameraCharacteristics.LENS_FACING_BACK
+
+/**
+ * Check if string is a front camera id
+ *
+ * @return true if string is a front camera id, otherwise false
+ */
+fun Context.isFrontCamera(cameraId: String) =
+    getFacingDirection(cameraId) == CameraCharacteristics.LENS_FACING_FRONT
+
+/**
+ * Gets camera facing direction.
+ *
+ * @param cameraId camera id
+ * @return camera facing direction, either [CameraCharacteristics.LENS_FACING_BACK], [CameraCharacteristics.LENS_FACING_FRONT] or [CameraCharacteristics.LENS_FACING_EXTERNAL]
+ */
+fun Context.getFacingDirection(cameraId: String) =
+    getCameraCharacteristics(cameraId).get(CameraCharacteristics.LENS_FACING)
+
 
 /**
  * Gets list of output sizes compatible with [klass] of a camera.
