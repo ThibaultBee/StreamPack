@@ -74,30 +74,41 @@ data class VideoConfig(
         private var startBitrate: Int = 2000000,
         private var resolution: Size = Size(1280, 720),
         private var fps: Int = 30,
-        private var profile: Int = when (mimeType) {
-            MediaFormat.MIMETYPE_VIDEO_AVC -> CodecProfileLevel.AVCProfileHigh
-            MediaFormat.MIMETYPE_VIDEO_HEVC -> CodecProfileLevel.HEVCProfileMain
-            else -> throw IOException("Not supported mime type: $mimeType")
-        },
-        private var level: Int = when (mimeType) {
-            MediaFormat.MIMETYPE_VIDEO_AVC -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                CodecProfileLevel.AVCLevel62
-            } else {
-                CodecProfileLevel.AVCLevel52
-            }
-            MediaFormat.MIMETYPE_VIDEO_HEVC -> CodecProfileLevel.HEVCMainTierLevel62
-            else -> throw IOException("Not supported mime type: $mimeType")
-        },
+        private var profile: Int = getDefaultProfile(mimeType),
+        private var level: Int = getDefaultLevel(mimeType)
     ) {
+        companion object {
+            private fun getDefaultProfile(mimeType: String) =
+                when (mimeType) {
+                    MediaFormat.MIMETYPE_VIDEO_AVC -> CodecProfileLevel.AVCProfileHigh
+                    MediaFormat.MIMETYPE_VIDEO_HEVC -> CodecProfileLevel.HEVCProfileMain
+                    else -> throw IOException("Not supported mime type: $mimeType")
+                }
+
+
+            private fun getDefaultLevel(mimeType: String) = when (mimeType) {
+                MediaFormat.MIMETYPE_VIDEO_AVC -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    CodecProfileLevel.AVCLevel62
+                } else {
+                    CodecProfileLevel.AVCLevel52
+                }
+                MediaFormat.MIMETYPE_VIDEO_HEVC -> CodecProfileLevel.HEVCMainTierLevel62
+                else -> throw IOException("Not supported mime type: $mimeType")
+            }
+        }
+
         /**
          * Set video encoder mime type.
          * Get supported video encoder mime type with [CameraStreamerConfigurationHelper.Video.supportedEncoders].
-         * Warning: If you set to another codec than the one specified in [Builder] constructor, you
-         * must explicit set both [level] and [profile].
+         * Warning: It resets profile and level.
          *
          * @param mimeType video encoder mime type from [MediaFormat MIMETYPE_VIDEO_*](https://developer.android.com/reference/android/media/MediaFormat)
          */
-        fun setMimeType(mimeType: String) = apply { this.mimeType = mimeType }
+        fun setMimeType(mimeType: String) = apply {
+            this.mimeType = mimeType
+            this.profile = getDefaultProfile(mimeType)
+            this.level = getDefaultLevel(mimeType)
+        }
 
         /**
          * Set video encoder bitrate.
@@ -122,6 +133,7 @@ data class VideoConfig(
 
         /**
          * Set encoder profile.
+         * Warning: It is reset by [setMimeType]. Always call [setEncoderProfile] after [setMimeType].
          *
          * @param profile encoder profile from [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
          */
@@ -129,6 +141,7 @@ data class VideoConfig(
 
         /**
          * Set encoder level.
+         * Warning: It is reset by [setMimeType]. Always call [setEncoderLevel] after [setMimeType].
          *
          * @param level encoder level from [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
          */

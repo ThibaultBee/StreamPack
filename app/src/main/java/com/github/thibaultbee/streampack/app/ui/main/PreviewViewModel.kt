@@ -104,7 +104,8 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
                     CameraTsFileStreamer.Builder()
                 }
 
-                val videoConfig = VideoConfig.Builder(mimeType = configuration.video.encoder)
+                val videoConfig = VideoConfig.Builder()
+                    .setMimeType(configuration.video.encoder)
                     .setStartBitrate(configuration.video.bitrate * 1000)  // to b/s
                     .setResolution(configuration.video.resolution)
                     .setFps(configuration.video.fps)
