@@ -21,33 +21,19 @@ import android.content.pm.PackageManager
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
-import com.github.thibaultbee.streampack.data.AudioConfig
-import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.error.StreamPackError
-import com.github.thibaultbee.streampack.internal.data.Frame
-import com.github.thibaultbee.streampack.internal.data.Packet
-import com.github.thibaultbee.streampack.internal.encoders.AudioMediaCodecEncoder
-import com.github.thibaultbee.streampack.internal.encoders.IEncoderListener
-import com.github.thibaultbee.streampack.internal.encoders.VideoMediaCodecEncoder
 import com.github.thibaultbee.streampack.internal.endpoints.IEndpoint
-import com.github.thibaultbee.streampack.internal.events.EventHandler
-import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
-import com.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.internal.sources.AudioCapture
 import com.github.thibaultbee.streampack.internal.sources.camera.CameraCapture
-import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.logger.ILogger
-import com.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import com.github.thibaultbee.streampack.utils.CameraSettings
-import com.github.thibaultbee.streampack.utils.CameraStreamerConfigurationHelper
 import com.github.thibaultbee.streampack.utils.getCameraList
 import kotlinx.coroutines.runBlocking
-import java.nio.ByteBuffer
 
 /**
- * Base class of CaptureStreamer: [CameraTsFileStreamer] or [CameraSrtLiveStreamer]
- * Use this class, only if you want to implement a custom endpoint.
+ * Base class of camera streamer: [CameraTsFileStreamer] or [CameraSrtLiveStreamer]
+ * Use this class, only if you want to implement a custom endpoint with a camera source.
  *
  * @param context application context
  * @param tsServiceInfo MPEG-TS service description
@@ -56,15 +42,18 @@ import java.nio.ByteBuffer
  */
 open class BaseCameraStreamer(
     private val context: Context,
-    private val tsServiceInfo: ServiceInfo,
-    protected val endpoint: IEndpoint,
-    private val logger: ILogger
-) : EventHandler(), IStreamer {
-    /**
-     * Listener that reports streamer error.
-     * Supports only one listener.
-     */
-    var onErrorListener: OnErrorListener? = null
+    tsServiceInfo: ServiceInfo,
+    endpoint: IEndpoint,
+    logger: ILogger
+) : BaseStreamer(
+    context = context,
+    tsServiceInfo = tsServiceInfo,
+    videoCapture = CameraCapture(context, logger = logger),
+    audioCapture = AudioCapture(logger),
+    endpoint = endpoint,
+    logger = logger
+) {
+    private val cameraCapture = videoCapture as CameraCapture
 
     /**
      * Get/Set current camera id.
@@ -75,7 +64,7 @@ open class BaseCameraStreamer(
          *
          * @return a string that described current camera
          */
-        get() = videoSource.cameraId
+        get() = cameraCapture.cameraId
         /**
          * Set current camera id.
          *
@@ -83,160 +72,18 @@ open class BaseCameraStreamer(
          */
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
-            videoSource.cameraId = value
+            cameraCapture.cameraId = value
         }
 
     /**
      * Get the object that manipulate camera settings.
      */
     val cameraSettings: CameraSettings
-        get() = videoSource.settings
-
-    private var audioTsStreamId: Short? = null
-    private var videoTsStreamId: Short? = null
-
-    // Keep video configuration
-    private var videoConfig: VideoConfig? = null
-    private var audioConfig: AudioConfig? = null
-
-    // Only handle stream error (error on muxer, endpoint,...)
-    override var onInternalErrorListener = object : OnErrorListener {
-        override fun onError(error: StreamPackError) {
-            onStreamError(error)
-        }
-    }
-
-    private val onInternalCodecErrorListener = object : OnErrorListener {
-        override fun onError(error: StreamPackError) {
-            onStreamError(error)
-        }
-    }
-
-    private val audioEncoderListener = object : IEncoderListener {
-        override fun onInputFrame(buffer: ByteBuffer): Frame {
-            return audioSource.getFrame(buffer)
-        }
-
-        override fun onOutputFrame(frame: Frame) {
-            audioTsStreamId?.let {
-                try {
-                    tsMux.encode(frame, it)
-                } catch (e: Exception) {
-                    throw StreamPackError(e)
-                }
-            }
-        }
-    }
-
-    private val videoEncoderListener = object : IEncoderListener {
-        override fun onInputFrame(buffer: ByteBuffer): Frame {
-            // Not needed for video
-            throw StreamPackError(RuntimeException("No video input on VideoEncoder"))
-        }
-
-        override fun onOutputFrame(frame: Frame) {
-            videoTsStreamId?.let {
-                try {
-                    frame.pts += videoSource.timestampOffset
-                    frame.dts = if (frame.dts != null) {
-                        frame.dts!! + videoSource.timestampOffset
-                    } else {
-                        null
-                    }
-                    tsMux.encode(frame, it)
-                } catch (e: Exception) {
-                    // Send exception to encoder
-                    throw StreamPackError(e)
-                }
-            }
-        }
-    }
-
-    private val muxListener = object : IMuxerListener {
-        override fun onOutputFrame(packet: Packet) {
-            try {
-                endpoint.write(packet)
-            } catch (e: Exception) {
-                // Send exception to encoder
-                throw StreamPackError(e)
-            }
-        }
-    }
-
-    /**
-     * Manages error on stream.
-     * Stops only stream.
-     *
-     * @param error triggered [StreamPackError]
-     */
-    private fun onStreamError(error: StreamPackError) {
-        try {
-            stopStream()
-            onErrorListener?.onError(error)
-        } catch (e: Exception) {
-            logger.e(this, "onStreamError: Can't stop stream")
-        }
-    }
-
-    private val audioSource = AudioCapture(logger)
-    private val videoSource =
-        CameraCapture(context, logger = logger)
-
-    private var audioEncoder =
-        AudioMediaCodecEncoder(audioEncoderListener, onInternalCodecErrorListener, logger)
-    private var videoEncoder =
-        VideoMediaCodecEncoder(videoEncoderListener, onInternalCodecErrorListener, context, logger)
-
-    protected var audioBitrate: Int
-        get() = audioEncoder.bitrate
-        set(value) { audioEncoder.bitrate = value }
-    protected var videoBitrate: Int
-        get() = videoEncoder.bitrate
-        set(value) { videoEncoder.bitrate = value }
-
-
-    private val tsMux = TSMuxer(muxListener)
-
-    /**
-     * Configures both video and audio settings.
-     * It is the first method to call after a [BaseCameraStreamer] instantiation.
-     * It must be call when both stream and capture are not running.
-     *
-     * Use [CameraStreamerConfigurationHelper] to get value limits.
-     *
-     * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
-     * to video encoder default level and default profile.
-     *
-     * Inside, it creates most of record and encoders object.
-     *
-     * @param audioConfig Audio configuration to set
-     * @param videoConfig Video configuration to set
-     *
-     * @throws [StreamPackError] if configuration can not be applied.
-     * @see [release]
-     */
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    fun configure(audioConfig: AudioConfig, videoConfig: VideoConfig) {
-        // Keep settings when we need to reconfigure
-        this.videoConfig = videoConfig
-        this.audioConfig = audioConfig
-
-        try {
-            audioSource.configure(audioConfig)
-            audioEncoder.configure(audioConfig)
-            videoSource.configure(videoConfig.fps)
-            videoEncoder.configure(videoConfig)
-
-            endpoint.configure(videoConfig.startBitrate + audioConfig.startBitrate)
-        } catch (e: Exception) {
-            release()
-            throw StreamPackError(e)
-        }
-    }
+        get() = cameraCapture.settings
 
     /**
      * Starts audio and video capture.
-     * [BaseCameraStreamer.configure] must have been called at least once.
+     * [BaseStreamer.configure] must have been called at least once.
      *
      * Inside, it launches both camera and microphone capture.
      *
@@ -248,16 +95,13 @@ open class BaseCameraStreamer(
      */
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun startPreview(previewSurface: Surface, cameraId: String = "0") {
-        require(audioConfig != null) { "Audio has not been configured!" }
-        require(videoConfig != null) { "Video has not been configured!" }
+        checkConfigs()
 
         runBlocking {
             try {
-                videoSource.previewSurface = previewSurface
-                videoSource.encoderSurface = videoEncoder.inputSurface
-                videoSource.startPreview(cameraId)
-
-                audioSource.startStream()
+                cameraCapture.previewSurface = previewSurface
+                cameraCapture.encoderSurface = videoEncoder.inputSurface
+                cameraCapture.startPreview(cameraId)
             } catch (e: Exception) {
                 stopPreview()
                 throw StreamPackError(e)
@@ -273,138 +117,37 @@ open class BaseCameraStreamer(
      */
     fun stopPreview() {
         stopStreamImpl()
-        videoSource.stopPreview()
-        audioSource.stopStream()
+        cameraCapture.stopPreview()
+        audioCapture.stopStream()
     }
 
     /**
-     * Starts audio/video stream.
-     * Stream depends of the endpoint: Audio/video could be write to a file or send to a remote
-     * device.
-     * To avoid creating an unresponsive UI, do not call on main thread.
-     *
-     * @see [stopStream]
+     * Stops camera and ask for a reset if camera is already running.
      */
-    override fun startStream() {
-        require(audioConfig != null) { "Audio has not been configured!" }
-        require(videoConfig != null) { "Video has not been configured!" }
-        require(videoEncoder.mimeType != null) { "Missing video encoder mime type! Encoder not configured?" }
-        require(audioEncoder.mimeType != null) { "Missing audio encoder mime type! Encoder not configured?" }
-
-        try {
-            endpoint.startStream()
-
-            val streams = mutableListOf<String>()
-            videoEncoder.mimeType?.let { streams.add(it) }
-            audioEncoder.mimeType?.let { streams.add(it) }
-
-            tsMux.addService(tsServiceInfo)
-            tsMux.addStreams(tsServiceInfo, streams)
-            videoEncoder.mimeType?.let { videoTsStreamId = tsMux.getStreams(it)[0].pid }
-            audioEncoder.mimeType?.let { audioTsStreamId = tsMux.getStreams(it)[0].pid }
-
-            audioEncoder.startStream()
-            videoSource.startStream()
-            videoEncoder.startStream()
-        } catch (e: Exception) {
-            stopStream()
-            throw StreamPackError(e)
-        }
+    override fun onResetVideo(): Boolean {
+        val restartPreview = cameraCapture.isPreviewing
+        cameraCapture.stopPreview()
+        return restartPreview
     }
 
     /**
-     * Stops audio/video stream.
-     *
-     * Internally, it resets audio and video recorders and encoders to get them ready for another
-     * [startStream] session. It explains why camera is restarted when calling this method.
-     *
-     * @see [startStream]
+     * Start preview when video system has been reset.
      */
-    override fun stopStream() {
-        stopStreamImpl()
-
-        // Encoder does not return to CONFIGURED state... so we have to reset everything for video...
-        resetAudio()
-
+    override suspend fun afterResetVideo() {
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            resetVideo()
+            cameraCapture.startPreview()
         }
     }
 
     /**
-     * Stops audio/video stream implementation.
-     *
-     * @see [stopStream]
+     * Same as [BaseStreamer.release] but it also calls [stopPreview].
      */
-    private fun stopStreamImpl() {
-        videoSource.stopStream()
-        videoEncoder.stopStream()
-        audioEncoder.stopStream()
-
-        tsMux.stop()
-
-        endpoint.stopStream()
-    }
-
-    /**
-     * Prepares audio encoder for another session
-     *
-     * @see [stopStream]
-     */
-    private fun resetAudio() {
-        if (audioConfig == null) {
-            logger.w(this, "Audio has not been configured!")
-            return
-        }
-
-        audioEncoder.release()
-
-        // Reconfigure
-        audioEncoder.configure(audioConfig!!)
-    }
-
-    /**
-     * Prepares camera and video encoder for another session
-     *
-     * @see [stopStream]
-     */
-    @RequiresPermission(Manifest.permission.CAMERA)
-    private fun resetVideo() {
-        if (videoConfig == null) {
-            logger.w(this, "Video has not been configured!")
-            return
-        }
-
-        val restartPreview = videoSource.isPreviewing
-        videoSource.stopPreview()
-        videoEncoder.release()
-
-        // And restart...
-        runBlocking {
-            videoEncoder.configure(videoConfig!!)
-            videoSource.encoderSurface = videoEncoder.inputSurface
-            if (restartPreview) {
-                videoSource.startPreview()
-            }
-        }
-    }
-
-    /**
-     * Releases recorders and encoders object.
-     * It also stops preview if needed
-     *
-     * @see [configure]
-     */
-    fun release() {
+    override fun release() {
         stopPreview()
-        audioEncoder.release()
-        videoEncoder.release()
-        audioSource.release()
-        videoSource.release()
-        endpoint.release()
+        super.release()
     }
 }

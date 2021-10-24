@@ -19,7 +19,7 @@ import android.media.MediaCodecInfo.CodecProfileLevel
 import android.media.MediaFormat
 import android.os.Build
 import android.util.Size
-import com.github.thibaultbee.streampack.streamers.BaseCameraStreamer
+import com.github.thibaultbee.streampack.streamers.BaseStreamer
 import com.github.thibaultbee.streampack.utils.CameraStreamerConfigurationHelper
 import com.github.thibaultbee.streampack.utils.isVideo
 import java.io.IOException
@@ -28,7 +28,7 @@ import java.io.IOException
  * Video configuration class.
  * If you don't know how to set class members, [Video encoding recommendations](https://developer.android.com/guide/topics/media/media-formats#video-encoding) should give you hints.
  *
- * @see [BaseCameraStreamer.configure]
+ * @see [BaseStreamer.configure]
  */
 data class VideoConfig(
     /**

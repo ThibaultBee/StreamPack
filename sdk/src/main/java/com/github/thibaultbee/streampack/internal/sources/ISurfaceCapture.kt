@@ -15,16 +15,14 @@
  */
 package com.github.thibaultbee.streampack.internal.sources
 
-import com.github.thibaultbee.streampack.internal.data.Frame
+import android.view.Surface
 import com.github.thibaultbee.streampack.internal.interfaces.Streamable
-import java.nio.ByteBuffer
 
-interface ISyncCapture<T> : Streamable<T> {
+interface ISurfaceCapture<T> : Streamable<T> {
+    val timestampOffset: Long
 
     /**
-     * Generate a frame from capture device
-     * @param buffer buffer where to write data. Must be set as buffer of returned Frame
-     * @return frame with correct infos (at least buffer, mime type and pts)
+     * Set encoder surface
      */
-    fun getFrame(buffer: ByteBuffer): Frame
+    var encoderSurface: Surface?
 }

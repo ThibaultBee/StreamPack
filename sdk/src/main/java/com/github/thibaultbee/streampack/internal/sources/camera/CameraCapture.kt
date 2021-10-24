@@ -19,17 +19,18 @@ import android.Manifest
 import android.content.Context
 import android.view.Surface
 import androidx.annotation.RequiresPermission
-import com.github.thibaultbee.streampack.internal.interfaces.Streamable
-import com.github.thibaultbee.streampack.utils.CameraSettings
+import com.github.thibaultbee.streampack.data.VideoConfig
+import com.github.thibaultbee.streampack.internal.sources.ISurfaceCapture
 import com.github.thibaultbee.streampack.logger.ILogger
+import com.github.thibaultbee.streampack.utils.CameraSettings
 import kotlinx.coroutines.runBlocking
 
 class CameraCapture(
     context: Context,
     logger: ILogger
-) : Streamable<Int> {
+) : ISurfaceCapture<VideoConfig> {
     var previewSurface: Surface? = null
-    var encoderSurface: Surface? = null
+    override var encoderSurface: Surface? = null
     var cameraId: String = "0"
         get() = cameraController.camera?.id ?: field
         @RequiresPermission(Manifest.permission.CAMERA)
@@ -47,15 +48,15 @@ class CameraCapture(
     /**
      * As timestamp source differs from one camera to another. Computes an offset.
      */
-    val timestampOffset = CameraHelper.getTimeOffsetToMonoClock(context, cameraId)
+    override val timestampOffset = CameraHelper.getTimeOffsetToMonoClock(context, cameraId)
 
 
     private var fps: Int = 30
     private var isStreaming = false
     internal var isPreviewing = false
 
-    override fun configure(fps: Int) {
-        this.fps = fps
+    override fun configure(config: VideoConfig) {
+        this.fps = config.fps
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
