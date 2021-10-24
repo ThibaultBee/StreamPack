@@ -18,24 +18,20 @@ package com.github.thibaultbee.streampack.utils
 import android.content.Context
 import android.util.Range
 import android.util.Size
-import com.github.thibaultbee.streampack.streamers.BaseCameraStreamer
-import com.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
-import com.github.thibaultbee.streampack.internal.muxers.ts.TSMuxerHelper
 import com.github.thibaultbee.streampack.internal.sources.camera.getCameraFpsList
 import com.github.thibaultbee.streampack.internal.sources.camera.getCameraOutputStreamSizes
+import com.github.thibaultbee.streampack.streamers.BaseCameraStreamer
 
 /**
  * Configuration helper for [BaseCameraStreamer].
- * It filters supported values from MediaCodec, Camera and TS Muxer.
+ * It wraps supported values from MediaCodec, Camera and TS Muxer.
  */
 object CameraStreamerConfigurationHelper {
     object Video {
         /**
          * Supported encoders for a [BaseCameraStreamer]
          */
-        val supportedEncoders = TSMuxerHelper.Video.supportedEncoders.filter {
-            MediaCodecHelper.Video.supportedEncoders.contains(it)
-        }
+        val supportedEncoders = StreamerConfigurationHelper.Video.supportedEncoders
 
         /**
          * Get supported resolutions for a [BaseCameraStreamer].
@@ -45,8 +41,9 @@ object CameraStreamerConfigurationHelper {
          * @return list of resolutions
          */
         fun getSupportedResolutions(context: Context, mimeType: String): List<Size> {
-            val codecSupportedWidths = MediaCodecHelper.Video.getSupportedWidths(mimeType)
-            val codecSupportedHeights = MediaCodecHelper.Video.getSupportedHeights(mimeType)
+            val pair = StreamerConfigurationHelper.Video.getSupportedResolutions(mimeType)
+            val codecSupportedWidths = pair.first
+            val codecSupportedHeights = pair.second
 
             return context.getCameraOutputStreamSizes().filter {
                 codecSupportedWidths.contains(it.width) && codecSupportedHeights.contains(it.height)
@@ -66,7 +63,7 @@ object CameraStreamerConfigurationHelper {
             mimeType: String,
             cameraId: String
         ): List<Range<Int>> {
-            val encoderFpsRange = MediaCodecHelper.Video.getFramerateRange(mimeType)
+            val encoderFpsRange = StreamerConfigurationHelper.Video.getSupportedFramerate(mimeType)
             return context.getCameraFpsList(cameraId).filter { encoderFpsRange.contains(it) }
         }
 
@@ -77,16 +74,14 @@ object CameraStreamerConfigurationHelper {
          * @return bitrate range
          */
         fun getSupportedBitrates(mimeType: String) =
-            MediaCodecHelper.Video.getBitrateRange(mimeType)
+            StreamerConfigurationHelper.Video.getSupportedBitrates(mimeType)
     }
 
     object Audio {
         /**
          * Get supported audio encoders list
          */
-        val supportedEncoders = TSMuxerHelper.Audio.supportedEncoders.filter {
-            MediaCodecHelper.Audio.supportedEncoders.contains(it)
-        }
+        val supportedEncoders = StreamerConfigurationHelper.Audio.supportedEncoders
 
         /**
          * Get maximum supported number of channel by encoder.
@@ -95,7 +90,7 @@ object CameraStreamerConfigurationHelper {
          * @return maximum number of channel supported by the encoder
          */
         fun getSupportedInputChannelRange(mimeType: String) =
-            MediaCodecHelper.Audio.getInputChannelRange(mimeType)
+            StreamerConfigurationHelper.Audio.getSupportedInputChannelRange(mimeType)
 
         /**
          * Get supported bitrate range for a [BaseCameraStreamer].
@@ -104,7 +99,7 @@ object CameraStreamerConfigurationHelper {
          * @return bitrate range
          */
         fun getSupportedBitrates(mimeType: String) =
-            MediaCodecHelper.Audio.getBitrateRange(mimeType)
+            StreamerConfigurationHelper.Audio.getSupportedBitrates(mimeType)
 
         /**
          * Get audio supported sample rates.
@@ -112,7 +107,7 @@ object CameraStreamerConfigurationHelper {
          * @param mimeType audio encoder mime type
          * @return sample rates list in Hz.
          */
-        fun getSupportedSampleRates(mimeType: String) =
-            MediaCodecHelper.Audio.getSupportedSampleRates(mimeType)
+        fun getSupportedSampleRates(mimeType: String): IntArray =
+            StreamerConfigurationHelper.Audio.getSupportedSampleRates(mimeType)
     }
 }

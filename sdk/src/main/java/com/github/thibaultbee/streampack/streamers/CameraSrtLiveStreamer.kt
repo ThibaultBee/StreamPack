@@ -31,11 +31,11 @@ import com.github.thibaultbee.streampack.logger.StreamPackLogger
 import com.github.thibaultbee.streampack.regulator.DefaultSrtBitrateRegulatorFactory
 import com.github.thibaultbee.streampack.regulator.ISrtBitrateRegulatorFactory
 import com.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
-import com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
+import com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerPreviewBuilder
 import java.net.SocketException
 
 /**
- * [BaseCameraStreamer] that sends audio/video frames to a remote device p, Secure Reliable
+ * [BaseCameraStreamer] that sends audio/video frames to a remote device with Secure Reliable
  * Transport (SRT) Protocol.
  *
  * @param context application context
@@ -75,7 +75,7 @@ class CameraSrtLiveStreamer(
     /**
      * Listener to manage SRT connection.
      */
-    var onConnectionListener: OnConnectionListener? = null
+    override var onConnectionListener: OnConnectionListener? = null
         set(value) {
             srtProducer.onConnectionListener = value
             field = value
@@ -182,7 +182,7 @@ class CameraSrtLiveStreamer(
         private var streamId: String? = null,
         private var bitrateRegulatorFactory: ISrtBitrateRegulatorFactory? = null,
         private var bitrateRegulatorConfig: BitrateRegulatorConfig? = null
-    ) : IStreamerBuilder {
+    ) : IStreamerPreviewBuilder {
         private lateinit var context: Context
         private lateinit var serviceInfo: ServiceInfo
 

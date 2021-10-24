@@ -1,10 +1,10 @@
 package com.github.thibaultbee.streampack.logger
 
-import com.github.thibaultbee.streampack.streamers.BaseCameraStreamer
+import com.github.thibaultbee.streampack.streamers.BaseStreamer
 
 /**
  * Logger interface.
- * You can implement a custom [ILogger] and pass it as a parameter of [BaseCameraStreamer]
+ * You can implement a custom [ILogger] and pass it as a parameter of [BaseStreamer]
  * implementation.
  */
 interface ILogger {

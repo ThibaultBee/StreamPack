@@ -125,7 +125,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
                     .setContext(getApplication())
                     .setServiceInfo(tsServiceInfo)
                     .setConfiguration(audioConfig, videoConfig)
-                    .build()
+                    .build() as BaseCameraStreamer
 
                 streamer.onErrorListener = object : OnErrorListener {
                     override fun onError(error: StreamPackError) {

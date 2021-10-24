@@ -1,12 +1,11 @@
 package com.github.thibaultbee.streampack.streamers.interfaces.builders
 
 import android.content.Context
-import android.view.Surface
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
-import com.github.thibaultbee.streampack.streamers.BaseCameraStreamer
 import com.github.thibaultbee.streampack.logger.ILogger
+import com.github.thibaultbee.streampack.streamers.BaseStreamer
 
 interface IStreamerBuilder {
 
@@ -40,17 +39,9 @@ interface IStreamerBuilder {
     fun setConfiguration(audioConfig: AudioConfig, videoConfig: VideoConfig): IStreamerBuilder
 
     /**
-     * Set preview surface.
-     * If provided, it starts preview.
+     * Combines all of the characteristics that have been set and return a new [BaseStreamer] object.
      *
-     * @param previewSurface surface where to display preview
+     * @return a new [BaseStreamer] object
      */
-    fun setPreviewSurface(previewSurface: Surface): IStreamerBuilder
-
-    /**
-     * Combines all of the characteristics that have been set and return a new [BaseCameraStreamer] object.
-     *
-     * @return a new [BaseCameraStreamer] object
-     */
-    fun build(): BaseCameraStreamer
+    fun build(): BaseStreamer
 }

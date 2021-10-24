@@ -30,7 +30,7 @@ import com.github.thibaultbee.streampack.internal.utils.TimeUtils
 import com.github.thibaultbee.streampack.logger.ILogger
 import java.nio.ByteBuffer
 
-class AudioCapture(val logger: ILogger) : ISyncCapture<AudioConfig> {
+class AudioCapture(val logger: ILogger) : IFrameCapture<AudioConfig> {
     private var audioRecord: AudioRecord? = null
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)

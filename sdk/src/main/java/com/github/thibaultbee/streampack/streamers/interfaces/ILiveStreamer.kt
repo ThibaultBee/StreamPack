@@ -1,6 +1,13 @@
 package com.github.thibaultbee.streampack.streamers.interfaces
 
+import com.github.thibaultbee.streampack.listeners.OnConnectionListener
+
 interface ILiveStreamer : IStreamer {
+    /**
+     * Listen to manage connection events.
+     */
+    var onConnectionListener: OnConnectionListener?
+
     /**
      * Connect to a remote server.
      *
