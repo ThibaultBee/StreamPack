@@ -17,7 +17,7 @@ package com.github.thibaultbee.streampack.data
 
 import android.media.AudioFormat
 import android.media.MediaFormat
-import com.github.thibaultbee.streampack.streamers.BaseCameraStreamer
+import com.github.thibaultbee.streampack.streamers.BaseStreamer
 import com.github.thibaultbee.streampack.utils.isAudio
 import java.security.InvalidParameterException
 
@@ -25,7 +25,7 @@ import java.security.InvalidParameterException
  * Audio configuration class.
  * If you don't know how to set class members, [Video encoding recommendations](https://developer.android.com/guide/topics/media/media-formats#video-encoding) should give you hints.
  *
- * @see [BaseCameraStreamer.configure]
+ * @see [BaseStreamer.configure]
  */
 data class AudioConfig(
     /**

@@ -1,0 +1,84 @@
+<resources>
+    <string name="app_name">Screen Recorder</string>
+
+    <!--Main activity -->
+    <string name="action_settings">Settings</string>
+    <string name="menu_actions">Menu actions</string>
+
+    <string name="record_screen">Record screen</string>
+    <string name="stop">Stop</string>
+
+    <!--Settings activity -->
+    <string name="resolution">Resolution</string>
+    <string name="video_bitrate">Video start bitrate (kb/s)</string>
+    <string name="video_resolution_key">video_resolution_key</string>
+    <string name="server_ip_key">server_ip_key</string>
+    <string name="server_ip">IP</string>
+    <string name="server_port">Port</string>
+    <string name="server_port_key">server_port_key</string>
+    <string name="server">Server</string>
+    <string name="endpoint">Endpoint</string>
+    <string name="video_bitrate_key">video_bitrate_key</string>
+    <string name="fps">Framerate</string>
+    <string name="video_fps_key">video_fps_key</string>
+    <string name="video_encoder">Encoder</string>
+    <string name="video_encoder_key">video_encoder_key</string>
+    <string name="default_video_encoder">video/avc</string>
+    <string name="video">Video</string>
+    <string name="audio">Audio</string>
+    <string name="audio_encoder_key">audio_encoder_key</string>
+    <string name="default_audio_encoder">audio/mp4a-latm</string>
+    <string name="audio_encoder">Encoder</string>
+    <string name="endpoint_type_key">endpoint_type_key</string>
+    <string name="tofile">Write to a file</string>
+    <string name="toSRT">Stream to a remote SRT device</string>
+    <string name="endpoint_key">endpoint_key</string>
+    <string name="endpoint_server_key">server_key</string>
+    <string name="endpoint_file_key">endpoint_file_key</string>
+    <string name="file">File</string>
+    <string name="file_name_key">file_name_key</string>
+    <string name="file_name">File name</string>
+    <string name="muxer">Muxer</string>
+    <string name="muxer_service_key">muxer_service_key</string>
+    <string name="default_muxer_service">StreamPackService</string>
+    <string name="muxer_service">Service name</string>
+    <string name="muxer_provider_key">muxer_provider_key</string>
+    <string name="default_muxer_provider">StreamPack Inc</string>
+    <string name="muxer_provider">Provider name</string>
+    <string name="default_video_resolution">1280x720</string>
+    <string name="audio_number_of_channels">Number of channels</string>
+    <string name="audio_number_of_channels_key">audio_number_of_channels_configuration_key</string>
+    <string name="audio_bitrate_key">audio_bitrate_key</string>
+    <string name="audio_bitrate">Bitrate</string>
+    <string name="audio_sample_rate_key">audio_sample_rate_key</string>
+    <string name="audio_sample_rate">Sample rate</string>
+    <string name="audio_byte_format">Byte format</string>
+    <string name="audio_byte_format_key">audio_byte_format_key</string>
+    <string name="video_encoder_h264">AVC/H.264</string>
+    <string name="video_encoder_h265">HEVC/H.265</string>
+    <string name="audio_encoder_aac">AAC</string>
+    <string name="server_stream_id_key">server_stream_id_key</string>
+    <string name="server_stream_id">Stream ID</string>
+    <string name="default_server_stream_id">StreamPack</string>
+    <string name="server_passphrase_key">server_passphrase_key</string>
+    <string name="server_passphrase">Passphrase</string>
+    <string name="default_server_passphrase_id">""</string>
+    <string name="audio_enable_echo_canceler_key">audio_enable_echo_canceler_key</string>
+    <string name="audio_enable_echo_canceler">Enable echo canceler</string>
+    <string name="audio_enable_noise_suppressor_key">audio_enable_noise_suppressor_key</string>
+    <string name="audio_enable_noise_suppressor">Enable noise suppressor</string>
+    <string name="switch_camera_source">Switch camera source</string>
+    <string name="turn_on_off_torch">Turn on/off torch</string>
+    <string name="server_enable_bitrate_regulation_key">server_enable_bitrate_regulation_key</string>
+    <string name="server_enable_bitrate_regulation">Enable bitrate regulation</string>
+    <string name="server_video_target_bitrate_key">server_video_target_bitrate_key</string>
+    <string name="server_video_target_bitrate">Video target bitrate (kb/s)</string>
+    <string name="server_video_min_bitrate_key">server_video_min_bitrate_key</string>
+    <string name="server_video_min_bitrate">Video minimum bitrate (kb/s)</string>
+    <string name="permission">Permission</string>
+    <string name="permission_not_granted">Permission must be granted: leaving!</string>
+    <string name="channel_name">StreamPack channel</string>
+    <string name="channel_description">Notices stream error or disconnection.</string>
+    <string name="notification_title">StreamPack</string>
+    <string name="notification_service_started">Service started</string>
+</resources>
