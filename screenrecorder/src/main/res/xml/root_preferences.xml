@@ -1,0 +1,147 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory app:title="@string/video">
+        <ListPreference
+            app:defaultValue="@string/default_video_encoder"
+            app:key="@string/video_encoder_key"
+            app:title="@string/video_encoder"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="@string/default_video_resolution"
+            app:key="@string/video_resolution_key"
+            app:title="@string/resolution"
+            app:useSimpleSummaryProvider="true" />
+
+        <SeekBarPreference
+            android:max="10000"
+            app:defaultValue="2000"
+            app:key="@string/video_bitrate_key"
+            app:min="500"
+            app:showSeekBarValue="true"
+            app:title="@string/video_bitrate"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/audio">
+        <ListPreference
+            app:defaultValue="@string/default_audio_encoder"
+            app:key="@string/audio_encoder_key"
+            app:title="@string/audio_encoder"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="2"
+            app:entries="@array/AudioNumberOfChannelsEntries"
+            app:entryValues="@array/AudioNumberOfChannelsEntryValues"
+            app:key="@string/audio_number_of_channels_key"
+            app:title="@string/audio_number_of_channels"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="128000"
+            app:entries="@array/AudioBitrateEntries"
+            app:entryValues="@array/AudioBitrateEntryValues"
+            app:key="@string/audio_bitrate_key"
+            app:title="@string/audio_bitrate"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="44100"
+            app:entries="@array/AudioSampleRateEntries"
+            app:entryValues="@array/AudioSampleRateEntryValues"
+            app:key="@string/audio_sample_rate_key"
+            app:title="@string/audio_sample_rate"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="2"
+            app:entries="@array/AudioByteFormatEntries"
+            app:entryValues="@array/AudioByteFormatEntryValues"
+            app:key="@string/audio_byte_format_key"
+            app:title="@string/audio_byte_format"
+            app:useSimpleSummaryProvider="true" />
+
+        <SwitchPreference
+            android:defaultValue="false"
+            app:key="@string/audio_enable_echo_canceler_key"
+            app:title="@string/audio_enable_echo_canceler" />
+
+        <SwitchPreference
+            android:defaultValue="false"
+            app:key="@string/audio_enable_noise_suppressor_key"
+            app:title="@string/audio_enable_noise_suppressor" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/muxer">
+        <EditTextPreference
+            app:defaultValue="@string/default_muxer_service"
+            app:key="@string/muxer_service_key"
+            app:title="@string/muxer_service"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:defaultValue="@string/default_muxer_provider"
+            app:key="@string/muxer_provider_key"
+            app:title="@string/muxer_provider"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/endpoint">
+        <PreferenceCategory
+            app:key="@string/endpoint_server_key"
+            app:title="@string/server">
+
+            <EditTextPreference
+                app:defaultValue=""
+                app:key="@string/server_ip_key"
+                app:title="@string/server_ip"
+                app:useSimpleSummaryProvider="true" />
+
+            <EditTextPreference
+                app:defaultValue="9998"
+                app:key="@string/server_port_key"
+                app:title="@string/server_port"
+                app:useSimpleSummaryProvider="true" />
+
+            <EditTextPreference
+                app:defaultValue="@string/default_server_stream_id"
+                app:key="@string/server_stream_id_key"
+                app:title="@string/server_stream_id"
+                app:useSimpleSummaryProvider="true" />
+
+            <EditTextPreference
+                app:defaultValue="@string/default_server_passphrase_id"
+                app:key="@string/server_passphrase_key"
+                app:title="@string/server_passphrase"
+                app:useSimpleSummaryProvider="true" />
+
+            <SwitchPreference
+                android:defaultValue="false"
+                app:key="@string/server_enable_bitrate_regulation_key"
+                app:title="@string/server_enable_bitrate_regulation" />
+
+            <SeekBarPreference
+                android:max="10000"
+                app:defaultValue="5000"
+                app:key="@string/server_video_target_bitrate_key"
+                app:min="500"
+                app:showSeekBarValue="true"
+                app:title="@string/server_video_target_bitrate"
+                app:useSimpleSummaryProvider="true" />
+
+            <SeekBarPreference
+                android:max="10000"
+                app:defaultValue="300"
+                app:key="@string/server_video_min_bitrate_key"
+                app:min="100"
+                app:showSeekBarValue="true"
+                app:title="@string/server_video_min_bitrate"
+                app:useSimpleSummaryProvider="true" />
+
+        </PreferenceCategory>
+    </PreferenceCategory>
+</PreferenceScreen>
