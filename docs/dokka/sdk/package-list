@@ -34,6 +34,7 @@ $dokka.location:com.github.thibaultbee.streampack.data/BitrateRegulatorConfig///
 $dokka.location:com.github.thibaultbee.streampack.data/BitrateRegulatorConfig/BitrateRegulatorConfig/#android.util.Range[kotlin.Int]#android.util.Range[kotlin.Int]/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.data/-bitrate-regulator-config/-bitrate-regulator-config.html
 $dokka.location:com.github.thibaultbee.streampack.data/BitrateRegulatorConfig/audioBitrateRange/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.data/-bitrate-regulator-config/audio-bitrate-range.html
 $dokka.location:com.github.thibaultbee.streampack.data/BitrateRegulatorConfig/videoBitrateRange/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.data/-bitrate-regulator-config/video-bitrate-range.html
+$dokka.location:com.github.thibaultbee.streampack.data/VideoConfig.Builder.Companion///PointingToDeclaration/sdk/com.github.thibaultbee.streampack.data/-video-config/-builder/-companion/index.html
 $dokka.location:com.github.thibaultbee.streampack.data/VideoConfig.Builder///PointingToDeclaration/sdk/com.github.thibaultbee.streampack.data/-video-config/-builder/index.html
 $dokka.location:com.github.thibaultbee.streampack.data/VideoConfig.Builder/Builder/#kotlin.String#kotlin.Int#android.util.Size#kotlin.Int#kotlin.Int#kotlin.Int/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.data/-video-config/-builder/-builder.html
 $dokka.location:com.github.thibaultbee.streampack.data/VideoConfig.Builder/build/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.data/-video-config/-builder/build.html
@@ -162,9 +163,14 @@ $dokka.location:com.github.thibaultbee.streampack.streamers/CameraTsFileStreamer
 $dokka.location:com.github.thibaultbee.streampack.streamers/CameraTsFileStreamer/file/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.streamers/-camera-ts-file-streamer/file.html
 $dokka.location:com.github.thibaultbee.streampack.streamers/CameraTsFileStreamer/startStream/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.streamers/-camera-ts-file-streamer/start-stream.html
 $dokka.location:com.github.thibaultbee.streampack.utils////PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/index.html
+$dokka.location:com.github.thibaultbee.streampack.utils//getBackCameraList/android.content.Context#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/get-back-camera-list.html
 $dokka.location:com.github.thibaultbee.streampack.utils//getCameraList/android.content.Context#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/get-camera-list.html
 $dokka.location:com.github.thibaultbee.streampack.utils//getCameraOutputSizes/android.content.Context#java.lang.Class[TypeParam(bounds=[kotlin.Any])]#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/get-camera-output-sizes.html
+$dokka.location:com.github.thibaultbee.streampack.utils//getFacingDirection/android.content.Context#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/get-facing-direction.html
+$dokka.location:com.github.thibaultbee.streampack.utils//getFrontCameraList/android.content.Context#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/get-front-camera-list.html
 $dokka.location:com.github.thibaultbee.streampack.utils//isAudio/kotlin.String#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/is-audio.html
+$dokka.location:com.github.thibaultbee.streampack.utils//isBackCamera/android.content.Context#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/is-back-camera.html
+$dokka.location:com.github.thibaultbee.streampack.utils//isFrontCamera/android.content.Context#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/is-front-camera.html
 $dokka.location:com.github.thibaultbee.streampack.utils//isVideo/kotlin.String#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/is-video.html
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraSettings///PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-settings/index.html
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraSettings/CameraSettings/#com.github.thibaultbee.streampack.internal.sources.camera.CameraController/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-settings/-camera-settings.html
