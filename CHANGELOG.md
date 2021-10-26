@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+Version 1.2.0
+-------------
+
+## Features:
+
+- Add HEVC support
+- You can set video framerate to 60 FPS on sample if it is supported by your device and cameras.
+  
 Version 1.1.0
 -------------
 
