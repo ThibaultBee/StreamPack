@@ -1,0 +1,197 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>BaseStreamer</title>
+<link href="../../../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script><script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script><link href="../../../styles/style.css" rel="Stylesheet"><link href="../../../styles/logo-styles.css" rel="Stylesheet"><link href="../../../styles/jetbrains-mono.css" rel="Stylesheet"><link href="../../../styles/main.css" rel="Stylesheet"><script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script><script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script><script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script><script type="text/javascript" src="../../../scripts/main.js" async="async"></script>  </head>
+  <body>
+    <div id="container">
+      <div id="leftColumn"><a href="../../../index.html">
+          <div id="logo"></div>
+        </a>
+        <div id="paneSearch"></div>
+        <div id="sideMenu"></div>
+      </div>
+      <div id="main">
+        <div id="leftToggler"><span class="icon-toggler"></span></div>
+<script type="text/javascript" src="../../../scripts/main.js"></script>        <div class="main-content" id="content" pageIds="sdk::com.github.thibaultbee.streampack.streamers.bases/BaseStreamer///PointingToDeclaration//165651098">
+          <div class="navigation-wrapper" id="navigation-wrapper">
+            <div class="breadcrumbs"><a href="../../../index.html">sdk</a>/<a href="../index.html">com.github.thibaultbee.streampack.streamers.bases</a>/<a href="index.html">BaseStreamer</a></div>
+            <div class="pull-right d-flex">
+              <div id="searchBar"></div>
+            </div>
+          </div>
+          <div class="cover ">
+            <h1 class="cover"><span>Base</span><wbr></wbr><span>Streamer</span></h1>
+            <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">abstract class <a href="index.html">BaseStreamer</a>(context: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, tsServiceInfo: <span data-unresolved-link="com.github.thibaultbee.streampack.internal.muxers.ts.data/ServiceInfo///PointingToDeclaration/">ServiceInfo</span>, videoCapture: <span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources/ISurfaceCapture///PointingToDeclaration/">ISurfaceCapture</span>&lt;<a href="../../com.github.thibaultbee.streampack.data/-video-config/index.html">VideoConfig</a>&gt;?, audioCapture: <span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources/IFrameCapture///PointingToDeclaration/">IFrameCapture</span>&lt;<a href="../../com.github.thibaultbee.streampack.data/-audio-config/index.html">AudioConfig</a>&gt;?, endpoint: <span data-unresolved-link="com.github.thibaultbee.streampack.internal.endpoints/IEndpoint///PointingToDeclaration/">IEndpoint</span>, logger: <a href="../../com.github.thibaultbee.streampack.logger/-i-logger/index.html">ILogger</a>) : <span data-unresolved-link="com.github.thibaultbee.streampack.internal.events/EventHandler///PointingToDeclaration/">EventHandler</span>, <a href="../../com.github.thibaultbee.streampack.streamers.interfaces/-i-streamer/index.html">IStreamer</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph">Base class of all streamers. Use this class, only if you want to implement a add new Audio or video source.</p></div></div>
+          </div>
+          <div class="tabbedcontent">
+            <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="Constructors">Constructors</button><button class="section-tab" data-togglable="Functions">Functions</button><button class="section-tab" data-togglable="Properties">Properties</button><button class="section-tab" data-togglable="Parameters">Parameters</button><button class="section-tab" data-togglable="Inheritors">Inheritors</button></div>
+            <div class="tabs-section-body">
+              <h2 class="">Parameters</h2>
+              <div data-togglable="Parameters">
+                <div class="platform-hinted WithExtraAttributes" data-platform-hinted="data-platform-hinted" data-togglable="Parameters"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div data-togglable="Parameters"><div class="table" data-togglable="Parameters"><div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="main-subrow keyValue WithExtraAttributes"><div class=""><span class="inline-flex">context</span></div><div><div class="title"><div data-togglable="Parameters"><p class="paragraph">application context</p></div></div></div></div></div><div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="main-subrow keyValue WithExtraAttributes"><div class=""><span class="inline-flex">tsServiceInfo</span></div><div><div class="title"><div data-togglable="Parameters"><p class="paragraph">MPEG-TS service description</p></div></div></div></div></div><div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="main-subrow keyValue WithExtraAttributes"><div class=""><span class="inline-flex">videoCapture</span></div><div><div class="title"><div data-togglable="Parameters"><p class="paragraph">Video source</p></div></div></div></div></div><div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="main-subrow keyValue WithExtraAttributes"><div class=""><span class="inline-flex">audioCapture</span></div><div><div class="title"><div data-togglable="Parameters"><p class="paragraph">Audio source</p></div></div></div></div></div><div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="main-subrow keyValue WithExtraAttributes"><div class=""><span class="inline-flex">endpoint</span></div><div><div class="title"><div data-togglable="Parameters"><p class="paragraph">a <span data-unresolved-link="com.github.thibaultbee.streampack.internal.endpoints/IEndpoint///PointingToDeclaration/">IEndpoint</span> implementation</p></div></div></div></div></div><div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="main-subrow keyValue WithExtraAttributes"><div class=""><span class="inline-flex">logger</span></div><div><div class="title"><div data-togglable="Parameters"><p class="paragraph">a <a href="../../com.github.thibaultbee.streampack.logger/-i-logger/index.html">ILogger</a> implementation</p></div></div></div></div></div></div></div></div></div>
+              </div>
+              <h2 class="tabbedcontent">Constructors</h2>
+              <div class="table" data-togglable="Constructors"><a data-name="-634768905%2FConstructors%2F165651098" anchor-label="BaseStreamer" id="-634768905%2FConstructors%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue TabbedContent">
+                    <div class=""><span class="inline-flex"><a href="-base-streamer.html">BaseStreamer</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-634768905%2FConstructors%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="-base-streamer.html">BaseStreamer</a>(context: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, tsServiceInfo: <span data-unresolved-link="com.github.thibaultbee.streampack.internal.muxers.ts.data/ServiceInfo///PointingToDeclaration/">ServiceInfo</span>, videoCapture: <span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources/ISurfaceCapture///PointingToDeclaration/">ISurfaceCapture</span>&lt;<a href="../../com.github.thibaultbee.streampack.data/-video-config/index.html">VideoConfig</a>&gt;?, audioCapture: <span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources/IFrameCapture///PointingToDeclaration/">IFrameCapture</span>&lt;<a href="../../com.github.thibaultbee.streampack.data/-audio-config/index.html">AudioConfig</a>&gt;?, endpoint: <span data-unresolved-link="com.github.thibaultbee.streampack.internal.endpoints/IEndpoint///PointingToDeclaration/">IEndpoint</span>, logger: <a href="../../com.github.thibaultbee.streampack.logger/-i-logger/index.html">ILogger</a>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief ">application context</div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <h2 class="">Functions</h2>
+              <div class="table" data-togglable="Functions"><a data-name="-1322304761%2FFunctions%2F165651098" anchor-label="configure" id="-1322304761%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="configure.html">configure</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1322304761%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><div class="block"><div class="block">@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html">RequiresPermission</a>(<span>value = <span class="breakable-word">android.permission.RECORD_AUDIO</span></span><wbr></wbr>)</div></div>open override fun <a href="configure.html">configure</a>(audioConfig: <a href="../../com.github.thibaultbee.streampack.data/-audio-config/index.html">AudioConfig</a>?, videoConfig: <a href="../../com.github.thibaultbee.streampack.data/-video-config/index.html">VideoConfig</a>?)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="-1322304761%2FFunctions%2F165651098" anchor-label="configure" id="-1322304761%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="-1322304761%2FFunctions%2F165651098" anchor-label="configure" id="-1322304761%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Configures both video and audio settings.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="2091393936%2FFunctions%2F165651098" anchor-label="release" id="2091393936%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="release.html">release</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2091393936%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">open override fun <a href="release.html">release</a>()<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="2091393936%2FFunctions%2F165651098" anchor-label="release" id="2091393936%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="2091393936%2FFunctions%2F165651098" anchor-label="release" id="2091393936%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Releases recorders and encoders object.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="-944512806%2FFunctions%2F165651098" anchor-label="reportError" id="-944512806%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="index.html#-944512806%2FFunctions%2F165651098">reportError</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-944512806%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="index.html#-944512806%2FFunctions%2F165651098">reportError</a>(error: <a href="../../com.github.thibaultbee.streampack.error/-stream-pack-error/index.html">StreamPackError</a>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+</div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="1314701429%2FFunctions%2F165651098" anchor-label="startStream" id="1314701429%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="start-stream.html">startStream</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1314701429%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">open override fun <a href="start-stream.html">startStream</a>()<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="1314701429%2FFunctions%2F165651098" anchor-label="startStream" id="1314701429%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="1314701429%2FFunctions%2F165651098" anchor-label="startStream" id="1314701429%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Starts audio/video stream.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="-1758865503%2FFunctions%2F165651098" anchor-label="stopStream" id="-1758865503%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="stop-stream.html">stopStream</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1758865503%2FFunctions%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">open override fun <a href="stop-stream.html">stopStream</a>()<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="-1758865503%2FFunctions%2F165651098" anchor-label="stopStream" id="-1758865503%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="-1758865503%2FFunctions%2F165651098" anchor-label="stopStream" id="-1758865503%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Stops audio/video stream.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <h2 class="">Properties</h2>
+              <div class="table" data-togglable="Properties"><a data-name="1676329754%2FProperties%2F165651098" anchor-label="onErrorListener" id="1676329754%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="on-error-listener.html">onErrorListener</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1676329754%2FProperties%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><a data-name="1676329754%2FProperties%2F165651098" anchor-label="onErrorListener" id="1676329754%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="symbol monospace">open override var <a href="on-error-listener.html">onErrorListener</a>: <a href="../../com.github.thibaultbee.streampack.listeners/-on-error-listener/index.html">OnErrorListener</a>? = null<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="1676329754%2FProperties%2F165651098" anchor-label="onErrorListener" id="1676329754%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Listener that reports streamer error.</div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <h2 class="">Inheritors</h2>
+              <div class="table" data-togglable="Inheritors"><a data-name="1144431674%2FInheritors%2F165651098" anchor-label="AudioOnlySrtLiveStreamer" id="1144431674%2FInheritors%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="../../com.github.thibaultbee.streampack.streamers/-audio-only-srt-live-streamer/index.html">AudioOnlySrtLiveStreamer</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1144431674%2FInheritors%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div></div>
+                  </div>
+                </div>
+<a data-name="-720585646%2FInheritors%2F165651098" anchor-label="AudioOnlyTsFileStreamer" id="-720585646%2FInheritors%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="../../com.github.thibaultbee.streampack.streamers/-audio-only-ts-file-streamer/index.html">AudioOnlyTsFileStreamer</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-720585646%2FInheritors%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div></div>
+                  </div>
+                </div>
+<a data-name="-336919977%2FInheritors%2F165651098" anchor-label="BaseCameraStreamer" id="-336919977%2FInheritors%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="../-base-camera-streamer/index.html">BaseCameraStreamer</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-336919977%2FInheritors%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div></div>
+                  </div>
+                </div>
+<a data-name="-1048288046%2FInheritors%2F165651098" anchor-label="BaseScreenRecorderStreamer" id="-1048288046%2FInheritors%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
+                <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="../-base-screen-recorder-streamer/index.html">BaseScreenRecorderStreamer</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1048288046%2FInheritors%2F165651098"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span class="go-to-top-icon"><a href="#content"></a></span><span>© 2021 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span></div>
+      </div>
+    </div>
+  </body>
+</html>
+
