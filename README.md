@@ -9,12 +9,15 @@ high quality live streaming for Android.
   * Ultra low-latency based on [SRT](https://github.com/Haivision/srt)
   * Network adaptive bitrate mechanism
 * Video:
+  * Source: Cameras or Screen recorder
   * Codec: HEVC/H.265 or AVC/H.264
   * Configurable bitrate, resolution, framerate (tested up to 60), encoder level, encoder profile
+  * Video only mode
 * Audio:
   * Codec: AAC-LC
   * Configurable bitrate, sample rate, stereo/mono, data format
   * Processing: Noise suppressor or echo cancellation
+  * Audio only mode
 
 ## Setup
 
