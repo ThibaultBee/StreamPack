@@ -24,6 +24,14 @@ import com.github.thibaultbee.streampack.app.R
 import com.github.thibaultbee.streampack.utils.CameraStreamerConfigurationHelper
 
 class SettingsFragment : PreferenceFragmentCompat() {
+    private val videoEnablePreference: SwitchPreference by lazy {
+        this.findPreference(getString(R.string.video_enable_key))!!
+    }
+
+    private val videoSettingsCategory: PreferenceCategory by lazy {
+        this.findPreference(getString(R.string.video_settings_key))!!
+    }
+
     private val videoEncoderListPreference: ListPreference by lazy {
         this.findPreference(getString(R.string.video_encoder_key))!!
     }
@@ -38,6 +46,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private val videoBitrateSeekBar: SeekBarPreference by lazy {
         this.findPreference(getString(R.string.video_bitrate_key))!!
+    }
+
+    private val audioEnablePreference: SwitchPreference by lazy {
+        this.findPreference(getString(R.string.audio_enable_key))!!
+    }
+
+    private val audioSettingsCategory: PreferenceCategory by lazy {
+        this.findPreference(getString(R.string.audio_settings_key))!!
     }
 
     private val audioEncoderListPreference: ListPreference by lazy {
@@ -98,6 +114,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun setVideoEncoderSettings(encoder: String) {
+        videoSettingsCategory.isVisible = videoEnablePreference.isChecked
+        videoEnablePreference.setOnPreferenceChangeListener { _, newValue ->
+            videoSettingsCategory.isVisible = newValue as Boolean
+            true
+        }
+
         // Inflates video resolutions
         CameraStreamerConfigurationHelper.Video.getSupportedResolutions(
             requireContext(),
@@ -129,6 +151,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
 
     private fun setAudioEncoderSettings(encoder: String) {
+        audioSettingsCategory.isVisible = audioEnablePreference.isChecked
+        audioEnablePreference.setOnPreferenceChangeListener { _, newValue ->
+            audioSettingsCategory.isVisible = newValue as Boolean
+            true
+        }
+
         // Inflates audio number of channel
         val inputChannelRange =
             CameraStreamerConfigurationHelper.Audio.getSupportedInputChannelRange(encoder)
@@ -210,8 +238,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
             editText.filters = arrayOf(InputFilter.LengthFilter(5))
         }
 
-        serverTargetVideoBitratePreference.isVisible = serverEnableBitrateRegulationPreference.isChecked
-        serverMinVideoBitratePreference.isVisible = serverEnableBitrateRegulationPreference.isChecked
+        serverTargetVideoBitratePreference.isVisible =
+            serverEnableBitrateRegulationPreference.isChecked
+        serverMinVideoBitratePreference.isVisible =
+            serverEnableBitrateRegulationPreference.isChecked
         serverEnableBitrateRegulationPreference.setOnPreferenceChangeListener { _, newValue ->
             serverTargetVideoBitratePreference.isVisible = newValue as Boolean
             serverMinVideoBitratePreference.isVisible = newValue

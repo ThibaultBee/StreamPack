@@ -17,7 +17,7 @@ package com.github.thibaultbee.streampack.utils
 
 import android.hardware.camera2.CaptureResult
 import com.github.thibaultbee.streampack.internal.sources.camera.CameraController
-import com.github.thibaultbee.streampack.streamers.BaseCameraStreamer
+import com.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 
 /**
  * Use to change camera settings.

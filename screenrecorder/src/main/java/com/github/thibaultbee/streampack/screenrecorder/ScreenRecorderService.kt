@@ -212,7 +212,7 @@ class ScreenRecorderService : Service() {
 
             val audioConfig = (intent.extras?.get(AUDIO_CONFIG_KEY) as Bundle?)?.let { bundle ->
                 createAudioConfigFromBundle(bundle)
-            } ?: AudioConfig.Builder().build()
+            }
 
             if (ActivityCompat.checkSelfPermission(
                     this,
@@ -233,8 +233,8 @@ class ScreenRecorderService : Service() {
                                 .setVideoBitrateRange(videoBitrateRange!!) // if enableBitrateRegulation = true, videoBitrateRange exists
                                 .setAudioBitrateRange(
                                     Range(
-                                        audioConfig.startBitrate,
-                                        audioConfig.startBitrate
+                                        audioConfig?.startBitrate ?: 0,
+                                        audioConfig?.startBitrate ?: 0
                                     )
                                 )
                                 .build()
@@ -242,6 +242,11 @@ class ScreenRecorderService : Service() {
                             null
                         },
                     )
+                    .apply {
+                        if (audioConfig == null) {
+                            disableAudio()
+                        }
+                    }
                     .build()
                     .apply {
                         this.onErrorListener = object : OnErrorListener {
@@ -306,7 +311,7 @@ class ScreenRecorderService : Service() {
         return START_REDELIVER_INTENT
     }
 
-    private fun createAudioConfigFromBundle(bundle: Bundle): AudioConfig {
+    private fun createAudioConfigFromBundle(bundle: Bundle): AudioConfig? {
         val configBuilder = AudioConfig.Builder()
         bundle.getString(MIME_TYPE)?.let {
             configBuilder.setMimeType(it)

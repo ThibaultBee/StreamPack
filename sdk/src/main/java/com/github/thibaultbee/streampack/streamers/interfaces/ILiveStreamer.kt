@@ -2,11 +2,21 @@ package com.github.thibaultbee.streampack.streamers.interfaces
 
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 
-interface ILiveStreamer : IStreamer {
+interface ILiveStreamer {
     /**
      * Listen to manage connection events.
      */
     var onConnectionListener: OnConnectionListener?
+
+    /**
+     * Get/set connection passphrase.
+     */
+    var passPhrase: String
+
+    /**
+     * Get/set stream id.
+     */
+    var streamId: String
 
     /**
      * Connect to a remote server.

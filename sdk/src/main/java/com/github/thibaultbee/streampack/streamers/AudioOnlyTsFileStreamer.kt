@@ -23,35 +23,34 @@ import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.internal.endpoints.FileWriter
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
+import com.github.thibaultbee.streampack.internal.sources.AudioCapture
 import com.github.thibaultbee.streampack.logger.ILogger
 import com.github.thibaultbee.streampack.logger.StreamPackLogger
 import com.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
+import com.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.builders.IFileStreamerBuilder
 import com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
-import com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerPreviewBuilder
 import java.io.File
 
 /**
- * [BaseCameraStreamer] that sends audio/video frames to a [File].
+ * [BaseCameraStreamer] that sends audio frames to a [File].
  *
  * @param context application context
  * @param tsServiceInfo MPEG-TS service description
  * @param logger a [ILogger] implementation
- * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
  */
-class CameraTsFileStreamer(
+class AudioOnlyTsFileStreamer(
     context: Context,
     tsServiceInfo: ServiceInfo,
-    logger: ILogger,
-    enableAudio: Boolean,
-) : BaseCameraStreamer(
+    logger: ILogger
+) : BaseStreamer(
     context = context,
     tsServiceInfo = tsServiceInfo,
-    endpoint = FileWriter(logger),
-    logger = logger,
-    enableAudio = enableAudio,
-    enableVideo = true
+    videoCapture = null,
+    audioCapture = AudioCapture(logger),
+    endpoint = FileWriter(logger = logger),
+    logger = logger
 ), IFileStreamer {
     private val fileWriter = endpoint as FileWriter
 
@@ -78,11 +77,21 @@ class CameraTsFileStreamer(
      * Same as [BaseCameraStreamer.startStream] with RequiresPermission annotation for
      * Manifest.permission.WRITE_EXTERNAL_STORAGE.
      */
-    @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
+    @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO])
     override fun startStream() = super.startStream()
 
     /**
-     * Builder class for [CameraTsFileStreamer] objects. Use this class to configure and create an [CameraTsFileStreamer] instance.
+     * No need for video
+     */
+    override fun onResetVideo() = false
+
+    /**
+     * No need for video
+     */
+    override suspend fun afterResetVideo() {}
+
+    /**
+     * Builder class for [AudioOnlyTsFileStreamer] objects. Use this class to configure and create an [AudioOnlyTsFileStreamer] instance.
      */
     data class Builder(
         private var logger: ILogger = StreamPackLogger(),
@@ -90,8 +99,8 @@ class CameraTsFileStreamer(
         private var videoConfig: VideoConfig? = null,
         private var previewSurface: Surface? = null,
         private var file: File? = null,
-        private var enableAudio: Boolean = true,
-    ) : IStreamerBuilder, IStreamerPreviewBuilder, IFileStreamerBuilder {
+        private var enableAudio: Boolean = true
+    ) : IStreamerBuilder, IFileStreamerBuilder {
         private lateinit var context: Context
         private lateinit var serviceInfo: ServiceInfo
 
@@ -118,16 +127,15 @@ class CameraTsFileStreamer(
         override fun setLogger(logger: ILogger) = apply { this.logger = logger }
 
         /**
-         * Set both audio and video configuration.
+         * Set audio configuration.
          * Configurations can be change later with [configure].
-         * Same as calling both [setAudioConfiguration] and [setVideoConfiguration].
+         * Video configuration is not used.
          *
          * @param audioConfig audio configuration
-         * @param videoConfig video configuration
+         * @param videoConfig video configuration. Not used.
          */
         override fun setConfiguration(audioConfig: AudioConfig, videoConfig: VideoConfig) = apply {
             this.audioConfig = audioConfig
-            this.videoConfig = videoConfig
         }
 
         /**
@@ -141,32 +149,19 @@ class CameraTsFileStreamer(
         }
 
         /**
-         * Set video configurations.
-         * Configurations can be change later with [configure].
+         * Set video configurations. Do not use.
          *
          * @param videoConfig video configuration
          */
         override fun setVideoConfiguration(videoConfig: VideoConfig) = apply {
-            this.videoConfig = videoConfig
+            throw UnsupportedOperationException("Do not set video configuration on audio only streamer")
         }
 
         /**
-         * Disable audio.
-         * Audio is enabled by default.
-         * When audio is disabled, there is no way to enable it again.
+         * Disable audio. Do not use.
          */
-        override fun disableAudio() = apply {
-            this.enableAudio = false
-        }
-
-        /**
-         * Set preview surface.
-         * If provided, it starts preview.
-         *
-         * @param previewSurface surface where to display preview
-         */
-        override fun setPreviewSurface(previewSurface: Surface) = apply {
-            this.previewSurface = previewSurface
+        override fun disableAudio(): IStreamerBuilder {
+            throw UnsupportedOperationException("Do not disable audio on audio only streamer")
         }
 
         /**
@@ -179,30 +174,21 @@ class CameraTsFileStreamer(
         }
 
         /**
-         * Combines all of the characteristics that have been set and return a new [CameraTsFileStreamer] object.
+         * Combines all of the characteristics that have been set and return a new [AudioOnlyTsFileStreamer] object.
          *
-         * @return a new [CameraTsFileStreamer] object
+         * @return a new [AudioOnlyTsFileStreamer] object
          */
         @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-        override fun build(): CameraTsFileStreamer {
-            return CameraTsFileStreamer(
+        override fun build(): AudioOnlyTsFileStreamer {
+            return AudioOnlyTsFileStreamer(
                 context,
                 serviceInfo,
-                logger,
-                enableAudio
-            ).also { streamer ->
-                if (videoConfig != null) {
-                    streamer.configure(audioConfig, videoConfig!!)
+                logger
+            )
+                .also { streamer ->
+                    streamer.configure(audioConfig)
+                    streamer.file = file
                 }
-
-                previewSurface?.let {
-                    streamer.startPreview(it)
-                }
-
-                file?.let {
-                    streamer.file = it
-                }
-            }
         }
     }
 }

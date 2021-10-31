@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.streamers
+package com.github.thibaultbee.streampack.streamers.bases
 
 import android.Manifest
 import android.content.Context
@@ -54,8 +54,8 @@ import java.nio.ByteBuffer
 abstract class BaseStreamer(
     private val context: Context,
     private val tsServiceInfo: ServiceInfo,
-    protected val videoCapture: ISurfaceCapture<VideoConfig>,
-    protected val audioCapture: IFrameCapture<AudioConfig>,
+    protected val videoCapture: ISurfaceCapture<VideoConfig>?,
+    protected val audioCapture: IFrameCapture<AudioConfig>?,
     protected val endpoint: IEndpoint,
     protected val logger: ILogger
 ) : EventHandler(), IStreamer {
@@ -63,7 +63,7 @@ abstract class BaseStreamer(
      * Listener that reports streamer error.
      * Supports only one listener.
      */
-    var onErrorListener: OnErrorListener? = null
+    override var onErrorListener: OnErrorListener? = null
 
     private var audioTsStreamId: Short? = null
     private var videoTsStreamId: Short? = null
@@ -81,7 +81,7 @@ abstract class BaseStreamer(
 
     private val audioEncoderListener = object : IEncoderListener {
         override fun onInputFrame(buffer: ByteBuffer): Frame {
-            return audioCapture.getFrame(buffer)
+            return audioCapture!!.getFrame(buffer)
         }
 
         override fun onOutputFrame(frame: Frame) {
@@ -104,7 +104,7 @@ abstract class BaseStreamer(
         override fun onOutputFrame(frame: Frame) {
             videoTsStreamId?.let {
                 try {
-                    frame.pts += videoCapture.timestampOffset
+                    frame.pts += videoCapture!!.timestampOffset
                     frame.dts = if (frame.dts != null) {
                         frame.dts!! + videoCapture.timestampOffset
                     } else {
@@ -145,20 +145,28 @@ abstract class BaseStreamer(
         }
     }
 
-    private var audioEncoder =
+    private var audioEncoder = if (audioCapture != null) {
         AudioMediaCodecEncoder(audioEncoderListener, onInternalErrorListener, logger)
-    protected var videoEncoder =
+    } else {
+        null
+    }
+    protected var videoEncoder = if (videoCapture != null) {
         VideoMediaCodecEncoder(videoEncoderListener, onInternalErrorListener, context, logger)
+    } else {
+        null
+    }
 
     protected var audioBitrate: Int
-        get() = audioEncoder.bitrate
+        get() = audioEncoder?.bitrate ?: throw UnsupportedOperationException("No audio source")
         set(value) {
-            audioEncoder.bitrate = value
+            audioEncoder?.let { it.bitrate = value }
+                ?: throw UnsupportedOperationException("No audio source")
         }
     protected var videoBitrate: Int
-        get() = videoEncoder.bitrate
+        get() = videoEncoder?.bitrate ?: throw UnsupportedOperationException("No video source")
         set(value) {
-            videoEncoder.bitrate = value
+            videoEncoder?.let { it.bitrate = value }
+                ?: throw UnsupportedOperationException("No video source")
         }
 
     private val tsMux = TSMuxer(muxListener)
@@ -182,18 +190,23 @@ abstract class BaseStreamer(
      * @see [release]
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    fun configure(audioConfig: AudioConfig, videoConfig: VideoConfig) {
+    override fun configure(audioConfig: AudioConfig?, videoConfig: VideoConfig?) {
         // Keep settings when we need to reconfigure
         this.videoConfig = videoConfig
         this.audioConfig = audioConfig
 
         try {
-            audioCapture.configure(audioConfig)
-            audioEncoder.configure(audioConfig)
-            videoCapture.configure(videoConfig)
-            videoEncoder.configure(videoConfig)
+            audioConfig?.let {
+                audioCapture?.configure(it)
+                audioEncoder?.configure(it)
+            }
 
-            endpoint.configure(videoConfig.startBitrate + audioConfig.startBitrate)
+            videoConfig?.let {
+                videoCapture?.configure(it)
+                videoEncoder?.configure(it)
+            }
+
+            endpoint.configure((videoConfig?.startBitrate ?: 0) + (audioConfig?.startBitrate ?: 0))
         } catch (e: Exception) {
             release()
             throw StreamPackError(e)
@@ -209,26 +222,23 @@ abstract class BaseStreamer(
      * @see [stopStream]
      */
     override fun startStream() {
-        checkConfigs()
-        require(videoEncoder.mimeType != null) { "Missing video encoder mime type! Encoder not configured?" }
-        require(audioEncoder.mimeType != null) { "Missing audio encoder mime type! Encoder not configured?" }
-
         try {
             endpoint.startStream()
 
             val streams = mutableListOf<String>()
-            videoEncoder.mimeType?.let { streams.add(it) }
-            audioEncoder.mimeType?.let { streams.add(it) }
+            videoEncoder?.mimeType?.let { streams.add(it) }
+            audioEncoder?.mimeType?.let { streams.add(it) }
 
             tsMux.addService(tsServiceInfo)
             tsMux.addStreams(tsServiceInfo, streams)
-            videoEncoder.mimeType?.let { videoTsStreamId = tsMux.getStreams(it)[0].pid }
-            audioEncoder.mimeType?.let { audioTsStreamId = tsMux.getStreams(it)[0].pid }
+            videoEncoder?.mimeType?.let { videoTsStreamId = tsMux.getStreams(it)[0].pid }
+            audioEncoder?.mimeType?.let { audioTsStreamId = tsMux.getStreams(it)[0].pid }
 
-            audioCapture.startStream()
-            audioEncoder.startStream()
-            videoCapture.startStream()
-            videoEncoder.startStream()
+            audioCapture?.startStream()
+            audioEncoder?.startStream()
+
+            videoCapture?.startStream()
+            videoEncoder?.startStream()
         } catch (e: Exception) {
             stopStream()
             throw StreamPackError(e)
@@ -258,9 +268,10 @@ abstract class BaseStreamer(
      * @see [stopStream]
      */
     protected fun stopStreamImpl() {
-        videoCapture.stopStream()
-        videoEncoder.stopStream()
-        audioEncoder.stopStream()
+        videoCapture?.stopStream()
+        videoEncoder?.stopStream()
+        audioCapture?.stopStream()
+        audioEncoder?.stopStream()
 
         tsMux.stop()
 
@@ -273,15 +284,12 @@ abstract class BaseStreamer(
      * @see [stopStream]
      */
     private fun resetAudio() {
-        if (audioConfig == null) {
-            logger.w(this, "Audio has not been configured!")
-            return
-        }
-
-        audioEncoder.release()
+        audioEncoder?.release()
 
         // Reconfigure
-        audioEncoder.configure(audioConfig!!)
+        audioConfig?.let {
+            audioEncoder?.configure(it)
+        }
     }
 
     /**
@@ -302,30 +310,19 @@ abstract class BaseStreamer(
      * @see [stopStream]
      */
     private fun resetVideo() {
-        if (videoConfig == null) {
-            logger.w(this, "Video has not been configured!")
-            return
-        }
-
         val callAfterResetVideo = onResetVideo()
-        videoEncoder.release()
+        videoEncoder?.release()
 
         // And restart...
         runBlocking {
-            videoEncoder.configure(videoConfig!!)
-            videoCapture.encoderSurface = videoEncoder.inputSurface
+            videoConfig?.let {
+                videoEncoder?.configure(it)
+            }
+            videoCapture?.encoderSurface = videoEncoder?.inputSurface
             if (callAfterResetVideo) {
                 afterResetVideo()
             }
         }
-    }
-
-    /**
-     * Asserts audio and video configurations have been set.
-     */
-    protected fun checkConfigs() {
-        require(audioConfig != null) { "Audio has not been configured!" }
-        require(videoConfig != null) { "Video has not been configured!" }
     }
 
     /**
@@ -335,10 +332,10 @@ abstract class BaseStreamer(
      * @see [configure]
      */
     override fun release() {
-        audioEncoder.release()
-        videoEncoder.release()
-        audioCapture.release()
-        videoCapture.release()
+        audioEncoder?.release()
+        videoEncoder?.release()
+        audioCapture?.release()
+        videoCapture?.release()
         endpoint.release()
     }
 }

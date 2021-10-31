@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.streamers
+package com.github.thibaultbee.streampack.streamers.bases
 
 import android.content.Context
 import android.content.Intent
@@ -35,22 +35,24 @@ import com.github.thibaultbee.streampack.logger.ILogger
  * @param tsServiceInfo MPEG-TS service description
  * @param endpoint a [IEndpoint] implementation
  * @param logger a [ILogger] implementation
+ * @param enableAudio [Boolean.true] to capture audio
  */
 open class BaseScreenRecorderStreamer(
     context: Context,
     tsServiceInfo: ServiceInfo,
     endpoint: IEndpoint,
-    logger: ILogger
+    logger: ILogger,
+    enableAudio: Boolean
 ) : BaseStreamer(
-    context,
-    tsServiceInfo,
-    ScreenCapture(context, logger = logger),
-    AudioCapture(logger),
-    endpoint,
-    logger
+    context = context,
+    tsServiceInfo = tsServiceInfo,
+    videoCapture = ScreenCapture(context, logger = logger),
+    audioCapture = if (enableAudio) AudioCapture(logger) else null,
+    endpoint = endpoint,
+    logger = logger
 ) {
     private val screenCapture =
-        (videoCapture as ScreenCapture).apply { onErrorListener = onInternalErrorListener }
+        (videoCapture as ScreenCapture?).apply { onErrorListener = onInternalErrorListener }
 
     companion object {
         /**
@@ -76,14 +78,14 @@ open class BaseScreenRecorderStreamer(
          *
          * @return activity result previously set.
          */
-        get() = screenCapture.activityResult
+        get() = screenCapture?.activityResult
         /**
          * Set activity result. Must be call before [startStream].
          *
          * @param value activity result returns from [ComponentActivity.registerForActivityResult] callback.
          */
         set(value) {
-            screenCapture.activityResult = value
+            screenCapture?.activityResult = value
         }
 
     /**
@@ -91,9 +93,7 @@ open class BaseScreenRecorderStreamer(
      * You must have set [activityResult] before.
      */
     override fun startStream() {
-        checkConfigs()
-
-        screenCapture.encoderSurface = videoEncoder.inputSurface
+        screenCapture?.encoderSurface = videoEncoder?.inputSurface
         super.startStream()
     }
 

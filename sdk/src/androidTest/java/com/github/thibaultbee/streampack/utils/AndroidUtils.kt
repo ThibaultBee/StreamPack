@@ -16,6 +16,7 @@
 package com.github.thibaultbee.streampack.utils
 
 import android.media.AudioFormat
+import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.util.Size
 import com.github.thibaultbee.streampack.data.AudioConfig
@@ -46,7 +47,9 @@ object AndroidUtils {
         startBitrate = Random.nextInt(),
         sampleRate = 48000,
         channelConfig = AudioFormat.CHANNEL_IN_MONO,
-        byteFormat = AudioFormat.ENCODING_PCM_16BIT
+        byteFormat = AudioFormat.ENCODING_PCM_16BIT,
+        enableEchoCanceler = true,
+        enableNoiseSuppressor = true
     )
 
     /**
@@ -59,7 +62,9 @@ object AndroidUtils {
         startBitrate = Random.nextInt(),
         sampleRate = 44100,
         channelConfig = AudioFormat.CHANNEL_IN_MONO,
-        byteFormat = AudioFormat.ENCODING_PCM_16BIT
+        byteFormat = AudioFormat.ENCODING_PCM_16BIT,
+        enableEchoCanceler = true,
+        enableNoiseSuppressor = true
     )
 
     /**
@@ -71,7 +76,9 @@ object AndroidUtils {
         mimeType = MediaFormat.MIMETYPE_VIDEO_AVC,
         startBitrate = Random.nextInt(),
         resolution = Size(1280, 720),
-        fps = 30
+        fps = 30,
+        profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
+        level = MediaCodecInfo.CodecProfileLevel.AVCLevel52
     )
 
     /**
@@ -83,6 +90,8 @@ object AndroidUtils {
         mimeType = MediaFormat.MIMETYPE_AUDIO_AAC, // Audio instead of video
         startBitrate = Random.nextInt(),
         resolution = Size(1280, 720),
-        fps = 30
+        fps = 30,
+        profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
+        level = MediaCodecInfo.CodecProfileLevel.AVCLevel52
     )
 }

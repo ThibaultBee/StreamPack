@@ -30,7 +30,10 @@ import com.github.thibaultbee.streampack.logger.ILogger
 import com.github.thibaultbee.streampack.logger.StreamPackLogger
 import com.github.thibaultbee.streampack.regulator.DefaultSrtBitrateRegulatorFactory
 import com.github.thibaultbee.streampack.regulator.ISrtBitrateRegulatorFactory
+import com.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
+import com.github.thibaultbee.streampack.streamers.interfaces.builders.IAdaptiveLiveStreamerBuilder
+import com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
 import com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerPreviewBuilder
 import java.net.SocketException
 
@@ -49,8 +52,16 @@ class CameraSrtLiveStreamer(
     tsServiceInfo: ServiceInfo,
     logger: ILogger,
     bitrateRegulatorFactory: ISrtBitrateRegulatorFactory?,
-    bitrateRegulatorConfig: BitrateRegulatorConfig?
-) : BaseCameraStreamer(context, tsServiceInfo, SrtProducer(logger = logger), logger),
+    bitrateRegulatorConfig: BitrateRegulatorConfig?,
+    enableAudio: Boolean,
+) : BaseCameraStreamer(
+    context = context,
+    tsServiceInfo = tsServiceInfo,
+    endpoint = SrtProducer(logger = logger),
+    logger = logger,
+    enableAudio = enableAudio,
+    enableVideo = true
+),
     ILiveStreamer {
 
     /**
@@ -87,7 +98,7 @@ class CameraSrtLiveStreamer(
      * Get/set SRT stream ID.
      * **See:** [SRT Socket Options](https://github.com/Haivision/srt/blob/master/docs/API/API-socket-options.md#srto_streamid)
      */
-    var streamId: String
+    override var streamId: String
         /**
          * Get SRT stream ID
          * @return stream ID
@@ -104,7 +115,7 @@ class CameraSrtLiveStreamer(
      * Get/set SRT passphrase.
      * **See:** [SRT Socket Options](https://github.com/Haivision/srt/blob/master/docs/API/API-socket-options.md#srto_passphrase)
      */
-    var passPhrase: String
+    override var passPhrase: String
         /**
          * Get SRT passphrase
          * @return passphrase
@@ -157,7 +168,7 @@ class CameraSrtLiveStreamer(
      * @param port server port
      * @throws Exception if connection has failed or configuration has failed or [startStream] has failed too.
      */
-    @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
+    @RequiresPermission(allOf = [Manifest.permission.CAMERA])
     override suspend fun startStream(ip: String, port: Int) {
         connect(ip, port)
         startStream()
@@ -179,10 +190,12 @@ class CameraSrtLiveStreamer(
         private var audioConfig: AudioConfig? = null,
         private var videoConfig: VideoConfig? = null,
         private var previewSurface: Surface? = null,
+        private var enableAudio: Boolean = true,
         private var streamId: String? = null,
+        private var passPhrase: String? = null,
         private var bitrateRegulatorFactory: ISrtBitrateRegulatorFactory? = null,
         private var bitrateRegulatorConfig: BitrateRegulatorConfig? = null
-    ) : IStreamerPreviewBuilder {
+    ) : IStreamerBuilder, IStreamerPreviewBuilder, IAdaptiveLiveStreamerBuilder {
         private lateinit var context: Context
         private lateinit var serviceInfo: ServiceInfo
 
@@ -209,7 +222,9 @@ class CameraSrtLiveStreamer(
         override fun setLogger(logger: ILogger) = apply { this.logger = logger }
 
         /**
-         * Set both audio and video configuration. Can be change with [configure].
+         * Set both audio and video configuration.
+         * Configurations can be change later with [configure].
+         * Same as calling both [setAudioConfiguration] and [setVideoConfiguration].
          *
          * @param audioConfig audio configuration
          * @param videoConfig video configuration
@@ -217,6 +232,35 @@ class CameraSrtLiveStreamer(
         override fun setConfiguration(audioConfig: AudioConfig, videoConfig: VideoConfig) = apply {
             this.audioConfig = audioConfig
             this.videoConfig = videoConfig
+        }
+
+        /**
+         * Set audio configurations.
+         * Configurations can be change later with [configure].
+         *
+         * @param audioConfig audio configuration
+         */
+        override fun setAudioConfiguration(audioConfig: AudioConfig) = apply {
+            this.audioConfig = audioConfig
+        }
+
+        /**
+         * Set video configurations.
+         * Configurations can be change later with [configure].
+         *
+         * @param videoConfig video configuration
+         */
+        override fun setVideoConfiguration(videoConfig: VideoConfig) = apply {
+            this.videoConfig = videoConfig
+        }
+
+        /**
+         * Disable audio.
+         * Audio is enabled by default.
+         * When audio is disabled, there is no way to enable it again.
+         */
+        override fun disableAudio() = apply {
+            this.enableAudio = false
         }
 
         /**
@@ -234,8 +278,17 @@ class CameraSrtLiveStreamer(
          *
          * @param streamId string describing SRT stream id
          */
-        fun setStreamId(streamId: String) = apply {
+        override fun setStreamId(streamId: String) = apply {
             this.streamId = streamId
+        }
+
+        /**
+         * Set SRT passphrase.
+         *
+         * @param passPhrase string describing SRT pass phrase
+         */
+        override fun setPassPhrase(passPhrase: String) = apply {
+            this.passPhrase = passPhrase
         }
 
         /**
@@ -244,14 +297,13 @@ class CameraSrtLiveStreamer(
          * @param bitrateRegulatorFactory bitrate regulator factory. If you don't want to implement your own bitrate regulator, use [DefaultSrtBitrateRegulatorFactory]
          * @param bitrateRegulatorConfig bitrate regulator configuration.
          */
-        fun setBitrateRegulator(
+        override fun setBitrateRegulator(
             bitrateRegulatorFactory: ISrtBitrateRegulatorFactory?,
             bitrateRegulatorConfig: BitrateRegulatorConfig?
         ) = apply {
             this.bitrateRegulatorFactory = bitrateRegulatorFactory
             this.bitrateRegulatorConfig = bitrateRegulatorConfig
         }
-
 
         /**
          * Combines all of the characteristics that have been set and return a new [CameraSrtLiveStreamer] object.
@@ -260,27 +312,30 @@ class CameraSrtLiveStreamer(
          */
         @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
         override fun build(): CameraSrtLiveStreamer {
-            val streamer = CameraSrtLiveStreamer(
+            return CameraSrtLiveStreamer(
                 context,
                 serviceInfo,
                 logger,
                 bitrateRegulatorFactory,
-                bitrateRegulatorConfig
-            )
+                bitrateRegulatorConfig,
+                enableAudio
+            ).also { streamer ->
+                if (videoConfig != null) {
+                    streamer.configure(audioConfig, videoConfig!!)
+                }
 
-            if ((audioConfig != null) && (videoConfig != null)) {
-                streamer.configure(audioConfig!!, videoConfig!!)
+                previewSurface?.let {
+                    streamer.startPreview(it)
+                }
+
+                streamId?.let {
+                    streamer.streamId = it
+                }
+
+                passPhrase?.let {
+                    streamer.passPhrase = it
+                }
             }
-
-            previewSurface?.let {
-                streamer.startPreview(it)
-            }
-
-            streamId?.let {
-                streamer.streamId = it
-            }
-
-            return streamer
         }
     }
 }

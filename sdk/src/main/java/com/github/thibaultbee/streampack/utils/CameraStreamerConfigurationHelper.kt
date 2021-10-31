@@ -20,7 +20,7 @@ import android.util.Range
 import android.util.Size
 import com.github.thibaultbee.streampack.internal.sources.camera.getCameraFpsList
 import com.github.thibaultbee.streampack.internal.sources.camera.getCameraOutputStreamSizes
-import com.github.thibaultbee.streampack.streamers.BaseCameraStreamer
+import com.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 
 /**
  * Configuration helper for [BaseCameraStreamer].

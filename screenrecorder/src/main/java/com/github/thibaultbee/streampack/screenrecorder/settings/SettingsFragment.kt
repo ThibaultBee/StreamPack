@@ -36,6 +36,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
         this.findPreference(getString(R.string.video_bitrate_key))!!
     }
 
+    private val audioEnablePreference: SwitchPreference by lazy {
+        this.findPreference(getString(R.string.audio_enable_key))!!
+    }
+
+    private val audioSettingsCategory: PreferenceCategory by lazy {
+        this.findPreference(getString(R.string.audio_settings_key))!!
+    }
+
     private val audioEncoderListPreference: ListPreference by lazy {
         this.findPreference(getString(R.string.audio_encoder_key))!!
     }
@@ -93,12 +101,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         // Inflates video bitrate
         CameraStreamerConfigurationHelper.Video.getSupportedBitrates(encoder).run {
-            videoBitrateSeekBar.min = maxOf(videoBitrateSeekBar.min, lower / 1000) // to kb/s
             videoBitrateSeekBar.max = minOf(videoBitrateSeekBar.max, upper / 1000) // to kb/s
         }
     }
 
     private fun setAudioEncoderSettings(encoder: String) {
+        audioSettingsCategory.isVisible = audioEnablePreference.isChecked
+        audioEnablePreference.setOnPreferenceChangeListener { _, newValue ->
+            audioSettingsCategory.isVisible = newValue as Boolean
+            true
+        }
+
         // Inflates audio number of channel
         val inputChannelRange =
             CameraStreamerConfigurationHelper.Audio.getSupportedInputChannelRange(encoder)

@@ -2,9 +2,9 @@ package com.github.thibaultbee.streampack.streamers.interfaces
 
 import java.io.File
 
-interface IFileStreamer : IStreamer {
+interface IFileStreamer {
     /**
-     * Streamer file.
+     * [File] where to write data.
      */
     var file: File?
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.streamers
+package com.github.thibaultbee.streampack.streamers.bases
 
 import android.Manifest
 import android.content.Context
@@ -27,6 +27,9 @@ import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.internal.sources.AudioCapture
 import com.github.thibaultbee.streampack.internal.sources.camera.CameraCapture
 import com.github.thibaultbee.streampack.logger.ILogger
+import com.github.thibaultbee.streampack.streamers.CameraSrtLiveStreamer
+import com.github.thibaultbee.streampack.streamers.CameraTsFileStreamer
+import com.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
 import com.github.thibaultbee.streampack.utils.CameraSettings
 import com.github.thibaultbee.streampack.utils.getCameraList
 import kotlinx.coroutines.runBlocking
@@ -39,32 +42,36 @@ import kotlinx.coroutines.runBlocking
  * @param tsServiceInfo MPEG-TS service description
  * @param endpoint a [IEndpoint] implementation
  * @param logger a [ILogger] implementation
+ * @param enableAudio [Boolean.true] to capture audio
+ * @param enableVideo [Boolean.true] to capture video
  */
 open class BaseCameraStreamer(
     private val context: Context,
     tsServiceInfo: ServiceInfo,
     endpoint: IEndpoint,
-    logger: ILogger
+    logger: ILogger,
+    enableAudio: Boolean,
+    enableVideo: Boolean
 ) : BaseStreamer(
     context = context,
     tsServiceInfo = tsServiceInfo,
-    videoCapture = CameraCapture(context, logger = logger),
-    audioCapture = AudioCapture(logger),
+    videoCapture = if (enableVideo) CameraCapture(context, logger = logger) else null,
+    audioCapture = if (enableAudio) AudioCapture(logger) else null,
     endpoint = endpoint,
     logger = logger
-) {
-    private val cameraCapture = videoCapture as CameraCapture
+), ICameraStreamer {
+    private val cameraCapture = videoCapture as CameraCapture?
 
     /**
      * Get/Set current camera id.
      */
-    var camera: String
+    override var camera: String
         /**
          * Get current camera id.
          *
          * @return a string that described current camera
          */
-        get() = cameraCapture.cameraId
+        get() = cameraCapture?.cameraId ?: throw UnsupportedOperationException("No camera source")
         /**
          * Set current camera id.
          *
@@ -72,14 +79,16 @@ open class BaseCameraStreamer(
          */
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
-            cameraCapture.cameraId = value
+            cameraCapture?.let { it.cameraId = value }
+                ?: throw UnsupportedOperationException("No camera source")
         }
 
     /**
-     * Get the object that manipulate camera settings.
+     * Get the camera settings.
      */
-    val cameraSettings: CameraSettings
-        get() = cameraCapture.settings
+    override val cameraSettings: CameraSettings
+        get() = cameraCapture?.settings
+            ?: throw UnsupportedOperationException("No camera source")
 
     /**
      * Starts audio and video capture.
@@ -93,15 +102,13 @@ open class BaseCameraStreamer(
      * @throws [StreamPackError] if audio or video capture couldn't be launch
      * @see [stopPreview]
      */
-    @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-    fun startPreview(previewSurface: Surface, cameraId: String = "0") {
-        checkConfigs()
-
+    @RequiresPermission(allOf = [Manifest.permission.CAMERA])
+    override fun startPreview(previewSurface: Surface, cameraId: String) {
         runBlocking {
             try {
-                cameraCapture.previewSurface = previewSurface
-                cameraCapture.encoderSurface = videoEncoder.inputSurface
-                cameraCapture.startPreview(cameraId)
+                cameraCapture?.previewSurface = previewSurface
+                cameraCapture?.encoderSurface = videoEncoder?.inputSurface
+                cameraCapture?.startPreview(cameraId)
             } catch (e: Exception) {
                 stopPreview()
                 throw StreamPackError(e)
@@ -115,18 +122,17 @@ open class BaseCameraStreamer(
      *
      * @see [startPreview]
      */
-    fun stopPreview() {
+    override fun stopPreview() {
         stopStreamImpl()
-        cameraCapture.stopPreview()
-        audioCapture.stopStream()
+        cameraCapture?.stopPreview()
     }
 
     /**
      * Stops camera and ask for a reset if camera is already running.
      */
     override fun onResetVideo(): Boolean {
-        val restartPreview = cameraCapture.isPreviewing
-        cameraCapture.stopPreview()
+        val restartPreview = cameraCapture?.isPreviewing ?: false
+        cameraCapture?.stopPreview()
         return restartPreview
     }
 
@@ -139,7 +145,7 @@ open class BaseCameraStreamer(
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            cameraCapture.startPreview()
+            cameraCapture?.startPreview()
         }
     }
 

@@ -2,7 +2,7 @@ package com.github.thibaultbee.streampack.streamers.interfaces.builders
 
 import java.io.File
 
-interface IFileStreamerBuilder : IStreamerPreviewBuilder {
+interface IFileStreamerBuilder {
     /**
      * Set destination file.
      *

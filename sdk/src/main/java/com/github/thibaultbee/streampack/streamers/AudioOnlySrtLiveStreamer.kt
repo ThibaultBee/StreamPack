@@ -16,74 +16,43 @@
 package com.github.thibaultbee.streampack.streamers
 
 import android.Manifest
-import android.app.Service
 import android.content.Context
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.data.AudioConfig
-import com.github.thibaultbee.streampack.data.BitrateRegulatorConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.internal.endpoints.SrtProducer
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
-import com.github.thibaultbee.streampack.internal.utils.Scheduler
+import com.github.thibaultbee.streampack.internal.sources.AudioCapture
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.logger.ILogger
 import com.github.thibaultbee.streampack.logger.StreamPackLogger
-import com.github.thibaultbee.streampack.regulator.DefaultSrtBitrateRegulatorFactory
-import com.github.thibaultbee.streampack.regulator.ISrtBitrateRegulatorFactory
-import com.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
+import com.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
-import com.github.thibaultbee.streampack.streamers.interfaces.builders.IAdaptiveLiveStreamerBuilder
+import com.github.thibaultbee.streampack.streamers.interfaces.builders.ILiveStreamerBuilder
 import com.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
 import java.net.SocketException
 
 /**
- * [BaseScreenRecorderStreamer] that sends audio/video frames to a remote device with Secure Reliable
+ * [BaseStreamer] that sends only audio frames to a remote device with Secure Reliable
  * Transport (SRT) Protocol.
- * To run this streamer while application is on background, you will have to create a [Service].
- * As an example, check for `screenrecorder`.
  *
  * @param context application context
  * @param tsServiceInfo MPEG-TS service description
  * @param logger a [ILogger] implementation
- * @param bitrateRegulatorFactory a [ISrtBitrateRegulatorFactory] implementation. Use it to customized bitrate regulator.  If bitrateRegulatorConfig is not null, bitrateRegulatorFactory must not be null.
- * @param bitrateRegulatorConfig bitrate regulator configuration. If bitrateRegulatorFactory is not null, bitrateRegulatorConfig must not be null.
- * @param enableAudio [Boolean.true] to also capture audio. False to disable audio capture.
  */
-class ScreenRecorderSrtLiveStreamer(
+class AudioOnlySrtLiveStreamer(
     context: Context,
     tsServiceInfo: ServiceInfo,
-    logger: ILogger,
-    bitrateRegulatorFactory: ISrtBitrateRegulatorFactory?,
-    bitrateRegulatorConfig: BitrateRegulatorConfig?,
-    enableAudio: Boolean,
-) : BaseScreenRecorderStreamer(
+    logger: ILogger
+) : BaseStreamer(
     context = context,
     tsServiceInfo = tsServiceInfo,
+    videoCapture = null,
+    audioCapture = AudioCapture(logger),
     endpoint = SrtProducer(logger = logger),
-    logger = logger,
-    enableAudio = enableAudio
+    logger = logger
 ),
     ILiveStreamer {
-
-    /**
-     * Bitrate regulator. Calls regularly by [scheduler]. Don't call it otherwise or you might break regulation.
-     */
-    private val bitrateRegulator = bitrateRegulatorConfig?.let { config ->
-        bitrateRegulatorFactory?.newSrtBitrateRegulator(
-            config,
-            { videoBitrate = it },
-            { audioBitrate = it }
-        )
-    }
-
-    /**
-     * Scheduler for bitrate regulation
-     */
-    private val scheduler = Scheduler(500) {
-        bitrateRegulator?.update(srtProducer.stats, videoBitrate, audioBitrate)
-            ?: throw UnsupportedOperationException("Scheduler runs but no bitrate regulator set")
-    }
-
     /**
      * Listener to manage SRT connection.
      */
@@ -151,16 +120,6 @@ class ScreenRecorderSrtLiveStreamer(
     }
 
     /**
-     * Same as [BaseScreenRecorderStreamer.startStream] but also starts bitrate regulator.
-     */
-    override fun startStream() {
-        if (bitrateRegulator != null) {
-            scheduler.start()
-        }
-        super.startStream()
-    }
-
-    /**
      * Connect to an SRT server and start stream.
      * Same as calling [connect], then [startStream].
      * To avoid creating an unresponsive UI, do not call on main thread.
@@ -169,33 +128,31 @@ class ScreenRecorderSrtLiveStreamer(
      * @param port server port
      * @throws Exception if connection has failed or configuration has failed or [startStream] has failed too.
      */
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
+    @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
     override suspend fun startStream(ip: String, port: Int) {
         connect(ip, port)
         startStream()
     }
 
     /**
-     * Same as [BaseScreenRecorderStreamer.stopStream] but also stops bitrate regulator.
+     * No need for video
      */
-    override fun stopStream() {
-        scheduler.cancel()
-        super.stopStream()
-    }
+    override fun onResetVideo() = false
 
     /**
-     * Builder class for [ScreenRecorderSrtLiveStreamer] objects. Use this class to configure and create an [ScreenRecorderSrtLiveStreamer] instance.
+     * No need for video
+     */
+    override suspend fun afterResetVideo() {}
+
+    /**
+     * Builder class for [AudioOnlySrtLiveStreamer] objects. Use this class to configure and create an [AudioOnlySrtLiveStreamer] instance.
      */
     data class Builder(
         private var logger: ILogger = StreamPackLogger(),
         private var audioConfig: AudioConfig? = null,
-        private var videoConfig: VideoConfig? = null,
-        private var enableAudio: Boolean = true,
         private var streamId: String? = null,
-        private var passPhrase: String? = null,
-        private var bitrateRegulatorFactory: ISrtBitrateRegulatorFactory? = null,
-        private var bitrateRegulatorConfig: BitrateRegulatorConfig? = null
-    ) : IStreamerBuilder, IAdaptiveLiveStreamerBuilder {
+        private var passPhrase: String? = null
+    ) : IStreamerBuilder, ILiveStreamerBuilder {
         private lateinit var context: Context
         private lateinit var serviceInfo: ServiceInfo
 
@@ -222,16 +179,15 @@ class ScreenRecorderSrtLiveStreamer(
         override fun setLogger(logger: ILogger) = apply { this.logger = logger }
 
         /**
-         * Set both audio and video configuration.
+         * Set audio configuration.
          * Configurations can be change later with [configure].
-         * Same as calling both [setAudioConfiguration] and [setVideoConfiguration].
+         * Video configuration is not used.
          *
          * @param audioConfig audio configuration
-         * @param videoConfig video configuration
+         * @param videoConfig video configuration. Not used.
          */
         override fun setConfiguration(audioConfig: AudioConfig, videoConfig: VideoConfig) = apply {
             this.audioConfig = audioConfig
-            this.videoConfig = videoConfig
         }
 
         /**
@@ -245,22 +201,19 @@ class ScreenRecorderSrtLiveStreamer(
         }
 
         /**
-         * Set video configurations.
-         * Configurations can be change later with [configure].
+         * Set video configurations. Do not use.
          *
          * @param videoConfig video configuration
          */
         override fun setVideoConfiguration(videoConfig: VideoConfig) = apply {
-            this.videoConfig = videoConfig
+            throw UnsupportedOperationException("Do not set video configuration on audio only streamer")
         }
 
         /**
-         * Disable audio.
-         * Audio is enabled by default.
-         * When audio is disabled, there is no way to enable it again.
+         * Disable audio. Do not use.
          */
-        override fun disableAudio() = apply {
-            this.enableAudio = false
+        override fun disableAudio(): IStreamerBuilder {
+            throw UnsupportedOperationException("Do not disable audio on audio only streamer")
         }
 
         /**
@@ -282,37 +235,18 @@ class ScreenRecorderSrtLiveStreamer(
         }
 
         /**
-         * Set SRT bitrate regulator class and configuration.
+         * Combines all of the characteristics that have been set and return a new [AudioOnlySrtLiveStreamer] object.
          *
-         * @param bitrateRegulatorFactory bitrate regulator factory. If you don't want to implement your own bitrate regulator, use [DefaultSrtBitrateRegulatorFactory]
-         * @param bitrateRegulatorConfig bitrate regulator configuration.
-         */
-        override fun setBitrateRegulator(
-            bitrateRegulatorFactory: ISrtBitrateRegulatorFactory?,
-            bitrateRegulatorConfig: BitrateRegulatorConfig?
-        ) = apply {
-            this.bitrateRegulatorFactory = bitrateRegulatorFactory
-            this.bitrateRegulatorConfig = bitrateRegulatorConfig
-        }
-
-        /**
-         * Combines all of the characteristics that have been set and return a new [ScreenRecorderSrtLiveStreamer] object.
-         *
-         * @return a new [ScreenRecorderSrtLiveStreamer] object
+         * @return a new [AudioOnlySrtLiveStreamer] object
          */
         @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
-        override fun build(): ScreenRecorderSrtLiveStreamer {
-            return ScreenRecorderSrtLiveStreamer(
+        override fun build(): AudioOnlySrtLiveStreamer {
+            return AudioOnlySrtLiveStreamer(
                 context,
                 serviceInfo,
-                logger,
-                bitrateRegulatorFactory,
-                bitrateRegulatorConfig,
-                enableAudio
+                logger
             ).also { streamer ->
-                if (videoConfig != null) {
-                    streamer.configure(audioConfig, videoConfig!!)
-                }
+                streamer.configure(audioConfig)
 
                 streamId?.let {
                     streamer.streamId = it
