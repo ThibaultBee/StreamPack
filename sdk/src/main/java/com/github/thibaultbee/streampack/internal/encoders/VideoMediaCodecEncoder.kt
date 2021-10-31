@@ -124,8 +124,8 @@ class VideoMediaCodecEncoder(
         return extra
     }
 
-    val inputSurface: Surface
-        get() = Surface(codecSurface?.surfaceTexture)
+    val inputSurface: Surface?
+        get() = codecSurface?.let { Surface(it.surfaceTexture) } ?: null
 
     class CodecSurface(surface: Surface, private val context: Context) :
         SurfaceTexture.OnFrameAvailableListener {

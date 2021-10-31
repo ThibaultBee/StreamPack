@@ -50,8 +50,7 @@ class CameraTsFileStreamer(
     tsServiceInfo = tsServiceInfo,
     endpoint = FileWriter(logger),
     logger = logger,
-    enableAudio = enableAudio,
-    enableVideo = true
+    enableAudio = enableAudio
 ), IFileStreamer {
     private val fileWriter = endpoint as FileWriter
 

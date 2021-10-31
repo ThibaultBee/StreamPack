@@ -69,7 +69,7 @@ abstract class BaseStreamer(
     private var videoTsStreamId: Short? = null
 
     // Keep video configuration
-    private var videoConfig: VideoConfig? = null
+    protected var videoConfig: VideoConfig? = null
     private var audioConfig: AudioConfig? = null
 
     // Only handle stream error (error on muxer, endpoint,...)
@@ -270,8 +270,8 @@ abstract class BaseStreamer(
     protected fun stopStreamImpl() {
         videoCapture?.stopStream()
         videoEncoder?.stopStream()
-        audioCapture?.stopStream()
         audioEncoder?.stopStream()
+        audioCapture?.stopStream()
 
         tsMux.stop()
 

@@ -44,6 +44,7 @@ import java.net.SocketException
  * @param context application context
  * @param tsServiceInfo MPEG-TS service description
  * @param logger a [ILogger] implementation
+ * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
  * @param bitrateRegulatorFactory a [ISrtBitrateRegulatorFactory] implementation. Use it to customized bitrate regulator.  If bitrateRegulatorConfig is not null, bitrateRegulatorFactory must not be null.
  * @param bitrateRegulatorConfig bitrate regulator configuration. If bitrateRegulatorFactory is not null, bitrateRegulatorConfig must not be null.
  */
@@ -51,16 +52,15 @@ class CameraSrtLiveStreamer(
     context: Context,
     tsServiceInfo: ServiceInfo,
     logger: ILogger,
-    bitrateRegulatorFactory: ISrtBitrateRegulatorFactory?,
-    bitrateRegulatorConfig: BitrateRegulatorConfig?,
     enableAudio: Boolean,
+    bitrateRegulatorFactory: ISrtBitrateRegulatorFactory?,
+    bitrateRegulatorConfig: BitrateRegulatorConfig?
 ) : BaseCameraStreamer(
     context = context,
     tsServiceInfo = tsServiceInfo,
     endpoint = SrtProducer(logger = logger),
     logger = logger,
-    enableAudio = enableAudio,
-    enableVideo = true
+    enableAudio = enableAudio
 ),
     ILiveStreamer {
 
@@ -316,9 +316,9 @@ class CameraSrtLiveStreamer(
                 context,
                 serviceInfo,
                 logger,
+                enableAudio,
                 bitrateRegulatorFactory,
-                bitrateRegulatorConfig,
-                enableAudio
+                bitrateRegulatorConfig
             ).also { streamer ->
                 if (videoConfig != null) {
                     streamer.configure(audioConfig, videoConfig!!)

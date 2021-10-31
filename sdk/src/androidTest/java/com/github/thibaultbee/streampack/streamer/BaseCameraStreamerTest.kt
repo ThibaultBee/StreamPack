@@ -40,7 +40,6 @@ class BaseCameraStreamerTest {
             AndroidUtils.fakeServiceInfo(),
             FakeEndpoint(logger),
             logger,
-            true,
             true
         )
     }

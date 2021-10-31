@@ -43,24 +43,22 @@ import kotlinx.coroutines.runBlocking
  * @param endpoint a [IEndpoint] implementation
  * @param logger a [ILogger] implementation
  * @param enableAudio [Boolean.true] to capture audio
- * @param enableVideo [Boolean.true] to capture video
  */
 open class BaseCameraStreamer(
     private val context: Context,
     tsServiceInfo: ServiceInfo,
     endpoint: IEndpoint,
     logger: ILogger,
-    enableAudio: Boolean,
-    enableVideo: Boolean
+    enableAudio: Boolean
 ) : BaseStreamer(
     context = context,
     tsServiceInfo = tsServiceInfo,
-    videoCapture = if (enableVideo) CameraCapture(context, logger = logger) else null,
+    videoCapture = CameraCapture(context, logger = logger),
     audioCapture = if (enableAudio) AudioCapture(logger) else null,
     endpoint = endpoint,
     logger = logger
 ), ICameraStreamer {
-    private val cameraCapture = videoCapture as CameraCapture?
+    private val cameraCapture = videoCapture as CameraCapture
 
     /**
      * Get/Set current camera id.
@@ -71,7 +69,7 @@ open class BaseCameraStreamer(
          *
          * @return a string that described current camera
          */
-        get() = cameraCapture?.cameraId ?: throw UnsupportedOperationException("No camera source")
+        get() = cameraCapture.cameraId
         /**
          * Set current camera id.
          *
@@ -79,16 +77,14 @@ open class BaseCameraStreamer(
          */
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
-            cameraCapture?.let { it.cameraId = value }
-                ?: throw UnsupportedOperationException("No camera source")
+            cameraCapture.let { it.cameraId = value }
         }
 
     /**
      * Get the camera settings.
      */
     override val cameraSettings: CameraSettings
-        get() = cameraCapture?.settings
-            ?: throw UnsupportedOperationException("No camera source")
+        get() = cameraCapture.settings
 
     /**
      * Starts audio and video capture.
@@ -104,11 +100,12 @@ open class BaseCameraStreamer(
      */
     @RequiresPermission(allOf = [Manifest.permission.CAMERA])
     override fun startPreview(previewSurface: Surface, cameraId: String) {
+        require(videoConfig != null) { "Video has not been configured!" }
         runBlocking {
             try {
-                cameraCapture?.previewSurface = previewSurface
-                cameraCapture?.encoderSurface = videoEncoder?.inputSurface
-                cameraCapture?.startPreview(cameraId)
+                cameraCapture.previewSurface = previewSurface
+                cameraCapture.encoderSurface = videoEncoder?.inputSurface
+                cameraCapture.startPreview(cameraId)
             } catch (e: Exception) {
                 stopPreview()
                 throw StreamPackError(e)
@@ -124,15 +121,15 @@ open class BaseCameraStreamer(
      */
     override fun stopPreview() {
         stopStreamImpl()
-        cameraCapture?.stopPreview()
+        cameraCapture.stopPreview()
     }
 
     /**
      * Stops camera and ask for a reset if camera is already running.
      */
     override fun onResetVideo(): Boolean {
-        val restartPreview = cameraCapture?.isPreviewing ?: false
-        cameraCapture?.stopPreview()
+        val restartPreview = cameraCapture.isPreviewing
+        cameraCapture.stopPreview()
         return restartPreview
     }
 
@@ -145,7 +142,7 @@ open class BaseCameraStreamer(
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            cameraCapture?.startPreview()
+            cameraCapture.startPreview()
         }
     }
 

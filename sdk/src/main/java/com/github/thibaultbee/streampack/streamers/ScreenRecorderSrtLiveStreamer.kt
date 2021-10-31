@@ -45,17 +45,17 @@ import java.net.SocketException
  * @param context application context
  * @param tsServiceInfo MPEG-TS service description
  * @param logger a [ILogger] implementation
+ * @param enableAudio [Boolean.true] to also capture audio. False to disable audio capture.
  * @param bitrateRegulatorFactory a [ISrtBitrateRegulatorFactory] implementation. Use it to customized bitrate regulator.  If bitrateRegulatorConfig is not null, bitrateRegulatorFactory must not be null.
  * @param bitrateRegulatorConfig bitrate regulator configuration. If bitrateRegulatorFactory is not null, bitrateRegulatorConfig must not be null.
- * @param enableAudio [Boolean.true] to also capture audio. False to disable audio capture.
  */
 class ScreenRecorderSrtLiveStreamer(
     context: Context,
     tsServiceInfo: ServiceInfo,
     logger: ILogger,
+    enableAudio: Boolean,
     bitrateRegulatorFactory: ISrtBitrateRegulatorFactory?,
     bitrateRegulatorConfig: BitrateRegulatorConfig?,
-    enableAudio: Boolean,
 ) : BaseScreenRecorderStreamer(
     context = context,
     tsServiceInfo = tsServiceInfo,
@@ -306,9 +306,9 @@ class ScreenRecorderSrtLiveStreamer(
                 context,
                 serviceInfo,
                 logger,
+                enableAudio,
                 bitrateRegulatorFactory,
-                bitrateRegulatorConfig,
-                enableAudio
+                bitrateRegulatorConfig
             ).also { streamer ->
                 if (videoConfig != null) {
                     streamer.configure(audioConfig, videoConfig!!)
