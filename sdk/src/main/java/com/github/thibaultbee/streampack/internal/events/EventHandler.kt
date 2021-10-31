@@ -26,7 +26,7 @@ abstract class EventHandler {
         EventHandler()
     }
 
-    abstract val onInternalErrorListener: OnErrorListener
+    protected abstract val onInternalErrorListener: OnErrorListener
 
     fun reportError(error: StreamPackError) {
         val msg = eventHandler.obtainMessage(MSG_ERROR, error)
