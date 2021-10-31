@@ -7,8 +7,6 @@
     <string name="permission_not_granted">To function properly, StreamPack needs your permission.</string>
     <string name="action_settings">Settings</string>
     <string name="menu_actions">Menu actions</string>
-    <string name="endpoint_type_srt">to SRT</string>
-    <string name="endpoint_type_file">to File</string>
     <string name="endpoint_type">Type</string>
     <string name="resolution">Resolution</string>
     <string name="video_bitrate">Video start bitrate (kb/s)</string>
@@ -33,7 +31,6 @@
     <string name="endpoint_type_key">endpoint_type_key</string>
     <string name="tofile">Write to a file</string>
     <string name="toSRT">Stream to a remote SRT device</string>
-    <string name="endpoint_key">endpoint_key</string>
     <string name="endpoint_server_key">server_key</string>
     <string name="endpoint_file_key">endpoint_file_key</string>
     <string name="file">File</string>

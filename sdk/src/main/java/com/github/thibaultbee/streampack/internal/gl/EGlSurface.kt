@@ -62,7 +62,7 @@ class EGlSurface(private val surface: Surface) {
 
         // Configure EGL for recordable and OpenGL ES 2.0.  We want enough RGB bits
         // to minimize artifacts from possible YUV conversion.
-        val attribList = intArrayOf(
+        var attribList = intArrayOf(
             EGL14.EGL_RED_SIZE, 8,
             EGL14.EGL_GREEN_SIZE, 8,
             EGL14.EGL_BLUE_SIZE, 8,
@@ -80,13 +80,13 @@ class EGlSurface(private val surface: Surface) {
         }
 
         // Configure context for OpenGL ES 2.0.
-        val attrib_list = intArrayOf(
+        attribList = intArrayOf(
             EGL14.EGL_CONTEXT_CLIENT_VERSION, 2,
             EGL14.EGL_NONE
         )
         eglContext = EGL14.eglCreateContext(
             eglDisplay, configs[0], EGL14.EGL_NO_CONTEXT,
-            attrib_list, 0
+            attribList, 0
         )
         GlUtils.checkEglError("eglCreateContext")
 

@@ -41,12 +41,13 @@ abstract class MediaCodecEncoder<T>(
     private var isOnError = false
 
     protected var _bitrate = 0
-    var bitrate: Int
+    var bitrate: Int = 0
         get() = _bitrate
         set(value) {
             val bundle = Bundle()
             bundle.putInt(MediaCodec.PARAMETER_KEY_VIDEO_BITRATE, value)
             mediaCodec?.setParameters(bundle)
+            field = value
             _bitrate = value
         }
 

@@ -77,7 +77,7 @@ open class BaseCameraStreamer(
          */
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
-            cameraCapture.let { it.cameraId = value }
+            cameraCapture.cameraId = value
         }
 
     /**

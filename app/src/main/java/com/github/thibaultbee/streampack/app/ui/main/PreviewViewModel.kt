@@ -51,7 +51,9 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 class PreviewViewModel(application: Application) : AndroidViewModel(application) {
-    private val TAG = this::class.java.simpleName
+    companion object {
+        private const val TAG = "PreviewViewModel"
+    }
 
     private val configuration = Configuration(getApplication())
 

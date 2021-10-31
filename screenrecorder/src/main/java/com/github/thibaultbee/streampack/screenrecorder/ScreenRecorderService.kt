@@ -311,7 +311,7 @@ class ScreenRecorderService : Service() {
         return START_REDELIVER_INTENT
     }
 
-    private fun createAudioConfigFromBundle(bundle: Bundle): AudioConfig? {
+    private fun createAudioConfigFromBundle(bundle: Bundle): AudioConfig {
         val configBuilder = AudioConfig.Builder()
         bundle.getString(MIME_TYPE)?.let {
             configBuilder.setMimeType(it)

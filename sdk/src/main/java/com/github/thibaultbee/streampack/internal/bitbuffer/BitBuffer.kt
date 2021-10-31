@@ -184,7 +184,7 @@ class BitBuffer private constructor(buffer: ByteBuffer) {
         order: ByteOrder = ByteOrder.LITTLE_ENDIAN
     ): BitBuffer {
         return putBits(
-            (if (order == ByteOrder.BIG_ENDIAN) Character.reverseBytes(c) else c).toLong(),
+            (if (order == ByteOrder.BIG_ENDIAN) Character.reverseBytes(c) else c).code.toLong(),
             numBits
         )
     }
@@ -281,7 +281,7 @@ class BitBuffer private constructor(buffer: ByteBuffer) {
     /**
      * Writes a String to this [BitBuffer] using [Byte.SIZE_BITS] bits for each `byte`.
      *
-     * @param src the string to write.
+     * @param s the string to write.
      * @return this [BitBuffer] to allow for the convenience of method-chaining.
      */
     fun put(s: String): BitBuffer {
@@ -442,7 +442,7 @@ class BitBuffer private constructor(buffer: ByteBuffer) {
      * @return A `char`.
      */
     fun getChar(order: ByteOrder): Char {
-        val value = getBits(Char.SIZE_BITS).toChar()
+        val value = Char(getBits(Char.SIZE_BITS).toInt())
         return if (order == ByteOrder.BIG_ENDIAN) Character.reverseBytes(value) else value
     }
 

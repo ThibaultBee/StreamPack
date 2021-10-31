@@ -175,7 +175,7 @@ class MainActivity : AppCompatActivity() {
         val inflater: MenuInflater = popup.menuInflater
         inflater.inflate(R.menu.actions, popup.menu)
         popup.show()
-        popup.setOnMenuItemClickListener { it ->
+        popup.setOnMenuItemClickListener {
             if (it.itemId == R.id.action_settings) {
                 goToSettingsActivity()
             } else {

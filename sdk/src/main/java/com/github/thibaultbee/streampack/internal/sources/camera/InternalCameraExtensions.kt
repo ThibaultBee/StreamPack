@@ -19,10 +19,11 @@ import android.content.Context
 import android.graphics.ImageFormat
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.hardware.display.DisplayManager
 import android.util.Range
 import android.util.Size
+import android.view.Display
 import android.view.Surface
-import android.view.WindowManager
 
 /**
  * Get camera characteristics.
@@ -103,8 +104,9 @@ fun Context.getCameraFpsList(cameraId: String): List<Range<Int>> {
  * @return an integer equals to the current camera orientation
  */
 fun Context.getCameraOrientation(): Int {
-    val windowManager = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-    return when (val displayRotation = windowManager.defaultDisplay.rotation) {
+    val displayManager = this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+    return when (val displayRotation =
+        displayManager.getDisplay(Display.DEFAULT_DISPLAY).rotation) {
         Surface.ROTATION_0 -> 90
         Surface.ROTATION_90 -> 0
         Surface.ROTATION_180 -> 270

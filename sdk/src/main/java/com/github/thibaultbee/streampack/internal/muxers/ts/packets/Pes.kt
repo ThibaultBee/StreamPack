@@ -21,8 +21,8 @@ import com.github.thibaultbee.streampack.internal.muxers.ts.data.Stream
 import com.github.thibaultbee.streampack.internal.muxers.ts.descriptors.AdaptationField
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Pes.StreamId.Companion.fromMimeType
 import com.github.thibaultbee.streampack.internal.utils.TimeUtils
-import com.github.thibaultbee.streampack.utils.isAudio
-import com.github.thibaultbee.streampack.utils.isVideo
+import com.github.thibaultbee.streampack.internal.utils.isAudio
+import com.github.thibaultbee.streampack.internal.utils.isVideo
 
 class Pes(
     muxerListener: IMuxerListener,

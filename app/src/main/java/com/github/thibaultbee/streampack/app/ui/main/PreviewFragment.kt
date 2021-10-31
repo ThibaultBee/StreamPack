@@ -38,9 +38,12 @@ import java.util.concurrent.TimeUnit
 
 
 class PreviewFragment : Fragment() {
-    private val TAG = this::class.java.simpleName
     private val fragmentDisposables = CompositeDisposable()
     private lateinit var binding: MainFragmentBinding
+
+    companion object {
+        private const val TAG = "PreviewFragment"
+    }
 
     private val viewModel: PreviewViewModel by lazy {
         ViewModelProvider(this).get(PreviewViewModel::class.java)

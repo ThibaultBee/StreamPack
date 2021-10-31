@@ -19,7 +19,6 @@ import com.github.thibaultbee.streampack.internal.data.Packet
 import com.github.thibaultbee.streampack.logger.ILogger
 import java.io.File
 import java.io.FileOutputStream
-import java.net.ConnectException
 
 
 class FileWriter(val logger: ILogger) : IEndpoint {

@@ -98,7 +98,7 @@ object StreamerConfigurationHelper {
          * @param mimeType audio encoder mime type
          * @return sample rates list in Hz.
          */
-        fun getSupportedSampleRates(mimeType: String) =
+        fun getSupportedSampleRates(mimeType: String): IntArray =
             MediaCodecHelper.Audio.getSupportedSampleRates(mimeType)
     }
 }

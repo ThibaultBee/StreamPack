@@ -20,8 +20,8 @@ import android.media.MediaCodecInfo
 import android.media.MediaCodecList
 import android.media.MediaFormat
 import android.util.Range
-import com.github.thibaultbee.streampack.utils.isAudio
-import com.github.thibaultbee.streampack.utils.isVideo
+import com.github.thibaultbee.streampack.internal.utils.isAudio
+import com.github.thibaultbee.streampack.internal.utils.isVideo
 
 object MediaCodecHelper {
     object Video {
@@ -171,7 +171,7 @@ object MediaCodecHelper {
          * @param mimeType audio encoder mime type
          * @return sample rates list in Hz.
          */
-        fun getSupportedSampleRates(mimeType: String) =
+        fun getSupportedSampleRates(mimeType: String): IntArray =
             getCapabilities(mimeType).supportedSampleRates
     }
 }
