@@ -53,7 +53,7 @@ import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.Co
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.VIDEO_CONFIG_KEY
 import com.github.thibaultbee.streampack.screenrecorder.databinding.ActivityMainBinding
 import com.github.thibaultbee.streampack.screenrecorder.settings.SettingsActivity
-import com.github.thibaultbee.streampack.streamers.BaseScreenRecorderStreamer
+import com.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
 import com.tbruyelle.rxpermissions3.RxPermissions
 
 class MainActivity : AppCompatActivity() {
@@ -102,7 +102,9 @@ class MainActivity : AppCompatActivity() {
     private var getContent =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val intent = Intent(this, ScreenRecorderService::class.java)
-            intent.putExtra(AUDIO_CONFIG_KEY, createAudioConfigBundle())
+            createAudioConfigBundle()?.let {
+                intent.putExtra(AUDIO_CONFIG_KEY, it)
+            }
             intent.putExtra(VIDEO_CONFIG_KEY, createVideoConfigBundle())
             intent.putExtra(MUXER_CONFIG_KEY, createMuxerConfigBundle())
             intent.putExtra(CONNECTION_CONFIG_KEY, createConnectionConfigBundle())
@@ -143,16 +145,20 @@ class MainActivity : AppCompatActivity() {
         return bundle
     }
 
-    private fun createAudioConfigBundle(): Bundle {
-        val bundle = Bundle()
-        bundle.putString(MIME_TYPE, configuration.audio.encoder)
-        bundle.putInt(BITRATE, configuration.audio.bitrate)
-        bundle.putInt(SAMPLE_RATE, configuration.audio.sampleRate)
-        bundle.putInt(CHANNEL_CONFIG, configuration.audio.numberOfChannels)
-        bundle.putInt(BYTE_FORMAT, configuration.audio.byteFormat)
-        bundle.putBoolean(ENABLE_ECHO_CANCELER, configuration.audio.enableEchoCanceler)
-        bundle.putBoolean(ENABLE_NOISE_SUPPRESSOR, configuration.audio.enableNoiseSuppressor)
-        return bundle
+    private fun createAudioConfigBundle(): Bundle? {
+        return if (configuration.audio.enable) {
+            val bundle = Bundle()
+            bundle.putString(MIME_TYPE, configuration.audio.encoder)
+            bundle.putInt(BITRATE, configuration.audio.bitrate)
+            bundle.putInt(SAMPLE_RATE, configuration.audio.sampleRate)
+            bundle.putInt(CHANNEL_CONFIG, configuration.audio.numberOfChannels)
+            bundle.putInt(BYTE_FORMAT, configuration.audio.byteFormat)
+            bundle.putBoolean(ENABLE_ECHO_CANCELER, configuration.audio.enableEchoCanceler)
+            bundle.putBoolean(ENABLE_NOISE_SUPPRESSOR, configuration.audio.enableNoiseSuppressor)
+            bundle
+        } else {
+            null
+        }
     }
 
     private fun createVideoConfigBundle(): Bundle {

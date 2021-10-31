@@ -19,7 +19,7 @@ import android.media.MediaCodecInfo.CodecProfileLevel
 import android.media.MediaFormat
 import android.os.Build
 import android.util.Size
-import com.github.thibaultbee.streampack.streamers.BaseStreamer
+import com.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import com.github.thibaultbee.streampack.utils.CameraStreamerConfigurationHelper
 import com.github.thibaultbee.streampack.utils.isVideo
 import java.io.IOException

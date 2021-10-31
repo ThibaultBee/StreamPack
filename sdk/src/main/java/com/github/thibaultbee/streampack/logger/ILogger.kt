@@ -1,6 +1,6 @@
 package com.github.thibaultbee.streampack.logger
 
-import com.github.thibaultbee.streampack.streamers.BaseStreamer
+import com.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 
 /**
  * Logger interface.

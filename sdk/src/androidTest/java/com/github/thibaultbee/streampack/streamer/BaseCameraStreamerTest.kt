@@ -19,7 +19,7 @@ import android.graphics.SurfaceTexture
 import android.view.Surface
 import androidx.test.platform.app.InstrumentationRegistry
 import com.github.thibaultbee.streampack.internal.endpoints.FakeEndpoint
-import com.github.thibaultbee.streampack.streamers.BaseCameraStreamer
+import com.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import com.github.thibaultbee.streampack.utils.AndroidUtils
 import com.github.thibaultbee.streampack.utils.FakeAndroidLogger
 import org.junit.After
@@ -39,7 +39,9 @@ class BaseCameraStreamerTest {
             context,
             AndroidUtils.fakeServiceInfo(),
             FakeEndpoint(logger),
-            logger
+            logger,
+            true,
+            true
         )
     }
 

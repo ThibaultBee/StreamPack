@@ -18,7 +18,7 @@ package com.github.thibaultbee.streampack.utils
 import android.util.Range
 import com.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
 import com.github.thibaultbee.streampack.internal.muxers.ts.TSMuxerHelper
-import com.github.thibaultbee.streampack.streamers.BaseStreamer
+import com.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 
 /**
  * Configuration helper for [BaseStreamer].
