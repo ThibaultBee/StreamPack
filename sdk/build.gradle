@@ -25,10 +25,6 @@ android {
 }
 
 dokkaHtml {
-    configure {
-        outputDirectory.set(file("$rootDir/docs/dokka"))
-    }
-
     dokkaSourceSets {
         named("main") {
             noAndroidSdkLink.set(false)
