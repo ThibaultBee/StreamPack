@@ -20,6 +20,7 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.util.Size
 import com.github.thibaultbee.streampack.internal.sources.camera.getCameraCharacteristics
+import com.github.thibaultbee.streampack.internal.sources.camera.getCameraFpsList
 
 /**
  * Gets camera id list.
@@ -72,7 +73,6 @@ fun Context.isFrontCamera(cameraId: String) =
 fun Context.getFacingDirection(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.LENS_FACING)
 
-
 /**
  * Gets list of output sizes compatible with [klass] of a camera.
  * Use it to select camera preview size.
@@ -86,3 +86,13 @@ fun <T : Any> Context.getCameraOutputSizes(klass: Class<T>, cameraId: String): L
         klass
     )?.toList() ?: emptyList()
 }
+
+/**
+ * Check is the camera supports a frame rate
+ *
+ * @param cameraId camera id
+ * @param fps frame rate
+ * @return [Boolean.true] if camera supports fps, [Boolean.false] otherwise.
+ */
+fun Context.isFrameRateSupported(cameraId: String, fps: Int) =
+    this.getCameraFpsList(cameraId).any { it.contains(fps) }

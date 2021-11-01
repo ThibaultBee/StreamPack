@@ -23,10 +23,11 @@ import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.internal.sources.ISurfaceCapture
 import com.github.thibaultbee.streampack.logger.ILogger
 import com.github.thibaultbee.streampack.utils.CameraSettings
+import com.github.thibaultbee.streampack.utils.isFrameRateSupported
 import kotlinx.coroutines.runBlocking
 
 class CameraCapture(
-    context: Context,
+    private val context: Context,
     logger: ILogger
 ) : ISurfaceCapture<VideoConfig> {
     var previewSurface: Surface? = null
@@ -35,6 +36,9 @@ class CameraCapture(
         get() = cameraController.camera?.id ?: field
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
+            if (!context.isFrameRateSupported(value, fps)) {
+                throw UnsupportedOperationException("Camera $value does not support $fps fps")
+            }
             runBlocking {
                 val restartStream = isStreaming
                 stopPreview()

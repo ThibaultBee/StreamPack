@@ -80,4 +80,9 @@
     <string name="video_enable_key">video_enable_key</string>
     <string name="video_enable">Enable video</string>
     <string name="video_settings_key">video_settings_key</string>
+    <string name="warning">Warning</string>
+    <plurals name="camera_frame_rate_not_supported">
+        <item quantity="one">Camera %1$s does not support %2$d fps</item>
+        <item quantity="other">Cameras %1$s do not support %2$d fps</item>
+    </plurals>
 </resources>

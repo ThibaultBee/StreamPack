@@ -21,7 +21,10 @@ import android.text.InputFilter
 import android.text.InputType
 import androidx.preference.*
 import com.github.thibaultbee.streampack.app.R
+import com.github.thibaultbee.streampack.app.utils.DialogUtils
 import com.github.thibaultbee.streampack.utils.CameraStreamerConfigurationHelper
+import com.github.thibaultbee.streampack.utils.getCameraList
+import com.github.thibaultbee.streampack.utils.isFrameRateSupported
 
 class SettingsFragment : PreferenceFragmentCompat() {
     private val videoEnablePreference: SwitchPreference by lazy {
@@ -140,6 +143,25 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }.toTypedArray().run {
             videoFpsListPreference.entries = this
             videoFpsListPreference.entryValues = this
+        }
+        videoFpsListPreference.setOnPreferenceChangeListener { _, newValue ->
+            val fps = (newValue as String).toInt()
+            val unsupportedCameras = requireContext().getCameraList().filter {
+                !requireContext().isFrameRateSupported(it, fps)
+            }
+            if (unsupportedCameras.isNotEmpty()) {
+                DialogUtils.showAlertDialog(
+                    requireContext(),
+                    getString(R.string.warning),
+                    resources.getQuantityString(
+                        R.plurals.camera_frame_rate_not_supported,
+                        unsupportedCameras.size,
+                        unsupportedCameras.joinToString(", "),
+                        fps
+                    )
+                )
+            }
+            true
         }
 
         // Inflates video bitrate

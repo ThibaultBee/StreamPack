@@ -21,6 +21,7 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.util.Range
 import android.util.Size
+import com.github.thibaultbee.streampack.utils.getCameraList
 
 /**
  * Get camera characteristics.
@@ -31,16 +32,6 @@ import android.util.Size
 fun Context.getCameraCharacteristics(cameraId: String): CameraCharacteristics {
     val cameraManager = this.getSystemService(Context.CAMERA_SERVICE) as CameraManager
     return cameraManager.getCameraCharacteristics(cameraId)
-}
-
-/**
- * Gets camera id list.
- *
- * @return List of camera ids
- */
-fun Context.getCameraList(): List<String> {
-    val cameraManager = this.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-    return cameraManager.cameraIdList.toList()
 }
 
 /**
@@ -67,20 +58,6 @@ fun Context.getCameraOutputStreamSizes(): List<Size> {
 fun Context.getCameraOutputStreamSizes(cameraId: String): List<Size> {
     return this.getCameraCharacteristics(cameraId)[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]?.getOutputSizes(
         ImageFormat.YUV_420_888
-    )?.toList() ?: emptyList()
-}
-
-/**
- * Gets list of output sizes compatible with [klass] of a camera.
- * Use it to select camera preview size.
- *
- * @param klass a non-null Class object reference (for example SurfaceHolder::class.java)
- * @param cameraId camera id
- * @return List of resolutions supported by a camera for the [klass]
- */
-fun <T : Any> Context.getCameraOutputSizes(klass: Class<T>, cameraId: String): List<Size> {
-    return this.getCameraCharacteristics(cameraId)[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]?.getOutputSizes(
-        klass
     )?.toList() ?: emptyList()
 }
 

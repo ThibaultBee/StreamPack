@@ -47,6 +47,7 @@ import com.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import com.github.thibaultbee.streampack.utils.getBackCameraList
 import com.github.thibaultbee.streampack.utils.getFrontCameraList
 import com.github.thibaultbee.streampack.utils.isBackCamera
+import com.github.thibaultbee.streampack.utils.isFrameRateSupported
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -258,12 +259,22 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
     @RequiresPermission(Manifest.permission.CAMERA)
     fun toggleVideoSource() {
         if (streamer is ICameraStreamer) {
-            val cameraStreamer = streamer as ICameraStreamer
-            val context = (getApplication() as Context)
-            if (context.isBackCamera(cameraStreamer.camera)) {
-                cameraStreamer.camera = context.getFrontCameraList()[0]
-            } else {
-                cameraStreamer.camera = context.getBackCameraList()[0]
+            /**
+             * If video frame rate is not supported by the new camera, streamer will throw an
+             * exception instead of crashing. You can either catch the exception or check if the
+             * configuration is valid for the new camera with [Context.isFrameRateSupported].
+             */
+            try {
+                val cameraStreamer = streamer as ICameraStreamer
+                val context = (getApplication() as Context)
+                if (context.isBackCamera(cameraStreamer.camera)) {
+                    cameraStreamer.camera = context.getFrontCameraList()[0]
+                } else {
+                    cameraStreamer.camera = context.getBackCameraList()[0]
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "toggleVideoSource failed", e)
+                streamerError.postValue("toggleVideoSource: ${e.message ?: "Unknown error"}")
             }
         }
     }
