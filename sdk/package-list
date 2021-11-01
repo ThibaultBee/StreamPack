@@ -263,6 +263,7 @@ $dokka.location:com.github.thibaultbee.streampack.utils//getCameraOutputSizes/an
 $dokka.location:com.github.thibaultbee.streampack.utils//getFacingDirection/android.content.Context#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/get-facing-direction.html
 $dokka.location:com.github.thibaultbee.streampack.utils//getFrontCameraList/android.content.Context#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/get-front-camera-list.html
 $dokka.location:com.github.thibaultbee.streampack.utils//isBackCamera/android.content.Context#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/is-back-camera.html
+$dokka.location:com.github.thibaultbee.streampack.utils//isFrameRateSupported/android.content.Context#kotlin.String#kotlin.Int/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/is-frame-rate-supported.html
 $dokka.location:com.github.thibaultbee.streampack.utils//isFrontCamera/android.content.Context#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/is-front-camera.html
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraSettings///PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-settings/index.html
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraSettings/CameraSettings/#com.github.thibaultbee.streampack.internal.sources.camera.CameraController/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-settings/-camera-settings.html
