@@ -52,7 +52,7 @@ open class BaseScreenRecorderStreamer(
     logger = logger
 ) {
     private val screenCapture =
-        (videoCapture as ScreenCapture?).apply { onErrorListener = onInternalErrorListener }
+        (videoCapture as ScreenCapture).apply { onErrorListener = onInternalErrorListener }
 
     companion object {
         /**
@@ -78,14 +78,14 @@ open class BaseScreenRecorderStreamer(
          *
          * @return activity result previously set.
          */
-        get() = screenCapture?.activityResult
+        get() = screenCapture.activityResult
         /**
          * Set activity result. Must be call before [startStream].
          *
          * @param value activity result returns from [ComponentActivity.registerForActivityResult] callback.
          */
         set(value) {
-            screenCapture?.activityResult = value
+            screenCapture.activityResult = value
         }
 
     /**
@@ -93,7 +93,7 @@ open class BaseScreenRecorderStreamer(
      * You must have set [activityResult] before.
      */
     override fun startStream() {
-        screenCapture?.encoderSurface = videoEncoder?.inputSurface
+        screenCapture.encoderSurface = videoEncoder?.inputSurface
         super.startStream()
     }
 
