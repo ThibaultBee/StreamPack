@@ -19,11 +19,8 @@ import android.content.Context
 import android.graphics.ImageFormat
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
-import android.hardware.display.DisplayManager
 import android.util.Range
 import android.util.Size
-import android.view.Display
-import android.view.Surface
 
 /**
  * Get camera characteristics.
@@ -96,33 +93,4 @@ fun <T : Any> Context.getCameraOutputSizes(klass: Class<T>, cameraId: String): L
 fun Context.getCameraFpsList(cameraId: String): List<Range<Int>> {
     return this.getCameraCharacteristics(cameraId)[CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES]?.toList()
         ?: emptyList()
-}
-
-/**
- * Returns the camera orientation.
- *
- * @return an integer equals to the current camera orientation
- */
-fun Context.getCameraOrientation(): Int {
-    val displayManager = this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-    return when (val displayRotation =
-        displayManager.getDisplay(Display.DEFAULT_DISPLAY).rotation) {
-        Surface.ROTATION_0 -> 90
-        Surface.ROTATION_90 -> 0
-        Surface.ROTATION_180 -> 270
-        Surface.ROTATION_270 -> 180
-        else -> throw UnsupportedOperationException(
-            "Unsupported display rotation: $displayRotation"
-        )
-    }
-}
-
-/**
- * Check if camera is in portrait.
- *
- * @return true if camera is in portrait, otherwise false
- */
-fun Context.isCameraPortrait(): Boolean {
-    val orientation = this.getCameraOrientation()
-    return orientation == 90 || orientation == 270
 }

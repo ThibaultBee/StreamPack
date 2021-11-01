@@ -15,6 +15,11 @@
  */
 package com.github.thibaultbee.streampack.internal.utils
 
+import android.content.Context
+import android.hardware.display.DisplayManager
+import android.view.Display
+import android.view.Surface
+
 /**
  * Check if mime type is a video mime type.
  *
@@ -28,3 +33,33 @@ fun String.isVideo() = this.startsWith("video")
  * @return true if mime type is audio, otherwise false
  */
 fun String.isAudio() = this.startsWith("audio")
+
+
+/**
+ * Returns the camera orientation.
+ *
+ * @return an integer equals to the current camera orientation
+ */
+fun Context.getOrientation(): Int {
+    val displayManager = this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+    return when (val displayRotation =
+        displayManager.getDisplay(Display.DEFAULT_DISPLAY).rotation) {
+        Surface.ROTATION_0 -> 90
+        Surface.ROTATION_90 -> 0
+        Surface.ROTATION_180 -> 270
+        Surface.ROTATION_270 -> 180
+        else -> throw UnsupportedOperationException(
+            "Unsupported display rotation: $displayRotation"
+        )
+    }
+}
+
+/**
+ * Check if camera is in portrait.
+ *
+ * @return true if camera is in portrait, otherwise false
+ */
+fun Context.isPortrait(): Boolean {
+    val orientation = this.getOrientation()
+    return orientation == 90 || orientation == 270
+}

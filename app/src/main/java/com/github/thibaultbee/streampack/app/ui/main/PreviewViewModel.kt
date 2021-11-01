@@ -242,7 +242,6 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun stopStream() {
         viewModelScope.launch {
             try {

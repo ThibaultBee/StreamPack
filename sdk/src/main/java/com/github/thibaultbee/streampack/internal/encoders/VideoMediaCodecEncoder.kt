@@ -27,7 +27,8 @@ import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.internal.gl.EGlSurface
 import com.github.thibaultbee.streampack.internal.gl.FullFrameRect
 import com.github.thibaultbee.streampack.internal.gl.Texture2DProgram
-import com.github.thibaultbee.streampack.internal.sources.camera.getCameraOrientation
+import com.github.thibaultbee.streampack.internal.utils.getOrientation
+import com.github.thibaultbee.streampack.internal.utils.isPortrait
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.logger.ILogger
 import java.nio.ByteBuffer
@@ -54,10 +55,19 @@ class VideoMediaCodecEncoder(
         videoConfig: VideoConfig,
         useConfigProfileLevel: Boolean
     ): MediaCodec {
+        val isPortrait = context.isPortrait()
         val videoFormat = MediaFormat.createVideoFormat(
             videoConfig.mimeType,
-            videoConfig.resolution.width,
-            videoConfig.resolution.height
+            if (isPortrait) {
+                videoConfig.resolution.height
+            } else {
+                videoConfig.resolution.width
+            },
+            if (isPortrait) {
+                videoConfig.resolution.width
+            } else {
+                videoConfig.resolution.height
+            }
         )
 
         // Create codec
@@ -96,11 +106,6 @@ class VideoMediaCodecEncoder(
             codec.release()
             throw e
         }
-    }
-
-    override fun startStream() {
-        codecSurface?.startStream()
-        super.startStream()
     }
 
     override fun release() {
@@ -145,12 +150,9 @@ class VideoMediaCodecEncoder(
             surfaceTexture.setDefaultBufferSize(eglSurface.getWidth(), eglSurface.getHeight())
             surfaceTexture.setOnFrameAvailableListener(this)
             eglSurface.makeUnCurrent()
-        }
 
-
-        fun startStream() {
             fullFrameRect.setMVPMatrixAndViewPort(
-                context.getCameraOrientation().toFloat(),
+                context.getOrientation().toFloat(),
                 Size(eglSurface.getWidth(), eglSurface.getHeight())
             )
         }

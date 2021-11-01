@@ -10,6 +10,7 @@ high quality live streaming for Android.
   * Network adaptive bitrate mechanism
 * Video:
   * Source: Cameras or Screen recorder
+  * Orientation: portrait or landscape
   * Codec: HEVC/H.265 or AVC/H.264
   * Configurable bitrate, resolution, framerate (tested up to 60), encoder level, encoder profile
   * Video only mode

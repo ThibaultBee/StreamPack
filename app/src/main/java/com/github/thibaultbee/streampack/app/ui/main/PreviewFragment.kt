@@ -73,9 +73,9 @@ class PreviewFragment : Fragment() {
                             showPermissionError()
                         } else {
                             if (binding.liveButton.isChecked) {
-                                viewModel.startStream()
+                                startStream()
                             } else {
-                                viewModel.stopStream()
+                                stopStream()
                             }
                         }
                     }
@@ -100,8 +100,30 @@ class PreviewFragment : Fragment() {
         }
     }
 
+
+    private fun startStream() {
+        /**
+         * Lock orientation while stream is running to avoid stream interruption if
+         * user turns the device.
+         * For landscape only mode, set [Activity.requestedOrientation] to
+         * [ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE] in [onCreate] or [onResume].
+         */
+        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
+        viewModel.startStream()
+    }
+
+    private fun unLockScreen() {
+        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+    }
+
+    private fun stopStream() {
+        viewModel.stopStream()
+        unLockScreen()
+    }
+
     private fun showPermissionError() {
         binding.liveButton.isChecked = false
+        unLockScreen()
         DialogUtils.showPermissionAlertDialog(requireContext())
     }
 
@@ -112,13 +134,8 @@ class PreviewFragment : Fragment() {
 
     private fun showError(title: String, message: String) {
         binding.liveButton.isChecked = false
+        unLockScreen()
         DialogUtils.showAlertDialog(requireContext(), "Error: $title", message)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requireActivity().requestedOrientation =
-            ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
     }
 
     @SuppressLint("MissingPermission")
