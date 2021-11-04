@@ -66,20 +66,9 @@ class AudioMediaCodecEncoder(
         }
         audioFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 0)
 
-        // Apply configuration
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            createHandler("AMediaCodecThread")
-            codec.setCallback(encoderCallback, handler)
-        } else {
-            codec.setCallback(encoderCallback)
-        }
-        try {
-            codec.configure(audioFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-            return codec
-        } catch (e: Exception) {
-            codec.release()
-            throw e
-        }
+        configureCodec(codec, audioFormat, "AMediaCodecThread")
+
+        return codec
     }
 
     override fun onGenerateExtra(buffer: ByteBuffer, format: MediaFormat): ByteBuffer {

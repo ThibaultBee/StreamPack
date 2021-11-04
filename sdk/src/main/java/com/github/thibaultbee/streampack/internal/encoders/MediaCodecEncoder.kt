@@ -18,6 +18,7 @@ package com.github.thibaultbee.streampack.internal.encoders
 import android.media.MediaCodec
 import android.media.MediaCodecList
 import android.media.MediaFormat
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
@@ -130,7 +131,7 @@ abstract class MediaCodecEncoder<T>(
         }
     }
 
-    protected fun createHandler(name: String) {
+    private fun createHandler(name: String) {
         callbackThread = HandlerThread(name)
         handler = callbackThread?.let { handlerThread ->
             handlerThread.start()
@@ -138,11 +139,28 @@ abstract class MediaCodecEncoder<T>(
         }
     }
 
-    fun createCodec(format: MediaFormat): MediaCodec {
+    protected fun createCodec(format: MediaFormat): MediaCodec {
         val mediaCodecList = MediaCodecList(MediaCodecList.REGULAR_CODECS)
         val encoderName = mediaCodecList.findEncoderForFormat(format)
         encoderName?.let { return MediaCodec.createByCodecName(encoderName) }
             ?: throw InvalidParameterException("Failed to create codec for $mediaCodec")
+    }
+
+    protected fun configureCodec(codec: MediaCodec, format: MediaFormat, handlerName: String) {
+        // Apply configuration
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            createHandler(handlerName)
+            codec.setCallback(encoderCallback, handler)
+        } else {
+            codec.setCallback(encoderCallback)
+        }
+
+        try {
+            codec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+        } catch (e: Exception) {
+            codec.release()
+            throw e
+        }
     }
 
     override val mimeType: String?

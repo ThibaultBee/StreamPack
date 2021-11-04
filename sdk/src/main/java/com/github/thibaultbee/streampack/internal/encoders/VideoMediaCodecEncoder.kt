@@ -92,20 +92,9 @@ class VideoMediaCodecEncoder(
         }
 
         // Apply configuration
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            createHandler("VMediaCodecThread")
-            codec.setCallback(encoderCallback, handler)
-        } else {
-            codec.setCallback(encoderCallback)
-        }
-        try {
-            codec.configure(videoFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-            codecSurface = CodecSurface(codec.createInputSurface(), context)
-            return codec
-        } catch (e: Exception) {
-            codec.release()
-            throw e
-        }
+        configureCodec(codec, videoFormat, "VMediaCodecThread")
+        codecSurface = CodecSurface(codec.createInputSurface(), context)
+        return codec
     }
 
     override fun release() {
@@ -132,7 +121,7 @@ class VideoMediaCodecEncoder(
     val inputSurface: Surface?
         get() = codecSurface?.let { Surface(it.surfaceTexture) }
 
-    class CodecSurface(surface: Surface, private val context: Context) :
+    class CodecSurface(surface: Surface, context: Context) :
         SurfaceTexture.OnFrameAvailableListener {
         private val eglSurface = EGlSurface(surface)
         private val textureId: Int
