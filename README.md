@@ -72,7 +72,7 @@ side, you should be able to watch this stream.
 
 2. Create a `SurfaceView` in your layout
 
-```
+```xml
    <SurfaceView
    android:id="@+id/surfaceView"
    android:layout_width="match_parent"
@@ -81,7 +81,7 @@ side, you should be able to watch this stream.
 
 3. Prepare audio and video configurations
 
-```
+```kotlin
 val audioConfig = AudioConfig.Builder()
                       .setStartBitrate(128000)
                       .setSampleRate(48000)
@@ -97,7 +97,7 @@ val videoConfig = VideoConfig.Builder()
 
 4. Instantiate the streamer (main live streaming class)
 
-```
+```kotlin
 val streamer = CameraSrtLiveStreamer.Builder()
                 .setContext(getApplication())
                 .setServiceInfo(tsServiceInfo)
@@ -107,19 +107,19 @@ val streamer = CameraSrtLiveStreamer.Builder()
 
 5. Start the camera preview
 
-```
+```kotlin
 streamer.startPreview(surface) // surface: SurfaceView or TextureView where to display preview
 ```
 
 6. Start the live streaming
 
-```
+```kotlin
 streamer.startStream(ip, port)
 ```
 
 7. Stop and release
 
-```
+```kotlin
 streamer.stopStream()
 streamer.disconnect()
 streamer.stopPreview()
@@ -133,7 +133,7 @@ the [API documentation](https://thibaultbee.github.io/StreamPack).
 
 You need to add the following permissions in your `AndroidManifest.xml`:
 
-```
+```xml
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -147,7 +147,7 @@ permission: `android.permission.RECORD_AUDIO`, `android.permission.CAMERA` and
 
 For the PlayStore, your application might declare this in its `AndroidManifest.xml`
 
-```
+```xml
 <uses-feature android:name="android.hardware.camera" android:required="true" />
 <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 ```
