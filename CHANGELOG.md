@@ -1,14 +1,29 @@
 Change Log
 ==========
 
+Version 1.3.0
+-------------
+
+## Features:
+
+- Introducing new streamers:
+  - [ScreenRecorderSrtLiveStreamer] for screen sharing. A new sample application has been developed:
+    have a look at `screenrecorder\` folder.
+  - [AudioOnlySrtLiveStreamer] and [AudioOnlyTsFileStreamer] to record audio only
+- Video orientation could be in portrait or/and in landscape. Use `Activity.requestedOrientation` to
+  lock orientation in portrait or landscape.
+- Add `isFrameRateSupported` API so you can check that camera supports current configured frame
+  rate. Use it if you need to change the current camera.
+
 Version 1.2.0
 -------------
 
 ## Features:
 
 - Add HEVC support
+- Add API to check cameras orientation
 - You can set video framerate to 60 FPS on sample if it is supported by your device and cameras.
-  
+
 Version 1.1.0
 -------------
 
