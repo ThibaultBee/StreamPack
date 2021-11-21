@@ -22,6 +22,7 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.app.configuration.Configuration
 import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
+import io.github.thibaultbee.streampack.internal.utils.AudioMeasurements
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
@@ -56,6 +57,9 @@ class StreamerManager(
 
     val cameraId: String?
         get() = getCameraStreamer()?.camera
+
+    val audioMeasurements: AudioMeasurements?
+        get() = streamer?.measurements?.audio
 
     private inline fun <reified T> getStreamer(): T? {
         return if (streamer is T) {

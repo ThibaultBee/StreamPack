@@ -77,6 +77,13 @@ class PreviewFragment : Fragment() {
         viewModel.streamerError.observe(viewLifecycleOwner) {
             showError("Oops", it)
         }
+
+        viewModel.audioPeakValue.observe(viewLifecycleOwner) {
+            binding.vuMeter.progress = it
+        }
+        viewModel.audioRmsValue.observe(viewLifecycleOwner) {
+            binding.vuMeter.secondaryProgress = it
+        }
     }
 
     private fun startStopLive() {

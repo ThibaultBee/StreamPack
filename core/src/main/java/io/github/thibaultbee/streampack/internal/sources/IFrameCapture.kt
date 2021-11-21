@@ -20,7 +20,6 @@ import io.github.thibaultbee.streampack.internal.interfaces.Streamable
 import java.nio.ByteBuffer
 
 interface IFrameCapture<T> : Streamable<T> {
-
     /**
      * Generate a frame from capture device
      * @param buffer buffer where to write data. Must be set as buffer of returned Frame

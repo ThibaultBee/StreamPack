@@ -15,8 +15,14 @@
  */
 package io.github.thibaultbee.streampack.internal.utils
 
+import com.github.thibaultbee.streampack.internal.utils.absoluteValue
 import java.nio.ByteBuffer
+import java.nio.FloatBuffer
+import java.nio.IntBuffer
+import java.nio.ShortBuffer
 import java.nio.charset.StandardCharsets
+import kotlin.math.absoluteValue
+import kotlin.math.pow
 
 
 fun ByteBuffer.put(i: Int, i1: Int) {
@@ -105,4 +111,229 @@ fun ByteBuffer.extractArray(): ByteArray {
         this.get(byteArray)
         byteArray
     }
+}
+
+/**
+ * Get max value of a ByteBuffer.
+ * Audio buffer are order this way: L.R.L.R.L.R
+ *
+ * @param numOfChannels number of channel
+ * @return max value that buffer contains
+ */
+fun ByteBuffer.getMaxValuePerChannel(numOfChannels: Int): List<Byte> {
+    val maxValue = MutableList<Byte>(numOfChannels) { 0 }
+    while (hasRemaining()) {
+        (0 until numOfChannels).forEach {
+            maxValue[it] = this.get().absoluteValue.coerceAtLeast(maxValue[it])
+        }
+    }
+    this.rewind()
+    return maxValue
+}
+
+/**
+ * Get max value of a ShortBuffer.
+ * Audio buffer are order this way: L.R.L.R.L.R
+ *
+ * @param numOfChannels number of channel
+ * @return max value that buffer contains
+ */
+fun ShortBuffer.getMaxValuePerChannel(numOfChannels: Int): List<Short> {
+    val maxValue = MutableList<Short>(numOfChannels) { 0 }
+    while (hasRemaining()) {
+        (0 until numOfChannels).forEach {
+            maxValue[it] = this.get().absoluteValue.coerceAtLeast(maxValue[it])
+        }
+    }
+    this.rewind()
+    return maxValue
+}
+
+/**
+ * Get max value of an IntBuffer.
+ * Audio buffer are order this way: L.R.L.R.L.R
+ *
+ * @param numOfChannels number of channel
+ * @return max value that buffer contains
+ */
+fun IntBuffer.getMaxValuePerChannel(numOfChannels: Int): List<Int> {
+    val maxValue = MutableList(numOfChannels) { 0 }
+    while (hasRemaining()) {
+        (0 until numOfChannels).forEach {
+            maxValue[it] = this.get().absoluteValue.coerceAtLeast(maxValue[it])
+        }
+    }
+    this.rewind()
+    return maxValue
+}
+
+/**
+ * Get max value of a FloatBuffer.
+ * Audio buffer are order this way: L.R.L.R.L.R
+ *
+ * @param numOfChannels number of channel
+ * @return max value that buffer contains
+ */
+fun FloatBuffer.getMaxValuePerChannel(numOfChannels: Int): List<Float> {
+    val maxValue = MutableList(numOfChannels) { 0F }
+    while (hasRemaining()) {
+        (0 until numOfChannels).forEach {
+            maxValue[it] = this.get().absoluteValue.coerceAtLeast(maxValue[it])
+        }
+    }
+    this.rewind()
+    return maxValue
+}
+
+/**
+ * Get square sum value of a ByteBuffer
+ *
+ * * @param numOfChannels number of channel
+ * @return square sum value
+ */
+fun ByteBuffer.getSquareSumPerChannel(numOfChannels: Int): List<Float> {
+    val squareSum = MutableList(numOfChannels) { 0F }
+    while (hasRemaining()) {
+        (0 until numOfChannels).forEach {
+            squareSum[it] += this.get().toFloat().pow(2)
+        }
+    }
+    this.rewind()
+    return squareSum
+}
+
+/**
+ * Get square sum value of a ShortBuffer
+ *
+ * @param numOfChannels number of channel
+ * @return square sum value
+ */
+fun ShortBuffer.getSquareSumPerChannel(numOfChannels: Int): List<Float> {
+    val squareSum = MutableList(numOfChannels) { 0F }
+    while (hasRemaining()) {
+        (0 until numOfChannels).forEach {
+            squareSum[it] += this.get().toFloat().pow(2)
+        }
+    }
+    this.rewind()
+    return squareSum
+}
+
+/**
+ * Get square sum value of a IntBuffer
+ *
+ * @param numOfChannels number of channel
+ * @return square sum value
+ */
+fun IntBuffer.getSquareSumPerChannel(numOfChannels: Int): List<Float> {
+    val squareSum = MutableList(numOfChannels) { 0F }
+    while (hasRemaining()) {
+        (0 until numOfChannels).forEach {
+            squareSum[it] += this.get().toFloat().pow(2)
+        }
+    }
+    this.rewind()
+    return squareSum
+}
+
+/**
+ * Get square sum value of a FloatBuffer
+ *
+ * @param numOfChannels number of channel
+ * @return square sum value
+ */
+fun FloatBuffer.getSquareSumPerChannel(numOfChannels: Int): List<Float> {
+    val squareSum = MutableList(numOfChannels) { 0F }
+    while (hasRemaining()) {
+        (0 until numOfChannels).forEach {
+            squareSum[it] += this.get().pow(2)
+        }
+    }
+    this.rewind()
+    return squareSum
+}
+
+
+/**
+ * Get max value and square sum of a ByteBuffer.
+ * Audio buffer are order this way: L.R.L.R.L.R
+ *
+ * @param numOfChannels number of channel
+ * @return a pair containing max value and square root
+ */
+fun ByteBuffer.getMaxValueAndSquareSumPerChannel(numOfChannels: Int): Pair<List<Byte>, List<Float>> {
+    val maxValue = MutableList<Byte>(numOfChannels) { 0 }
+    val squareSum = MutableList(numOfChannels) { 0F }
+
+    while (hasRemaining()) {
+        (0 until numOfChannels).forEach {
+            maxValue[it] = this.get().absoluteValue.coerceAtLeast(maxValue[it])
+            squareSum[it] += this.get().toFloat().pow(2)
+        }
+    }
+    this.rewind()
+    return Pair(maxValue, squareSum)
+}
+
+/**
+ * Get max value and square sum of a ShortBuffer.
+ * Audio buffer are order this way: L.R.L.R.L.R
+ *
+ * @param numOfChannels number of channel
+ * @return a pair containing max value and square root
+ */
+fun ShortBuffer.getMaxValueAndSquareSumPerChannel(numOfChannels: Int): Pair<List<Short>, List<Float>> {
+    val maxValue = MutableList<Short>(numOfChannels) { 0 }
+    val squareSum = MutableList(numOfChannels) { 0F }
+
+    while (hasRemaining()) {
+        (0 until numOfChannels).forEach {
+            maxValue[it] = this.get().absoluteValue.coerceAtLeast(maxValue[it])
+            squareSum[it] += this.get().toFloat().pow(2)
+        }
+    }
+    this.rewind()
+    return Pair(maxValue, squareSum)
+}
+
+/**
+ * Get max value and square sum of an IntBuffer.
+ * Audio buffer are order this way: L.R.L.R.L.R
+ *
+ * @param numOfChannels number of channel
+ * @return a pair containing max value and square root
+ */
+fun IntBuffer.getMaxValueAndSquareSumPerChannel(numOfChannels: Int): Pair<List<Int>, List<Float>> {
+    val maxValue = MutableList(numOfChannels) { 0 }
+    val squareSum = MutableList(numOfChannels) { 0F }
+
+    while (hasRemaining()) {
+        (0 until numOfChannels).forEach {
+            maxValue[it] = this.get().absoluteValue.coerceAtLeast(maxValue[it])
+            squareSum[it] += this.get().toFloat().pow(2)
+        }
+    }
+    this.rewind()
+    return Pair(maxValue, squareSum)
+}
+
+/**
+ * Get max value and square sum of a FloatBuffer.
+ * Audio buffer are order this way: L.R.L.R.L.R
+ *
+ * @param numOfChannels number of channel
+ * @return a pair containing max value and square root
+ */
+fun FloatBuffer.getMaxValueAndSquareSumPerChannel(numOfChannels: Int): Pair<List<Float>, List<Float>> {
+    val maxValue = MutableList(numOfChannels) { 0F }
+    val squareSum = MutableList(numOfChannels) { 0F }
+
+    while (hasRemaining()) {
+        (0 until numOfChannels).forEach {
+            maxValue[it] = this.get().absoluteValue.coerceAtLeast(maxValue[it])
+            squareSum[it] += this.get().pow(2)
+        }
+    }
+    this.rewind()
+    return Pair(maxValue, squareSum)
 }

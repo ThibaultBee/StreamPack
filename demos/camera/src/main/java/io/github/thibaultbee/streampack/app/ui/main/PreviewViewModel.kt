@@ -34,7 +34,8 @@ import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.utils.isFrameRateSupported
 import kotlinx.coroutines.launch
-import java.io.File
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class PreviewViewModel(private val streamerManager: StreamerManager) : ObservableViewModel() {
     companion object {
@@ -70,6 +71,10 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
         }
     }
 
+    private val scheduleTaskExecutor = Executors.newScheduledThreadPool(2)
+    val audioPeakValue = MutableLiveData<Int>()
+    val audioRmsValue = MutableLiveData<Int>()
+
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun createStreamer() {
         viewModelScope.launch {
@@ -77,6 +82,14 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
                 streamerManager.rebuildStreamer()
                 streamerManager.onErrorListener = onErrorListener
                 streamerManager.onConnectionListener = onConnectionListener
+
+                // Schedule vu meter updates
+                scheduleTaskExecutor.scheduleAtFixedRate({
+                    streamerManager.audioMeasurements?.let {
+                        audioPeakValue.postValue((it.peak[0] + 100).toInt())
+                        audioRmsValue.postValue((it.rms[0] + 100).toInt())
+                    }
+                }, 0, 200, TimeUnit.MILLISECONDS)
                 Log.d(TAG, "Streamer is created")
             } catch (e: Throwable) {
                 Log.e(TAG, "createStreamer failed", e)
@@ -287,4 +300,6 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
             Log.e(TAG, "streamer.release failed", e)
         }
     }
+
+
 }

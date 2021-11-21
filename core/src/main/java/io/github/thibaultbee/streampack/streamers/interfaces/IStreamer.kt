@@ -20,6 +20,7 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.error.StreamPackError
+import io.github.thibaultbee.streampack.internal.utils.Measurements
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseStreamerSettings
@@ -40,6 +41,11 @@ interface IStreamer {
      * Access extended streamer settings.
      */
     val settings: IBaseStreamerSettings
+
+    /**
+     * Get statistic on streamer.
+     */
+    val measurements: Measurements
 
     /**
      * Configures only audio settings.

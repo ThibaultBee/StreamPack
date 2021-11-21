@@ -13,6 +13,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_margin="0dp"
         android:keepScreenOn="true">
 
         <io.github.thibaultbee.streampack.views.AutoFitSurfaceView
@@ -46,6 +47,22 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:rotation="-90"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <github.nisrulz.stackedhorizontalprogressbar.StackedHorizontalProgressBar
+                android:id="@+id/vuMeter"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="100dp"
+                android:layout_height="10dp"
+                android:progressDrawable="@drawable/stacked_horizontal_progress" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="200dp"
@@ -83,6 +100,7 @@
                 android:valueFrom="@{viewmodel.lensDistanceRange.lower}"
                 android:valueTo="@{viewmodel.lensDistanceRange.upper}"
                 app:goneUnless="@{viewmodel.showLensDistanceSlider}" />
+
         </LinearLayout>
 
         <LinearLayout

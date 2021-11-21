@@ -33,6 +33,7 @@ import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.sources.IAudioCapture
 import io.github.thibaultbee.streampack.internal.sources.IVideoCapture
+import io.github.thibaultbee.streampack.internal.utils.Measurements
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.logger.StreamPackLogger
@@ -79,6 +80,8 @@ abstract class BaseStreamer(
     protected var videoConfig: VideoConfig? = null
     private var audioConfig: AudioConfig? = null
 
+    override val measurements = Measurements()
+
     // Only handle stream error (error on muxer, endpoint,...)
     /**
      * Internal usage only
@@ -91,7 +94,9 @@ abstract class BaseStreamer(
 
     private val audioEncoderListener = object : IEncoderListener {
         override fun onInputFrame(buffer: ByteBuffer): Frame {
-            return audioCapture!!.getFrame(buffer)
+            val frame = audioCapture!!.getFrame(buffer)
+            measurements.audio?.onNewBuffer(frame.buffer)
+            return frame
         }
 
         override fun onOutputFrame(frame: Frame) {
@@ -202,6 +207,8 @@ abstract class BaseStreamer(
         this.audioConfig = audioConfig
 
         try {
+            measurements.audioConfig = audioConfig
+
             audioCapture?.configure(audioConfig)
             audioEncoder?.configure(audioConfig)
 

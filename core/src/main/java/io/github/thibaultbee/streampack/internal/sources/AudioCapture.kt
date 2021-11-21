@@ -36,6 +36,15 @@ class AudioCapture(val logger: ILogger) : IAudioCapture {
 
     override var isMuted: Boolean = false
 
+    /**
+     * Check if an audio capture is running
+     */
+    private val isRunning: Boolean
+        /**
+         * @return true if an audio capture if running
+         */
+        get() = audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING
+
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun configure(config: AudioConfig) {
         val bufferSize = AudioRecord.getMinBufferSize(
@@ -79,16 +88,14 @@ class AudioCapture(val logger: ILogger) : IAudioCapture {
         audioRecord?.let {
             it.startRecording()
 
-            if (!isRunning()) {
+            if (!isRunning) {
                 throw IllegalStateException("AudioCapture: failed to start recording")
             }
         } ?: throw IllegalStateException("AudioCapture: run: : No audioRecorder")
     }
 
-    private fun isRunning() = audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING
-
     override fun stopStream() {
-        if (!isRunning()) {
+        if (!isRunning) {
             logger.d(this, "Not running")
             return
         }
