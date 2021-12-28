@@ -19,6 +19,8 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.view.Surface
+import android.view.SurfaceView
+import android.view.TextureView
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import com.github.thibaultbee.streampack.error.StreamPackError
@@ -32,6 +34,7 @@ import com.github.thibaultbee.streampack.streamers.CameraTsFileStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
 import com.github.thibaultbee.streampack.utils.CameraSettings
 import com.github.thibaultbee.streampack.utils.getCameraList
+import com.github.thibaultbee.streampack.views.AutoFitSurfaceView
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -92,7 +95,7 @@ open class BaseCameraStreamer(
      *
      * Inside, it launches both camera and microphone capture.
      *
-     * @param previewSurface Where to display camera capture
+     * @param previewSurface Where to display camera capture. Could be a [Surface] from [AutoFitSurfaceView], a [SurfaceView] or a [TextureView].
      * @param cameraId camera id (get camera id list from [Context.getCameraList])
      *
      * @throws [StreamPackError] if audio or video capture couldn't be launch

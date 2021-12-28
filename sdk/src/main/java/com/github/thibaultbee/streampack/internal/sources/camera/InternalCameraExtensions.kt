@@ -21,18 +21,8 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.util.Range
 import android.util.Size
+import com.github.thibaultbee.streampack.utils.getCameraCharacteristics
 import com.github.thibaultbee.streampack.utils.getCameraList
-
-/**
- * Get camera characteristics.
- *
- * @param cameraId camera id
- * @return camera characteristics
- */
-fun Context.getCameraCharacteristics(cameraId: String): CameraCharacteristics {
-    val cameraManager = this.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-    return cameraManager.getCameraCharacteristics(cameraId)
-}
 
 /**
  * Gets all output capture sizes.
