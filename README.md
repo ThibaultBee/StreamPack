@@ -24,7 +24,7 @@ high quality live streaming for Android.
 
 Get StreamPack latest artifacts on [jitpack.io](https://jitpack.io/#ThibaultBee/StreamPack)
 
-```gradle
+```groovy
 allprojects {
     repositories {
         ...
@@ -67,57 +67,59 @@ side, you should be able to watch this stream.
 
 ## Quick start
 
-1. Add [permissions](#permissions) to your `AndroidManifest.xml` and request them in your
+1. Adds [permissions](#permissions) to your `AndroidManifest.xml` and request them in your
    Activity/Fragment.
 
-2. Create a `SurfaceView` in your layout
+2. Creates a `AutoFitSurfaceView` in your layout
+
+To simplify development, StreamPack provides an `AutoFitSurfaceView`.
 
 ```xml
-   <SurfaceView
-   android:id="@+id/surfaceView"
-   android:layout_width="match_parent"
-   android:layout_height="match_parent" />
+<com.github.thibaultbee.streampack.views.AutoFitSurfaceView
+        android:id="@+id/preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 ```
 
-3. Prepare audio and video configurations
+3. Prepares audio and video configurations
 
 ```kotlin
 val audioConfig = AudioConfig.Builder()
-                      .setStartBitrate(128000)
-                      .setSampleRate(48000)
-                      .setNumberOfChannel(2)
-                      .build()
+    .setStartBitrate(128000)
+    .setSampleRate(48000)
+    .setNumberOfChannel(2)
+    .build()
 
 val videoConfig = VideoConfig.Builder()
-                    .setStartBitrate(1000000) // 1 Mb/s
-                    .setResolution(Size(1280,720))
-                    .setFps(30)
-                    .build()
+    .setStartBitrate(1000000) // 1 Mb/s
+    .setResolution(Size(1280, 720))
+    .setFps(30)
+    .build()
 ```
 
-4. Instantiate the streamer (main live streaming class)
+4. Instantiates the streamer (main live streaming class)
 
 ```kotlin
 val streamer = CameraSrtLiveStreamer.Builder()
-                .setContext(getApplication())
-                .setServiceInfo(tsServiceInfo)
-                .setConfiguration(audioConfig, videoConfig)
-                .build()
+    .setContext(getApplication())
+    .setServiceInfo(tsServiceInfo)
+    .setConfiguration(audioConfig, videoConfig)
+    .build()
 ```
 
-5. Start the camera preview
+5. Starts the camera preview
 
 ```kotlin
-streamer.startPreview(surface) // surface: SurfaceView or TextureView where to display preview
+streamer.startPreview(surface) // surface from AutoFitSurfaceView, SurfaceView or TextureView: where to display preview
 ```
 
-6. Start the live streaming
+6. Starts the live streaming
 
 ```kotlin
 streamer.startStream(ip, port)
 ```
 
-7. Stop and release
+7. Stops and releases
 
 ```kotlin
 streamer.stopStream()
@@ -134,11 +136,11 @@ the [API documentation](https://thibaultbee.github.io/StreamPack).
 You need to add the following permissions in your `AndroidManifest.xml`:
 
 ```xml
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.INTERNET" />
 <!-- Application requires android.permission.WRITE_EXTERNAL_STORAGE only for IFileStreamer implementation` -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
 
 Your application also has to request the following dangerous

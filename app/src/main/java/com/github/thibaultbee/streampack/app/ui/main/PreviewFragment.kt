@@ -28,14 +28,13 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import com.github.thibaultbee.streampack.app.utils.DialogUtils
-import com.github.thibaultbee.streampack.app.utils.PreviewUtils.Companion.chooseBigEnoughSize
-import com.github.thibaultbee.streampack.utils.getCameraOutputSizes
+import com.github.thibaultbee.streampack.utils.getCameraCharacteristics
+import com.github.thibaultbee.streampack.views.getPreviewOutputSize
 import com.jakewharton.rxbinding4.view.clicks
 import com.tbruyelle.rxpermissions3.RxPermissions
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import java.util.concurrent.TimeUnit
-
 
 class PreviewFragment : Fragment() {
     private val fragmentDisposables = CompositeDisposable()
@@ -150,18 +149,10 @@ class PreviewFragment : Fragment() {
                 } else {
                     viewModel.createStreamer()
                     // Wait till streamer exists to create the SurfaceView (and call startCapture).
-                    binding.surfaceView.visibility = View.VISIBLE
+                    binding.preview.visibility = View.VISIBLE
                 }
             }
-        binding.surfaceView.holder.addCallback(surfaceViewCallback)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        binding.surfaceView.holder.setFixedSize(
-            0,
-            0
-        ) // Ensure to trigger surface holder callback on resume
+        binding.preview.holder.addCallback(surfaceViewCallback)
     }
 
     override fun onDestroy() {
@@ -171,37 +162,34 @@ class PreviewFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private val surfaceViewCallback = object : SurfaceHolder.Callback {
-        var nbOnSurfaceChange = 0
-
-        override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-            require(context != null)
-
-            try {
-                nbOnSurfaceChange++
-                if (nbOnSurfaceChange == 2) {
-                    viewModel.startPreview(holder.surface)
-                } else {
-                    val choices = context!!.getCameraOutputSizes(
-                        SurfaceHolder::class.java,
-                        viewModel.cameraId
-                    )
-
-                    chooseBigEnoughSize(choices, width, height)?.let { size ->
-                        holder.setFixedSize(size.width, size.height)
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Can't start preview due to ${e.message}", e)
-            }
-        }
-
         override fun surfaceDestroyed(holder: SurfaceHolder) {
             viewModel.stopPreview()
-            binding.surfaceView.holder.removeCallback(this)
+            binding.preview.holder.removeCallback(this)
         }
 
+        override fun surfaceChanged(
+            holder: SurfaceHolder,
+            format: Int,
+            width: Int,
+            height: Int
+        ) = Unit
+
         override fun surfaceCreated(holder: SurfaceHolder) {
-            nbOnSurfaceChange = 0
+            // Selects appropriate preview size and configures view finder
+            val previewSize = getPreviewOutputSize(
+                binding.preview.display,
+                requireContext().getCameraCharacteristics(viewModel.cameraId),
+                SurfaceHolder::class.java
+            )
+            Log.d(
+                TAG,
+                "View finder size: ${binding.preview.width} x ${binding.preview.height}"
+            )
+            Log.d(TAG, "Selected preview size: $previewSize")
+            binding.preview.setAspectRatio(previewSize.width, previewSize.height)
+
+            // To ensure that size is set, initialize camera in the view's thread
+            binding.preview.post { viewModel.startPreview(holder.surface) }
         }
     }
 }
