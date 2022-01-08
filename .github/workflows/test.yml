@@ -1,11 +1,12 @@
 # This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
 
-name: Build
+name: Run tests
 
 on: [push]
 
 jobs:
-  build:
+  unit-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -15,6 +16,5 @@ jobs:
           java-version: 12
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Build
-        run: ./gradlew build
-
+      - name: Run tests
+        run: ./gradlew test
