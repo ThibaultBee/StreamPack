@@ -258,6 +258,7 @@ $dokka.location:com.github.thibaultbee.streampack.streamers/ScreenRecorderSrtLiv
 $dokka.location:com.github.thibaultbee.streampack.streamers/ScreenRecorderSrtLiveStreamer/streamId/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.streamers/-screen-recorder-srt-live-streamer/stream-id.html
 $dokka.location:com.github.thibaultbee.streampack.utils////PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/index.html
 $dokka.location:com.github.thibaultbee.streampack.utils//getBackCameraList/android.content.Context#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/get-back-camera-list.html
+$dokka.location:com.github.thibaultbee.streampack.utils//getCameraCharacteristics/android.content.Context#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/get-camera-characteristics.html
 $dokka.location:com.github.thibaultbee.streampack.utils//getCameraList/android.content.Context#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/get-camera-list.html
 $dokka.location:com.github.thibaultbee.streampack.utils//getCameraOutputSizes/android.content.Context#java.lang.Class[TypeParam(bounds=[kotlin.Any])]#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/get-camera-output-sizes.html
 $dokka.location:com.github.thibaultbee.streampack.utils//getFacingDirection/android.content.Context#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/get-facing-direction.html
@@ -290,6 +291,20 @@ $dokka.location:com.github.thibaultbee.streampack.utils/StreamerConfigurationHel
 $dokka.location:com.github.thibaultbee.streampack.utils/StreamerConfigurationHelper.Video/getSupportedResolutions/#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-streamer-configuration-helper/-video/get-supported-resolutions.html
 $dokka.location:com.github.thibaultbee.streampack.utils/StreamerConfigurationHelper.Video/supportedEncoders/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-streamer-configuration-helper/-video/supported-encoders.html
 $dokka.location:com.github.thibaultbee.streampack.utils/StreamerConfigurationHelper///PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-streamer-configuration-helper/index.html
+$dokka.location:com.github.thibaultbee.streampack.views////PointingToDeclaration/sdk/com.github.thibaultbee.streampack.views/index.html
+$dokka.location:com.github.thibaultbee.streampack.views//SIZE_1080P/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.views/-s-i-z-e_1080-p.html
+$dokka.location:com.github.thibaultbee.streampack.views//getDisplaySmartSize/#android.view.Display/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.views/get-display-smart-size.html
+$dokka.location:com.github.thibaultbee.streampack.views//getPreviewOutputSize/#android.view.Display#android.hardware.camera2.CameraCharacteristics#java.lang.Class[TypeParam(bounds=[kotlin.Any?])]#kotlin.Int?/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.views/get-preview-output-size.html
+$dokka.location:com.github.thibaultbee.streampack.views/AutoFitSurfaceView.Companion///PointingToDeclaration/sdk/com.github.thibaultbee.streampack.views/-auto-fit-surface-view/-companion/index.html
+$dokka.location:com.github.thibaultbee.streampack.views/AutoFitSurfaceView///PointingToDeclaration/sdk/com.github.thibaultbee.streampack.views/-auto-fit-surface-view/index.html
+$dokka.location:com.github.thibaultbee.streampack.views/AutoFitSurfaceView/AutoFitSurfaceView/#android.content.Context#android.util.AttributeSet?#kotlin.Int/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.views/-auto-fit-surface-view/-auto-fit-surface-view.html
+$dokka.location:com.github.thibaultbee.streampack.views/AutoFitSurfaceView/setAspectRatio/#kotlin.Int#kotlin.Int/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.views/-auto-fit-surface-view/set-aspect-ratio.html
+$dokka.location:com.github.thibaultbee.streampack.views/SmartSize///PointingToDeclaration/sdk/com.github.thibaultbee.streampack.views/-smart-size/index.html
+$dokka.location:com.github.thibaultbee.streampack.views/SmartSize/SmartSize/#kotlin.Int#kotlin.Int/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.views/-smart-size/-smart-size.html
+$dokka.location:com.github.thibaultbee.streampack.views/SmartSize/long/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.views/-smart-size/long.html
+$dokka.location:com.github.thibaultbee.streampack.views/SmartSize/short/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.views/-smart-size/short.html
+$dokka.location:com.github.thibaultbee.streampack.views/SmartSize/size/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.views/-smart-size/size.html
+$dokka.location:com.github.thibaultbee.streampack.views/SmartSize/toString/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.views/-smart-size/to-string.html
 com.github.thibaultbee.streampack.data
 com.github.thibaultbee.streampack.error
 com.github.thibaultbee.streampack.listeners
@@ -300,4 +315,5 @@ com.github.thibaultbee.streampack.streamers.bases
 com.github.thibaultbee.streampack.streamers.interfaces
 com.github.thibaultbee.streampack.streamers.interfaces.builders
 com.github.thibaultbee.streampack.utils
+com.github.thibaultbee.streampack.views
 
