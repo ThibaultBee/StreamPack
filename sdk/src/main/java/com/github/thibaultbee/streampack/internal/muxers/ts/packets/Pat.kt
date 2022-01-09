@@ -15,11 +15,11 @@
  */
 package com.github.thibaultbee.streampack.internal.muxers.ts.packets
 
-import com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer
 import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ITSElement
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Service
 import java.nio.ByteBuffer
+import kotlin.experimental.or
 
 class Pat(
     muxerListener: IMuxerListener,
@@ -56,16 +56,19 @@ class Pat(
     }
 
     override fun toByteBuffer(): ByteBuffer {
-        val buffer = BitBuffer.allocate(bitSize.toLong())
+        val buffer = ByteBuffer.allocate(size)
 
         services
             .filter { it.pmt != null }
             .forEach {
-                buffer.put(it.info.id)
-                buffer.put(0b111, 3)  // reserved
-                buffer.put(it.pmt!!.pid, 13)
+                buffer.putShort(it.info.id)
+                buffer.putShort(
+                    (0b111 shl 13).toShort()  // reserved
+                            or it.pmt!!.pid
+                )
             }
 
-        return buffer.toByteBuffer()
+        buffer.rewind()
+        return buffer
     }
 }

@@ -15,10 +15,12 @@
  */
 package com.github.thibaultbee.streampack.internal.muxers.ts.packets
 
-import com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer
 import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ITSElement
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Service
+import com.github.thibaultbee.streampack.internal.muxers.ts.utils.put
+import com.github.thibaultbee.streampack.internal.muxers.ts.utils.putShort
+import com.github.thibaultbee.streampack.internal.muxers.ts.utils.putString
 import java.nio.ByteBuffer
 
 
@@ -67,40 +69,38 @@ class Sdt(
     }
 
     override fun toByteBuffer(): ByteBuffer {
-        val buffer = BitBuffer.allocate(bitSize.toLong())
+        val buffer = ByteBuffer.allocate(size)
 
-        buffer.put(originalNetworkId, 16)
-        buffer.put(0b11111111, 8) // Reserved for future use
+        buffer.putShort(originalNetworkId)
+        buffer.put(0b11111111) // Reserved for future use
 
         services.map { it.info }.forEach {
-            buffer.put(it.id, 16)
-            buffer.put(0b111111, 6) // Reserved
-
-            buffer.put(0, 1) // EIT_schedule_flag
-            buffer.put(0, 1) // EIT_present_following_flag
-
-            buffer.put(4, 3) // running_status - 4 -> running
-            buffer.put(0, 1) // free_CA_mode
+            buffer.putShort(it.id)
+            buffer.put(0b11111100) // Reserved + EIT_schedule_flag + EIT_present_following_flag
 
             val serviceDescriptorLength = 3 + it.providerName.length + it.name.length
             val descriptorsLoopLength =
                 2 + serviceDescriptorLength // 2 = descriptor_tag + descriptor_length
-            buffer.put(descriptorsLoopLength, 12)
+            buffer.putShort(
+                (0b1000 shl 12) // running_status - 4 -> running + free_CA_mode
+                        or (descriptorsLoopLength)
+            )
 
             // Service descriptor
-            buffer.put(0x48, 8) // descriptor_tag
-            buffer.put(serviceDescriptorLength, 8)
+            buffer.put(0x48) // descriptor_tag
+            buffer.put(serviceDescriptorLength)
 
-            buffer.put(it.type.value, 8)
+            buffer.put(it.type.value)
 
-            buffer.put(it.providerName.length, 8)
-            buffer.put(it.providerName)
+            buffer.put(it.providerName.length)
+            buffer.putString(it.providerName)
 
-            buffer.put(it.name.length, 8)
-            buffer.put(it.name)
+            buffer.put(it.name.length)
+            buffer.putString(it.name)
         }
 
-        return buffer.toByteBuffer()
+        buffer.rewind()
+        return buffer
     }
 
 }

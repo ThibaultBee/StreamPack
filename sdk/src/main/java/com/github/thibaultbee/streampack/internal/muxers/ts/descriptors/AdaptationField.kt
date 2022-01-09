@@ -15,9 +15,11 @@
  */
 package com.github.thibaultbee.streampack.internal.muxers.ts.descriptors
 
-import com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ITSElement
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.TSConst
+import com.github.thibaultbee.streampack.internal.muxers.ts.utils.put
+import com.github.thibaultbee.streampack.internal.muxers.ts.utils.putShort
+import com.github.thibaultbee.streampack.internal.muxers.ts.utils.shl
 import java.nio.ByteBuffer
 import kotlin.math.pow
 
@@ -48,16 +50,18 @@ class AdaptationField(
     }
 
     override fun toByteBuffer(): ByteBuffer {
-        val buffer = BitBuffer.allocate(bitSize.toLong())
-        buffer.put(adaptationFieldLength, 8)
-        buffer.put(discontinuityIndicator)
-        buffer.put(randomAccessIndicator)
-        buffer.put(elementaryStreamPriorityIndicator)
-        programClockReference?.let { buffer.put(true) } ?: buffer.put(false)
-        originalProgramClockReference?.let { buffer.put(true) } ?: buffer.put(false)
-        spliceCountdown?.let { buffer.put(true) } ?: buffer.put(false)
-        transportPrivateData?.let { buffer.put(true) } ?: buffer.put(false)
-        adaptationFieldExtension?.let { buffer.put(true) } ?: buffer.put(false)
+        val buffer = ByteBuffer.allocate(size)
+
+        buffer.put(adaptationFieldLength)
+        buffer.put(((discontinuityIndicator shl 7)
+                or (randomAccessIndicator shl 6)
+                or (elementaryStreamPriorityIndicator shl 5)
+                or ((programClockReference?.let { 1 } ?: 0) shl 4)
+                or ((originalProgramClockReference?.let { 1 } ?: 0) shl 3)
+                or ((spliceCountdown?.let { 1 } ?: 0) shl 2)
+                or ((transportPrivateData?.let { 1 } ?: 0) shl 1)
+                or (adaptationFieldExtension?.let { 1 } ?: 0)
+                ))
 
         programClockReference?.let {
             addClockReference(buffer, it)
@@ -70,7 +74,7 @@ class AdaptationField(
             NotImplementedError("spliceCountdown not implemented yet")
         }
         transportPrivateData?.let {
-            buffer.put(it.remaining())
+            buffer.put(it.remaining().toByte())
             buffer.put(transportPrivateData)
             NotImplementedError("transportPrivateData not implemented yet")
         }
@@ -78,18 +82,27 @@ class AdaptationField(
             NotImplementedError("adaptationFieldExtension not implemented yet")
         }
 
-        return buffer.toByteBuffer()
+        buffer.rewind()
+        return buffer
     }
 
-    private fun addClockReference(buffer: BitBuffer, timestamp: Long) {
+    private fun addClockReference(buffer: ByteBuffer, timestamp: Long) {
         val pcrBase =
             (TSConst.SYSTEM_CLOCK_FREQ * timestamp / 1000000 /* µs -> s */ / 300) % 2.toDouble()
                 .pow(33)
                 .toLong()
         val pcrExt = (TSConst.SYSTEM_CLOCK_FREQ * timestamp / 1000000 /* µs -> s */) % 300
 
-        buffer.put(pcrBase, 33)
-        buffer.put(0b111111, 6) // Reserved
-        buffer.put(pcrExt, 9)
+        /**
+         * PCR Base -> 33 bits
+         * Reserved -> 6 bits (0b111111)
+         * PCR Ext -> 9 bits
+         */
+        buffer.putInt((pcrBase shr 1).toInt())
+        buffer.putShort(
+            (((pcrBase and 0x1) shl 15)
+                    or (0b111111 shl 9)
+                    or (pcrExt and 0x1FF))
+        )
     }
 }

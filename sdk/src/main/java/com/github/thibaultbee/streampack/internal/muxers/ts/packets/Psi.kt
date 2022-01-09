@@ -17,6 +17,7 @@ package com.github.thibaultbee.streampack.internal.muxers.ts.packets
 
 import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.CRC32
+import com.github.thibaultbee.streampack.internal.muxers.ts.utils.put
 import java.nio.ByteBuffer
 
 open class Psi(
@@ -65,13 +66,12 @@ open class Psi(
             1,
             table.position()
         ) // offset = 1 -> pointer_field is not in CRC32 computation
-        table.put((crc32 shr 24 and 0xFF).toByte())
-        table.put((crc32 shr 16 and 0xFF).toByte())
-        table.put((crc32 shr 8 and 0xFF).toByte())
-        table.put((crc32 and 0xFF).toByte())
+        table.put(crc32 shr 24 and 0xFF)
+        table.put(crc32 shr 16 and 0xFF)
+        table.put(crc32 shr 8 and 0xFF)
+        table.put(crc32 and 0xFF)
 
         table.rewind()
-
         return table
     }
 }

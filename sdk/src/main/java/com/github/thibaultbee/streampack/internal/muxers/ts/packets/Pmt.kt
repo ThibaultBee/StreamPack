@@ -16,11 +16,11 @@
 package com.github.thibaultbee.streampack.internal.muxers.ts.packets
 
 import android.media.MediaFormat
-import com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer
 import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ITSElement
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Service
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Stream
+import com.github.thibaultbee.streampack.internal.muxers.ts.utils.putShort
 import java.nio.ByteBuffer
 
 class Pmt(
@@ -56,28 +56,27 @@ class Pmt(
     }
 
     override fun toByteBuffer(): ByteBuffer {
-        val buffer = BitBuffer.allocate(bitSize.toLong())
+        val buffer = ByteBuffer.allocate(size)
 
-        buffer.put(0b111, 3) // Reserved
-        buffer.put(service.pcrPid!!, 13)
+        buffer.putShort(
+            (0b111 shl 13)  // Reserved
+                    or service.pcrPid!!.toInt()
+        )
 
-        buffer.put(0b1111, 4) // Reserved
-        buffer.put(0b00, 2) // First two bits of program_info_length shall be '00'
-        buffer.put(0, 10) // program_info_length
-        // TODO: Program Info
+        buffer.putShort(0b1111 shl 12) // Reserved + First two bits of program_info_length shall be '00' + program_info_length
 
         streams.forEach {
-            buffer.put(StreamType.fromMimeType(it.mimeType).value, 8)
-            buffer.put(0b111, 3) // Reserved
-            buffer.put(it.pid, 13)
-            buffer.put(0b1111, 4) // Reserved
-
-            buffer.put(0b00, 2) // First two bits of ES_info_length shall be '00'
-            buffer.put(0b00, 10) // ES_info_length
+            buffer.put(StreamType.fromMimeType(it.mimeType).value)
+            buffer.putShort(
+                (0b111 shl 13) // Reserved
+                        or (it.pid.toInt())
+            )
+            buffer.putShort(0b1111 shl 12) // Reserved + First two bits of ES_info_length shall be '00' + ES_info_length
             // TODO: ES Info
         }
 
-        return buffer.toByteBuffer()
+        buffer.rewind()
+        return buffer
     }
 
     enum class StreamType(val value: Byte) {
