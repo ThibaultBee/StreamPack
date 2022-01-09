@@ -15,10 +15,10 @@
  */
 package com.github.thibaultbee.streampack.internal.muxers.ts.packets
 
-import com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ITSElement
-import com.github.thibaultbee.streampack.internal.muxers.ts.utils.TSConst
+import com.github.thibaultbee.streampack.internal.muxers.ts.utils.*
 import java.nio.ByteBuffer
+import kotlin.experimental.and
 import kotlin.math.pow
 
 class PesHeader(
@@ -63,50 +63,53 @@ class PesHeader(
         get() = pesHeaderDataBitLength / Byte.SIZE_BITS
 
     override fun toByteBuffer(): ByteBuffer {
-        val buffer = BitBuffer.allocate(bitSize.toLong())
-        buffer.put(1, 24)
-        buffer.put(streamId, 8)
+        val buffer = ByteBuffer.allocate(size)
+
+        buffer.putShort(0) // start code is 0x000001
+        buffer.put(1)
+        buffer.put(streamId)
         if (pesPacketLength > 0xFFFF)
             pesPacketLength = 0
-        buffer.put(pesPacketLength, 16)
+        buffer.putShort(pesPacketLength)
         // Optional
-        buffer.put(0b10, 2)
-        buffer.put(esScramblingControl, 2)
-        buffer.put(esPriority)
-        buffer.put(dataAlignmentIndicator)
-        buffer.put(copyright)
-        buffer.put(originalOrCopy)
+        buffer.put(
+            ((0b10 shl 6)
+                    or ((esScramblingControl and 0x3) shl 4)
+                    or (esPriority shl 3)
+                    or (dataAlignmentIndicator shl 2)
+                    or (copyright shl 1)
+                    or (originalOrCopy.toInt())
+                    )
+        )
 
         // 7 flags
-        pts?.let {
-            buffer.put(true)
-        } ?: buffer.put(false)
-        dts?.let {
-            buffer.put(true)
-        } ?: buffer.put(false)
-        esClockReference?.let {
-            buffer.put(true)
-            NotImplementedError("esClockReference not implemented yet")
-        } ?: buffer.put(false)
-        esRate?.let {
-            buffer.put(true)
-            NotImplementedError("esRate not implemented yet")
-        } ?: buffer.put(false)
-        dsmTrickMode?.let {
-            buffer.put(true)
-            NotImplementedError("dsmTrickMode not implemented yet")
-        } ?: buffer.put(false)
-        additionalCopyInfo?.let {
-            buffer.put(true)
-            NotImplementedError("additionalCopyInfo not implemented yet")
-        } ?: buffer.put(false)
-        crc?.let {
-            buffer.put(true)
-            NotImplementedError("crc not implemented yet")
-        } ?: buffer.put(false)
+        buffer.put((((pts?.let { 1 } ?: 0) shl 7)
+                or ((dts?.let { 1 } ?: 0) shl 6)
+                or ((esClockReference?.let { 1 } ?: 0) shl 5)
+                or ((esRate?.let { 1 } ?: 0) shl 4)
+                or ((dsmTrickMode?.let { 1 } ?: 0) shl 3)
+                or ((additionalCopyInfo?.let { 1 } ?: 0) shl 2)
+                or ((crc?.let { 1 } ?: 0) shl 1)
+                or 0 // PES_extension_flag
+                ))
 
-        buffer.put(false) // PES_extension_flag
-        buffer.put(pesHeaderDataLength, 8)
+        esClockReference?.let {
+            NotImplementedError("esClockReference not implemented yet")
+        }
+        esRate?.let {
+            NotImplementedError("esRate not implemented yet")
+        }
+        dsmTrickMode?.let {
+            NotImplementedError("dsmTrickMode not implemented yet")
+        }
+        additionalCopyInfo?.let {
+            NotImplementedError("additionalCopyInfo not implemented yet")
+        }
+        crc?.let {
+            NotImplementedError("crc not implemented yet")
+        }
+
+        buffer.put(pesHeaderDataLength.toByte())
         pts?.let {
             addTimestamp(buffer, it, dts?.let { 0b0011 } ?: 0b0010)
         }
@@ -114,21 +117,28 @@ class PesHeader(
             addTimestamp(buffer, it, 0b1)
         }
 
-        return buffer.toByteBuffer()
+        buffer.rewind()
+        return buffer
     }
 
-    private fun addTimestamp(buffer: BitBuffer, timestamp: Long, fourBits: Byte) {
+    private fun addTimestamp(buffer: ByteBuffer, timestamp: Long, fourBits: Byte) {
         val pts =
             (TSConst.SYSTEM_CLOCK_FREQ * timestamp / 1000000 /* µs -> s */ / 300) % 2.toDouble()
                 .pow(33)
                 .toLong()
 
-        buffer.put(fourBits, 4)
-        buffer.put(pts shr 30, 3)
-        buffer.put(true)
-        buffer.put(pts shr 15, 15)
-        buffer.put(true)
-        buffer.put(pts, 15)
-        buffer.put(true)
+        buffer.put(
+            (((fourBits and 0xF).toInt() shl 4)
+                    or ((pts shr 29) and 0xE).toInt()
+                    or 1)
+        )
+        buffer.putShort(
+            ((pts shr 14) and 0xFFFE)
+                    or 1
+        )
+        buffer.putShort(
+            ((pts shl 1) and 0xFFFE)
+                    or 1
+        )
     }
 }
