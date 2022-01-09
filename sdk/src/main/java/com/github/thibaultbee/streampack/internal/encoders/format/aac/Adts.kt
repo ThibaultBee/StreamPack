@@ -16,10 +16,23 @@
 package com.github.thibaultbee.streampack.internal.encoders.format.aac
 
 import android.media.MediaFormat
-import com.github.thibaultbee.streampack.internal.bitbuffer.BitBuffer
+import com.github.thibaultbee.streampack.internal.muxers.ts.utils.put
+import com.github.thibaultbee.streampack.internal.muxers.ts.utils.putShort
+import com.github.thibaultbee.streampack.internal.muxers.ts.utils.toInt
 import java.nio.ByteBuffer
 
-class Adts(private val format: MediaFormat, private val payloadLength: Int) {
+data class Adts(
+    private val protectionAbsent: Boolean, // No CRC protection
+    private val sampleRate: Int,
+    private val channelCount: Int,
+    private val payloadLength: Int
+) {
+    constructor(format: MediaFormat, payloadLength: Int) : this(
+        true,
+        format.getInteger(MediaFormat.KEY_SAMPLE_RATE),
+        format.getInteger(MediaFormat.KEY_CHANNEL_COUNT),
+        payloadLength
+    )
 
     private fun samplingFrequencyIndex(samplingFrequency: Int): Int {
         return when (samplingFrequency) {
@@ -54,34 +67,34 @@ class Adts(private val format: MediaFormat, private val payloadLength: Int) {
     }
 
     fun toByteBuffer(): ByteBuffer {
-        val protectionAbsent = true // No CRC protection
-        val adts = BitBuffer.allocate(if (protectionAbsent) 7 else 9) // 56: 7 Bytes - 48: 9 Bytes
+        val adts = ByteBuffer.allocate(if (protectionAbsent) 7 else 9) // 56: 7 Bytes - 48: 9 Bytes
 
-        adts.put(0xFFF, 12)
-        adts.put(0, 1) // MPEG-4
-        adts.put(0, 2) // Layer
-        adts.put(protectionAbsent)
+        adts.putShort(
+            (0xFFF shl 4)
+                    or (0b000 shl 1) // MPEG-4 + Layer
+                    or (protectionAbsent.toInt())
+        )
 
-        adts.put(1, 2) // AAC-LC = 2 - minus 1
         val samplingFrequencyIndex =
-            samplingFrequencyIndex(format.getInteger(MediaFormat.KEY_SAMPLE_RATE))
-        adts.put(samplingFrequencyIndex, 4)
-        adts.put(0, 1) // Private bit
+            samplingFrequencyIndex(sampleRate)
         val channelConfiguration =
-            channelConfiguration(format.getInteger(MediaFormat.KEY_CHANNEL_COUNT))
-        adts.put(channelConfiguration, 3)
-        adts.put(0, 1) // originality
-        adts.put(0, 1) // home
-
-        adts.put(0, 1) // copyright it bit
-        adts.put(0, 1) // copyright id start
-
+            channelConfiguration(channelCount)
         val frameLength = payloadLength + if (protectionAbsent) 7 else 9
-        adts.put(frameLength, 13)
+        adts.putInt(
+            (1 shl 30) // AAC-LC = 2 - minus 1
+                    or (samplingFrequencyIndex shl 26)
+                    // 0 - Private bit
+                    or (channelConfiguration shl 22)
+                    // 0 - originality
+                    // 0 - home
+                    // 0 - copyright id bit
+                    // 0 - copyright id start
+                    or (frameLength shl 5)
+                    or (0b11111) // Buffer fullness 0x7FF for variable bitrate
+        )
+        adts.put(0b11111100) // Buffer fullness 0x7FF for variable bitrate
 
-        adts.put(0x7FF, 11) // Buffer fullness 0x7FF for variable bitrate
-        adts.put(0b00, 2)
-
-        return adts.toByteBuffer()
+        adts.rewind()
+        return adts
     }
 }
