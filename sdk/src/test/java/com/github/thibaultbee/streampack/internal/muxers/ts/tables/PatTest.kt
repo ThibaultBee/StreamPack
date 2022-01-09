@@ -20,6 +20,7 @@ import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Pat
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Pmt
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.AssertEqualsSingleBufferMockMuxerListener
+import com.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Test
 import java.nio.ByteBuffer
 
@@ -30,7 +31,7 @@ class PatTest {
     @Test
     fun testSimplePat() {
         val expectedBuffer = ByteBuffer.wrap(
-            this.javaClass.classLoader!!.getResource("test-samples/muxer/pat.ts")!!.readBytes()
+            ResourcesUtils.readResources("test-samples/muxer/pat.ts")
         )
         val listener = AssertEqualsSingleBufferMockMuxerListener(expectedBuffer)
         val service = Service(

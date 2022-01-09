@@ -1,5 +1,6 @@
 package com.github.thibaultbee.streampack.internal.encoders.format.aac
 
+import com.github.thibaultbee.streampack.utils.ResourcesUtils
 import com.github.thibaultbee.streampack.utils.extractArray
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
@@ -9,8 +10,7 @@ class AdtsTest {
     @Test
     fun `test ADTS with payload size of 378 bytes`() {
         val expectedAdts = ByteBuffer.wrap(
-            this.javaClass.classLoader!!.getResource("test-samples/encoders/adts-378bytes")!!
-                .readBytes()
+            ResourcesUtils.readResources("test-samples/encoders/adts-378bytes")
         )
         val adts = Adts(
             protectionAbsent = true, // No CRC protection
@@ -28,8 +28,7 @@ class AdtsTest {
     @Test
     fun `test ADTS with payload size of 516 bytes`() {
         val expectedAdts = ByteBuffer.wrap(
-            this.javaClass.classLoader!!.getResource("test-samples/encoders/adts-516bytes")!!
-                .readBytes()
+            ResourcesUtils.readResources("test-samples/encoders/adts-516bytes")
         )
         val adts = Adts(
             protectionAbsent = true, // No CRC protection

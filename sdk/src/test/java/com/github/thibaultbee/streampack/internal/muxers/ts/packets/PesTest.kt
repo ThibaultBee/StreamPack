@@ -20,6 +20,7 @@ import com.github.thibaultbee.streampack.internal.data.Frame
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Stream
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.AssertEqualsBuffersMockMuxerListener
 import com.github.thibaultbee.streampack.internal.utils.TimeUtils
+import com.github.thibaultbee.streampack.utils.ResourcesUtils
 import io.mockk.every
 import io.mockk.mockkObject
 import org.junit.Test
@@ -52,8 +53,7 @@ class PesTest {
         every { TimeUtils.currentTime() } returns 1433034
 
         val rawData = ByteBuffer.wrap(
-            this.javaClass.classLoader!!.getResource("test-samples/muxer/pes-video1/raw")!!
-                .readBytes()
+            ResourcesUtils.readResources("test-samples/muxer/pes-video1/raw")
         )
         val frame =
             Frame(rawData, MediaFormat.MIMETYPE_VIDEO_AVC, 1433334, 1400000, isKeyFrame = true)
@@ -74,8 +74,7 @@ class PesTest {
         every { TimeUtils.currentTime() } returns 700000
 
         val rawData = ByteBuffer.wrap(
-            this.javaClass.classLoader!!.getResource("test-samples/muxer/pes-audio1/raw.aac")!!
-                .readBytes()
+            ResourcesUtils.readResources("test-samples/muxer/pes-audio1/raw.aac")
         )
         val frame =
             Frame(rawData, MediaFormat.MIMETYPE_AUDIO_AAC, 1400000, null, isKeyFrame = true)
@@ -96,8 +95,7 @@ class PesTest {
         every { TimeUtils.currentTime() } returns 700000
 
         val rawData = ByteBuffer.wrap(
-            this.javaClass.classLoader!!.getResource("test-samples/muxer/pes-audio2/raw.aac")!!
-                .readBytes()
+            ResourcesUtils.readResources("test-samples/muxer/pes-audio2/raw.aac")
         )
         val frame =
             Frame(rawData, MediaFormat.MIMETYPE_AUDIO_AAC, 1400000, null, isKeyFrame = true)

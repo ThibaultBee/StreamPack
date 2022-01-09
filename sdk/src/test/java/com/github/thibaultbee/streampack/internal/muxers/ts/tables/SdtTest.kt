@@ -19,6 +19,7 @@ import com.github.thibaultbee.streampack.internal.muxers.ts.data.Service
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Sdt
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.AssertEqualsSingleBufferMockMuxerListener
+import com.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Test
 import java.nio.ByteBuffer
 
@@ -29,7 +30,7 @@ class SdtTest {
     @Test
     fun testSimpleSdt() {
         val expectedBuffer = ByteBuffer.wrap(
-            this.javaClass.classLoader!!.getResource("test-samples/muxer/sdt.ts")!!.readBytes()
+            ResourcesUtils.readResources("test-samples/muxer/sdt.ts")
         )
         val listener = AssertEqualsSingleBufferMockMuxerListener(expectedBuffer)
         val services = listOf(

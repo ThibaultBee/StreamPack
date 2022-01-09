@@ -16,6 +16,7 @@
 package com.github.thibaultbee.streampack.internal.muxers.ts.tables
 
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.TableHeader
+import com.github.thibaultbee.streampack.utils.ResourcesUtils
 import com.github.thibaultbee.streampack.utils.extractArray
 import org.junit.Assert
 import org.junit.Test
@@ -25,8 +26,7 @@ class TableHeaderTest {
     @Test
     fun `table header`() {
         val expectedTableHeader = ByteBuffer.wrap(
-            this.javaClass.classLoader!!.getResource("test-samples/muxer/table-header.ts")!!
-                .readBytes()
+            ResourcesUtils.readResources("test-samples/muxer/table-header.ts")
         )
 
         val tableHeader = TableHeader(

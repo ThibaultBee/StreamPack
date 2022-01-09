@@ -21,6 +21,7 @@ import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Stream
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Pmt
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.AssertEqualsSingleBufferMockMuxerListener
+import com.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Test
 import java.nio.ByteBuffer
 
@@ -31,7 +32,7 @@ class PmtTest {
     @Test
     fun testSimplePmt() {
         val expectedBuffer = ByteBuffer.wrap(
-            this.javaClass.classLoader!!.getResource("test-samples/muxer/pmt.ts")!!.readBytes()
+            ResourcesUtils.readResources("test-samples/muxer/pmt.ts")
         )
         val listener = AssertEqualsSingleBufferMockMuxerListener(expectedBuffer)
         val service =
