@@ -136,7 +136,11 @@ class VideoMediaCodecEncoder(
             fullFrameRect = FullFrameRect(Texture2DProgram())
             textureId = fullFrameRect.createTextureObject()
             surfaceTexture = SurfaceTexture(textureId)
-            surfaceTexture.setDefaultBufferSize(eglSurface.getWidth(), eglSurface.getHeight())
+            if (context.isPortrait()) {
+                surfaceTexture.setDefaultBufferSize(eglSurface.getHeight(), eglSurface.getWidth())
+            } else {
+                surfaceTexture.setDefaultBufferSize(eglSurface.getWidth(), eglSurface.getHeight())
+            }
             surfaceTexture.setOnFrameAvailableListener(this)
             eglSurface.makeUnCurrent()
 
