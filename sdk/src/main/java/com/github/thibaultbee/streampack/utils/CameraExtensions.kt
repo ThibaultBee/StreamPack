@@ -98,11 +98,21 @@ fun <T : Any> Context.getCameraOutputSizes(klass: Class<T>, cameraId: String): L
 }
 
 /**
- * Check is the camera supports a frame rate
+ * Checks if the camera supports a frame rate
  *
  * @param cameraId camera id
  * @param fps frame rate
  * @return [Boolean.true] if camera supports fps, [Boolean.false] otherwise.
  */
 fun Context.isFrameRateSupported(cameraId: String, fps: Int) =
-    this.getCameraFpsList(cameraId).any { it.contains(fps) }
+    getCameraFpsList(cameraId).any { it.contains(fps) }
+
+/**
+ * Checks if the camera has a flash device.
+ *
+ * @param cameraId camera id
+ * @return [Boolean.true] if camera has a flash device, [Boolean.false] otherwise.
+ */
+fun Context.isFlashAvailable(cameraId: String): Boolean =
+    getCameraCharacteristics(cameraId).get(CameraCharacteristics.FLASH_INFO_AVAILABLE)
+        ?: false

@@ -83,6 +83,7 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : ViewModel
         viewModelScope.launch {
             try {
                 streamerManager.startPreview(previewSurface)
+                notifyCameraChange()
             } catch (e: Throwable) {
                 Log.e(TAG, "startPreview failed", e)
                 streamerError.postValue("startPreview: ${e.message ?: "Unknown error"}")
@@ -130,14 +131,20 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : ViewModel
          */
         try {
             streamerManager.toggleCamera()
+            notifyCameraChange()
         } catch (e: Exception) {
             Log.e(TAG, "toggleCamera failed", e)
             streamerError.postValue("toggleCamera: ${e.message ?: "Unknown error"}")
         }
     }
 
+    val isFlashAvailable = MutableLiveData<Boolean>()
     fun toggleFlash() {
         streamerManager.toggleFlash()
+    }
+
+    private fun notifyCameraChange() {
+        isFlashAvailable.postValue(streamerManager.isFlashAvailable)
     }
 
     override fun onCleared() {

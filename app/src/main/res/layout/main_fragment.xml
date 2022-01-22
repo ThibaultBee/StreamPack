@@ -63,6 +63,7 @@
                 android:contentDescription="@string/turn_on_off_torch"
                 android:onClick="@{() -> viewmodel.toggleFlash()}"
                 android:src="@drawable/ic_baseline_flash_on_24"
+                app:goneUnless="@{viewmodel.isFlashAvailable}"
                 app:tint="@android:color/white" />
 
         </LinearLayout>

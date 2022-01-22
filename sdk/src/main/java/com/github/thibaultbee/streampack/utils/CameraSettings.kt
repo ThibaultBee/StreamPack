@@ -25,7 +25,9 @@ import com.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
  */
 class CameraSettings(private val cameraController: CameraController) {
     /**
-     * Enables or disables flash
+     * Enables or disables flash.
+     *
+     * @see [isFlashAvailable]
      */
     var flashEnable: Boolean
         /**

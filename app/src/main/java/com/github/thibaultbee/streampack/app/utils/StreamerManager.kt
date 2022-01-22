@@ -29,6 +29,7 @@ import com.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import com.github.thibaultbee.streampack.utils.getBackCameraList
 import com.github.thibaultbee.streampack.utils.getFrontCameraList
 import com.github.thibaultbee.streampack.utils.isBackCamera
+import com.github.thibaultbee.streampack.utils.isFlashAvailable
 import java.io.File
 
 class StreamerManager(
@@ -142,6 +143,9 @@ class StreamerManager(
             }
         }
     }
+
+    val isFlashAvailable: Boolean
+        get() = getCameraStreamer()?.let { context.isFlashAvailable(it.camera) } ?: false
 
     fun toggleFlash() {
         getCameraStreamer()?.let {
