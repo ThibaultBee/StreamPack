@@ -65,6 +65,8 @@ class PreviewFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = MainFragmentBinding.inflate(inflater, container, false)
+        binding.lifecycleOwner = this
+        binding.viewmodel = viewModel
         bindProperties()
         return binding.root
     }
@@ -90,19 +92,6 @@ class PreviewFragment : Fragment() {
                     }
             }
             .let(fragmentDisposables::add)
-
-        binding.switchButton.clicks()
-            .observeOn(AndroidSchedulers.mainThread())
-            .throttleFirst(1000, TimeUnit.MILLISECONDS)
-            .subscribe {
-                viewModel.toggleCamera()
-            }
-            .let(fragmentDisposables::add)
-
-        binding.flashButton.clicks()
-            .subscribe {
-                viewModel.toggleFlash()
-            }
 
         viewModel.streamerError.observe(viewLifecycleOwner) {
             showError("Oops", it)
