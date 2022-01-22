@@ -29,6 +29,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.github.thibaultbee.streampack.app.configuration.Configuration
 import com.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import com.github.thibaultbee.streampack.app.utils.DialogUtils
+import com.github.thibaultbee.streampack.app.utils.StreamerManager
 import com.github.thibaultbee.streampack.utils.getCameraCharacteristics
 import com.github.thibaultbee.streampack.views.getPreviewOutputSize
 import com.jakewharton.rxbinding4.view.clicks
@@ -48,7 +49,12 @@ class PreviewFragment : Fragment() {
     private val viewModel: PreviewViewModel by lazy {
         ViewModelProvider(
             this,
-            PreviewViewModelFactory(Configuration(requireContext()))
+            PreviewViewModelFactory(
+                StreamerManager(
+                    requireContext(),
+                    Configuration(requireContext())
+                )
+            )
         )[PreviewViewModel::class.java]
     }
 
@@ -69,7 +75,7 @@ class PreviewFragment : Fragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 rxPermissions
-                    .requestEachCombined(*viewModel.streamAdditionalPermissions.toTypedArray())
+                    .requestEachCombined(*viewModel.requiredPermissions.toTypedArray())
                     .subscribe { permission ->
                         if (!permission.granted) {
                             binding.liveButton.isChecked = false
@@ -89,7 +95,7 @@ class PreviewFragment : Fragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .throttleFirst(1000, TimeUnit.MILLISECONDS)
             .subscribe {
-                viewModel.toggleVideoSource(requireContext())
+                viewModel.toggleCamera()
             }
             .let(fragmentDisposables::add)
 
@@ -151,7 +157,7 @@ class PreviewFragment : Fragment() {
                 if (!permission.granted) {
                     showPermissionErrorAndFinish()
                 } else {
-                    viewModel.createStreamer(requireContext())
+                    viewModel.createStreamer()
                     // Wait till streamer exists to create the SurfaceView (and call startCapture).
                     binding.preview.visibility = View.VISIBLE
                 }

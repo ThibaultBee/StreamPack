@@ -17,14 +17,14 @@ package com.github.thibaultbee.streampack.app.ui.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.github.thibaultbee.streampack.app.configuration.Configuration
+import com.github.thibaultbee.streampack.app.utils.StreamerManager
 
-class PreviewViewModelFactory(private val configuration: Configuration) :
+class PreviewViewModelFactory(private val streamerManager: StreamerManager) :
     ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(PreviewViewModel::class.java)) {
-            return PreviewViewModel(configuration) as T
+            return PreviewViewModel(streamerManager) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
