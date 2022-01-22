@@ -26,6 +26,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.github.thibaultbee.streampack.app.configuration.Configuration
 import com.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import com.github.thibaultbee.streampack.app.utils.DialogUtils
 import com.github.thibaultbee.streampack.utils.getCameraCharacteristics
@@ -45,7 +46,10 @@ class PreviewFragment : Fragment() {
     }
 
     private val viewModel: PreviewViewModel by lazy {
-        ViewModelProvider(this).get(PreviewViewModel::class.java)
+        ViewModelProvider(
+            this,
+            PreviewViewModelFactory(Configuration(requireContext()))
+        )[PreviewViewModel::class.java]
     }
 
     private val rxPermissions: RxPermissions by lazy { RxPermissions(this) }
@@ -85,7 +89,7 @@ class PreviewFragment : Fragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .throttleFirst(1000, TimeUnit.MILLISECONDS)
             .subscribe {
-                viewModel.toggleVideoSource()
+                viewModel.toggleVideoSource(requireContext())
             }
             .let(fragmentDisposables::add)
 
@@ -108,7 +112,7 @@ class PreviewFragment : Fragment() {
          * [ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE] in [onCreate] or [onResume].
          */
         requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
-        viewModel.startStream()
+        viewModel.startStream(requireContext().filesDir)
     }
 
     private fun unLockScreen() {
@@ -147,7 +151,7 @@ class PreviewFragment : Fragment() {
                 if (!permission.granted) {
                     showPermissionErrorAndFinish()
                 } else {
-                    viewModel.createStreamer()
+                    viewModel.createStreamer(requireContext())
                     // Wait till streamer exists to create the SurfaceView (and call startCapture).
                     binding.preview.visibility = View.VISIBLE
                 }

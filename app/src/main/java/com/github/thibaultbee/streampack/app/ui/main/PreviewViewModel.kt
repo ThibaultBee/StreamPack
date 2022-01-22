@@ -16,15 +16,13 @@
 package com.github.thibaultbee.streampack.app.ui.main
 
 import android.Manifest
-import android.app.Application
 import android.content.Context
-import android.os.Environment
 import android.util.Log
 import android.util.Range
 import android.view.Surface
 import androidx.annotation.RequiresPermission
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.thibaultbee.streampack.app.configuration.Configuration
 import com.github.thibaultbee.streampack.app.configuration.Configuration.Endpoint.EndpointType
@@ -51,12 +49,10 @@ import com.github.thibaultbee.streampack.utils.isFrameRateSupported
 import kotlinx.coroutines.launch
 import java.io.File
 
-class PreviewViewModel(application: Application) : AndroidViewModel(application) {
+class PreviewViewModel(private val configuration: Configuration) : ViewModel() {
     companion object {
         private const val TAG = "PreviewViewModel"
     }
-
-    private val configuration = Configuration(getApplication())
 
     private lateinit var streamer: IStreamer
 
@@ -85,7 +81,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
             return permissions
         }
 
-    fun createStreamer() {
+    fun createStreamer(context: Context) {
         viewModelScope.launch {
             val tsServiceInfo = ServiceInfo(
                 ServiceInfo.ServiceType.DIGITAL_TV,
@@ -148,7 +144,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
                     .build()
 
                 streamer = streamerBuilder
-                    .setContext(getApplication())
+                    .setContext(context)
                     .setServiceInfo(tsServiceInfo)
                     .apply {
                         if (!configuration.audio.enable) {
@@ -216,7 +212,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun startStream() {
+    fun startStream(filesDir: File) {
         viewModelScope.launch {
             try {
                 if (streamer is ILiveStreamer) {
@@ -231,7 +227,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
                     )
                 } else if (streamer is IFileStreamer) {
                     (streamer as IFileStreamer).file = File(
-                        (getApplication() as Context).getExternalFilesDir(Environment.DIRECTORY_DCIM),
+                        filesDir,
                         configuration.endpoint.file.filename
                     )
                 }
@@ -257,7 +253,7 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    fun toggleVideoSource() {
+    fun toggleVideoSource(context: Context) {
         if (streamer is ICameraStreamer) {
             /**
              * If video frame rate is not supported by the new camera, streamer will throw an
@@ -266,7 +262,6 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
              */
             try {
                 val cameraStreamer = streamer as ICameraStreamer
-                val context = (getApplication() as Context)
                 if (context.isBackCamera(cameraStreamer.camera)) {
                     cameraStreamer.camera = context.getFrontCameraList()[0]
                 } else {
