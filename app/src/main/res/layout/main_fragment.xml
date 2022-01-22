@@ -57,13 +57,21 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageButton
-                android:id="@+id/flashButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/turn_on_off_torch"
                 android:onClick="@{() -> viewmodel.toggleFlash()}"
                 android:src="@drawable/ic_baseline_flash_on_24"
                 app:goneUnless="@{viewmodel.isFlashAvailable}"
+                app:tint="@android:color/white" />
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/set_white_balance"
+                android:onClick="@{() -> viewmodel.toggleAutoWhiteBalanceMode()}"
+                android:src="@drawable/ic_baseline_wb_auto_24"
+                app:goneUnless="@{viewmodel.isAutoWhiteBalanceAvailable}"
                 app:tint="@android:color/white" />
 
         </LinearLayout>

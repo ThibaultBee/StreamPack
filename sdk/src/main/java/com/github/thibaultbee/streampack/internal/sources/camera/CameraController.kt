@@ -246,4 +246,13 @@ class CameraController(
 
     fun getFlash(): Int =
         captureRequest?.get(CaptureRequest.FLASH_MODE) ?: CaptureResult.FLASH_MODE_OFF
+
+    fun setAutoWhiteBalanceMode(autoWhiteBalanceMode: Int) {
+        captureRequest?.set(CaptureRequest.CONTROL_AWB_MODE, autoWhiteBalanceMode)
+        updateCaptureSession()
+    }
+
+    fun getAutoWhiteBalanceMode(): Int =
+        captureRequest?.get(CaptureRequest.CONTROL_AWB_MODE) ?: CaptureResult.CONTROL_AWB_MODE_OFF
+
 }

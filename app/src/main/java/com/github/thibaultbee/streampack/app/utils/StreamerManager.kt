@@ -26,10 +26,7 @@ import com.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.IStreamer
-import com.github.thibaultbee.streampack.utils.getBackCameraList
-import com.github.thibaultbee.streampack.utils.getFrontCameraList
-import com.github.thibaultbee.streampack.utils.isBackCamera
-import com.github.thibaultbee.streampack.utils.isFlashAvailable
+import com.github.thibaultbee.streampack.utils.*
 import java.io.File
 
 class StreamerManager(
@@ -151,6 +148,18 @@ class StreamerManager(
         getCameraStreamer()?.let {
             val settings = it.cameraSettings
             settings.flashEnable = !settings.flashEnable
+        }
+    }
+
+    val autoWhiteBalanceModes: List<Int>
+        get() = getCameraStreamer()?.let { context.getAutoWhiteBalanceModes(it.camera) }
+            ?: emptyList()
+
+    fun toggleAutoWhiteBalanceMode() {
+        getCameraStreamer()?.let {
+            val awbModes = autoWhiteBalanceModes
+            val index = awbModes.indexOf(it.cameraSettings.autoWhiteBalanceMode)
+            it.cameraSettings.autoWhiteBalanceMode = awbModes[(index + 1) % awbModes.size]
         }
     }
 }

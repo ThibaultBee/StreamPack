@@ -44,4 +44,25 @@ class CameraSettings(private val cameraController: CameraController) {
                 cameraController.setFlash(CaptureResult.FLASH_MODE_OFF)
             }
         }
+
+    /**
+     * Set or get auto white balance mode.
+     *
+     * **See Also:** [CONTROL_AWB_MODE](https://developer.android.com/reference/android/hardware/camera2/CaptureRequest#CONTROL_AWB_MODE)
+     */
+    var autoWhiteBalanceMode: Int
+        /**
+         * Get auto white balance mode.
+         *
+         * @return current camera audo white balance mode
+         */
+        get() = cameraController.getAutoWhiteBalanceMode()
+        /**
+         * Get auto white balance mode.
+         *
+         * @param value auto white balance mode
+         */
+        set(value) {
+            cameraController.setAutoWhiteBalanceMode(value)
+        }
 }

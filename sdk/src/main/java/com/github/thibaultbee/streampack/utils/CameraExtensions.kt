@@ -116,3 +116,14 @@ fun Context.isFrameRateSupported(cameraId: String, fps: Int) =
 fun Context.isFlashAvailable(cameraId: String): Boolean =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.FLASH_INFO_AVAILABLE)
         ?: false
+
+/**
+ * Gets supported auto white balance modes
+ *
+ * @param cameraId camera id
+ * @return list of supported white balance mode.
+ */
+fun Context.getAutoWhiteBalanceModes(cameraId: String): List<Int> {
+    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES)
+        ?.toList() ?: emptyList()
+}

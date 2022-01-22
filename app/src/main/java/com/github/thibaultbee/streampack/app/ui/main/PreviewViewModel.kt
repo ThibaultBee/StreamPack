@@ -143,7 +143,13 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : ViewModel
         streamerManager.toggleFlash()
     }
 
+    val isAutoWhiteBalanceAvailable = MutableLiveData<Boolean>()
+    fun toggleAutoWhiteBalanceMode() {
+        streamerManager.toggleAutoWhiteBalanceMode()
+    }
+
     private fun notifyCameraChange() {
+        isAutoWhiteBalanceAvailable.postValue(streamerManager.autoWhiteBalanceModes.size > 1)
         isFlashAvailable.postValue(streamerManager.isFlashAvailable)
     }
 
