@@ -266,6 +266,7 @@ $dokka.location:com.github.thibaultbee.streampack.utils//getExposureRange/androi
 $dokka.location:com.github.thibaultbee.streampack.utils//getExposureStep/android.content.Context#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/get-exposure-step.html
 $dokka.location:com.github.thibaultbee.streampack.utils//getFacingDirection/android.content.Context#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/get-facing-direction.html
 $dokka.location:com.github.thibaultbee.streampack.utils//getFrontCameraList/android.content.Context#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/get-front-camera-list.html
+$dokka.location:com.github.thibaultbee.streampack.utils//getZoomRatioRange/android.content.Context#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/get-zoom-ratio-range.html
 $dokka.location:com.github.thibaultbee.streampack.utils//isBackCamera/android.content.Context#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/is-back-camera.html
 $dokka.location:com.github.thibaultbee.streampack.utils//isFlashAvailable/android.content.Context#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/is-flash-available.html
 $dokka.location:com.github.thibaultbee.streampack.utils//isFrameRateSupported/android.content.Context#kotlin.String#kotlin.Int/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/is-frame-rate-supported.html
@@ -275,6 +276,7 @@ $dokka.location:com.github.thibaultbee.streampack.utils/CameraSettings/CameraSet
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraSettings/exposure/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-settings/exposure.html
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraSettings/flash/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-settings/flash.html
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraSettings/whiteBalance/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-settings/white-balance.html
+$dokka.location:com.github.thibaultbee.streampack.utils/CameraSettings/zoom/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-settings/zoom.html
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraStreamerConfigurationHelper.Audio///PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-streamer-configuration-helper/-audio/index.html
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraStreamerConfigurationHelper.Audio/getSupportedBitrates/#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-streamer-configuration-helper/-audio/get-supported-bitrates.html
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraStreamerConfigurationHelper.Audio/getSupportedInputChannelRange/#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-streamer-configuration-helper/-audio/get-supported-input-channel-range.html
@@ -310,6 +312,10 @@ $dokka.location:com.github.thibaultbee.streampack.utils/WhiteBalance///PointingT
 $dokka.location:com.github.thibaultbee.streampack.utils/WhiteBalance/WhiteBalance/#android.content.Context#com.github.thibaultbee.streampack.internal.sources.camera.CameraController/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-white-balance/-white-balance.html
 $dokka.location:com.github.thibaultbee.streampack.utils/WhiteBalance/autoMode/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-white-balance/auto-mode.html
 $dokka.location:com.github.thibaultbee.streampack.utils/WhiteBalance/availableAutoModes/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-white-balance/available-auto-modes.html
+$dokka.location:com.github.thibaultbee.streampack.utils/Zoom///PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-zoom/index.html
+$dokka.location:com.github.thibaultbee.streampack.utils/Zoom/Zoom/#android.content.Context#com.github.thibaultbee.streampack.internal.sources.camera.CameraController/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-zoom/-zoom.html
+$dokka.location:com.github.thibaultbee.streampack.utils/Zoom/availableRatioRange/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-zoom/available-ratio-range.html
+$dokka.location:com.github.thibaultbee.streampack.utils/Zoom/zoomRatio/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-zoom/zoom-ratio.html
 $dokka.location:com.github.thibaultbee.streampack.views////PointingToDeclaration/sdk/com.github.thibaultbee.streampack.views/index.html
 $dokka.location:com.github.thibaultbee.streampack.views//SIZE_1080P/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.views/-s-i-z-e_1080-p.html
 $dokka.location:com.github.thibaultbee.streampack.views//getDisplaySmartSize/#android.view.Display/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.views/get-display-smart-size.html
