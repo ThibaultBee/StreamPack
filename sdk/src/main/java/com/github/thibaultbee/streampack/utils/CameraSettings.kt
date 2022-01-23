@@ -53,6 +53,11 @@ class CameraSettings(context: Context, cameraController: CameraController) {
      * Current focus API.
      */
     val focus = Focus(context, cameraController)
+
+    /**
+     * Current stabilization API.
+     */
+    val stabilization = Stabilization(context, cameraController)
 }
 
 class WhiteBalance(private val context: Context, private val cameraController: CameraController) {
@@ -247,7 +252,7 @@ class Focus(private val context: Context, private val cameraController: CameraCo
         /**
          * Set the auto focus mode.
          *
-         * @param value eauto focus mode
+         * @param value auto focus mode
          */
         set(value) {
             cameraController.setSetting(CaptureRequest.CONTROL_AF_MODE, value)
@@ -285,5 +290,83 @@ class Focus(private val context: Context, private val cameraController: CameraCo
          */
         set(value) {
             cameraController.setSetting(CaptureRequest.LENS_FOCUS_DISTANCE, value)
+        }
+}
+
+
+class Stabilization(private val context: Context, private val cameraController: CameraController) {
+    /**
+     * Enable or disable video stabilization.
+     *
+     * Do not enable both [enableVideo] and [enableOptical] at the same time.
+     */
+    var enableVideo: Boolean
+        /**
+         * Checks if video stabilization is enabled.
+         *
+         * @return [Boolean.true] if video stabilization is enabled, otherwise [Boolean.false]
+         */
+        get() = cameraController.getSetting(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE) == CaptureResult.CONTROL_VIDEO_STABILIZATION_MODE_ON
+        /**
+         * Enable or disable the video stabilization.
+         *
+         * @param value [Boolean.true] to enable video stabilization, otherwise [Boolean.false]
+         */
+        set(value) {
+            if (value) {
+                cameraController.setSetting(
+                    CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
+                    CaptureResult.CONTROL_VIDEO_STABILIZATION_MODE_ON
+                )
+            } else {
+                cameraController.setSetting(
+                    CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
+                    CaptureResult.CONTROL_VIDEO_STABILIZATION_MODE_OFF
+                )
+            }
+        }
+
+    /**
+     * Check if optical video stabilization is available.
+     *
+     * @return [Boolean.true] if optical video stabilization is supported, otherwise [Boolean.false]
+     *
+     * @see [enableOptical]
+     */
+    val availableOptical: Boolean
+        get() = cameraController.cameraId?.let { context.isOpticalStabilizationAvailable(it) }
+            ?: false
+
+    /**
+     * Enable or disable optical video stabilization.
+     *
+     * Do not enable both [enableVideo] and [enableOptical] at the same time.
+     *
+     * @see [availableOptical]
+     */
+    var enableOptical: Boolean
+        /**
+         * Checks if optical video stabilization is enabled.
+         *
+         * @return [Boolean.true] if optical video stabilization is enabled, otherwise [Boolean.false]
+         */
+        get() = cameraController.getSetting(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE) == CaptureResult.LENS_OPTICAL_STABILIZATION_MODE_ON
+        /**
+         * Enable or disable the optical video stabilization.
+         *
+         * @param value [Boolean.true] to enable optical video stabilization, otherwise [Boolean.false]
+         */
+        set(value) {
+            if (value) {
+                cameraController.setSetting(
+                    CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE,
+                    CaptureResult.LENS_OPTICAL_STABILIZATION_MODE_ON
+                )
+            } else {
+                cameraController.setSetting(
+                    CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE,
+                    CaptureResult.LENS_OPTICAL_STABILIZATION_MODE_OFF
+                )
+            }
         }
 }

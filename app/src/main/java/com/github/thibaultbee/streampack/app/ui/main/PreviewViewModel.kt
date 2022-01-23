@@ -222,6 +222,14 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
 
     private fun notifyCameraChange() {
         streamerManager.cameraSettings?.let {
+            // Set optical stabilization first
+            // Do not set both video and optical stabilization at the same time
+            if (it.stabilization.availableOptical) {
+                it.stabilization.enableOptical = true
+            } else {
+                it.stabilization.enableVideo = true
+            }
+
             isAutoWhiteBalanceAvailable.postValue(it.whiteBalance.availableAutoModes.size > 1)
             isFlashAvailable.postValue(it.flash.available)
             it.exposure.let { exposure ->

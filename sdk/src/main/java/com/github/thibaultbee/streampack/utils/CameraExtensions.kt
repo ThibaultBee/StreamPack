@@ -18,6 +18,7 @@ package com.github.thibaultbee.streampack.utils
 import android.content.Context
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CaptureResult
 import android.os.Build
 import android.util.Range
 import android.util.Rational
@@ -191,8 +192,22 @@ fun Context.getAutoFocusModes(cameraId: String): List<Int> {
  * @return lens distance range
  */
 fun Context.getLensDistanceRange(cameraId: String): Range<Float> {
-    return Range(0f,
+    return Range(
+        0f,
         getCameraCharacteristics(cameraId).get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE)
             ?: 0f
     )
 }
+
+/**
+ * Checks if the camera supports optical stabilization.
+ *
+ * @param cameraId camera id
+ * @return [Boolean.true] if camera supports optical stabilization, [Boolean.false] otherwise.
+ */
+fun Context.isOpticalStabilizationAvailable(cameraId: String): Boolean =
+    getCameraCharacteristics(cameraId).get(CameraCharacteristics.LENS_INFO_AVAILABLE_OPTICAL_STABILIZATION)
+        ?.contains(
+            CaptureResult.LENS_OPTICAL_STABILIZATION_MODE_ON
+        )
+        ?: false
