@@ -273,11 +273,13 @@ $dokka.location:com.github.thibaultbee.streampack.utils//isBackCamera/android.co
 $dokka.location:com.github.thibaultbee.streampack.utils//isFlashAvailable/android.content.Context#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/is-flash-available.html
 $dokka.location:com.github.thibaultbee.streampack.utils//isFrameRateSupported/android.content.Context#kotlin.String#kotlin.Int/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/is-frame-rate-supported.html
 $dokka.location:com.github.thibaultbee.streampack.utils//isFrontCamera/android.content.Context#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/is-front-camera.html
+$dokka.location:com.github.thibaultbee.streampack.utils//isOpticalStabilizationAvailable/android.content.Context#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/is-optical-stabilization-available.html
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraSettings///PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-settings/index.html
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraSettings/CameraSettings/#android.content.Context#com.github.thibaultbee.streampack.internal.sources.camera.CameraController/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-settings/-camera-settings.html
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraSettings/exposure/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-settings/exposure.html
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraSettings/flash/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-settings/flash.html
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraSettings/focus/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-settings/focus.html
+$dokka.location:com.github.thibaultbee.streampack.utils/CameraSettings/stabilization/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-settings/stabilization.html
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraSettings/whiteBalance/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-settings/white-balance.html
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraSettings/zoom/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-settings/zoom.html
 $dokka.location:com.github.thibaultbee.streampack.utils/CameraStreamerConfigurationHelper.Audio///PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-camera-streamer-configuration-helper/-audio/index.html
@@ -306,6 +308,11 @@ $dokka.location:com.github.thibaultbee.streampack.utils/Focus/autoMode/#/Pointin
 $dokka.location:com.github.thibaultbee.streampack.utils/Focus/availableAutoModes/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-focus/available-auto-modes.html
 $dokka.location:com.github.thibaultbee.streampack.utils/Focus/availableLensDistanceRange/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-focus/available-lens-distance-range.html
 $dokka.location:com.github.thibaultbee.streampack.utils/Focus/lensDistance/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-focus/lens-distance.html
+$dokka.location:com.github.thibaultbee.streampack.utils/Stabilization///PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-stabilization/index.html
+$dokka.location:com.github.thibaultbee.streampack.utils/Stabilization/Stabilization/#android.content.Context#com.github.thibaultbee.streampack.internal.sources.camera.CameraController/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-stabilization/-stabilization.html
+$dokka.location:com.github.thibaultbee.streampack.utils/Stabilization/availableOptical/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-stabilization/available-optical.html
+$dokka.location:com.github.thibaultbee.streampack.utils/Stabilization/enableOptical/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-stabilization/enable-optical.html
+$dokka.location:com.github.thibaultbee.streampack.utils/Stabilization/enableVideo/#/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-stabilization/enable-video.html
 $dokka.location:com.github.thibaultbee.streampack.utils/StreamerConfigurationHelper.Audio///PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-streamer-configuration-helper/-audio/index.html
 $dokka.location:com.github.thibaultbee.streampack.utils/StreamerConfigurationHelper.Audio/getSupportedBitrates/#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-streamer-configuration-helper/-audio/get-supported-bitrates.html
 $dokka.location:com.github.thibaultbee.streampack.utils/StreamerConfigurationHelper.Audio/getSupportedInputChannelRange/#kotlin.String/PointingToDeclaration/sdk/com.github.thibaultbee.streampack.utils/-streamer-configuration-helper/-audio/get-supported-input-channel-range.html
