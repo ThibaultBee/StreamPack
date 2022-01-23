@@ -34,7 +34,10 @@ class CameraController(
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val logger: ILogger
 ) {
-    var camera: CameraDevice? = null
+    private var camera: CameraDevice? = null
+    val cameraId: String?
+        get() = camera?.id
+
     private var captureSession: CameraCaptureSession? = null
     private var captureRequest: CaptureRequest.Builder? = null
 
@@ -239,20 +242,12 @@ class CameraController(
         )
     }
 
-    fun setFlash(mode: Int) {
-        captureRequest?.set(CaptureRequest.FLASH_MODE, mode)
-        updateCaptureSession()
+    fun <T> getSetting(key: CaptureRequest.Key<T>?): T? {
+        return captureRequest?.get(key)
     }
 
-    fun getFlash(): Int =
-        captureRequest?.get(CaptureRequest.FLASH_MODE) ?: CaptureResult.FLASH_MODE_OFF
-
-    fun setAutoWhiteBalanceMode(autoWhiteBalanceMode: Int) {
-        captureRequest?.set(CaptureRequest.CONTROL_AWB_MODE, autoWhiteBalanceMode)
+    fun <T> setSetting(key: CaptureRequest.Key<T>, value: T) {
+        captureRequest?.set(key, value)
         updateCaptureSession()
     }
-
-    fun getAutoWhiteBalanceMode(): Int =
-        captureRequest?.get(CaptureRequest.CONTROL_AWB_MODE) ?: CaptureResult.CONTROL_AWB_MODE_OFF
-
 }

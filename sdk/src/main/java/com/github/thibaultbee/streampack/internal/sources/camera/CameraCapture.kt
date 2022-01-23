@@ -33,7 +33,7 @@ class CameraCapture(
     var previewSurface: Surface? = null
     override var encoderSurface: Surface? = null
     var cameraId: String = "0"
-        get() = cameraController.camera?.id ?: field
+        get() = cameraController.cameraId ?: field
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
             if (!context.isFrameRateSupported(value, fps)) {
@@ -47,7 +47,7 @@ class CameraCapture(
             field = value
         }
     private var cameraController = CameraController(context, logger = logger)
-    var settings = CameraSettings(cameraController)
+    var settings = CameraSettings(context, cameraController)
 
     /**
      * As timestamp source differs from one camera to another. Computes an offset.

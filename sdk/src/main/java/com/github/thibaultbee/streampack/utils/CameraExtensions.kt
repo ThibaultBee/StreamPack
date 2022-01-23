@@ -121,7 +121,7 @@ fun Context.isFlashAvailable(cameraId: String): Boolean =
  * Gets supported auto white balance modes
  *
  * @param cameraId camera id
- * @return list of supported white balance mode.
+ * @return list of supported white balance modes.
  */
 fun Context.getAutoWhiteBalanceModes(cameraId: String): List<Int> {
     return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES)

@@ -15,6 +15,8 @@
  */
 package com.github.thibaultbee.streampack.utils
 
+import android.content.Context
+import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.CaptureResult
 import com.github.thibaultbee.streampack.internal.sources.camera.CameraController
 import com.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
@@ -23,46 +25,86 @@ import com.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
  * Use to change camera settings.
  * This object is returned by [BaseCameraStreamer.cameraSettings].
  */
-class CameraSettings(private val cameraController: CameraController) {
+class CameraSettings(context: Context, cameraController: CameraController) {
     /**
-     * Enables or disables flash.
-     *
-     * @see [isFlashAvailable]
+     * Current camera flash API.
      */
-    var flashEnable: Boolean
-        /**
-         * @return [Boolean.true] if flash is already on, otherwise [Boolean.false]
-         */
-        get() = cameraController.getFlash() == CaptureResult.FLASH_MODE_TORCH
-        /**
-         * @param value [Boolean.true] to switch on flash, [Boolean.false] to switch off flash
-         */
-        set(value) {
-            if (value) {
-                cameraController.setFlash(CaptureResult.FLASH_MODE_TORCH)
-            } else {
-                cameraController.setFlash(CaptureResult.FLASH_MODE_OFF)
-            }
-        }
+    val flash = Flash(context, cameraController)
+
+    /**
+     * Current camera white balance API.
+     */
+    val whiteBalance = WhiteBalance(context, cameraController)
+}
+
+class WhiteBalance(private val context: Context, private val cameraController: CameraController) {
+    /**
+     * Gets supported auto white balance modes for the current camera
+     *
+     * @return list of supported white balance modes.
+     */
+    val availableAutoModes: List<Int>
+        get() = cameraController.cameraId?.let { context.getAutoWhiteBalanceModes(it) }
+            ?: emptyList()
 
     /**
      * Set or get auto white balance mode.
      *
      * **See Also:** [CONTROL_AWB_MODE](https://developer.android.com/reference/android/hardware/camera2/CaptureRequest#CONTROL_AWB_MODE)
+     * @see [availableAutoModes]
      */
-    var autoWhiteBalanceMode: Int
+    var autoMode: Int
         /**
          * Get auto white balance mode.
          *
          * @return current camera audo white balance mode
          */
-        get() = cameraController.getAutoWhiteBalanceMode()
+        get() = cameraController.getSetting(CaptureRequest.CONTROL_AWB_MODE)
+            ?: CaptureResult.CONTROL_AWB_MODE_OFF
         /**
          * Get auto white balance mode.
          *
          * @param value auto white balance mode
          */
         set(value) {
-            cameraController.setAutoWhiteBalanceMode(value)
+            cameraController.setSetting(CaptureRequest.CONTROL_AWB_MODE, value)
         }
+}
+
+class Flash(private val context: Context, private val cameraController: CameraController) {
+    /**
+     * Checks if the current camera has a flash device.
+     *
+     * @return [Boolean.true] if camera has a flash device, [Boolean.false] otherwise.
+     */
+    val available: Boolean
+        get() = cameraController.cameraId?.let { context.isFlashAvailable(it) } ?: false
+
+    /**
+     * Enables or disables flash.
+     *
+     * @see [available]
+     */
+    var enable: Boolean
+        /**
+         * @return [Boolean.true] if flash is already on, otherwise [Boolean.false]
+         */
+        get() = getFlash() == CaptureResult.FLASH_MODE_TORCH
+        /**
+         * @param value [Boolean.true] to switch on flash, [Boolean.false] to switch off flash
+         */
+        set(value) {
+            if (value) {
+                setFlash(CaptureResult.FLASH_MODE_TORCH)
+            } else {
+                setFlash(CaptureResult.FLASH_MODE_OFF)
+            }
+        }
+
+    private fun getFlash(): Int =
+        cameraController.getSetting(CaptureRequest.FLASH_MODE) ?: CaptureResult.FLASH_MODE_OFF
+
+    private fun setFlash(mode: Int) {
+        cameraController.setSetting(CaptureRequest.FLASH_MODE, mode)
+    }
 }
