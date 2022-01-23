@@ -18,11 +18,15 @@ package com.github.thibaultbee.streampack.app.ui.main
 import android.Manifest
 import android.content.Context
 import android.util.Log
+import android.util.Range
+import android.util.Rational
 import android.view.Surface
 import androidx.annotation.RequiresPermission
+import androidx.databinding.Bindable
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.thibaultbee.streampack.app.BR
+import com.github.thibaultbee.streampack.app.utils.ObservableViewModel
 import com.github.thibaultbee.streampack.app.utils.StreamerManager
 import com.github.thibaultbee.streampack.error.StreamPackError
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
@@ -31,7 +35,7 @@ import com.github.thibaultbee.streampack.utils.isFrameRateSupported
 import kotlinx.coroutines.launch
 import java.io.File
 
-class PreviewViewModel(private val streamerManager: StreamerManager) : ViewModel() {
+class PreviewViewModel(private val streamerManager: StreamerManager) : ObservableViewModel() {
     companion object {
         private const val TAG = "PreviewViewModel"
     }
@@ -138,19 +142,62 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : ViewModel
         }
     }
 
-    val isFlashAvailable = MutableLiveData<Boolean>()
+    val isFlashAvailable = MutableLiveData(false)
     fun toggleFlash() {
-        streamerManager.toggleFlash()
+        streamerManager.cameraSettings?.let {
+            it.flash.enable = !it.flash.enable
+        }
     }
 
-    val isAutoWhiteBalanceAvailable = MutableLiveData<Boolean>()
+    val isAutoWhiteBalanceAvailable = MutableLiveData(false)
     fun toggleAutoWhiteBalanceMode() {
-        streamerManager.toggleAutoWhiteBalanceMode()
+        streamerManager.cameraSettings?.let {
+            val awbModes = it.whiteBalance.availableAutoModes
+            val index = awbModes.indexOf(it.whiteBalance.autoMode)
+            it.whiteBalance.autoMode = awbModes[(index + 1) % awbModes.size]
+        }
     }
+
+    val showExposureSlider = MutableLiveData(false)
+    fun toggleExposureSlider() {
+        showExposureSlider.postValue(!(showExposureSlider.value)!!)
+    }
+
+    val isExposureCompensationAvailable = MutableLiveData(false)
+    val exposureCompensationRange = MutableLiveData<Range<Int>>()
+    val exposureCompensationStep = MutableLiveData<Rational>()
+    var exposureCompensation: Float
+        @Bindable get() = streamerManager.cameraSettings?.exposure?.let { it.compensation * it.availableCompensationStep.toFloat() }
+            ?: 0f
+        set(value) {
+            streamerManager.cameraSettings?.exposure?.let {
+                it.compensation = (value / it.availableCompensationStep.toFloat()).toInt()
+                notifyPropertyChanged(BR.exposureCompensation)
+            }
+        }
 
     private fun notifyCameraChange() {
-        isAutoWhiteBalanceAvailable.postValue(streamerManager.autoWhiteBalanceModes.size > 1)
-        isFlashAvailable.postValue(streamerManager.isFlashAvailable)
+        streamerManager.cameraSettings?.let {
+            isAutoWhiteBalanceAvailable.postValue(it.whiteBalance.availableAutoModes.size > 1)
+            isFlashAvailable.postValue(it.flash.available)
+            isExposureCompensationAvailable.postValue(
+                it.exposure.availableCompensationRange != Range(
+                    0,
+                    0
+                )
+            )
+            it.exposure.let { exposure ->
+                exposureCompensationRange.postValue(
+                    Range(
+                        (exposure.availableCompensationRange.lower * exposure.availableCompensationStep.toFloat()).toInt(),
+                        (exposure.availableCompensationRange.upper * exposure.availableCompensationStep.toFloat()).toInt()
+                    )
+                )
+                exposureCompensationStep.postValue(exposure.availableCompensationStep)
+                exposureCompensation =
+                    exposure.compensation * exposure.availableCompensationStep.toFloat()
+            }
+        }
     }
 
     override fun onCleared() {

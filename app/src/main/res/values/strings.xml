@@ -82,6 +82,7 @@
     <string name="video_settings_key">video_settings_key</string>
     <string name="warning">Warning</string>
     <string name="set_white_balance">Set white balance</string>
+    <string name="set_exposure_compensation">Set exposure compensation</string>
     <plurals name="camera_frame_rate_not_supported">
         <item quantity="one">Camera %1$s does not support %2$d fps</item>
         <item quantity="other">Cameras %1$s do not support %2$d fps</item>

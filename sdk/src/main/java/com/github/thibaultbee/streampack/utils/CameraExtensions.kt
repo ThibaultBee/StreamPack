@@ -18,6 +18,8 @@ package com.github.thibaultbee.streampack.utils
 import android.content.Context
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.util.Range
+import android.util.Rational
 import android.util.Size
 import com.github.thibaultbee.streampack.internal.sources.camera.getCameraFpsList
 
@@ -126,4 +128,30 @@ fun Context.isFlashAvailable(cameraId: String): Boolean =
 fun Context.getAutoWhiteBalanceModes(cameraId: String): List<Int> {
     return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES)
         ?.toList() ?: emptyList()
+}
+
+/**
+ * Gets exposure range.
+ *
+ * @param cameraId camera id
+ * @return exposure range.
+ */
+fun Context.getExposureRange(cameraId: String): Range<Int> {
+    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE)
+        ?: Range(0, 0)
+}
+
+/**
+ * Get current camera exposure compensation step.
+ *
+ * This is the unit for [getExposureRange]. For example, if this key has a value of 1/2, then a
+ * setting of -2 for  [getExposureRange] means that the target EV offset for the auto-exposure
+ * routine is -1 EV.
+ *
+ * @param cameraId camera id
+ * @return exposure range.
+ */
+fun Context.getExposureStep(cameraId: String): Rational {
+    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP)
+        ?: Rational(1, 1)
 }

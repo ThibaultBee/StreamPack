@@ -18,6 +18,8 @@ package com.github.thibaultbee.streampack.utils
 import android.content.Context
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.CaptureResult
+import android.util.Range
+import android.util.Rational
 import com.github.thibaultbee.streampack.internal.sources.camera.CameraController
 import com.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 
@@ -35,6 +37,11 @@ class CameraSettings(context: Context, cameraController: CameraController) {
      * Current camera white balance API.
      */
     val whiteBalance = WhiteBalance(context, cameraController)
+
+    /**
+     * Current camera exposure API.
+     */
+    val exposure = Exposure(context, cameraController)
 }
 
 class WhiteBalance(private val context: Context, private val cameraController: CameraController) {
@@ -107,4 +114,54 @@ class Flash(private val context: Context, private val cameraController: CameraCo
     private fun setFlash(mode: Int) {
         cameraController.setSetting(CaptureRequest.FLASH_MODE, mode)
     }
+}
+
+class Exposure(private val context: Context, private val cameraController: CameraController) {
+    /**
+     * Gets current camera exposure range.
+     *
+     * @return exposure range.
+     *
+     * @see [availableCompensationStep]
+     * @see [compensation]
+     */
+    val availableCompensationRange: Range<Int>
+        get() = cameraController.cameraId?.let { context.getExposureRange(it) } ?: Range(0, 0)
+
+    /**
+     * Get current camera exposure compensation step.
+     *
+     * This is the unit for [getExposureRange]. For example, if this key has a value of 1/2, then a
+     * setting of -2 for  [getExposureRange] means that the target EV offset for the auto-exposure
+     * routine is -1 EV.
+     *
+     * @return exposure range.
+     *
+     * @see [availableCompensationRange]
+     * @see [compensation]
+     */
+    val availableCompensationStep: Rational
+        get() = cameraController.cameraId?.let { context.getExposureStep(it) } ?: Rational(1, 1)
+
+    /**
+     * Set or get exposure compensation.
+     *
+     * @see [availableCompensationRange]
+     * @see [availableCompensationStep]
+     */
+    var compensation: Int
+        /**
+         * Get the exposure compensation.
+         *
+         * @return exposure compensation
+         */
+        get() = cameraController.getSetting(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION) ?: 0
+        /**
+         * Set the exposure compensation.
+         *
+         * @param value exposure compensation
+         */
+        set(value) {
+            cameraController.setSetting(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, value)
+        }
 }
