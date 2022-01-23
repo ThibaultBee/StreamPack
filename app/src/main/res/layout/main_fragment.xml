@@ -74,6 +74,15 @@
                 android:valueFrom="@{viewmodel.zoomRatioRange.lower}"
                 android:valueTo="@{viewmodel.zoomRatioRange.upper}"
                 app:goneUnless="@{viewmodel.showZoomSlider}" />
+
+            <com.google.android.material.slider.Slider
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:theme="@style/AppTheme"
+                android:value="@={viewmodel.lensDistance}"
+                android:valueFrom="@{viewmodel.lensDistanceRange.lower}"
+                android:valueTo="@{viewmodel.lensDistanceRange.upper}"
+                app:goneUnless="@{viewmodel.showLensDistanceSlider}" />
         </LinearLayout>
 
         <LinearLayout
@@ -120,6 +129,15 @@
                 android:onClick="@{() -> viewmodel.toggleZoomSlider()}"
                 android:src="@drawable/ic_baseline_zoom_in_24"
                 app:goneUnless="@{viewmodel.isZoomAvailable()}"
+                app:tint="@android:color/white" />
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/set_auto_focus_mode"
+                android:onClick="@{() -> viewmodel.toggleAutoFocusMode()}"
+                android:src="@drawable/ic_baseline_center_focus_strong_24"
+                app:goneUnless="@{viewmodel.isAutoFocusModeAvailable()}"
                 app:tint="@android:color/white" />
 
         </LinearLayout>

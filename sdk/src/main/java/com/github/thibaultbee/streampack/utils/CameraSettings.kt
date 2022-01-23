@@ -48,6 +48,11 @@ class CameraSettings(context: Context, cameraController: CameraController) {
      * Current camera zoom API.
      */
     val zoom = Zoom(context, cameraController)
+
+    /**
+     * Current focus API.
+     */
+    val focus = Focus(context, cameraController)
 }
 
 class WhiteBalance(private val context: Context, private val cameraController: CameraController) {
@@ -211,5 +216,74 @@ class Zoom(private val context: Context, private val cameraController: CameraCon
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 cameraController.setSetting(CaptureRequest.CONTROL_ZOOM_RATIO, value)
             }
+        }
+}
+
+
+class Focus(private val context: Context, private val cameraController: CameraController) {
+    /**
+     * Get current camera supported auto focus mode.
+     *
+     * @return list of supported auto focus mode
+     *
+     * @see [autoMode]
+     */
+    val availableAutoModes: List<Int>
+        get() = cameraController.cameraId?.let { context.getAutoFocusModes(it) } ?: emptyList()
+
+    /**
+     * Set or get auto focus mode.
+     *
+     * @see [availableAutoModes]
+     */
+    var autoMode: Int
+        /**
+         * Get the auto focus mode.
+         *
+         * @return auto focus mode
+         */
+        get() = cameraController.getSetting(CaptureRequest.CONTROL_AF_MODE)
+            ?: CaptureResult.CONTROL_AF_MODE_OFF
+        /**
+         * Set the auto focus mode.
+         *
+         * @param value eauto focus mode
+         */
+        set(value) {
+            cameraController.setSetting(CaptureRequest.CONTROL_AF_MODE, value)
+        }
+
+    /**
+     * Get current camera supported auto focus mode.
+     *
+     * @return list of supported auto focus mode
+     *
+     * @see [lensDistance]
+     */
+    val availableLensDistanceRange: Range<Float>
+        get() = cameraController.cameraId?.let { context.getLensDistanceRange(it) } ?: Range(0F, 0f)
+
+    /**
+     * Set or get lens focus distance.
+     *
+     * @see [availableLensDistanceRange]
+     */
+    var lensDistance: Float
+        /**
+         * Get the lens focus distance.
+         *
+         * @return lens focus distance
+         */
+        get() = cameraController.getSetting(CaptureRequest.LENS_FOCUS_DISTANCE)
+            ?: 0.0f
+        /**
+         * Set the lens focus distance
+         *
+         * Only set lens focus distance if [autoMode] == [CaptureResult.CONTROL_AF_MODE_OFF].
+         *
+         * @param value lens focus distance
+         */
+        set(value) {
+            cameraController.setSetting(CaptureRequest.LENS_FOCUS_DISTANCE, value)
         }
 }

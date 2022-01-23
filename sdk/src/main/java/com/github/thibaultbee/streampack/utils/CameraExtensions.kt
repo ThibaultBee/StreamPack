@@ -172,3 +172,27 @@ fun Context.getZoomRatioRange(cameraId: String): Range<Float> {
         Range(1f, 1f)
     }
 }
+
+/**
+ * Get supported auto focus modes.
+ *
+ * @param cameraId camera id
+ * @return list of supported auto focus modes
+ */
+fun Context.getAutoFocusModes(cameraId: String): List<Int> {
+    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES)
+        ?.toList() ?: emptyList()
+}
+
+/**
+ * Get supported lens distance range.
+ *
+ * @param cameraId camera id
+ * @return lens distance range
+ */
+fun Context.getLensDistanceRange(cameraId: String): Range<Float> {
+    return Range(0f,
+        getCameraCharacteristics(cameraId).get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE)
+            ?: 0f
+    )
+}

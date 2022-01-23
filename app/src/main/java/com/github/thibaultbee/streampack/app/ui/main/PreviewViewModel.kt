@@ -17,6 +17,7 @@ package com.github.thibaultbee.streampack.app.ui.main
 
 import android.Manifest
 import android.content.Context
+import android.hardware.camera2.CaptureResult
 import android.util.Log
 import android.util.Range
 import android.util.Rational
@@ -193,6 +194,32 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
             }
         }
 
+    val isAutoFocusModeAvailable = MutableLiveData(false)
+    fun toggleAutoFocusMode() {
+        streamerManager.cameraSettings?.let {
+            val afModes = it.focus.availableAutoModes
+            val index = afModes.indexOf(it.focus.autoMode)
+            it.focus.autoMode = afModes[(index + 1) % afModes.size]
+            if (it.focus.autoMode == CaptureResult.CONTROL_AF_MODE_OFF) {
+                showLensDistanceSlider.postValue(true)
+            } else {
+                showLensDistanceSlider.postValue(false)
+            }
+        }
+    }
+
+    val showLensDistanceSlider = MutableLiveData(false)
+    val lensDistanceRange = MutableLiveData<Range<Float>>()
+    var lensDistance: Float
+        @Bindable get() = streamerManager.cameraSettings?.focus?.lensDistance
+            ?: 0f
+        set(value) {
+            streamerManager.cameraSettings?.focus?.let {
+                it.lensDistance = value
+                notifyPropertyChanged(BR.lensDistance)
+            }
+        }
+
     private fun notifyCameraChange() {
         streamerManager.cameraSettings?.let {
             isAutoWhiteBalanceAvailable.postValue(it.whiteBalance.availableAutoModes.size > 1)
@@ -226,6 +253,14 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
 
                 zoomRatioRange.postValue(zoom.availableRatioRange)
                 zoomRatio = zoom.zoomRatio
+            }
+
+            it.focus.let { focus ->
+                isAutoFocusModeAvailable.postValue(focus.availableAutoModes.size > 1)
+
+                showLensDistanceSlider.postValue(false)
+                lensDistanceRange.postValue(focus.availableLensDistanceRange)
+                lensDistance = focus.lensDistance
             }
         }
     }
