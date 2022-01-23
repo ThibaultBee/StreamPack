@@ -65,6 +65,15 @@
                 android:valueFrom="@{viewmodel.exposureCompensationRange.lower}"
                 android:valueTo="@{viewmodel.exposureCompensationRange.upper}"
                 app:goneUnless="@{viewmodel.showExposureSlider}" />
+
+            <com.google.android.material.slider.Slider
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:theme="@style/AppTheme"
+                android:value="@={viewmodel.zoomRatio}"
+                android:valueFrom="@{viewmodel.zoomRatioRange.lower}"
+                android:valueTo="@{viewmodel.zoomRatioRange.upper}"
+                app:goneUnless="@{viewmodel.showZoomSlider}" />
         </LinearLayout>
 
         <LinearLayout
@@ -102,6 +111,15 @@
                 android:onClick="@{() -> viewmodel.toggleExposureSlider()}"
                 android:src="@drawable/ic_baseline_exposure_24"
                 app:goneUnless="@{viewmodel.isExposureCompensationAvailable()}"
+                app:tint="@android:color/white" />
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/set_zoom_ratio"
+                android:onClick="@{() -> viewmodel.toggleZoomSlider()}"
+                android:src="@drawable/ic_baseline_zoom_in_24"
+                app:goneUnless="@{viewmodel.isZoomAvailable()}"
                 app:tint="@android:color/white" />
 
         </LinearLayout>

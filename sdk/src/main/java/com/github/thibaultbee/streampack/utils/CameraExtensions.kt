@@ -18,6 +18,7 @@ package com.github.thibaultbee.streampack.utils
 import android.content.Context
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.os.Build
 import android.util.Range
 import android.util.Rational
 import android.util.Size
@@ -142,7 +143,7 @@ fun Context.getExposureRange(cameraId: String): Range<Int> {
 }
 
 /**
- * Get current camera exposure compensation step.
+ * Get exposure compensation step.
  *
  * This is the unit for [getExposureRange]. For example, if this key has a value of 1/2, then a
  * setting of -2 for  [getExposureRange] means that the target EV offset for the auto-exposure
@@ -154,4 +155,20 @@ fun Context.getExposureRange(cameraId: String): Range<Int> {
 fun Context.getExposureStep(cameraId: String): Rational {
     return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP)
         ?: Rational(1, 1)
+}
+
+/**
+ * Gets zoom ratio range.
+ *
+ * @param cameraId camera id
+ * @return zoom ratio range.
+ */
+fun Context.getZoomRatioRange(cameraId: String): Range<Float> {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE)
+            ?: Range(1f, 1f)
+    } else {
+        // Not supported
+        Range(1f, 1f)
+    }
 }

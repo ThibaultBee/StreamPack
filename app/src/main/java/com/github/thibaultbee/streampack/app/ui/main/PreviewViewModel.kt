@@ -176,17 +176,35 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
             }
         }
 
+    val showZoomSlider = MutableLiveData(false)
+    fun toggleZoomSlider() {
+        showZoomSlider.postValue(!(showZoomSlider.value)!!)
+    }
+
+    val isZoomAvailable = MutableLiveData(false)
+    val zoomRatioRange = MutableLiveData<Range<Float>>()
+    var zoomRatio: Float
+        @Bindable get() = streamerManager.cameraSettings?.zoom?.zoomRatio
+            ?: 1f
+        set(value) {
+            streamerManager.cameraSettings?.zoom?.let {
+                it.zoomRatio = value
+                notifyPropertyChanged(BR.zoomRatio)
+            }
+        }
+
     private fun notifyCameraChange() {
         streamerManager.cameraSettings?.let {
             isAutoWhiteBalanceAvailable.postValue(it.whiteBalance.availableAutoModes.size > 1)
             isFlashAvailable.postValue(it.flash.available)
-            isExposureCompensationAvailable.postValue(
-                it.exposure.availableCompensationRange != Range(
-                    0,
-                    0
-                )
-            )
             it.exposure.let { exposure ->
+                isExposureCompensationAvailable.postValue(
+                    exposure.availableCompensationRange != Range(
+                        0,
+                        0
+                    )
+                )
+
                 exposureCompensationRange.postValue(
                     Range(
                         (exposure.availableCompensationRange.lower * exposure.availableCompensationStep.toFloat()).toInt(),
@@ -196,6 +214,18 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
                 exposureCompensationStep.postValue(exposure.availableCompensationStep)
                 exposureCompensation =
                     exposure.compensation * exposure.availableCompensationStep.toFloat()
+            }
+
+            it.zoom.let { zoom ->
+                isZoomAvailable.postValue(
+                    zoom.availableRatioRange != Range(
+                        1f,
+                        1f
+                    )
+                )
+
+                zoomRatioRange.postValue(zoom.availableRatioRange)
+                zoomRatio = zoom.zoomRatio
             }
         }
     }

@@ -247,7 +247,9 @@ class CameraController(
     }
 
     fun <T> setSetting(key: CaptureRequest.Key<T>, value: T) {
-        captureRequest?.set(key, value)
-        updateCaptureSession()
+        captureRequest?.let {
+            it.set(key, value)
+            updateCaptureSession()
+        }
     }
 }

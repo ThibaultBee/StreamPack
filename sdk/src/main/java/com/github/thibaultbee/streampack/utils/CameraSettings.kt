@@ -18,6 +18,7 @@ package com.github.thibaultbee.streampack.utils
 import android.content.Context
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.CaptureResult
+import android.os.Build
 import android.util.Range
 import android.util.Rational
 import com.github.thibaultbee.streampack.internal.sources.camera.CameraController
@@ -42,6 +43,11 @@ class CameraSettings(context: Context, cameraController: CameraController) {
      * Current camera exposure API.
      */
     val exposure = Exposure(context, cameraController)
+
+    /**
+     * Current camera zoom API.
+     */
+    val zoom = Zoom(context, cameraController)
 }
 
 class WhiteBalance(private val context: Context, private val cameraController: CameraController) {
@@ -118,7 +124,7 @@ class Flash(private val context: Context, private val cameraController: CameraCo
 
 class Exposure(private val context: Context, private val cameraController: CameraController) {
     /**
-     * Gets current camera exposure range.
+     * Get current camera exposure range.
      *
      * @return exposure range.
      *
@@ -163,5 +169,47 @@ class Exposure(private val context: Context, private val cameraController: Camer
          */
         set(value) {
             cameraController.setSetting(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, value)
+        }
+}
+
+
+class Zoom(private val context: Context, private val cameraController: CameraController) {
+    /**
+     * Get current camera zoom ratio range.
+     *
+     * Only for Android version >= R (30)
+     *
+     * @return zoom ratio range.
+     *
+     * @see [zoomRatio]
+     */
+    val availableRatioRange: Range<Float>
+        get() = cameraController.cameraId?.let { context.getZoomRatioRange(it) } ?: Range(1f, 1f)
+
+    /**
+     * Set or get exposure compensation.
+     *
+     * @see [availableRatioRange]
+     */
+    var zoomRatio: Float
+        /**
+         * Get the exposure compensation.
+         *
+         * @return exposure compensation
+         */
+        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            cameraController.getSetting(CaptureRequest.CONTROL_ZOOM_RATIO) ?: 1f
+        } else {
+            1f
+        }
+        /**
+         * Set the exposure compensation.
+         *
+         * @param value exposure compensation
+         */
+        set(value) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                cameraController.setSetting(CaptureRequest.CONTROL_ZOOM_RATIO, value)
+            }
         }
 }
