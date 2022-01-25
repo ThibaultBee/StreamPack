@@ -125,28 +125,6 @@ open class BaseCameraStreamer(
     }
 
     /**
-     * Stops camera and ask for a reset if camera is already running.
-     */
-    override fun onResetVideo(): Boolean {
-        val restartPreview = cameraCapture.isPreviewing
-        cameraCapture.stopPreview()
-        return restartPreview
-    }
-
-    /**
-     * Start preview when video system has been reset.
-     */
-    override suspend fun afterResetVideo() {
-        if (ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            cameraCapture.startPreview()
-        }
-    }
-
-    /**
      * Same as [BaseStreamer.release] but it also calls [stopPreview].
      */
     override fun release() {

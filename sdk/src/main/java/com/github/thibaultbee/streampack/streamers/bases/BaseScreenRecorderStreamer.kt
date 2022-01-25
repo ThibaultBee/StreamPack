@@ -96,8 +96,4 @@ open class BaseScreenRecorderStreamer(
         screenCapture.encoderSurface = videoEncoder?.inputSurface
         super.startStream()
     }
-
-    override fun onResetVideo() = false // Nothing to do here
-
-    override suspend fun afterResetVideo() {} // Nothing to do here
 }

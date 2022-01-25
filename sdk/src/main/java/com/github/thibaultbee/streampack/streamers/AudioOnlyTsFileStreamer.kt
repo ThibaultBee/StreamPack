@@ -81,16 +81,6 @@ class AudioOnlyTsFileStreamer(
     override fun startStream() = super.startStream()
 
     /**
-     * No need for video
-     */
-    override fun onResetVideo() = false
-
-    /**
-     * No need for video
-     */
-    override suspend fun afterResetVideo() {}
-
-    /**
      * Builder class for [AudioOnlyTsFileStreamer] objects. Use this class to configure and create an [AudioOnlyTsFileStreamer] instance.
      */
     data class Builder(

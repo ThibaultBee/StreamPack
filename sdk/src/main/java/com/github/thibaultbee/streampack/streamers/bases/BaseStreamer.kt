@@ -247,7 +247,7 @@ abstract class BaseStreamer(
     override fun stopStream() {
         stopStreamImpl()
 
-        // Encoder does not return to CONFIGURED state... so we have to reset everything for video...
+        // Encoder does not return to CONFIGURED state... so we have to reset everything...
         resetAudio()
 
         resetVideo()
@@ -284,24 +284,11 @@ abstract class BaseStreamer(
     }
 
     /**
-     * Reset video if needed
-     *
-     * @return true if children class wants to call [afterResetVideo]
-     */
-    protected abstract fun onResetVideo(): Boolean
-
-    /**
-     * Only calls if [onResetVideo] has returned [Boolean.true].
-     */
-    protected abstract suspend fun afterResetVideo()
-
-    /**
      * Prepares video for another session.
      *
      * @see [stopStream]
      */
     private fun resetVideo() {
-        val callAfterResetVideo = onResetVideo()
         videoEncoder?.release()
 
         // And restart...
@@ -310,9 +297,6 @@ abstract class BaseStreamer(
                 videoEncoder?.configure(it)
             }
             videoCapture?.encoderSurface = videoEncoder?.inputSurface
-            if (callAfterResetVideo) {
-                afterResetVideo()
-            }
         }
     }
 
@@ -324,6 +308,7 @@ abstract class BaseStreamer(
      */
     override fun release() {
         audioEncoder?.release()
+        videoEncoder?.codecSurface?.dispose()
         videoEncoder?.release()
         audioCapture?.release()
         videoCapture?.release()
