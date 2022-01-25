@@ -135,16 +135,6 @@ class AudioOnlySrtLiveStreamer(
     }
 
     /**
-     * No need for video
-     */
-    override fun onResetVideo() = false
-
-    /**
-     * No need for video
-     */
-    override suspend fun afterResetVideo() {}
-
-    /**
      * Builder class for [AudioOnlySrtLiveStreamer] objects. Use this class to configure and create an [AudioOnlySrtLiveStreamer] instance.
      */
     data class Builder(

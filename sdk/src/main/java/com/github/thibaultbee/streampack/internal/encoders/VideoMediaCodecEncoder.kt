@@ -15,6 +15,7 @@
  */
 package com.github.thibaultbee.streampack.internal.encoders
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.SurfaceTexture
 import android.media.MediaCodec
@@ -41,14 +42,14 @@ class VideoMediaCodecEncoder(
     logger: ILogger
 ) :
     MediaCodecEncoder<VideoConfig>(encoderListener, logger) {
-    var codecSurface: CodecSurface? = null
+    var codecSurface = CodecSurface(context)
 
     override fun configure(config: VideoConfig) {
         mediaCodec = try {
             createVideoCodec(config, true)
         } catch (e: MediaCodec.CodecException) {
             createVideoCodec(config, false)
-        }
+        }.apply { codecSurface.surface = createInputSurface() }
     }
 
     private fun createVideoCodec(
@@ -93,14 +94,17 @@ class VideoMediaCodecEncoder(
 
         // Apply configuration
         configureCodec(codec, videoFormat, "VMediaCodecThread")
-        codecSurface = CodecSurface(codec.createInputSurface(), context)
         return codec
     }
 
-    override fun release() {
-        super.release()
-        codecSurface?.release()
-        codecSurface = null
+    override fun startStream() {
+        codecSurface.startStream()
+        super.startStream()
+    }
+
+    override fun stopStream() {
+        codecSurface.stopStream()
+        super.stopStream()
     }
 
     override fun onGenerateExtra(buffer: ByteBuffer, format: MediaFormat): ByteBuffer {
@@ -119,65 +123,126 @@ class VideoMediaCodecEncoder(
     }
 
     val inputSurface: Surface?
-        get() = codecSurface?.let { Surface(it.surfaceTexture) }
+        get() = codecSurface.inputSurface
 
-    class CodecSurface(surface: Surface, context: Context) :
+    class CodecSurface(private val context: Context) :
         SurfaceTexture.OnFrameAvailableListener {
-        private val eglSurface = EGlSurface(surface)
-        private val textureId: Int
-        private val fullFrameRect: FullFrameRect
+        private var eglSurface: EGlSurface? = null
+        private var fullFrameRect: FullFrameRect? = null
+        private var textureId = -1
         private val executor = Executors.newSingleThreadExecutor()
-        private var isReleased = false
+        private var isRunning = false
+        private var surfaceTexture: SurfaceTexture? = null
+        val inputSurface: Surface?
+            get() = surfaceTexture?.let { Surface(surfaceTexture) }
 
-        val surfaceTexture: SurfaceTexture
-
-        init {
-            eglSurface.makeCurrent()
-            fullFrameRect = FullFrameRect(Texture2DProgram())
-            textureId = fullFrameRect.createTextureObject()
-            surfaceTexture = SurfaceTexture(textureId)
-            if (context.isPortrait()) {
-                surfaceTexture.setDefaultBufferSize(eglSurface.getHeight(), eglSurface.getWidth())
-            } else {
-                surfaceTexture.setDefaultBufferSize(eglSurface.getWidth(), eglSurface.getHeight())
+        var surface: Surface? = null
+            set(value) {
+                value?.let {
+                    executor.submit {
+                        synchronized(this) {
+                            initOrUpdateSurfaceTexture(it)
+                        }
+                    }.get() // Wait till executor returns
+                }
+                field = value
             }
-            surfaceTexture.setOnFrameAvailableListener(this)
-            eglSurface.makeUnCurrent()
 
-            fullFrameRect.setMVPMatrixAndViewPort(
-                context.getOrientation().toFloat(),
-                Size(eglSurface.getWidth(), eglSurface.getHeight())
-            )
+        private fun initOrUpdateSurfaceTexture(surface: Surface) {
+            eglSurface = ensureGlContext(EGlSurface(surface)) {
+                val width = it.getWidth()
+                val height = it.getHeight()
+                fullFrameRect = FullFrameRect(Texture2DProgram()).apply {
+                    textureId = createTextureObject()
+                    setMVPMatrixAndViewPort(
+                        context.getOrientation().toFloat(),
+                        Size(width, height)
+                    )
+                }
+
+                surfaceTexture = attachOrBuildSurfaceTexture(surfaceTexture).apply {
+                    if (context.isPortrait()) {
+                        setDefaultBufferSize(height, width)
+                    } else {
+                        setDefaultBufferSize(width, height)
+                    }
+                    setOnFrameAvailableListener(this@CodecSurface)
+                }
+            }
+        }
+
+        @SuppressLint("Recycle")
+        private fun attachOrBuildSurfaceTexture(surfaceTexture: SurfaceTexture?): SurfaceTexture {
+            return if (surfaceTexture == null) {
+                SurfaceTexture(textureId)
+            } else {
+                surfaceTexture.attachToGLContext(textureId)
+                surfaceTexture
+            }
+        }
+
+        private fun ensureGlContext(
+            surface: EGlSurface?,
+            action: (EGlSurface) -> Unit
+        ): EGlSurface? {
+            surface?.let {
+                it.makeCurrent()
+                action(it)
+                it.makeUnCurrent()
+            }
+            return surface
         }
 
         override fun onFrameAvailable(surfaceTexture: SurfaceTexture) {
             synchronized(this) {
-                if (isReleased) {
+                if (!isRunning) {
                     return
                 }
 
                 executor.execute {
-                    eglSurface.makeCurrent()
-                    surfaceTexture.updateTexImage()
-                    val stMatrix = FloatArray(16)
-                    surfaceTexture.getTransformMatrix(stMatrix)
+                    eglSurface?.let {
+                        it.makeCurrent()
+                        surfaceTexture.updateTexImage()
+                        val stMatrix = FloatArray(16)
+                        surfaceTexture.getTransformMatrix(stMatrix)
 
-                    // Use the identity matrix for MVP so our 2x2 FULL_RECTANGLE covers the viewport.
-                    fullFrameRect.drawFrame(textureId, stMatrix)
-                    eglSurface.setPresentationTime(surfaceTexture.timestamp)
-                    eglSurface.swapBuffers()
-                    surfaceTexture.releaseTexImage()
+                        // Use the identity matrix for MVP so our 2x2 FULL_RECTANGLE covers the viewport.
+                        fullFrameRect?.drawFrame(textureId, stMatrix)
+                        it.setPresentationTime(surfaceTexture.timestamp)
+                        it.swapBuffers()
+                        surfaceTexture.releaseTexImage()
+                    }
                 }
             }
         }
 
-        fun release() {
-            synchronized(this) {
-                isReleased = true
-                fullFrameRect.release(true)
-                eglSurface.release()
-                surfaceTexture.release()
+        fun startStream() {
+            // Flushing spurious latest camera frames that block SurfaceTexture buffer.
+            ensureGlContext(eglSurface) {
+                surfaceTexture?.updateTexImage()
             }
+            isRunning = true
+        }
+
+        fun stopStream() {
+            executor.execute {
+                synchronized(this) {
+                    isRunning = false
+                    ensureGlContext(eglSurface) {
+                        surfaceTexture?.detachFromGLContext()
+                        fullFrameRect?.release(true)
+                    }
+                    eglSurface?.release()
+                    eglSurface = null
+                    fullFrameRect = null
+                }
+            }
+        }
+
+        fun dispose() {
+            stopStream()
+            surfaceTexture?.release()
+            surfaceTexture = null
         }
     }
 }
