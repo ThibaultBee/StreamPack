@@ -1,9 +1,9 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.5.30'
-    ext.dokka_version = '1.5.0'
-    ext.androidx_core_version = '1.6.0'
+    ext.kotlin_version = '1.6.0'
+    ext.dokka_version = '1.6.0'
+    ext.androidx_core_version = '1.7.0'
 
     // Upgrade StreamPack version here
     ext.streampack_code = '4'
@@ -14,7 +14,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.3'
+        classpath 'com.android.tools.build:gradle:7.0.4'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:${dokka_version}"
 
