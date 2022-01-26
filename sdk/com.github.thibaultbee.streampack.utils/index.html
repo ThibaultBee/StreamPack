@@ -2,26 +2,30 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
     <title>com.github.thibaultbee.streampack.utils</title>
-<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../";</script><script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async="async"></script><link href="../../styles/style.css" rel="Stylesheet"><link href="../../styles/logo-styles.css" rel="Stylesheet"><link href="../../styles/jetbrains-mono.css" rel="Stylesheet"><link href="../../styles/main.css" rel="Stylesheet"><script type="text/javascript" src="../../scripts/clipboard.js" async="async"></script><script type="text/javascript" src="../../scripts/navigation-loader.js" async="async"></script><script type="text/javascript" src="../../scripts/platform-content-handler.js" async="async"></script><script type="text/javascript" src="../../scripts/main.js" async="async"></script>  </head>
+<link href="../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../";</script>    <script>const storage = localStorage.getItem("dokka-dark-mode")
+const savedDarkMode = storage ? JSON.parse(storage) : false
+if(savedDarkMode === true){
+    document.getElementsByTagName("html")[0].classList.add("theme-dark")
+}</script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async="async"></script><link href="../../styles/style.css" rel="Stylesheet"><link href="../../styles/jetbrains-mono.css" rel="Stylesheet"><link href="../../styles/main.css" rel="Stylesheet"><link href="../../styles/prism.css" rel="Stylesheet"><link href="../../styles/logo-styles.css" rel="Stylesheet"><script type="text/javascript" src="../../scripts/clipboard.js" async="async"></script><script type="text/javascript" src="../../scripts/navigation-loader.js" async="async"></script><script type="text/javascript" src="../../scripts/platform-content-handler.js" async="async"></script><script type="text/javascript" src="../../scripts/main.js" async="async"></script><script type="text/javascript" src="../../scripts/prism.js" async="async"></script>  </head>
   <body>
+    <div class="navigation-wrapper" id="navigation-wrapper">
+      <div id="leftToggler"><span class="icon-toggler"></span></div>
+      <div class="library-name"><a href="../../index.html">sdk</a></div>
+      <div></div>
+      <div class="pull-right d-flex"><button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+      </div>
+    </div>
     <div id="container">
-      <div id="leftColumn"><a href="../../index.html">
-          <div id="logo"></div>
-        </a>
-        <div id="paneSearch"></div>
+      <div id="leftColumn">
         <div id="sideMenu"></div>
       </div>
-      <div id="main">
-        <div id="leftToggler"><span class="icon-toggler"></span></div>
-<script type="text/javascript" src="../../scripts/main.js"></script>        <div class="main-content" id="content" pageIds="sdk::com.github.thibaultbee.streampack.utils////PointingToDeclaration//165651098">
-          <div class="navigation-wrapper" id="navigation-wrapper">
-            <div class="breadcrumbs"><a href="../../index.html">sdk</a>/<a href="index.html">com.github.thibaultbee.streampack.utils</a></div>
-            <div class="pull-right d-flex">
-              <div id="searchBar"></div>
-            </div>
-          </div>
+      <div id="main"><script type="text/javascript" src="../../scripts/main.js"></script>
+        <div class="main-content" id="content" pageIds="sdk::com.github.thibaultbee.streampack.utils////PointingToDeclaration//165651098">
+          <div class="breadcrumbs"><a href="../../index.html">sdk</a>/<a href="index.html">com.github.thibaultbee.streampack.utils</a></div>
           <div class="cover ">
-            <h1 class="cover"><span>Package com.</span><wbr></wbr><span>github.</span><wbr></wbr><span>thibaultbee.</span><wbr></wbr><span>streampack.</span><wbr></wbr><span>utils</span></h1>
+            <h1 class="cover"><span><span>Package</span></span> <span>com.</span><wbr></wbr><span>github.</span><wbr></wbr><span>thibaultbee.</span><wbr></wbr><span>streampack.</span><wbr></wbr><span>utils</span></h1>
           </div>
           <div class="tabbedcontent">
             <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="Types">Types</button><button class="section-tab" data-togglable="Functions">Functions</button></div>
@@ -30,153 +34,117 @@
               <div class="table" data-togglable="Types"><a data-name="1640836393%2FClasslikes%2F165651098" anchor-label="CameraSettings" id="1640836393%2FClasslikes%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="-camera-settings/index.html">CameraSettings</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1640836393%2FClasslikes%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="-camera-settings/index.html"><span>Camera</span><wbr></wbr><span><span>Settings</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1640836393%2FClasslikes%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">class <a href="-camera-settings/index.html">CameraSettings</a>(context: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, cameraController: <span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="1640836393%2FClasslikes%2F165651098" anchor-label="CameraSettings" id="1640836393%2FClasslikes%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="1640836393%2FClasslikes%2F165651098" anchor-label="CameraSettings" id="1640836393%2FClasslikes%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Use to change camera settings.</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-camera-settings/index.html">CameraSettings</a><span class="token punctuation">(</span>context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span>cameraController<span class="token operator">: </span><span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span><span class="token punctuation">)</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Use to change camera settings. This object is returned by <a href="../com.github.thibaultbee.streampack.streamers.bases/-base-camera-streamer/camera-settings.html">BaseCameraStreamer.cameraSettings</a>.</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="-86487649%2FClasslikes%2F165651098" anchor-label="CameraStreamerConfigurationHelper" id="-86487649%2FClasslikes%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="-camera-streamer-configuration-helper/index.html">CameraStreamerConfigurationHelper</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-86487649%2FClasslikes%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="-camera-streamer-configuration-helper/index.html"><span>Camera</span><wbr></wbr><span>Streamer</span><wbr></wbr><span>Configuration</span><wbr></wbr><span><span>Helper</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-86487649%2FClasslikes%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">object <a href="-camera-streamer-configuration-helper/index.html">CameraStreamerConfigurationHelper</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="-86487649%2FClasslikes%2F165651098" anchor-label="CameraStreamerConfigurationHelper" id="-86487649%2FClasslikes%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="-86487649%2FClasslikes%2F165651098" anchor-label="CameraStreamerConfigurationHelper" id="-86487649%2FClasslikes%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Configuration helper for <a href="../com.github.thibaultbee.streampack.streamers.bases/-base-camera-streamer/index.html">BaseCameraStreamer</a>.</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-camera-streamer-configuration-helper/index.html">CameraStreamerConfigurationHelper</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Configuration helper for <a href="../com.github.thibaultbee.streampack.streamers.bases/-base-camera-streamer/index.html">BaseCameraStreamer</a>. It wraps supported values from MediaCodec, Camera and TS Muxer.</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="1424476010%2FClasslikes%2F165651098" anchor-label="Exposure" id="1424476010%2FClasslikes%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="-exposure/index.html">Exposure</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1424476010%2FClasslikes%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="-exposure/index.html"><span><span>Exposure</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1424476010%2FClasslikes%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">class <a href="-exposure/index.html">Exposure</a>(context: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, cameraController: <span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-</div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-exposure/index.html">Exposure</a><span class="token punctuation">(</span>context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span>cameraController<span class="token operator">: </span><span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span><span class="token punctuation">)</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="1425934305%2FClasslikes%2F165651098" anchor-label="Flash" id="1425934305%2FClasslikes%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="-flash/index.html">Flash</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1425934305%2FClasslikes%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="-flash/index.html"><span><span>Flash</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1425934305%2FClasslikes%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">class <a href="-flash/index.html">Flash</a>(context: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, cameraController: <span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-</div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-flash/index.html">Flash</a><span class="token punctuation">(</span>context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span>cameraController<span class="token operator">: </span><span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span><span class="token punctuation">)</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="965244921%2FClasslikes%2F165651098" anchor-label="Focus" id="965244921%2FClasslikes%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="-focus/index.html">Focus</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="965244921%2FClasslikes%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="-focus/index.html"><span><span>Focus</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="965244921%2FClasslikes%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">class <a href="-focus/index.html">Focus</a>(context: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, cameraController: <span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-</div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-focus/index.html">Focus</a><span class="token punctuation">(</span>context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span>cameraController<span class="token operator">: </span><span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span><span class="token punctuation">)</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="395736274%2FClasslikes%2F165651098" anchor-label="Stabilization" id="395736274%2FClasslikes%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="-stabilization/index.html">Stabilization</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="395736274%2FClasslikes%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="-stabilization/index.html"><span><span>Stabilization</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="395736274%2FClasslikes%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">class <a href="-stabilization/index.html">Stabilization</a>(context: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, cameraController: <span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-</div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-stabilization/index.html">Stabilization</a><span class="token punctuation">(</span>context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span>cameraController<span class="token operator">: </span><span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span><span class="token punctuation">)</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="1607263962%2FClasslikes%2F165651098" anchor-label="StreamerConfigurationHelper" id="1607263962%2FClasslikes%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="-streamer-configuration-helper/index.html">StreamerConfigurationHelper</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1607263962%2FClasslikes%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="-streamer-configuration-helper/index.html"><span>Streamer</span><wbr></wbr><span>Configuration</span><wbr></wbr><span><span>Helper</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1607263962%2FClasslikes%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">object <a href="-streamer-configuration-helper/index.html">StreamerConfigurationHelper</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="1607263962%2FClasslikes%2F165651098" anchor-label="StreamerConfigurationHelper" id="1607263962%2FClasslikes%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="1607263962%2FClasslikes%2F165651098" anchor-label="StreamerConfigurationHelper" id="1607263962%2FClasslikes%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Configuration helper for <a href="../com.github.thibaultbee.streampack.streamers.bases/-base-streamer/index.html">BaseStreamer</a>.</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-streamer-configuration-helper/index.html">StreamerConfigurationHelper</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Configuration helper for <a href="../com.github.thibaultbee.streampack.streamers.bases/-base-streamer/index.html">BaseStreamer</a>. It wraps supported values from MediaCodec and TS Muxer.</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="-310518914%2FClasslikes%2F165651098" anchor-label="WhiteBalance" id="-310518914%2FClasslikes%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="-white-balance/index.html">WhiteBalance</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-310518914%2FClasslikes%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="-white-balance/index.html"><span>White</span><wbr></wbr><span><span>Balance</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-310518914%2FClasslikes%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">class <a href="-white-balance/index.html">WhiteBalance</a>(context: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, cameraController: <span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-</div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-white-balance/index.html">WhiteBalance</a><span class="token punctuation">(</span>context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span>cameraController<span class="token operator">: </span><span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span><span class="token punctuation">)</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="2049592862%2FClasslikes%2F165651098" anchor-label="Zoom" id="2049592862%2FClasslikes%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="-zoom/index.html">Zoom</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2049592862%2FClasslikes%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="-zoom/index.html"><span><span>Zoom</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2049592862%2FClasslikes%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">class <a href="-zoom/index.html">Zoom</a>(context: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, cameraController: <span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-</div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-zoom/index.html">Zoom</a><span class="token punctuation">(</span>context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span>cameraController<span class="token operator">: </span><span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span><span class="token punctuation">)</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -185,289 +153,221 @@
               <div class="table" data-togglable="Functions"><a data-name="-1666340228%2FFunctions%2F165651098" anchor-label="getAutoFocusModes" id="-1666340228%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="get-auto-focus-modes.html">getAutoFocusModes</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1666340228%2FFunctions%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="get-auto-focus-modes.html"><span>get</span><wbr></wbr><span>Auto</span><wbr></wbr><span>Focus</span><wbr></wbr><span><span>Modes</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1666340228%2FFunctions%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>.<a href="get-auto-focus-modes.html">getAutoFocusModes</a>(cameraId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>&gt;<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="-1666340228%2FFunctions%2F165651098" anchor-label="getAutoFocusModes" id="-1666340228%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="-1666340228%2FFunctions%2F165651098" anchor-label="getAutoFocusModes" id="-1666340228%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Get supported auto focus modes.</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-auto-focus-modes.html"><span class="token function">getAutoFocusModes</span></a><span class="token punctuation">(</span>cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Get supported auto focus modes.</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="325209347%2FFunctions%2F165651098" anchor-label="getAutoWhiteBalanceModes" id="325209347%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="get-auto-white-balance-modes.html">getAutoWhiteBalanceModes</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="325209347%2FFunctions%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="get-auto-white-balance-modes.html"><span>get</span><wbr></wbr><span>Auto</span><wbr></wbr><span>White</span><wbr></wbr><span>Balance</span><wbr></wbr><span><span>Modes</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="325209347%2FFunctions%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>.<a href="get-auto-white-balance-modes.html">getAutoWhiteBalanceModes</a>(cameraId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>&gt;<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="325209347%2FFunctions%2F165651098" anchor-label="getAutoWhiteBalanceModes" id="325209347%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="325209347%2FFunctions%2F165651098" anchor-label="getAutoWhiteBalanceModes" id="325209347%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Gets supported auto white balance modes</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-auto-white-balance-modes.html"><span class="token function">getAutoWhiteBalanceModes</span></a><span class="token punctuation">(</span>cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Gets supported auto white balance modes</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="30425835%2FFunctions%2F165651098" anchor-label="getBackCameraList" id="30425835%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="get-back-camera-list.html">getBackCameraList</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="30425835%2FFunctions%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="get-back-camera-list.html"><span>get</span><wbr></wbr><span>Back</span><wbr></wbr><span>Camera</span><wbr></wbr><span><span>List</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="30425835%2FFunctions%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>.<a href="get-back-camera-list.html">getBackCameraList</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="30425835%2FFunctions%2F165651098" anchor-label="getBackCameraList" id="30425835%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="30425835%2FFunctions%2F165651098" anchor-label="getBackCameraList" id="30425835%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Gets back camera id list.</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-back-camera-list.html"><span class="token function">getBackCameraList</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Gets back camera id list.</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="179159390%2FFunctions%2F165651098" anchor-label="getCameraCharacteristics" id="179159390%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="get-camera-characteristics.html">getCameraCharacteristics</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="179159390%2FFunctions%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="get-camera-characteristics.html"><span>get</span><wbr></wbr><span>Camera</span><wbr></wbr><span><span>Characteristics</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="179159390%2FFunctions%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>.<a href="get-camera-characteristics.html">getCameraCharacteristics</a>(cameraId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraCharacteristics.html">CameraCharacteristics</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="179159390%2FFunctions%2F165651098" anchor-label="getCameraCharacteristics" id="179159390%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="179159390%2FFunctions%2F165651098" anchor-label="getCameraCharacteristics" id="179159390%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Get camera characteristics.</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-camera-characteristics.html"><span class="token function">getCameraCharacteristics</span></a><span class="token punctuation">(</span>cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraCharacteristics.html">CameraCharacteristics</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Get camera characteristics.</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="62491684%2FFunctions%2F165651098" anchor-label="getCameraList" id="62491684%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="get-camera-list.html">getCameraList</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="62491684%2FFunctions%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="get-camera-list.html"><span>get</span><wbr></wbr><span>Camera</span><wbr></wbr><span><span>List</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="62491684%2FFunctions%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>.<a href="get-camera-list.html">getCameraList</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="62491684%2FFunctions%2F165651098" anchor-label="getCameraList" id="62491684%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="62491684%2FFunctions%2F165651098" anchor-label="getCameraList" id="62491684%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Gets camera id list.</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-camera-list.html"><span class="token function">getCameraList</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Gets camera id list.</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="-1619809419%2FFunctions%2F165651098" anchor-label="getCameraOutputSizes" id="-1619809419%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="get-camera-output-sizes.html">getCameraOutputSizes</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1619809419%2FFunctions%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="get-camera-output-sizes.html"><span>get</span><wbr></wbr><span>Camera</span><wbr></wbr><span>Output</span><wbr></wbr><span><span>Sizes</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1619809419%2FFunctions%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun &lt;<a href="get-camera-output-sizes.html">T</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>&gt; <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>.<a href="get-camera-output-sizes.html">getCameraOutputSizes</a>(klass: <a href="https://developer.android.com/reference/kotlin/java/lang/Class.html">Class</a>&lt;<a href="get-camera-output-sizes.html">T</a>&gt;, cameraId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a>&gt;<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="-1619809419%2FFunctions%2F165651098" anchor-label="getCameraOutputSizes" id="-1619809419%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="-1619809419%2FFunctions%2F165651098" anchor-label="getCameraOutputSizes" id="-1619809419%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Gets list of output sizes compatible with <a href="get-camera-output-sizes.html">klass</a> of a camera.</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="get-camera-output-sizes.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-camera-output-sizes.html"><span class="token function">getCameraOutputSizes</span></a><span class="token punctuation">(</span>klass<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="get-camera-output-sizes.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span>cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Gets list of output sizes compatible with <a href="get-camera-output-sizes.html">klass</a> of a camera. Use it to select camera preview size.</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="-1886250213%2FFunctions%2F165651098" anchor-label="getExposureRange" id="-1886250213%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="get-exposure-range.html">getExposureRange</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1886250213%2FFunctions%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="get-exposure-range.html"><span>get</span><wbr></wbr><span>Exposure</span><wbr></wbr><span><span>Range</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1886250213%2FFunctions%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>.<a href="get-exposure-range.html">getExposureRange</a>(cameraId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://developer.android.com/reference/kotlin/android/util/Range.html">Range</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>&gt;<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="-1886250213%2FFunctions%2F165651098" anchor-label="getExposureRange" id="-1886250213%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="-1886250213%2FFunctions%2F165651098" anchor-label="getExposureRange" id="-1886250213%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Gets exposure range.</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-exposure-range.html"><span class="token function">getExposureRange</span></a><span class="token punctuation">(</span>cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Range.html">Range</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Gets exposure range.</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="1796333584%2FFunctions%2F165651098" anchor-label="getExposureStep" id="1796333584%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="get-exposure-step.html">getExposureStep</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1796333584%2FFunctions%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="get-exposure-step.html"><span>get</span><wbr></wbr><span>Exposure</span><wbr></wbr><span><span>Step</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1796333584%2FFunctions%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>.<a href="get-exposure-step.html">getExposureStep</a>(cameraId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://developer.android.com/reference/kotlin/android/util/Rational.html">Rational</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="1796333584%2FFunctions%2F165651098" anchor-label="getExposureStep" id="1796333584%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="1796333584%2FFunctions%2F165651098" anchor-label="getExposureStep" id="1796333584%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Get exposure compensation step.</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-exposure-step.html"><span class="token function">getExposureStep</span></a><span class="token punctuation">(</span>cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Rational.html">Rational</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Get exposure compensation step.</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="79891308%2FFunctions%2F165651098" anchor-label="getFacingDirection" id="79891308%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="get-facing-direction.html">getFacingDirection</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="79891308%2FFunctions%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="get-facing-direction.html"><span>get</span><wbr></wbr><span>Facing</span><wbr></wbr><span><span>Direction</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="79891308%2FFunctions%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>.<a href="get-facing-direction.html">getFacingDirection</a>(cameraId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>?<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="79891308%2FFunctions%2F165651098" anchor-label="getFacingDirection" id="79891308%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="79891308%2FFunctions%2F165651098" anchor-label="getFacingDirection" id="79891308%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Gets camera facing direction.</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-facing-direction.html"><span class="token function">getFacingDirection</span></a><span class="token punctuation">(</span>cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Gets camera facing direction.</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="1082117695%2FFunctions%2F165651098" anchor-label="getFrontCameraList" id="1082117695%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="get-front-camera-list.html">getFrontCameraList</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1082117695%2FFunctions%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="get-front-camera-list.html"><span>get</span><wbr></wbr><span>Front</span><wbr></wbr><span>Camera</span><wbr></wbr><span><span>List</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1082117695%2FFunctions%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>.<a href="get-front-camera-list.html">getFrontCameraList</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="1082117695%2FFunctions%2F165651098" anchor-label="getFrontCameraList" id="1082117695%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="1082117695%2FFunctions%2F165651098" anchor-label="getFrontCameraList" id="1082117695%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Gets back camera id list.</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-front-camera-list.html"><span class="token function">getFrontCameraList</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Gets back camera id list.</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="-94145881%2FFunctions%2F165651098" anchor-label="getLensDistanceRange" id="-94145881%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="get-lens-distance-range.html">getLensDistanceRange</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-94145881%2FFunctions%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="get-lens-distance-range.html"><span>get</span><wbr></wbr><span>Lens</span><wbr></wbr><span>Distance</span><wbr></wbr><span><span>Range</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-94145881%2FFunctions%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>.<a href="get-lens-distance-range.html">getLensDistanceRange</a>(cameraId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://developer.android.com/reference/kotlin/android/util/Range.html">Range</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a>&gt;<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="-94145881%2FFunctions%2F165651098" anchor-label="getLensDistanceRange" id="-94145881%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="-94145881%2FFunctions%2F165651098" anchor-label="getLensDistanceRange" id="-94145881%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Get supported lens distance range.</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-lens-distance-range.html"><span class="token function">getLensDistanceRange</span></a><span class="token punctuation">(</span>cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Range.html">Range</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Get supported lens distance range.</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="2083595102%2FFunctions%2F165651098" anchor-label="getZoomRatioRange" id="2083595102%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="get-zoom-ratio-range.html">getZoomRatioRange</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2083595102%2FFunctions%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="get-zoom-ratio-range.html"><span>get</span><wbr></wbr><span>Zoom</span><wbr></wbr><span>Ratio</span><wbr></wbr><span><span>Range</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2083595102%2FFunctions%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>.<a href="get-zoom-ratio-range.html">getZoomRatioRange</a>(cameraId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://developer.android.com/reference/kotlin/android/util/Range.html">Range</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a>&gt;<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="2083595102%2FFunctions%2F165651098" anchor-label="getZoomRatioRange" id="2083595102%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="2083595102%2FFunctions%2F165651098" anchor-label="getZoomRatioRange" id="2083595102%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Gets zoom ratio range.</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-zoom-ratio-range.html"><span class="token function">getZoomRatioRange</span></a><span class="token punctuation">(</span>cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Range.html">Range</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a><span class="token operator">&gt;</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Gets zoom ratio range.</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="-1944351643%2FFunctions%2F165651098" anchor-label="isBackCamera" id="-1944351643%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="is-back-camera.html">isBackCamera</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1944351643%2FFunctions%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="is-back-camera.html"><span>is</span><wbr></wbr><span>Back</span><wbr></wbr><span><span>Camera</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1944351643%2FFunctions%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>.<a href="is-back-camera.html">isBackCamera</a>(cameraId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="-1944351643%2FFunctions%2F165651098" anchor-label="isBackCamera" id="-1944351643%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="-1944351643%2FFunctions%2F165651098" anchor-label="isBackCamera" id="-1944351643%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Check if string is a back camera id</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-back-camera.html"><span class="token function">isBackCamera</span></a><span class="token punctuation">(</span>cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Check if string is a back camera id</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="-632920520%2FFunctions%2F165651098" anchor-label="isFlashAvailable" id="-632920520%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="is-flash-available.html">isFlashAvailable</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-632920520%2FFunctions%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="is-flash-available.html"><span>is</span><wbr></wbr><span>Flash</span><wbr></wbr><span><span>Available</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-632920520%2FFunctions%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>.<a href="is-flash-available.html">isFlashAvailable</a>(cameraId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="-632920520%2FFunctions%2F165651098" anchor-label="isFlashAvailable" id="-632920520%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="-632920520%2FFunctions%2F165651098" anchor-label="isFlashAvailable" id="-632920520%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Checks if the camera has a flash device.</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-flash-available.html"><span class="token function">isFlashAvailable</span></a><span class="token punctuation">(</span>cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Checks if the camera has a flash device.</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="-2141031891%2FFunctions%2F165651098" anchor-label="isFrameRateSupported" id="-2141031891%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="is-frame-rate-supported.html">isFrameRateSupported</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2141031891%2FFunctions%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="is-frame-rate-supported.html"><span>is</span><wbr></wbr><span>Frame</span><wbr></wbr><span>Rate</span><wbr></wbr><span><span>Supported</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2141031891%2FFunctions%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>.<a href="is-frame-rate-supported.html">isFrameRateSupported</a>(cameraId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, fps: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="-2141031891%2FFunctions%2F165651098" anchor-label="isFrameRateSupported" id="-2141031891%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="-2141031891%2FFunctions%2F165651098" anchor-label="isFrameRateSupported" id="-2141031891%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Checks if the camera supports a frame rate</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-frame-rate-supported.html"><span class="token function">isFrameRateSupported</span></a><span class="token punctuation">(</span>cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span>fps<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Checks if the camera supports a frame rate</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="-1877745291%2FFunctions%2F165651098" anchor-label="isFrontCamera" id="-1877745291%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="is-front-camera.html">isFrontCamera</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1877745291%2FFunctions%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="is-front-camera.html"><span>is</span><wbr></wbr><span>Front</span><wbr></wbr><span><span>Camera</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1877745291%2FFunctions%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>.<a href="is-front-camera.html">isFrontCamera</a>(cameraId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="-1877745291%2FFunctions%2F165651098" anchor-label="isFrontCamera" id="-1877745291%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="-1877745291%2FFunctions%2F165651098" anchor-label="isFrontCamera" id="-1877745291%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Check if string is a front camera id</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-front-camera.html"><span class="token function">isFrontCamera</span></a><span class="token punctuation">(</span>cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Check if string is a front camera id</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 <a data-name="-153545055%2FFunctions%2F165651098" anchor-label="isOpticalStabilizationAvailable" id="-153545055%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>
                 <div class="table-row" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release">
                   <div class="main-subrow keyValue ">
-                    <div class=""><span class="inline-flex"><a href="is-optical-stabilization-available.html">isOpticalStabilizationAvailable</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-153545055%2FFunctions%2F165651098"></span>
+                    <div class=""><span class="inline-flex"><a href="is-optical-stabilization-available.html"><span>is</span><wbr></wbr><span>Optical</span><wbr></wbr><span>Stabilization</span><wbr></wbr><span><span>Available</span></span></a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-153545055%2FFunctions%2F165651098"></span>
                           <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                         </span></span></div>
                     <div>
-                      <div class="title"><div class="divergent-group" data-filterable-current=":sdk:dokkaHtml/release" data-filterable-set=":sdk:dokkaHtml/release"><div class="with-platform-tags"><span class="pull-right"></span></div>
-
-  <div>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>.<a href="is-optical-stabilization-available.html">isOpticalStabilizationAvailable</a>(cameraId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
-  </div>
-<a data-name="-153545055%2FFunctions%2F165651098" anchor-label="isOpticalStabilizationAvailable" id="-153545055%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="brief "><a data-name="-153545055%2FFunctions%2F165651098" anchor-label="isOpticalStabilizationAvailable" id="-153545055%2FFunctions%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Checks if the camera supports optical stabilization.</div></div>
-</div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-optical-stabilization-available.html"><span class="token function">isOpticalStabilizationAvailable</span></a><span class="token punctuation">(</span>cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Checks if the camera supports optical stabilization.</p></div></div></div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -475,7 +375,7 @@
             </div>
           </div>
         </div>
-        <div class="footer"><span class="go-to-top-icon"><a href="#content"></a></span><span>© 2022 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span></div>
+        <div class="footer"><span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2022 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span></div>
       </div>
     </div>
   </body>

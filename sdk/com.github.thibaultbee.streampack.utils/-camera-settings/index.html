@@ -2,27 +2,31 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
     <title>CameraSettings</title>
-<link href="../../../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script><script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script><link href="../../../styles/style.css" rel="Stylesheet"><link href="../../../styles/logo-styles.css" rel="Stylesheet"><link href="../../../styles/jetbrains-mono.css" rel="Stylesheet"><link href="../../../styles/main.css" rel="Stylesheet"><script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script><script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script><script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script><script type="text/javascript" src="../../../scripts/main.js" async="async"></script>  </head>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>    <script>const storage = localStorage.getItem("dokka-dark-mode")
+const savedDarkMode = storage ? JSON.parse(storage) : false
+if(savedDarkMode === true){
+    document.getElementsByTagName("html")[0].classList.add("theme-dark")
+}</script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script><link href="../../../styles/style.css" rel="Stylesheet"><link href="../../../styles/jetbrains-mono.css" rel="Stylesheet"><link href="../../../styles/main.css" rel="Stylesheet"><link href="../../../styles/prism.css" rel="Stylesheet"><link href="../../../styles/logo-styles.css" rel="Stylesheet"><script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script><script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script><script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script><script type="text/javascript" src="../../../scripts/main.js" async="async"></script><script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>  </head>
   <body>
+    <div class="navigation-wrapper" id="navigation-wrapper">
+      <div id="leftToggler"><span class="icon-toggler"></span></div>
+      <div class="library-name"><a href="../../../index.html">sdk</a></div>
+      <div></div>
+      <div class="pull-right d-flex"><button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+      </div>
+    </div>
     <div id="container">
-      <div id="leftColumn"><a href="../../../index.html">
-          <div id="logo"></div>
-        </a>
-        <div id="paneSearch"></div>
+      <div id="leftColumn">
         <div id="sideMenu"></div>
       </div>
-      <div id="main">
-        <div id="leftToggler"><span class="icon-toggler"></span></div>
-<script type="text/javascript" src="../../../scripts/main.js"></script>        <div class="main-content" id="content" pageIds="sdk::com.github.thibaultbee.streampack.utils/CameraSettings///PointingToDeclaration//165651098">
-          <div class="navigation-wrapper" id="navigation-wrapper">
-            <div class="breadcrumbs"><a href="../../../index.html">sdk</a>/<a href="../index.html">com.github.thibaultbee.streampack.utils</a>/<a href="index.html">CameraSettings</a></div>
-            <div class="pull-right d-flex">
-              <div id="searchBar"></div>
-            </div>
-          </div>
+      <div id="main"><script type="text/javascript" src="../../../scripts/main.js"></script>
+        <div class="main-content" id="content" pageIds="sdk::com.github.thibaultbee.streampack.utils/CameraSettings///PointingToDeclaration//165651098">
+          <div class="breadcrumbs"><a href="../../../index.html">sdk</a>/<a href="../index.html">com.github.thibaultbee.streampack.utils</a>/<a href="index.html">CameraSettings</a></div>
           <div class="cover ">
-            <h1 class="cover"><span>Camera</span><wbr></wbr><span>Settings</span></h1>
-            <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">class <a href="index.html">CameraSettings</a>(context: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, cameraController: <span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph">Use to change camera settings. This object is returned by <a href="../../com.github.thibaultbee.streampack.streamers.bases/-base-camera-streamer/camera-settings.html">BaseCameraStreamer.cameraSettings</a>.</p></div></div>
+            <h1 class="cover"><span>Camera</span><wbr></wbr><span><span>Settings</span></span></h1>
+            <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">CameraSettings</a><span class="token punctuation">(</span>context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span>cameraController<span class="token operator">: </span><span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span><span class="token punctuation">)</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph">Use to change camera settings. This object is returned by <a href="../../com.github.thibaultbee.streampack.streamers.bases/-base-camera-streamer/camera-settings.html">BaseCameraStreamer.cameraSettings</a>.</p></div></div>
           </div>
           <div class="tabbedcontent">
             <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="Constructors">Constructors</button><button class="section-tab" data-togglable="Properties">Properties</button></div>
@@ -36,7 +40,7 @@
                         </span></span></div>
                     <div>
                       <div class="title">
-                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace">fun <a href="-camera-settings.html">CameraSettings</a>(context: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, cameraController: <span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="-camera-settings.html"><span class="token function">CameraSettings</span></a><span class="token punctuation">(</span>context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span>cameraController<span class="token operator">: </span><span data-unresolved-link="com.github.thibaultbee.streampack.internal.sources.camera/CameraController///PointingToDeclaration/">CameraController</span><span class="token punctuation">)</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
                       </div>
                     </div>
                   </div>
@@ -51,7 +55,7 @@
                         </span></span></div>
                     <div>
                       <div class="title">
-                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><a data-name="24415823%2FProperties%2F165651098" anchor-label="exposure" id="24415823%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="symbol monospace">val <a href="exposure.html">exposure</a>: <a href="../-exposure/index.html">Exposure</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="24415823%2FProperties%2F165651098" anchor-label="exposure" id="24415823%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Current camera exposure API.</div></div></div>
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><a data-name="24415823%2FProperties%2F165651098" anchor-label="exposure" id="24415823%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="exposure.html">exposure</a><span class="token operator">: </span><a href="../-exposure/index.html">Exposure</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="24415823%2FProperties%2F165651098" anchor-label="exposure" id="24415823%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><p class="paragraph">Current camera exposure API.</p></div></div></div>
                       </div>
                     </div>
                   </div>
@@ -64,7 +68,7 @@
                         </span></span></div>
                     <div>
                       <div class="title">
-                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><a data-name="-1661926732%2FProperties%2F165651098" anchor-label="flash" id="-1661926732%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="symbol monospace">val <a href="flash.html">flash</a>: <a href="../-flash/index.html">Flash</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="-1661926732%2FProperties%2F165651098" anchor-label="flash" id="-1661926732%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Current camera flash API.</div></div></div>
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><a data-name="-1661926732%2FProperties%2F165651098" anchor-label="flash" id="-1661926732%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="flash.html">flash</a><span class="token operator">: </span><a href="../-flash/index.html">Flash</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="-1661926732%2FProperties%2F165651098" anchor-label="flash" id="-1661926732%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><p class="paragraph">Current camera flash API.</p></div></div></div>
                       </div>
                     </div>
                   </div>
@@ -77,7 +81,7 @@
                         </span></span></div>
                     <div>
                       <div class="title">
-                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><a data-name="-2122616116%2FProperties%2F165651098" anchor-label="focus" id="-2122616116%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="symbol monospace">val <a href="focus.html">focus</a>: <a href="../-focus/index.html">Focus</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="-2122616116%2FProperties%2F165651098" anchor-label="focus" id="-2122616116%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Current focus API.</div></div></div>
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><a data-name="-2122616116%2FProperties%2F165651098" anchor-label="focus" id="-2122616116%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="focus.html">focus</a><span class="token operator">: </span><a href="../-focus/index.html">Focus</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="-2122616116%2FProperties%2F165651098" anchor-label="focus" id="-2122616116%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><p class="paragraph">Current focus API.</p></div></div></div>
                       </div>
                     </div>
                   </div>
@@ -90,7 +94,7 @@
                         </span></span></div>
                     <div>
                       <div class="title">
-                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><a data-name="-393791323%2FProperties%2F165651098" anchor-label="stabilization" id="-393791323%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="symbol monospace">val <a href="stabilization.html">stabilization</a>: <a href="../-stabilization/index.html">Stabilization</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="-393791323%2FProperties%2F165651098" anchor-label="stabilization" id="-393791323%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Current stabilization API.</div></div></div>
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><a data-name="-393791323%2FProperties%2F165651098" anchor-label="stabilization" id="-393791323%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="stabilization.html">stabilization</a><span class="token operator">: </span><a href="../-stabilization/index.html">Stabilization</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="-393791323%2FProperties%2F165651098" anchor-label="stabilization" id="-393791323%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><p class="paragraph">Current stabilization API.</p></div></div></div>
                       </div>
                     </div>
                   </div>
@@ -103,7 +107,7 @@
                         </span></span></div>
                     <div>
                       <div class="title">
-                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><a data-name="-527675933%2FProperties%2F165651098" anchor-label="whiteBalance" id="-527675933%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="symbol monospace">val <a href="white-balance.html">whiteBalance</a>: <a href="../-white-balance/index.html">WhiteBalance</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="-527675933%2FProperties%2F165651098" anchor-label="whiteBalance" id="-527675933%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Current camera white balance API.</div></div></div>
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><a data-name="-527675933%2FProperties%2F165651098" anchor-label="whiteBalance" id="-527675933%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="white-balance.html">whiteBalance</a><span class="token operator">: </span><a href="../-white-balance/index.html">WhiteBalance</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="-527675933%2FProperties%2F165651098" anchor-label="whiteBalance" id="-527675933%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><p class="paragraph">Current camera white balance API.</p></div></div></div>
                       </div>
                     </div>
                   </div>
@@ -116,7 +120,7 @@
                         </span></span></div>
                     <div>
                       <div class="title">
-                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><a data-name="-2121029245%2FProperties%2F165651098" anchor-label="zoom" id="-2121029245%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="symbol monospace">val <a href="zoom.html">zoom</a>: <a href="../-zoom/index.html">Zoom</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="-2121029245%2FProperties%2F165651098" anchor-label="zoom" id="-2121029245%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a>Current camera zoom API.</div></div></div>
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":sdk:dokkaHtml/release"><a data-name="-2121029245%2FProperties%2F165651098" anchor-label="zoom" id="-2121029245%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="zoom.html">zoom</a><span class="token operator">: </span><a href="../-zoom/index.html">Zoom</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="-2121029245%2FProperties%2F165651098" anchor-label="zoom" id="-2121029245%2FProperties%2F165651098" data-filterable-set=":sdk:dokkaHtml/release"></a><p class="paragraph">Current camera zoom API.</p></div></div></div>
                       </div>
                     </div>
                   </div>
@@ -125,7 +129,7 @@
             </div>
           </div>
         </div>
-        <div class="footer"><span class="go-to-top-icon"><a href="#content"></a></span><span>© 2022 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span></div>
+        <div class="footer"><span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2022 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span></div>
       </div>
     </div>
   </body>
