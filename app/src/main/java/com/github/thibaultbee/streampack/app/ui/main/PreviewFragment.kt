@@ -36,7 +36,6 @@ import com.jakewharton.rxbinding4.view.clicks
 import com.tbruyelle.rxpermissions3.RxPermissions
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
-import java.util.concurrent.TimeUnit
 
 class PreviewFragment : Fragment() {
     private val fragmentDisposables = CompositeDisposable()
@@ -175,20 +174,22 @@ class PreviewFragment : Fragment() {
 
         override fun surfaceCreated(holder: SurfaceHolder) {
             // Selects appropriate preview size and configures view finder
-            val previewSize = getPreviewOutputSize(
-                binding.preview.display,
-                requireContext().getCameraCharacteristics(viewModel.cameraId),
-                SurfaceHolder::class.java
-            )
-            Log.d(
-                TAG,
-                "View finder size: ${binding.preview.width} x ${binding.preview.height}"
-            )
-            Log.d(TAG, "Selected preview size: $previewSize")
-            binding.preview.setAspectRatio(previewSize.width, previewSize.height)
+            viewModel.cameraId?.let {
+                val previewSize = getPreviewOutputSize(
+                    binding.preview.display,
+                    requireContext().getCameraCharacteristics(it),
+                    SurfaceHolder::class.java
+                )
+                Log.d(
+                    TAG,
+                    "View finder size: ${binding.preview.width} x ${binding.preview.height}"
+                )
+                Log.d(TAG, "Selected preview size: $previewSize")
+                binding.preview.setAspectRatio(previewSize.width, previewSize.height)
 
-            // To ensure that size is set, initialize camera in the view's thread
-            binding.preview.post { viewModel.startPreview(holder.surface) }
+                // To ensure that size is set, initialize camera in the view's thread
+                binding.preview.post { viewModel.startPreview(holder.surface) }
+            }
         }
     }
 }

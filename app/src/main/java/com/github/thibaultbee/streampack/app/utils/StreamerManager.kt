@@ -50,13 +50,13 @@ class StreamerManager(
             getLiveStreamer()?.onConnectionListener = value
         }
 
-    val cameraId: String
+    val cameraId: String?
         get() {
             return if (streamer is ICameraStreamer) {
                 val cameraStreamer = streamer as ICameraStreamer
                 cameraStreamer.camera
             } else {
-                "Not applicable"
+                null
             }
         }
 

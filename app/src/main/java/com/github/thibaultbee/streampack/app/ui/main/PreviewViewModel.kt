@@ -41,7 +41,7 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
         private const val TAG = "PreviewViewModel"
     }
 
-    val cameraId: String
+    val cameraId: String?
         get() = streamerManager.cameraId
 
     val streamerError = MutableLiveData<String>()

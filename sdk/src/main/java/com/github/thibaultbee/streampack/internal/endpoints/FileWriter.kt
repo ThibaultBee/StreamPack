@@ -24,7 +24,9 @@ import java.io.FileOutputStream
 class FileWriter(val logger: ILogger) : IEndpoint {
     var file: File? = null
         set(value) {
-            fileOutputStream = FileOutputStream(value, false)
+            value?.let {
+                fileOutputStream = FileOutputStream(value, false)
+            }
             field = value
         }
 
