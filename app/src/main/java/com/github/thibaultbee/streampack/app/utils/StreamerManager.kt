@@ -26,6 +26,7 @@ import com.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.IStreamer
+import com.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
 import com.github.thibaultbee.streampack.utils.CameraSettings
 import com.github.thibaultbee.streampack.utils.getBackCameraList
 import com.github.thibaultbee.streampack.utils.getFrontCameraList
@@ -66,6 +67,10 @@ class StreamerManager(
         } else {
             null
         }
+    }
+
+    private fun getBaseStreamer(): IStreamer {
+        return getStreamer<IStreamer>()!!
     }
 
     private fun getCameraStreamer(): ICameraStreamer? {
@@ -145,5 +150,18 @@ class StreamerManager(
     }
 
     val cameraSettings: CameraSettings?
-        get() = getCameraStreamer()?.cameraSettings
+        get() {
+            val settings = getBaseStreamer().settings
+            return if (settings is IBaseCameraStreamerSettings) {
+                settings.camera
+            } else {
+                null
+            }
+        }
+
+    var isMuted: Boolean
+        get() = getBaseStreamer().settings.audio.isMuted
+        set(value) {
+            getBaseStreamer().settings.audio.isMuted = value
+        }
 }

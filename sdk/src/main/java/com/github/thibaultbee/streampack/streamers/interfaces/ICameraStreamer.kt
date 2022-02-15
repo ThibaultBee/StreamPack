@@ -19,7 +19,7 @@ import android.Manifest
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.streamers.bases.BaseStreamer
-import com.github.thibaultbee.streampack.utils.CameraSettings
+import com.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
 
 interface ICameraStreamer {
     /**
@@ -28,9 +28,9 @@ interface ICameraStreamer {
     var camera: String
 
     /**
-     * Get the camera settings.
+     *  Access extended camera settings.
      */
-    val cameraSettings: CameraSettings
+    val settings: IBaseCameraStreamerSettings
 
     /**
      * Starts audio and video capture.

@@ -31,11 +31,13 @@ import com.github.thibaultbee.streampack.internal.events.EventHandler
 import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
-import com.github.thibaultbee.streampack.internal.sources.IFrameCapture
+import com.github.thibaultbee.streampack.internal.sources.IAudioCapture
 import com.github.thibaultbee.streampack.internal.sources.ISurfaceCapture
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.logger.ILogger
 import com.github.thibaultbee.streampack.streamers.interfaces.IStreamer
+import com.github.thibaultbee.streampack.streamers.interfaces.settings.IAudioSettings
+import com.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseStreamerSettings
 import com.github.thibaultbee.streampack.utils.CameraStreamerConfigurationHelper
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
@@ -55,7 +57,7 @@ abstract class BaseStreamer(
     private val context: Context,
     private val tsServiceInfo: ServiceInfo,
     protected val videoCapture: ISurfaceCapture<VideoConfig>?,
-    protected val audioCapture: IFrameCapture<AudioConfig>?,
+    protected val audioCapture: IAudioCapture?,
     protected val endpoint: IEndpoint,
     protected val logger: ILogger
 ) : EventHandler(), IStreamer {
@@ -64,6 +66,7 @@ abstract class BaseStreamer(
      * Supports only one listener.
      */
     override var onErrorListener: OnErrorListener? = null
+    override val settings = Settings()
 
     private var audioTsStreamId: Short? = null
     private var videoTsStreamId: Short? = null
@@ -337,5 +340,32 @@ abstract class BaseStreamer(
         audioCapture?.release()
         videoCapture?.release()
         endpoint.release()
+    }
+
+    /**
+     * Base streamer settings (ie available for all streamers).
+     */
+    open inner class Settings : IBaseStreamerSettings {
+        /**
+         * Get audio settings
+         */
+        override val audio = Audio()
+
+        inner class Audio : IAudioSettings {
+            /**
+             * Get/set audio mute
+             */
+            override var isMuted: Boolean
+                /**
+                 * @return [Boolean.true] if audio is muted, [Boolean.false] if audio is running.
+                 */
+                get() = audioCapture?.isMuted ?: true
+                /**
+                 * @param value [Boolean.true] to mute audio, [Boolean.false]to unmute audio.
+                 */
+                set(value) {
+                    audioCapture?.isMuted = value
+                }
+        }
     }
 }
