@@ -38,6 +38,7 @@ import com.github.thibaultbee.streampack.logger.ILogger
 import com.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.settings.IAudioSettings
 import com.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseStreamerSettings
+import com.github.thibaultbee.streampack.streamers.interfaces.settings.IVideoSettings
 import com.github.thibaultbee.streampack.utils.CameraStreamerConfigurationHelper
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
@@ -158,19 +159,6 @@ abstract class BaseStreamer(
     } else {
         null
     }
-
-    protected var audioBitrate: Int
-        get() = audioEncoder?.bitrate ?: throw UnsupportedOperationException("No audio source")
-        set(value) {
-            audioEncoder?.let { it.bitrate = value }
-                ?: throw UnsupportedOperationException("No audio source")
-        }
-    protected var videoBitrate: Int
-        get() = videoEncoder?.bitrate ?: throw UnsupportedOperationException("No video source")
-        set(value) {
-            videoEncoder?.let { it.bitrate = value }
-                ?: throw UnsupportedOperationException("No video source")
-        }
 
     private val tsMux = TSMuxer(muxListener)
 
@@ -347,11 +335,50 @@ abstract class BaseStreamer(
      */
     open inner class Settings : IBaseStreamerSettings {
         /**
+         * Get video settings
+         */
+        override val video = Video()
+
+        /**
          * Get audio settings
          */
         override val audio = Audio()
 
+        inner class Video : IVideoSettings {
+            /**
+             * Get/set video bitrate.
+             * Do not set this value if you are using a bitrate regulator.
+             */
+            override var bitrate: Int
+                /**
+                 * @return video bitrate in bps
+                 */
+                get() = videoEncoder?.bitrate ?: 0
+                /**
+                 * @param value video bitrate in bps
+                 */
+                set(value) {
+                    videoEncoder?.let { it.bitrate = value }
+                }
+        }
+
         inner class Audio : IAudioSettings {
+            /**
+             * Get/set audio bitrate.
+             * Do not set this value if you are using a bitrate regulator.
+             */
+            override var bitrate: Int
+                /**
+                 * @return audio bitrate in bps
+                 */
+                get() = audioEncoder?.bitrate ?: 0
+                /**
+                 * @param value audio bitrate in bps
+                 */
+                set(value) {
+                    audioEncoder?.let { it.bitrate = value }
+                }
+
             /**
              * Get/set audio mute
              */
