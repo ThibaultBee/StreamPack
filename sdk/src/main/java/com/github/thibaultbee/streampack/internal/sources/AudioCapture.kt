@@ -30,8 +30,11 @@ import com.github.thibaultbee.streampack.internal.utils.TimeUtils
 import com.github.thibaultbee.streampack.logger.ILogger
 import java.nio.ByteBuffer
 
-class AudioCapture(val logger: ILogger) : IFrameCapture<AudioConfig> {
+class AudioCapture(val logger: ILogger) : IAudioCapture {
     private var audioRecord: AudioRecord? = null
+    private var mutedByteArray: ByteArray? = null
+
+    override var isMuted: Boolean = false
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun configure(config: AudioConfig) {
@@ -44,6 +47,8 @@ class AudioCapture(val logger: ILogger) : IFrameCapture<AudioConfig> {
         if (bufferSize <= 0) {
             throw IllegalArgumentException(audioRecordErrorToString(bufferSize))
         }
+
+        mutedByteArray = ByteArray(bufferSize)
 
         audioRecord = AudioRecord(
             MediaRecorder.AudioSource.DEFAULT, config.sampleRate,
@@ -93,6 +98,7 @@ class AudioCapture(val logger: ILogger) : IFrameCapture<AudioConfig> {
     }
 
     override fun release() {
+        mutedByteArray = null
         // Release audio record
         audioRecord?.release()
         audioRecord = null
@@ -124,7 +130,13 @@ class AudioCapture(val logger: ILogger) : IFrameCapture<AudioConfig> {
         audioRecord?.let {
             val length = it.read(buffer, buffer.remaining())
             if (length >= 0) {
-                return Frame(buffer, MediaFormat.MIMETYPE_AUDIO_RAW, getTimestamp(it))
+                return if (isMuted) {
+                    buffer.put(mutedByteArray!!, 0, buffer.remaining())
+                    buffer.clear()
+                    Frame(buffer, MediaFormat.MIMETYPE_AUDIO_RAW, getTimestamp(it))
+                } else {
+                    Frame(buffer, MediaFormat.MIMETYPE_AUDIO_RAW, getTimestamp(it))
+                }
             } else {
                 throw IllegalArgumentException(audioRecordErrorToString(length))
             }

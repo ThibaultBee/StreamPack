@@ -140,6 +140,17 @@
                 app:goneUnless="@{viewmodel.isAutoFocusModeAvailable()}"
                 app:tint="@android:color/white" />
 
+            <ToggleButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/mute_unmute_microphone"
+                android:drawableTop="@drawable/ic_toggle_mic_button"
+                android:onCheckedChanged="@{(_, checked) -> viewmodel.setMute(checked)}"
+                android:textOff=""
+                android:textOn=""
+                app:tint="@android:color/white" />
+
+
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

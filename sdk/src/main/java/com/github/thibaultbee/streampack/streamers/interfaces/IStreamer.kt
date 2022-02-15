@@ -19,6 +19,7 @@ import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.error.StreamPackError
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
+import com.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseStreamerSettings
 
 interface IStreamer {
     /**
@@ -26,6 +27,11 @@ interface IStreamer {
      * Supports only one listener.
      */
     var onErrorListener: OnErrorListener?
+
+    /**
+     * Access extended streamer settings.
+     */
+    val settings: IBaseStreamerSettings
 
     /**
      * Configures both video and audio settings.

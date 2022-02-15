@@ -127,6 +127,10 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
         }
     }
 
+    fun setMute(isMuted: Boolean) {
+        streamerManager.isMuted = isMuted
+    }
+
     @RequiresPermission(Manifest.permission.CAMERA)
     fun toggleCamera() {
         /**

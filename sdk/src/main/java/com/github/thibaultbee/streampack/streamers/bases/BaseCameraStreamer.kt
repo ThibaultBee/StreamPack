@@ -32,6 +32,7 @@ import com.github.thibaultbee.streampack.logger.ILogger
 import com.github.thibaultbee.streampack.streamers.CameraSrtLiveStreamer
 import com.github.thibaultbee.streampack.streamers.CameraTsFileStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
+import com.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
 import com.github.thibaultbee.streampack.utils.CameraSettings
 import com.github.thibaultbee.streampack.utils.getCameraList
 import com.github.thibaultbee.streampack.views.AutoFitSurfaceView
@@ -83,11 +84,7 @@ open class BaseCameraStreamer(
             cameraCapture.cameraId = value
         }
 
-    /**
-     * Get the camera settings.
-     */
-    override val cameraSettings: CameraSettings
-        get() = cameraCapture.settings
+    override var settings = Settings()
 
     /**
      * Starts audio and video capture.
@@ -155,5 +152,16 @@ open class BaseCameraStreamer(
     override fun release() {
         stopPreview()
         super.release()
+    }
+
+    /**
+     * Get the base camera settings ie all settings available for [BaseCameraStreamer].
+     */
+    inner class Settings : BaseStreamer.Settings(), IBaseCameraStreamerSettings {
+        /**
+         * Get the camera settings (focus, zoom,...).
+         */
+        override val camera: CameraSettings
+            get() = cameraCapture.settings
     }
 }
