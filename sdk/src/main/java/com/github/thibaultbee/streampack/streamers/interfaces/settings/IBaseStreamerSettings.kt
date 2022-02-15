@@ -16,5 +16,6 @@
 package com.github.thibaultbee.streampack.streamers.interfaces.settings
 
 interface IBaseStreamerSettings {
+    val video: IVideoSettings
     val audio: IAudioSettings
 }

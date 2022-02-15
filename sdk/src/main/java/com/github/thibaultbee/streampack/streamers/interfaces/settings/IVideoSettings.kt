@@ -15,14 +15,9 @@
  */
 package com.github.thibaultbee.streampack.streamers.interfaces.settings
 
-interface IAudioSettings {
+interface IVideoSettings {
     /**
-     * Set/get audio bitrate
+     * Set/get video bitrate.
      */
     var bitrate: Int
-
-    /**
-     * Set/get mute state
-     */
-    var isMuted: Boolean
 }

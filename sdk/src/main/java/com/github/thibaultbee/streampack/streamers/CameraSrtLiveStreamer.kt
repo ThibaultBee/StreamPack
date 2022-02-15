@@ -70,8 +70,8 @@ class CameraSrtLiveStreamer(
     private val bitrateRegulator = bitrateRegulatorConfig?.let { config ->
         bitrateRegulatorFactory?.newSrtBitrateRegulator(
             config,
-            { videoBitrate = it },
-            { audioBitrate = it }
+            { settings.video.bitrate = it },
+            { settings.audio.bitrate = it }
         )
     }
 
@@ -79,7 +79,7 @@ class CameraSrtLiveStreamer(
      * Scheduler for bitrate regulation
      */
     private val scheduler = Scheduler(500) {
-        bitrateRegulator?.update(srtProducer.stats, videoBitrate, audioBitrate)
+        bitrateRegulator?.update(srtProducer.stats, settings.video.bitrate, settings.audio.bitrate)
             ?: throw UnsupportedOperationException("Scheduler runs but no bitrate regulator set")
     }
 
