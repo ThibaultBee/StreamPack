@@ -4,8 +4,8 @@
 name: Updates API guide
 
 on:
-  push:
-    branches: [ master ]
+  release:
+    types: [published]
 
 jobs:
   update-doc:
