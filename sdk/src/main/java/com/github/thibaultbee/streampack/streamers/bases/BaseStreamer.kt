@@ -59,6 +59,7 @@ abstract class BaseStreamer(
     private val tsServiceInfo: ServiceInfo,
     protected val videoCapture: ISurfaceCapture<VideoConfig>?,
     protected val audioCapture: IAudioCapture?,
+    manageVideoOrientation: Boolean,
     protected val endpoint: IEndpoint,
     protected val logger: ILogger
 ) : EventHandler(), IStreamer {
@@ -155,7 +156,13 @@ abstract class BaseStreamer(
         null
     }
     protected var videoEncoder = if (videoCapture != null) {
-        VideoMediaCodecEncoder(videoEncoderListener, onInternalErrorListener, context, logger)
+        VideoMediaCodecEncoder(
+            videoEncoderListener,
+            onInternalErrorListener,
+            context,
+            manageVideoOrientation,
+            logger
+        )
     } else {
         null
     }

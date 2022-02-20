@@ -39,10 +39,11 @@ class VideoMediaCodecEncoder(
     encoderListener: IEncoderListener,
     override val onInternalErrorListener: OnErrorListener,
     private val context: Context,
+    private val manageVideoOrientation: Boolean,
     logger: ILogger
 ) :
     MediaCodecEncoder<VideoConfig>(encoderListener, logger) {
-    var codecSurface = CodecSurface(context)
+    var codecSurface = CodecSurface(context, manageVideoOrientation)
 
     override fun configure(config: VideoConfig) {
         mediaCodec = try {
@@ -59,13 +60,21 @@ class VideoMediaCodecEncoder(
         val isPortrait = context.isPortrait()
         val videoFormat = MediaFormat.createVideoFormat(
             videoConfig.mimeType,
-            if (isPortrait) {
-                videoConfig.resolution.height
+            if (manageVideoOrientation) {
+                if (isPortrait) {
+                    videoConfig.resolution.height
+                } else {
+                    videoConfig.resolution.width
+                }
             } else {
                 videoConfig.resolution.width
             },
-            if (isPortrait) {
-                videoConfig.resolution.width
+            if (manageVideoOrientation) {
+                if (isPortrait) {
+                    videoConfig.resolution.width
+                } else {
+                    videoConfig.resolution.height
+                }
             } else {
                 videoConfig.resolution.height
             }
@@ -125,7 +134,7 @@ class VideoMediaCodecEncoder(
     val inputSurface: Surface?
         get() = codecSurface.inputSurface
 
-    class CodecSurface(private val context: Context) :
+    class CodecSurface(private val context: Context, private val manageVideoOrientation: Boolean) :
         SurfaceTexture.OnFrameAvailableListener {
         private var eglSurface: EGlSurface? = null
         private var fullFrameRect: FullFrameRect? = null
@@ -161,8 +170,12 @@ class VideoMediaCodecEncoder(
                 }
 
                 surfaceTexture = attachOrBuildSurfaceTexture(surfaceTexture).apply {
-                    if (context.isPortrait()) {
-                        setDefaultBufferSize(height, width)
+                    if (manageVideoOrientation) {
+                        if (context.isPortrait()) {
+                            setDefaultBufferSize(height, width)
+                        } else {
+                            setDefaultBufferSize(width, height)
+                        }
                     } else {
                         setDefaultBufferSize(width, height)
                     }

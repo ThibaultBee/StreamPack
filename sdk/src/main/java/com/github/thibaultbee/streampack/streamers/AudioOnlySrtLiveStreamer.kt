@@ -49,6 +49,7 @@ class AudioOnlySrtLiveStreamer(
     tsServiceInfo = tsServiceInfo,
     videoCapture = null,
     audioCapture = AudioCapture(logger),
+    manageVideoOrientation = false,
     endpoint = SrtProducer(logger = logger),
     logger = logger
 ),

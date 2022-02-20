@@ -48,6 +48,7 @@ open class BaseScreenRecorderStreamer(
     tsServiceInfo = tsServiceInfo,
     videoCapture = ScreenCapture(context, logger = logger),
     audioCapture = if (enableAudio) AudioCapture(logger) else null,
+    manageVideoOrientation = false,
     endpoint = endpoint,
     logger = logger
 ) {

@@ -17,12 +17,10 @@ package com.github.thibaultbee.streampack.streamers.bases
 
 import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
 import android.view.Surface
 import android.view.SurfaceView
 import android.view.TextureView
 import androidx.annotation.RequiresPermission
-import androidx.core.app.ActivityCompat
 import com.github.thibaultbee.streampack.error.StreamPackError
 import com.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
@@ -59,6 +57,7 @@ open class BaseCameraStreamer(
     tsServiceInfo = tsServiceInfo,
     videoCapture = CameraCapture(context, logger = logger),
     audioCapture = if (enableAudio) AudioCapture(logger) else null,
+    manageVideoOrientation = true,
     endpoint = endpoint,
     logger = logger
 ), ICameraStreamer {

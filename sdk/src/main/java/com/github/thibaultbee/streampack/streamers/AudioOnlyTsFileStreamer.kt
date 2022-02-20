@@ -49,6 +49,7 @@ class AudioOnlyTsFileStreamer(
     tsServiceInfo = tsServiceInfo,
     videoCapture = null,
     audioCapture = AudioCapture(logger),
+    manageVideoOrientation = false,
     endpoint = FileWriter(logger = logger),
     logger = logger
 ), IFileStreamer {
