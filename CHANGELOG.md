@@ -1,6 +1,29 @@
 Change Log
 ==========
 
+Version 1.4.0
+-------------
+
+## API changes:
+
+- Zoom bas been moved to `streamer.settings.camera`
+- `audioBitrate` and `videoBitrate` have been moved respectively
+  to `streamer.settings.audio.bitrate` and `streamer.settings.video.bitrate`
+
+## Features:
+
+- Introducing new surface to simplify usage: `AutoFitSurfaceView`
+- Introducing camera settings for: auto white balance, focus, zoom, exposure, stabilization...
+- Introducing an API to mute/unmute audio: `streamer.settings.audio.isMuted`
+- Camera does not restart on `stopStream` anymore
+- Refactor `app` sample
+- Remove `jcenter` as a dependencies repository
+
+## Bug fixes:
+
+- Fix screen recorder display on stream part
+- Fix camera portrait aspect ratio on stream part
+
 Version 1.3.0
 -------------
 

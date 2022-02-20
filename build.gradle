@@ -6,8 +6,8 @@ buildscript {
     ext.androidx_core_version = '1.7.0'
 
     // Upgrade StreamPack version here
-    ext.streampack_code = '4'
-    ext.streampack_version = '1.3.0'
+    ext.streampack_code = '5'
+    ext.streampack_version = '1.4.0'
 
     repositories {
         google()

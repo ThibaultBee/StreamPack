@@ -3,6 +3,23 @@
 StreamPack brings the best audio/video live technologies together in order to achieve low-latency &
 high quality live streaming for Android.
 
+## Setup
+
+Get StreamPack latest artifacts on [jitpack.io](https://jitpack.io/#ThibaultBee/StreamPack)
+
+```groovy
+allprojects {
+    repositories {
+        ...
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+dependencies {
+    implementation 'com.github.ThibaultBee:StreamPack:1.4.0'
+}
+```
+
 ## Features
 
 * Network:
@@ -19,23 +36,6 @@ high quality live streaming for Android.
   * Configurable bitrate, sample rate, stereo/mono, data format
   * Processing: Noise suppressor or echo cancellation
   * Audio only mode
-
-## Setup
-
-Get StreamPack latest artifacts on [jitpack.io](https://jitpack.io/#ThibaultBee/StreamPack)
-
-```groovy
-allprojects {
-    repositories {
-        ...
-        maven { url 'https://jitpack.io' }
-    }
-}
-
-dependencies {
-    implementation 'com.github.ThibaultBee:StreamPack:1.3.0'
-}
-```
 
 ## Samples
 
