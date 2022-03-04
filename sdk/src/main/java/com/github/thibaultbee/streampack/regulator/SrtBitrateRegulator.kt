@@ -15,9 +15,10 @@
  */
 package com.github.thibaultbee.streampack.regulator
 
+//import com.github.thibaultbee.srtdroid.models.Stats
 import com.github.thibaultbee.srtdroid.models.Stats
 import com.github.thibaultbee.streampack.data.BitrateRegulatorConfig
-import com.github.thibaultbee.streampack.streamers.CameraSrtLiveStreamer
+import com.github.thibaultbee.streampack.streamers.srt.CameraSrtLiveStreamer
 
 /**
  * Base class of bitrate regulation implementation.

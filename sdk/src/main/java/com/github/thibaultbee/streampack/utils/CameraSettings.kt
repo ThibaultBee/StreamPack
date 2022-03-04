@@ -26,7 +26,7 @@ import com.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 
 /**
  * Use to change camera settings.
- * This object is returned by [BaseCameraStreamer.cameraSettings].
+ * This object is returned by [BaseCameraStreamer.settings.camera].
  */
 class CameraSettings(context: Context, cameraController: CameraController) {
     /**

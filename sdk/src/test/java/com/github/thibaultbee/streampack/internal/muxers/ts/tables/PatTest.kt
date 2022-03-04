@@ -16,7 +16,7 @@
 package com.github.thibaultbee.streampack.internal.muxers.ts.tables
 
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Service
-import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
+import com.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Pat
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Pmt
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.AssertEqualsSingleBufferMockMuxerListener
@@ -29,14 +29,14 @@ class PatTest {
      * Assert generated PAT is equivalent to an expected sample
      */
     @Test
-    fun testSimplePat() {
+    fun `simple pat test`() {
         val expectedBuffer = ByteBuffer.wrap(
             ResourcesUtils.readResources("test-samples/muxer/pat.ts")
         )
         val listener = AssertEqualsSingleBufferMockMuxerListener(expectedBuffer)
         val service = Service(
-            ServiceInfo(
-                ServiceInfo.ServiceType.DIGITAL_TV,  // not used in this test
+            TsServiceInfo(
+                TsServiceInfo.ServiceType.DIGITAL_TV,  // not used in this test
                 id = 0x6d66,
                 name = "ServiceName",  // not used in this test
                 providerName = "ProviderName"  // not used in this test

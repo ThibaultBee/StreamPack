@@ -49,6 +49,7 @@ data class Frame(
     /**
      * Contains extra frame description.
      * For AAC, it contains ADTS.
+     * For AVC/H.264, it contains SPS (first) and PPS
      */
-    val extra: ByteBuffer? = null
+    val extra: List<ByteBuffer>? = null
 )

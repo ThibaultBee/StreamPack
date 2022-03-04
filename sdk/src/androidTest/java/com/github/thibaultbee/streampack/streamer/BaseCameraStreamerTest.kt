@@ -19,6 +19,7 @@ import android.graphics.SurfaceTexture
 import android.view.Surface
 import androidx.test.platform.app.InstrumentationRegistry
 import com.github.thibaultbee.streampack.internal.endpoints.FakeEndpoint
+import com.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
 import com.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import com.github.thibaultbee.streampack.utils.AndroidUtils
 import com.github.thibaultbee.streampack.utils.FakeAndroidLogger
@@ -37,7 +38,7 @@ class BaseCameraStreamerTest {
     fun setUp() {
         cameraStreamer = BaseCameraStreamer(
             context,
-            AndroidUtils.fakeServiceInfo(),
+            TSMuxer().apply { addService(AndroidUtils.fakeServiceInfo()) },
             FakeEndpoint(logger),
             logger,
             true

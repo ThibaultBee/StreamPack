@@ -38,7 +38,7 @@ import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.BitrateRegulatorConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.error.StreamPackError
-import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
+import com.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.regulator.DefaultSrtBitrateRegulatorFactory
@@ -68,7 +68,7 @@ import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.Co
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.VIDEO_BITRATE_REGULATION_LOWER
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.VIDEO_BITRATE_REGULATION_UPPER
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.VIDEO_CONFIG_KEY
-import com.github.thibaultbee.streampack.streamers.ScreenRecorderSrtLiveStreamer
+import com.github.thibaultbee.streampack.streamers.srt.ScreenRecorderSrtLiveStreamer
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -199,8 +199,8 @@ class ScreenRecorderService : Service() {
 
             val muxerConfigBundle = intent.extras?.getBundle(MUXER_CONFIG_KEY)
                 ?: throw IllegalStateException("Muxer configuration must be pass to the service")
-            val serviceInfo = ServiceInfo(
-                ServiceInfo.ServiceType.DIGITAL_TV,
+            val serviceInfo = TsServiceInfo(
+                TsServiceInfo.ServiceType.DIGITAL_TV,
                 0x4698,
                 muxerConfigBundle.getString(SERVICE)!!,
                 muxerConfigBundle.getString(PROVIDER)!!

@@ -32,7 +32,6 @@ import com.github.thibaultbee.streampack.internal.utils.getOrientation
 import com.github.thibaultbee.streampack.internal.utils.isPortrait
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.logger.ILogger
-import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 
 class VideoMediaCodecEncoder(
@@ -57,27 +56,15 @@ class VideoMediaCodecEncoder(
         videoConfig: VideoConfig,
         useConfigProfileLevel: Boolean
     ): MediaCodec {
-        val isPortrait = context.isPortrait()
+        val resolution = if (manageVideoOrientation) {
+            videoConfig.getOrientedResolution(context)
+        } else {
+            videoConfig.resolution
+        }
         val videoFormat = MediaFormat.createVideoFormat(
             videoConfig.mimeType,
-            if (manageVideoOrientation) {
-                if (isPortrait) {
-                    videoConfig.resolution.height
-                } else {
-                    videoConfig.resolution.width
-                }
-            } else {
-                videoConfig.resolution.width
-            },
-            if (manageVideoOrientation) {
-                if (isPortrait) {
-                    videoConfig.resolution.width
-                } else {
-                    videoConfig.resolution.height
-                }
-            } else {
-                videoConfig.resolution.height
-            }
+            resolution.width,
+            resolution.height
         )
 
         // Create codec
@@ -114,21 +101,6 @@ class VideoMediaCodecEncoder(
     override fun stopStream() {
         codecSurface.stopStream()
         super.stopStream()
-    }
-
-    override fun onGenerateExtra(buffer: ByteBuffer, format: MediaFormat): ByteBuffer {
-        val csd0 = format.getByteBuffer("csd-0")
-        val csd1 = format.getByteBuffer("csd-1")
-
-        var byteBufferSize = csd0?.limit() ?: 0
-        byteBufferSize += csd1?.limit() ?: 0
-
-        val extra = ByteBuffer.allocate(byteBufferSize)
-        csd0?.let { extra.put(it) }
-        csd1?.let { extra.put(it) }
-
-        extra.rewind()
-        return extra
     }
 
     val inputSurface: Surface?

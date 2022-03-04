@@ -16,6 +16,7 @@
 package com.github.thibaultbee.streampack.internal.endpoints
 
 import com.github.thibaultbee.streampack.internal.data.Packet
+import com.github.thibaultbee.streampack.internal.data.SrtPacket
 import com.github.thibaultbee.streampack.utils.FakeLogger
 import com.github.thibaultbee.streampack.utils.Utils
 import org.junit.Assert.*
@@ -59,8 +60,6 @@ class FileWriterTest {
             filePublisher.write(
                 Packet(
                     ByteBuffer.wrap(randomArray),
-                    isFirstPacketFrame = true,
-                    isLastPacketFrame = true,
                     ts = 0
                 )
             )
@@ -81,8 +80,6 @@ class FileWriterTest {
             filePublisher.write(
                 Packet(
                     ByteBuffer.wrap(randomArray),
-                    isFirstPacketFrame = true,
-                    isLastPacketFrame = true,
                     ts = 0
                 )
             )

@@ -15,8 +15,10 @@
  */
 package com.github.thibaultbee.streampack.internal.muxers.ts.data
 
+import com.github.thibaultbee.streampack.data.Config
+
 data class Stream(
-    val mimeType: String,
+    val config: Config,
     val pid: Short,
     val discontinuity: Boolean = false
 )

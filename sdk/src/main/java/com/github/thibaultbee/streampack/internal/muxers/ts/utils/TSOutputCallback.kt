@@ -15,12 +15,12 @@
  */
 package com.github.thibaultbee.streampack.internal.muxers.ts.utils
 
-import com.github.thibaultbee.streampack.internal.data.Packet
+import com.github.thibaultbee.streampack.internal.data.SrtPacket
 import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 
-open class TSOutputCallback(private val muxerListener: IMuxerListener) {
-    protected fun writePacket(packet: Packet) {
+open class TSOutputCallback(var listener: IMuxerListener? = null) {
+    protected fun writePacket(packet: SrtPacket) {
         packet.buffer.rewind()
-        return muxerListener.onOutputFrame(packet)
+        listener?.onOutputFrame(packet)
     }
 }

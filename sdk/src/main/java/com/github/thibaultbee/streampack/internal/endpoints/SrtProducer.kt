@@ -25,6 +25,7 @@ import com.github.thibaultbee.srtdroid.models.MsgCtrl
 import com.github.thibaultbee.srtdroid.models.Socket
 import com.github.thibaultbee.srtdroid.models.Stats
 import com.github.thibaultbee.streampack.internal.data.Packet
+import com.github.thibaultbee.streampack.internal.data.SrtPacket
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.logger.ILogger
 import kotlinx.coroutines.CoroutineDispatcher
@@ -46,12 +47,14 @@ class SrtProducer(
         private const val PAYLOAD_SIZE = 1316
     }
 
+
     /**
      * Get/set SRT stream ID
      */
     var streamId: String
         get() = socket.getSockFlag(SockOpt.STREAMID) as String
         set(value) = socket.setSockFlag(SockOpt.STREAMID, value)
+
 
     /**
      * Get/set SRT stream passPhrase
@@ -100,6 +103,7 @@ class SrtProducer(
             onConnectionListener?.onFailed(e.message ?: "Unknown error")
             throw e
         }
+
     }
 
     fun disconnect() {
@@ -108,6 +112,7 @@ class SrtProducer(
     }
 
     override fun write(packet: Packet) {
+        packet as SrtPacket
         val boundary = when {
             packet.isFirstPacketFrame && packet.isLastPacketFrame -> Boundary.SOLO
             packet.isFirstPacketFrame -> Boundary.FIRST

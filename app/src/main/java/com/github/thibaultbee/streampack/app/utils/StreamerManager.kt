@@ -22,10 +22,7 @@ import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.app.configuration.Configuration
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
-import com.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
-import com.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
-import com.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
-import com.github.thibaultbee.streampack.streamers.interfaces.IStreamer
+import com.github.thibaultbee.streampack.streamers.interfaces.*
 import com.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
 import com.github.thibaultbee.streampack.utils.CameraSettings
 import com.github.thibaultbee.streampack.utils.getBackCameraList
@@ -77,6 +74,14 @@ class StreamerManager(
         return getStreamer<ICameraStreamer>()
     }
 
+    private fun getSrtLiveStreamer(): ISrtLiveStreamer? {
+        return getStreamer<ISrtLiveStreamer>()
+    }
+
+    private fun getRtmpLiveStreamer(): IRtmpLiveStreamer? {
+        return getStreamer<IRtmpLiveStreamer>()
+    }
+
     private fun getLiveStreamer(): ILiveStreamer? {
         return getStreamer<ILiveStreamer>()
     }
@@ -111,22 +116,26 @@ class StreamerManager(
     }
 
     suspend fun startStream(filesDir: File) {
-        getLiveStreamer()?.let {
+        getSrtLiveStreamer()?.let {
             it.streamId =
-                configuration.endpoint.connection.streamID
+                configuration.endpoint.srt.streamID
             it.passPhrase =
-                configuration.endpoint.connection.passPhrase
+                configuration.endpoint.srt.passPhrase
             it.connect(
-                configuration.endpoint.connection.ip,
-                configuration.endpoint.connection.port
+                configuration.endpoint.srt.ip,
+                configuration.endpoint.srt.port
             )
         }
+
+        getRtmpLiveStreamer()?.connect(configuration.endpoint.rtmp.url)
+
         getFileStreamer()?.let {
             it.file = File(
                 filesDir,
                 configuration.endpoint.file.filename
             )
         }
+
         streamer.startStream()
     }
 

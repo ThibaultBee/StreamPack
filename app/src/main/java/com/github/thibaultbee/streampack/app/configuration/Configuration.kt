@@ -23,6 +23,7 @@ import android.util.Range
 import android.util.Size
 import androidx.preference.PreferenceManager
 import com.github.thibaultbee.streampack.app.R
+import com.github.thibaultbee.streampack.app.models.EndpointType
 
 class Configuration(context: Context) {
     private val sharedPref = PreferenceManager.getDefaultSharedPreferences(context)
@@ -109,73 +110,69 @@ class Configuration(context: Context) {
 
     class Muxer(private val sharedPref: SharedPreferences, private val resources: Resources) {
         var service: String = resources.getString(R.string.default_muxer_service)
-            get() = sharedPref.getString(resources.getString(R.string.muxer_service_key), field)!!
+            get() = sharedPref.getString(
+                resources.getString(R.string.ts_muxer_service_key),
+                field
+            )!!
 
-        var provider: String = resources.getString(R.string.default_muxer_provider)
-            get() = sharedPref.getString(resources.getString(R.string.muxer_provider_key), field)!!
+        var provider: String = resources.getString(R.string.default_ts_muxer_provider)
+            get() = sharedPref.getString(
+                resources.getString(R.string.ts_muxer_provider_key),
+                field
+            )!!
     }
 
     class Endpoint(private val sharedPref: SharedPreferences, private val resources: Resources) {
         val file = File(sharedPref, resources)
-        val connection = Connection(sharedPref, resources)
+        val srt = SrtConnection(sharedPref, resources)
+        val rtmp = RtmpConnection(sharedPref, resources)
 
-        enum class EndpointType {
-            FILE,
-            SRT
-        }
-
-        val enpointType: EndpointType
+        val endpointType: EndpointType
             get() {
-                return if (sharedPref.getBoolean(
-                        resources.getString(R.string.endpoint_type_key),
-                        true
-                    )
-                ) {
-                    EndpointType.SRT
-                } else {
-                    EndpointType.FILE
-                }
+                val endpointId = sharedPref.getString(
+                    resources.getString(R.string.endpoint_type_key),
+                    "${EndpointType.SRT.id}"
+                )!!.toInt()
+
+                return EndpointType.fromId(endpointId)
             }
 
         class File(
             private val sharedPref: SharedPreferences,
             private val resources: Resources
         ) {
-            companion object {
-                const val TS_FILE_EXTENSION = ".ts"
-            }
-
             var filename: String = ""
-                get() = "${
-                    sharedPref.getString(
-                        resources.getString(R.string.file_name_key),
-                        field
-                    )!!
-                }$TS_FILE_EXTENSION"
+                get() = sharedPref.getString(
+                    resources.getString(R.string.file_name_key),
+                    field
+                )!!
         }
 
-        class Connection(
+        class SrtConnection(
             private val sharedPref: SharedPreferences,
             private val resources: Resources
         ) {
             var ip: String = ""
-                get() = sharedPref.getString(resources.getString(R.string.server_ip_key), field)!!
+                get() = sharedPref.getString(
+                    resources.getString(R.string.srt_server_ip_key),
+                    field
+                )!!
 
             var port: Int = 9998
                 get() = sharedPref.getString(
-                    resources.getString(R.string.server_port_key),
+                    resources.getString(R.string.srt_server_port_key),
                     field.toString()
                 )!!.toInt()
 
             var streamID: String = ""
                 get() = sharedPref.getString(
-                    resources.getString(R.string.server_stream_id_key),
+                    resources.getString(R.string.ts_server_stream_id_key),
                     field
                 )!!
 
             var passPhrase: String = ""
                 get() = sharedPref.getString(
-                    resources.getString(R.string.server_passphrase_key),
+                    resources.getString(R.string.ts_server_passphrase_key),
                     field
                 )!!
 
@@ -196,6 +193,17 @@ class Configuration(context: Context) {
                         field.upper
                     ) * 1000,  // to b/s
                 )
+        }
+
+        class RtmpConnection(
+            private val sharedPref: SharedPreferences,
+            private val resources: Resources
+        ) {
+            var url: String = resources.getString(R.string.default_rtmp_url)
+                get() = sharedPref.getString(
+                    resources.getString(R.string.rtmp_server_url_key),
+                    field
+                )!!
         }
     }
 

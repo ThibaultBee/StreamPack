@@ -16,9 +16,10 @@
 package com.github.thibaultbee.streampack.internal.muxers.ts.tables
 
 import android.media.MediaFormat
+import com.github.thibaultbee.streampack.data.Config
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Service
-import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Stream
+import com.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Pmt
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.AssertEqualsSingleBufferMockMuxerListener
 import com.github.thibaultbee.streampack.utils.ResourcesUtils
@@ -30,15 +31,15 @@ class PmtTest {
      * Assert generated PMT is equivalent to an expected sample
      */
     @Test
-    fun testSimplePmt() {
+    fun `simple pmt test`() {
         val expectedBuffer = ByteBuffer.wrap(
             ResourcesUtils.readResources("test-samples/muxer/pmt.ts")
         )
         val listener = AssertEqualsSingleBufferMockMuxerListener(expectedBuffer)
         val service =
             Service(
-                ServiceInfo(
-                    ServiceInfo.ServiceType.DIGITAL_TV,  // not used in this test
+                TsServiceInfo(
+                    TsServiceInfo.ServiceType.DIGITAL_TV,  // not used in this test
                     id = 0x0001,
                     name = "ServiceName",  // not used in this test
                     providerName = "ProviderName"  // not used in this test
@@ -46,8 +47,11 @@ class PmtTest {
                 pcrPid = 256
             )
         val streams = listOf(
-            Stream(MediaFormat.MIMETYPE_VIDEO_MPEG2, 256),
-            Stream(MediaFormat.MIMETYPE_AUDIO_MPEG, 257)
+            Stream(
+                Config(MediaFormat.MIMETYPE_VIDEO_MPEG2, 2 * 1024 * 1024),
+                256
+            ),
+            Stream(Config(MediaFormat.MIMETYPE_AUDIO_MPEG, 2 * 1024 * 1024), 257)
         )
         Pmt(listener, service, streams, 0x1000).run {
             write()

@@ -27,19 +27,19 @@ import java.security.InvalidParameterException
  *
  * @see [BaseStreamer.configure]
  */
-data class AudioConfig(
+class AudioConfig(
     /**
      * Audio encoder mime type.
      * Only [MediaFormat.MIMETYPE_AUDIO_AAC] is supported yet.
      *
      * **See Also:** [MediaFormat MIMETYPE_AUDIO_*](https://developer.android.com/reference/android/media/MediaFormat)
      */
-    val mimeType: String,
+    mimeType: String,
 
     /**
      * Audio encoder bitrate in bits/s.
      */
-    val startBitrate: Int,
+    startBitrate: Int,
 
     /**
      * Audio capture sample rate in Hz.
@@ -76,9 +76,9 @@ data class AudioConfig(
      * If device does not have a noise suppressor, it does nothing.
      */
     val enableNoiseSuppressor: Boolean
-) {
+) : Config(mimeType, startBitrate) {
     init {
-        require(mimeType.isAudio()) { "Mime Type must be audio" }
+        require(mimeType.isAudio()) { "MimeType must be audio" }
     }
 
     companion object {
@@ -104,6 +104,21 @@ data class AudioConfig(
             1 -> AudioFormat.CHANNEL_IN_MONO
             2 -> AudioFormat.CHANNEL_IN_STEREO
             else -> throw InvalidParameterException("Number of channels not supported: $nChannel")
+        }
+
+        /**
+         * Returns the number of bytes for a single audio sample.
+         *
+         * @param byteFormat byte format (either [AudioFormat.ENCODING_PCM_8BIT] or [AudioFormat.ENCODING_PCM_16BIT],...)
+         * @return number of bytes per sample
+         */
+        fun getNumOfBytesPerSample(byteFormat: Int) = when (byteFormat) {
+            AudioFormat.ENCODING_PCM_8BIT -> 1
+            AudioFormat.ENCODING_PCM_16BIT -> 2
+            AudioFormat.ENCODING_PCM_24BIT_PACKED -> 3
+            AudioFormat.ENCODING_PCM_32BIT -> 4
+            AudioFormat.ENCODING_PCM_FLOAT -> 4
+            else -> throw InvalidParameterException("Byte format not supported: $byteFormat")
         }
     }
 

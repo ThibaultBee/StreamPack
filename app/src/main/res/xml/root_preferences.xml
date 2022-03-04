@@ -106,56 +106,57 @@
         </PreferenceCategory>
 
     </PreferenceCategory>
-
-    <PreferenceCategory app:title="@string/muxer">
-        <EditTextPreference
-            app:defaultValue="@string/default_muxer_service"
-            app:key="@string/muxer_service_key"
-            app:title="@string/muxer_service"
-            app:useSimpleSummaryProvider="true" />
-
-        <EditTextPreference
-            app:defaultValue="@string/default_muxer_provider"
-            app:key="@string/muxer_provider_key"
-            app:title="@string/muxer_provider"
-            app:useSimpleSummaryProvider="true" />
-
-    </PreferenceCategory>
-
+    
     <PreferenceCategory app:title="@string/endpoint">
-
-        <SwitchPreference
-            android:defaultValue="true"
+        <ListPreference
+            app:defaultValue="2"
             app:key="@string/endpoint_type_key"
-            app:summaryOff="@string/tofile"
-            app:summaryOn="@string/toSRT"
-            app:title="@string/endpoint_type" />
+            app:title="@string/endpoint_type"
+            app:useSimpleSummaryProvider="true" />
 
         <PreferenceCategory
-            app:key="@string/endpoint_server_key"
-            app:title="@string/server">
+            app:key="@string/ts_muxer_key"
+            app:title="@string/ts_muxer">
+
+            <EditTextPreference
+                app:defaultValue="@string/default_muxer_service"
+                app:key="@string/ts_muxer_service_key"
+                app:title="@string/ts_muxer_service"
+                app:useSimpleSummaryProvider="true" />
+
+            <EditTextPreference
+                app:defaultValue="@string/default_ts_muxer_provider"
+                app:key="@string/ts_muxer_provider_key"
+                app:title="@string/ts_muxer_provider"
+                app:useSimpleSummaryProvider="true" />
+
+        </PreferenceCategory>
+
+        <PreferenceCategory
+            app:key="@string/srt_server_key"
+            app:title="@string/srt_server">
 
             <EditTextPreference
                 app:defaultValue=""
-                app:key="@string/server_ip_key"
+                app:key="@string/srt_server_ip_key"
                 app:title="@string/server_ip"
                 app:useSimpleSummaryProvider="true" />
 
             <EditTextPreference
                 app:defaultValue="9998"
-                app:key="@string/server_port_key"
+                app:key="@string/srt_server_port_key"
                 app:title="@string/server_port"
                 app:useSimpleSummaryProvider="true" />
 
             <EditTextPreference
-                app:defaultValue="@string/default_server_stream_id"
-                app:key="@string/server_stream_id_key"
-                app:title="@string/server_stream_id"
+                app:defaultValue="@string/default_ts_server_stream_id"
+                app:key="@string/ts_server_stream_id_key"
+                app:title="@string/ts_server_stream_id"
                 app:useSimpleSummaryProvider="true" />
 
             <EditTextPreference
                 app:defaultValue="@string/default_server_passphrase_id"
-                app:key="@string/server_passphrase_key"
+                app:key="@string/ts_server_passphrase_key"
                 app:title="@string/server_passphrase"
                 app:useSimpleSummaryProvider="true" />
 
@@ -185,7 +186,19 @@
         </PreferenceCategory>
 
         <PreferenceCategory
-            app:key="@string/endpoint_file_key"
+            app:key="@string/rtmp_server_key"
+            app:title="@string/rtmp_server">
+
+            <EditTextPreference
+                app:defaultValue="@string/default_rtmp_url"
+                app:key="@string/rtmp_server_url_key"
+                app:title="@string/server_url"
+                app:useSimpleSummaryProvider="true" />
+
+        </PreferenceCategory>
+
+        <PreferenceCategory
+            app:key="@string/ts_endpoint_file_key"
             app:title="@string/file">
 
             <EditTextPreference

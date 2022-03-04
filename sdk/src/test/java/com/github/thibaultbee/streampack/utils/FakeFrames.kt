@@ -25,7 +25,7 @@ object FakeFrames {
         mimeType,
         Random.nextLong(),
         isKeyFrame = true,
-        extra = ByteBuffer.wrap(Random.nextBytes(10))
+        extra = listOf(ByteBuffer.wrap(Random.nextBytes(10)))
     )
 
     fun createFakeFrame(mimeType: String) = Frame(
