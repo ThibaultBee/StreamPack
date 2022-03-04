@@ -21,7 +21,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
 }
 
 dokkaHtml {
@@ -56,7 +55,8 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation "androidx.core:core-ktx:${androidx_core_version}"
 
-    implementation 'com.github.ThibaultBee:srtdroid:1.2.0'
+    implementation 'io.github.thibaultbee:srtdroid:1.4.0'
+    implementation 'video.api:rtmpdroid:0.9.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0'
 
     testImplementation 'junit:junit:4.13.2'

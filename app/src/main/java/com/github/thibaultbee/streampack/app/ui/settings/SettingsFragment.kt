@@ -21,10 +21,14 @@ import android.text.InputFilter
 import android.text.InputType
 import androidx.preference.*
 import com.github.thibaultbee.streampack.app.R
+import com.github.thibaultbee.streampack.app.models.EndpointFactory
+import com.github.thibaultbee.streampack.app.models.EndpointType
+import com.github.thibaultbee.streampack.app.models.FileExtension
 import com.github.thibaultbee.streampack.app.utils.DialogUtils
 import com.github.thibaultbee.streampack.utils.CameraStreamerConfigurationHelper
 import com.github.thibaultbee.streampack.utils.getCameraList
 import com.github.thibaultbee.streampack.utils.isFrameRateSupported
+import java.io.IOException
 
 class SettingsFragment : PreferenceFragmentCompat() {
     private val videoEnablePreference: SwitchPreference by lazy {
@@ -75,24 +79,32 @@ class SettingsFragment : PreferenceFragmentCompat() {
         this.findPreference(getString(R.string.audio_sample_rate_key))!!
     }
 
-    private val endpointTypePreference: SwitchPreference by lazy {
+    private val endpointTypePreference: ListPreference by lazy {
         this.findPreference(getString(R.string.endpoint_type_key))!!
     }
 
-    private val serverEndpointPreference: PreferenceCategory by lazy {
-        this.findPreference(getString(R.string.endpoint_server_key))!!
+    private val tsMuxerPreference: PreferenceCategory by lazy {
+        this.findPreference(getString(R.string.ts_muxer_key))!!
+    }
+
+    private val rtmpEndpointPreference: PreferenceCategory by lazy {
+        this.findPreference(getString(R.string.rtmp_server_key))!!
+    }
+
+    private val srtEndpointPreference: PreferenceCategory by lazy {
+        this.findPreference(getString(R.string.srt_server_key))!!
     }
 
     private val fileEndpointPreference: PreferenceCategory by lazy {
-        this.findPreference(getString(R.string.endpoint_file_key))!!
+        this.findPreference(getString(R.string.ts_endpoint_file_key))!!
     }
 
     private val serverIpPreference: EditTextPreference by lazy {
-        this.findPreference(getString(R.string.server_ip_key))!!
+        this.findPreference(getString(R.string.srt_server_ip_key))!!
     }
 
     private val serverPortPreference: EditTextPreference by lazy {
-        this.findPreference(getString(R.string.server_port_key))!!
+        this.findPreference(getString(R.string.srt_server_port_key))!!
     }
 
     private val serverEnableBitrateRegulationPreference: SwitchPreference by lazy {
@@ -107,6 +119,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
         this.findPreference(getString(R.string.server_video_min_bitrate_key))!!
     }
 
+    private val fileNamePreference: EditTextPreference by lazy {
+        this.findPreference(getString(R.string.file_name_key))!!
+    }
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
     }
@@ -116,7 +132,24 @@ class SettingsFragment : PreferenceFragmentCompat() {
         loadPreferences()
     }
 
-    private fun setVideoEncoderSettings(encoder: String) {
+    private fun loadVideoSettings() {
+        // Inflates video encoders
+        val supportedVideoEncoderName =
+            mapOf(
+                MediaFormat.MIMETYPE_VIDEO_AVC to getString(R.string.video_encoder_h264),
+                MediaFormat.MIMETYPE_VIDEO_HEVC to getString(R.string.video_encoder_h265)
+            )
+
+        val supportedVideoEncoder = CameraStreamerConfigurationHelper.Video.supportedEncoders
+        videoEncoderListPreference.setDefaultValue(MediaFormat.MIMETYPE_VIDEO_AVC)
+        videoEncoderListPreference.entryValues = supportedVideoEncoder.toTypedArray()
+        videoEncoderListPreference.entries =
+            supportedVideoEncoder.map { supportedVideoEncoderName[it] }.toTypedArray()
+
+        loadVideoSettings(videoEncoderListPreference.value)
+    }
+
+    private fun loadVideoSettings(encoder: String) {
         videoSettingsCategory.isVisible = videoEnablePreference.isChecked
         videoEnablePreference.setOnPreferenceChangeListener { _, newValue ->
             videoSettingsCategory.isVisible = newValue as Boolean
@@ -171,8 +204,21 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
     }
 
+    private fun loadAudioSettings() {
+        // Inflates audio encoders
+        val supportedAudioEncoderName =
+            mapOf(MediaFormat.MIMETYPE_AUDIO_AAC to getString(R.string.audio_encoder_aac))
 
-    private fun setAudioEncoderSettings(encoder: String) {
+        val supportedAudioEncoder = CameraStreamerConfigurationHelper.Audio.supportedEncoders
+        audioEncoderListPreference.setDefaultValue(MediaFormat.MIMETYPE_AUDIO_AAC)
+        audioEncoderListPreference.entryValues = supportedAudioEncoder.toTypedArray()
+        audioEncoderListPreference.entries =
+            supportedAudioEncoder.map { supportedAudioEncoderName[it] }.toTypedArray()
+
+        loadAudioSettings(audioEncoderListPreference.value)
+    }
+
+    private fun loadAudioSettings(encoder: String) {
         audioSettingsCategory.isVisible = audioEnablePreference.isChecked
         audioEnablePreference.setOnPreferenceChangeListener { _, newValue ->
             audioSettingsCategory.isVisible = newValue as Boolean
@@ -214,40 +260,24 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
     }
 
-    private fun loadPreferences() {
-        // Inflates video encoders
-        val supportedVideoEncoderName =
-            mapOf(
-                MediaFormat.MIMETYPE_VIDEO_AVC to getString(R.string.video_encoder_h264),
-                MediaFormat.MIMETYPE_VIDEO_HEVC to getString(R.string.video_encoder_h265)
-            )
-
-        val supportedVideoEncoder = CameraStreamerConfigurationHelper.Video.supportedEncoders
-        videoEncoderListPreference.setDefaultValue(MediaFormat.MIMETYPE_VIDEO_AVC)
-        videoEncoderListPreference.entryValues = supportedVideoEncoder.toTypedArray()
-        videoEncoderListPreference.entries =
-            supportedVideoEncoder.map { supportedVideoEncoderName[it] }.toTypedArray()
-
-        setVideoEncoderSettings(videoEncoderListPreference.value)
-
-        // Inflates audio encoders
-        val supportedAudioEncoderName =
-            mapOf(MediaFormat.MIMETYPE_AUDIO_AAC to getString(R.string.audio_encoder_aac))
-
-        val supportedAudioEncoder = CameraStreamerConfigurationHelper.Audio.supportedEncoders
-        audioEncoderListPreference.setDefaultValue(MediaFormat.MIMETYPE_AUDIO_AAC)
-        audioEncoderListPreference.entryValues = supportedAudioEncoder.toTypedArray()
-        audioEncoderListPreference.entries =
-            supportedAudioEncoder.map { supportedAudioEncoderName[it] }.toTypedArray()
-
-        setAudioEncoderSettings(audioEncoderListPreference.value)
-
+    private fun loadEndpoint() {
         // Inflates endpoint
-        serverEndpointPreference.isVisible = endpointTypePreference.isChecked
-        fileEndpointPreference.isVisible = !endpointTypePreference.isChecked
+        val supportedEndpointName =
+            mapOf(
+                EndpointType.TS_FILE to getString(R.string.to_ts_file),
+                EndpointType.FLV_FILE to getString(R.string.to_flv_file),
+                EndpointType.SRT to getString(R.string.to_srt),
+                EndpointType.RTMP to getString(R.string.to_rtmp),
+            )
+        val supportedEndpoint = EndpointType.values().map { "${it.id}" }.toTypedArray()
+        endpointTypePreference.setDefaultValue(EndpointType.SRT.id)
+        endpointTypePreference.entryValues = supportedEndpoint
+        endpointTypePreference.entries =
+            supportedEndpoint.map { supportedEndpointName[EndpointType.fromId(it.toInt())] }
+                .toTypedArray()
+        setEndpointType(endpointTypePreference.value.toInt())
         endpointTypePreference.setOnPreferenceChangeListener { _, newValue ->
-            serverEndpointPreference.isVisible = newValue as Boolean
-            fileEndpointPreference.isVisible = !newValue
+            setEndpointType((newValue as String).toInt())
             true
         }
 
@@ -283,5 +313,41 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
             true
         }
+    }
+
+    private fun setEndpointType(id: Int) {
+        val endpoint = EndpointFactory(
+            EndpointType.fromId(id)
+        ).build()
+        srtEndpointPreference.isVisible = endpoint.hasSrtCapabilities
+        rtmpEndpointPreference.isVisible = endpoint.hasRtmpCapabilities
+        fileEndpointPreference.isVisible = endpoint.hasFileCapabilities
+        tsMuxerPreference.isVisible = endpoint.hasTSCapabilities
+
+        // Update file extension
+        if (endpoint.hasFileCapabilities) {
+            // Remove previous extension
+            FileExtension.values().forEach {
+                fileNamePreference.text = fileNamePreference.text.removeSuffix(it.extension)
+            }
+            // Add correct extension
+            fileNamePreference.text += when {
+                endpoint.hasFLVCapabilities -> {
+                    FileExtension.FLV.extension
+                }
+                endpoint.hasTSCapabilities -> {
+                    FileExtension.TS.extension
+                }
+                else -> {
+                    throw IOException("Unknown file type")
+                }
+            }
+        }
+    }
+
+    private fun loadPreferences() {
+        loadVideoSettings()
+        loadAudioSettings()
+        loadEndpoint()
     }
 }

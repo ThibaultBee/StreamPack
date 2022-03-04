@@ -9,7 +9,15 @@ import java.nio.ByteBuffer
  */
 fun ByteBuffer.extractArray(): ByteArray {
     return if (this.hasArray()) {
-        this.array()
+        if (isDirect) {
+            this.array().sliceArray(
+                IntRange(
+                    4,
+                    4 + limit() - 1
+                ))
+        } else {
+            this.array()
+        }
     } else {
         val byteArray = ByteArray(this.remaining())
         this.get(byteArray)

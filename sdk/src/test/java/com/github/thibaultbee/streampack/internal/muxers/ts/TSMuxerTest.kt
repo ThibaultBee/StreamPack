@@ -16,11 +16,13 @@
 package com.github.thibaultbee.streampack.internal.muxers.ts
 
 import android.media.MediaFormat
+import com.github.thibaultbee.streampack.data.AudioConfig
+import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.internal.data.Frame
 import com.github.thibaultbee.streampack.internal.data.Packet
 import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.TSConst
-import com.github.thibaultbee.streampack.internal.muxers.ts.utils.Utils.fakeServiceInfo
+import com.github.thibaultbee.streampack.internal.muxers.ts.utils.Utils.createFakeServiceInfo
 import com.github.thibaultbee.streampack.utils.FakeFrames
 import org.junit.Assert.*
 import org.junit.Test
@@ -33,92 +35,134 @@ class TSMuxerTest {
     }
 
     @Test
-    fun `test full constructor`() {
-        val vstream1 = "video/test"
-        val vstream2 = "video/test2"
-        val astream2 = "audio/test"
+    fun `add streams in constructor test`() {
+        val vStreamConfig1 =
+            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_AVC).build()
+        val vStreamConfig2 =
+            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_HEVC).build()
+        val aStreamConfig =
+            AudioConfig.Builder().setMimeType(MediaFormat.MIMETYPE_AUDIO_AAC).build()
         val tsMux =
-            TSMuxer(MockMuxerListener(), fakeServiceInfo(), listOf(vstream1, vstream2, astream2))
-        assertEquals(TSConst.BASE_PID, tsMux.getStreams(vstream1)[0].pid)
-        assertEquals((TSConst.BASE_PID + 1).toShort(), tsMux.getStreams(vstream2)[0].pid)
-        assertEquals((TSConst.BASE_PID + 2).toShort(), tsMux.getStreams(astream2)[0].pid)
+            TSMuxer(
+                MockMuxerListener(),
+                createFakeServiceInfo(),
+                listOf(vStreamConfig1, vStreamConfig2, aStreamConfig)
+            )
+        assertEquals(TSConst.BASE_PID, tsMux.getStreams(vStreamConfig1.mimeType)[0].pid)
+        assertEquals(
+            (TSConst.BASE_PID + 1).toShort(),
+            tsMux.getStreams(vStreamConfig2.mimeType)[0].pid
+        )
+        assertEquals(
+            (TSConst.BASE_PID + 2).toShort(),
+            tsMux.getStreams(aStreamConfig.mimeType)[0].pid
+        )
     }
 
     @Test
-    fun `test no streams constructor`() {
-        val vstream1 = "video/test"
-        val vstream2 = "video/test2"
-        val astream2 = "audio/test"
-        val tsMux = TSMuxer(MockMuxerListener(), fakeServiceInfo())
-        tsMux.addStreams(fakeServiceInfo(), listOf(vstream1, vstream2, astream2)).run {
-            assertEquals(TSConst.BASE_PID, this[0])
-            assertEquals((TSConst.BASE_PID + 1).toShort(), this[1])
-            assertEquals((TSConst.BASE_PID + 2).toShort(), this[2])
+    fun `add streams test`() {
+        val vStreamConfig1 =
+            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_AVC).build()
+        val vStreamConfig2 =
+            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_HEVC).build()
+        val aStreamConfig =
+            AudioConfig.Builder().setMimeType(MediaFormat.MIMETYPE_AUDIO_AAC).build()
+        val tsMux = TSMuxer(MockMuxerListener(), createFakeServiceInfo())
+        tsMux.addStreams(
+            createFakeServiceInfo(),
+            listOf(vStreamConfig1, vStreamConfig2, aStreamConfig)
+        ).run {
+            assertEquals(TSConst.BASE_PID.toInt(), this[vStreamConfig1])
+            assertEquals((TSConst.BASE_PID + 1), this[vStreamConfig2])
+            assertEquals((TSConst.BASE_PID + 2), this[aStreamConfig])
         }
     }
 
-
     @Test
-    fun `test no service but streams constructor`() {
-        val vstream1 = "video/test"
-        val vstream2 = "video/test2"
-        val astream2 = "audio/test"
+    fun `constructor with streams and no service test`() {
+        val vStreamConfig1 =
+            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_AVC).build()
+        val vStreamConfig2 =
+            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_HEVC).build()
+        val aStreamConfig =
+            AudioConfig.Builder().setMimeType(MediaFormat.MIMETYPE_AUDIO_AAC).build()
         try {
-            TSMuxer(MockMuxerListener(), initialStreams = listOf(vstream1, vstream2, astream2))
+            TSMuxer(
+                MockMuxerListener(),
+                initialStreams = listOf(vStreamConfig1, vStreamConfig2, aStreamConfig)
+            )
             fail()
         } catch (e: Exception) {
         }
     }
 
     @Test
-    fun `test failed on re-add existing service`() {
-        val tsMux = TSMuxer(MockMuxerListener(), fakeServiceInfo())
+    fun `re-add existing service test`() {
+        val service = createFakeServiceInfo()
+        val tsMux = TSMuxer(MockMuxerListener(), service)
         try {
-            tsMux.addService(fakeServiceInfo())
+            tsMux.addService(service)
             fail()
         } catch (e: Exception) {
         }
     }
 
     @Test
-    fun `test remove existing service`() {
-        val vstream1 = "video/test"
-        val vstream2 = "video/test2"
-        val astream2 = "audio/test"
+    fun `remove existing service test`() {
+        val vStreamConfig1 =
+            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_AVC).build()
+        val vStreamConfig2 =
+            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_HEVC).build()
+        val aStreamConfig =
+            AudioConfig.Builder().setMimeType(MediaFormat.MIMETYPE_AUDIO_AAC).build()
         val tsMux =
-            TSMuxer(MockMuxerListener(), fakeServiceInfo(), listOf(vstream1, vstream2, astream2))
-        assertTrue(tsMux.getService().contains(fakeServiceInfo()))
+            TSMuxer(
+                MockMuxerListener(),
+                createFakeServiceInfo(),
+                listOf(vStreamConfig1, vStreamConfig2, aStreamConfig)
+            )
+        assertTrue(tsMux.getServices().contains(createFakeServiceInfo()))
 
-        tsMux.removeService(fakeServiceInfo())
-        assertFalse(tsMux.getService().contains(fakeServiceInfo()))
+        tsMux.removeService(createFakeServiceInfo())
+        assertFalse(tsMux.getServices().contains(createFakeServiceInfo()))
 
         // Assert streams doe not exist
-        assertTrue(tsMux.getStreams(vstream1).isEmpty())
-        assertTrue(tsMux.getStreams(vstream2).isEmpty())
-        assertTrue(tsMux.getStreams(astream2).isEmpty())
+        assertTrue(tsMux.getStreams(vStreamConfig1.mimeType).isEmpty())
+        assertTrue(tsMux.getStreams(vStreamConfig2.mimeType).isEmpty())
+        assertTrue(tsMux.getStreams(aStreamConfig.mimeType).isEmpty())
         try { // try to add a stream to this service
-            tsMux.addStreams(fakeServiceInfo(), listOf("video/test"))
+            tsMux.addStreams(createFakeServiceInfo(), listOf(vStreamConfig1))
             fail()
         } catch (e: Exception) {
         }
     }
 
     @Test
-    fun `test remove streams`() {
-        val vstream1 = "video/test"
-        val vstream2 = "video/test2"
-        val astream2 = "audio/test"
+    fun `remove streams test `() {
+        val vStreamConfig1 =
+            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_AVC).build()
+        val vStreamConfig2 =
+            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_HEVC).build()
+        val aStreamConfig =
+            AudioConfig.Builder().setMimeType(MediaFormat.MIMETYPE_AUDIO_AAC).build()
         val tsMux =
-            TSMuxer(MockMuxerListener(), fakeServiceInfo(), listOf(vstream1, vstream2, astream2))
+            TSMuxer(
+                MockMuxerListener(),
+                createFakeServiceInfo(),
+                listOf(vStreamConfig1, vStreamConfig2, aStreamConfig)
+            )
 
-        tsMux.removeStreams(fakeServiceInfo(), listOf(tsMux.getStreams(vstream1)[0].pid))
-        assertTrue(tsMux.getStreams(vstream1).isEmpty())
+        tsMux.removeStreams(
+            createFakeServiceInfo(),
+            listOf(tsMux.getStreams(vStreamConfig1.mimeType)[0].pid)
+        )
+        assertTrue(tsMux.getStreams(vStreamConfig1.mimeType).isEmpty())
     }
 
 
     @Test
-    fun `test encode without streams`() {
-        val tsMux = TSMuxer(MockMuxerListener(), fakeServiceInfo())
+    fun `encode without streams test`() {
+        val tsMux = TSMuxer(MockMuxerListener(), createFakeServiceInfo())
         try {
             tsMux.encode(FakeFrames.createFakeKeyFrame(MediaFormat.MIMETYPE_VIDEO_AVC), -1)
             fail()
@@ -127,8 +171,8 @@ class TSMuxerTest {
     }
 
     @Test
-    fun `test encode with key frame with extra`() {
-        val tsMux = TSMuxer(MockMuxerListener(), fakeServiceInfo())
+    fun `encode with key frame with extra test `() {
+        val tsMux = TSMuxer(MockMuxerListener(), createFakeServiceInfo())
         try {
             tsMux.encode(
                 Frame(
@@ -144,10 +188,11 @@ class TSMuxerTest {
     }
 
     @Test
-    fun `test encode h264 frame`() {
-        val tsMux = TSMuxer(MockMuxerListener(), fakeServiceInfo())
+    fun `encode h264 frame test`() {
+        val config = VideoConfig.Builder().build()
+        val tsMux = TSMuxer(MockMuxerListener(), createFakeServiceInfo())
         val streamPid =
-            tsMux.addStreams(fakeServiceInfo(), listOf(MediaFormat.MIMETYPE_VIDEO_AVC))[0]
+            tsMux.addStreams(createFakeServiceInfo(), listOf(config))[config]!!
 
         tsMux.encode(
             FakeFrames.createFakeKeyFrame(MediaFormat.MIMETYPE_VIDEO_AVC), streamPid
@@ -159,20 +204,17 @@ class TSMuxerTest {
     }
 
     @Test
-    fun `test encode aac frame`() {
-        val tsMux = TSMuxer(MockMuxerListener(), fakeServiceInfo())
+    fun `encode aac frame test`() {
+        val config = AudioConfig.Builder().build()
+        val tsMux = TSMuxer(MockMuxerListener(), createFakeServiceInfo())
         val streamPid =
-            tsMux.addStreams(fakeServiceInfo(), listOf(MediaFormat.MIMETYPE_AUDIO_AAC))[0]
+            tsMux.addStreams(createFakeServiceInfo(), listOf(config))[config]!!
 
         tsMux.encode(
             FakeFrames.createFakeKeyFrame(MediaFormat.MIMETYPE_AUDIO_AAC), streamPid
         )
-        try {
-            tsMux.encode(
-                FakeFrames.createFakeFrame(MediaFormat.MIMETYPE_AUDIO_AAC), streamPid
-            )
-            fail()
-        } catch (e: Exception) {
-        }
+        tsMux.encode(
+            FakeFrames.createFakeFrame(MediaFormat.MIMETYPE_AUDIO_AAC), streamPid
+        )
     }
 }

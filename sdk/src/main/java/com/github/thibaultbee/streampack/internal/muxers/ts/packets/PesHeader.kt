@@ -17,6 +17,10 @@ package com.github.thibaultbee.streampack.internal.muxers.ts.packets
 
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ITSElement
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.*
+import com.github.thibaultbee.streampack.internal.utils.put
+import com.github.thibaultbee.streampack.internal.utils.putShort
+import com.github.thibaultbee.streampack.internal.utils.shl
+import com.github.thibaultbee.streampack.internal.utils.toInt
 import java.nio.ByteBuffer
 import kotlin.experimental.and
 import kotlin.math.pow

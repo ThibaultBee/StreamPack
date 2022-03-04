@@ -16,10 +16,13 @@
 package com.github.thibaultbee.streampack.internal.muxers.ts.packets
 
 import android.media.MediaFormat
+import com.github.thibaultbee.streampack.data.AudioConfig
+import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.internal.data.Frame
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Stream
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.AssertEqualsBuffersMockMuxerListener
 import com.github.thibaultbee.streampack.internal.utils.TimeUtils
+import com.github.thibaultbee.streampack.utils.MockUtils
 import com.github.thibaultbee.streampack.utils.ResourcesUtils
 import io.mockk.every
 import io.mockk.mockkObject
@@ -48,9 +51,8 @@ class PesTest {
     }
 
     @Test
-    fun testSimpleVideoFrame() {
-        mockkObject(TimeUtils)
-        every { TimeUtils.currentTime() } returns 1433034
+    fun `single video frame to pes test`() {
+        MockUtils.mockTimeUtils(1433034)
 
         val rawData = ByteBuffer.wrap(
             ResourcesUtils.readResources("test-samples/muxer/pes-video1/raw")
@@ -61,7 +63,7 @@ class PesTest {
         val expectedBuffers = readFrames("test-samples/muxer/pes-video1")
         Pes(
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
-            Stream(MediaFormat.MIMETYPE_VIDEO_AVC, 256),
+            Stream(VideoConfig.Builder().build(), 256),
             true
         ).run {
             write(frame)
@@ -69,9 +71,8 @@ class PesTest {
     }
 
     @Test
-    fun testSimpleAudioFrame() {
-        mockkObject(TimeUtils)
-        every { TimeUtils.currentTime() } returns 700000
+    fun `single audio frame to pes test`() {
+        MockUtils.mockTimeUtils(700000)
 
         val rawData = ByteBuffer.wrap(
             ResourcesUtils.readResources("test-samples/muxer/pes-audio1/raw.aac")
@@ -82,7 +83,7 @@ class PesTest {
         val expectedBuffers = readFrames("test-samples/muxer/pes-audio1")
         Pes(
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
-            Stream(MediaFormat.MIMETYPE_AUDIO_AAC, 256),
+            Stream(AudioConfig.Builder().build(), 256),
             true
         ).run {
             write(frame)
@@ -90,9 +91,8 @@ class PesTest {
     }
 
     @Test
-    fun testSimpleAudioFrameWith1StuffingLength() {
-        mockkObject(TimeUtils)
-        every { TimeUtils.currentTime() } returns 700000
+    fun `single audio frame with stuffing length = 1 to pes test`() {
+        MockUtils.mockTimeUtils(700000)
 
         val rawData = ByteBuffer.wrap(
             ResourcesUtils.readResources("test-samples/muxer/pes-audio2/raw.aac")
@@ -103,7 +103,7 @@ class PesTest {
         val expectedBuffers = readFrames("test-samples/muxer/pes-audio2")
         Pes(
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
-            Stream(MediaFormat.MIMETYPE_AUDIO_AAC, 256),
+            Stream(AudioConfig.Builder().build(), 256),
             true
         ).run {
             write(frame)

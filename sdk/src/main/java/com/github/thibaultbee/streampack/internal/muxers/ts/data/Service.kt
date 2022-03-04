@@ -18,7 +18,7 @@ package com.github.thibaultbee.streampack.internal.muxers.ts.data
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Pmt
 
 class Service(
-    val info: ServiceInfo,
+    val info: TsServiceInfo,
     var pmt: Pmt? = null,
     var streams: MutableList<Stream> = mutableListOf(),
     var pcrPid: Short? = null

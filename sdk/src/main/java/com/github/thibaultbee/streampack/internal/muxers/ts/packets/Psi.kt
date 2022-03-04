@@ -17,11 +17,11 @@ package com.github.thibaultbee.streampack.internal.muxers.ts.packets
 
 import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.CRC32
-import com.github.thibaultbee.streampack.internal.muxers.ts.utils.put
+import com.github.thibaultbee.streampack.internal.utils.put
 import java.nio.ByteBuffer
 
 open class Psi(
-    muxerListener: IMuxerListener,
+    listener: IMuxerListener? = null,
     pid: Short,
     private val tableId: Byte,
     private val sectionSyntaxIndicator: Boolean = false,
@@ -30,7 +30,7 @@ open class Psi(
     var versionNumber: Byte = 0,
     private val sectionNumber: Byte = 0,
     private val lastSectionNumber: Byte = 0,
-) : TS(muxerListener, pid) {
+) : TS(listener, pid) {
     companion object {
         const val CRC_SIZE = 4
         const val PSI_HEADER_SIZE = 9 // contains pointer_field

@@ -20,17 +20,17 @@ import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ITSElement
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Service
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Stream
-import com.github.thibaultbee.streampack.internal.muxers.ts.utils.putShort
+import com.github.thibaultbee.streampack.internal.utils.putShort
 import java.nio.ByteBuffer
 
 class Pmt(
-    muxerListener: IMuxerListener,
+    listener: IMuxerListener? = null,
     private val service: Service,
     var streams: List<Stream>,
     pid: Short,
     versionNumber: Byte = 0,
 ) : Psi(
-    muxerListener,
+    listener,
     pid,
     TID,
     true,
@@ -66,7 +66,7 @@ class Pmt(
         buffer.putShort(0b1111 shl 12) // Reserved + First two bits of program_info_length shall be '00' + program_info_length
 
         streams.forEach {
-            buffer.put(StreamType.fromMimeType(it.mimeType).value)
+            buffer.put(StreamType.fromMimeType(it.config.mimeType).value)
             buffer.putShort(
                 (0b111 shl 13) // Reserved
                         or (it.pid.toInt())

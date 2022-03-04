@@ -15,10 +15,12 @@
  */
 package com.github.thibaultbee.streampack.data
 
+import android.content.Context
 import android.media.MediaCodecInfo.CodecProfileLevel
 import android.media.MediaFormat
 import android.os.Build
 import android.util.Size
+import com.github.thibaultbee.streampack.internal.utils.isPortrait
 import com.github.thibaultbee.streampack.internal.utils.isVideo
 import com.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import com.github.thibaultbee.streampack.utils.CameraStreamerConfigurationHelper
@@ -30,18 +32,18 @@ import java.io.IOException
  *
  * @see [BaseStreamer.configure]
  */
-data class VideoConfig(
+class VideoConfig(
     /**
      * Video encoder mime type.
      * Only [MediaFormat.MIMETYPE_VIDEO_AVC] is supported yet.
      *
      * **See Also:** [MediaFormat MIMETYPE_VIDEO_*](https://developer.android.com/reference/android/media/MediaFormat)
      */
-    val mimeType: String,
+    mimeType: String,
     /**
      * Video encoder bitrate in bits/s.
      */
-    val startBitrate: Int,
+    startBitrate: Int,
     /**
      * Video output resolution in pixel.
      */
@@ -61,9 +63,23 @@ data class VideoConfig(
      * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
      */
     val level: Int,
-) {
+) : Config(mimeType, startBitrate) {
     init {
-        require(mimeType.isVideo()) { "Mime Type must be video" }
+        require(mimeType.isVideo()) { "MimeType must be video" }
+    }
+
+    /**
+     * Get resolution according to device orientation
+     *
+     * @param context activity context
+     * @return oriented resolution
+     */
+    fun getOrientedResolution(context: Context): Size {
+        return if (context.isPortrait()) {
+            Size(resolution.height, resolution.width)
+        } else {
+            Size(resolution.width, resolution.height)
+        }
     }
 
     /**

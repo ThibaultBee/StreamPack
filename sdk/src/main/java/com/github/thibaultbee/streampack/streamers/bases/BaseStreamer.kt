@@ -19,6 +19,7 @@ import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.data.AudioConfig
+import com.github.thibaultbee.streampack.data.Config
 import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.error.StreamPackError
 import com.github.thibaultbee.streampack.internal.data.Frame
@@ -28,9 +29,8 @@ import com.github.thibaultbee.streampack.internal.encoders.IEncoderListener
 import com.github.thibaultbee.streampack.internal.encoders.VideoMediaCodecEncoder
 import com.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import com.github.thibaultbee.streampack.internal.events.EventHandler
+import com.github.thibaultbee.streampack.internal.muxers.IMuxer
 import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
-import com.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
-import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.internal.sources.IAudioCapture
 import com.github.thibaultbee.streampack.internal.sources.ISurfaceCapture
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
@@ -48,18 +48,19 @@ import java.nio.ByteBuffer
  * Use this class, only if you want to implement a add new Audio or video source.
  *
  * @param context application context
- * @param tsServiceInfo MPEG-TS service description
  * @param videoCapture Video source
  * @param audioCapture Audio source
+ * @param manageVideoOrientation Set to [Boolean.true] to rotate video according to device orientation.
+ * @param muxer a [IMuxer] implementation
  * @param endpoint a [IEndpoint] implementation
  * @param logger a [ILogger] implementation
  */
 abstract class BaseStreamer(
     private val context: Context,
-    private val tsServiceInfo: ServiceInfo,
     protected val videoCapture: ISurfaceCapture<VideoConfig>?,
     protected val audioCapture: IAudioCapture?,
-    manageVideoOrientation: Boolean,
+    manageVideoOrientation: Boolean = false,
+    private val muxer: IMuxer,
     protected val endpoint: IEndpoint,
     protected val logger: ILogger
 ) : EventHandler(), IStreamer {
@@ -70,8 +71,8 @@ abstract class BaseStreamer(
     override var onErrorListener: OnErrorListener? = null
     override val settings = Settings()
 
-    private var audioTsStreamId: Short? = null
-    private var videoTsStreamId: Short? = null
+    private var audioTsStreamId: Int? = null
+    private var videoTsStreamId: Int? = null
 
     // Keep video configuration
     protected var videoConfig: VideoConfig? = null
@@ -92,7 +93,7 @@ abstract class BaseStreamer(
         override fun onOutputFrame(frame: Frame) {
             audioTsStreamId?.let {
                 try {
-                    tsMux.encode(frame, it)
+                    this@BaseStreamer.muxer.encode(frame, it)
                 } catch (e: Exception) {
                     throw StreamPackError(e)
                 }
@@ -115,7 +116,7 @@ abstract class BaseStreamer(
                     } else {
                         null
                     }
-                    tsMux.encode(frame, it)
+                    this@BaseStreamer.muxer.encode(frame, it)
                 } catch (e: Exception) {
                     // Send exception to encoder
                     throw StreamPackError(e)
@@ -167,7 +168,15 @@ abstract class BaseStreamer(
         null
     }
 
-    private val tsMux = TSMuxer(muxListener)
+    private val hasAudio: Boolean
+        get() = audioCapture != null
+    private val hasVideo: Boolean
+        get() = videoCapture != null
+
+    init {
+        muxer.manageVideoOrientation = manageVideoOrientation
+        muxer.listener = muxListener
+    }
 
     /**
      * Configures both video and audio settings.
@@ -189,6 +198,13 @@ abstract class BaseStreamer(
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun configure(audioConfig: AudioConfig?, videoConfig: VideoConfig?) {
+        if (hasAudio) {
+            require(audioConfig != null) { "Requires audio config" }
+        }
+        if (hasVideo) {
+            require(videoConfig != null) { "Requires video config" }
+        }
+
         // Keep settings when we need to reconfigure
         this.videoConfig = videoConfig
         this.audioConfig = audioConfig
@@ -223,14 +239,19 @@ abstract class BaseStreamer(
         try {
             endpoint.startStream()
 
-            val streams = mutableListOf<String>()
-            videoEncoder?.mimeType?.let { streams.add(it) }
-            audioEncoder?.mimeType?.let { streams.add(it) }
+            val streams = mutableListOf<Config>()
+            if (hasVideo) {
+                streams.add(videoConfig!!)
+            }
+            if (hasAudio) {
+                streams.add(audioConfig!!)
+            }
 
-            tsMux.addService(tsServiceInfo)
-            tsMux.addStreams(tsServiceInfo, streams)
-            videoEncoder?.mimeType?.let { videoTsStreamId = tsMux.getStreams(it)[0].pid }
-            audioEncoder?.mimeType?.let { audioTsStreamId = tsMux.getStreams(it)[0].pid }
+            val streamsIdMap = this.muxer.addStreams(streams)
+            videoConfig?.let { videoTsStreamId = streamsIdMap[videoConfig as Config] }
+            audioConfig?.let { audioTsStreamId = streamsIdMap[audioConfig as Config] }
+
+            muxer.startStream()
 
             audioCapture?.startStream()
             audioEncoder?.startStream()
@@ -271,7 +292,7 @@ abstract class BaseStreamer(
         audioEncoder?.stopStream()
         audioCapture?.stopStream()
 
-        tsMux.stop()
+        muxer.stopStream()
 
         endpoint.stopStream()
     }
@@ -319,6 +340,9 @@ abstract class BaseStreamer(
         videoEncoder?.release()
         audioCapture?.release()
         videoCapture?.release()
+
+        muxer.release()
+
         endpoint.release()
     }
 

@@ -16,39 +16,53 @@
 package com.github.thibaultbee.streampack.internal.muxers.ts
 
 import android.media.MediaFormat
+import com.github.thibaultbee.streampack.data.AudioConfig
+import com.github.thibaultbee.streampack.data.Config
 import com.github.thibaultbee.streampack.internal.data.Frame
+import com.github.thibaultbee.streampack.internal.muxers.IMuxer
 import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Service
-import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Stream
+import com.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Pat
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Pes
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Pmt
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Sdt
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.MuxerConst
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.TSConst
+import com.github.thibaultbee.streampack.internal.utils.av.audio.aac.ADTS
 import com.github.thibaultbee.streampack.internal.utils.isVideo
 import java.nio.ByteBuffer
 import java.util.*
 import kotlin.random.Random
 
 class TSMuxer(
-    private val muxerListener: IMuxerListener,
-    firstServiceInfo: ServiceInfo? = null,
-    initialStreams: List<String>? = null
-) {
+    initialListener: IMuxerListener? = null,
+    initialTsServiceInfo: TsServiceInfo? = null,
+    initialStreams: List<Config>? = null,
+) : IMuxer {
     private val tsServices = mutableListOf<Service>()
     private val tsPes = mutableListOf<Pes>()
+    override var manageVideoOrientation: Boolean = false // Useless here
+    override var listener: IMuxerListener? = initialListener
+        set(value) {
+            pat.listener = value
+            sdt.listener = value
+            tsPes.forEach { it.listener = value }
+            tsServices.forEach { it.pmt?.listener = value }
+
+            field = value
+        }
 
     private val tsId = Random.nextInt(Byte.MIN_VALUE.toInt(), Byte.MAX_VALUE.toInt()).toShort()
     private var pat = Pat(
-        muxerListener,
+        listener,
         tsServices,
         tsId,
         packetCount = 0
     )
     private var sdt = Sdt(
-        muxerListener,
+        listener,
         tsServices,
         tsId,
         packetCount = 0
@@ -56,9 +70,9 @@ class TSMuxer(
 
     init {
         if (initialStreams != null) {
-            require(firstServiceInfo != null) { "If streams are specified, a service info must be specified too" }
+            require(initialTsServiceInfo != null) { "If streams are specified, a service info must be specified too" }
         }
-        firstServiceInfo?.let { addService(it) }
+        initialTsServiceInfo?.let { addService(it) }
         initialStreams?.let { addStreams(tsServices[0], it) }
     }
 
@@ -68,7 +82,8 @@ class TSMuxer(
      * @param frame frame to mux
      * @param streamPid Pid of frame stream. Throw a NoSuchElementException if streamPid refers to an unknown stream
      */
-    fun encode(frame: Frame, streamPid: Short) {
+    override fun encode(frame: Frame, streamPid: Int) {
+        val pes = getPes(streamPid.toShort())
         when (frame.mimeType) {
             MediaFormat.MIMETYPE_VIDEO_AVC -> {
                 // Copy sps & pps before buffer
@@ -78,12 +93,12 @@ class TSMuxer(
                     }
                     val buffer =
                         ByteBuffer.allocate(
-                            6 + frame.extra.limit() + frame.buffer.limit()
+                            6 + frame.extra.sumOf { it.limit() } + frame.buffer.limit()
                         )
                     buffer.putInt(0x00000001)
                     buffer.put(0x09.toByte())
                     buffer.put(0xf0.toByte())
-                    buffer.put(frame.extra)
+                    frame.extra.forEach { buffer.put(it) }
                     buffer.put(frame.buffer)
                     buffer.rewind()
                     frame.buffer = buffer
@@ -97,26 +112,26 @@ class TSMuxer(
                     }
                     val buffer =
                         ByteBuffer.allocate(
-                            7 + frame.extra.limit() + frame.buffer.limit()
+                            7 + frame.extra.sumOf { it.limit() } + frame.buffer.limit()
                         )
                     buffer.putInt(0x00000001)
                     buffer.put(0x46.toByte())
                     buffer.put(0x01.toByte())
                     buffer.put(0x50.toByte())
-                    buffer.put(frame.extra)
+                    frame.extra.forEach { buffer.put(it) }
                     buffer.put(frame.buffer)
                     buffer.rewind()
                     frame.buffer = buffer
                 }
             }
             MediaFormat.MIMETYPE_AUDIO_AAC -> {
-                // Copy ADTS
-                if (frame.extra == null) {
-                    throw MissingFormatArgumentException("Missing extra ADTS for AAC")
-                }
+                // Encapsulates RAW AAC with ADTS
                 val buffer =
-                    ByteBuffer.allocate(frame.buffer.limit() + frame.extra.limit())
-                frame.extra.let { buffer.put(it) }
+                    ByteBuffer.allocate(frame.buffer.remaining() + 7) // 7 = ADTS - protectionAbsent
+                val adts =
+                    ADTS.fromAudioConfig(pes.stream.config as AudioConfig, frame.buffer.remaining())
+                adts.write(buffer)
+                // No need to use extra. It contains decoder-specific information from ESDS.
                 buffer.put(frame.buffer)
                 buffer.rewind()
                 frame.buffer = buffer
@@ -125,7 +140,7 @@ class TSMuxer(
         }
 
         synchronized(this) {
-            generateStreams(frame, getPes(streamPid))
+            generateStreams(frame, pes)
         }
     }
 
@@ -201,25 +216,25 @@ class TSMuxer(
      * Get registered services list
      * @return list of registered services
      */
-    fun getService(): List<ServiceInfo> {
+    fun getServices(): List<TsServiceInfo> {
         return tsServices.map { it.info }
     }
 
     /**
      * Register a new service. Service will be valid (tables will be emitted) as soon as streams will be added.
-     * @param serviceInfo new service to add to service list
+     * @param tsServiceInfo new service to add to service list
      */
-    fun addService(serviceInfo: ServiceInfo) {
-        require(tsServices.none { it.info == serviceInfo }) { "Service already exists" }
+    fun addService(tsServiceInfo: TsServiceInfo) {
+        require(tsServices.none { it.info == tsServiceInfo }) { "Service already exists" }
 
-        tsServices.add(Service(serviceInfo))
+        tsServices.add(Service(tsServiceInfo))
     }
 
     /**
      * Remove a service and its streams
-     * @param serviceInfo service info of service to remove
+     * @param tsServiceInfo service info of service to remove
      */
-    fun removeService(serviceInfo: ServiceInfo) = removeService(getService(serviceInfo))
+    fun removeService(tsServiceInfo: TsServiceInfo) = removeService(getServices(tsServiceInfo))
 
     /**
      * Remove a service and its streams
@@ -238,35 +253,45 @@ class TSMuxer(
     }
 
     /**
-     * Add streams for a service
-     * @param serviceInfo service where to add streams
-     * @param streamsMimeType list of mime type
+     * Add streams to the first service registered
+     *
+     * @param streamsConfig list of config
      * @return ordered list of stream id
      */
-    fun addStreams(serviceInfo: ServiceInfo, streamsMimeType: List<String>): List<Short> {
-        return addStreams(getService(serviceInfo), streamsMimeType)
-    }
+    override fun addStreams(streamsConfig: List<Config>) =
+        addStreams(getServices()[0], streamsConfig)
+
+
+    /**
+     * Add streams for a service
+     * @param tsServiceInfo service where to add streams
+     * @param streamsConfig list of config
+     * @return ordered list of stream id
+     */
+    fun addStreams(tsServiceInfo: TsServiceInfo, streamsConfig: List<Config>) =
+        addStreams(getServices(tsServiceInfo), streamsConfig)
+
 
     /**
      * Add streams for a service
      * @param service service where to add streams
-     * @param streamsMimeType list of mime type
+     * @param streamsConfig list of config
      * @return list of corresponding PES
      */
-    private fun addStreams(service: Service, streamsMimeType: List<String>): List<Short> {
+    private fun addStreams(service: Service, streamsConfig: List<Config>): Map<Config, Int> {
         require(tsServices.contains(service)) { "Unknown service" }
 
         val isNewService = service.pmt == null
 
         val newStreams = mutableListOf<Stream>()
-        streamsMimeType.forEach {
+        streamsConfig.forEach {
             val stream = Stream(it, getNewPid())
             newStreams.add(stream)
             service.streams.add(stream)
         }
 
         service.pcrPid = try {
-            service.streams.first { it.mimeType.isVideo() }.pid
+            service.streams.first { it.config.mimeType.isVideo() }.pid
         } catch (e: NoSuchElementException) {
             service.streams[0].pid
         }
@@ -275,12 +300,12 @@ class TSMuxer(
         service.pmt = service.pmt?.apply {
             versionNumber = (versionNumber + 1).toByte()
             streams = service.streams
-        } ?: Pmt(muxerListener, service, service.streams, getNewPid())
+        } ?: Pmt(listener, service, service.streams, getNewPid())
 
         // Init PES
         newStreams.forEach {
             Pes(
-                muxerListener,
+                listener,
                 it,
                 service.pcrPid == it.pid,
             ).run { tsPes.add(this) }
@@ -293,17 +318,19 @@ class TSMuxer(
             upgradePat()
         }
 
-        return newStreams.map { it.pid }
+        val streamMap = mutableMapOf<Config, Int>()
+        newStreams.forEach { streamMap[it.config] = it.pid.toInt() }
+        return streamMap
     }
 
     /**
      * Remove streams from service. If you want to remove all streams from a service,
      * use {@link removeService} instead.
-     * @param serviceInfo service info
+     * @param tsServiceInfo service info
      * @param streamsPid list of streams to remove
      */
-    fun removeStreams(serviceInfo: ServiceInfo, streamsPid: List<Short>) =
-        removeStreams(getService(serviceInfo), streamsPid.map { getStream(it) })
+    fun removeStreams(tsServiceInfo: TsServiceInfo, streamsPid: List<Short>) =
+        removeStreams(getServices(tsServiceInfo), streamsPid.map { getStream(it) })
 
     /**
      * Remove streams from service. If you want to remove all streams from a service,
@@ -325,12 +352,24 @@ class TSMuxer(
         sendPmt(service)
     }
 
+    override fun configure(config: Unit) {
+        // Nothing to configure
+    }
+
+    override fun startStream() {
+        // Nothing to start
+    }
+
     /**
      * Clear internal parameters
      */
-    fun stop() {
+    override fun stopStream() {
         tsPes.clear()
         tsServices.clear()
+    }
+
+    override fun release() {
+        // Nothing to release
     }
 
     /**
@@ -361,12 +400,21 @@ class TSMuxer(
     }
 
     /**
+     * Get list of streams id from a MimeType
+     * @param mimeType stream mimetype
+     * @return list of streams id with same MimeType
+     */
+    fun getStreamsId(mimeType: String): List<Short> {
+        return getStreams(mimeType).map { it.pid }
+    }
+
+    /**
      * Get list of streams from a MimeType
      * @param mimeType stream mimetype
      * @return list of streams with same MimeType
      */
     fun getStreams(mimeType: String): List<Stream> {
-        return tsServices.flatMap { it.streams }.filter { it.mimeType == mimeType }
+        return tsServices.flatMap { it.streams }.filter { it.config.mimeType == mimeType }
     }
 
     /**
@@ -380,11 +428,11 @@ class TSMuxer(
 
     /**
      * Get Service from ServiceInfo
-     * @param serviceInfo service info
+     * @param tsServiceInfo service info
      * @return Service
      */
-    private fun getService(serviceInfo: ServiceInfo): Service {
-        return tsServices.first { it.info == serviceInfo }
+    private fun getServices(tsServiceInfo: TsServiceInfo): Service {
+        return tsServices.first { it.info == tsServiceInfo }
     }
 
 }

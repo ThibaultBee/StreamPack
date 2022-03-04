@@ -17,9 +17,9 @@ package com.github.thibaultbee.streampack.internal.muxers.ts.descriptors
 
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ITSElement
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.TSConst
-import com.github.thibaultbee.streampack.internal.muxers.ts.utils.put
-import com.github.thibaultbee.streampack.internal.muxers.ts.utils.putShort
-import com.github.thibaultbee.streampack.internal.muxers.ts.utils.shl
+import com.github.thibaultbee.streampack.internal.utils.put
+import com.github.thibaultbee.streampack.internal.utils.putShort
+import com.github.thibaultbee.streampack.internal.utils.shl
 import java.nio.ByteBuffer
 import kotlin.math.pow
 

@@ -18,7 +18,6 @@ package com.github.thibaultbee.streampack.streamers.interfaces.builders
 import android.content.Context
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
-import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
 import com.github.thibaultbee.streampack.logger.ILogger
 import com.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 
@@ -30,13 +29,6 @@ interface IStreamerBuilder {
      * @param context application context.
      */
     fun setContext(context: Context): IStreamerBuilder
-
-    /**
-     * Set TS service info. It is mandatory to set TS service info.
-     *
-     * @param serviceInfo TS service info.
-     */
-    fun setServiceInfo(serviceInfo: ServiceInfo): IStreamerBuilder
 
     /**
      * Set logger.

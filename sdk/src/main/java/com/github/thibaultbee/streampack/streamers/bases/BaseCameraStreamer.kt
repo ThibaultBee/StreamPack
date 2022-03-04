@@ -23,12 +23,12 @@ import android.view.TextureView
 import androidx.annotation.RequiresPermission
 import com.github.thibaultbee.streampack.error.StreamPackError
 import com.github.thibaultbee.streampack.internal.endpoints.IEndpoint
-import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
+import com.github.thibaultbee.streampack.internal.muxers.IMuxer
 import com.github.thibaultbee.streampack.internal.sources.AudioCapture
 import com.github.thibaultbee.streampack.internal.sources.camera.CameraCapture
 import com.github.thibaultbee.streampack.logger.ILogger
-import com.github.thibaultbee.streampack.streamers.CameraSrtLiveStreamer
-import com.github.thibaultbee.streampack.streamers.CameraTsFileStreamer
+import com.github.thibaultbee.streampack.streamers.srt.CameraSrtLiveStreamer
+import com.github.thibaultbee.streampack.streamers.file.CameraTsFileStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
 import com.github.thibaultbee.streampack.utils.CameraSettings
@@ -41,23 +41,23 @@ import kotlinx.coroutines.runBlocking
  * Use this class, only if you want to implement a custom endpoint with a camera source.
  *
  * @param context application context
- * @param tsServiceInfo MPEG-TS service description
+ * @param muxer a [IMuxer] implementation
  * @param endpoint a [IEndpoint] implementation
  * @param logger a [ILogger] implementation
  * @param enableAudio [Boolean.true] to capture audio
  */
 open class BaseCameraStreamer(
     private val context: Context,
-    tsServiceInfo: ServiceInfo,
+    muxer: IMuxer,
     endpoint: IEndpoint,
     logger: ILogger,
     enableAudio: Boolean
 ) : BaseStreamer(
     context = context,
-    tsServiceInfo = tsServiceInfo,
     videoCapture = CameraCapture(context, logger = logger),
     audioCapture = if (enableAudio) AudioCapture(logger) else null,
     manageVideoOrientation = true,
+    muxer = muxer,
     endpoint = endpoint,
     logger = logger
 ), ICameraStreamer {

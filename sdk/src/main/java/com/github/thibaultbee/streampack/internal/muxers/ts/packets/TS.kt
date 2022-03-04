@@ -15,22 +15,22 @@
  */
 package com.github.thibaultbee.streampack.internal.muxers.ts.packets
 
-import com.github.thibaultbee.streampack.internal.data.Packet
+import com.github.thibaultbee.streampack.internal.data.SrtPacket
 import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.MuxerConst
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.TSOutputCallback
-import com.github.thibaultbee.streampack.internal.muxers.ts.utils.toInt
+import com.github.thibaultbee.streampack.internal.utils.toInt
 import java.nio.ByteBuffer
 import java.security.InvalidParameterException
 
 open class TS(
-    muxerListener: IMuxerListener,
+    listener: IMuxerListener? = null,
     val pid: Short,
     private val transportErrorIndicator: Boolean = false,
     private val transportPriority: Boolean = false,
     private val transportScramblingControl: Byte = 0, // Not scrambled
     private var continuityCounter: Byte = 0,
-) : TSOutputCallback(muxerListener) {
+) : TSOutputCallback(listener) {
 
     companion object {
         const val SYNC_BYTE: Byte = 0x47
@@ -128,7 +128,7 @@ open class TS(
             val isLastPacket = payload?.let { !it.hasRemaining() } ?: true
             if (buffer.limit() == buffer.capacity() || isLastPacket) {
                 writePacket(
-                    Packet(
+                    SrtPacket(
                         buffer,
                         packetIndicator == 0,
                         isLastPacket,

@@ -20,11 +20,8 @@ import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.os.Build
 import com.github.thibaultbee.streampack.data.AudioConfig
-import com.github.thibaultbee.streampack.internal.encoders.format.aac.Adts
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.logger.ILogger
-import java.nio.ByteBuffer
-import java.security.InvalidParameterException
 
 
 class AudioMediaCodecEncoder(
@@ -70,19 +67,4 @@ class AudioMediaCodecEncoder(
 
         return codec
     }
-
-    override fun onGenerateExtra(buffer: ByteBuffer, format: MediaFormat): ByteBuffer {
-        when (val mimeType = format.getString(MediaFormat.KEY_MIME)) {
-            MediaFormat.MIMETYPE_AUDIO_AAC -> {
-                return Adts(format, buffer.limit()).toByteBuffer()
-            }
-            MediaFormat.MIMETYPE_AUDIO_OPUS -> {
-                TODO("Not yet implemented")
-            }
-            else -> {
-                throw InvalidParameterException("Format is not supported: $mimeType")
-            }
-        }
-    }
-
 }

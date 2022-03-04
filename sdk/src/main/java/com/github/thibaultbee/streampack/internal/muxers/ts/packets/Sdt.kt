@@ -18,21 +18,21 @@ package com.github.thibaultbee.streampack.internal.muxers.ts.packets
 import com.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.ITSElement
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Service
-import com.github.thibaultbee.streampack.internal.muxers.ts.utils.put
-import com.github.thibaultbee.streampack.internal.muxers.ts.utils.putShort
-import com.github.thibaultbee.streampack.internal.muxers.ts.utils.putString
+import com.github.thibaultbee.streampack.internal.utils.put
+import com.github.thibaultbee.streampack.internal.utils.putShort
+import com.github.thibaultbee.streampack.internal.utils.putString
 import java.nio.ByteBuffer
 
 
 class Sdt(
-    muxerListener: IMuxerListener,
+    listener: IMuxerListener? = null,
     private val services: List<Service>,
     tsId: Short,
     private val originalNetworkId: Short = 0xff01.toShort(),
     versionNumber: Byte = 0,
     var packetCount: Int = 0,
 ) : Psi(
-    muxerListener,
+    listener,
     PID,
     TID,
     true,

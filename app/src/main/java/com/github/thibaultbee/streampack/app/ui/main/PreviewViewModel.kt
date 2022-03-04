@@ -51,6 +51,7 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
 
     private val onErrorListener = object : OnErrorListener {
         override fun onError(error: StreamPackError) {
+            Log.e(TAG, "onError", error)
             streamerError.postValue("${error.javaClass.simpleName}: ${error.message}")
         }
     }

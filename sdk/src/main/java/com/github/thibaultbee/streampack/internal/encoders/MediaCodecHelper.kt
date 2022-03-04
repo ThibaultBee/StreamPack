@@ -53,7 +53,7 @@ object MediaCodecHelper {
          * @return encoder video capabilities
          */
         private fun getCapabilities(mimeType: String): MediaCodecInfo.VideoCapabilities {
-            require(mimeType.isVideo()) { "Mime Type must be video" }
+            require(mimeType.isVideo()) { "MimeType must be video" }
 
             val format = MediaFormat().apply { setString(MediaFormat.KEY_MIME, mimeType) }
             val mediaCodecList = MediaCodecList(MediaCodecList.REGULAR_CODECS)
@@ -133,7 +133,7 @@ object MediaCodecHelper {
          * @return encoder audio capabilities
          */
         private fun getCapabilities(mimeType: String): MediaCodecInfo.AudioCapabilities {
-            require(mimeType.isAudio()) { "Mime Type must be audio" }
+            require(mimeType.isAudio()) { "MimeType must be audio" }
 
             val format = MediaFormat().apply { setString(MediaFormat.KEY_MIME, mimeType) }
             val mediaCodecList = MediaCodecList(MediaCodecList.REGULAR_CODECS)

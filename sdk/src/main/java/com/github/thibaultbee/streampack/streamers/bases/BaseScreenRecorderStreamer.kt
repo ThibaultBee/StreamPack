@@ -22,7 +22,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.core.app.ActivityCompat
 import com.github.thibaultbee.streampack.internal.endpoints.IEndpoint
-import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
+import com.github.thibaultbee.streampack.internal.muxers.IMuxer
 import com.github.thibaultbee.streampack.internal.sources.AudioCapture
 import com.github.thibaultbee.streampack.internal.sources.screen.ScreenCapture
 import com.github.thibaultbee.streampack.logger.ILogger
@@ -32,23 +32,22 @@ import com.github.thibaultbee.streampack.logger.ILogger
  * Use this class, only if you want to implement a custom endpoint with a screen record as a source.
  *
  * @param context application context
- * @param tsServiceInfo MPEG-TS service description
+ * @param muxer a [IMuxer] implementation
  * @param endpoint a [IEndpoint] implementation
  * @param logger a [ILogger] implementation
  * @param enableAudio [Boolean.true] to capture audio
  */
 open class BaseScreenRecorderStreamer(
     context: Context,
-    tsServiceInfo: ServiceInfo,
+    muxer: IMuxer,
     endpoint: IEndpoint,
     logger: ILogger,
     enableAudio: Boolean
 ) : BaseStreamer(
     context = context,
-    tsServiceInfo = tsServiceInfo,
     videoCapture = ScreenCapture(context, logger = logger),
     audioCapture = if (enableAudio) AudioCapture(logger) else null,
-    manageVideoOrientation = false,
+    muxer = muxer,
     endpoint = endpoint,
     logger = logger
 ) {

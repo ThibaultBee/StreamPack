@@ -25,6 +25,7 @@ import android.os.HandlerThread
 import com.github.thibaultbee.streampack.error.StreamPackError
 import com.github.thibaultbee.streampack.internal.data.Frame
 import com.github.thibaultbee.streampack.internal.events.EventHandler
+import com.github.thibaultbee.streampack.internal.utils.slices
 import com.github.thibaultbee.streampack.logger.ILogger
 import java.nio.ByteBuffer
 import java.security.InvalidParameterException
@@ -68,7 +69,7 @@ abstract class MediaCodecEncoder<T>(
 
                 try {
                     mediaCodec?.getOutputBuffer(index)?.let { buffer ->
-                        val extra = onGenerateExtra(buffer, codec.outputFormat)
+                        val isKeyFrame = info.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME
                         /**
                          * Drops codec data. They are already passed in the extra buffer.
                          */
@@ -78,9 +79,12 @@ abstract class MediaCodecEncoder<T>(
                                 codec.outputFormat.getString(MediaFormat.KEY_MIME)!!,
                                 info.presentationTimeUs, // pts
                                 null, // dts
-                                info.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME,
-
-                                extra
+                                isKeyFrame,
+                                if (isKeyFrame) {
+                                    generateExtra(codec.outputFormat)
+                                } else {
+                                    null
+                                }
                             ).let { frame ->
                                 encoderListener.onOutputFrame(
                                     frame
@@ -194,5 +198,29 @@ abstract class MediaCodecEncoder<T>(
         mediaCodec = null
     }
 
-    abstract fun onGenerateExtra(buffer: ByteBuffer, format: MediaFormat): ByteBuffer
+    private fun generateExtra(format: MediaFormat): List<ByteBuffer> {
+        val extra = mutableListOf<ByteBuffer>()
+
+
+        format.getByteBuffer("csd-0")?.let {
+            /**
+             * For HEVC, vps, sps amd pps are all in csd-0.
+             * They all start with a start code 0x00000001.
+             */
+            if (format.getString(MediaFormat.KEY_MIME) == MediaFormat.MIMETYPE_VIDEO_HEVC) {
+                extra.addAll(it.slices(byteArrayOf(0x00, 0x00, 0x00, 0x01)))
+            } else {
+                extra.add(it.duplicate())
+            }
+        }
+        format.getByteBuffer("csd-1")?.let {
+            extra.add(it.duplicate())
+        }
+        format.getByteBuffer("csd-2")?.let {
+            extra.add(it.duplicate())
+        }
+
+
+        return extra
+    }
 }

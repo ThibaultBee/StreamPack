@@ -24,7 +24,7 @@ import java.nio.ByteBuffer
 
 class TableHeaderTest {
     @Test
-    fun `table header`() {
+    fun `simple table header test`() {
         val expectedTableHeader = ByteBuffer.wrap(
             ResourcesUtils.readResources("test-samples/muxer/table-header.ts")
         )

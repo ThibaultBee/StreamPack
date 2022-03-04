@@ -21,17 +21,17 @@ import android.media.MediaFormat
 import android.util.Size
 import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
-import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
+import com.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import kotlin.random.Random
 
 object AndroidUtils {
     /**
      * Generates a TS service information for test
      *
-     * @return a [ServiceInfo] for test
+     * @return a [TsServiceInfo] for test
      */
-    fun fakeServiceInfo() = ServiceInfo(
-        ServiceInfo.ServiceType.DIGITAL_TV,
+    fun fakeServiceInfo() = TsServiceInfo(
+        TsServiceInfo.ServiceType.DIGITAL_TV,
         Random.nextInt().toShort(),
         "testName",
         "testServiceName"

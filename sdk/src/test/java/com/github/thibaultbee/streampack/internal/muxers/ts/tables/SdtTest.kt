@@ -16,7 +16,7 @@
 package com.github.thibaultbee.streampack.internal.muxers.ts.tables
 
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.Service
-import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
+import com.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import com.github.thibaultbee.streampack.internal.muxers.ts.packets.Sdt
 import com.github.thibaultbee.streampack.internal.muxers.ts.utils.AssertEqualsSingleBufferMockMuxerListener
 import com.github.thibaultbee.streampack.utils.ResourcesUtils
@@ -28,15 +28,15 @@ class SdtTest {
      * Assert generated Sdt is equivalent to an expected sample
      */
     @Test
-    fun testSimpleSdt() {
+    fun `simple sdt test`() {
         val expectedBuffer = ByteBuffer.wrap(
             ResourcesUtils.readResources("test-samples/muxer/sdt.ts")
         )
         val listener = AssertEqualsSingleBufferMockMuxerListener(expectedBuffer)
         val services = listOf(
             Service(
-                ServiceInfo(
-                    ServiceInfo.ServiceType.DIGITAL_TV,
+                TsServiceInfo(
+                    TsServiceInfo.ServiceType.DIGITAL_TV,
                     id = 0x0001,
                     name = "ServiceName",
                     providerName = "ProviderName"

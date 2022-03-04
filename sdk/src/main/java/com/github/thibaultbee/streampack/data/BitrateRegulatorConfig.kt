@@ -16,7 +16,7 @@
 package com.github.thibaultbee.streampack.data
 
 import android.util.Range
-import com.github.thibaultbee.streampack.streamers.CameraSrtLiveStreamer
+import com.github.thibaultbee.streampack.streamers.srt.CameraSrtLiveStreamer
 
 /**
  * Bitrate regulator configuration. Use it to control bitrate

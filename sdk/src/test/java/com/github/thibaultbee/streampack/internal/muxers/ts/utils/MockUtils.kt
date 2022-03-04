@@ -23,7 +23,7 @@ import org.junit.Assert
 import java.nio.ByteBuffer
 
 /**
- * Assert expected buffer is equals to generated buffer
+ * Assert expected buffer is equals to expected buffer
  * @param expectedBuffer expected buffer (pre-generated buffer)
  */
 class AssertEqualsSingleBufferMockMuxerListener(private val expectedBuffer: ByteBuffer) :
@@ -34,7 +34,7 @@ class AssertEqualsSingleBufferMockMuxerListener(private val expectedBuffer: Byte
 }
 
 /**
- * Assert expected buffers is equals to generated buffers
+ * Assert expected buffers is equals to expected buffers
  * @param expectedBuffers expected buffers (often pre-generated buffers)
  */
 class AssertEqualsBuffersMockMuxerListener(private val expectedBuffers: List<ByteBuffer>) :

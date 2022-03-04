@@ -15,11 +15,14 @@
  */
 package com.github.thibaultbee.streampack.internal.muxers.ts.utils
 
-import com.github.thibaultbee.streampack.internal.muxers.ts.data.ServiceInfo
+import android.media.MediaFormat
+import com.github.thibaultbee.streampack.data.AudioConfig
+import com.github.thibaultbee.streampack.data.VideoConfig
+import com.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 
 object Utils {
-    fun fakeServiceInfo() = ServiceInfo(
-        ServiceInfo.ServiceType.DIGITAL_TV,
+    fun createFakeServiceInfo() = TsServiceInfo(
+        TsServiceInfo.ServiceType.DIGITAL_TV,
         0x4698,
         "ServiceName",
         "ProviderName"

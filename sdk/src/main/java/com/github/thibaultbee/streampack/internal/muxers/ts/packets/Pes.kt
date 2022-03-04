@@ -25,7 +25,7 @@ import com.github.thibaultbee.streampack.internal.utils.isAudio
 import com.github.thibaultbee.streampack.internal.utils.isVideo
 
 class Pes(
-    muxerListener: IMuxerListener,
+    muxerListener: IMuxerListener? = null,
     val stream: Stream,
     private val hasPcr: Boolean,
 ) : TS(muxerListener, stream.pid) {
@@ -42,7 +42,7 @@ class Pes(
         )
 
         val header = PesHeader(
-            streamId = fromMimeType(stream.mimeType).value,
+            streamId = fromMimeType(stream.config.mimeType).value,
             payloadLength = frame.buffer.remaining().toShort(),
             pts = frame.pts,
             dts = frame.dts

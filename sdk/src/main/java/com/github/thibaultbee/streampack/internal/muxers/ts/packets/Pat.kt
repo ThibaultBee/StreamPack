@@ -22,13 +22,13 @@ import java.nio.ByteBuffer
 import kotlin.experimental.or
 
 class Pat(
-    muxerListener: IMuxerListener,
+    listener: IMuxerListener? = null,
     private val services: List<Service>,
     tsId: Short,
     versionNumber: Byte = 0,
     var packetCount: Int = 0,
 ) : Psi(
-    muxerListener,
+    listener,
     PID,
     TID,
     true,
