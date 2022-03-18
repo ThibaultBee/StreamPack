@@ -41,6 +41,7 @@ class TSMuxer(
     initialTsServiceInfo: TsServiceInfo? = null,
     initialStreams: List<Config>? = null,
 ) : IMuxer {
+    override val helper = TSMuxerHelper()
     private val tsServices = mutableListOf<Service>()
     private val tsPes = mutableListOf<Pes>()
     override var manageVideoOrientation: Boolean = false // Useless here

@@ -1,0 +1,151 @@
+/*
+ * Copyright (C) 2022 Thibault B.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.github.thibaultbee.streampack.streamers.helpers
+
+import android.media.AudioFormat
+import android.util.Range
+import com.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
+import com.github.thibaultbee.streampack.internal.muxers.IAudioMuxerHelper
+import com.github.thibaultbee.streampack.internal.muxers.IMuxerHelper
+import com.github.thibaultbee.streampack.internal.muxers.IVideoMuxerHelper
+import com.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxerHelper
+import com.github.thibaultbee.streampack.internal.muxers.ts.TSMuxerHelper
+import com.github.thibaultbee.streampack.streamers.bases.BaseStreamer
+
+/**
+ * Configuration helper for [BaseStreamer].
+ * It wraps supported values from MediaCodec and TS Muxer.
+ *
+ * @param muxerHelper the corresponding muxer helper
+ */
+open class StreamerConfigurationHelper(muxerHelper: IMuxerHelper) :
+    IConfigurationHelper {
+    companion object {
+        fun createFlvHelper() = StreamerConfigurationHelper(FlvMuxerHelper())
+        fun createTsHelper() = StreamerConfigurationHelper(TSMuxerHelper())
+    }
+
+    override val audio =
+        AudioStreamerConfigurationHelper(muxerHelper.audio)
+    override val video =
+        VideoStreamerConfigurationHelper(muxerHelper.video)
+}
+
+class AudioStreamerConfigurationHelper(private val audioMuxerHelper: IAudioMuxerHelper) :
+    IAudioConfigurationHelper {
+    /**
+     * Get supported audio encoders list
+     */
+    override val supportedEncoders = MediaCodecHelper.Audio.supportedEncoders.filter {
+        audioMuxerHelper.supportedEncoders.contains(it)
+    }
+
+    /**
+     * Get supported bitrate range for a [BaseStreamer].
+     *
+     * @param mimeType audio encoder mime type
+     * @return bitrate range
+     */
+    override fun getSupportedBitrates(mimeType: String) =
+        MediaCodecHelper.Audio.getBitrateRange(mimeType)
+
+    /**
+     * Get maximum supported number of channel by encoder.
+     *
+     * @param mimeType audio encoder mime type
+     * @return maximum number of channel supported by the encoder
+     */
+    override fun getSupportedInputChannelRange(mimeType: String) =
+        MediaCodecHelper.Audio.getInputChannelRange(mimeType)
+
+    /**
+     * Get audio supported sample rates.
+     *
+     * @param mimeType audio encoder mime type
+     * @return sample rates list in Hz.
+     */
+    override fun getSupportedSampleRates(mimeType: String): List<Int> {
+        val codecSampleRates = MediaCodecHelper.Audio.getSupportedSampleRates(mimeType).toList()
+        return audioMuxerHelper.getSupportedSampleRates()?.let { muxerSampleRates ->
+            codecSampleRates.filter {
+                muxerSampleRates.contains(it)
+            }
+        } ?: codecSampleRates
+    }
+
+    /**
+     * Get audio supported byte formats.
+     *
+     * @return audio byte format.
+     * @see [AudioFormat.ENCODING_PCM_8BIT]
+     * @see [AudioFormat.ENCODING_PCM_16BIT]
+     * @see [AudioFormat.ENCODING_PCM_FLOAT]
+     */
+    override fun getSupportedByteFormats(): List<Int> {
+        val codecByteFormats = listOf(
+            AudioFormat.ENCODING_PCM_8BIT,
+            AudioFormat.ENCODING_PCM_16BIT,
+            AudioFormat.ENCODING_PCM_FLOAT
+        )
+        return audioMuxerHelper.getSupportedByteFormats()?.let { muxerByteFormats ->
+            codecByteFormats.filter {
+                muxerByteFormats.contains(it)
+            }
+        } ?: codecByteFormats
+    }
+}
+
+open class VideoStreamerConfigurationHelper(private val videoMuxerHelper: IVideoMuxerHelper) :
+    IVideoConfigurationHelper {
+    /**
+     * Supported encoders for a [BaseStreamer]
+     */
+    override val supportedEncoders = MediaCodecHelper.Video.supportedEncoders.filter {
+        videoMuxerHelper.supportedEncoders.contains(it)
+    }
+
+    /**
+     * Get supported bitrate range for a [BaseStreamer].
+     *
+     * @param mimeType video encoder mime type
+     * @return bitrate range
+     */
+    override fun getSupportedBitrates(mimeType: String) =
+        MediaCodecHelper.Video.getBitrateRange(mimeType)
+
+    /**
+     * Get supported resolutions for a [BaseStreamer].
+     *
+     * @param mimeType video encoder mime type
+     * @return pair that contains supported width ([Pair.first]) and supported height ([Pair.second]).
+     */
+    open fun getSupportedResolutions(mimeType: String): Pair<Range<Int>, Range<Int>> {
+        val codecSupportedWidths = MediaCodecHelper.Video.getSupportedWidths(mimeType)
+        val codecSupportedHeights = MediaCodecHelper.Video.getSupportedHeights(mimeType)
+
+        return Pair(codecSupportedWidths, codecSupportedHeights)
+    }
+
+    /**
+     * Get supported framerate for a [BaseStreamer].
+     *
+     * @param mimeType video encoder mime type
+     * @return framerate range supported by encoder
+     */
+    fun getSupportedFramerate(
+        mimeType: String,
+    ) = MediaCodecHelper.Video.getFramerateRange(mimeType)
+}

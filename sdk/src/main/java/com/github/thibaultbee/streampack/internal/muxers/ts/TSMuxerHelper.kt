@@ -16,23 +16,33 @@
 package com.github.thibaultbee.streampack.internal.muxers.ts
 
 import android.media.MediaFormat
+import com.github.thibaultbee.streampack.internal.muxers.IAudioMuxerHelper
+import com.github.thibaultbee.streampack.internal.muxers.IMuxerHelper
+import com.github.thibaultbee.streampack.internal.muxers.IVideoMuxerHelper
 
-object TSMuxerHelper {
-    object Video {
-        /**
-         * Get TS Muxer supported video encoders list
-         */
-        val supportedEncoders =
-            listOf(
-                MediaFormat.MIMETYPE_VIDEO_AVC,
-                MediaFormat.MIMETYPE_VIDEO_HEVC
-            )
-    }
+class TSMuxerHelper : IMuxerHelper {
+    override val audio = AudioTSMuxerHelper()
+    override val video = VideoTSMuxerHelper()
+}
 
-    object Audio {
-        /**
-         * Get TS Muxer supported audio encoders list
-         */
-        val supportedEncoders = listOf(MediaFormat.MIMETYPE_AUDIO_AAC)
-    }
+class AudioTSMuxerHelper : IAudioMuxerHelper {
+    /**
+     * Get TS Muxer supported audio encoders list
+     */
+    override val supportedEncoders = listOf(MediaFormat.MIMETYPE_AUDIO_AAC)
+
+    override fun getSupportedSampleRates(): List<Int>? = null
+
+    override fun getSupportedByteFormats(): List<Int>? = null
+}
+
+class VideoTSMuxerHelper : IVideoMuxerHelper {
+    /**
+     * Get TS Muxer supported video encoders list
+     */
+    override val supportedEncoders =
+        listOf(
+            MediaFormat.MIMETYPE_VIDEO_AVC,
+            MediaFormat.MIMETYPE_VIDEO_HEVC
+        )
 }

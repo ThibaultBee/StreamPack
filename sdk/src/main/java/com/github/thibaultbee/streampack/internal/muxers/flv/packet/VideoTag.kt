@@ -65,9 +65,9 @@ class VideoTag(
         )
         if (videoConfig.mimeType == MediaFormat.MIMETYPE_VIDEO_AVC) {
             if (isSequenceHeader) {
-                buffer.putInt(0) // AVC sequence header + CompositionTime
+                buffer.putInt(AVCPacketType.SEQUENCE.value) // AVC sequence header + CompositionTime
             } else {
-                buffer.putInt(1 shl 31) // AVC NALU + TODO: CompositionTime
+                buffer.putInt(AVCPacketType.NALU.value shl 31) // AVC NALU + TODO: CompositionTime
             }
         }
     }
@@ -140,6 +140,13 @@ enum class CodecID(val value: Int) {
     SCREEN_2(6),
     AVC(7),
     HEVC(12);
+
+    fun toMimeType() = when (this) {
+        SORENSON_H263 -> MediaFormat.MIMETYPE_VIDEO_H263
+        AVC -> MediaFormat.MIMETYPE_VIDEO_AVC
+        HEVC -> MediaFormat.MIMETYPE_VIDEO_HEVC
+        else -> throw IOException("MimeType is not supported: $this")
+    }
 
     companion object {
         fun fromMimeType(mimeType: String) = when (mimeType) {

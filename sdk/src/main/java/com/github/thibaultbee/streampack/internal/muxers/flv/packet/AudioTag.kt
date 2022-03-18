@@ -85,6 +85,14 @@ enum class SoundFormat(val value: Int) {
     MP3_8K(14),
     DEVICE_SPECIFIC(15);
 
+    fun toMimeType() = when (this) {
+        PCM -> MediaFormat.MIMETYPE_AUDIO_RAW
+        G711_ALAW -> MediaFormat.MIMETYPE_AUDIO_G711_ALAW
+        G711_MLAW -> MediaFormat.MIMETYPE_AUDIO_G711_MLAW
+        AAC -> MediaFormat.MIMETYPE_AUDIO_AAC
+        else -> throw IOException("MimeType is not supported: $this")
+    }
+
     companion object {
         fun fromMimeType(mimeType: String) = when (mimeType) {
             MediaFormat.MIMETYPE_AUDIO_RAW -> PCM
@@ -102,6 +110,13 @@ enum class SoundRate(val value: Int) {
     F_22050HZ(2),
     F_44100HZ(3);
 
+    fun toSampleRate() = when (this) {
+        F_5500HZ -> 5500
+        F_11025HZ -> 11025
+        F_22050HZ -> 22050
+        F_44100HZ -> 44100
+    }
+
     companion object {
         fun fromSampleRate(sampleRate: Int) = when (sampleRate) {
             5500 -> F_5500HZ
@@ -117,6 +132,11 @@ enum class SoundSize(val value: Int) {
     S_8BITS(0),
     S_16BITS(1);
 
+    fun toByteFormat() = when (this) {
+        S_8BITS -> AudioFormat.ENCODING_PCM_8BIT
+        S_16BITS -> AudioFormat.ENCODING_PCM_16BIT
+    }
+
     companion object {
         fun fromByteFormat(byteFormat: Int) = when (byteFormat) {
             AudioFormat.ENCODING_PCM_8BIT -> S_8BITS
@@ -129,6 +149,11 @@ enum class SoundSize(val value: Int) {
 enum class SoundType(val value: Int) {
     MONO(0),
     STEREO(1);
+
+    fun toChannelConfig() = when (this) {
+        MONO -> AudioFormat.CHANNEL_IN_MONO
+        STEREO -> AudioFormat.CHANNEL_IN_STEREO
+    }
 
     companion object {
         fun fromChannelConfig(channelConfig: Int) = when (channelConfig) {

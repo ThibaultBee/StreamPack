@@ -15,16 +15,18 @@
  */
 package com.github.thibaultbee.streampack.internal.muxers
 
-import com.github.thibaultbee.streampack.data.Config
-import com.github.thibaultbee.streampack.internal.data.Frame
-import com.github.thibaultbee.streampack.internal.interfaces.Streamable
+interface IMuxerHelper {
+    val audio: IAudioMuxerHelper
+    val video: IVideoMuxerHelper
+}
 
-interface IMuxer: Streamable<Unit> {
-    val helper: IMuxerHelper
+interface IVideoMuxerHelper : IAVMuxerHelper
 
-    var manageVideoOrientation: Boolean
-    var listener: IMuxerListener?
+interface IAudioMuxerHelper : IAVMuxerHelper {
+    fun getSupportedSampleRates(): List<Int>?
+    fun getSupportedByteFormats(): List<Int>?
+}
 
-    fun encode(frame: Frame, streamPid: Int)
-    fun addStreams(streamsConfig: List<Config>): Map<Config, Int>
+interface IAVMuxerHelper {
+    val supportedEncoders: List<String>
 }

@@ -35,11 +35,12 @@ import com.github.thibaultbee.streampack.internal.sources.IAudioCapture
 import com.github.thibaultbee.streampack.internal.sources.ISurfaceCapture
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
 import com.github.thibaultbee.streampack.logger.ILogger
+import com.github.thibaultbee.streampack.streamers.helpers.IConfigurationHelper
+import com.github.thibaultbee.streampack.streamers.helpers.StreamerConfigurationHelper
 import com.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.settings.IAudioSettings
 import com.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseStreamerSettings
 import com.github.thibaultbee.streampack.streamers.interfaces.settings.IVideoSettings
-import com.github.thibaultbee.streampack.utils.CameraStreamerConfigurationHelper
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
 
@@ -70,6 +71,7 @@ abstract class BaseStreamer(
      */
     override var onErrorListener: OnErrorListener? = null
     override val settings = Settings()
+    override val helper = StreamerConfigurationHelper(muxer.helper)
 
     private var audioTsStreamId: Int? = null
     private var videoTsStreamId: Int? = null
@@ -183,7 +185,7 @@ abstract class BaseStreamer(
      * It is the first method to call after a [BaseStreamer] instantiation.
      * It must be call when both stream and capture are not running.
      *
-     * Use [CameraStreamerConfigurationHelper] to get value limits.
+     * Use [IConfigurationHelper] to get value limits.
      *
      * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
      * to video encoder default level and default profile.

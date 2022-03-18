@@ -27,10 +27,11 @@ import com.github.thibaultbee.streampack.internal.muxers.IMuxer
 import com.github.thibaultbee.streampack.internal.sources.AudioCapture
 import com.github.thibaultbee.streampack.internal.sources.camera.CameraCapture
 import com.github.thibaultbee.streampack.logger.ILogger
-import com.github.thibaultbee.streampack.streamers.srt.CameraSrtLiveStreamer
 import com.github.thibaultbee.streampack.streamers.file.CameraTsFileStreamer
+import com.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationHelper
 import com.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
+import com.github.thibaultbee.streampack.streamers.srt.CameraSrtLiveStreamer
 import com.github.thibaultbee.streampack.utils.CameraSettings
 import com.github.thibaultbee.streampack.utils.getCameraList
 import com.github.thibaultbee.streampack.views.AutoFitSurfaceView
@@ -62,6 +63,7 @@ open class BaseCameraStreamer(
     logger = logger
 ), ICameraStreamer {
     private val cameraCapture = videoCapture as CameraCapture
+    override val helper = CameraStreamerConfigurationHelper(muxer.helper)
 
     /**
      * Get/Set current camera id.
