@@ -94,6 +94,11 @@
     <string name="rtmp_server_url_key">rtmp_server_url_key</string>
     <string name="server_url">URL</string>
     <string name="default_rtmp_url">rtmp://192.168.1.192/s/streamKey</string>
+    <string name="video_encoder_h263">3GPP</string>
+    <string name="audio_encoder_opus">Opus</string>
+    <string name="audio_byte_format_8bit">8 bits</string>
+    <string name="audio_byte_format_16bit">16 bits</string>
+    <string name="audio_byte_format_float">Float</string>
     <plurals name="camera_frame_rate_not_supported">
         <item quantity="one">Camera %1$s does not support %2$d fps</item>
         <item quantity="other">Cameras %1$s do not support %2$d fps</item>

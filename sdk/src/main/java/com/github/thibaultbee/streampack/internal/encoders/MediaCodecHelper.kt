@@ -41,6 +41,7 @@ object MediaCodecHelper {
                 .filter { it.isEncoder }
                 .flatMap { it.supportedTypes.toList() }
                 .filter { it.isVideo() }
+                .distinct()
                 .forEach { encoders.add(it) }
 
             return encoders
@@ -121,6 +122,7 @@ object MediaCodecHelper {
                 .filter { it.isEncoder }
                 .flatMap { it.supportedTypes.toList() }
                 .filter { it.isAudio() }
+                .distinct()
                 .forEach { encoders.add(it) }
 
             return encoders

@@ -16,23 +16,51 @@
 package com.github.thibaultbee.streampack.internal.muxers.flv
 
 import android.media.MediaFormat
+import com.github.thibaultbee.streampack.internal.muxers.IAudioMuxerHelper
+import com.github.thibaultbee.streampack.internal.muxers.IMuxerHelper
+import com.github.thibaultbee.streampack.internal.muxers.IVideoMuxerHelper
+import com.github.thibaultbee.streampack.internal.muxers.flv.packet.CodecID
+import com.github.thibaultbee.streampack.internal.muxers.flv.packet.SoundFormat
+import com.github.thibaultbee.streampack.internal.muxers.flv.packet.SoundRate
+import com.github.thibaultbee.streampack.internal.muxers.flv.packet.SoundSize
 
-object FlvMuxerHelper {
-    object Video {
-        /**
-         * Get FLV Muxer supported video encoders list
-         */
-        val supportedEncoders =
-            listOf(
-                MediaFormat.MIMETYPE_VIDEO_AVC
-                // HEVC is not supported in FLV standard
-            )
-    }
+class FlvMuxerHelper : IMuxerHelper {
+    override val video = VideoFlvMuxerHelper()
+    override val audio = AudioFlvMuxerHelper()
+}
 
-    object Audio {
-        /**
-         * Get FLV Muxer supported audio encoders list
-         */
-        val supportedEncoders = listOf(MediaFormat.MIMETYPE_AUDIO_AAC)
-    }
+class VideoFlvMuxerHelper : IVideoMuxerHelper {
+    /**
+     * Get FLV Muxer supported video encoders list
+     */
+    override val supportedEncoders: List<String>
+        get() {
+            return CodecID.values().mapNotNull {
+                try {
+                    it.toMimeType()
+                } catch (e: Exception) {
+                    null
+                }
+            }.filter { listOf(MediaFormat.MIMETYPE_VIDEO_AVC).contains(it) }
+        }
+}
+
+class AudioFlvMuxerHelper : IAudioMuxerHelper {
+    /**
+     * Get FLV Muxer supported audio encoders list
+     */
+    override val supportedEncoders: List<String>
+        get() {
+            return SoundFormat.values().mapNotNull {
+                try {
+                    it.toMimeType()
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        }
+
+    override fun getSupportedSampleRates() = SoundRate.values().map { it.toSampleRate() }
+
+    override fun getSupportedByteFormats() = SoundSize.values().map { it.toByteFormat() }
 }

@@ -23,7 +23,8 @@ import android.util.Size
 import com.github.thibaultbee.streampack.internal.utils.isPortrait
 import com.github.thibaultbee.streampack.internal.utils.isVideo
 import com.github.thibaultbee.streampack.streamers.bases.BaseStreamer
-import com.github.thibaultbee.streampack.utils.CameraStreamerConfigurationHelper
+import com.github.thibaultbee.streampack.streamers.helpers.IConfigurationHelper
+import com.github.thibaultbee.streampack.streamers.helpers.IVideoConfigurationHelper
 import java.io.IOException
 
 /**
@@ -115,7 +116,7 @@ class VideoConfig(
 
         /**
          * Set video encoder mime type.
-         * Get supported video encoder mime type with [CameraStreamerConfigurationHelper.Video.supportedEncoders].
+         * Get supported video encoder mime type with [IVideoConfigurationHelper.supportedEncoders] with [IConfigurationHelper.video].
          * Warning: It resets profile and level.
          *
          * @param mimeType video encoder mime type from [MediaFormat MIMETYPE_VIDEO_*](https://developer.android.com/reference/android/media/MediaFormat)

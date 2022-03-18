@@ -71,7 +71,6 @@
 
             <ListPreference
                 app:defaultValue="128000"
-                app:entries="@array/AudioBitrateEntries"
                 app:entryValues="@array/AudioBitrateEntryValues"
                 app:key="@string/audio_bitrate_key"
                 app:title="@string/audio_bitrate"
@@ -79,16 +78,12 @@
 
             <ListPreference
                 app:defaultValue="44100"
-                app:entries="@array/AudioSampleRateEntries"
-                app:entryValues="@array/AudioSampleRateEntryValues"
                 app:key="@string/audio_sample_rate_key"
                 app:title="@string/audio_sample_rate"
                 app:useSimpleSummaryProvider="true" />
 
             <ListPreference
                 app:defaultValue="2"
-                app:entries="@array/AudioByteFormatEntries"
-                app:entryValues="@array/AudioByteFormatEntryValues"
                 app:key="@string/audio_byte_format_key"
                 app:title="@string/audio_byte_format"
                 app:useSimpleSummaryProvider="true" />

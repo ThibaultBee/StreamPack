@@ -34,6 +34,7 @@ class FlvMuxer(
     initialStreams: List<Config>? = null,
     private val writeToFile: Boolean,
 ) : IMuxer {
+    override val helper = FlvMuxerHelper()
     private val streams = mutableListOf<Config>()
     private val hasAudio: Boolean
         get() = streams.any { it.mimeType.isAudio() }
