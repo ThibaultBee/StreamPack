@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Thibault B.
+ * Copyright (C) 2022 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,32 +15,19 @@
  */
 package com.github.thibaultbee.streampack.regulator
 
-//import com.github.thibaultbee.srtdroid.models.Stats
-import com.github.thibaultbee.srtdroid.models.Stats
 import com.github.thibaultbee.streampack.data.BitrateRegulatorConfig
-import com.github.thibaultbee.streampack.streamers.srt.CameraSrtLiveStreamer
 
 /**
  * Base class of bitrate regulation implementation.
  * If you want to implement your custom bitrate regulator, it must inherit from this class.
- * The bitrate regulator object is created by [CameraSrtLiveStreamer] by the [ISrtBitrateRegulatorFactory].
+ * The bitrate regulator object is created by streamers through the [IBitrateRegulatorFactory].
  *
  * @param bitrateRegulatorConfig bitrate regulation configuration
  * @param onVideoTargetBitrateChange call when you have to change video bitrate
  * @param onAudioTargetBitrateChange call when you have to change audio bitrate
  */
-abstract class SrtBitrateRegulator(
-    protected val bitrateRegulatorConfig : BitrateRegulatorConfig,
+abstract class BitrateRegulator(
+    protected val bitrateRegulatorConfig: BitrateRegulatorConfig,
     protected val onVideoTargetBitrateChange: ((Int) -> Unit),
     protected val onAudioTargetBitrateChange: ((Int) -> Unit)
-) {
-
-    /**
-     * Call regularly to get new SRT stats
-     *
-     * @param stats SRT transmission stats
-     * @param currentVideoBitrate current video bitrate target
-     * @param currentAudioBitrate current audio bitrate target
-     */
-    abstract fun update(stats: Stats, currentVideoBitrate: Int, currentAudioBitrate: Int)
-}
+)

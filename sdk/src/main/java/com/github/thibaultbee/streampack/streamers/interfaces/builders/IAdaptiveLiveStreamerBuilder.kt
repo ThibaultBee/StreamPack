@@ -16,8 +16,8 @@
 package com.github.thibaultbee.streampack.streamers.interfaces.builders
 
 import com.github.thibaultbee.streampack.data.BitrateRegulatorConfig
-import com.github.thibaultbee.streampack.regulator.DefaultSrtBitrateRegulatorFactory
-import com.github.thibaultbee.streampack.regulator.ISrtBitrateRegulatorFactory
+import com.github.thibaultbee.streampack.regulator.srt.DefaultSrtBitrateRegulatorFactory
+import com.github.thibaultbee.streampack.regulator.IBitrateRegulatorFactory
 
 interface IAdaptiveLiveStreamerBuilder : ILiveStreamerBuilder {
     /**
@@ -27,7 +27,7 @@ interface IAdaptiveLiveStreamerBuilder : ILiveStreamerBuilder {
      * @param bitrateRegulatorConfig bitrate regulator configuration.
      */
     fun setBitrateRegulator(
-        bitrateRegulatorFactory: ISrtBitrateRegulatorFactory?,
+        bitrateRegulatorFactory: IBitrateRegulatorFactory?,
         bitrateRegulatorConfig: BitrateRegulatorConfig?
     ): IStreamerBuilder
 }
