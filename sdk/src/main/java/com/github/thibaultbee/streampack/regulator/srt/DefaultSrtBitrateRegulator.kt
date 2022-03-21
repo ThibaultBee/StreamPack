@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.regulator
+package com.github.thibaultbee.streampack.regulator.srt
 
 import com.github.thibaultbee.srtdroid.models.Stats
 import com.github.thibaultbee.streampack.data.BitrateRegulatorConfig

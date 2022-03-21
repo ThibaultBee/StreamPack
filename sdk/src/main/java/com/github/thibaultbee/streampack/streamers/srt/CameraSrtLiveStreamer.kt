@@ -29,8 +29,9 @@ import com.github.thibaultbee.streampack.internal.utils.Scheduler
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.logger.ILogger
 import com.github.thibaultbee.streampack.logger.StreamPackLogger
-import com.github.thibaultbee.streampack.regulator.DefaultSrtBitrateRegulatorFactory
-import com.github.thibaultbee.streampack.regulator.ISrtBitrateRegulatorFactory
+import com.github.thibaultbee.streampack.regulator.srt.DefaultSrtBitrateRegulatorFactory
+import com.github.thibaultbee.streampack.regulator.IBitrateRegulatorFactory
+import com.github.thibaultbee.streampack.regulator.srt.SrtBitrateRegulator
 import com.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.ISrtLiveStreamer
 import com.github.thibaultbee.streampack.streamers.interfaces.builders.IAdaptiveLiveStreamerBuilder
@@ -47,7 +48,7 @@ import java.net.SocketException
  * @param tsServiceInfo MPEG-TS service description
  * @param logger a [ILogger] implementation
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
- * @param bitrateRegulatorFactory a [ISrtBitrateRegulatorFactory] implementation. Use it to customized bitrate regulator.  If bitrateRegulatorConfig is not null, bitrateRegulatorFactory must not be null.
+ * @param bitrateRegulatorFactory a [IBitrateRegulatorFactory] implementation. Use it to customized bitrate regulator.  If bitrateRegulatorConfig is not null, bitrateRegulatorFactory must not be null.
  * @param bitrateRegulatorConfig bitrate regulator configuration. If bitrateRegulatorFactory is not null, bitrateRegulatorConfig must not be null.
  */
 class CameraSrtLiveStreamer(
@@ -55,7 +56,7 @@ class CameraSrtLiveStreamer(
     tsServiceInfo: TsServiceInfo,
     logger: ILogger,
     enableAudio: Boolean,
-    bitrateRegulatorFactory: ISrtBitrateRegulatorFactory?,
+    bitrateRegulatorFactory: IBitrateRegulatorFactory?,
     bitrateRegulatorConfig: BitrateRegulatorConfig?
 ) : BaseCameraStreamer(
     context = context,
@@ -70,11 +71,11 @@ class CameraSrtLiveStreamer(
      * Bitrate regulator. Calls regularly by [scheduler]. Don't call it otherwise or you might break regulation.
      */
     private val bitrateRegulator = bitrateRegulatorConfig?.let { config ->
-        bitrateRegulatorFactory?.newSrtBitrateRegulator(
+        bitrateRegulatorFactory?.newBitrateRegulator(
             config,
             { settings.video.bitrate = it },
             { settings.audio.bitrate = it }
-        )
+        ) as SrtBitrateRegulator
     }
 
     /**
@@ -195,7 +196,7 @@ class CameraSrtLiveStreamer(
         private var enableAudio: Boolean = true,
         private var streamId: String? = null,
         private var passPhrase: String? = null,
-        private var bitrateRegulatorFactory: ISrtBitrateRegulatorFactory? = null,
+        private var bitrateRegulatorFactory: IBitrateRegulatorFactory? = null,
         private var bitrateRegulatorConfig: BitrateRegulatorConfig? = null
     ) : IStreamerBuilder, ITsStreamerBuilder, IStreamerPreviewBuilder,
         IAdaptiveLiveStreamerBuilder {
@@ -301,7 +302,7 @@ class CameraSrtLiveStreamer(
          * @param bitrateRegulatorConfig bitrate regulator configuration.
          */
         override fun setBitrateRegulator(
-            bitrateRegulatorFactory: ISrtBitrateRegulatorFactory?,
+            bitrateRegulatorFactory: IBitrateRegulatorFactory?,
             bitrateRegulatorConfig: BitrateRegulatorConfig?
         ) = apply {
             this.bitrateRegulatorFactory = bitrateRegulatorFactory

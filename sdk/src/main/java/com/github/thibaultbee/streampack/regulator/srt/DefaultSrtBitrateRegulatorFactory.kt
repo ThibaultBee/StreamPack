@@ -13,29 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.thibaultbee.streampack.regulator
+package com.github.thibaultbee.streampack.regulator.srt
 
 import com.github.thibaultbee.streampack.data.BitrateRegulatorConfig
-
+import com.github.thibaultbee.streampack.regulator.IBitrateRegulatorFactory
 
 /**
- * Factory interface you must use to create a [SrtBitrateRegulator] object.
- * If you want to create a custom bitrate regulation implementation, create a factory that
- * implements this interface.
+ * Factory that creates [DefaultSrtBitrateRegulator].
  */
-interface ISrtBitrateRegulatorFactory {
+class DefaultSrtBitrateRegulatorFactory : IBitrateRegulatorFactory {
 
     /**
-     * Creates a [SrtBitrateRegulator] object from given parameters
+     * Creates a [DefaultSrtBitrateRegulator] object from given parameters
      *
      * @param bitrateRegulatorConfig bitrate regulation configuration
      * @param onVideoTargetBitrateChange call when you have to change video bitrate
      * @param onAudioTargetBitrateChange call when you have to change audio bitrate
-     * @return a [SrtBitrateRegulator] object
+     * @return a [DefaultSrtBitrateRegulator] object
      */
-    fun newSrtBitrateRegulator(
+    override fun newBitrateRegulator(
         bitrateRegulatorConfig: BitrateRegulatorConfig,
         onVideoTargetBitrateChange: ((Int) -> Unit),
         onAudioTargetBitrateChange: ((Int) -> Unit)
-    ): SrtBitrateRegulator
+    ) = DefaultSrtBitrateRegulator(
+        bitrateRegulatorConfig,
+        onVideoTargetBitrateChange,
+        onAudioTargetBitrateChange
+    )
 }

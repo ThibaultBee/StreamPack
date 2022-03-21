@@ -41,7 +41,7 @@ import com.github.thibaultbee.streampack.error.StreamPackError
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import com.github.thibaultbee.streampack.listeners.OnConnectionListener
 import com.github.thibaultbee.streampack.listeners.OnErrorListener
-import com.github.thibaultbee.streampack.regulator.DefaultSrtBitrateRegulatorFactory
+import com.github.thibaultbee.streampack.regulator.srt.DefaultSrtBitrateRegulatorFactory
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.ACTIVITY_RESULT_KEY
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.AUDIO_CONFIG_KEY
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.BITRATE

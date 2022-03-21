@@ -23,7 +23,7 @@ import com.github.thibaultbee.streampack.data.AudioConfig
 import com.github.thibaultbee.streampack.data.BitrateRegulatorConfig
 import com.github.thibaultbee.streampack.data.VideoConfig
 import com.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
-import com.github.thibaultbee.streampack.regulator.DefaultSrtBitrateRegulatorFactory
+import com.github.thibaultbee.streampack.regulator.srt.DefaultSrtBitrateRegulatorFactory
 import com.github.thibaultbee.streampack.streamers.file.AudioOnlyFlvFileStreamer
 import com.github.thibaultbee.streampack.streamers.file.AudioOnlyTsFileStreamer
 import com.github.thibaultbee.streampack.streamers.file.CameraFlvFileStreamer
