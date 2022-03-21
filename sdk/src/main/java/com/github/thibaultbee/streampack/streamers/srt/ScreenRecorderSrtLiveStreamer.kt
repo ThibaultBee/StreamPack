@@ -132,7 +132,7 @@ class ScreenRecorderSrtLiveStreamer(
         }
 
     /**
-     * Connect to an SRT server with correct Live streaming parameters.
+     * Connect to an SRT server.
      * To avoid creating an unresponsive UI, do not call on main thread.
      *
      * @param ip server ip

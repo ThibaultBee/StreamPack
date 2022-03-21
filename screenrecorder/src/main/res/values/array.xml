@@ -24,32 +24,4 @@
         <item>192000</item>
     </string-array>
 
-    <string-array name="AudioSampleRateEntries">
-        <item>8 kHz</item>
-        <item>16 kHz</item>
-        <item>32 kHz</item>
-        <item>44.1 kHz</item>
-        <item>48 kHz</item>
-    </string-array>
-
-    <string-array name="AudioSampleRateEntryValues">
-        <item>8000</item>
-        <item>16000</item>
-        <item>32000</item>
-        <item>44100</item>
-        <item>48000</item>
-    </string-array>
-
-    <string-array name="AudioByteFormatEntries">
-        <item>8 bits</item>
-        <item>16 bits</item>
-        <item>Float</item>
-    </string-array>
-
-    <string-array name="AudioByteFormatEntryValues">
-        <item>3</item>
-        <item>2</item>
-        <item>4</item>
-    </string-array>
-
 </resources>

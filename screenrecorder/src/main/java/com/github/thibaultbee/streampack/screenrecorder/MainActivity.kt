@@ -33,10 +33,11 @@ import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.Co
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.BITRATE
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.BYTE_FORMAT
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.CHANNEL_CONFIG
-import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.CONNECTION_CONFIG_KEY
+import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.ENDPOINT_CONFIG_KEY
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.ENABLE_BITRATE_REGULATION
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.ENABLE_ECHO_CANCELER
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.ENABLE_NOISE_SUPPRESSOR
+import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.ENDPOINT_TYPE
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.IP
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.MIME_TYPE
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.MUXER_CONFIG_KEY
@@ -45,6 +46,7 @@ import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.Co
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.PROVIDER
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.RESOLUTION_HEIGHT
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.RESOLUTION_WIDTH
+import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.RTMP_URL
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.SAMPLE_RATE
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.SERVICE
 import com.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.STREAM_ID
@@ -107,7 +109,7 @@ class MainActivity : AppCompatActivity() {
             }
             intent.putExtra(VIDEO_CONFIG_KEY, createVideoConfigBundle())
             intent.putExtra(MUXER_CONFIG_KEY, createMuxerConfigBundle())
-            intent.putExtra(CONNECTION_CONFIG_KEY, createConnectionConfigBundle())
+            intent.putExtra(ENDPOINT_CONFIG_KEY, createEndpointConfigBundle())
             intent.putExtra(ACTIVITY_RESULT_KEY, result)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 startForegroundService(intent)
@@ -124,23 +126,32 @@ class MainActivity : AppCompatActivity() {
         return bundle
     }
 
-    private fun createConnectionConfigBundle(): Bundle {
+    private fun createEndpointConfigBundle(): Bundle {
         val bundle = Bundle()
-        bundle.putString(IP, configuration.endpoint.connection.ip)
-        bundle.putInt(PORT, configuration.endpoint.connection.port)
-        bundle.putString(PASSPHRASE, configuration.endpoint.connection.passPhrase)
-        bundle.putString(STREAM_ID, configuration.endpoint.connection.streamID)
+        bundle.putInt(ENDPOINT_TYPE, configuration.endpoint.type.id)
+
+        // Srt
+        bundle.putString(IP, configuration.endpoint.srt.ip)
+        bundle.putInt(PORT, configuration.endpoint.srt.port)
+        bundle.putString(PASSPHRASE, configuration.endpoint.srt.passPhrase)
+        bundle.putString(STREAM_ID, configuration.endpoint.srt.streamID)
         bundle.putBoolean(
             ENABLE_BITRATE_REGULATION,
-            configuration.endpoint.connection.enableBitrateRegulation
+            configuration.endpoint.srt.enableBitrateRegulation
         )
         bundle.putInt(
             VIDEO_BITRATE_REGULATION_LOWER,
-            configuration.endpoint.connection.videoBitrateRange.lower
+            configuration.endpoint.srt.videoBitrateRange.lower
         )
         bundle.putInt(
             VIDEO_BITRATE_REGULATION_UPPER,
-            configuration.endpoint.connection.videoBitrateRange.upper
+            configuration.endpoint.srt.videoBitrateRange.upper
+        )
+
+        // RTMP
+        bundle.putString(
+            RTMP_URL,
+            configuration.endpoint.rtmp.url
         )
         return bundle
     }
