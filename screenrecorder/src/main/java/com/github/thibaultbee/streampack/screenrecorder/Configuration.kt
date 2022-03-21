@@ -22,6 +22,7 @@ import android.media.MediaFormat
 import android.util.Range
 import android.util.Size
 import androidx.preference.PreferenceManager
+import com.github.thibaultbee.streampack.screenrecorder.models.EndpointType
 
 class Configuration(context: Context) {
     private val sharedPref = PreferenceManager.getDefaultSharedPreferences(context)
@@ -99,16 +100,27 @@ class Configuration(context: Context) {
 
     class Muxer(private val sharedPref: SharedPreferences, private val resources: Resources) {
         var service: String = resources.getString(R.string.default_muxer_service)
-            get() = sharedPref.getString(resources.getString(R.string.muxer_service_key), field)!!
+            get() = sharedPref.getString(resources.getString(R.string.ts_muxer_service_key), field)!!
 
-        var provider: String = resources.getString(R.string.default_muxer_provider)
-            get() = sharedPref.getString(resources.getString(R.string.muxer_provider_key), field)!!
+        var provider: String = resources.getString(R.string.default_ts_muxer_provider)
+            get() = sharedPref.getString(resources.getString(R.string.ts_muxer_provider_key), field)!!
     }
 
-    class Endpoint(sharedPref: SharedPreferences, resources: Resources) {
-        val connection = Connection(sharedPref, resources)
+    class Endpoint(private val sharedPref: SharedPreferences, private val resources: Resources) {
+        val srt = SrtConnection(sharedPref, resources)
+        val rtmp = RtmpConnection(sharedPref, resources)
 
-        class Connection(
+        val type: EndpointType
+            get() {
+                val endpointId = sharedPref.getString(
+                    resources.getString(R.string.endpoint_type_key),
+                    "${EndpointType.SRT.id}"
+                )!!.toInt()
+
+                return EndpointType.fromId(endpointId)
+            }
+
+        class SrtConnection(
             private val sharedPref: SharedPreferences,
             private val resources: Resources
         ) {
@@ -150,6 +162,17 @@ class Configuration(context: Context) {
                         field.upper
                     ) * 1000,  // to b/s
                 )
+        }
+
+        class RtmpConnection(
+            private val sharedPref: SharedPreferences,
+            private val resources: Resources
+        ) {
+            var url: String = resources.getString(R.string.default_rtmp_url)
+                get() = sharedPref.getString(
+                    resources.getString(R.string.rtmp_server_url_key),
+                    field
+                )!!
         }
     }
 

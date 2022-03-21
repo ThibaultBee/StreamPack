@@ -64,16 +64,12 @@
 
             <ListPreference
                 app:defaultValue="44100"
-                app:entries="@array/AudioSampleRateEntries"
-                app:entryValues="@array/AudioSampleRateEntryValues"
                 app:key="@string/audio_sample_rate_key"
                 app:title="@string/audio_sample_rate"
                 app:useSimpleSummaryProvider="true" />
 
             <ListPreference
                 app:defaultValue="2"
-                app:entries="@array/AudioByteFormatEntries"
-                app:entryValues="@array/AudioByteFormatEntryValues"
                 app:key="@string/audio_byte_format_key"
                 app:title="@string/audio_byte_format"
                 app:useSimpleSummaryProvider="true" />
@@ -92,25 +88,35 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/muxer">
-        <EditTextPreference
-            app:defaultValue="@string/default_muxer_service"
-            app:key="@string/muxer_service_key"
-            app:title="@string/muxer_service"
-            app:useSimpleSummaryProvider="true" />
-
-        <EditTextPreference
-            app:defaultValue="@string/default_muxer_provider"
-            app:key="@string/muxer_provider_key"
-            app:title="@string/muxer_provider"
-            app:useSimpleSummaryProvider="true" />
-
-    </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/endpoint">
+        <ListPreference
+            app:defaultValue="0"
+            app:key="@string/endpoint_type_key"
+            app:title="@string/endpoint_type"
+            app:useSimpleSummaryProvider="true" />
+
         <PreferenceCategory
-            app:key="@string/endpoint_server_key"
-            app:title="@string/server">
+            app:key="@string/ts_muxer_key"
+            app:title="@string/ts_muxer">
+
+            <EditTextPreference
+                app:defaultValue="@string/default_muxer_service"
+                app:key="@string/ts_muxer_service_key"
+                app:title="@string/ts_muxer_service"
+                app:useSimpleSummaryProvider="true" />
+
+            <EditTextPreference
+                app:defaultValue="@string/default_ts_muxer_provider"
+                app:key="@string/ts_muxer_provider_key"
+                app:title="@string/ts_muxer_provider"
+                app:useSimpleSummaryProvider="true" />
+
+        </PreferenceCategory>
+
+        <PreferenceCategory
+            app:key="@string/srt_server_key"
+            app:title="@string/srt_server">
 
             <EditTextPreference
                 app:defaultValue=""
@@ -160,5 +166,18 @@
                 app:useSimpleSummaryProvider="true" />
 
         </PreferenceCategory>
+
+        <PreferenceCategory
+            app:key="@string/rtmp_server_key"
+            app:title="@string/rtmp_server">
+
+            <EditTextPreference
+                app:defaultValue="@string/default_rtmp_url"
+                app:key="@string/rtmp_server_url_key"
+                app:title="@string/server_url"
+                app:useSimpleSummaryProvider="true" />
+
+        </PreferenceCategory>
+
     </PreferenceCategory>
 </PreferenceScreen>

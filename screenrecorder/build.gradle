@@ -33,6 +33,10 @@ android {
     buildFeatures {
         viewBinding true
     }
+
+    packagingOptions {
+        pickFirst '**/*.so'
+    }
 }
 
 dependencies {
