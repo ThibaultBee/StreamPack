@@ -34,12 +34,12 @@ class StreamerManager(
     private val context: Context,
     private val configuration: Configuration
 ) {
-    private lateinit var streamer: IStreamer
+    private var streamer: IStreamer? = null
 
     var onErrorListener: OnErrorListener?
-        get() = streamer.onErrorListener
+        get() = streamer?.onErrorListener
         set(value) {
-            streamer.onErrorListener = value
+            streamer?.onErrorListener = value
         }
 
     var onConnectionListener: OnConnectionListener?
@@ -49,14 +49,7 @@ class StreamerManager(
         }
 
     val cameraId: String?
-        get() {
-            return if (streamer is ICameraStreamer) {
-                val cameraStreamer = streamer as ICameraStreamer
-                cameraStreamer.camera
-            } else {
-                null
-            }
-        }
+        get() = getCameraStreamer()?.camera
 
     private inline fun <reified T> getStreamer(): T? {
         return if (streamer is T) {
@@ -66,8 +59,8 @@ class StreamerManager(
         }
     }
 
-    private fun getBaseStreamer(): IStreamer {
-        return getStreamer<IStreamer>()!!
+    private fun getBaseStreamer(): IStreamer? {
+        return getStreamer<IStreamer>()
     }
 
     private fun getCameraStreamer(): ICameraStreamer? {
@@ -136,16 +129,16 @@ class StreamerManager(
             )
         }
 
-        streamer.startStream()
+        streamer?.startStream()
     }
 
     fun stopStream() {
-        streamer.stopStream()
+        streamer?.stopStream()
         getLiveStreamer()?.disconnect()
     }
 
     fun release() {
-        streamer.release()
+        streamer?.release()
     }
 
     fun toggleCamera() {
@@ -160,7 +153,7 @@ class StreamerManager(
 
     val cameraSettings: CameraSettings?
         get() {
-            val settings = getBaseStreamer().settings
+            val settings = getBaseStreamer()?.settings
             return if (settings is IBaseCameraStreamerSettings) {
                 settings.camera
             } else {
@@ -169,8 +162,8 @@ class StreamerManager(
         }
 
     var isMuted: Boolean
-        get() = getBaseStreamer().settings.audio.isMuted
+        get() = getBaseStreamer()?.settings?.audio?.isMuted ?: true
         set(value) {
-            getBaseStreamer().settings.audio.isMuted = value
+            getBaseStreamer()?.settings?.audio?.isMuted = value
         }
 }

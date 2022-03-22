@@ -24,21 +24,18 @@ import android.view.LayoutInflater
 import android.view.SurfaceHolder
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.github.thibaultbee.streampack.app.configuration.Configuration
 import com.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import com.github.thibaultbee.streampack.app.utils.DialogUtils
+import com.github.thibaultbee.streampack.app.utils.PermissionManager
 import com.github.thibaultbee.streampack.app.utils.StreamerManager
 import com.github.thibaultbee.streampack.utils.getCameraCharacteristics
 import com.github.thibaultbee.streampack.views.getPreviewOutputSize
-import com.jakewharton.rxbinding4.view.clicks
-import com.tbruyelle.rxpermissions3.RxPermissions
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 class PreviewFragment : Fragment() {
-    private val fragmentDisposables = CompositeDisposable()
     private lateinit var binding: MainFragmentBinding
 
     companion object {
@@ -57,8 +54,6 @@ class PreviewFragment : Fragment() {
         )[PreviewViewModel::class.java]
     }
 
-    private val rxPermissions: RxPermissions by lazy { RxPermissions(this) }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -72,31 +67,38 @@ class PreviewFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private fun bindProperties() {
-        binding.liveButton.clicks()
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                rxPermissions
-                    .requestEachCombined(*viewModel.requiredPermissions.toTypedArray())
-                    .subscribe { permission ->
-                        if (!permission.granted) {
-                            binding.liveButton.isChecked = false
-                            showPermissionError()
-                        } else {
-                            if (binding.liveButton.isChecked) {
-                                startStream()
-                            } else {
-                                stopStream()
-                            }
-                        }
-                    }
-            }
-            .let(fragmentDisposables::add)
+        binding.liveButton.setOnClickListener {
+            requestStreamerPermissions(viewModel.requiredPermissions)
+        }
 
         viewModel.streamerError.observe(viewLifecycleOwner) {
             showError("Oops", it)
         }
     }
 
+    private fun startStopLive() {
+        if (binding.liveButton.isChecked) {
+            startStream()
+        } else {
+            stopStream()
+        }
+    }
+
+    private fun requestStreamerPermissions(permissions: List<String>) {
+        when {
+            PermissionManager.hasPermissions(
+                requireContext(),
+                *permissions.toTypedArray()
+            ) -> {
+                startStopLive()
+            }
+            else -> {
+                requestStreamerPermissionsLauncher.launch(
+                    permissions.toTypedArray()
+                )
+            }
+        }
+    }
 
     private fun startStream() {
         /**
@@ -138,24 +140,43 @@ class PreviewFragment : Fragment() {
     @SuppressLint("MissingPermission")
     override fun onStart() {
         super.onStart()
-
-        rxPermissions
-            .requestEachCombined(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
-            .subscribe { permission ->
-                if (!permission.granted) {
-                    showPermissionErrorAndFinish()
-                } else {
-                    viewModel.createStreamer()
-                    // Wait till streamer exists to create the SurfaceView (and call startCapture).
-                    binding.preview.visibility = View.VISIBLE
-                }
-            }
+        requestCameraAndMicrophonePermissions()
         binding.preview.holder.addCallback(surfaceViewCallback)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        fragmentDisposables.clear()
+    private fun requestCameraAndMicrophonePermissions() {
+        when {
+            PermissionManager.hasPermissions(
+                requireContext(),
+                Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO
+            ) -> {
+                createStreamer()
+            }
+            shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO) -> {
+                showPermissionError()
+                requestCameraAndMicrophonePermissionsLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.RECORD_AUDIO
+                    )
+                )
+            }
+            shouldShowRequestPermissionRationale(Manifest.permission.CAMERA) -> {
+                showPermissionError()
+                requestCameraAndMicrophonePermissionsLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.CAMERA
+                    )
+                )
+            }
+            else -> {
+                requestCameraAndMicrophonePermissionsLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.RECORD_AUDIO,
+                        Manifest.permission.CAMERA
+                    )
+                )
+            }
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -192,4 +213,36 @@ class PreviewFragment : Fragment() {
             }
         }
     }
+
+    private fun createStreamer() {
+        viewModel.createStreamer()
+        // Wait till streamer exists to create the SurfaceView (and call startCapture).
+        binding.preview.visibility = View.VISIBLE
+    }
+
+    private val requestCameraAndMicrophonePermissionsLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            if (permissions.toList().all {
+                    it.second == true
+                }) {
+                createStreamer()
+            } else {
+                showPermissionErrorAndFinish()
+            }
+        }
+
+    private val requestStreamerPermissionsLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            if (permissions.toList().all {
+                    it.second == true
+                }) {
+                startStopLive()
+            } else {
+                showPermissionError()
+            }
+        }
 }
