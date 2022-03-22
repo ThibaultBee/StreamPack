@@ -40,7 +40,7 @@ class FlvMuxer(
         get() = streams.any { it.mimeType.isAudio() }
     private val hasVideo: Boolean
         get() = streams.any { it.mimeType.isVideo() }
-    private var writeSequenceHeader: Boolean = true
+    private var startUpTime: Long? = null
 
     init {
         initialStreams?.let { streams.addAll(it) }
@@ -49,11 +49,11 @@ class FlvMuxer(
     override var manageVideoOrientation: Boolean = false
 
     override fun encode(frame: Frame, streamPid: Int) {
-        val flvTags = FlvTagFactory(frame, writeSequenceHeader, streams[streamPid]).build()
+        frame.pts -= startUpTime!!
+        val flvTags = FlvTagFactory(frame, true, streams[streamPid]).build()
         flvTags.forEach {
             listener?.onOutputFrame(Packet(it.write(), frame.pts))
         }
-        //   writeSequenceHeader = false
     }
 
     override fun addStreams(streamsConfig: List<Config>): Map<Config, Int> {
@@ -86,10 +86,12 @@ class FlvMuxer(
                 TimeUtils.currentTime()
             )
         )
+
+        startUpTime = TimeUtils.currentTime()
     }
 
     override fun stopStream() {
-        writeSequenceHeader = true
+        startUpTime = null
         streams.clear()
     }
 
