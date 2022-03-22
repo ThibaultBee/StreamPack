@@ -368,7 +368,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         if (endpoint.hasFileCapabilities) {
             // Remove previous extension
             FileExtension.values().forEach {
-                fileNamePreference.text = fileNamePreference.text.removeSuffix(it.extension)
+                fileNamePreference.text = fileNamePreference.text?.removeSuffix(it.extension)
             }
             // Add correct extension
             fileNamePreference.text += when {
