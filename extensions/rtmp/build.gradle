@@ -1,0 +1,9 @@
+apply from: "${project.rootDir}/common_library.gradle"
+
+dependencies {
+    implementation project(':core')
+    implementation 'video.api:rtmpdroid:0.9.0'
+
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2'
+    implementation "androidx.core:core-ktx:${androidx_core_version}"
+}
