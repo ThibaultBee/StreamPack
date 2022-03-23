@@ -1,4 +1,10 @@
 apply from: "${project.rootDir}/common_library.gradle"
+apply from: "${project.rootDir}/publish.gradle"
+
+ext {
+    artifactName = 'streampack-extension-srt'
+    artifactDescription = 'SRT extension for StreamPack.'
+}
 
 dependencies {
     implementation project(':core')

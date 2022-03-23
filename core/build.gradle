@@ -1,4 +1,5 @@
 apply from: "${project.rootDir}/common_library.gradle"
+apply from: "${project.rootDir}/publish.gradle"
 
 android {
     buildTypes {
@@ -7,6 +8,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+}
+
+ext {
+    artifactName = 'streampack'
+    artifactDescription = 'Main library of StreamPack.'
 }
 
 dependencies {
