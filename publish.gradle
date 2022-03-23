@@ -1,0 +1,101 @@
+/*
+ * Copyright 2013 Chris Banes
+ * Copyright 2022 Thibault B.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+def isReleaseBuild() {
+    return !streampackVersion.contains("SNAPSHOT")
+}
+
+def getReleaseRepositoryUrl() {
+    return hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
+            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+}
+
+def getSnapshotRepositoryUrl() {
+    return hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
+            : "https://oss.sonatype.org/content/repositories/snapshots/"
+}
+
+def getRepositoryUsername() {
+    return hasProperty('MAVEN_USERNAME') ? OSSRH_USERNAME : System.getenv("MAVEN_USERNAME")
+}
+
+def getRepositoryPassword() {
+    return hasProperty('MAVEN_PASSWORD') ? OSSRH_PASSWORD : System.getenv("MAVEN_PASSWORD")
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+
+                groupId = "io.github.thibaultbee"
+                artifactId = artifactName
+                version = streampackVersion
+
+                pom {
+                    name = artifactName
+                    packaging = "aar"
+                    description = artifactDescription
+                    url = "https://github.com/ThibaultBee/StreamPack"
+
+                    scm {
+                        url = "https://github.com/ThibaultBee/StreamPack"
+                        connection = "scm:git:git://github.com/ThibaultBee/StreamPack.git"
+                        developerConnection = "scm:git:ssh://github.com/ThibaultBee/StreamPack.git"
+                    }
+
+                    licenses {
+                        license {
+                            name = "Apache License, Version 2.0"
+                            url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                            distribution = "repo"
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            name = "Thibault B."
+                            organizationUrl = "https://github.com/ThibaultBee"
+                        }
+                    }
+                }
+            }
+        }
+        repositories {
+            maven {
+                name = "MavenCentral"
+                if (!isReleaseBuild()) {
+                    url getSnapshotRepositoryUrl()
+                } else {
+                    url getReleaseRepositoryUrl()
+                }
+                credentials {
+                    username = getRepositoryUsername()
+                    password = getRepositoryPassword()
+                }
+            }
+        }
+        signing {
+            required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
+            sign publishing.publications.release
+        }
+    }
+}
