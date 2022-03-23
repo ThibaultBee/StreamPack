@@ -1,4 +1,9 @@
 rootProject.name='StreamPack'
-include ':app'
-include ':sdk'
-include ':screenrecorder'
+
+include ':demo-camera'
+project(':demo-camera').projectDir = new File(rootDir, 'demos/camera')
+include ':demo-screenrecorder'
+project(':demo-screenrecorder').projectDir = new File(rootDir, 'demos/screenrecorder')
+
+apply from: 'core_settings.gradle'
+
