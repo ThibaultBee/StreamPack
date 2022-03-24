@@ -7,7 +7,7 @@ android {
     compileSdk project.compileSdk
 
     defaultConfig {
-        applicationId "com.github.thibaultbee.streampack.screenrecorder"
+        applicationId "io.github.thibaultbee.streampack.screenrecorder"
         minSdk project.minSdk
         targetSdk project.appTargetSdk
 
