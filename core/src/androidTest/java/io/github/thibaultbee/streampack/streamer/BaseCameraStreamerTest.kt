@@ -70,7 +70,7 @@ class BaseCameraStreamerTest {
             cameraStreamer.stopPreview()
             cameraStreamer.release()
         } catch (e: Exception) {
-            fail("Default usage must not throw exception ${e.message}")
+            fail("Default usage must not throw exception $e")
         }
     }
 
@@ -107,7 +107,7 @@ class BaseCameraStreamerTest {
         try {
             cameraStreamer.release()
         } catch (e: Exception) {
-            fail("Must be possible to only release without exception: ${e.message}")
+            fail("Must be possible to only release without exception: $e")
         }
     }
 
@@ -116,7 +116,7 @@ class BaseCameraStreamerTest {
         try {
             cameraStreamer.stopPreview()
         } catch (e: Exception) {
-            fail("Must be possible to only stopPreview without exception: ${e.message}")
+            fail("Must be possible to only stopPreview without exception: $e")
         }
     }
 
@@ -125,7 +125,7 @@ class BaseCameraStreamerTest {
         try {
             cameraStreamer.stopStream()
         } catch (e: Exception) {
-            fail("Must be possible to only stopStream without exception: ${e.message}")
+            fail("Must be possible to only stopStream without exception: $e")
         }
     }
 
@@ -138,7 +138,7 @@ class BaseCameraStreamerTest {
             )
             cameraStreamer.release()
         } catch (e: Exception) {
-            fail("Must be possible to configure/release but catches exception: ${e.message}")
+            fail("Must be possible to configure/release but catches exception: $e")
         }
     }
 
@@ -151,7 +151,7 @@ class BaseCameraStreamerTest {
             )
             cameraStreamer.stopPreview()
         } catch (e: Exception) {
-            fail("Must be possible to configure/stopPreview but catches exception: ${e.message}")
+            fail("Must be possible to configure/stopPreview but catches exception: $e")
         }
     }
 
@@ -164,7 +164,7 @@ class BaseCameraStreamerTest {
             )
             cameraStreamer.stopStream()
         } catch (e: Exception) {
-            fail("Must be possible to configure/stopStream but catches exception: ${e.message}")
+            fail("Must be possible to configure/stopStream but catches exception: $e")
         }
     }
 
@@ -190,10 +190,9 @@ class BaseCameraStreamerTest {
             cameraStreamer.startPreview(surface)
             cameraStreamer.release()
         } catch (e: Exception) {
-            fail("Must be possible to startPreview/release but catches exception: ${e.message}")
+            fail("Must be possible to startPreview/release but catches exception: $e")
         }
     }
-
 
     @Test
     fun startPreviewStopPreviewTest() {
@@ -205,7 +204,25 @@ class BaseCameraStreamerTest {
             cameraStreamer.startPreview(surface)
             cameraStreamer.stopPreview()
         } catch (e: Exception) {
-            fail("Must be possible to startPreview/stopPreview but catches exception: ${e.message}")
+            fail("Must be possible to startPreview/stopPreview but catches exception: $e")
+        }
+    }
+
+    @Test
+    fun multipleStartPreviewStopPreviewTest() {
+        try {
+            cameraStreamer.configure(
+                AndroidUtils.fakeValidAudioConfig(),
+                AndroidUtils.fakeValidVideoConfig()
+            )
+            cameraStreamer.startPreview(surface)
+            cameraStreamer.stopPreview()
+            cameraStreamer.startPreview(surface)
+            cameraStreamer.stopPreview()
+            cameraStreamer.startPreview(surface)
+            cameraStreamer.stopPreview()
+        } catch (e: Exception) {
+            fail("Must be possible to startPreview/stopPreview but catches exception: $e")
         }
     }
 
@@ -219,7 +236,7 @@ class BaseCameraStreamerTest {
             cameraStreamer.startPreview(surface)
             cameraStreamer.stopStream()
         } catch (e: Exception) {
-            fail("Must be possible to startPreview/stopStream but catches exception: ${e.message}")
+            fail("Must be possible to startPreview/stopStream but catches exception: $e")
         }
     }
 
@@ -235,7 +252,7 @@ class BaseCameraStreamerTest {
             cameraStreamer.startStream()
             cameraStreamer.release()
         } catch (e: Exception) {
-            fail("Must be possible to startStream/release but catches exception: ${e.message}")
+            fail("Must be possible to startStream/release but catches exception: $e")
         }
     }
 
@@ -251,7 +268,7 @@ class BaseCameraStreamerTest {
             cameraStreamer.startStream()
             cameraStreamer.stopPreview()
         } catch (e: Exception) {
-            fail("Must be possible to startStream/stopPreview but catches exception: ${e.message}")
+            fail("Must be possible to startStream/stopPreview but catches exception: $e")
         }
     }
 
@@ -266,7 +283,26 @@ class BaseCameraStreamerTest {
             cameraStreamer.startStream()
             cameraStreamer.stopStream()
         } catch (e: Exception) {
-            fail("Must be possible to startStream/stopStream but catches exception: ${e.message}")
+            fail("Must be possible to startStream/stopStream but catches exception: $e")
+        }
+    }
+
+    @Test
+    fun multipleStartStreamStopStreamTest() {
+        try {
+            cameraStreamer.configure(
+                AndroidUtils.fakeValidAudioConfig(),
+                AndroidUtils.fakeValidVideoConfig()
+            )
+            cameraStreamer.startPreview(surface)
+            cameraStreamer.startStream()
+            cameraStreamer.stopStream()
+            cameraStreamer.startStream()
+            cameraStreamer.stopStream()
+            cameraStreamer.startStream()
+            cameraStreamer.stopStream()
+        } catch (e: Exception) {
+            fail("Must be possible to startStream/stopStream but catches exception: $e")
         }
     }
 }

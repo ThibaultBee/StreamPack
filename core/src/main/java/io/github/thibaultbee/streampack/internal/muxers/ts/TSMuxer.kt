@@ -325,8 +325,8 @@ class TSMuxer(
     }
 
     /**
-     * Remove streams from service. If you want to remove all streams from a service,
-     * use {@link removeService} instead.
+     * Remove streams from service.
+     *
      * @param tsServiceInfo service info
      * @param streamsPid list of streams to remove
      */
@@ -334,13 +334,13 @@ class TSMuxer(
         removeStreams(getServices(tsServiceInfo), streamsPid.map { getStream(it) })
 
     /**
-     * Remove streams from service. If you want to remove all streams from a service,
-     * use {@link removeService} instead.
+     * Remove streams from service.
+     *
      * @param service service
      * @param streams list of streams to remove
      */
     private fun removeStreams(service: Service, streams: List<Stream>) {
-        service.streams.forEach {
+        streams.forEach {
             tsPes.remove(getPes(it.pid))
         }
         service.streams.removeAll(streams)
@@ -353,6 +353,18 @@ class TSMuxer(
         sendPmt(service)
     }
 
+    /**
+     * Remove all streams from a service.
+     *
+     * @param service service
+     */
+    private fun removeStreams(service: Service) {
+        service.streams.forEach {
+            tsPes.remove(getPes(it.pid))
+        }
+        service.streams.clear()
+    }
+
     override fun configure(config: Unit) {
         // Nothing to configure
     }
@@ -362,15 +374,16 @@ class TSMuxer(
     }
 
     /**
-     * Clear internal parameters
+     * Clear all streams of all services
      */
     override fun stopStream() {
-        tsPes.clear()
-        tsServices.clear()
+        tsServices.forEach {
+            removeStreams(it)
+        }
     }
 
     override fun release() {
-        // Nothing to release
+        tsServices.clear()
     }
 
     /**
