@@ -39,7 +39,7 @@ class BaseCameraStreamerTest {
     private val logger = FakeAndroidLogger()
     private val context = InstrumentationRegistry.getInstrumentation().context
     private lateinit var cameraStreamer: BaseCameraStreamer
-    private val surface = Surface(SurfaceTexture(true))
+    private val surface = Surface(SurfaceTexture(false))
 
     @Before
     fun setUp() {
