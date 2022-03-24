@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.github.thibaultbee.streampack.ext.srt">
+    package="io.github.thibaultbee.streampack.ext.srt">
 
     <uses-feature
         android:glEsVersion="0x00020000"

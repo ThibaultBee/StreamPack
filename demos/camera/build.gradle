@@ -8,7 +8,7 @@ android {
     compileSdk project.compileSdk
 
     defaultConfig {
-        applicationId "com.github.thibaultbee.streampack.sample"
+        applicationId "io.github.thibaultbee.streampack.sample"
         minSdk project.minSdk
         targetSdk project.appTargetSdk
 

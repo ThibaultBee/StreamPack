@@ -16,7 +16,7 @@ allprojects {
 }
 
 dependencies {
-    implementation 'com.github.ThibaultBee:StreamPack:1.4.0'
+    implementation 'io.github.ThibaultBee:StreamPack:1.4.0'
 }
 ```
 
@@ -75,7 +75,7 @@ side, you should be able to watch this stream.
 To simplify development, StreamPack provides an `AutoFitSurfaceView`.
 
 ```xml
-<com.github.thibaultbee.streampack.views.AutoFitSurfaceView
+<io.github.thibaultbee.streampack.views.AutoFitSurfaceView
         android:id="@+id/preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

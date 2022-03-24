@@ -7,7 +7,7 @@
 
         <variable
             name="viewmodel"
-            type="com.github.thibaultbee.streampack.app.ui.main.PreviewViewModel" />
+            type="io.github.thibaultbee.streampack.app.ui.main.PreviewViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -15,7 +15,7 @@
         android:layout_height="match_parent"
         android:keepScreenOn="true">
 
-        <com.github.thibaultbee.streampack.views.AutoFitSurfaceView
+        <io.github.thibaultbee.streampack.views.AutoFitSurfaceView
             android:id="@+id/preview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
