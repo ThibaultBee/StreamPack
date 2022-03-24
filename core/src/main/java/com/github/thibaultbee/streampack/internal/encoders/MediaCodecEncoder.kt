@@ -37,7 +37,7 @@ abstract class MediaCodecEncoder<T>(
     EventHandler(), IEncoder<T> {
     protected var mediaCodec: MediaCodec? = null
     private var callbackThread: HandlerThread? = null
-    protected var handler: Handler? = null
+    private var handler: Handler? = null
     private val lock = Object()
     private var isStopped = true
     private var isOnError = false
