@@ -53,7 +53,7 @@ abstract class MediaCodecEncoder<T>(
             _bitrate = value
         }
 
-    protected val encoderCallback = object : MediaCodec.Callback() {
+    private val encoderCallback = object : MediaCodec.Callback() {
         override fun onOutputBufferAvailable(
             codec: MediaCodec,
             index: Int,
