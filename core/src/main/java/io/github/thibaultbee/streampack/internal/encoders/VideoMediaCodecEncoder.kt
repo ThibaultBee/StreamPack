@@ -119,13 +119,22 @@ class VideoMediaCodecEncoder(
 
         var surface: Surface? = null
             set(value) {
-                value?.let {
-                    executor.submit {
-                        synchronized(this) {
+
+                /**
+                 * When surface is called twice without the stopStream(). When configure() is
+                 * called twice for example,
+                 */
+                executor.submit {
+                    if (eglSurface != null) {
+                        detachSurfaceTexture()
+                    }
+                    synchronized(this) {
+                        value?.let {
                             initOrUpdateSurfaceTexture(it)
                         }
-                    }.get() // Wait till executor returns
-                }
+                    }
+
+                }.get() // Wait till executor returns
                 field = value
             }
 
@@ -209,19 +218,23 @@ class VideoMediaCodecEncoder(
             isRunning = true
         }
 
+        private fun detachSurfaceTexture() {
+            ensureGlContext(eglSurface) {
+                surfaceTexture?.detachFromGLContext()
+                fullFrameRect?.release(true)
+            }
+            eglSurface?.release()
+            eglSurface = null
+            fullFrameRect = null
+        }
+
         fun stopStream() {
-            executor.execute {
+            executor.submit {
                 synchronized(this) {
                     isRunning = false
-                    ensureGlContext(eglSurface) {
-                        surfaceTexture?.detachFromGLContext()
-                        fullFrameRect?.release(true)
-                    }
-                    eglSurface?.release()
-                    eglSurface = null
-                    fullFrameRect = null
+                    detachSurfaceTexture()
                 }
-            }
+            }.get()
         }
 
         fun dispose() {
