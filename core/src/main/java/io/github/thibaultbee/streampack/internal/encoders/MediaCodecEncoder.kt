@@ -95,7 +95,10 @@ abstract class MediaCodecEncoder<T>(
                         mediaCodec?.releaseOutputBuffer(index, false)
                     }
                         ?: reportError(StreamPackError(UnsupportedOperationException("MediaCodecEncoder: can't get output buffer")))
-                } catch (e: StreamPackError) {
+                } catch (e: IllegalStateException) {
+                    isOnError = true
+                    logger.w(this, "onOutputBufferAvailable called while stopped")
+                } catch (e : StreamPackError) {
                     isOnError = true
                     reportError(e)
                 }
@@ -110,19 +113,32 @@ abstract class MediaCodecEncoder<T>(
                 if (isStopped) {
                     return
                 }
-
-                mediaCodec?.getInputBuffer(index)?.let { buffer ->
-                    encoderListener.onInputFrame(buffer).let { frame ->
-                        mediaCodec?.queueInputBuffer(
-                            index,
-                            0,
-                            frame.buffer.remaining(),
-                            frame.pts /* in us */,
-                            0
-                        )
-                    }
+                if (isOnError) {
+                    return
                 }
-                    ?: reportError(StreamPackError(UnsupportedOperationException("MediaCodecEncoder: can't get input buffer")))
+
+                try {
+                    mediaCodec?.getInputBuffer(index)?.let { buffer ->
+                        encoderListener.onInputFrame(buffer).let { frame ->
+                            mediaCodec?.queueInputBuffer(
+                                index,
+                                0,
+                                frame.buffer.remaining(),
+                                frame.pts /* in us */,
+                                0
+                            )
+                        }
+                    }
+                        ?: reportError(StreamPackError(
+                            UnsupportedOperationException("MediaCodecEncoder: can't get input buffer")
+                        ))
+                } catch (e: IllegalStateException) {
+                    isOnError = true
+                    logger.w(this, "onInputBufferAvailable called while stopped")
+                } catch (e : StreamPackError) {
+                    isOnError = true
+                    reportError(e)
+                }
             }
         }
 
