@@ -279,7 +279,6 @@ abstract class BaseStreamer(
 
         // Encoder does not return to CONFIGURED state... so we have to reset everything...
         resetAudio()
-
         resetVideo()
     }
 
@@ -322,12 +321,10 @@ abstract class BaseStreamer(
         videoEncoder?.release()
 
         // And restart...
-        runBlocking {
-            videoConfig?.let {
-                videoEncoder?.configure(it)
-            }
-            videoCapture?.encoderSurface = videoEncoder?.inputSurface
+        videoConfig?.let {
+            videoEncoder?.configure(it)
         }
+        videoCapture?.encoderSurface = videoEncoder?.inputSurface
     }
 
     /**

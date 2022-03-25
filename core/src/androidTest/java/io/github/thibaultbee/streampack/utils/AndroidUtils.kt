@@ -45,7 +45,7 @@ object AndroidUtils {
     fun fakeValidAudioConfig() = AudioConfig(
         mimeType = MediaFormat.MIMETYPE_AUDIO_AAC,
         startBitrate = Random.nextInt(),
-        sampleRate = 48000,
+        sampleRate = 44100,
         channelConfig = AudioFormat.CHANNEL_IN_MONO,
         byteFormat = AudioFormat.ENCODING_PCM_16BIT,
         enableEchoCanceler = true,
