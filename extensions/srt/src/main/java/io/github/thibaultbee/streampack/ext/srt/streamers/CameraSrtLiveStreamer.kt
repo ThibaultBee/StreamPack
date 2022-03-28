@@ -28,7 +28,7 @@ import io.github.thibaultbee.streampack.internal.utils.Scheduler
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.regulator.IBitrateRegulatorFactory
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.ISrtLiveStreamer
+import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.builders.IAdaptiveLiveStreamerBuilder
 import io.github.thibaultbee.streampack.streamers.interfaces.builders.ISrtLiveStreamerBuilder
 import io.github.thibaultbee.streampack.streamers.interfaces.builders.ITsStreamerBuilder
@@ -129,13 +129,23 @@ class CameraSrtLiveStreamer(
     }
 
     /**
-     * Same as [BaseCameraStreamer.startStream] but also starts bitrate regulator.
+     * Same as [BaseCameraLiveStreamer.startStream] but also starts bitrate regulator.
      */
     override fun startStream() {
         if (bitrateRegulator != null) {
             scheduler.start()
         }
         super.startStream()
+    }
+
+    /**
+     * Same as [BaseCameraLiveStreamer.startStream] but also starts bitrate regulator.
+     */
+    override suspend fun startStream(url: String) {
+        if (bitrateRegulator != null) {
+            scheduler.start()
+        }
+        super.startStream(url)
     }
 
     /**
@@ -147,7 +157,6 @@ class CameraSrtLiveStreamer(
      * @param port server port
      * @throws Exception if connection has failed or configuration has failed or [startStream] has failed too.
      */
-    @RequiresPermission(allOf = [Manifest.permission.CAMERA])
     override suspend fun startStream(ip: String, port: Int) {
         connect(ip, port)
         startStream()

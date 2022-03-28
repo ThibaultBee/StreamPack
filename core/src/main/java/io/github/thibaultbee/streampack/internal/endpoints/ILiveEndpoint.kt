@@ -24,6 +24,15 @@ interface ILiveEndpoint : IEndpoint {
     var onConnectionListener: OnConnectionListener?
 
     /**
+     * Connect to a server.
+     * To avoid creating an unresponsive UI, do not call on main thread.
+     *
+     * @param url server url
+     * @throws Exception if connection has failed or configuration has failed
+     */
+    suspend fun connect(url: String)
+
+    /**
      * Disconnect from the remote server.
      *
      * @throws Exception is not connected

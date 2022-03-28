@@ -26,7 +26,6 @@ import com.github.thibaultbee.srtdroid.models.Socket
 import com.github.thibaultbee.srtdroid.models.Stats
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.data.SrtPacket
-import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.logger.ILogger
@@ -35,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.ConnectException
 import java.net.InetSocketAddress
+import java.net.URI
 
 class SrtProducer(
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -74,6 +74,13 @@ class SrtProducer(
 
     override fun configure(startBitrate: Int) {
         this.bitrate = startBitrate.toLong()
+    }
+
+    override suspend fun connect(url: String) {
+        withContext(coroutineDispatcher) {
+            val netUrl = URI(url)
+            connect(netUrl.host, netUrl.port)
+        }
     }
 
     suspend fun connect(ip: String, port: Int) = withContext(coroutineDispatcher) {

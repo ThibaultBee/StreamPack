@@ -24,9 +24,28 @@ interface ILiveStreamer {
     var onConnectionListener: OnConnectionListener?
 
     /**
+     * Connect to an remove server.
+     * To avoid creating an unresponsive UI, do not call on main thread.
+     *
+     * @param url server url
+     * @throws Exception if connection has failed or configuration has failed
+     */
+    suspend fun connect(url: String)
+
+    /**
      * Disconnect from the remote server.
      *
      * @throws Exception is not connected
      */
     fun disconnect()
+
+    /**
+     * Connect to a RTMP server and start stream.
+     * Same as calling [connect], then [startStream].
+     * To avoid creating an unresponsive UI, do not call on main thread.
+     *
+     * @param url server url (syntax: rtmp://server/streamKey)
+     * @throws Exception if connection has failed or configuration has failed or [startStream] has failed too.
+     */
+    suspend fun startStream(url: String)
 }

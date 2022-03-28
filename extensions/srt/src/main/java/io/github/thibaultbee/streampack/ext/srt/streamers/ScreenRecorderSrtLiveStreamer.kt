@@ -29,7 +29,7 @@ import io.github.thibaultbee.streampack.internal.utils.Scheduler
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.regulator.IBitrateRegulatorFactory
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.ISrtLiveStreamer
+import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.builders.IAdaptiveLiveStreamerBuilder
 import io.github.thibaultbee.streampack.streamers.interfaces.builders.ITsStreamerBuilder
 import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStreamer
@@ -141,6 +141,16 @@ class ScreenRecorderSrtLiveStreamer(
     }
 
     /**
+     * Same as [BaseScreenRecorderLiveStreamer.startStream] but also starts bitrate regulator.
+     */
+    override suspend fun startStream(url: String) {
+        if (bitrateRegulator != null) {
+            scheduler.start()
+        }
+        super.startStream(url)
+    }
+
+    /**
      * Connect to an SRT server and start stream.
      * Same as calling [connect], then [startStream].
      * To avoid creating an unresponsive UI, do not call on main thread.
@@ -149,7 +159,6 @@ class ScreenRecorderSrtLiveStreamer(
      * @param port server port
      * @throws Exception if connection has failed or configuration has failed or [startStream] has failed too.
      */
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override suspend fun startStream(ip: String, port: Int) {
         connect(ip, port)
         startStream()

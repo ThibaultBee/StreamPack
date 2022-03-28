@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Thibault B.
+ * Copyright (C) 2021 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.streamers.interfaces
+package io.github.thibaultbee.streampack.ext.srt.streamers.interfaces
 
-interface IRtmpLiveStreamer : ILiveStreamer {
+import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
+
+interface ISrtLiveStreamer : ILiveStreamer {
+    /**
+     * Get/set connection passphrase.
+     */
+    var passPhrase: String
+
+    /**
+     * Get/set stream id.
+     */
+    var streamId: String
+
     /**
      * Connect to a remote server.
      *
-     * @param url server url
+     * @param ip server ip
+     * @param port server port
      * @throws Exception if connection has failed or configuration has failed
      */
-    suspend fun connect(url: String)
+    suspend fun connect(ip: String, port: Int)
 
     /**
      * Same as [connect] then [startStream].
      *
-     * @param url server url
+     * @param ip server ip
+     * @param port server port
      * @throws Exception if connection has failed or configuration has failed or startStream failed.
      */
-    suspend fun startStream(url: String)
+    suspend fun startStream(ip: String, port: Int)
 }
