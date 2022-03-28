@@ -29,6 +29,7 @@ import io.github.thibaultbee.streampack.internal.sources.camera.CameraCapture
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
+import io.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerPreviewBuilder
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
 import io.github.thibaultbee.streampack.utils.CameraSettings
 import io.github.thibaultbee.streampack.utils.getCameraList
@@ -36,21 +37,20 @@ import io.github.thibaultbee.streampack.views.AutoFitSurfaceView
 import kotlinx.coroutines.runBlocking
 
 /**
- * Base class of camera streamers.
- * Use this class, only if you want to implement a custom endpoint with a camera source.
+ * A [BaseStreamer] that sends microphone and camera frames.
  *
  * @param context application context
- * @param muxer a [IMuxer] implementation
- * @param endpoint a [IEndpoint] implementation
  * @param logger a [ILogger] implementation
  * @param enableAudio [Boolean.true] to capture audio
+ * @param muxer a [IMuxer] implementation
+ * @param endpoint a [IEndpoint] implementation
  */
 open class BaseCameraStreamer(
     private val context: Context,
-    muxer: IMuxer,
-    endpoint: IEndpoint,
     logger: ILogger,
-    enableAudio: Boolean
+    enableAudio: Boolean,
+    muxer: IMuxer,
+    endpoint: IEndpoint
 ) : BaseStreamer(
     context = context,
     videoCapture = CameraCapture(context, logger = logger),
@@ -140,5 +140,25 @@ open class BaseCameraStreamer(
          */
         override val camera: CameraSettings
             get() = cameraCapture.settings
+    }
+
+    abstract class Builder : BaseStreamer.Builder(), IStreamerPreviewBuilder {
+        protected var previewSurface: Surface? = null
+
+        /**
+         * Set preview surface.
+         * If provided, it starts preview.
+         *
+         * @param previewSurface surface where to display preview
+         */
+        override fun setPreviewSurface(previewSurface: Surface) = apply {
+            this.previewSurface = previewSurface
+        }
+
+        /**
+         * Same as [BaseCameraStreamer.Builder.build] that requires permissions.
+         */
+        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
+        abstract override fun build(): BaseCameraStreamer
     }
 }

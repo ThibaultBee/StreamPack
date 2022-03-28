@@ -1,0 +1,104 @@
+/*
+ * Copyright (C) 2022 Thibault B.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package io.github.thibaultbee.streampack.streamers.live
+
+import android.Manifest
+import android.content.Context
+import androidx.annotation.RequiresPermission
+import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
+import io.github.thibaultbee.streampack.internal.muxers.IMuxer
+import io.github.thibaultbee.streampack.listeners.OnConnectionListener
+import io.github.thibaultbee.streampack.logger.ILogger
+import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
+import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
+
+/**
+ * A [BaseScreenRecorderStreamer] that sends microphone and screen frames to a remote device.
+ *
+ * @param context application context
+ * @param logger a [ILogger] implementation
+ * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
+ * @param muxer a [IMuxer] implementation
+ * @param endpoint a [ILiveEndpoint] implementation
+ */
+open class BaseScreenRecorderLiveStreamer(
+    context: Context,
+    logger: ILogger,
+    enableAudio: Boolean,
+    muxer: IMuxer,
+    endpoint: ILiveEndpoint
+) : BaseScreenRecorderStreamer(
+    context = context,
+    logger = logger,
+    enableAudio = enableAudio,
+    muxer = muxer,
+    endpoint = endpoint
+),
+    ILiveStreamer {
+    private val liveProducer = endpoint
+
+    /**
+     * Listener to manage connection.
+     */
+    override var onConnectionListener: OnConnectionListener? = null
+        set(value) {
+            liveProducer.onConnectionListener = value
+            field = value
+        }
+
+    /**
+     * Disconnect from the remote server.
+     *
+     * @throws Exception is not connected
+     */
+    override fun disconnect() {
+        liveProducer.disconnect()
+    }
+
+    abstract class Builder : BaseScreenRecorderStreamer.Builder() {
+        protected lateinit var endpoint: ILiveEndpoint
+
+        /**
+         * Set live endpoint.
+         * Mandatory.
+         *
+         * @param endpoint a [ILiveEndpoint] implementation
+         */
+        protected fun setLiveEndpointImpl(endpoint: ILiveEndpoint) =
+            apply { this.endpoint = endpoint }
+
+        /**
+         * Combines all of the characteristics that have been set and return a new
+         * generic [BaseScreenRecorderLiveStreamer] object.
+         *
+         * @return a new generic [BaseScreenRecorderLiveStreamer] object
+         */
+        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
+        override fun build(): BaseScreenRecorderLiveStreamer {
+            return BaseScreenRecorderLiveStreamer(
+                context,
+                logger,
+                enableAudio,
+                muxer,
+                endpoint
+            ).also { streamer ->
+                if (videoConfig != null) {
+                    streamer.configure(audioConfig, videoConfig!!)
+                }
+            }
+        }
+    }
+}

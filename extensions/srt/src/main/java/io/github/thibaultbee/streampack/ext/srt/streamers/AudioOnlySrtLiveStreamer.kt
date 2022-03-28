@@ -23,20 +23,16 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.ext.srt.internal.endpoints.SrtProducer
 import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
-import io.github.thibaultbee.streampack.internal.sources.AudioCapture
-import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
-import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ISrtLiveStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.ILiveStreamerBuilder
 import io.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
+import io.github.thibaultbee.streampack.streamers.interfaces.builders.ISrtLiveStreamerBuilder
 import io.github.thibaultbee.streampack.streamers.interfaces.builders.ITsStreamerBuilder
-import java.net.SocketException
+import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
 
 /**
- * [BaseStreamer] that sends only audio frames to a remote device with Secure Reliable
- * Transport (SRT) Protocol.
+ * A [BaseAudioOnlyLiveStreamer] that sends only microphone frames to a remote Secure Reliable Transport
+ * (SRT) device.
  *
  * @param context application context
  * @param tsServiceInfo MPEG-TS service description
@@ -46,24 +42,13 @@ class AudioOnlySrtLiveStreamer(
     context: Context,
     tsServiceInfo: TsServiceInfo,
     logger: ILogger
-) : BaseStreamer(
+) : BaseAudioOnlyLiveStreamer(
     context = context,
-    videoCapture = null,
-    audioCapture = AudioCapture(logger),
+    logger = logger,
     muxer = TSMuxer().apply { addService(tsServiceInfo) },
-    endpoint = SrtProducer(logger = logger),
-    logger = logger
+    endpoint = SrtProducer(logger = logger)
 ),
     ISrtLiveStreamer {
-    /**
-     * Listener to manage SRT connection.
-     */
-    override var onConnectionListener: OnConnectionListener? = null
-        set(value) {
-            srtProducer.onConnectionListener = value
-            field = value
-        }
-
     private val srtProducer = endpoint as SrtProducer
 
     /**
@@ -113,15 +98,6 @@ class AudioOnlySrtLiveStreamer(
     }
 
     /**
-     * Disconnect from the connected SRT server.
-     *
-     * @throws SocketException is not connected
-     */
-    override fun disconnect() {
-        srtProducer.disconnect()
-    }
-
-    /**
      * Connect to an SRT server and start stream.
      * Same as calling [connect], then [startStream].
      * To avoid creating an unresponsive UI, do not call on main thread.
@@ -137,76 +113,22 @@ class AudioOnlySrtLiveStreamer(
     }
 
     /**
-     * Builder class for [AudioOnlySrtLiveStreamer] objects. Use this class to configure and create an [AudioOnlySrtLiveStreamer] instance.
+     * Builder class for [AudioOnlySrtLiveStreamer] objects. Use this class to configure and create
+     * an [AudioOnlySrtLiveStreamer] instance.
      */
-    data class Builder(
-        private var logger: ILogger = StreamPackLogger(),
-        private var audioConfig: AudioConfig? = null,
-        private var streamId: String? = null,
-        private var passPhrase: String? = null
-    ) : IStreamerBuilder, ITsStreamerBuilder, ILiveStreamerBuilder {
-        private lateinit var context: Context
+    class Builder : BaseAudioOnlyLiveStreamer.Builder(), ITsStreamerBuilder, ISrtLiveStreamerBuilder {
         private lateinit var tsServiceInfo: TsServiceInfo
-
-        /**
-         * Set application context. It is mandatory to set context.
-         *
-         * @param context application context.
-         */
-        override fun setContext(context: Context) = apply { this.context = context }
+        private var streamId: String? = null
+        private var passPhrase: String? = null
 
         /**
          * Set TS service info. It is mandatory to set TS service info.
+         * Mandatory.
          *
          * @param tsServiceInfo TS service info.
          */
         override fun setServiceInfo(tsServiceInfo: TsServiceInfo) =
             apply { this.tsServiceInfo = tsServiceInfo }
-
-        /**
-         * Set logger.
-         *
-         * @param logger [ILogger] implementation
-         */
-        override fun setLogger(logger: ILogger) = apply { this.logger = logger }
-
-        /**
-         * Set audio configuration.
-         * Configurations can be change later with [configure].
-         * Video configuration is not used.
-         *
-         * @param audioConfig audio configuration
-         * @param videoConfig video configuration. Not used.
-         */
-        override fun setConfiguration(audioConfig: AudioConfig, videoConfig: VideoConfig) = apply {
-            this.audioConfig = audioConfig
-        }
-
-        /**
-         * Set audio configurations.
-         * Configurations can be change later with [configure].
-         *
-         * @param audioConfig audio configuration
-         */
-        override fun setAudioConfiguration(audioConfig: AudioConfig) = apply {
-            this.audioConfig = audioConfig
-        }
-
-        /**
-         * Set video configurations. Do not use.
-         *
-         * @param videoConfig video configuration
-         */
-        override fun setVideoConfiguration(videoConfig: VideoConfig) = apply {
-            throw UnsupportedOperationException("Do not set video configuration on audio only streamer")
-        }
-
-        /**
-         * Disable audio. Do not use.
-         */
-        override fun disableAudio(): IStreamerBuilder {
-            throw UnsupportedOperationException("Do not disable audio on audio only streamer")
-        }
 
         /**
          * Set SRT stream id.
@@ -227,7 +149,8 @@ class AudioOnlySrtLiveStreamer(
         }
 
         /**
-         * Combines all of the characteristics that have been set and return a new [AudioOnlySrtLiveStreamer] object.
+         * Combines all of the characteristics that have been set and return a new
+         * [AudioOnlySrtLiveStreamer] object.
          *
          * @return a new [AudioOnlySrtLiveStreamer] object
          */

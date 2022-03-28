@@ -18,21 +18,14 @@ package io.github.thibaultbee.streampack.ext.rtmp.streamers
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.data.AudioConfig
-import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.RtmpProducer
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxer
-import io.github.thibaultbee.streampack.internal.sources.AudioCapture
-import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
-import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.IRtmpLiveStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
-import java.net.SocketException
+import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
 
 /**
- * [BaseStreamer] that sends only audio frames to a remote device with RTMP Protocol.
+ * A [BaseAudioOnlyLiveStreamer] that sends only microphone frames to a remote RTMP device.
  *
  * @param context application context
  * @param logger a [ILogger] implementation
@@ -40,24 +33,13 @@ import java.net.SocketException
 class AudioOnlyRtmpLiveStreamer(
     context: Context,
     logger: ILogger
-) : BaseStreamer(
+) : BaseAudioOnlyLiveStreamer(
     context = context,
-    videoCapture = null,
-    audioCapture = AudioCapture(logger),
+    logger = logger,
     muxer = FlvMuxer(context = context, writeToFile = false),
-    endpoint = RtmpProducer(logger = logger),
-    logger = logger
+    endpoint = RtmpProducer(logger = logger)
 ),
     IRtmpLiveStreamer {
-    /**
-     * Listener to manage RTMP connection.
-     */
-    override var onConnectionListener: OnConnectionListener? = null
-        set(value) {
-            rtmpProducer.onConnectionListener = value
-            field = value
-        }
-
     private val rtmpProducer = endpoint as RtmpProducer
 
     /**
@@ -69,15 +51,6 @@ class AudioOnlyRtmpLiveStreamer(
      */
     override suspend fun connect(url: String) {
         rtmpProducer.connect(url)
-    }
-
-    /**
-     * Disconnect from the connected RTMP server.
-     *
-     * @throws SocketException is not connected
-     */
-    override fun disconnect() {
-        rtmpProducer.disconnect()
     }
 
     /**
@@ -97,66 +70,7 @@ class AudioOnlyRtmpLiveStreamer(
     /**
      * Builder class for [AudioOnlyRtmpLiveStreamer] objects. Use this class to configure and create an [AudioOnlyRtmpLiveStreamer] instance.
      */
-    data class Builder(
-        private var logger: ILogger = StreamPackLogger(),
-        private var audioConfig: AudioConfig? = null,
-        private var streamId: String? = null,
-        private var passPhrase: String? = null
-    ) : IStreamerBuilder {
-        private lateinit var context: Context
-
-        /**
-         * Set application context. It is mandatory to set context.
-         *
-         * @param context application context.
-         */
-        override fun setContext(context: Context) = apply { this.context = context }
-
-        /**
-         * Set logger.
-         *
-         * @param logger [ILogger] implementation
-         */
-        override fun setLogger(logger: ILogger) = apply { this.logger = logger }
-
-        /**
-         * Set audio configuration.
-         * Configurations can be change later with [configure].
-         * Video configuration is not used.
-         *
-         * @param audioConfig audio configuration
-         * @param videoConfig video configuration. Not used.
-         */
-        override fun setConfiguration(audioConfig: AudioConfig, videoConfig: VideoConfig) = apply {
-            this.audioConfig = audioConfig
-        }
-
-        /**
-         * Set audio configurations.
-         * Configurations can be change later with [configure].
-         *
-         * @param audioConfig audio configuration
-         */
-        override fun setAudioConfiguration(audioConfig: AudioConfig) = apply {
-            this.audioConfig = audioConfig
-        }
-
-        /**
-         * Set video configurations. Do not use.
-         *
-         * @param videoConfig video configuration
-         */
-        override fun setVideoConfiguration(videoConfig: VideoConfig) = apply {
-            throw UnsupportedOperationException("Do not set video configuration on audio only streamer")
-        }
-
-        /**
-         * Disable audio. Do not use.
-         */
-        override fun disableAudio(): IStreamerBuilder {
-            throw UnsupportedOperationException("Do not disable audio on audio only streamer")
-        }
-
+    class Builder : BaseAudioOnlyLiveStreamer.Builder() {
         /**
          * Combines all of the characteristics that have been set and return a new [AudioOnlyRtmpLiveStreamer] object.
          *

@@ -15,18 +15,18 @@
  */
 package io.github.thibaultbee.streampack.streamers.interfaces.builders
 
-import io.github.thibaultbee.streampack.data.BitrateRegulatorConfig
-import io.github.thibaultbee.streampack.regulator.IBitrateRegulatorFactory
-
-interface IAdaptiveLiveStreamerBuilder : ISrtLiveStreamerBuilder {
+interface ISrtLiveStreamerBuilder {
     /**
-     * Set SRT bitrate regulator class and configuration.
+     * Set stream id.
      *
-     * @param bitrateRegulatorFactory bitrate regulator factory. If you don't want to implement your own bitrate regulator, use [IBitrateRegulatorFactory]
-     * @param bitrateRegulatorConfig bitrate regulator configuration.
+     * @param streamId string describing stream id
      */
-    fun setBitrateRegulator(
-        bitrateRegulatorFactory: IBitrateRegulatorFactory?,
-        bitrateRegulatorConfig: BitrateRegulatorConfig?
-    ): IStreamerBuilder
+    fun setStreamId(streamId: String): IStreamerBuilder
+
+    /**
+     * Set connection pass phrase.
+     *
+     * @param passPhrase pass phrase
+     */
+    fun setPassPhrase(passPhrase: String): IStreamerBuilder
 }

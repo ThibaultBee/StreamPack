@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints
 
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import kotlinx.coroutines.CoroutineDispatcher
@@ -28,8 +29,8 @@ class RtmpProducer(
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
     val logger: ILogger
 ) :
-    IEndpoint {
-    var onConnectionListener: OnConnectionListener? = null
+    ILiveEndpoint {
+    override var onConnectionListener: OnConnectionListener? = null
 
     private var socket = Rtmp()
 
@@ -47,7 +48,7 @@ class RtmpProducer(
         }
     }
 
-    fun disconnect() {
+    override fun disconnect() {
         socket.close()
         socket = Rtmp()
     }
