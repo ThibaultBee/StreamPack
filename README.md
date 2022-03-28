@@ -1,84 +1,125 @@
-# StreamPack: live streaming SDK for Android based on Secure Reliable Transport ([SRT](https://github.com/Haivision/srt))
+# StreamPack: RTMP and [SRT](https://github.com/Haivision/srt) live streaming SDK for Android
 
-StreamPack brings the best audio/video live technologies together in order to achieve low-latency &
-high quality live streaming for Android.
+StreamPack is Swiss Army Knife for live streaming broadcast on Android. It achieves professional
+quality while running with low CPU usage. And don't worry, it is still easy to use. Simplify your 
+live streaming integration and make your life easier.
 
 ## Setup
 
-Get StreamPack latest artifacts on [jitpack.io](https://jitpack.io/#ThibaultBee/StreamPack)
+Get StreamPack core latest artifacts on mavenCentral:
 
 ```groovy
-allprojects {
-    repositories {
-        ...
-        maven { url 'https://jitpack.io' }
-    }
-}
-
 dependencies {
-    implementation 'io.github.ThibaultBee:StreamPack:1.4.0'
+    implementation 'io.github.thibaultbee:streampack:1.4.0'
+}
+```
+
+If you want to use RTMP, you need to add the following dependency:
+
+```groovy
+dependencies {
+    implementation 'io.github.thibaultbee:streampack-extension-rtmp:1.4.0'
+}
+```
+
+If you want to use SRT, you need to add the following dependency:
+
+```groovy
+dependencies {
+    implementation 'io.github.thibaultbee:streampack-extension-srt:1.4.0'
+}
+```
+
+If you use both RTMP and SRT, you migh have a conflict with libssl.so and libcrypto.so because they
+are both includes in native dependencies. To solve this, you can add in your `build.gradle`:
+
+```groovy
+android {
+    packagingOptions {
+      pickFirst '**/*.so'
+    }
 }
 ```
 
 ## Features
 
-* Network:
-  * Ultra low-latency based on [SRT](https://github.com/Haivision/srt)
-  * Network adaptive bitrate mechanism
 * Video:
-  * Source: Cameras or Screen recorder
-  * Orientation: portrait or landscape
-  * Codec: HEVC/H.265 or AVC/H.264
-  * Configurable bitrate, resolution, framerate (tested up to 60), encoder level, encoder profile
-  * Video only mode
+    * Source: Cameras or Screen recorder
+    * Orientation: portrait or landscape
+    * Codec: HEVC/H.265 or AVC/H.264
+    * Configurable bitrate, resolution, framerate (tested up to 60), encoder level, encoder profile
+    * Video only mode
+    * Device video capabilities
 * Audio:
-  * Codec: AAC-LC
-  * Configurable bitrate, sample rate, stereo/mono, data format
-  * Processing: Noise suppressor or echo cancellation
-  * Audio only mode
+    * Codec: AAC-LC
+    * Configurable bitrate, sample rate, stereo/mono, data format
+    * Processing: Noise suppressor or echo cancellation
+    * Audio only mode
+    * Device audio capabilities
+* Network: RTMP or SRT
+    * Ultra low-latency based on [SRT](https://github.com/Haivision/srt)
+    * Network adaptive bitrate mechanism for [SRT](https://github.com/Haivision/srt)
 
 ## Samples
 
 ### Camera and audio sample
 
 For source code example on how to use camera and audio streamers, check
-the [sample app directory](https://github.com/ThibaultBee/StreamPack/tree/master/app). On first
-launch, you will have to set SRT server IP in the settings menu.
+the [sample app directory](https://github.com/ThibaultBee/StreamPack/tree/master/demos/camera). On
+first launch, you will have to set RTMP url or SRT server IP in the settings menu.
 
 ### Screen recorder
 
 For source code example on how to use screen recorder streamer, check
-the [sample screen recorder directory](https://github.com/ThibaultBee/StreamPack/tree/master/screenrecorder)
-. On first launch, you will have to set SRT server IP in the settings menu.
+the [sample screen recorder directory](https://github.com/ThibaultBee/StreamPack/tree/master/demos/screenrecorder)
+. On first launch, you will have to set RTMP url or SRT server IP in the settings menu.
 
-### Quick start with a FFmpeg SRT server
+### Tests with a FFmpeg server
 
-FFmpeg has been used as an SRT server+demuxer+decoder for the tests. Check how to build FFmpeg with
-libsrt in [SRT CookBook](https://srtlab.github.io/srt-cookbook/apps/ffmpeg/). Tells FFplay to listen
-on IP `0.0.0.0` and port `9998`:
+FFmpeg has been used as an SRT server+demuxer+decoder for the tests.
+
+#### RTMP
+
+Tells FFplay to listen on IP `0.0.0.0` and port `1935`.
+
+```
+ffplay -listen 1 -i rtmp://0.0.0.0:1935/s/streamKey
+```
+
+On StreamPack sample app settings, set `Endpoint` -> `Type` to `Stream to a remove RTMP device`,
+then set the server `URL` to `rtmp://serverip:1935/s/streamKey`. At this point, StreamPack sample
+app should successfully sends audio and video frames. On FFplay side, you should be able to watch
+this live stream.
+
+#### SRT
+
+Check how to build FFmpeg with libsrt
+in [SRT CookBook](https://srtlab.github.io/srt-cookbook/apps/ffmpeg/). Tells FFplay to listen on
+IP `0.0.0.0` and port `9998`:
 
 ```
 ffplay -fflags nobuffer srt://0.0.0.0:9998?mode=listener
 ```
 
-On StreamPack sample app settings, set the server `IP` to your server IP and server `port` to `9998`
+On StreamPack sample app settings, set the server `IP` to your server IP and server `Port` to `9998`
 . At this point, StreamPack sample app should successfully sends audio and video frames. On FFplay
-side, you should be able to watch this stream.
+side, you should be able to watch this live stream.
 
 ## Quick start
 
 1. Adds [permissions](#permissions) to your `AndroidManifest.xml` and request them in your
    Activity/Fragment.
 
-2. Creates a `AutoFitSurfaceView` in your layout
+2. Creates a `SurfaceView` to display camera preview in your layout
 
 To simplify development, StreamPack provides an `AutoFitSurfaceView`.
 
 ```xml
+
 <io.github.thibaultbee.streampack.views.AutoFitSurfaceView
-        android:id="@+id/preview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+    android:id="@+id/surface"
+    android:layout_width="match_parent" 
+    android:layout_height="match_parent" />
 ```
 
 3. Prepares audio and video configurations
@@ -86,7 +127,7 @@ To simplify development, StreamPack provides an `AutoFitSurfaceView`.
 ```kotlin
 val audioConfig = AudioConfig.Builder()
     .setStartBitrate(128000)
-    .setSampleRate(48000)
+    .setSampleRate(44100)
     .setNumberOfChannel(2)
     .build()
 
@@ -154,7 +195,101 @@ For the PlayStore, your application might declare this in its `AndroidManifest.x
 <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 ```
 
-## Android SDK version
+## Tips
+
+### RTMP or SRT
+
+RTMP and SRT are both live streaming protocols. SRT is a UDP-based modern protocol, it is reliable
+and ultra low latency. RTMP is a TCP-based protocol, it is also reliable but it is only low latency. 
+There are already a lot of comparison over the Internet, so here is a summary:
+SRT:
+  - Ultra low latency (< 1s)
+  - HEVC support through MPEG-TS
+RTMP:
+  - Low latency (2-3s)
+  - HEVC not officially support (specification has been aban by its creator)
+
+So, the main question is: "which protocol to use?"
+It is easy: if your server has SRT support, use SRT otherwise use RTMP.
+
+### Streamers
+
+Let's start with some definitions! `Streamers` are classes that represent a live streaming pipeline:
+capture, encode, mux and send. They comes in multiple flavours: with different audio and video
+source, with different endpoints and functionalities... 3 types of base streamers are available:
+
+- `CameraStreamers`: for streaming from camera
+- `ScreenRecorderStreamers`: for streaming from screen
+- `AudioOnlyStreamers`: for streaming audio only
+
+You can find specific streamers for File or for Live. Currently, there are 2 main endpoints:
+
+- `FileStreamer`: for streaming to file
+- `LiveStreamer`: for streaming to a RTMP or a SRT live streaming server
+
+For example, you can use `AudioOnlyFlvFileStreamer.Builder()` to stream from microphone only to a
+FLV file. Another example, you can use `CameraRtmpLiveStreamer.Build()` to stream from camera to a
+RTMP server.
+
+If a streamer is missing, of course, you can also create your own. You should definitely submit it
+in a [pull request](https://github.com/ThibaultBee/StreamPack/pulls).
+
+### Use Builders instead of Streamers
+
+All `Streamer` comes with `Builder` classes to help you to configure `Streamers` and to make your
+code more readable. For example, instead of:
+
+```kotlin
+val streamer = CameraSrtLiveStreamer(context, tsServiceInfo, audioConfig, videoConfig)
+```
+
+You should write:
+
+```kotlin
+val streamer = CameraSrtLiveStreamer().Builder()
+    .setContext(context)
+    .setServiceInfo(tsServiceInfo)
+    .setConfiguration(audioConfig, videoConfig)
+    .build()
+```
+
+I will make what is possible to keep `Builders` API stable whereas `Streamers` API might change.
+
+### Get device capabilities
+
+Have you ever wonder: "What are the supported resolution of my cameras?" or "What is the supported
+sample rate of my audio codecs?"? `Helpers` classes are made for this. All `Streamer` comes with a
+specific `Helper` object (I am starting to have the feeling I repeat myself):
+
+```kotlin
+val helper = streamer.helper
+```
+
+### Get extended settings
+
+If you are looking for more settings on streamer, like the exposure compensation of your camera, you
+must have a look on `Settings` class. All together: "All `Streamer` comes with a specific `Settings`
+object":
+
+```kotlin
+streamer.settings
+```
+
+For example, if you want to change the exposure compensation of your camera, on a `CameraStreamers`
+you can do it like this:
+
+```kotlin
+streamer.settings.camera.exposure.compensation = value
+```
+
+Moreover you can check exposure range and step with:
+
+```kotlin
+streamer.settings.camera.exposure.availableCompensationRange
+streamer.settings.camera.exposure.availableCompensationStep
+```
+
+### Android SDK version
 
 Even if StreamPack sdk supports a `minSdkVersion` 21. I strongly recommend to set the
 `minSdkVersion` of your application to a higher version (the highest is the best!) for higher
