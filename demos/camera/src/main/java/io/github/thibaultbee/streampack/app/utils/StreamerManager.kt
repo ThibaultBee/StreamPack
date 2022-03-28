@@ -20,6 +20,7 @@ import android.content.Context
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.app.configuration.Configuration
+import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
@@ -71,10 +72,6 @@ class StreamerManager(
         return getStreamer<ISrtLiveStreamer>()
     }
 
-    private fun getRtmpLiveStreamer(): IRtmpLiveStreamer? {
-        return getStreamer<IRtmpLiveStreamer>()
-    }
-
     private fun getLiveStreamer(): ILiveStreamer? {
         return getStreamer<ILiveStreamer>()
     }
@@ -109,18 +106,20 @@ class StreamerManager(
     }
 
     suspend fun startStream(filesDir: File) {
-        getSrtLiveStreamer()?.let {
-            it.streamId =
-                configuration.endpoint.srt.streamID
-            it.passPhrase =
-                configuration.endpoint.srt.passPhrase
-            it.connect(
-                configuration.endpoint.srt.ip,
-                configuration.endpoint.srt.port
+        if (getLiveStreamer() != null) {
+            getSrtLiveStreamer()?.let {
+                it.streamId =
+                    configuration.endpoint.srt.streamID
+                it.passPhrase =
+                    configuration.endpoint.srt.passPhrase
+                it.connect(
+                    configuration.endpoint.srt.ip,
+                    configuration.endpoint.srt.port
+                )
+            } ?: getLiveStreamer()?.connect(
+                configuration.endpoint.rtmp.url
             )
         }
-
-        getRtmpLiveStreamer()?.connect(configuration.endpoint.rtmp.url)
 
         getFileStreamer()?.let {
             it.file = File(

@@ -18,14 +18,11 @@ package io.github.thibaultbee.streampack.ext.srt.streamers
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.data.AudioConfig
-import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.ext.srt.internal.endpoints.SrtProducer
 import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.streamers.interfaces.ISrtLiveStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
+import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.builders.ISrtLiveStreamerBuilder
 import io.github.thibaultbee.streampack.streamers.interfaces.builders.ITsStreamerBuilder
 import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
@@ -106,7 +103,6 @@ class AudioOnlySrtLiveStreamer(
      * @param port server port
      * @throws Exception if connection has failed or configuration has failed or [startStream] has failed too.
      */
-    @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
     override suspend fun startStream(ip: String, port: Int) {
         connect(ip, port)
         startStream()

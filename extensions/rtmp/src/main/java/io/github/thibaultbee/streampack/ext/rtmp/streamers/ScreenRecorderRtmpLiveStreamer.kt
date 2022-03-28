@@ -19,14 +19,10 @@ import android.Manifest
 import android.app.Service
 import android.content.Context
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.data.AudioConfig
-import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.RtmpProducer
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxer
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.IRtmpLiveStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
 import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStreamer
 
 /**
@@ -48,35 +44,7 @@ class ScreenRecorderRtmpLiveStreamer(
     enableAudio = enableAudio,
     muxer = FlvMuxer(context = context, writeToFile = false),
     endpoint = RtmpProducer(logger = logger)
-),
-    IRtmpLiveStreamer {
-    private val rtmpProducer = endpoint as RtmpProducer
-
-    /**
-     * Connect to an RTMP server.
-     * To avoid creating an unresponsive UI, do not call on main thread.
-     *
-     * @param url server url
-     * @throws Exception if connection has failed or configuration has failed
-     */
-    override suspend fun connect(url: String) {
-        rtmpProducer.connect(url)
-    }
-
-    /**
-     * Connect to an RTMP server and start stream.
-     * Same as calling [connect], then [startStream].
-     * To avoid creating an unresponsive UI, do not call on main thread.
-     *
-     * @param url server url
-     * @throws Exception if connection has failed or configuration has failed or [startStream] has failed too.
-     */
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    override suspend fun startStream(url: String) {
-        connect(url)
-        startStream()
-    }
-
+) {
     /**
      * Builder class for [ScreenRecorderRtmpLiveStreamer] objects. Use this class to configure and
      * create an [ScreenRecorderRtmpLiveStreamer] instance.
@@ -89,16 +57,10 @@ class ScreenRecorderRtmpLiveStreamer(
          * @return a new [ScreenRecorderRtmpLiveStreamer] object
          */
         @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
-        override fun build(): ScreenRecorderRtmpLiveStreamer {
-            return ScreenRecorderRtmpLiveStreamer(
-                context,
-                logger,
-                enableAudio
-            ).also { streamer ->
-                if (videoConfig != null) {
-                    streamer.configure(audioConfig, videoConfig!!)
-                }
-            }
+        override fun build(): BaseScreenRecorderLiveStreamer {
+            setMuxerImpl(FlvMuxer(context = context, writeToFile = false))
+            setLiveEndpointImpl(RtmpProducer(logger = logger))
+            return super.build()
         }
     }
 }

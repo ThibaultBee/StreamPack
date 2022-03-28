@@ -75,8 +75,7 @@ import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.Con
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.IRtmpLiveStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.ISrtLiveStreamer
+import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.builders.IAdaptiveLiveStreamerBuilder
 import io.github.thibaultbee.streampack.streamers.interfaces.builders.ITsStreamerBuilder
 import kotlinx.coroutines.runBlocking
@@ -331,8 +330,7 @@ class ScreenRecorderService : Service() {
                         runBlocking {
                             when (this@apply) {
                                 is ISrtLiveStreamer -> this@apply.startStream(ip, port)
-                                is IRtmpLiveStreamer -> this@apply.startStream(url)
-                                else -> throw IOException("Live streamer is not supported: ${this::class.java.simpleName}")
+                                else -> this@apply.startStream(url)
                             }
                         }
                     } catch (e: Exception) {

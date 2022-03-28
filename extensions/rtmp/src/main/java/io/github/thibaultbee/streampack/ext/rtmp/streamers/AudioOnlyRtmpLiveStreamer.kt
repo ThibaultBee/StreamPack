@@ -21,7 +21,6 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.RtmpProducer
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxer
 import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.streamers.interfaces.IRtmpLiveStreamer
 import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
 
 /**
@@ -38,20 +37,7 @@ class AudioOnlyRtmpLiveStreamer(
     logger = logger,
     muxer = FlvMuxer(context = context, writeToFile = false),
     endpoint = RtmpProducer(logger = logger)
-),
-    IRtmpLiveStreamer {
-    private val rtmpProducer = endpoint as RtmpProducer
-
-    /**
-     * Connect to an RTMP server with correct Live streaming parameters.
-     * To avoid creating an unresponsive UI, do not call on main thread.
-     *
-     * @param url server url
-     * @throws Exception if connection has failed or configuration has failed
-     */
-    override suspend fun connect(url: String) {
-        rtmpProducer.connect(url)
-    }
+) {
 
     /**
      * Connect to an RTMP server and start stream.
@@ -77,13 +63,10 @@ class AudioOnlyRtmpLiveStreamer(
          * @return a new [AudioOnlyRtmpLiveStreamer] object
          */
         @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
-        override fun build(): AudioOnlyRtmpLiveStreamer {
-            return AudioOnlyRtmpLiveStreamer(
-                context,
-                logger
-            ).also { streamer ->
-                streamer.configure(audioConfig)
-            }
+        override fun build(): BaseAudioOnlyLiveStreamer {
+            setMuxerImpl(FlvMuxer(context = context, writeToFile = false))
+            setLiveEndpointImpl(RtmpProducer(logger = logger))
+            return super.build()
         }
     }
 }

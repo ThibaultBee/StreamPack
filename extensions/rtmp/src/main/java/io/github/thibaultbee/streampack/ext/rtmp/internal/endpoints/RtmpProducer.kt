@@ -37,14 +37,16 @@ class RtmpProducer(
     override fun configure(startBitrate: Int) {
     }
 
-    suspend fun connect(url: String) = withContext(coroutineDispatcher) {
-        try {
-            socket.connect("$url live=1")
-            onConnectionListener?.onSuccess()
-        } catch (e: Exception) {
-            socket = Rtmp()
-            onConnectionListener?.onFailed(e.message ?: "Unknown error")
-            throw e
+    override suspend fun connect(url: String) {
+        withContext(coroutineDispatcher) {
+            try {
+                socket.connect("$url live=1")
+                onConnectionListener?.onSuccess()
+            } catch (e: Exception) {
+                socket = Rtmp()
+                onConnectionListener?.onFailed(e.message ?: "Unknown error")
+                throw e
+            }
         }
     }
 
