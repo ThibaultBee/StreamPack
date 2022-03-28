@@ -31,7 +31,7 @@ import io.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerP
 import java.io.File
 
 /**
- * [BaseCameraStreamer] that sends audio/video frames to a FLV [File].
+ * A [BaseCameraFileStreamer] that sends microphone and video frames to a FLV [File].
  *
  * @param context application context
  * @param logger a [ILogger] implementation
@@ -43,122 +43,25 @@ class CameraFlvFileStreamer(
     enableAudio: Boolean,
 ) : BaseCameraFileStreamer(
     context = context,
-    muxer = FlvMuxer(context = context, writeToFile = true),
     logger = logger,
+    muxer = FlvMuxer(context = context, writeToFile = true),
     enableAudio = enableAudio
 ) {
     /**
-     * Builder class for [CameraFlvFileStreamer] objects. Use this class to configure and create an [CameraFlvFileStreamer] instance.
+     * Builder class for [BaseCameraFileStreamer] objects. Use this class to configure and create
+     * a specific [BaseCameraFileStreamer] instance for FLV.
      */
-    data class Builder(
-        private var logger: ILogger = StreamPackLogger(),
-        private var audioConfig: AudioConfig? = null,
-        private var videoConfig: VideoConfig? = null,
-        private var previewSurface: Surface? = null,
-        private var file: File? = null,
-        private var enableAudio: Boolean = true,
-    ) : IStreamerBuilder, IStreamerPreviewBuilder, IFileStreamerBuilder {
-        private lateinit var context: Context
-
+     class Builder: BaseCameraFileStreamer.Builder() {
         /**
-         * Set application context. It is mandatory to set context.
+         * Combines all of the characteristics that have been set and return a new
+         * [BaseCameraFileStreamer] object specific for FLV.
          *
-         * @param context application context.
-         */
-        override fun setContext(context: Context) = apply { this.context = context }
-
-        /**
-         * Set logger.
-         *
-         * @param logger [ILogger] implementation
-         */
-        override fun setLogger(logger: ILogger) = apply { this.logger = logger }
-
-        /**
-         * Set both audio and video configuration.
-         * Configurations can be change later with [configure].
-         * Same as calling both [setAudioConfiguration] and [setVideoConfiguration].
-         *
-         * @param audioConfig audio configuration
-         * @param videoConfig video configuration
-         */
-        override fun setConfiguration(audioConfig: AudioConfig, videoConfig: VideoConfig) = apply {
-            this.audioConfig = audioConfig
-            this.videoConfig = videoConfig
-        }
-
-        /**
-         * Set audio configurations.
-         * Configurations can be change later with [configure].
-         *
-         * @param audioConfig audio configuration
-         */
-        override fun setAudioConfiguration(audioConfig: AudioConfig) = apply {
-            this.audioConfig = audioConfig
-        }
-
-        /**
-         * Set video configurations.
-         * Configurations can be change later with [configure].
-         *
-         * @param videoConfig video configuration
-         */
-        override fun setVideoConfiguration(videoConfig: VideoConfig) = apply {
-            this.videoConfig = videoConfig
-        }
-
-        /**
-         * Disable audio.
-         * Audio is enabled by default.
-         * When audio is disabled, there is no way to enable it again.
-         */
-        override fun disableAudio() = apply {
-            this.enableAudio = false
-        }
-
-        /**
-         * Set preview surface.
-         * If provided, it starts preview.
-         *
-         * @param previewSurface surface where to display preview
-         */
-        override fun setPreviewSurface(previewSurface: Surface) = apply {
-            this.previewSurface = previewSurface
-        }
-
-        /**
-         * Set destination file.
-         *
-         * @param file where to write date
-         */
-        override fun setFile(file: File) = apply {
-            this.file = file
-        }
-
-        /**
-         * Combines all of the characteristics that have been set and return a new [CameraFlvFileStreamer] object.
-         *
-         * @return a new [CameraFlvFileStreamer] object
+         * @return a new [BaseCameraFileStreamer] object specific for FLV
          */
         @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-        override fun build(): CameraFlvFileStreamer {
-            return CameraFlvFileStreamer(
-                context,
-                logger,
-                enableAudio
-            ).also { streamer ->
-                if (videoConfig != null) {
-                    streamer.configure(audioConfig, videoConfig!!)
-                }
-
-                previewSurface?.let {
-                    streamer.startPreview(it)
-                }
-
-                file?.let {
-                    streamer.file = it
-                }
-            }
+        override fun build(): BaseCameraFileStreamer {
+            setMuxerImpl(FlvMuxer(context = context, writeToFile = true))
+            return super.build()
         }
     }
 }

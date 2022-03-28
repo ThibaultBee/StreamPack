@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Thibault B.
+ * Copyright (C) 2022 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.streamers.interfaces.builders
+package io.github.thibaultbee.streampack.internal.endpoints
 
-interface ILiveStreamerBuilder {
+import io.github.thibaultbee.streampack.listeners.OnConnectionListener
+
+interface ILiveEndpoint : IEndpoint {
     /**
-     * Set stream id.
-     *
-     * @param streamId string describing stream id
+     * Listener to manage connection.
      */
-    fun setStreamId(streamId: String): IStreamerBuilder
+    var onConnectionListener: OnConnectionListener?
 
     /**
-     * Set connection pass phrase.
+     * Disconnect from the remote server.
      *
-     * @param passPhrase pass phrase
+     * @throws Exception is not connected
      */
-    fun setPassPhrase(passPhrase: String): IStreamerBuilder
+    fun disconnect()
 }

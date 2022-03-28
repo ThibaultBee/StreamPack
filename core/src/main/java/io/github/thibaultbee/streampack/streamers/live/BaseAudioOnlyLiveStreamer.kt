@@ -13,70 +13,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.streamers.file
+package io.github.thibaultbee.streampack.streamers.live
 
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.internal.endpoints.FileWriter
+import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioCapture
+import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IFileStreamerBuilder
-import java.io.File
+import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 
 /**
- * A [BaseStreamer] that sends only microphone frames to a [File].
+ * A [BaseStreamer] that sends only microphone frames to a remote device.
  *
  * @param context application context
  * @param logger a [ILogger] implementation
  * @param muxer a [IMuxer] implementation
+ * @param endpoint a [ILiveEndpoint] implementation
  */
-open class BaseAudioOnlyFileStreamer(
+open class BaseAudioOnlyLiveStreamer(
     context: Context,
     logger: ILogger,
-    muxer: IMuxer
+    muxer: IMuxer,
+    endpoint: ILiveEndpoint
 ) : BaseStreamer(
     context = context,
     logger = logger,
     videoCapture = null,
     audioCapture = AudioCapture(logger),
     muxer = muxer,
-    endpoint = FileWriter(logger = logger)
-), IFileStreamer {
-    private val fileWriter = endpoint as FileWriter
+    endpoint = endpoint
+), ILiveStreamer {
+    private val liveProducer = endpoint
 
     /**
-     * Get/Set [FileWriter] file. If no file has been set. [FileWriter] uses a default temporary file.
+     * Listener to manage connection.
      */
-    override var file: File?
-        /**
-         * Get file writer file.
-         *
-         * @return file where [FileWriter] writes
-         */
-        get() = fileWriter.file
-        /**
-         * Set file writer file.
-         *
-         * @param value [File] where [FileWriter] writes
-         */
+    override var onConnectionListener: OnConnectionListener? = null
         set(value) {
-            fileWriter.file = value
+            liveProducer.onConnectionListener = value
+            field = value
         }
 
     /**
-     * Same as [BaseCameraStreamer.startStream] with RequiresPermission annotation for
-     * Manifest.permission.WRITE_EXTERNAL_STORAGE.
+     * Disconnect from the remote server.
+     *
+     * @throws Exception is not connected
      */
-    @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO])
-    override fun startStream() = super.startStream()
+    override fun disconnect() {
+        liveProducer.disconnect()
+    }
 
-    abstract class Builder : BaseStreamer.Builder(), IFileStreamerBuilder {
-        protected var file: File? = null
+    abstract class Builder : BaseStreamer.Builder() {
+        protected lateinit var endpoint: ILiveEndpoint
 
         /**
          * Disable audio. Do not use.
@@ -86,30 +78,30 @@ open class BaseAudioOnlyFileStreamer(
         }
 
         /**
-         * Set destination file.
+         * Set live endpoint.
+         * Mandatory.
          *
-         * @param file where to write date
+         * @param endpoint a [ILiveEndpoint] implementation
          */
-        override fun setFile(file: File) = apply {
-            this.file = file
-        }
+        protected fun setLiveEndpointImpl(endpoint: ILiveEndpoint) =
+            apply { this.endpoint = endpoint }
 
         /**
          * Combines all of the characteristics that have been set and return a new
-         * generic [BaseAudioOnlyFileStreamer] object.
+         * generic [BaseAudioOnlyLiveStreamer] object.
          *
-         * @return a new generic [BaseAudioOnlyFileStreamer] object
+         * @return a new generic [BaseAudioOnlyLiveStreamer] object
          */
         @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
-        override fun build(): BaseAudioOnlyFileStreamer {
-            return BaseAudioOnlyFileStreamer(
+        override fun build(): BaseAudioOnlyLiveStreamer {
+            return BaseAudioOnlyLiveStreamer(
                 context,
                 logger,
-                muxer
+                muxer,
+                endpoint
             )
                 .also { streamer ->
                     streamer.configure(audioConfig)
-                    streamer.file = file
                 }
         }
 

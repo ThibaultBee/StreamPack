@@ -28,6 +28,7 @@ import io.github.thibaultbee.streampack.internal.encoders.AudioMediaCodecEncoder
 import io.github.thibaultbee.streampack.internal.encoders.IEncoderListener
 import io.github.thibaultbee.streampack.internal.encoders.VideoMediaCodecEncoder
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.internal.events.EventHandler
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
@@ -35,35 +36,36 @@ import io.github.thibaultbee.streampack.internal.sources.IAudioCapture
 import io.github.thibaultbee.streampack.internal.sources.ISurfaceCapture
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
+import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.helpers.StreamerConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
+import io.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IAudioSettings
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseStreamerSettings
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IVideoSettings
-import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
 
 /**
  * Base class of all streamers.
- * Use this class, only if you want to implement a add new Audio or video source.
  *
  * @param context application context
+ * @param logger a [ILogger] implementation
  * @param videoCapture Video source
  * @param audioCapture Audio source
  * @param manageVideoOrientation Set to [Boolean.true] to rotate video according to device orientation.
  * @param muxer a [IMuxer] implementation
  * @param endpoint a [IEndpoint] implementation
- * @param logger a [ILogger] implementation
+
  */
 abstract class BaseStreamer(
     private val context: Context,
-    protected val videoCapture: ISurfaceCapture<VideoConfig>?,
+    protected val logger: ILogger,
     protected val audioCapture: IAudioCapture?,
+    protected val videoCapture: ISurfaceCapture<VideoConfig>?,
     manageVideoOrientation: Boolean = false,
     private val muxer: IMuxer,
-    protected val endpoint: IEndpoint,
-    protected val logger: ILogger
+    protected val endpoint: IEndpoint
 ) : EventHandler(), IStreamer {
     /**
      * Listener that reports streamer error.
@@ -409,5 +411,87 @@ abstract class BaseStreamer(
                     audioCapture?.isMuted = value
                 }
         }
+    }
+
+    abstract class Builder : IStreamerBuilder {
+        protected lateinit var context: Context
+        protected var logger: ILogger = StreamPackLogger()
+        protected var audioConfig: AudioConfig? = null
+        protected var videoConfig: VideoConfig? = null
+        protected lateinit var muxer: IMuxer
+        protected var enableAudio: Boolean = true
+
+        /**
+         * Set application context. It is mandatory to set context.
+         * Mandatory.
+         *
+         * @param context application context.
+         */
+        override fun setContext(context: Context) = apply { this.context = context }
+
+        /**
+         * Set logger.
+         *
+         * @param logger [ILogger] implementation
+         */
+        override fun setLogger(logger: ILogger) = apply { this.logger = logger }
+
+        /**
+         * Set audio configuration.
+         * Configurations can be change later with [configure].
+         *
+         * @param audioConfig audio configuration
+         * @param videoConfig video configuration
+         */
+        override fun setConfiguration(audioConfig: AudioConfig, videoConfig: VideoConfig) = apply {
+            this.audioConfig = audioConfig
+            this.videoConfig = videoConfig
+        }
+
+        /**
+         * Set audio configurations.
+         * Configurations can be change later with [configure].
+         *
+         * @param audioConfig audio configuration
+         */
+        override fun setAudioConfiguration(audioConfig: AudioConfig) = apply {
+            this.audioConfig = audioConfig
+        }
+
+        /**
+         * Set video configurations. Do not use.
+         *
+         * @param videoConfig video configuration
+         */
+        override fun setVideoConfiguration(videoConfig: VideoConfig) = apply {
+            throw UnsupportedOperationException("Do not set video configuration on audio only streamer")
+        }
+
+        /**
+         * Disable audio.
+         * Audio is enabled by default.
+         * When audio is disabled, there is no way to enable it again.
+         */
+        override fun disableAudio() = apply {
+            this.enableAudio = false
+        }
+
+        /**
+         * Set muxer.
+         * Mandatory.
+         *
+         * @param muxer a [IMuxer] implementation
+         */
+        protected fun setMuxerImpl(muxer: IMuxer) {
+            this.muxer = muxer
+        }
+
+        /**
+         * Combines all of the characteristics that have been set and return a new [BaseStreamer] object.
+         *
+         * @return a new [BaseStreamer] object
+         */
+        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
+        abstract override fun build(): BaseStreamer
     }
 }

@@ -26,23 +26,24 @@ import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioCapture
 import io.github.thibaultbee.streampack.internal.sources.screen.ScreenCapture
 import io.github.thibaultbee.streampack.logger.ILogger
+import java.io.File
 
 /**
- * Base class of screen recorder streamer.
- * Use this class, only if you want to implement a custom endpoint with a screen record as a source.
+ * A [BaseStreamer] that sends microphone and screen frames.
  *
  * @param context application context
- * @param muxer a [IMuxer] implementation
- * @param endpoint a [IEndpoint] implementation
  * @param logger a [ILogger] implementation
  * @param enableAudio [Boolean.true] to capture audio
+ * @param muxer a [IMuxer] implementation
+ * @param endpoint a [IEndpoint] implementation
+
  */
 open class BaseScreenRecorderStreamer(
     context: Context,
+    logger: ILogger,
+    enableAudio: Boolean,
     muxer: IMuxer,
     endpoint: IEndpoint,
-    logger: ILogger,
-    enableAudio: Boolean
 ) : BaseStreamer(
     context = context,
     videoCapture = ScreenCapture(context, logger = logger),
@@ -96,4 +97,6 @@ open class BaseScreenRecorderStreamer(
         screenCapture.encoderSurface = videoEncoder?.inputSurface
         super.startStream()
     }
+
+    abstract class Builder : BaseStreamer.Builder()
 }

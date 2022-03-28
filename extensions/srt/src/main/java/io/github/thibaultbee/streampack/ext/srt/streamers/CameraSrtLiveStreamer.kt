@@ -17,32 +17,26 @@ package io.github.thibaultbee.streampack.ext.srt.streamers
 
 import android.Manifest
 import android.content.Context
-import android.view.Surface
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.BitrateRegulatorConfig
-import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.ext.srt.internal.endpoints.SrtProducer
+import io.github.thibaultbee.streampack.ext.srt.regulator.srt.DefaultSrtBitrateRegulatorFactory
+import io.github.thibaultbee.streampack.ext.srt.regulator.srt.SrtBitrateRegulator
 import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.internal.utils.Scheduler
-import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
-import io.github.thibaultbee.streampack.ext.srt.regulator.srt.DefaultSrtBitrateRegulatorFactory
 import io.github.thibaultbee.streampack.regulator.IBitrateRegulatorFactory
-import io.github.thibaultbee.streampack.ext.srt.regulator.srt.SrtBitrateRegulator
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ISrtLiveStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.builders.IAdaptiveLiveStreamerBuilder
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerPreviewBuilder
+import io.github.thibaultbee.streampack.streamers.interfaces.builders.ISrtLiveStreamerBuilder
 import io.github.thibaultbee.streampack.streamers.interfaces.builders.ITsStreamerBuilder
-import java.net.SocketException
+import io.github.thibaultbee.streampack.streamers.live.BaseCameraLiveStreamer
 
 /**
- * [BaseCameraStreamer] that sends audio/video frames to a remote device with Secure Reliable
- * Transport (SRT) Protocol.
+ * [BaseCameraStreamer] that sends microphones and camerao frames to a remote Secure Reliable
+ * Transport (SRT) device.
  *
  * @param context application context
  * @param tsServiceInfo MPEG-TS service description
@@ -53,17 +47,17 @@ import java.net.SocketException
  */
 class CameraSrtLiveStreamer(
     context: Context,
-    tsServiceInfo: TsServiceInfo,
     logger: ILogger,
     enableAudio: Boolean,
+    tsServiceInfo: TsServiceInfo,
     bitrateRegulatorFactory: IBitrateRegulatorFactory?,
     bitrateRegulatorConfig: BitrateRegulatorConfig?
-) : BaseCameraStreamer(
+) : BaseCameraLiveStreamer(
     context = context,
-    endpoint = SrtProducer(logger = logger),
-    muxer = TSMuxer().apply { addService(tsServiceInfo) },
     logger = logger,
-    enableAudio = enableAudio
+    enableAudio = enableAudio,
+    muxer = TSMuxer().apply { addService(tsServiceInfo) },
+    endpoint = SrtProducer(logger = logger)
 ),
     ISrtLiveStreamer {
 
@@ -85,15 +79,6 @@ class CameraSrtLiveStreamer(
         bitrateRegulator?.update(srtProducer.stats, settings.video.bitrate, settings.audio.bitrate)
             ?: throw UnsupportedOperationException("Scheduler runs but no bitrate regulator set")
     }
-
-    /**
-     * Listener to manage SRT connection.
-     */
-    override var onConnectionListener: OnConnectionListener? = null
-        set(value) {
-            srtProducer.onConnectionListener = value
-            field = value
-        }
 
     private val srtProducer = endpoint as SrtProducer
 
@@ -144,15 +129,6 @@ class CameraSrtLiveStreamer(
     }
 
     /**
-     * Disconnect from the connected SRT server.
-     *
-     * @throws SocketException is not connected
-     */
-    override fun disconnect() {
-        srtProducer.disconnect()
-    }
-
-    /**
      * Same as [BaseCameraStreamer.startStream] but also starts bitrate regulator.
      */
     override fun startStream() {
@@ -178,7 +154,7 @@ class CameraSrtLiveStreamer(
     }
 
     /**
-     * Same as [BaseCameraStreamer.stopStream] but also stops bitrate regulator.
+     * Same as [BaseCameraLiveStreamer.stopStream] but also stops bitrate regulator.
      */
     override fun stopStream() {
         scheduler.cancel()
@@ -186,29 +162,16 @@ class CameraSrtLiveStreamer(
     }
 
     /**
-     * Builder class for [CameraSrtLiveStreamer] objects. Use this class to configure and create an [CameraSrtLiveStreamer] instance.
+     * Builder class for [CameraSrtLiveStreamer] objects. Use this class to configure and create
+     * an [CameraSrtLiveStreamer] instance.
      */
-    data class Builder(
-        private var logger: ILogger = StreamPackLogger(),
-        private var audioConfig: AudioConfig? = null,
-        private var videoConfig: VideoConfig? = null,
-        private var previewSurface: Surface? = null,
-        private var enableAudio: Boolean = true,
-        private var streamId: String? = null,
-        private var passPhrase: String? = null,
-        private var bitrateRegulatorFactory: IBitrateRegulatorFactory? = null,
-        private var bitrateRegulatorConfig: BitrateRegulatorConfig? = null
-    ) : IStreamerBuilder, ITsStreamerBuilder, IStreamerPreviewBuilder,
+    class Builder : BaseCameraLiveStreamer.Builder(), ITsStreamerBuilder, ISrtLiveStreamerBuilder,
         IAdaptiveLiveStreamerBuilder {
-        private lateinit var context: Context
         private lateinit var tsServiceInfo: TsServiceInfo
-
-        /**
-         * Set application context. It is mandatory to set context.
-         *
-         * @param context application context.
-         */
-        override fun setContext(context: Context) = apply { this.context = context }
+        private var bitrateRegulatorFactory: IBitrateRegulatorFactory? = null
+        private var bitrateRegulatorConfig: BitrateRegulatorConfig? = null
+        private var streamId: String? = null
+        private var passPhrase: String? = null
 
         /**
          * Set TS service info. It is mandatory to set TS service info.
@@ -217,65 +180,6 @@ class CameraSrtLiveStreamer(
          */
         override fun setServiceInfo(tsServiceInfo: TsServiceInfo) =
             apply { this.tsServiceInfo = tsServiceInfo }
-
-        /**
-         * Set logger.
-         *
-         * @param logger [ILogger] implementation
-         */
-        override fun setLogger(logger: ILogger) = apply { this.logger = logger }
-
-        /**
-         * Set both audio and video configuration.
-         * Configurations can be change later with [configure].
-         * Same as calling both [setAudioConfiguration] and [setVideoConfiguration].
-         *
-         * @param audioConfig audio configuration
-         * @param videoConfig video configuration
-         */
-        override fun setConfiguration(audioConfig: AudioConfig, videoConfig: VideoConfig) = apply {
-            this.audioConfig = audioConfig
-            this.videoConfig = videoConfig
-        }
-
-        /**
-         * Set audio configurations.
-         * Configurations can be change later with [configure].
-         *
-         * @param audioConfig audio configuration
-         */
-        override fun setAudioConfiguration(audioConfig: AudioConfig) = apply {
-            this.audioConfig = audioConfig
-        }
-
-        /**
-         * Set video configurations.
-         * Configurations can be change later with [configure].
-         *
-         * @param videoConfig video configuration
-         */
-        override fun setVideoConfiguration(videoConfig: VideoConfig) = apply {
-            this.videoConfig = videoConfig
-        }
-
-        /**
-         * Disable audio.
-         * Audio is enabled by default.
-         * When audio is disabled, there is no way to enable it again.
-         */
-        override fun disableAudio() = apply {
-            this.enableAudio = false
-        }
-
-        /**
-         * Set preview surface.
-         * If provided, it starts preview.
-         *
-         * @param previewSurface surface where to display preview
-         */
-        override fun setPreviewSurface(previewSurface: Surface) = apply {
-            this.previewSurface = previewSurface
-        }
 
         /**
          * Set SRT stream id.
@@ -310,7 +214,8 @@ class CameraSrtLiveStreamer(
         }
 
         /**
-         * Combines all of the characteristics that have been set and return a new [CameraSrtLiveStreamer] object.
+         * Combines all of the characteristics that have been set and return a new
+         * [CameraSrtLiveStreamer] object.
          *
          * @return a new [CameraSrtLiveStreamer] object
          */
@@ -318,9 +223,9 @@ class CameraSrtLiveStreamer(
         override fun build(): CameraSrtLiveStreamer {
             return CameraSrtLiveStreamer(
                 context,
-                tsServiceInfo,
                 logger,
                 enableAudio,
+                tsServiceInfo,
                 bitrateRegulatorFactory,
                 bitrateRegulatorConfig
             ).also { streamer ->

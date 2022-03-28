@@ -27,6 +27,7 @@ import com.github.thibaultbee.srtdroid.models.Stats
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.data.SrtPacket
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import kotlinx.coroutines.CoroutineDispatcher
@@ -38,8 +39,8 @@ import java.net.InetSocketAddress
 class SrtProducer(
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
     val logger: ILogger
-) : IEndpoint {
-    var onConnectionListener: OnConnectionListener? = null
+) : ILiveEndpoint {
+    override var onConnectionListener: OnConnectionListener? = null
 
     private var socket = Socket()
     private var bitrate = 0L
@@ -107,7 +108,7 @@ class SrtProducer(
 
     }
 
-    fun disconnect() {
+    override fun disconnect() {
         socket.close()
         socket = Socket()
     }

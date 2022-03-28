@@ -22,22 +22,22 @@ import io.github.thibaultbee.streampack.streamer.testcases.CameraStreamerTestCas
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.utils.AndroidUtils
 
-class TsCameraStreamerTest: CameraStreamerTestCase() {
+class TsCameraStreamerTest : CameraStreamerTestCase() {
     override val streamer = BaseCameraStreamer(
         context,
+        logger,
+        true,
         TSMuxer().apply { addService(AndroidUtils.fakeServiceInfo()) },
         FakeEndpoint(logger),
-        logger,
-        true
     )
 }
 
-class FlvCameraStreamerTest: CameraStreamerTestCase() {
+class FlvCameraStreamerTest : CameraStreamerTestCase() {
     override val streamer = BaseCameraStreamer(
         context,
+        logger,
+        true,
         FlvMuxer(context, writeToFile = false),
         FakeEndpoint(logger),
-        logger,
-        true
     )
 }

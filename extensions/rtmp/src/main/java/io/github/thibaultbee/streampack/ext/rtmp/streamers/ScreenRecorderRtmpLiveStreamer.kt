@@ -23,18 +23,16 @@ import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.RtmpProducer
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxer
-import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.IRtmpLiveStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
-import java.net.SocketException
+import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStreamer
 
 /**
- * [BaseScreenRecorderStreamer] that sends audio/video frames to a remote device with RTMP Protocol.
+ * A [BaseScreenRecorderStreamer] that sends microphone and screen frames to a remote RTMP device.
  * To run this streamer while application is on background, you will have to create a [Service].
- * As an example, check for `screenrecorder`.
+ * As an example, check for `screenrecorder` application.
  *
  * @param context application context
  * @param logger a [ILogger] implementation
@@ -44,24 +42,14 @@ class ScreenRecorderRtmpLiveStreamer(
     context: Context,
     logger: ILogger,
     enableAudio: Boolean
-) : BaseScreenRecorderStreamer(
+) : BaseScreenRecorderLiveStreamer(
     context = context,
-    muxer = FlvMuxer(context = context, writeToFile = false),
-    endpoint = RtmpProducer(logger = logger),
     logger = logger,
-    enableAudio = enableAudio
+    enableAudio = enableAudio,
+    muxer = FlvMuxer(context = context, writeToFile = false),
+    endpoint = RtmpProducer(logger = logger)
 ),
     IRtmpLiveStreamer {
-
-    /**
-     * Listener to manage RTMP connection.
-     */
-    override var onConnectionListener: OnConnectionListener? = null
-        set(value) {
-            rtmpProducer.onConnectionListener = value
-            field = value
-        }
-
     private val rtmpProducer = endpoint as RtmpProducer
 
     /**
@@ -73,15 +61,6 @@ class ScreenRecorderRtmpLiveStreamer(
      */
     override suspend fun connect(url: String) {
         rtmpProducer.connect(url)
-    }
-
-    /**
-     * Disconnect from the connected RTMP server.
-     *
-     * @throws SocketException is not connected
-     */
-    override fun disconnect() {
-        rtmpProducer.disconnect()
     }
 
     /**
@@ -99,74 +78,13 @@ class ScreenRecorderRtmpLiveStreamer(
     }
 
     /**
-     * Builder class for [ScreenRecorderRtmpLiveStreamer] objects. Use this class to configure and create an [ScreenRecorderRtmpLiveStreamer] instance.
+     * Builder class for [ScreenRecorderRtmpLiveStreamer] objects. Use this class to configure and
+     * create an [ScreenRecorderRtmpLiveStreamer] instance.
      */
-    data class Builder(
-        private var logger: ILogger = StreamPackLogger(),
-        private var audioConfig: AudioConfig? = null,
-        private var videoConfig: VideoConfig? = null,
-        private var enableAudio: Boolean = true,
-    ) : IStreamerBuilder {
-        private lateinit var context: Context
-
+    class Builder : BaseScreenRecorderLiveStreamer.Builder() {
         /**
-         * Set application context. It is mandatory to set context.
-         *
-         * @param context application context.
-         */
-        override fun setContext(context: Context) = apply { this.context = context }
-
-        /**
-         * Set logger.
-         *
-         * @param logger [ILogger] implementation
-         */
-        override fun setLogger(logger: ILogger) = apply { this.logger = logger }
-
-        /**
-         * Set both audio and video configuration.
-         * Configurations can be change later with [configure].
-         * Same as calling both [setAudioConfiguration] and [setVideoConfiguration].
-         *
-         * @param audioConfig audio configuration
-         * @param videoConfig video configuration
-         */
-        override fun setConfiguration(audioConfig: AudioConfig, videoConfig: VideoConfig) = apply {
-            this.audioConfig = audioConfig
-            this.videoConfig = videoConfig
-        }
-
-        /**
-         * Set audio configurations.
-         * Configurations can be change later with [configure].
-         *
-         * @param audioConfig audio configuration
-         */
-        override fun setAudioConfiguration(audioConfig: AudioConfig) = apply {
-            this.audioConfig = audioConfig
-        }
-
-        /**
-         * Set video configurations.
-         * Configurations can be change later with [configure].
-         *
-         * @param videoConfig video configuration
-         */
-        override fun setVideoConfiguration(videoConfig: VideoConfig) = apply {
-            this.videoConfig = videoConfig
-        }
-
-        /**
-         * Disable audio.
-         * Audio is enabled by default.
-         * When audio is disabled, there is no way to enable it again.
-         */
-        override fun disableAudio() = apply {
-            this.enableAudio = false
-        }
-
-        /**
-         * Combines all of the characteristics that have been set and return a new [ScreenRecorderRtmpLiveStreamer] object.
+         * Combines all of the characteristics that have been set and return a new
+         * [ScreenRecorderRtmpLiveStreamer] object.
          *
          * @return a new [ScreenRecorderRtmpLiveStreamer] object
          */

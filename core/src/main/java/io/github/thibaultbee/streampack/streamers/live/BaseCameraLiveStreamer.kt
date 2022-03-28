@@ -13,93 +13,88 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.streamers.file
+package io.github.thibaultbee.streampack.streamers.live
 
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.internal.endpoints.FileWriter
+import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
+import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IFileStreamerBuilder
-import java.io.File
+import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 
 /**
- * A [BaseCameraStreamer] that sends microphone and camera frames to a [File].
+ * A [BaseCameraStreamer] that sends microphone and camera frames to a remote device.
  *
  * @param context application context
- * @param muxer a [IMuxer] implementation
  * @param logger a [ILogger] implementation
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
+ * @param muxer a [IMuxer] implementation
+ * @param endpoint a [ILiveEndpoint] implementation
  */
-open class BaseCameraFileStreamer(
+open class BaseCameraLiveStreamer(
     context: Context,
     logger: ILogger,
     enableAudio: Boolean,
     muxer: IMuxer,
+    endpoint: ILiveEndpoint
 ) : BaseCameraStreamer(
     context = context,
     logger = logger,
     enableAudio = enableAudio,
     muxer = muxer,
-    endpoint = FileWriter(logger)
+    endpoint = endpoint
 ),
-    IFileStreamer {
-    private val fileWriter = endpoint as FileWriter
+    ILiveStreamer {
+    private val liveProducer = endpoint
 
     /**
-     * Get/Set [FileWriter] file. If no file has been set. [FileWriter] uses a default temporary file.
+     * Listener to manage connection.
      */
-    override var file: File?
-        /**
-         * Get file writer file.
-         *
-         * @return file where [FileWriter] writes
-         */
-        get() = fileWriter.file
-        /**
-         * Set file writer file.
-         *
-         * @param value [File] where [FileWriter] writes
-         */
+    override var onConnectionListener: OnConnectionListener? = null
         set(value) {
-            fileWriter.file = value
+            liveProducer.onConnectionListener = value
+            field = value
         }
 
     /**
-     * Same as [BaseCameraStreamer.startStream] with RequiresPermission annotation for
-     * Manifest.permission.WRITE_EXTERNAL_STORAGE.
+     * Disconnect from the remote server.
+     *
+     * @throws Exception is not connected
      */
-    @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
-    override fun startStream() = super.startStream()
+    override fun disconnect() {
+        liveProducer.disconnect()
+    }
 
-    abstract class Builder : BaseCameraStreamer.Builder(), IFileStreamerBuilder {
-        protected var file: File? = null
+    abstract class Builder : BaseCameraStreamer.Builder() {
+        protected lateinit var endpoint: ILiveEndpoint
 
         /**
-         * Set destination file.
+         * Set live endpoint.
+         * Mandatory.
          *
-         * @param file where to write date
+         * @param endpoint a [ILiveEndpoint] implementation
          */
-        override fun setFile(file: File) = apply {
-            this.file = file
-        }
+        protected fun setLiveEndpointImpl(endpoint: ILiveEndpoint) =
+            apply { this.endpoint = endpoint }
 
         /**
          * Combines all of the characteristics that have been set and return a new
-         * generic [BaseCameraFileStreamer] object.
+         * generic [BaseCameraLiveStreamer] object.
          *
-         * @return a new generic [BaseCameraFileStreamer] object
+         * @return a new generic [BaseCameraLiveStreamer] object
          */
         @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-        override fun build(): BaseCameraFileStreamer {
-            return BaseCameraFileStreamer(
+        override fun build(): BaseCameraLiveStreamer {
+            return BaseCameraLiveStreamer(
                 context,
                 logger,
                 enableAudio,
-                muxer
+                muxer,
+                endpoint
             ).also { streamer ->
                 if (videoConfig != null) {
                     streamer.configure(audioConfig, videoConfig!!)
@@ -107,10 +102,6 @@ open class BaseCameraFileStreamer(
 
                 previewSurface?.let {
                     streamer.startPreview(it)
-                }
-
-                file?.let {
-                    streamer.file = it
                 }
             }
         }
