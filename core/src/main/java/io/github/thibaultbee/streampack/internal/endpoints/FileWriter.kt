@@ -38,7 +38,7 @@ class FileWriter(val logger: ILogger) : IEndpoint {
         }
     }
 
-    override fun configure(startBitrate: Int) {} // Nothing to configure
+    override fun configure(config: Int) {} // Nothing to configure
 
     override fun write(packet: Packet) {
         fileOutputStream?.channel?.write(packet.buffer)

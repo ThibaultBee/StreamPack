@@ -22,9 +22,9 @@ interface IEndpoint : Streamable<Int> {
 
     /**
      * Configure endpoint bitrate, mainly for network endpoint.
-     * @param startBitrate bitrate at the beginning of the communication
+     * @param config bitrate at the beginning of the communication
      */
-    override fun configure(startBitrate: Int)
+    override fun configure(config: Int)
 
     /**
      * Writes a buffer to endpoint.

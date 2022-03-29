@@ -19,7 +19,7 @@ import kotlinx.coroutines.*
 
 class Scheduler(
     private val delayTimeMillis: Long,
-    private val coroutineScope: CoroutineScope = GlobalScope,
+    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default),
     private val action: suspend CoroutineScope.() -> Unit
 ) {
     private var job: Job? = null
