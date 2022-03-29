@@ -1,6 +1,6 @@
 # MPEG transport stream mux
 
-MPEG-TS mux is a minimalist MPEG-TS mux.
+MPEG-TS muxer is a minimalist MPEG-TS muxer.
 It manages packets encapsulation and section tables (PAT, PMT, SDT).
 
 It supports the following operations:
@@ -10,18 +10,25 @@ It supports the following operations:
 
 ## Quick start
 
-1/ Instantiate a `TSMux()`
+1/ Instantiates a `TSMuxer()`:
+
 ```
-val tsMux = TSMux(listener, serviceInfo)
+val muxer = TSMuxer(listener = object : IMuxerListerner {
+    override fun onOutputFrame(packet: Packet)
+        // Use packet
+    }
+})
 ```
 
-2/ Register the streams
+2/ Registers on or multiple services and streams:
+
 ```
- val streamPid = addStreams(serviceInfo, listOf(MediaFormat.MIMETYPE_VIDEO_AVC))[0]
+val streamPid = muxer.addStreams(serviceInfo, listOf(audioConfig))[audioConfig]
 ```
 
-2/ Encode frames with `encode`
+2/ Encodes frames with `encode`:
+
 ```
-tsMux.encode(frame, streamPid)
+muxer.encode(frame, streamPid)
 ```
 
