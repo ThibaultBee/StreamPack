@@ -21,7 +21,7 @@ android {
     testOptions.unitTests.includeAndroidResources = true
 }
 
-dokkaHtml {
+dokkaHtmlPartial {
     dokkaSourceSets {
         named("main") {
             noAndroidSdkLink.set(false)
