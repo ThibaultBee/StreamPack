@@ -26,8 +26,8 @@ class FakeEndpoint(val logger: ILogger) : IEndpoint {
         logger.d(this, "startStream called")
     }
 
-    override fun configure(startBitrate: Int) {
-        logger.d(this, "configure called with bitrate = $startBitrate")
+    override fun configure(config: Int) {
+        logger.d(this, "configure called with bitrate = $config")
     }
 
     override fun write(packet: Packet) {

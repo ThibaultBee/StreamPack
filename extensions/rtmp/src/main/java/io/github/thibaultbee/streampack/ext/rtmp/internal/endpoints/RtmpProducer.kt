@@ -34,7 +34,7 @@ class RtmpProducer(
 
     private var socket = Rtmp()
 
-    override fun configure(startBitrate: Int) {
+    override fun configure(config: Int) {
     }
 
     override suspend fun connect(url: String) {

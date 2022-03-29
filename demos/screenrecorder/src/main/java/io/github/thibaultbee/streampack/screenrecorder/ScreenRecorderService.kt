@@ -425,6 +425,7 @@ class ScreenRecorderService : Service() {
                 .setContentText(content)
                 .build()
         } else {
+            @Suppress("deprecation")
             Notification.Builder(applicationContext)
                 .setSmallIcon(R.drawable.ic_baseline_notifications_24)
                 .setContentTitle(title)

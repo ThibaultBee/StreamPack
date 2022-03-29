@@ -72,8 +72,8 @@ class SrtProducer(
     val stats: Stats
         get() = socket.bistats(clear = true, instantaneous = true)
 
-    override fun configure(startBitrate: Int) {
-        this.bitrate = startBitrate.toLong()
+    override fun configure(config: Int) {
+        this.bitrate = config.toLong()
     }
 
     override suspend fun connect(url: String) {

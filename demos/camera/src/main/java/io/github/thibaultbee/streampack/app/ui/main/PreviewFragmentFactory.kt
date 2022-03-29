@@ -24,7 +24,9 @@ class PreviewViewModelFactory(private val streamerManager: StreamerManager) :
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(PreviewViewModel::class.java)) {
-            return PreviewViewModel(streamerManager) as T
+            return modelClass
+                .getConstructor(StreamerManager::class.java)
+                .newInstance(streamerManager)
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
