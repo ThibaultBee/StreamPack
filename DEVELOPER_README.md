@@ -75,10 +75,28 @@ Then these base streamers are specialized for a File or for a Live:
 
 There are 2 types of sources:
 
-- source from buffer: such as a microphone. It implements `IFrameCapture` or `IAudioCapture` for
-  audio source.
-- source from encoder surface (video only): when the video source can write to a `Surface`. Its
-  purpose is to improve encoder performance. For example, it suits camera and screen recorder.
+- frames are captured in a `ByteBuffer`: such as a microphone. `ByteBuffer` sources
+  implement `IFrameCapture`.
+- frames are passed to the encoder surface (video only): when the video source can write to
+  a `Surface`. Its purpose is to improve encoder performance. For example, it suits camera and
+  screen recorder. `Surface` sources implement `ISurfaceCapture`.
+
+To create a new audio source, implements a `IAudioCapture`. It inherits from `IFrameCapture`.
+
+To create a new video source, implements a `IVideoCapture`. It inherits from both `IFrameCapture`
+and `ISurfaceCapture`. Always prefer to use a video source as a `Surface` source if it is possible.
+
+If your video source is a `Surface` source, set:
+
+- `hasSurface` = true
+- `encoderSurface` must not return null
+- `getFrame` won't be use, you can make it throw an exception.
+
+If your video source is a `ByteBuffer` source, set:
+
+- `hasSurface` = false
+- `encoderSurface` = null
+- `getFrame` to fill the `ByteBuffer` with the raw video frame.
 
 ## Encoders
 

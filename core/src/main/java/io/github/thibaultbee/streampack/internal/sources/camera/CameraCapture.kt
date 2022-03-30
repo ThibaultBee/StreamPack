@@ -20,16 +20,18 @@ import android.content.Context
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.data.VideoConfig
-import io.github.thibaultbee.streampack.internal.sources.ISurfaceCapture
+import io.github.thibaultbee.streampack.internal.data.Frame
+import io.github.thibaultbee.streampack.internal.sources.IVideoCapture
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.utils.CameraSettings
 import io.github.thibaultbee.streampack.utils.isFrameRateSupported
 import kotlinx.coroutines.runBlocking
+import java.nio.ByteBuffer
 
 class CameraCapture(
     private val context: Context,
     logger: ILogger
-) : ISurfaceCapture<VideoConfig> {
+) : IVideoCapture {
     var previewSurface: Surface? = null
     override var encoderSurface: Surface? = null
     var cameraId: String = "0"
@@ -49,11 +51,11 @@ class CameraCapture(
     private var cameraController = CameraController(context, logger = logger)
     var settings = CameraSettings(context, cameraController)
 
-    /**
-     * As timestamp source differs from one camera to another. Computes an offset.
-     */
     override val timestampOffset = CameraHelper.getTimeOffsetToMonoClock(context, cameraId)
-
+    override val hasSurface = true
+    override fun getFrame(buffer: ByteBuffer): Frame {
+        throw UnsupportedOperationException("Camera expects to run in Surface mode")
+    }
 
     private var fps: Int = 30
     private var isStreaming = false

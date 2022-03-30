@@ -28,12 +28,11 @@ import io.github.thibaultbee.streampack.internal.encoders.AudioMediaCodecEncoder
 import io.github.thibaultbee.streampack.internal.encoders.IEncoderListener
 import io.github.thibaultbee.streampack.internal.encoders.VideoMediaCodecEncoder
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.internal.events.EventHandler
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.sources.IAudioCapture
-import io.github.thibaultbee.streampack.internal.sources.ISurfaceCapture
+import io.github.thibaultbee.streampack.internal.sources.IVideoCapture
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.logger.StreamPackLogger
@@ -41,9 +40,6 @@ import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.helpers.StreamerConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
-import io.github.thibaultbee.streampack.streamers.interfaces.settings.IAudioSettings
-import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseStreamerSettings
-import io.github.thibaultbee.streampack.streamers.interfaces.settings.IVideoSettings
 import io.github.thibaultbee.streampack.streamers.settings.BaseStreamerSettings
 import java.nio.ByteBuffer
 
@@ -63,7 +59,7 @@ abstract class BaseStreamer(
     private val context: Context,
     protected val logger: ILogger,
     protected val audioCapture: IAudioCapture?,
-    protected val videoCapture: ISurfaceCapture<VideoConfig>?,
+    protected val videoCapture: IVideoCapture?,
     manageVideoOrientation: Boolean = false,
     private val muxer: IMuxer,
     protected val endpoint: IEndpoint
@@ -107,8 +103,7 @@ abstract class BaseStreamer(
 
     private val videoEncoderListener = object : IEncoderListener {
         override fun onInputFrame(buffer: ByteBuffer): Frame {
-            // Not needed for video
-            throw StreamPackError(RuntimeException("No video input on VideoEncoder"))
+            return videoCapture!!.getFrame(buffer)
         }
 
         override fun onOutputFrame(frame: Frame) {
@@ -165,6 +160,7 @@ abstract class BaseStreamer(
             videoEncoderListener,
             onInternalErrorListener,
             context,
+            videoCapture.hasSurface,
             manageVideoOrientation,
             logger
         )
