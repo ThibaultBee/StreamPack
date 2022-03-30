@@ -108,6 +108,8 @@ open class BaseAudioOnlyFileStreamer(
                 muxer
             )
                 .also { streamer ->
+                    streamer.onErrorListener = errorListener
+
                     streamer.configure(audioConfig)
                     streamer.file = file
                 }

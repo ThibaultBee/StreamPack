@@ -79,6 +79,9 @@ abstract class BaseStreamer(
     private var audioConfig: AudioConfig? = null
 
     // Only handle stream error (error on muxer, endpoint,...)
+    /**
+     * Internal usage only
+     */
     final override val onInternalErrorListener = object : OnErrorListener {
         override fun onError(error: StreamPackError) {
             onStreamError(error)
@@ -351,6 +354,7 @@ abstract class BaseStreamer(
         protected var videoConfig: VideoConfig? = null
         protected lateinit var muxer: IMuxer
         protected var enableAudio: Boolean = true
+        protected var errorListener: OnErrorListener? = null
 
         /**
          * Set application context. It is mandatory to set context.
@@ -395,7 +399,7 @@ abstract class BaseStreamer(
          * @param videoConfig video configuration
          */
         override fun setVideoConfiguration(videoConfig: VideoConfig) = apply {
-            throw UnsupportedOperationException("Do not set video configuration on audio only streamer")
+            this.videoConfig = videoConfig
         }
 
         /**
@@ -408,14 +412,20 @@ abstract class BaseStreamer(
         }
 
         /**
+         * Set the error listener.
+         *
+         * @param listener a [OnErrorListener] implementation
+         */
+        override fun setErrorListener(listener: OnErrorListener) =
+            apply { this.errorListener = listener }
+
+        /**
          * Set muxer.
          * Mandatory.
          *
          * @param muxer a [IMuxer] implementation
          */
-        protected fun setMuxerImpl(muxer: IMuxer) {
-            this.muxer = muxer
-        }
+        protected fun setMuxerImpl(muxer: IMuxer) = apply { this.muxer = muxer }
 
         /**
          * Combines all of the characteristics that have been set and return a new [BaseStreamer] object.

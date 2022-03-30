@@ -101,6 +101,8 @@ open class BaseCameraFileStreamer(
                 enableAudio,
                 muxer
             ).also { streamer ->
+                streamer.onErrorListener = errorListener
+
                 if (videoConfig != null) {
                     streamer.configure(audioConfig, videoConfig!!)
                 }

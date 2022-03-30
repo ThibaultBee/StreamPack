@@ -26,7 +26,6 @@ import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioCapture
 import io.github.thibaultbee.streampack.internal.sources.screen.ScreenCapture
 import io.github.thibaultbee.streampack.logger.ILogger
-import java.io.File
 
 /**
  * A [BaseStreamer] that sends microphone and screen frames.

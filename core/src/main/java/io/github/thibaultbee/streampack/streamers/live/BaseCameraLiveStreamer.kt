@@ -18,7 +18,6 @@ package io.github.thibaultbee.streampack.streamers.live
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.internal.endpoints.FileWriter
 import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
@@ -95,6 +94,15 @@ open class BaseCameraLiveStreamer(
 
     abstract class Builder : BaseCameraStreamer.Builder() {
         protected lateinit var endpoint: ILiveEndpoint
+        private var connectionListener: OnConnectionListener? = null
+
+        /**
+         * Set the connection listener.
+         *
+         * @param listener a [OnConnectionListener] implementation
+         */
+         fun setConnectionListener(listener: OnConnectionListener) =
+            apply { this.connectionListener = listener }
 
         /**
          * Set live endpoint.
@@ -120,6 +128,9 @@ open class BaseCameraLiveStreamer(
                 muxer,
                 endpoint
             ).also { streamer ->
+                streamer.onErrorListener = errorListener
+                streamer.onConnectionListener = connectionListener
+
                 if (videoConfig != null) {
                     streamer.configure(audioConfig, videoConfig!!)
                 }
