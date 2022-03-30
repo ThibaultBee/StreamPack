@@ -94,6 +94,15 @@ open class BaseScreenRecorderLiveStreamer(
 
     abstract class Builder : BaseScreenRecorderStreamer.Builder() {
         protected lateinit var endpoint: ILiveEndpoint
+        private var connectionListener: OnConnectionListener? = null
+
+        /**
+         * Set the connection listener.
+         *
+         * @param listener a [OnConnectionListener] implementation
+         */
+        fun setConnectionListener(listener: OnConnectionListener) =
+            apply { this.connectionListener = listener }
 
         /**
          * Set live endpoint.
@@ -119,6 +128,9 @@ open class BaseScreenRecorderLiveStreamer(
                 muxer,
                 endpoint
             ).also { streamer ->
+                streamer.onErrorListener = errorListener
+                streamer.onConnectionListener = connectionListener
+
                 if (videoConfig != null) {
                     streamer.configure(audioConfig, videoConfig!!)
                 }

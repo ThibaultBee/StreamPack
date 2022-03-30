@@ -93,6 +93,7 @@ open class BaseAudioOnlyLiveStreamer(
 
     abstract class Builder : BaseStreamer.Builder() {
         protected lateinit var endpoint: ILiveEndpoint
+        private var connectionListener: OnConnectionListener? = null
 
         /**
          * Disable audio. Do not use.
@@ -102,7 +103,15 @@ open class BaseAudioOnlyLiveStreamer(
         }
 
         /**
-         * Set live endpoint.
+         * Set connection listener.
+         *
+         * @param listener a [OnConnectionListener] implementation
+         */
+        open fun setConnectionListener(listener: OnConnectionListener) =
+            apply { this.connectionListener = listener }
+
+        /**
+         * Set the live endpoint.
          * Mandatory.
          *
          * @param endpoint a [ILiveEndpoint] implementation
@@ -125,6 +134,9 @@ open class BaseAudioOnlyLiveStreamer(
                 endpoint
             )
                 .also { streamer ->
+                    streamer.onErrorListener = errorListener
+                    streamer.onConnectionListener = connectionListener
+
                     streamer.configure(audioConfig)
                 }
         }

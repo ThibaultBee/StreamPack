@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.streamers.interfaces.builders
 import android.content.Context
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.VideoConfig
+import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 
@@ -69,6 +70,13 @@ interface IStreamerBuilder {
      * When audio is disabled, there is no way to enable it again.
      */
     fun disableAudio(): IStreamerBuilder
+
+    /**
+     * Set the error listener.
+     *
+     * @param listener a [OnErrorListener] implementation
+     */
+    fun setErrorListener(listener: OnErrorListener): IStreamerBuilder
 
     /**
      * Combines all of the characteristics that have been set and return a new [BaseStreamer] object.
