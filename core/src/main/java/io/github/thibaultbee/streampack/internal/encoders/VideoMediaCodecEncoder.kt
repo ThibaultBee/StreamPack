@@ -34,22 +34,32 @@ import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import java.util.concurrent.Executors
 
+/**
+ * Encoder for video using MediaCodec.
+ *
+ * @param useSurfaceMode to get video frames, if [Boolean.true],the encoder will use Surface mode, else Buffer mode with [IEncoderListener.onInputFrame].
+ */
 class VideoMediaCodecEncoder(
     encoderListener: IEncoderListener,
     override val onInternalErrorListener: OnErrorListener,
     private val context: Context,
+    private val useSurfaceMode: Boolean,
     private val manageVideoOrientation: Boolean,
     logger: ILogger
 ) :
     MediaCodecEncoder<VideoConfig>(encoderListener, logger) {
-    var codecSurface = CodecSurface(context, manageVideoOrientation)
+    var codecSurface = if (useSurfaceMode) {
+        CodecSurface(context, manageVideoOrientation)
+    } else {
+        null
+    }
 
     override fun configure(config: VideoConfig) {
         mediaCodec = try {
             createVideoCodec(config, true)
         } catch (e: MediaCodec.CodecException) {
             createVideoCodec(config, false)
-        }.apply { codecSurface.surface = createInputSurface() }
+        }.apply { codecSurface?.surface = createInputSurface() }
     }
 
     private fun createVideoCodec(
@@ -94,17 +104,17 @@ class VideoMediaCodecEncoder(
     }
 
     override fun startStream() {
-        codecSurface.startStream()
+        codecSurface?.startStream()
         super.startStream()
     }
 
     override fun stopStream() {
-        codecSurface.stopStream()
+        codecSurface?.stopStream()
         super.stopStream()
     }
 
     val inputSurface: Surface?
-        get() = codecSurface.inputSurface
+        get() = codecSurface?.inputSurface
 
     class CodecSurface(private val context: Context, private val manageVideoOrientation: Boolean) :
         SurfaceTexture.OnFrameAvailableListener {

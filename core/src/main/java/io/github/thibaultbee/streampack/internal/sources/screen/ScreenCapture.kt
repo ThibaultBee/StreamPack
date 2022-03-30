@@ -26,16 +26,23 @@ import android.view.Surface
 import androidx.activity.result.ActivityResult
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.error.StreamPackError
-import io.github.thibaultbee.streampack.internal.sources.ISurfaceCapture
+import io.github.thibaultbee.streampack.internal.data.Frame
+import io.github.thibaultbee.streampack.internal.sources.IVideoCapture
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
+import java.nio.ByteBuffer
 
 class ScreenCapture(
     context: Context,
     logger: ILogger
-) : ISurfaceCapture<VideoConfig> {
+) : IVideoCapture {
     override var encoderSurface: Surface? = null
     override val timestampOffset = 0L
+    override val hasSurface = true
+    override fun getFrame(buffer: ByteBuffer): Frame {
+        throw UnsupportedOperationException("Screen source expects to run in Surface mode")
+    }
+
     private var mediaProjection: MediaProjection? = null
     var activityResult: ActivityResult? = null
     var onErrorListener: OnErrorListener? = null

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Thibault B.
+ * Copyright (C) 2022 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,13 @@
  */
 package io.github.thibaultbee.streampack.internal.sources
 
-import android.view.Surface
 import io.github.thibaultbee.streampack.data.VideoConfig
-import io.github.thibaultbee.streampack.internal.interfaces.Streamable
 
-interface ISurfaceCapture : Streamable<VideoConfig> {
+interface IVideoCapture : IFrameCapture<VideoConfig>, ISurfaceCapture {
     /**
-     * The offset between source capture time and MONOTONIC clock. It is used to synchronize video
-     * with audio. It is only useful for camera source.
+     * Set to [Boolean.true] to use video source as a Surface renderer (see [ISurfaceCapture]). For example, this is useful
+     * for camera and screen recording. If set to [Boolean.false], the encoder will use source as a
+     * buffer producer (see [IFrameCapture]).
      */
-    val timestampOffset: Long
-
-    /**
-     * Set surface where capture source will render its frame.
-     */
-    var encoderSurface: Surface?
+    val hasSurface: Boolean
 }
