@@ -25,6 +25,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
+import android.media.MediaFormat
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
@@ -75,7 +76,6 @@ import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.Con
 import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.VIDEO_CONFIG_KEY
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStreamer
 import kotlinx.coroutines.runBlocking
 
@@ -222,12 +222,12 @@ class ScreenRecorderService : Service() {
 
             val videoConfig = intent.extras?.getBundle(VIDEO_CONFIG_KEY)?.let { bundle ->
                 createVideoConfigFromBundle(bundle)
-            } ?: VideoConfig.Builder().build()
+            } ?: VideoConfig()
 
             val hasAudio = intent.extras?.get(AUDIO_CONFIG_KEY) != null
             val audioConfig = (intent.extras?.get(AUDIO_CONFIG_KEY) as Bundle?)?.let { bundle ->
                 createAudioConfigFromBundle(bundle)
-            } ?: AudioConfig.Builder().build()
+            } ?: AudioConfig()
 
             if (ActivityCompat.checkSelfPermission(
                     this,
@@ -333,61 +333,31 @@ class ScreenRecorderService : Service() {
     }
 
     private fun createAudioConfigFromBundle(bundle: Bundle): AudioConfig {
-        val configBuilder = AudioConfig.Builder()
-        bundle.getString(MIME_TYPE)?.let {
-            configBuilder.setMimeType(it)
-        }
-        if (bundle.containsKey(BITRATE)) {
-            configBuilder.setStartBitrate(bundle.getInt(BITRATE))
-        }
-        if (bundle.containsKey(SAMPLE_RATE)) {
-            configBuilder.setSampleRate(bundle.getInt(SAMPLE_RATE))
-        }
-        if (bundle.containsKey(CHANNEL_CONFIG)) {
-            configBuilder.setNumberOfChannel(bundle.getInt(CHANNEL_CONFIG))
-        }
-        if (bundle.containsKey(BYTE_FORMAT)) {
-            configBuilder.setByteFormat(bundle.getInt(BYTE_FORMAT))
-        }
-        if (bundle.containsKey(ENABLE_ECHO_CANCELER)) {
-            configBuilder.setEchoCanceler(bundle.getBoolean(ENABLE_ECHO_CANCELER))
-        }
-        if (bundle.containsKey(ENABLE_NOISE_SUPPRESSOR)) {
-            configBuilder.setNoiseSuppressor(bundle.getBoolean(ENABLE_NOISE_SUPPRESSOR))
-        }
-        return configBuilder.build()
+        return AudioConfig(
+            mimeType = bundle.getString(MIME_TYPE) ?: MediaFormat.MIMETYPE_AUDIO_AAC,
+            startBitrate = bundle.getInt(BITRATE),
+            sampleRate = bundle.getInt(SAMPLE_RATE),
+            channelConfig = AudioConfig.getChannelConfig(bundle.getInt(CHANNEL_CONFIG)),
+            byteFormat = bundle.getInt(BYTE_FORMAT),
+            enableEchoCanceler = bundle.getBoolean(ENABLE_ECHO_CANCELER),
+            enableNoiseSuppressor = bundle.getBoolean(ENABLE_NOISE_SUPPRESSOR)
+        )
     }
 
     private fun createVideoConfigFromBundle(bundle: Bundle): VideoConfig {
-        val configBuilder = VideoConfig.Builder()
-        bundle.getString(MIME_TYPE)?.let {
-            configBuilder.setMimeType(it)
-        }
-        if (bundle.containsKey(BITRATE)) {
-            configBuilder.setStartBitrate(bundle.getInt(BITRATE))
-        }
-        if (bundle.containsKey(RESOLUTION_WIDTH) && bundle.containsKey(RESOLUTION_HEIGHT)) {
-            configBuilder.setResolution(
-                Size(
-                    bundle.getInt(RESOLUTION_WIDTH),
-                    bundle.getInt(RESOLUTION_HEIGHT)
-                )
-            )
-        }
-        if (bundle.containsKey(LEVEL)) {
-            configBuilder.setEncoderLevel(bundle.getInt(LEVEL))
-        }
-        if (bundle.containsKey(PROFILE)) {
-            configBuilder.setEncoderLevel(bundle.getInt(PROFILE))
-        }
-        // refreshRate returns a high value but measured fps is lower...
-        configBuilder.setFps(
-            (this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager).getDisplay(
+        return VideoConfig(
+            mimeType = bundle.getString(MIME_TYPE) ?: MediaFormat.MIMETYPE_VIDEO_AVC,
+            startBitrate = bundle.getInt(BITRATE),
+            resolution = Size(
+                bundle.getInt(RESOLUTION_WIDTH),
+                bundle.getInt(RESOLUTION_HEIGHT)
+            ),
+            fps = (this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager).getDisplay(
                 Display.DEFAULT_DISPLAY
-            ).refreshRate.toInt()
+            ).refreshRate.toInt(),
+            level = bundle.getInt(LEVEL),
+            profile = bundle.getInt(PROFILE)
         )
-
-        return configBuilder.build()
     }
 
     private fun notify(titleResId: Int, contentResId: Int) =

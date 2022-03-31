@@ -197,10 +197,7 @@ class OnMetadataTest {
             context,
             false,
             listOf(
-                VideoConfig.Builder()
-                    .setMimeType(MediaFormat.MIMETYPE_VIDEO_AVC)
-                    .setResolution(MockUtils.mockSize(640, 480))
-                    .build()
+                VideoConfig(resolution = MockUtils.mockSize(640, 480))
             )
         )
         val buffer = onMetadata.write()

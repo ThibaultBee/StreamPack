@@ -115,39 +115,36 @@ side, you should be able to watch this live stream.
 To simplify development, StreamPack provides an `AutoFitSurfaceView`.
 
 ```xml
-
 <io.github.thibaultbee.streampack.views.AutoFitSurfaceView
     android:id="@+id/surface"
     android:layout_width="match_parent" 
     android:layout_height="match_parent" />
 ```
 
-3. Prepares audio and video configurations
+3. Instantiates the streamer (main live streaming class)
 
 ```kotlin
-val audioConfig = AudioConfig.Builder()
-    .setStartBitrate(128000)
-    .setSampleRate(44100)
-    .setNumberOfChannel(2)
-    .build()
-
-val videoConfig = VideoConfig.Builder()
-    .setStartBitrate(1000000) // 1 Mb/s
-    .setResolution(Size(1280, 720))
-    .setFps(30)
-    .build()
+val streamer = CameraSrtLiveStreamer(context = requireContext())
 ```
 
-4. Instantiates the streamer (main live streaming class)
+4. Configures
 
 ```kotlin
-val streamer = CameraSrtLiveStreamer.Builder()
-    .setContext(getApplication())
-    .setServiceInfo(tsServiceInfo)
-    .setConfiguration(audioConfig, videoConfig)
-    .build()
-```
+val audioConfig = AudioConfig(
+    startBitrate = 128000,
+    sampleRate = 44100, 
+    channelConfig = AudioFormat.CHANNEL_IN_STEREO
+)
 
+val videoConfig = VideoConfig(
+    startBitrate = 2000000, // 2 Mb/s
+    resolution = Size(1280, 720),
+    fps = 30
+)
+
+streamer.configure(audioConfig, videoConfig)
+```
+   
 5. Starts the camera preview
 
 ```kotlin
@@ -227,33 +224,12 @@ You can find specific streamers for File or for Live. Currently, there are 2 mai
 - `FileStreamer`: for streaming to file
 - `LiveStreamer`: for streaming to a RTMP or a SRT live streaming server
 
-For example, you can use `AudioOnlyFlvFileStreamer.Builder()` to stream from microphone only to a
-FLV file. Another example, you can use `CameraRtmpLiveStreamer.Build()` to stream from camera to a
+For example, you can use `AudioOnlyFlvFileStreamer` to stream from microphone only to a
+FLV file. Another example, you can use `CameraRtmpLiveStreamer` to stream from camera to a
 RTMP server.
 
 If a streamer is missing, of course, you can also create your own. You should definitely submit it
 in a [pull request](https://github.com/ThibaultBee/StreamPack/pulls).
-
-### Use Builders instead of Streamers
-
-All `Streamer` comes with `Builder` classes to help you to configure `Streamers` and to make your
-code more readable. For example, instead of:
-
-```kotlin
-val streamer = CameraSrtLiveStreamer(context, tsServiceInfo, audioConfig, videoConfig)
-```
-
-You should write:
-
-```kotlin
-val streamer = CameraSrtLiveStreamer().Builder()
-    .setContext(context)
-    .setServiceInfo(tsServiceInfo)
-    .setConfiguration(audioConfig, videoConfig)
-    .build()
-```
-
-I will make what is possible to keep `Builders` API stable whereas `Streamers` API might change.
 
 ### Get device capabilities
 
