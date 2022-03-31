@@ -60,7 +60,7 @@ class PesTest {
         val expectedBuffers = readFrames("test-samples/muxer/pes-video1")
         Pes(
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
-            Stream(VideoConfig.Builder().build(), 256),
+            Stream(VideoConfig(), 256),
             true
         ).run {
             write(frame)
@@ -80,7 +80,7 @@ class PesTest {
         val expectedBuffers = readFrames("test-samples/muxer/pes-audio1")
         Pes(
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
-            Stream(AudioConfig.Builder().build(), 256),
+            Stream(AudioConfig(), 256),
             true
         ).run {
             write(frame)
@@ -100,7 +100,7 @@ class PesTest {
         val expectedBuffers = readFrames("test-samples/muxer/pes-audio2")
         Pes(
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
-            Stream(AudioConfig.Builder().build(), 256),
+            Stream(AudioConfig(), 256),
             true
         ).run {
             write(frame)
