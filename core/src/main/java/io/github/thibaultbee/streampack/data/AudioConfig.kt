@@ -34,18 +34,18 @@ class AudioConfig(
      *
      * **See Also:** [MediaFormat MIMETYPE_AUDIO_*](https://developer.android.com/reference/android/media/MediaFormat)
      */
-    mimeType: String,
+    mimeType: String = MediaFormat.MIMETYPE_AUDIO_AAC,
 
     /**
      * Audio encoder bitrate in bits/s.
      */
-    startBitrate: Int,
+    startBitrate: Int = 128000,
 
     /**
      * Audio capture sample rate in Hz.
      * From [AudioRecord API](https://developer.android.com/reference/android/media/AudioRecord?hl=en#AudioRecord(int,%20int,%20int,%20int,%20int)): "44100Hz is currently the only rate that is guaranteed to work on all devices, but other rates such as 22050, 16000, and 11025 may work on some devices."
      */
-    val sampleRate: Int,
+    val sampleRate: Int = 44100,
 
     /**
      * Audio channel configuration.
@@ -54,7 +54,7 @@ class AudioConfig(
      * @see [AudioFormat.CHANNEL_IN_MONO]
      * @see [AudioFormat.CHANNEL_IN_STEREO]
      */
-    val channelConfig: Int,
+    val channelConfig: Int = AudioFormat.CHANNEL_IN_STEREO,
 
     /**
      * Audio byte format.
@@ -63,19 +63,19 @@ class AudioConfig(
      * @see [AudioFormat.ENCODING_PCM_16BIT]
      * @see [AudioFormat.ENCODING_PCM_FLOAT]
      */
-    val byteFormat: Int,
+    val byteFormat: Int = AudioFormat.ENCODING_PCM_16BIT,
 
     /**
      * Enable/disable audio echo canceller.
      * If device does not have an echo canceller, it does nothing.
      */
-    val enableEchoCanceler: Boolean,
+    val enableEchoCanceler: Boolean = true,
 
     /**
      * Enable/disable audio noise suppressor.
      * If device does not have a noise suppressor, it does nothing.
      */
-    val enableNoiseSuppressor: Boolean
+    val enableNoiseSuppressor: Boolean = true
 ) : Config(mimeType, startBitrate) {
     init {
         require(mimeType.isAudio()) { "MimeType must be audio" }
@@ -120,97 +120,5 @@ class AudioConfig(
             AudioFormat.ENCODING_PCM_FLOAT -> 4
             else -> throw InvalidParameterException("Byte format not supported: $byteFormat")
         }
-    }
-
-    /**
-     * Builder class for [AudioConfig] objects. Use this class to configure and create an [AudioConfig] instance.
-     */
-    data class Builder(
-        private var mimeType: String = MediaFormat.MIMETYPE_AUDIO_AAC,
-        private var startBitrate: Int = 128000,
-        private var sampleRate: Int = 44100,
-        private var nChannel: Int = 2,
-        private var byteFormat: Int = AudioFormat.ENCODING_PCM_16BIT,
-        private var enableEchoCanceler: Boolean = false,
-        private var enableNoiseSuppressor: Boolean = false
-    ) {
-        /**
-         * Set audio encoder mime type.
-         *
-         * @param mimeType audio encoder mime type from [MediaFormat MIMETYPE_AUDIO_*](https://developer.android.com/reference/android/media/MediaFormat)
-         */
-        fun setMimeType(mimeType: String) = apply { this.mimeType = mimeType }
-
-        /**
-         * Set audio encoder bitrate.
-         *
-         * @param startBitrate audio encoder bitrate in bits/s.
-         */
-        fun setStartBitrate(startBitrate: Int) = apply { this.startBitrate = startBitrate }
-
-        /**
-         * Set sample rate.
-         *
-         * @param sampleRate audio capture sample rate (example: 44100, 48000,...)
-         */
-        fun setSampleRate(sampleRate: Int) = apply { this.sampleRate = sampleRate }
-
-        /**
-         * Set number of channels.
-         *
-         * @param nChannel 1 for mono, 2 for stereo
-         */
-        fun setNumberOfChannel(nChannel: Int) = apply { this.nChannel = nChannel }
-
-        /**
-         * Set audio capture byte format.
-         *
-         * @param byteFormat [AudioFormat.ENCODING_PCM_8BIT], [AudioFormat.ENCODING_PCM_16BIT] or [AudioFormat.ENCODING_PCM_FLOAT]
-         */
-        fun setByteFormat(byteFormat: Int) = apply { this.byteFormat = byteFormat }
-
-        /**
-         * Enable echo canceller.
-         * If device does not have an echo canceller, it does nothing.
-         * @see [setEchoCanceler]
-         */
-        fun enableEchoCanceler() = apply { this.enableEchoCanceler = true }
-
-        /**
-         * Enable/disable echo canceller.
-         * If device does not have an echo canceller, it does nothing.
-         * @see [enableEchoCanceler]
-         */
-        fun setEchoCanceler(enable: Boolean) = apply { this.enableEchoCanceler = enable }
-
-        /**
-         * Enable noise suppressor.
-         * If device does not have a noise suppressor, it does nothing.
-         * @see [setNoiseSuppressor]
-         */
-        fun enableNoiseSuppressor() = apply { this.enableNoiseSuppressor = true }
-
-        /**
-         * Enable/disable noise suppressor.
-         * If device does not have a noise suppressor, it does nothing.
-         * @see [enableNoiseSuppressor]
-         */
-        fun setNoiseSuppressor(enable: Boolean) = apply { this.enableNoiseSuppressor = enable }
-
-        /**
-         * Combines all of the characteristics that have been set and return a new [AudioConfig] object.
-         *
-         * @return a new [AudioConfig] object
-         */
-        fun build() =
-            AudioConfig(
-                mimeType,
-                startBitrate,
-                sampleRate,
-                getChannelConfig(nChannel),
-                byteFormat,
-                enableEchoCanceler,
-                enableNoiseSuppressor
-            )
     }
 }

@@ -23,8 +23,6 @@ import android.util.Size
 import io.github.thibaultbee.streampack.internal.utils.isPortrait
 import io.github.thibaultbee.streampack.internal.utils.isVideo
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
-import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationHelper
-import io.github.thibaultbee.streampack.streamers.helpers.IVideoConfigurationHelper
 import java.io.IOException
 
 /**
@@ -36,34 +34,34 @@ import java.io.IOException
 class VideoConfig(
     /**
      * Video encoder mime type.
-     * Only [MediaFormat.MIMETYPE_VIDEO_AVC] is supported yet.
+     * Only [MediaFormat.MIMETYPE_VIDEO_AVC] and [MediaFormat.MIMETYPE_VIDEO_HEVC] are supported yet.
      *
      * **See Also:** [MediaFormat MIMETYPE_VIDEO_*](https://developer.android.com/reference/android/media/MediaFormat)
      */
-    mimeType: String,
+    mimeType: String = MediaFormat.MIMETYPE_VIDEO_AVC,
     /**
      * Video encoder bitrate in bits/s.
      */
-    startBitrate: Int,
+    startBitrate: Int = 2000000,
     /**
      * Video output resolution in pixel.
      */
-    val resolution: Size,
+    val resolution: Size = Size(1280, 720),
     /**
      * Video framerate.
      * This is a best effort as few camera can not generate a fixed framerate.
      */
-    val fps: Int,
+    val fps: Int = 30,
     /**
      * Video encoder profile. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile.
      * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
      */
-    val profile: Int,
+    val profile: Int = getDefaultProfile(mimeType),
     /**
      * Video encoder level. Encoders may not support requested level. In this case, StreamPack fallbacks to default level.
      * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
      */
-    val level: Int,
+    val level: Int = getDefaultLevel(mimeType)
 ) : Config(mimeType, startBitrate) {
     init {
         require(mimeType.isVideo()) { "MimeType must be video" }
@@ -83,94 +81,24 @@ class VideoConfig(
         }
     }
 
-    /**
-     * Builder class for [VideoConfig] objects. Use this class to configure and create an [VideoConfig] instance.
-     */
-    data class Builder(
-        private var mimeType: String = MediaFormat.MIMETYPE_VIDEO_AVC,
-        private var startBitrate: Int = 2000000,
-        private var resolution: Size = Size(1280, 720),
-        private var fps: Int = 30,
-        private var profile: Int = getDefaultProfile(mimeType),
-        private var level: Int = getDefaultLevel(mimeType)
-    ) {
-        companion object {
-            private fun getDefaultProfile(mimeType: String) =
-                when (mimeType) {
-                    MediaFormat.MIMETYPE_VIDEO_AVC -> CodecProfileLevel.AVCProfileHigh
-                    MediaFormat.MIMETYPE_VIDEO_HEVC -> CodecProfileLevel.HEVCProfileMain
-                    else -> throw IOException("Not supported mime type: $mimeType")
-                }
-
-
-            private fun getDefaultLevel(mimeType: String) = when (mimeType) {
-                MediaFormat.MIMETYPE_VIDEO_AVC -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    CodecProfileLevel.AVCLevel62
-                } else {
-                    CodecProfileLevel.AVCLevel52
-                }
-                MediaFormat.MIMETYPE_VIDEO_HEVC -> CodecProfileLevel.HEVCMainTierLevel62
+    companion object {
+        private fun getDefaultProfile(mimeType: String) =
+            when (mimeType) {
+                MediaFormat.MIMETYPE_VIDEO_AVC -> CodecProfileLevel.AVCProfileHigh
+                MediaFormat.MIMETYPE_VIDEO_HEVC -> CodecProfileLevel.HEVCProfileMain
                 else -> throw IOException("Not supported mime type: $mimeType")
             }
+
+
+        private fun getDefaultLevel(mimeType: String) = when (mimeType) {
+            MediaFormat.MIMETYPE_VIDEO_AVC -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                CodecProfileLevel.AVCLevel62
+            } else {
+                CodecProfileLevel.AVCLevel52
+            }
+            MediaFormat.MIMETYPE_VIDEO_HEVC -> CodecProfileLevel.HEVCMainTierLevel62
+            else -> throw IOException("Not supported mime type: $mimeType")
         }
-
-        /**
-         * Set video encoder mime type.
-         * Get supported video encoder mime type with [IVideoConfigurationHelper.supportedEncoders] with [IConfigurationHelper.video].
-         * Warning: It resets profile and level.
-         *
-         * @param mimeType video encoder mime type from [MediaFormat MIMETYPE_VIDEO_*](https://developer.android.com/reference/android/media/MediaFormat)
-         */
-        fun setMimeType(mimeType: String) = apply {
-            this.mimeType = mimeType
-            this.profile = getDefaultProfile(mimeType)
-            this.level = getDefaultLevel(mimeType)
-        }
-
-        /**
-         * Set video encoder bitrate.
-         *
-         * @param startBitrate video encoder bitrate in bits/s.
-         */
-        fun setStartBitrate(startBitrate: Int) = apply { this.startBitrate = startBitrate }
-
-        /**
-         * Set video resolution.
-         *
-         * @param resolution video resolution
-         */
-        fun setResolution(resolution: Size) = apply { this.resolution = resolution }
-
-        /**
-         * Set video frame rate.
-         *
-         * @param fps video frame rate
-         */
-        fun setFps(fps: Int) = apply { this.fps = fps }
-
-        /**
-         * Set encoder profile.
-         * Warning: It is reset by [setMimeType]. Always call [setEncoderProfile] after [setMimeType].
-         *
-         * @param profile encoder profile from [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
-         */
-        fun setEncoderProfile(profile: Int) = apply { this.profile = profile }
-
-        /**
-         * Set encoder level.
-         * Warning: It is reset by [setMimeType]. Always call [setEncoderLevel] after [setMimeType].
-         *
-         * @param level encoder level from [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
-         */
-        fun setEncoderLevel(level: Int) = apply { this.level = level }
-
-        /**
-         * Combines all of the characteristics that have been set and return a new [VideoConfig] object.
-         *
-         * @return a new [VideoConfig] object
-         */
-        fun build() =
-            VideoConfig(mimeType, startBitrate, resolution, fps, profile, level)
     }
 }
 

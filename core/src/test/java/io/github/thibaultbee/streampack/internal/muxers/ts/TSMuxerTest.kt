@@ -36,12 +36,9 @@ class TSMuxerTest {
 
     @Test
     fun `add streams in constructor test`() {
-        val vStreamConfig1 =
-            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_AVC).build()
-        val vStreamConfig2 =
-            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_HEVC).build()
-        val aStreamConfig =
-            AudioConfig.Builder().setMimeType(MediaFormat.MIMETYPE_AUDIO_AAC).build()
+        val vStreamConfig1 = VideoConfig(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC)
+        val vStreamConfig2 = VideoConfig(mimeType = MediaFormat.MIMETYPE_VIDEO_HEVC)
+        val aStreamConfig = AudioConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
         val tsMux =
             TSMuxer(
                 MockMuxerListener(),
@@ -61,12 +58,9 @@ class TSMuxerTest {
 
     @Test
     fun `add streams test`() {
-        val vStreamConfig1 =
-            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_AVC).build()
-        val vStreamConfig2 =
-            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_HEVC).build()
-        val aStreamConfig =
-            AudioConfig.Builder().setMimeType(MediaFormat.MIMETYPE_AUDIO_AAC).build()
+        val vStreamConfig1 = VideoConfig(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC)
+        val vStreamConfig2 = VideoConfig(mimeType = MediaFormat.MIMETYPE_VIDEO_HEVC)
+        val aStreamConfig = AudioConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
         val tsMux = TSMuxer(MockMuxerListener(), createFakeServiceInfo())
         tsMux.addStreams(
             createFakeServiceInfo(),
@@ -80,12 +74,9 @@ class TSMuxerTest {
 
     @Test
     fun `constructor with streams and no service test`() {
-        val vStreamConfig1 =
-            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_AVC).build()
-        val vStreamConfig2 =
-            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_HEVC).build()
-        val aStreamConfig =
-            AudioConfig.Builder().setMimeType(MediaFormat.MIMETYPE_AUDIO_AAC).build()
+        val vStreamConfig1 = VideoConfig(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC)
+        val vStreamConfig2 = VideoConfig(mimeType = MediaFormat.MIMETYPE_VIDEO_HEVC)
+        val aStreamConfig = AudioConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
         try {
             TSMuxer(
                 MockMuxerListener(),
@@ -109,12 +100,9 @@ class TSMuxerTest {
 
     @Test
     fun `remove existing service test`() {
-        val vStreamConfig1 =
-            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_AVC).build()
-        val vStreamConfig2 =
-            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_HEVC).build()
-        val aStreamConfig =
-            AudioConfig.Builder().setMimeType(MediaFormat.MIMETYPE_AUDIO_AAC).build()
+        val vStreamConfig1 = VideoConfig(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC)
+        val vStreamConfig2 = VideoConfig(mimeType = MediaFormat.MIMETYPE_VIDEO_HEVC)
+        val aStreamConfig = AudioConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
         val tsMux =
             TSMuxer(
                 MockMuxerListener(),
@@ -139,12 +127,9 @@ class TSMuxerTest {
 
     @Test
     fun `remove streams test `() {
-        val vStreamConfig1 =
-            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_AVC).build()
-        val vStreamConfig2 =
-            VideoConfig.Builder().setMimeType(MediaFormat.MIMETYPE_VIDEO_HEVC).build()
-        val aStreamConfig =
-            AudioConfig.Builder().setMimeType(MediaFormat.MIMETYPE_AUDIO_AAC).build()
+        val vStreamConfig1 = VideoConfig(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC)
+        val vStreamConfig2 = VideoConfig(mimeType = MediaFormat.MIMETYPE_VIDEO_HEVC)
+        val aStreamConfig = AudioConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
         val tsMux =
             TSMuxer(
                 MockMuxerListener(),
@@ -189,7 +174,7 @@ class TSMuxerTest {
 
     @Test
     fun `encode h264 frame test`() {
-        val config = VideoConfig.Builder().build()
+        val config = VideoConfig(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC)
         val tsMux = TSMuxer(MockMuxerListener(), createFakeServiceInfo())
         val streamPid =
             tsMux.addStreams(createFakeServiceInfo(), listOf(config))[config]!!
@@ -205,7 +190,7 @@ class TSMuxerTest {
 
     @Test
     fun `encode aac frame test`() {
-        val config = AudioConfig.Builder().build()
+        val config = AudioConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
         val tsMux = TSMuxer(MockMuxerListener(), createFakeServiceInfo())
         val streamPid =
             tsMux.addStreams(createFakeServiceInfo(), listOf(config))[config]!!

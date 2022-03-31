@@ -111,23 +111,22 @@ class StreamerFactory(
     fun build(): IStreamer {
         val streamer = createStreamer(context)
 
-        val videoConfig = VideoConfig.Builder()
-            .setMimeType(configuration.video.encoder)
-            .setStartBitrate(configuration.video.bitrate * 1000)  // to b/s
-            .setResolution(configuration.video.resolution)
-            .setFps(configuration.video.fps)
-            .build()
+        val videoConfig = VideoConfig(
+            mimeType = configuration.video.encoder,
+            startBitrate = configuration.video.bitrate * 1000, // to b/s
+            resolution = configuration.video.resolution,
+            fps = configuration.video.fps
+        )
 
-        val audioConfig = AudioConfig.Builder()
-            .setMimeType(configuration.audio.encoder)
-            .setStartBitrate(configuration.audio.bitrate)
-            .setSampleRate(configuration.audio.sampleRate)
-            .setNumberOfChannel(configuration.audio.numberOfChannels)
-            .setByteFormat(configuration.audio.byteFormat)
-            .setEchoCanceler(configuration.audio.enableEchoCanceler)
-            .setNoiseSuppressor(configuration.audio.enableNoiseSuppressor)
-            .build()
-
+        val audioConfig = AudioConfig(
+            mimeType = configuration.audio.encoder,
+            startBitrate = configuration.audio.bitrate,
+            sampleRate = configuration.audio.sampleRate,
+            channelConfig = AudioConfig.getChannelConfig(configuration.audio.numberOfChannels),
+            byteFormat = configuration.audio.byteFormat,
+            enableEchoCanceler = configuration.audio.enableEchoCanceler,
+            enableNoiseSuppressor = configuration.audio.enableNoiseSuppressor
+        )
 
         streamer.configure(audioConfig, videoConfig)
 

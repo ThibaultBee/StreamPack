@@ -15,10 +15,7 @@
  */
 package io.github.thibaultbee.streampack.utils
 
-import android.media.AudioFormat
-import android.media.MediaCodecInfo
 import android.media.MediaFormat
-import android.util.Size
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
@@ -42,15 +39,7 @@ object AndroidUtils {
      *
      * @return a [AudioConfig] for test
      */
-    fun fakeValidAudioConfig() = AudioConfig(
-        mimeType = MediaFormat.MIMETYPE_AUDIO_AAC,
-        startBitrate = Random.nextInt(),
-        sampleRate = 44100,
-        channelConfig = AudioFormat.CHANNEL_IN_MONO,
-        byteFormat = AudioFormat.ENCODING_PCM_16BIT,
-        enableEchoCanceler = true,
-        enableNoiseSuppressor = true
-    )
+    fun fakeValidAudioConfig() = AudioConfig()
 
     /**
      * Generates an invalid audio configuration for test
@@ -58,13 +47,7 @@ object AndroidUtils {
      * @return a [AudioConfig] for test
      */
     fun fakeInvalidAudioConfig() = AudioConfig(
-        mimeType = MediaFormat.MIMETYPE_VIDEO_AVC, // Video instead of audio
-        startBitrate = Random.nextInt(),
-        sampleRate = 44100,
-        channelConfig = AudioFormat.CHANNEL_IN_MONO,
-        byteFormat = AudioFormat.ENCODING_PCM_16BIT,
-        enableEchoCanceler = true,
-        enableNoiseSuppressor = true
+        mimeType = MediaFormat.MIMETYPE_VIDEO_AVC // Video instead of audio
     )
 
     /**
@@ -72,14 +55,8 @@ object AndroidUtils {
      *
      * @return a [VideoConfig] for test
      */
-    fun fakeValidVideoConfig() = VideoConfig(
-        mimeType = MediaFormat.MIMETYPE_VIDEO_AVC,
-        startBitrate = Random.nextInt(),
-        resolution = Size(1280, 720),
-        fps = 30,
-        profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
-        level = MediaCodecInfo.CodecProfileLevel.AVCLevel52
-    )
+    fun fakeValidVideoConfig() = VideoConfig()
+
 
     /**
      * Generates an invalid video configuration for test
@@ -87,11 +64,6 @@ object AndroidUtils {
      * @return a [VideoConfig] for test
      */
     fun fakeInvalidVideoConfig() = VideoConfig(
-        mimeType = MediaFormat.MIMETYPE_AUDIO_AAC, // Audio instead of video
-        startBitrate = Random.nextInt(),
-        resolution = Size(1280, 720),
-        fps = 30,
-        profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
-        level = MediaCodecInfo.CodecProfileLevel.AVCLevel52
+        mimeType = MediaFormat.MIMETYPE_AUDIO_AAC // Audio instead of video
     )
 }
