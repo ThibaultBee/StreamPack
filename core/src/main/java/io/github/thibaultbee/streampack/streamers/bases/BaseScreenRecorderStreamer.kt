@@ -26,6 +26,7 @@ import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioCapture
 import io.github.thibaultbee.streampack.internal.sources.screen.ScreenCapture
 import io.github.thibaultbee.streampack.logger.ILogger
+import io.github.thibaultbee.streampack.logger.StreamPackLogger
 
 /**
  * A [BaseStreamer] that sends microphone and screen frames.
@@ -39,14 +40,15 @@ import io.github.thibaultbee.streampack.logger.ILogger
  */
 open class BaseScreenRecorderStreamer(
     context: Context,
-    logger: ILogger,
-    enableAudio: Boolean,
+    logger: ILogger = StreamPackLogger(),
+    enableAudio: Boolean = true,
     muxer: IMuxer,
     endpoint: IEndpoint,
 ) : BaseStreamer(
     context = context,
     videoCapture = ScreenCapture(context, logger = logger),
     audioCapture = if (enableAudio) AudioCapture(logger) else null,
+    manageVideoOrientation = false,
     muxer = muxer,
     endpoint = endpoint,
     logger = logger
@@ -96,6 +98,4 @@ open class BaseScreenRecorderStreamer(
         screenCapture.encoderSurface = videoEncoder?.inputSurface
         super.startStream()
     }
-
-    abstract class Builder : BaseStreamer.Builder()
 }

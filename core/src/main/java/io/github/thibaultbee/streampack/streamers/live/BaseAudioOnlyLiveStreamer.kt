@@ -23,6 +23,7 @@ import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioCapture
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.logger.ILogger
+import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 
@@ -36,7 +37,7 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  */
 open class BaseAudioOnlyLiveStreamer(
     context: Context,
-    logger: ILogger,
+    logger: ILogger = StreamPackLogger(),
     muxer: IMuxer,
     endpoint: ILiveEndpoint
 ) : BaseStreamer(
@@ -44,6 +45,7 @@ open class BaseAudioOnlyLiveStreamer(
     logger = logger,
     videoCapture = null,
     audioCapture = AudioCapture(logger),
+    manageVideoOrientation = false,
     muxer = muxer,
     endpoint = endpoint
 ), ILiveStreamer {
@@ -89,57 +91,5 @@ open class BaseAudioOnlyLiveStreamer(
     override suspend fun startStream(url: String) {
         connect(url)
         startStream()
-    }
-
-    abstract class Builder : BaseStreamer.Builder() {
-        protected lateinit var endpoint: ILiveEndpoint
-        private var connectionListener: OnConnectionListener? = null
-
-        /**
-         * Disable audio. Do not use.
-         */
-        override fun disableAudio(): Builder {
-            throw UnsupportedOperationException("Do not disable audio on audio only streamer")
-        }
-
-        /**
-         * Set connection listener.
-         *
-         * @param listener a [OnConnectionListener] implementation
-         */
-        open fun setConnectionListener(listener: OnConnectionListener) =
-            apply { this.connectionListener = listener }
-
-        /**
-         * Set the live endpoint.
-         * Mandatory.
-         *
-         * @param endpoint a [ILiveEndpoint] implementation
-         */
-        protected fun setLiveEndpointImpl(endpoint: ILiveEndpoint) =
-            apply { this.endpoint = endpoint }
-
-        /**
-         * Combines all of the characteristics that have been set and return a new
-         * generic [BaseAudioOnlyLiveStreamer] object.
-         *
-         * @return a new generic [BaseAudioOnlyLiveStreamer] object
-         */
-        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
-        override fun build(): BaseAudioOnlyLiveStreamer {
-            return BaseAudioOnlyLiveStreamer(
-                context,
-                logger,
-                muxer,
-                endpoint
-            )
-                .also { streamer ->
-                    streamer.onErrorListener = errorListener
-                    streamer.onConnectionListener = connectionListener
-
-                    streamer.configure(audioConfig)
-                }
-        }
-
     }
 }

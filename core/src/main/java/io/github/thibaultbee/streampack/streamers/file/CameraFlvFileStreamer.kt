@@ -15,19 +15,10 @@
  */
 package io.github.thibaultbee.streampack.streamers.file
 
-import android.Manifest
 import android.content.Context
-import android.view.Surface
-import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.data.AudioConfig
-import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxer
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.logger.StreamPackLogger
-import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IFileStreamerBuilder
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerPreviewBuilder
 import java.io.File
 
 /**
@@ -39,29 +30,11 @@ import java.io.File
  */
 class CameraFlvFileStreamer(
     context: Context,
-    logger: ILogger,
-    enableAudio: Boolean,
+    logger: ILogger = StreamPackLogger(),
+    enableAudio: Boolean = true,
 ) : BaseCameraFileStreamer(
     context = context,
     logger = logger,
     muxer = FlvMuxer(context = context, writeToFile = true),
     enableAudio = enableAudio
-) {
-    /**
-     * Builder class for [BaseCameraFileStreamer] objects. Use this class to configure and create
-     * a specific [BaseCameraFileStreamer] instance for FLV.
-     */
-     class Builder: BaseCameraFileStreamer.Builder() {
-        /**
-         * Combines all of the characteristics that have been set and return a new
-         * [BaseCameraFileStreamer] object specific for FLV.
-         *
-         * @return a new [BaseCameraFileStreamer] object specific for FLV
-         */
-        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-        override fun build(): BaseCameraFileStreamer {
-            setMuxerImpl(FlvMuxer(context = context, writeToFile = true))
-            return super.build()
-        }
-    }
-}
+)

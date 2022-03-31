@@ -15,11 +15,10 @@
  */
 package io.github.thibaultbee.streampack.streamers.file
 
-import android.Manifest
 import android.content.Context
-import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxer
 import io.github.thibaultbee.streampack.logger.ILogger
+import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import java.io.File
 
 /**
@@ -30,27 +29,9 @@ import java.io.File
  */
 class AudioOnlyFlvFileStreamer(
     context: Context,
-    logger: ILogger
+    logger: ILogger = StreamPackLogger()
 ) : BaseAudioOnlyFileStreamer(
     context = context,
     logger = logger,
     muxer = FlvMuxer(context = context, writeToFile = true),
-) {
-    /**
-     * Builder class for [BaseAudioOnlyFileStreamer] objects. Use this class to configure and create
-     * a specific [BaseAudioOnlyFileStreamer] instance for FLV.
-     */
-    class Builder : BaseAudioOnlyFileStreamer.Builder() {
-        /**
-         * Combines all of the characteristics that have been set and return a new
-         * [BaseAudioOnlyFileStreamer] object specific for FLV.
-         *
-         * @return a new [BaseAudioOnlyFileStreamer] object specific for FLV
-         */
-        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
-        override fun build(): BaseAudioOnlyFileStreamer {
-            setMuxerImpl(FlvMuxer(context = context, writeToFile = true))
-            return super.build()
-        }
-    }
-}
+)

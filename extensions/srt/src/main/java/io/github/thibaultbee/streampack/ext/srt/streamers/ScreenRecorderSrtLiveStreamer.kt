@@ -15,23 +15,20 @@
  */
 package io.github.thibaultbee.streampack.ext.srt.streamers
 
-import android.Manifest
 import android.app.Service
 import android.content.Context
-import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.data.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.ext.srt.internal.endpoints.SrtProducer
-import io.github.thibaultbee.streampack.ext.srt.regulator.srt.DefaultSrtBitrateRegulatorFactory
 import io.github.thibaultbee.streampack.ext.srt.regulator.srt.SrtBitrateRegulator
+import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
+import io.github.thibaultbee.streampack.utils.Utils
 import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.internal.utils.Scheduler
 import io.github.thibaultbee.streampack.logger.ILogger
+import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.regulator.IBitrateRegulatorFactory
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
-import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IAdaptiveLiveStreamerBuilder
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.ITsStreamerBuilder
 import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStreamer
 
 /**
@@ -49,11 +46,11 @@ import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStr
  */
 class ScreenRecorderSrtLiveStreamer(
     context: Context,
-    logger: ILogger,
-    enableAudio: Boolean,
-    tsServiceInfo: TsServiceInfo,
-    bitrateRegulatorFactory: IBitrateRegulatorFactory?,
-    bitrateRegulatorConfig: BitrateRegulatorConfig?,
+    logger: ILogger = StreamPackLogger(),
+    enableAudio: Boolean = true,
+    tsServiceInfo: TsServiceInfo = Utils.defaultTsServiceInfo,
+    bitrateRegulatorFactory: IBitrateRegulatorFactory? = null,
+    bitrateRegulatorConfig: BitrateRegulatorConfig? = null,
 ) : BaseScreenRecorderLiveStreamer(
     context = context,
     logger = logger,
@@ -170,86 +167,5 @@ class ScreenRecorderSrtLiveStreamer(
     override fun stopStream() {
         scheduler.cancel()
         super.stopStream()
-    }
-
-    /**
-     * Builder class for [ScreenRecorderSrtLiveStreamer] objects. Use this class to configure and create an [ScreenRecorderSrtLiveStreamer] instance.
-     */
-    class Builder : BaseScreenRecorderLiveStreamer.Builder(), ITsStreamerBuilder,
-        IAdaptiveLiveStreamerBuilder {
-        private lateinit var tsServiceInfo: TsServiceInfo
-        private var streamId: String? = null
-        private var passPhrase: String? = null
-        private var bitrateRegulatorFactory: IBitrateRegulatorFactory? = null
-        private var bitrateRegulatorConfig: BitrateRegulatorConfig? = null
-
-        /**
-         * Set TS service info. It is mandatory to set TS service info.
-         *
-         * @param tsServiceInfo TS service info.
-         */
-        override fun setServiceInfo(tsServiceInfo: TsServiceInfo) =
-            apply { this.tsServiceInfo = tsServiceInfo }
-
-        /**
-         * Set SRT stream id.
-         *
-         * @param streamId string describing SRT stream id
-         */
-        override fun setStreamId(streamId: String) = apply {
-            this.streamId = streamId
-        }
-
-        /**
-         * Set SRT passphrase.
-         *
-         * @param passPhrase string describing SRT pass phrase
-         */
-        override fun setPassPhrase(passPhrase: String) = apply {
-            this.passPhrase = passPhrase
-        }
-
-        /**
-         * Set SRT bitrate regulator class and configuration.
-         *
-         * @param bitrateRegulatorFactory bitrate regulator factory. If you don't want to implement your own bitrate regulator, use [DefaultSrtBitrateRegulatorFactory]
-         * @param bitrateRegulatorConfig bitrate regulator configuration.
-         */
-        override fun setBitrateRegulator(
-            bitrateRegulatorFactory: IBitrateRegulatorFactory?,
-            bitrateRegulatorConfig: BitrateRegulatorConfig?
-        ) = apply {
-            this.bitrateRegulatorFactory = bitrateRegulatorFactory
-            this.bitrateRegulatorConfig = bitrateRegulatorConfig
-        }
-
-        /**
-         * Combines all of the characteristics that have been set and return a new [ScreenRecorderSrtLiveStreamer] object.
-         *
-         * @return a new [ScreenRecorderSrtLiveStreamer] object
-         */
-        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
-        override fun build(): ScreenRecorderSrtLiveStreamer {
-            return ScreenRecorderSrtLiveStreamer(
-                context,
-                logger,
-                enableAudio,
-                tsServiceInfo,
-                bitrateRegulatorFactory,
-                bitrateRegulatorConfig
-            ).also { streamer ->
-                if (videoConfig != null) {
-                    streamer.configure(audioConfig, videoConfig!!)
-                }
-
-                streamId?.let {
-                    streamer.streamId = it
-                }
-
-                passPhrase?.let {
-                    streamer.passPhrase = it
-                }
-            }
-        }
     }
 }

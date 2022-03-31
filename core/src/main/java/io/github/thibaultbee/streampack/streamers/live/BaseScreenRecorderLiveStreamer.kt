@@ -22,6 +22,7 @@ import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.logger.ILogger
+import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 
@@ -36,8 +37,8 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  */
 open class BaseScreenRecorderLiveStreamer(
     context: Context,
-    logger: ILogger,
-    enableAudio: Boolean,
+    logger: ILogger = StreamPackLogger(),
+    enableAudio: Boolean = true,
     muxer: IMuxer,
     endpoint: ILiveEndpoint
 ) : BaseScreenRecorderStreamer(
@@ -90,51 +91,5 @@ open class BaseScreenRecorderLiveStreamer(
     override suspend fun startStream(url: String) {
         connect(url)
         startStream()
-    }
-
-    abstract class Builder : BaseScreenRecorderStreamer.Builder() {
-        protected lateinit var endpoint: ILiveEndpoint
-        private var connectionListener: OnConnectionListener? = null
-
-        /**
-         * Set the connection listener.
-         *
-         * @param listener a [OnConnectionListener] implementation
-         */
-        fun setConnectionListener(listener: OnConnectionListener) =
-            apply { this.connectionListener = listener }
-
-        /**
-         * Set live endpoint.
-         * Mandatory.
-         *
-         * @param endpoint a [ILiveEndpoint] implementation
-         */
-        protected fun setLiveEndpointImpl(endpoint: ILiveEndpoint) =
-            apply { this.endpoint = endpoint }
-
-        /**
-         * Combines all of the characteristics that have been set and return a new
-         * generic [BaseScreenRecorderLiveStreamer] object.
-         *
-         * @return a new generic [BaseScreenRecorderLiveStreamer] object
-         */
-        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
-        override fun build(): BaseScreenRecorderLiveStreamer {
-            return BaseScreenRecorderLiveStreamer(
-                context,
-                logger,
-                enableAudio,
-                muxer,
-                endpoint
-            ).also { streamer ->
-                streamer.onErrorListener = errorListener
-                streamer.onConnectionListener = connectionListener
-
-                if (videoConfig != null) {
-                    streamer.configure(audioConfig, videoConfig!!)
-                }
-            }
-        }
     }
 }

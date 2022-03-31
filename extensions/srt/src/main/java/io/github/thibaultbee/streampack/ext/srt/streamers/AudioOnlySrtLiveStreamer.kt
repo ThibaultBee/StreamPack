@@ -15,16 +15,14 @@
  */
 package io.github.thibaultbee.streampack.ext.srt.streamers
 
-import android.Manifest
 import android.content.Context
-import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.ext.srt.internal.endpoints.SrtProducer
+import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
+import io.github.thibaultbee.streampack.utils.Utils
 import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.ISrtLiveStreamerBuilder
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.ITsStreamerBuilder
+import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
 
 /**
@@ -37,8 +35,8 @@ import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
  */
 class AudioOnlySrtLiveStreamer(
     context: Context,
-    tsServiceInfo: TsServiceInfo,
-    logger: ILogger
+    tsServiceInfo: TsServiceInfo = Utils.defaultTsServiceInfo,
+    logger: ILogger = StreamPackLogger()
 ) : BaseAudioOnlyLiveStreamer(
     context = context,
     logger = logger,
@@ -106,67 +104,5 @@ class AudioOnlySrtLiveStreamer(
     override suspend fun startStream(ip: String, port: Int) {
         connect(ip, port)
         startStream()
-    }
-
-    /**
-     * Builder class for [AudioOnlySrtLiveStreamer] objects. Use this class to configure and create
-     * an [AudioOnlySrtLiveStreamer] instance.
-     */
-    class Builder : BaseAudioOnlyLiveStreamer.Builder(), ITsStreamerBuilder, ISrtLiveStreamerBuilder {
-        private lateinit var tsServiceInfo: TsServiceInfo
-        private var streamId: String? = null
-        private var passPhrase: String? = null
-
-        /**
-         * Set TS service info. It is mandatory to set TS service info.
-         * Mandatory.
-         *
-         * @param tsServiceInfo TS service info.
-         */
-        override fun setServiceInfo(tsServiceInfo: TsServiceInfo) =
-            apply { this.tsServiceInfo = tsServiceInfo }
-
-        /**
-         * Set SRT stream id.
-         *
-         * @param streamId string describing SRT stream id
-         */
-        override fun setStreamId(streamId: String) = apply {
-            this.streamId = streamId
-        }
-
-        /**
-         * Set SRT passphrase.
-         *
-         * @param passPhrase string describing SRT pass phrase
-         */
-        override fun setPassPhrase(passPhrase: String) = apply {
-            this.passPhrase = passPhrase
-        }
-
-        /**
-         * Combines all of the characteristics that have been set and return a new
-         * [AudioOnlySrtLiveStreamer] object.
-         *
-         * @return a new [AudioOnlySrtLiveStreamer] object
-         */
-        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
-        override fun build(): AudioOnlySrtLiveStreamer {
-            return AudioOnlySrtLiveStreamer(
-                context,
-                tsServiceInfo,
-                logger
-            ).also { streamer ->
-                streamer.configure(audioConfig)
-
-                streamId?.let {
-                    streamer.streamId = it
-                }
-
-                passPhrase?.let {
-                    streamer.passPhrase = it
-                }
-            }
-        }
     }
 }
