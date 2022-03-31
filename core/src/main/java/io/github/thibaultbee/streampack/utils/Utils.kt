@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Thibault B.
+ * Copyright (C) 2022 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.streamers.interfaces.builders
+package io.github.thibaultbee.streampack.utils
 
-import java.io.File
+import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 
-interface IFileStreamerBuilder {
-    /**
-     * Set destination file.
-     *
-     * @param file where to write date
-     */
-    fun setFile(file: File): IFileStreamerBuilder
+object Utils {
+    val defaultTsServiceInfo = TsServiceInfo(
+        TsServiceInfo.ServiceType.DIGITAL_TV,
+        0x4698,
+        "StreamPack",
+        "Thibault B."
+    )
 }

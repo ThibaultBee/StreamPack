@@ -22,85 +22,94 @@ import io.github.thibaultbee.streampack.app.models.EndpointType
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.data.VideoConfig
-import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
+import io.github.thibaultbee.streampack.ext.rtmp.streamers.AudioOnlyRtmpLiveStreamer
+import io.github.thibaultbee.streampack.ext.rtmp.streamers.CameraRtmpLiveStreamer
 import io.github.thibaultbee.streampack.ext.srt.regulator.srt.DefaultSrtBitrateRegulatorFactory
+import io.github.thibaultbee.streampack.ext.srt.streamers.AudioOnlySrtLiveStreamer
+import io.github.thibaultbee.streampack.ext.srt.streamers.CameraSrtLiveStreamer
+import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
+import io.github.thibaultbee.streampack.regulator.IBitrateRegulatorFactory
 import io.github.thibaultbee.streampack.streamers.file.AudioOnlyFlvFileStreamer
 import io.github.thibaultbee.streampack.streamers.file.AudioOnlyTsFileStreamer
 import io.github.thibaultbee.streampack.streamers.file.CameraFlvFileStreamer
 import io.github.thibaultbee.streampack.streamers.file.CameraTsFileStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IAdaptiveLiveStreamerBuilder
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.ITsStreamerBuilder
-import io.github.thibaultbee.streampack.ext.rtmp.streamers.AudioOnlyRtmpLiveStreamer
-import io.github.thibaultbee.streampack.ext.rtmp.streamers.CameraRtmpLiveStreamer
-import io.github.thibaultbee.streampack.ext.srt.streamers.AudioOnlySrtLiveStreamer
-import io.github.thibaultbee.streampack.ext.srt.streamers.CameraSrtLiveStreamer
 
 class StreamerFactory(
     private val context: Context,
     private val configuration: Configuration,
 ) {
-    private fun createTsServiceInfo(): TsServiceInfo {
-        return TsServiceInfo(
+    private val enableAudio: Boolean
+        get() = configuration.audio.enable
+
+    private val tsServiceInfo: TsServiceInfo
+        get() = TsServiceInfo(
             TsServiceInfo.ServiceType.DIGITAL_TV,
             0x4698,
             configuration.muxer.service,
             configuration.muxer.provider
         )
-    }
 
-    private fun createStreamerBuilder(): IStreamerBuilder {
+    private val bitrateRegulatorFactory: IBitrateRegulatorFactory?
+        get() = if (configuration.endpoint.srt.enableBitrateRegulation) {
+            DefaultSrtBitrateRegulatorFactory()
+        } else {
+            null
+        }
+
+    private val bitrateRegulatorConfig: BitrateRegulatorConfig?
+        get() = if (configuration.endpoint.srt.enableBitrateRegulation) {
+            BitrateRegulatorConfig(
+                configuration.endpoint.srt.videoBitrateRange,
+                Range(configuration.audio.bitrate, configuration.audio.bitrate)
+            )
+        } else {
+            null
+        }
+
+
+    private fun createStreamer(context: Context): IStreamer {
         return if (configuration.video.enable) {
             when (configuration.endpoint.endpointType) {
-                EndpointType.TS_FILE -> CameraTsFileStreamer.Builder()
-                EndpointType.FLV_FILE -> CameraFlvFileStreamer.Builder()
-                EndpointType.SRT -> CameraSrtLiveStreamer.Builder()
-                EndpointType.RTMP -> CameraRtmpLiveStreamer.Builder()
+                EndpointType.TS_FILE -> CameraTsFileStreamer(
+                    context,
+                    enableAudio = enableAudio,
+                    tsServiceInfo = tsServiceInfo
+                )
+                EndpointType.FLV_FILE -> CameraFlvFileStreamer(
+                    context,
+                    enableAudio = enableAudio
+                )
+                EndpointType.SRT -> CameraSrtLiveStreamer(
+                    context,
+                    enableAudio = enableAudio,
+                    tsServiceInfo = tsServiceInfo,
+                    bitrateRegulatorFactory = bitrateRegulatorFactory,
+                    bitrateRegulatorConfig = bitrateRegulatorConfig
+                )
+                EndpointType.RTMP -> CameraRtmpLiveStreamer(
+                    context,
+                    enableAudio = enableAudio
+                )
             }
         } else {
             when (configuration.endpoint.endpointType) {
-                EndpointType.TS_FILE -> AudioOnlyTsFileStreamer.Builder()
-                EndpointType.FLV_FILE -> AudioOnlyFlvFileStreamer.Builder()
-                EndpointType.SRT -> AudioOnlySrtLiveStreamer.Builder()
-                EndpointType.RTMP -> AudioOnlyRtmpLiveStreamer.Builder()
+                EndpointType.TS_FILE -> AudioOnlyTsFileStreamer(
+                    context,
+                    tsServiceInfo = tsServiceInfo
+                )
+                EndpointType.FLV_FILE -> AudioOnlyFlvFileStreamer(context)
+                EndpointType.SRT -> AudioOnlySrtLiveStreamer(
+                    context,
+                    tsServiceInfo = tsServiceInfo
+                )
+                EndpointType.RTMP -> AudioOnlyRtmpLiveStreamer(context)
             }
         }
     }
 
     fun build(): IStreamer {
-        val streamerBuilder = createStreamerBuilder()
-
-        if (streamerBuilder is IAdaptiveLiveStreamerBuilder) {
-            streamerBuilder.setBitrateRegulator(
-                if (configuration.endpoint.srt.enableBitrateRegulation) {
-                    DefaultSrtBitrateRegulatorFactory()
-                } else {
-                    null
-                },
-                if (configuration.endpoint.srt.enableBitrateRegulation) {
-                    BitrateRegulatorConfig.Builder()
-                        .setVideoBitrateRange(configuration.endpoint.srt.videoBitrateRange)
-                        .setAudioBitrateRange(
-                            Range(
-                                configuration.audio.bitrate,
-                                configuration.audio.bitrate
-                            )
-                        )
-                        .build()
-                } else {
-                    null
-                },
-            )
-        }
-
-        if (streamerBuilder is ITsStreamerBuilder) {
-            streamerBuilder.setServiceInfo(createTsServiceInfo())
-        }
-
-        if (!configuration.audio.enable) {
-            streamerBuilder.disableAudio()
-        }
+        val streamer = createStreamer(context)
 
         val videoConfig = VideoConfig.Builder()
             .setMimeType(configuration.video.encoder)
@@ -120,9 +129,8 @@ class StreamerFactory(
             .build()
 
 
-        return streamerBuilder
-            .setContext(context)
-            .setConfiguration(audioConfig, videoConfig)
-            .build()
+        streamer.configure(audioConfig, videoConfig)
+
+        return streamer
     }
 }

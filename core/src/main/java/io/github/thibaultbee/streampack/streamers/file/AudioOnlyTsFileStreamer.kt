@@ -15,14 +15,12 @@
  */
 package io.github.thibaultbee.streampack.streamers.file
 
-import android.Manifest
 import android.content.Context
-import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.ITsStreamerBuilder
+import io.github.thibaultbee.streampack.logger.StreamPackLogger
+import io.github.thibaultbee.streampack.utils.Utils
 import java.io.File
 
 /**
@@ -34,39 +32,10 @@ import java.io.File
  */
 class AudioOnlyTsFileStreamer(
     context: Context,
-    logger: ILogger,
-    tsServiceInfo: TsServiceInfo
+    logger: ILogger = StreamPackLogger(),
+    tsServiceInfo: TsServiceInfo = Utils.defaultTsServiceInfo
 ) : BaseAudioOnlyFileStreamer(
     context = context,
     logger = logger,
     muxer = TSMuxer().apply { addService(tsServiceInfo) }
-) {
-    /**
-     * Builder class for [BaseAudioOnlyFileStreamer] objects. Use this class to configure and create
-     * a specific [BaseAudioOnlyFileStreamer] instance for MPEG-TS.
-     */
-    class Builder : BaseAudioOnlyFileStreamer.Builder(), ITsStreamerBuilder {
-        private lateinit var tsServiceInfo: TsServiceInfo
-
-        /**
-         * Set MPEG-TS service info. It is mandatory to set MPEG-TS service info.
-         * Mandatory.
-         *
-         * @param tsServiceInfo MPEG-TS service info.
-         */
-        override fun setServiceInfo(tsServiceInfo: TsServiceInfo) =
-            apply { this.tsServiceInfo = tsServiceInfo }
-
-        /**
-         * Combines all of the characteristics that have been set and return a new
-         * [BaseAudioOnlyFileStreamer] object specific for MPEG-TS.
-         *
-         * @return a new [BaseAudioOnlyFileStreamer] object specific for MPEG-TS.
-         */
-        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
-        override fun build(): BaseAudioOnlyFileStreamer {
-            setMuxerImpl(TSMuxer().apply { addService(tsServiceInfo) })
-            return super.build()
-        }
-    }
-}
+)

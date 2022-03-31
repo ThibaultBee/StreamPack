@@ -15,12 +15,11 @@
  */
 package io.github.thibaultbee.streampack.ext.rtmp.streamers
 
-import android.Manifest
 import android.content.Context
-import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.RtmpProducer
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxer
 import io.github.thibaultbee.streampack.logger.ILogger
+import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
 
 /**
@@ -31,42 +30,10 @@ import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
  */
 class AudioOnlyRtmpLiveStreamer(
     context: Context,
-    logger: ILogger
+    logger: ILogger = StreamPackLogger()
 ) : BaseAudioOnlyLiveStreamer(
     context = context,
     logger = logger,
     muxer = FlvMuxer(context = context, writeToFile = false),
     endpoint = RtmpProducer(logger = logger)
-) {
-
-    /**
-     * Connect to an RTMP server and start stream.
-     * Same as calling [connect], then [startStream].
-     * To avoid creating an unresponsive UI, do not call on main thread.
-     *
-     * @param url server url
-     * @throws Exception if connection has failed or configuration has failed or [startStream] has failed too.
-     */
-    @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
-    override suspend fun startStream(url: String) {
-        connect(url)
-        startStream()
-    }
-
-    /**
-     * Builder class for [AudioOnlyRtmpLiveStreamer] objects. Use this class to configure and create an [AudioOnlyRtmpLiveStreamer] instance.
-     */
-    class Builder : BaseAudioOnlyLiveStreamer.Builder() {
-        /**
-         * Combines all of the characteristics that have been set and return a new [AudioOnlyRtmpLiveStreamer] object.
-         *
-         * @return a new [AudioOnlyRtmpLiveStreamer] object
-         */
-        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
-        override fun build(): BaseAudioOnlyLiveStreamer {
-            setMuxerImpl(FlvMuxer(context = context, writeToFile = false))
-            setLiveEndpointImpl(RtmpProducer(logger = logger))
-            return super.build()
-        }
-    }
-}
+)

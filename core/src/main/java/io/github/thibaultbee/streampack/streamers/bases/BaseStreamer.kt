@@ -39,9 +39,9 @@ import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.helpers.StreamerConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerBuilder
 import io.github.thibaultbee.streampack.streamers.settings.BaseStreamerSettings
 import java.nio.ByteBuffer
+
 
 /**
  * Base class of all streamers.
@@ -57,10 +57,10 @@ import java.nio.ByteBuffer
  */
 abstract class BaseStreamer(
     private val context: Context,
-    protected val logger: ILogger,
+    protected val logger: ILogger = StreamPackLogger(),
     protected val audioCapture: IAudioCapture?,
     protected val videoCapture: IVideoCapture?,
-    manageVideoOrientation: Boolean = false,
+    manageVideoOrientation: Boolean,
     private val muxer: IMuxer,
     protected val endpoint: IEndpoint
 ) : EventHandler(), IStreamer {
@@ -345,94 +345,5 @@ abstract class BaseStreamer(
         muxer.release()
 
         endpoint.release()
-    }
-
-    abstract class Builder : IStreamerBuilder {
-        protected lateinit var context: Context
-        protected var logger: ILogger = StreamPackLogger()
-        protected var audioConfig: AudioConfig? = null
-        protected var videoConfig: VideoConfig? = null
-        protected lateinit var muxer: IMuxer
-        protected var enableAudio: Boolean = true
-        protected var errorListener: OnErrorListener? = null
-
-        /**
-         * Set application context. It is mandatory to set context.
-         * Mandatory.
-         *
-         * @param context application context.
-         */
-        override fun setContext(context: Context) = apply { this.context = context }
-
-        /**
-         * Set logger.
-         *
-         * @param logger [ILogger] implementation
-         */
-        override fun setLogger(logger: ILogger) = apply { this.logger = logger }
-
-        /**
-         * Set audio configuration.
-         * Configurations can be change later with [configure].
-         *
-         * @param audioConfig audio configuration
-         * @param videoConfig video configuration
-         */
-        override fun setConfiguration(audioConfig: AudioConfig, videoConfig: VideoConfig) = apply {
-            this.audioConfig = audioConfig
-            this.videoConfig = videoConfig
-        }
-
-        /**
-         * Set audio configurations.
-         * Configurations can be change later with [configure].
-         *
-         * @param audioConfig audio configuration
-         */
-        override fun setAudioConfiguration(audioConfig: AudioConfig) = apply {
-            this.audioConfig = audioConfig
-        }
-
-        /**
-         * Set video configurations. Do not use.
-         *
-         * @param videoConfig video configuration
-         */
-        override fun setVideoConfiguration(videoConfig: VideoConfig) = apply {
-            this.videoConfig = videoConfig
-        }
-
-        /**
-         * Disable audio.
-         * Audio is enabled by default.
-         * When audio is disabled, there is no way to enable it again.
-         */
-        override fun disableAudio() = apply {
-            this.enableAudio = false
-        }
-
-        /**
-         * Set the error listener.
-         *
-         * @param listener a [OnErrorListener] implementation
-         */
-        override fun setErrorListener(listener: OnErrorListener) =
-            apply { this.errorListener = listener }
-
-        /**
-         * Set muxer.
-         * Mandatory.
-         *
-         * @param muxer a [IMuxer] implementation
-         */
-        protected fun setMuxerImpl(muxer: IMuxer) = apply { this.muxer = muxer }
-
-        /**
-         * Combines all of the characteristics that have been set and return a new [BaseStreamer] object.
-         *
-         * @return a new [BaseStreamer] object
-         */
-        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
-        abstract override fun build(): BaseStreamer
     }
 }

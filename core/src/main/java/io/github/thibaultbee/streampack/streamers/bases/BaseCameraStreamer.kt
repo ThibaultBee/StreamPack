@@ -27,9 +27,9 @@ import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioCapture
 import io.github.thibaultbee.streampack.internal.sources.camera.CameraCapture
 import io.github.thibaultbee.streampack.logger.ILogger
+import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IStreamerPreviewBuilder
 import io.github.thibaultbee.streampack.streamers.settings.BaseCameraStreamerSettings
 import io.github.thibaultbee.streampack.utils.getCameraList
 import io.github.thibaultbee.streampack.views.AutoFitSurfaceView
@@ -46,8 +46,8 @@ import kotlinx.coroutines.runBlocking
  */
 open class BaseCameraStreamer(
     private val context: Context,
-    logger: ILogger,
-    enableAudio: Boolean,
+    logger: ILogger = StreamPackLogger(),
+    enableAudio: Boolean = true,
     muxer: IMuxer,
     endpoint: IEndpoint
 ) : BaseStreamer(
@@ -129,25 +129,5 @@ open class BaseCameraStreamer(
     override fun release() {
         stopPreview()
         super.release()
-    }
-
-    abstract class Builder : BaseStreamer.Builder(), IStreamerPreviewBuilder {
-        protected var previewSurface: Surface? = null
-
-        /**
-         * Set preview surface.
-         * If provided, it starts preview.
-         *
-         * @param previewSurface surface where to display preview
-         */
-        override fun setPreviewSurface(previewSurface: Surface) = apply {
-            this.previewSurface = previewSurface
-        }
-
-        /**
-         * Same as [BaseCameraStreamer.Builder.build] that requires permissions.
-         */
-        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-        abstract override fun build(): BaseCameraStreamer
     }
 }

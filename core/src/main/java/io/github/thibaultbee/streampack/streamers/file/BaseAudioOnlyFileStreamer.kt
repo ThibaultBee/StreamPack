@@ -22,10 +22,10 @@ import io.github.thibaultbee.streampack.internal.endpoints.FileWriter
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioCapture
 import io.github.thibaultbee.streampack.logger.ILogger
+import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IFileStreamerBuilder
 import java.io.File
 
 /**
@@ -37,13 +37,14 @@ import java.io.File
  */
 open class BaseAudioOnlyFileStreamer(
     context: Context,
-    logger: ILogger,
+    logger: ILogger = StreamPackLogger(),
     muxer: IMuxer
 ) : BaseStreamer(
     context = context,
     logger = logger,
     videoCapture = null,
     audioCapture = AudioCapture(logger),
+    manageVideoOrientation = false,
     muxer = muxer,
     endpoint = FileWriter(logger = logger)
 ), IFileStreamer {
@@ -74,46 +75,4 @@ open class BaseAudioOnlyFileStreamer(
      */
     @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO])
     override fun startStream() = super.startStream()
-
-    abstract class Builder : BaseStreamer.Builder(), IFileStreamerBuilder {
-        protected var file: File? = null
-
-        /**
-         * Disable audio. Do not use.
-         */
-        override fun disableAudio(): Builder {
-            throw UnsupportedOperationException("Do not disable audio on audio only streamer")
-        }
-
-        /**
-         * Set destination file.
-         *
-         * @param file where to write date
-         */
-        override fun setFile(file: File) = apply {
-            this.file = file
-        }
-
-        /**
-         * Combines all of the characteristics that have been set and return a new
-         * generic [BaseAudioOnlyFileStreamer] object.
-         *
-         * @return a new generic [BaseAudioOnlyFileStreamer] object
-         */
-        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
-        override fun build(): BaseAudioOnlyFileStreamer {
-            return BaseAudioOnlyFileStreamer(
-                context,
-                logger,
-                muxer
-            )
-                .also { streamer ->
-                    streamer.onErrorListener = errorListener
-
-                    streamer.configure(audioConfig)
-                    streamer.file = file
-                }
-        }
-
-    }
 }

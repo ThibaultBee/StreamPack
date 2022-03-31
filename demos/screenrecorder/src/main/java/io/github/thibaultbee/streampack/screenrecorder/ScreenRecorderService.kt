@@ -41,6 +41,7 @@ import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.ext.rtmp.streamers.ScreenRecorderRtmpLiveStreamer
 import io.github.thibaultbee.streampack.ext.srt.regulator.srt.DefaultSrtBitrateRegulatorFactory
 import io.github.thibaultbee.streampack.ext.srt.streamers.ScreenRecorderSrtLiveStreamer
+import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
@@ -73,13 +74,10 @@ import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.Con
 import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.VIDEO_BITRATE_REGULATION_UPPER
 import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.VIDEO_CONFIG_KEY
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
-import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
-import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IAdaptiveLiveStreamerBuilder
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.ITsStreamerBuilder
+import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
+import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStreamer
 import kotlinx.coroutines.runBlocking
-import java.io.IOException
 
 /**
  * Foreground service that launches and stops streamer.
@@ -140,7 +138,7 @@ class ScreenRecorderService : Service() {
         }
     }
 
-    private var screenRecorder: BaseScreenRecorderStreamer? = null
+    private var screenRecorder: BaseScreenRecorderLiveStreamer? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -215,7 +213,7 @@ class ScreenRecorderService : Service() {
 
             val muxerConfigBundle = intent.extras?.getBundle(MUXER_CONFIG_KEY)
                 ?: throw IllegalStateException("Muxer configuration must be pass to the service")
-            val serviceInfo = TsServiceInfo(
+            val tsServiceInfo = TsServiceInfo(
                 TsServiceInfo.ServiceType.DIGITAL_TV,
                 0x4698,
                 muxerConfigBundle.getString(SERVICE)!!,
@@ -239,108 +237,93 @@ class ScreenRecorderService : Service() {
                 throw SecurityException("Permission RECORD_AUDIO must have been granted!")
             }
 
-            val streamerBuilder = when (endpointType) {
+            val streamer = when (endpointType) {
                 EndpointType.SRT -> {
-                    ScreenRecorderSrtLiveStreamer.Builder()
-                }
-                EndpointType.RTMP -> {
-                    ScreenRecorderRtmpLiveStreamer.Builder()
-                }
-            }
-
-            if (streamerBuilder is IAdaptiveLiveStreamerBuilder) {
-                streamerBuilder.setBitrateRegulator(
-                    if (enableBitrateRegulation) {
+                    val bitrateRegulatorFactory = if (enableBitrateRegulation) {
                         DefaultSrtBitrateRegulatorFactory()
                     } else {
                         null
-                    },
-                    if (enableBitrateRegulation) {
-                        BitrateRegulatorConfig.Builder()
-                            .setVideoBitrateRange(videoBitrateRange!!) // if enableBitrateRegulation = true, videoBitrateRange exists
-                            .setAudioBitrateRange(
-                                Range(
-                                    audioConfig.startBitrate,
-                                    audioConfig.startBitrate
-                                )
+                    }
+                    val bitrateRegulatorConfig = if (enableBitrateRegulation) {
+                        BitrateRegulatorConfig(
+                            videoBitrateRange!!,  // if enableBitrateRegulation = true, videoBitrateRange exists
+                            Range(
+                                audioConfig.startBitrate,
+                                audioConfig.startBitrate
                             )
-                            .build()
+                        )
                     } else {
                         null
-                    },
-                )
-            }
-
-            if (streamerBuilder is ITsStreamerBuilder) {
-                streamerBuilder.setServiceInfo(serviceInfo)
-            }
-
-            if (!hasAudio) {
-                streamerBuilder.disableAudio()
-            }
-
-            screenRecorder = (streamerBuilder
-                .setContext(this)
-                .setConfiguration(audioConfig, videoConfig)
-                .build() as BaseScreenRecorderStreamer).apply {
-
-                onErrorListener = object : OnErrorListener {
-                    override fun onError(error: StreamPackError) {
-                        Log.e(tag, "An error occurred", error)
-                        notify(
-                            "An error occurred",
-                            error.localizedMessage ?: "Unknown error"
-                        )
-                        stopSelf()
                     }
+                    ScreenRecorderSrtLiveStreamer(
+                        this,
+                        enableAudio = hasAudio,
+                        tsServiceInfo = tsServiceInfo,
+                        bitrateRegulatorFactory = bitrateRegulatorFactory,
+                        bitrateRegulatorConfig = bitrateRegulatorConfig
+                    )
                 }
-                if (this is ILiveStreamer) {
-                    onConnectionListener = object : OnConnectionListener {
-                        override fun onLost(message: String) {
-                            Log.e(tag, "Connection lost: $message")
-                            notify("Connection", message)
-                            stopSelf()
-                        }
-
-                        override fun onFailed(message: String) {
-                            Log.e(tag, "Connection failed: $message")
-                            notify("Connection failed", message)
-                            stopSelf()
-                        }
-
-                        override fun onSuccess() {
-                            Log.i(tag, "Connection succeeded")
-                            notify("Connection succeeded", "")
-                        }
-                    }
-
-
-                    if (this is ISrtLiveStreamer) {
-                        streamId?.let {
-                            this.streamId = it
-                        }
-                        passPhrase?.let {
-                            this.passPhrase = it
-                        }
-                    }
-
-                    this.activityResult = activityResult
-
-                    try {
-                        runBlocking {
-                            when (this@apply) {
-                                is ISrtLiveStreamer -> this@apply.startStream(ip, port)
-                                else -> this@apply.startStream(url)
-                            }
-                        }
-                    } catch (e: Exception) {
-                        this@apply.release()
-                        screenRecorder = null
-                        throw e
-                    }
+                EndpointType.RTMP -> {
+                    ScreenRecorderRtmpLiveStreamer(this, enableAudio = hasAudio)
                 }
             }
 
+
+            streamer.onErrorListener = object : OnErrorListener {
+                override fun onError(error: StreamPackError) {
+                    Log.e(tag, "An error occurred", error)
+                    notify(
+                        "An error occurred",
+                        error.localizedMessage ?: "Unknown error"
+                    )
+                    stopSelf()
+                }
+            }
+
+            streamer.onConnectionListener = object : OnConnectionListener {
+                override fun onLost(message: String) {
+                    Log.e(tag, "Connection lost: $message")
+                    notify("Connection", message)
+                    stopSelf()
+                }
+
+                override fun onFailed(message: String) {
+                    Log.e(tag, "Connection failed: $message")
+                    notify("Connection failed", message)
+                    stopSelf()
+                }
+
+                override fun onSuccess() {
+                    Log.i(tag, "Connection succeeded")
+                    notify("Connection succeeded", "")
+                }
+            }
+
+            if (streamer is ISrtLiveStreamer) {
+                streamId?.let {
+                    streamer.streamId = it
+                }
+                passPhrase?.let {
+                    streamer.passPhrase = it
+                }
+            }
+
+            streamer.activityResult = activityResult
+
+            streamer.configure(audioConfig, videoConfig)
+
+            try {
+                runBlocking {
+                    when (streamer) {
+                        is ISrtLiveStreamer -> streamer.startStream(ip, port)
+                        else -> streamer.startStream(url)
+                    }
+                    screenRecorder = streamer
+                }
+            } catch (e: Exception) {
+                streamer.release()
+                throw e
+            }
         } catch (e: Exception) {
             Log.e(tag, "An error occurred", e)
             notify("An error occurred", e.localizedMessage ?: "Unknown error")

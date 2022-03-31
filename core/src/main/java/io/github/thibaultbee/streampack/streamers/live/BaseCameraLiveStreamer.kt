@@ -22,6 +22,7 @@ import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.logger.ILogger
+import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 
@@ -36,8 +37,8 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  */
 open class BaseCameraLiveStreamer(
     context: Context,
-    logger: ILogger,
-    enableAudio: Boolean,
+    logger: ILogger = StreamPackLogger(),
+    enableAudio: Boolean = true,
     muxer: IMuxer,
     endpoint: ILiveEndpoint
 ) : BaseCameraStreamer(
@@ -90,55 +91,5 @@ open class BaseCameraLiveStreamer(
     override suspend fun startStream(url: String) {
         connect(url)
         startStream()
-    }
-
-    abstract class Builder : BaseCameraStreamer.Builder() {
-        protected lateinit var endpoint: ILiveEndpoint
-        private var connectionListener: OnConnectionListener? = null
-
-        /**
-         * Set the connection listener.
-         *
-         * @param listener a [OnConnectionListener] implementation
-         */
-         fun setConnectionListener(listener: OnConnectionListener) =
-            apply { this.connectionListener = listener }
-
-        /**
-         * Set live endpoint.
-         * Mandatory.
-         *
-         * @param endpoint a [ILiveEndpoint] implementation
-         */
-        protected fun setLiveEndpointImpl(endpoint: ILiveEndpoint) =
-            apply { this.endpoint = endpoint }
-
-        /**
-         * Combines all of the characteristics that have been set and return a new
-         * generic [BaseCameraLiveStreamer] object.
-         *
-         * @return a new generic [BaseCameraLiveStreamer] object
-         */
-        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-        override fun build(): BaseCameraLiveStreamer {
-            return BaseCameraLiveStreamer(
-                context,
-                logger,
-                enableAudio,
-                muxer,
-                endpoint
-            ).also { streamer ->
-                streamer.onErrorListener = errorListener
-                streamer.onConnectionListener = connectionListener
-
-                if (videoConfig != null) {
-                    streamer.configure(audioConfig, videoConfig!!)
-                }
-
-                previewSurface?.let {
-                    streamer.startPreview(it)
-                }
-            }
-        }
     }
 }

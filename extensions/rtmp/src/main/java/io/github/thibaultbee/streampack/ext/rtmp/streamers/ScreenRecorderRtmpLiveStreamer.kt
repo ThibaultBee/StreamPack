@@ -22,6 +22,7 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.RtmpProducer
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxer
 import io.github.thibaultbee.streampack.logger.ILogger
+import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
 import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStreamer
 
@@ -36,31 +37,12 @@ import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStr
  */
 class ScreenRecorderRtmpLiveStreamer(
     context: Context,
-    logger: ILogger,
-    enableAudio: Boolean
+    logger: ILogger = StreamPackLogger(),
+    enableAudio: Boolean = true
 ) : BaseScreenRecorderLiveStreamer(
     context = context,
     logger = logger,
     enableAudio = enableAudio,
     muxer = FlvMuxer(context = context, writeToFile = false),
     endpoint = RtmpProducer(logger = logger)
-) {
-    /**
-     * Builder class for [ScreenRecorderRtmpLiveStreamer] objects. Use this class to configure and
-     * create an [ScreenRecorderRtmpLiveStreamer] instance.
-     */
-    class Builder : BaseScreenRecorderLiveStreamer.Builder() {
-        /**
-         * Combines all of the characteristics that have been set and return a new
-         * [ScreenRecorderRtmpLiveStreamer] object.
-         *
-         * @return a new [ScreenRecorderRtmpLiveStreamer] object
-         */
-        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO])
-        override fun build(): BaseScreenRecorderLiveStreamer {
-            setMuxerImpl(FlvMuxer(context = context, writeToFile = false))
-            setLiveEndpointImpl(RtmpProducer(logger = logger))
-            return super.build()
-        }
-    }
-}
+)

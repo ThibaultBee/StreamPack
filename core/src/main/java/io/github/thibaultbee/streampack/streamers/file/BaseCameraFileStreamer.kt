@@ -21,9 +21,9 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.internal.endpoints.FileWriter
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.logger.ILogger
+import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.builders.IFileStreamerBuilder
 import java.io.File
 
 /**
@@ -36,8 +36,8 @@ import java.io.File
  */
 open class BaseCameraFileStreamer(
     context: Context,
-    logger: ILogger,
-    enableAudio: Boolean,
+    logger: ILogger = StreamPackLogger(),
+    enableAudio: Boolean = true,
     muxer: IMuxer,
 ) : BaseCameraStreamer(
     context = context,
@@ -74,47 +74,4 @@ open class BaseCameraFileStreamer(
      */
     @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
     override fun startStream() = super.startStream()
-
-    abstract class Builder : BaseCameraStreamer.Builder(), IFileStreamerBuilder {
-        protected var file: File? = null
-
-        /**
-         * Set destination file.
-         *
-         * @param file where to write date
-         */
-        override fun setFile(file: File) = apply {
-            this.file = file
-        }
-
-        /**
-         * Combines all of the characteristics that have been set and return a new
-         * generic [BaseCameraFileStreamer] object.
-         *
-         * @return a new generic [BaseCameraFileStreamer] object
-         */
-        @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-        override fun build(): BaseCameraFileStreamer {
-            return BaseCameraFileStreamer(
-                context,
-                logger,
-                enableAudio,
-                muxer
-            ).also { streamer ->
-                streamer.onErrorListener = errorListener
-
-                if (videoConfig != null) {
-                    streamer.configure(audioConfig, videoConfig!!)
-                }
-
-                previewSurface?.let {
-                    streamer.startPreview(it)
-                }
-
-                file?.let {
-                    streamer.file = it
-                }
-            }
-        }
-    }
 }
