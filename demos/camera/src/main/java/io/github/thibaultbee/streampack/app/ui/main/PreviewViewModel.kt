@@ -70,6 +70,7 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
         }
     }
 
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun createStreamer() {
         viewModelScope.launch {
             try {
