@@ -21,6 +21,7 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.internal.endpoints.FileWriter
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioCapture
+import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
@@ -34,11 +35,13 @@ import java.io.File
  * @param context application context
  * @param logger a [ILogger] implementation
  * @param muxer a [IMuxer] implementation
+ * @param initialOnErrorListener initialize [OnErrorListener]
  */
 open class BaseAudioOnlyFileStreamer(
     context: Context,
     logger: ILogger = StreamPackLogger(),
-    muxer: IMuxer
+    muxer: IMuxer,
+    initialOnErrorListener: OnErrorListener? = null
 ) : BaseStreamer(
     context = context,
     logger = logger,
@@ -46,7 +49,8 @@ open class BaseAudioOnlyFileStreamer(
     audioCapture = AudioCapture(logger),
     manageVideoOrientation = false,
     muxer = muxer,
-    endpoint = FileWriter(logger = logger)
+    endpoint = FileWriter(logger = logger),
+    initialOnErrorListener = initialOnErrorListener
 ), IFileStreamer {
     private val fileWriter = endpoint as FileWriter
 

@@ -21,6 +21,8 @@ import android.content.Context
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.RtmpProducer
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxer
+import io.github.thibaultbee.streampack.listeners.OnConnectionListener
+import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
@@ -34,15 +36,21 @@ import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStr
  * @param context application context
  * @param logger a [ILogger] implementation
  * @param enableAudio [Boolean.true] to also capture audio. False to disable audio capture.
+ * @param initialOnErrorListener initialize [OnErrorListener]
+ * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 class ScreenRecorderRtmpLiveStreamer(
     context: Context,
     logger: ILogger = StreamPackLogger(),
-    enableAudio: Boolean = true
+    enableAudio: Boolean = true,
+    initialOnErrorListener: OnErrorListener? = null,
+    initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseScreenRecorderLiveStreamer(
     context = context,
     logger = logger,
     enableAudio = enableAudio,
     muxer = FlvMuxer(context = context, writeToFile = false),
-    endpoint = RtmpProducer(logger = logger)
+    endpoint = RtmpProducer(logger = logger),
+    initialOnErrorListener = initialOnErrorListener,
+    initialOnConnectionListener = initialOnConnectionListener
 )

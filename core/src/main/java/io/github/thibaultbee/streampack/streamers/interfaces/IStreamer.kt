@@ -15,6 +15,8 @@
  */
 package io.github.thibaultbee.streampack.streamers.interfaces
 
+import android.Manifest
+import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.error.StreamPackError
@@ -48,6 +50,7 @@ interface IStreamer {
      * @throws [StreamPackError] if configuration can not be applied.
      * @see [release]
      */
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun configure(audioConfig: AudioConfig? = null, videoConfig: VideoConfig? = null)
 
     /**
