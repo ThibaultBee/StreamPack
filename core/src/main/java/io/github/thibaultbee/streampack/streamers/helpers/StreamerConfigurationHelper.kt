@@ -127,7 +127,7 @@ open class VideoStreamerConfigurationHelper(private val videoMuxerHelper: IVideo
         MediaCodecHelper.Video.getBitrateRange(mimeType)
 
     /**
-     * Get supported resolutions for a [BaseStreamer].
+     * Get supported resolutions range for then encoder.
      *
      * @param mimeType video encoder mime type
      * @return pair that contains supported width ([Pair.first]) and supported height ([Pair.second]).
