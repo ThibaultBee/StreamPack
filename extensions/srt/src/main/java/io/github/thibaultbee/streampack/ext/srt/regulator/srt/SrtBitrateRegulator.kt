@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.ext.srt.regulator.srt
 
-import com.github.thibaultbee.srtdroid.models.Stats
+import io.github.thibaultbee.srtdroid.models.Stats
 import io.github.thibaultbee.streampack.data.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.regulator.BitrateRegulator
 import io.github.thibaultbee.streampack.regulator.IBitrateRegulatorFactory
