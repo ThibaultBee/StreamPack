@@ -12,7 +12,7 @@ Get StreamPack core latest artifacts on mavenCentral:
 
 ```groovy
 dependencies {
-    implementation 'io.github.thibaultbee:streampack:1.4.0'
+    implementation 'io.github.thibaultbee:streampack:2.0.0'
 }
 ```
 
@@ -20,7 +20,7 @@ If you want to use RTMP, you need to add the following dependency:
 
 ```groovy
 dependencies {
-    implementation 'io.github.thibaultbee:streampack-extension-rtmp:1.4.0'
+    implementation 'io.github.thibaultbee:streampack-extension-rtmp:2.0.0'
 }
 ```
 
@@ -28,7 +28,7 @@ If you want to use SRT, you need to add the following dependency:
 
 ```groovy
 dependencies {
-    implementation 'io.github.thibaultbee:streampack-extension-srt:1.4.0'
+    implementation 'io.github.thibaultbee:streampack-extension-srt:2.0.0'
 }
 ```
 

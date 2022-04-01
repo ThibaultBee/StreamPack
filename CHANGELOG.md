@@ -1,6 +1,32 @@
 Change Log
 ==========
 
+
+Version 2.0.0
+-------------
+
+## API changes:
+
+- Package has been moved to maven central and rename from `com.github.thibaultbee`
+  to `io.github.thibaultbee`
+- Splits `StreamPack` in multiple libraries:
+    - `core`: main functionalities
+    - `extension/srt`: SRT based streamers
+    - `extension/rtmp`: RTMP based streamers
+- Error and connection listeners are now available in `Streamers` constructors
+- `Builder` have been removed in favor of Kotlin default parameters
+- `ConfigurationHelper` are accessible through the `helper` field of `Streamers`
+
+## Features:
+
+- Adds support for RTMP with the `Streamers`: `AudioOnlyRtmpLiveStreamer`, `CameraRtmpLiveStreamer`
+  and `ScreenRecorderRtmpLiveStreamer`
+- Video sources can be operated in `ByteBuffer` mode as well as in `Surface` mode
+
+## Bug fixes:
+
+- You can call `configure` multiple times
+
 Version 1.4.0
 -------------
 
@@ -30,9 +56,9 @@ Version 1.3.0
 ## Features:
 
 - Introducing new streamers:
-  - [ScreenRecorderSrtLiveStreamer] for screen sharing. A new sample application has been developed:
-    have a look at `screenrecorder\` folder.
-  - [AudioOnlySrtLiveStreamer] and [AudioOnlyTsFileStreamer] to record audio only
+    - [ScreenRecorderSrtLiveStreamer] for screen sharing. A new sample application has been
+      developed: have a look at `screenrecorder\` folder.
+    - [AudioOnlySrtLiveStreamer] and [AudioOnlyTsFileStreamer] to record audio only
 - Video orientation could be in portrait or/and in landscape. Use `Activity.requestedOrientation` to
   lock orientation in portrait or landscape.
 - Add `isFrameRateSupported` API so you can check that camera supports current configured frame
