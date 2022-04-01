@@ -18,12 +18,14 @@ package io.github.thibaultbee.streampack.ext.srt.streamers
 import android.content.Context
 import io.github.thibaultbee.streampack.ext.srt.internal.endpoints.SrtProducer
 import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
-import io.github.thibaultbee.streampack.utils.Utils
 import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
+import io.github.thibaultbee.streampack.listeners.OnConnectionListener
+import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
+import io.github.thibaultbee.streampack.utils.Utils
 
 /**
  * A [BaseAudioOnlyLiveStreamer] that sends only microphone frames to a remote Secure Reliable Transport
@@ -32,16 +34,22 @@ import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
  * @param context application context
  * @param tsServiceInfo MPEG-TS service description
  * @param logger a [ILogger] implementation
+ * @param initialOnErrorListener initialize [OnErrorListener]
+ * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 class AudioOnlySrtLiveStreamer(
     context: Context,
     tsServiceInfo: TsServiceInfo = Utils.defaultTsServiceInfo,
-    logger: ILogger = StreamPackLogger()
+    logger: ILogger = StreamPackLogger(),
+    initialOnErrorListener: OnErrorListener? = null,
+    initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseAudioOnlyLiveStreamer(
     context = context,
     logger = logger,
     muxer = TSMuxer().apply { addService(tsServiceInfo) },
-    endpoint = SrtProducer(logger = logger)
+    endpoint = SrtProducer(logger = logger),
+    initialOnErrorListener = initialOnErrorListener,
+    initialOnConnectionListener = initialOnConnectionListener
 ),
     ISrtLiveStreamer {
     private val srtProducer = endpoint as SrtProducer

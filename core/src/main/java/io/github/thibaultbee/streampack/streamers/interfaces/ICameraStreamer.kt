@@ -38,7 +38,7 @@ interface ICameraStreamer {
      *
      * @see [stopPreview]
      */
-    @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
+    @RequiresPermission(allOf = [Manifest.permission.CAMERA])
     fun startPreview(previewSurface: Surface, cameraId: String = "0")
 
     /**

@@ -1,8 +1,10 @@
 # StreamPack: RTMP and [SRT](https://github.com/Haivision/srt) live streaming SDK for Android
 
-StreamPack is Swiss Army Knife for live streaming broadcast on Android. It achieves professional
-quality while running with low CPU usage. And don't worry, it is still easy to use. Simplify your 
-live streaming integration and make your life easier.
+StreamPack is a modern Swiss Army Knife for live streaming broadcast on Android. It achieves
+professional audio and video quality while running with low CPU usage. And don't worry, it is still
+easy to use.
+
+Simplify your live streaming integration.
 
 ## Setup
 
@@ -36,7 +38,7 @@ are both includes in native dependencies. To solve this, you can add in your `bu
 ```groovy
 android {
     packagingOptions {
-      pickFirst '**/*.so'
+        pickFirst '**/*.so'
     }
 }
 ```
@@ -115,10 +117,9 @@ side, you should be able to watch this live stream.
 To simplify development, StreamPack provides an `AutoFitSurfaceView`.
 
 ```xml
-<io.github.thibaultbee.streampack.views.AutoFitSurfaceView
-    android:id="@+id/surface"
-    android:layout_width="match_parent" 
-    android:layout_height="match_parent" />
+
+<io.github.thibaultbee.streampack.views.AutoFitSurfaceView android:id="@+id/surface"
+    android:layout_width="match_parent" android:layout_height="match_parent" />
 ```
 
 3. Instantiates the streamer (main live streaming class)
@@ -132,7 +133,7 @@ val streamer = CameraSrtLiveStreamer(context = requireContext())
 ```kotlin
 val audioConfig = AudioConfig(
     startBitrate = 128000,
-    sampleRate = 44100, 
+    sampleRate = 44100,
     channelConfig = AudioFormat.CHANNEL_IN_STEREO
 )
 
@@ -144,7 +145,7 @@ val videoConfig = VideoConfig(
 
 streamer.configure(audioConfig, videoConfig)
 ```
-   
+
 5. Starts the camera preview
 
 ```kotlin
@@ -174,10 +175,10 @@ the [API documentation](https://thibaultbee.github.io/StreamPack).
 You need to add the following permissions in your `AndroidManifest.xml`:
 
 ```xml
-<uses-permission android:name="android.permission.RECORD_AUDIO" />
-<uses-permission android:name="android.permission.CAMERA" />
-<uses-permission android:name="android.permission.INTERNET" />
-<!-- Application requires android.permission.WRITE_EXTERNAL_STORAGE only for IFileStreamer implementation` -->
+
+<uses-permission android:name="android.permission.RECORD_AUDIO" /><uses-permission
+android:name="android.permission.CAMERA" /><uses-permission
+android:name="android.permission.INTERNET" /><!-- Application requires android.permission.WRITE_EXTERNAL_STORAGE only for IFileStreamer implementation` -->
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
 
@@ -188,8 +189,9 @@ permission: `android.permission.RECORD_AUDIO`, `android.permission.CAMERA` and
 For the PlayStore, your application might declare this in its `AndroidManifest.xml`
 
 ```xml
-<uses-feature android:name="android.hardware.camera" android:required="true" />
-<uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+
+<uses-feature android:name="android.hardware.camera" android:required="true" /><uses-feature
+android:name="android.hardware.camera.autofocus" android:required="false" />
 ```
 
 ## Tips
@@ -197,14 +199,14 @@ For the PlayStore, your application might declare this in its `AndroidManifest.x
 ### RTMP or SRT
 
 RTMP and SRT are both live streaming protocols. SRT is a UDP-based modern protocol, it is reliable
-and ultra low latency. RTMP is a TCP-based protocol, it is also reliable but it is only low latency. 
+and ultra low latency. RTMP is a TCP-based protocol, it is also reliable but it is only low latency.
 There are already a lot of comparison over the Internet, so here is a summary:
 SRT:
-  - Ultra low latency (< 1s)
-  - HEVC support through MPEG-TS
-RTMP:
-  - Low latency (2-3s)
-  - HEVC not officially support (specification has been aban by its creator)
+
+- Ultra low latency (< 1s)
+- HEVC support through MPEG-TS RTMP:
+- Low latency (2-3s)
+- HEVC not officially support (specification has been aban by its creator)
 
 So, the main question is: "which protocol to use?"
 It is easy: if your server has SRT support, use SRT otherwise use RTMP.
@@ -224,9 +226,8 @@ You can find specific streamers for File or for Live. Currently, there are 2 mai
 - `FileStreamer`: for streaming to file
 - `LiveStreamer`: for streaming to a RTMP or a SRT live streaming server
 
-For example, you can use `AudioOnlyFlvFileStreamer` to stream from microphone only to a
-FLV file. Another example, you can use `CameraRtmpLiveStreamer` to stream from camera to a
-RTMP server.
+For example, you can use `AudioOnlyFlvFileStreamer` to stream from microphone only to a FLV file.
+Another example, you can use `CameraRtmpLiveStreamer` to stream from camera to a RTMP server.
 
 If a streamer is missing, of course, you can also create your own. You should definitely submit it
 in a [pull request](https://github.com/ThibaultBee/StreamPack/pulls).

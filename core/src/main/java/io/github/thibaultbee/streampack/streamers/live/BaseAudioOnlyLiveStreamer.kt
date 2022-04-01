@@ -22,6 +22,7 @@ import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioCapture
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
+import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
@@ -34,12 +35,16 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  * @param logger a [ILogger] implementation
  * @param muxer a [IMuxer] implementation
  * @param endpoint a [ILiveEndpoint] implementation
+ * @param initialOnErrorListener initialize [OnErrorListener]
+ * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 open class BaseAudioOnlyLiveStreamer(
     context: Context,
     logger: ILogger = StreamPackLogger(),
     muxer: IMuxer,
-    endpoint: ILiveEndpoint
+    endpoint: ILiveEndpoint,
+    initialOnErrorListener: OnErrorListener? = null,
+    initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseStreamer(
     context = context,
     logger = logger,
@@ -47,14 +52,15 @@ open class BaseAudioOnlyLiveStreamer(
     audioCapture = AudioCapture(logger),
     manageVideoOrientation = false,
     muxer = muxer,
-    endpoint = endpoint
+    endpoint = endpoint,
+    initialOnErrorListener = initialOnErrorListener,
 ), ILiveStreamer {
     private val liveProducer = endpoint
 
     /**
      * Listener to manage connection.
      */
-    override var onConnectionListener: OnConnectionListener? = null
+    override var onConnectionListener: OnConnectionListener? = initialOnConnectionListener
         set(value) {
             liveProducer.onConnectionListener = value
             field = value
