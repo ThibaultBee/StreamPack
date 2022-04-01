@@ -26,6 +26,7 @@ import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioCapture
 import io.github.thibaultbee.streampack.internal.sources.camera.CameraCapture
+import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationHelper
@@ -43,13 +44,15 @@ import kotlinx.coroutines.runBlocking
  * @param enableAudio [Boolean.true] to capture audio
  * @param muxer a [IMuxer] implementation
  * @param endpoint a [IEndpoint] implementation
+ * @param initialOnErrorListener initialize [OnErrorListener]
  */
 open class BaseCameraStreamer(
     private val context: Context,
     logger: ILogger = StreamPackLogger(),
     enableAudio: Boolean = true,
     muxer: IMuxer,
-    endpoint: IEndpoint
+    endpoint: IEndpoint,
+    initialOnErrorListener: OnErrorListener? = null
 ) : BaseStreamer(
     context = context,
     videoCapture = CameraCapture(context, logger = logger),
@@ -57,7 +60,8 @@ open class BaseCameraStreamer(
     manageVideoOrientation = true,
     muxer = muxer,
     endpoint = endpoint,
-    logger = logger
+    logger = logger,
+    initialOnErrorListener = initialOnErrorListener
 ), ICameraStreamer {
     private val cameraCapture = videoCapture as CameraCapture
     override val helper = CameraStreamerConfigurationHelper(muxer.helper)

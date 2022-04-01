@@ -24,6 +24,8 @@ import io.github.thibaultbee.streampack.utils.Utils
 import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.internal.utils.Scheduler
+import io.github.thibaultbee.streampack.listeners.OnConnectionListener
+import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.regulator.IBitrateRegulatorFactory
@@ -40,6 +42,8 @@ import io.github.thibaultbee.streampack.streamers.live.BaseCameraLiveStreamer
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
  * @param bitrateRegulatorFactory a [IBitrateRegulatorFactory] implementation. Use it to customized bitrate regulator.  If bitrateRegulatorConfig is not null, bitrateRegulatorFactory must not be null.
  * @param bitrateRegulatorConfig bitrate regulator configuration. If bitrateRegulatorFactory is not null, bitrateRegulatorConfig must not be null.
+ * @param initialOnErrorListener initialize [OnErrorListener]
+ * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 class CameraSrtLiveStreamer(
     context: Context,
@@ -47,13 +51,17 @@ class CameraSrtLiveStreamer(
     enableAudio: Boolean = true,
     tsServiceInfo: TsServiceInfo = Utils.defaultTsServiceInfo,
     bitrateRegulatorFactory: IBitrateRegulatorFactory? = null,
-    bitrateRegulatorConfig: BitrateRegulatorConfig? = null
+    bitrateRegulatorConfig: BitrateRegulatorConfig? = null,
+    initialOnErrorListener: OnErrorListener? = null,
+    initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseCameraLiveStreamer(
     context = context,
     logger = logger,
     enableAudio = enableAudio,
     muxer = TSMuxer().apply { addService(tsServiceInfo) },
-    endpoint = SrtProducer(logger = logger)
+    endpoint = SrtProducer(logger = logger),
+    initialOnErrorListener = initialOnErrorListener,
+    initialOnConnectionListener = initialOnConnectionListener
 ),
     ISrtLiveStreamer {
 

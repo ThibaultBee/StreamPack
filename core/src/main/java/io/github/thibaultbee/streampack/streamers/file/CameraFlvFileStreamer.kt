@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.streamers.file
 
 import android.content.Context
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxer
+import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import java.io.File
@@ -27,14 +28,17 @@ import java.io.File
  * @param context application context
  * @param logger a [ILogger] implementation
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
+ * @param initialOnErrorListener initialize [OnErrorListener]
  */
 class CameraFlvFileStreamer(
     context: Context,
     logger: ILogger = StreamPackLogger(),
     enableAudio: Boolean = true,
+    initialOnErrorListener: OnErrorListener? = null
 ) : BaseCameraFileStreamer(
     context = context,
     logger = logger,
     muxer = FlvMuxer(context = context, writeToFile = true),
-    enableAudio = enableAudio
+    enableAudio = enableAudio,
+    initialOnErrorListener = initialOnErrorListener
 )

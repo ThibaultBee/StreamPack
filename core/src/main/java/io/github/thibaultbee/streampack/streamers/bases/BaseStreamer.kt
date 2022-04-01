@@ -53,7 +53,7 @@ import java.nio.ByteBuffer
  * @param manageVideoOrientation Set to [Boolean.true] to rotate video according to device orientation.
  * @param muxer a [IMuxer] implementation
  * @param endpoint a [IEndpoint] implementation
-
+ * @param initialOnErrorListener initialize [OnErrorListener]
  */
 abstract class BaseStreamer(
     private val context: Context,
@@ -62,13 +62,14 @@ abstract class BaseStreamer(
     protected val videoCapture: IVideoCapture?,
     manageVideoOrientation: Boolean,
     private val muxer: IMuxer,
-    protected val endpoint: IEndpoint
+    protected val endpoint: IEndpoint,
+    initialOnErrorListener: OnErrorListener? = null
 ) : EventHandler(), IStreamer {
     /**
      * Listener that reports streamer error.
      * Supports only one listener.
      */
-    override var onErrorListener: OnErrorListener? = null
+    override var onErrorListener: OnErrorListener? = initialOnErrorListener
     override val helper = StreamerConfigurationHelper(muxer.helper)
 
     private var audioTsStreamId: Int? = null

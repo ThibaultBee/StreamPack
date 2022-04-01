@@ -21,6 +21,7 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
+import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
@@ -34,19 +35,24 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
  * @param muxer a [IMuxer] implementation
  * @param endpoint a [ILiveEndpoint] implementation
+ * @param initialOnErrorListener initialize [OnErrorListener]
+ * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 open class BaseScreenRecorderLiveStreamer(
     context: Context,
     logger: ILogger = StreamPackLogger(),
     enableAudio: Boolean = true,
     muxer: IMuxer,
-    endpoint: ILiveEndpoint
+    endpoint: ILiveEndpoint,
+    initialOnErrorListener: OnErrorListener? = null,
+    initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseScreenRecorderStreamer(
     context = context,
     logger = logger,
     enableAudio = enableAudio,
     muxer = muxer,
-    endpoint = endpoint
+    endpoint = endpoint,
+    initialOnErrorListener = initialOnErrorListener
 ),
     ILiveStreamer {
     private val liveProducer = endpoint
@@ -54,7 +60,7 @@ open class BaseScreenRecorderLiveStreamer(
     /**
      * Listener to manage connection.
      */
-    override var onConnectionListener: OnConnectionListener? = null
+    override var onConnectionListener: OnConnectionListener? = initialOnConnectionListener
         set(value) {
             liveProducer.onConnectionListener = value
             field = value
