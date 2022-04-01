@@ -15,15 +15,15 @@
  */
 package io.github.thibaultbee.streampack.ext.srt.internal.endpoints
 
-import com.github.thibaultbee.srtdroid.Srt
-import com.github.thibaultbee.srtdroid.enums.Boundary
-import com.github.thibaultbee.srtdroid.enums.ErrorType
-import com.github.thibaultbee.srtdroid.enums.SockOpt
-import com.github.thibaultbee.srtdroid.enums.Transtype
-import com.github.thibaultbee.srtdroid.listeners.SocketListener
-import com.github.thibaultbee.srtdroid.models.MsgCtrl
-import com.github.thibaultbee.srtdroid.models.Socket
-import com.github.thibaultbee.srtdroid.models.Stats
+import io.github.thibaultbee.srtdroid.Srt
+import io.github.thibaultbee.srtdroid.enums.Boundary
+import io.github.thibaultbee.srtdroid.enums.ErrorType
+import io.github.thibaultbee.srtdroid.enums.SockOpt
+import io.github.thibaultbee.srtdroid.enums.Transtype
+import io.github.thibaultbee.srtdroid.listeners.SocketListener
+import io.github.thibaultbee.srtdroid.models.MsgCtrl
+import io.github.thibaultbee.srtdroid.models.Socket
+import io.github.thibaultbee.srtdroid.models.Stats
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.data.SrtPacket
 import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
