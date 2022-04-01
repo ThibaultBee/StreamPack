@@ -15,8 +15,10 @@
  */
 package io.github.thibaultbee.streampack.app.utils
 
+import android.Manifest
 import android.content.Context
 import android.util.Range
+import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.app.configuration.Configuration
 import io.github.thibaultbee.streampack.app.models.EndpointType
 import io.github.thibaultbee.streampack.data.AudioConfig
@@ -108,6 +110,7 @@ class StreamerFactory(
         }
     }
 
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun build(): IStreamer {
         val streamer = createStreamer(context)
 

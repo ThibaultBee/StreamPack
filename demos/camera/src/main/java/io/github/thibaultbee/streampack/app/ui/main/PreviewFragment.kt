@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.app.ui.main
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -25,6 +26,8 @@ import android.view.SurfaceHolder
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresPermission
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import io.github.thibaultbee.streampack.app.configuration.Configuration
@@ -144,6 +147,7 @@ class PreviewFragment : Fragment() {
         binding.preview.holder.addCallback(surfaceViewCallback)
     }
 
+    @SuppressLint("MissingPermission")
     private fun requestCameraAndMicrophonePermissions() {
         when {
             PermissionManager.hasPermissions(
@@ -214,12 +218,15 @@ class PreviewFragment : Fragment() {
         }
     }
 
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     private fun createStreamer() {
         viewModel.createStreamer()
+
         // Wait till streamer exists to create the SurfaceView (and call startCapture).
         binding.preview.visibility = View.VISIBLE
     }
 
+    @SuppressLint("MissingPermission")
     private val requestCameraAndMicrophonePermissionsLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()

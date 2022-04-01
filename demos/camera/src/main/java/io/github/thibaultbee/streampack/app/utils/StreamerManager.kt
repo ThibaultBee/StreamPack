@@ -92,6 +92,7 @@ class StreamerManager(
             return permissions
         }
 
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun rebuildStreamer() {
         streamer = StreamerFactory(context, configuration).build()
     }
