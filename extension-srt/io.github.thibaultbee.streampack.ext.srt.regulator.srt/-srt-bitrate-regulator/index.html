@@ -1,0 +1,95 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>SrtBitrateRegulator</title>
+</head><body><link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script><link href="../../../styles/style.css" rel="Stylesheet"><link href="../../../styles/jetbrains-mono.css" rel="Stylesheet"><link href="../../../styles/main.css" rel="Stylesheet"><link href="../../../styles/prism.css" rel="Stylesheet"><link href="../../../styles/logo-styles.css" rel="Stylesheet"><script type="text/javascript" src="../../../scripts/clipboard.js" async></script><script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script><script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script><script type="text/javascript" src="../../../scripts/main.js" defer></script><script type="text/javascript" src="../../../scripts/prism.js" async></script><script>const storage = localStorage.getItem("dokka-dark-mode")
+const savedDarkMode = storage ? JSON.parse(storage) : false
+if(savedDarkMode === true){
+    document.getElementsByTagName("html")[0].classList.add("theme-dark")
+}</script>
+
+  
+    <div class="navigation-wrapper" id="navigation-wrapper">
+      <div id="leftToggler"><span class="icon-toggler"></span></div>
+      <div class="library-name"><a href="../../../index.html"><span>StreamPack</span></a></div>
+      <div></div>
+      <div class="pull-right d-flex"><button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+      </div>
+    </div>
+    <div id="container">
+      <div id="leftColumn">
+        <div id="sideMenu"></div>
+      </div>
+      <div id="main">
+        <div class="main-content" id="content" pageids="extension-srt::io.github.thibaultbee.streampack.ext.srt.regulator.srt/SrtBitrateRegulator///PointingToDeclaration//759038430">
+          <div class="breadcrumbs"><a href="../../index.html">extension-srt</a>/<a href="../index.html">io.github.thibaultbee.streampack.ext.srt.regulator.srt</a>/<a href="index.html">SrtBitrateRegulator</a></div>
+          <div class="cover ">
+            <h1 class="cover"><span>Srt</span><wbr><span>Bitrate</span><wbr><span><span>Regulator</span></span></h1>
+            <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":extension-srt:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">class </span><a href="index.html">SrtBitrateRegulator</a><span class="token punctuation">(</span>bitrateRegulatorConfig<span class="token operator">: </span><a href="../../../core/io.github.thibaultbee.streampack.data/-bitrate-regulator-config/index.html">BitrateRegulatorConfig</a><span class="token punctuation">, </span>onVideoTargetBitrateChange<span class="token operator">: </span><span class="token punctuation">(</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html">Unit</a><span class="token punctuation">, </span>onAudioTargetBitrateChange<span class="token operator">: </span><span class="token punctuation">(</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html">Unit</a><span class="token punctuation">)</span> : <a href="../../../core/io.github.thibaultbee.streampack.regulator/-bitrate-regulator/index.html">BitrateRegulator</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph">Base class of bitrate regulation implementation. If you want to implement your custom bitrate regulator, it must inherit from this class. The bitrate regulator object is created by streamers with the <a href="../../../core/io.github.thibaultbee.streampack.regulator/-i-bitrate-regulator-factory/index.html">IBitrateRegulatorFactory</a>.</p></div></div>
+          </div>
+          <div class="tabbedcontent">
+            <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="Constructors">Constructors</button><button class="section-tab" data-togglable="Functions">Functions</button><button class="section-tab" data-togglable="Parameters">Parameters</button><button class="section-tab" data-togglable="Inheritors">Inheritors</button></div>
+            <div class="tabs-section-body">
+              <h2 class="">Parameters</h2>
+              <div data-togglable="Parameters">
+                <div class="platform-hinted WithExtraAttributes" data-platform-hinted="data-platform-hinted" data-togglable="Parameters"><div class="content sourceset-depenent-content" data-active="" data-togglable=":extension-srt:dokkaHtmlPartial/release"><div data-togglable="Parameters"><div class="table" data-togglable="Parameters"><div class="table-row" data-filterable-current=":extension-srt:dokkaHtmlPartial/release" data-filterable-set=":extension-srt:dokkaHtmlPartial/release"><div class="main-subrow keyValue WithExtraAttributes"><div class=""><span class="inline-flex"><div><span>bitrate</span><wbr><span>Regulator</span><wbr><span><span>Config</span></span></div></span></div><div><div class="title"><div data-togglable="Parameters"><p class="paragraph">bitrate regulation configuration</p></div></div></div></div></div><div class="table-row" data-filterable-current=":extension-srt:dokkaHtmlPartial/release" data-filterable-set=":extension-srt:dokkaHtmlPartial/release"><div class="main-subrow keyValue WithExtraAttributes"><div class=""><span class="inline-flex"><div><span>on</span><wbr><span>Video</span><wbr><span>Target</span><wbr><span>Bitrate</span><wbr><span><span>Change</span></span></div></span></div><div><div class="title"><div data-togglable="Parameters"><p class="paragraph">call when you have to change video bitrate</p></div></div></div></div></div><div class="table-row" data-filterable-current=":extension-srt:dokkaHtmlPartial/release" data-filterable-set=":extension-srt:dokkaHtmlPartial/release"><div class="main-subrow keyValue WithExtraAttributes"><div class=""><span class="inline-flex"><div><span>on</span><wbr><span>Audio</span><wbr><span>Target</span><wbr><span>Bitrate</span><wbr><span><span>Change</span></span></div></span></div><div><div class="title"><div data-togglable="Parameters"><p class="paragraph">call when you have to change audio bitrate</p></div></div></div></div></div></div></div></div></div>
+              </div>
+              <h2 class="tabbedcontent">Constructors</h2>
+              <div class="table" data-togglable="Constructors"><a data-name="1352143143%2FConstructors%2F759038430" anchor-label="SrtBitrateRegulator" id="1352143143%2FConstructors%2F759038430" data-filterable-set=":extension-srt:dokkaHtmlPartial/release"></a>
+                <div class="table-row" data-filterable-current=":extension-srt:dokkaHtmlPartial/release" data-filterable-set=":extension-srt:dokkaHtmlPartial/release">
+                  <div class="main-subrow keyValue TabbedContent">
+                    <div class=""><span class="inline-flex">
+                        <div><a href="-srt-bitrate-regulator.html"><span>Srt</span><wbr><span>Bitrate</span><wbr><span><span>Regulator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1352143143%2FConstructors%2F759038430"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":extension-srt:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="-srt-bitrate-regulator.html"><span class="token function">SrtBitrateRegulator</span></a><span class="token punctuation">(</span>bitrateRegulatorConfig<span class="token operator">: </span><a href="../../../core/io.github.thibaultbee.streampack.data/-bitrate-regulator-config/index.html">BitrateRegulatorConfig</a><span class="token punctuation">, </span>onVideoTargetBitrateChange<span class="token operator">: </span><span class="token punctuation">(</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html">Unit</a><span class="token punctuation">, </span>onAudioTargetBitrateChange<span class="token operator">: </span><span class="token punctuation">(</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html">Unit</a><span class="token punctuation">)</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <h2 class="">Functions</h2>
+              <div class="table" data-togglable="Functions"><a data-name="-613154860%2FFunctions%2F759038430" anchor-label="update" id="-613154860%2FFunctions%2F759038430" data-filterable-set=":extension-srt:dokkaHtmlPartial/release"></a>
+                <div class="table-row" data-filterable-current=":extension-srt:dokkaHtmlPartial/release" data-filterable-set=":extension-srt:dokkaHtmlPartial/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex">
+                        <div><a href="update.html"><span><span>update</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-613154860%2FFunctions%2F759038430"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":extension-srt:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="update.html"><span class="token function">update</span></a><span class="token punctuation">(</span>stats<span class="token operator">: </span><span data-unresolved-link="io.github.thibaultbee.srtdroid.models/Stats///PointingToDeclaration/">Stats</span><span class="token punctuation">, </span>currentVideoBitrate<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span>currentAudioBitrate<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">)</span><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><p class="paragraph">Call regularly to get new SRT stats</p></div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <h2 class="">Inheritors</h2>
+              <div class="table" data-togglable="Inheritors"><a data-name="-836132961%2FInheritors%2F759038430" anchor-label="DefaultSrtBitrateRegulator" id="-836132961%2FInheritors%2F759038430" data-filterable-set=":extension-srt:dokkaHtmlPartial/release"></a>
+                <div class="table-row" data-filterable-current=":extension-srt:dokkaHtmlPartial/release" data-filterable-set=":extension-srt:dokkaHtmlPartial/release">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex">
+                        <div><a href="../-default-srt-bitrate-regulator/index.html">DefaultSrtBitrateRegulator</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-836132961%2FInheritors%2F759038430"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2022 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span></div>
+      </div>
+    </div>
+  
+</body></html>
+
+
