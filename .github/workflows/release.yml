@@ -1,0 +1,31 @@
+name: Publish package to GitHub Packages
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
+      - name: Decode the secret key
+        run: echo $GPG_KEYRING_FILE_CONTENT | base64 --decode > ~/secring.gpg
+        env:
+          GPG_KEYRING_FILE_CONTENT: "${{ secrets.GPG_KEYRING_FILE_CONTENT }}"
+      - name: Publish package
+        run: gradle publish -Psigning.secretKeyRingFile=$(echo ~/secring.gpg) -Psigning.password=$GPG_PASSPHRASE -Psigning.keyId=$GPG_KEY_ID
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
