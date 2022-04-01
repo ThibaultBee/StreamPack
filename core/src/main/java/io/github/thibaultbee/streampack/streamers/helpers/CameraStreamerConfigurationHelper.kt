@@ -46,7 +46,7 @@ class CameraStreamerConfigurationHelper(muxerHelper: IMuxerHelper) :
 class VideoCameraStreamerConfigurationHelper(muxerHelper: IVideoMuxerHelper) :
     VideoStreamerConfigurationHelper(muxerHelper) {
     /**
-     * Get supported resolutions for a [BaseCameraStreamer].
+     * Get camera resolutions that are supported by the encoder.
      *
      * @param context application context
      * @param mimeType video encoder mime type
