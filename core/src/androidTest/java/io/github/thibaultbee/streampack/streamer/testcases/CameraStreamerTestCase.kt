@@ -21,6 +21,7 @@ import android.view.Surface
 import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.utils.AndroidUtils
+import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
@@ -34,6 +35,12 @@ abstract class CameraStreamerTestCase :
     @Before
     fun setUp() {
         surface = Surface(SurfaceTexture(false))
+    }
+
+    @After
+    override fun tearDown() {
+        super.tearDown()
+        surface.release()
     }
 
     @get:Rule

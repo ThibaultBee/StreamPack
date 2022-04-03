@@ -20,6 +20,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import io.github.thibaultbee.streampack.utils.AndroidUtils
 import io.github.thibaultbee.streampack.utils.FakeAndroidLogger
+import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Test
 
@@ -28,6 +29,11 @@ abstract class StreamerTestCase {
     protected val context: Context = InstrumentationRegistry.getInstrumentation().context
 
     abstract val streamer: BaseStreamer
+
+    @After
+    open fun tearDown() {
+        streamer.release()
+    }
 
     @Test
     open fun defaultUsageTest() {
