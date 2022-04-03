@@ -23,7 +23,7 @@ streams somewhere For example, a file (`FileWriter`), or a remote RTMP server (`
 A class that represent a audio and/or video live streaming pipeline. It manages sources, encoders,
 muxers, endpoints,... and have lot of tools. They are the most important class for users.
 
-![streamer.png](https://github.com/ThibaultBee/StreamPack/tree/master/app/docs/assets/streamer.png)
+![streamer.png](https://github.com/ThibaultBee/StreamPack/blob/master/docs/assets/streamer.png)
 
 `Streamer element`:
 Could be a `Source`, `Encoder`, `Muxer`, or `Endpoint`. They implement the `Streamable<T>`.
