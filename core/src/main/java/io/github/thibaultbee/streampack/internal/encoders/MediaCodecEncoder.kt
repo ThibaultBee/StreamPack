@@ -160,10 +160,11 @@ abstract class MediaCodecEncoder<T>(
     }
 
     protected fun createCodec(format: MediaFormat): MediaCodec {
+        logger.e(this, "createCodec: $format")
         val mediaCodecList = MediaCodecList(MediaCodecList.REGULAR_CODECS)
         val encoderName = mediaCodecList.findEncoderForFormat(format)
         encoderName?.let { return MediaCodec.createByCodecName(encoderName) }
-            ?: throw InvalidParameterException("Failed to create codec for $mediaCodec")
+            ?: throw InvalidParameterException("Failed to create ${encoderName ?: "unknown"} codec for: $format")
     }
 
     protected fun configureCodec(codec: MediaCodec, format: MediaFormat, handlerName: String) {

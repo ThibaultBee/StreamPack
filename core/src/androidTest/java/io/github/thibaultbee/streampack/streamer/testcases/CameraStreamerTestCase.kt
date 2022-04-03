@@ -30,7 +30,7 @@ import org.junit.Test
 abstract class CameraStreamerTestCase :
     StreamerTestCase() {
     abstract override val streamer: BaseCameraStreamer
-    private lateinit var surface : Surface//= Surface(SurfaceTexture(false))
+    private lateinit var surface : Surface
 
     @Before
     fun setUp() {

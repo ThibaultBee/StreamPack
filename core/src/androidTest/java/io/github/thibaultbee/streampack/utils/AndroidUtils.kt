@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.utils
 
 import android.media.MediaFormat
+import android.util.Size
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
@@ -55,7 +56,9 @@ object AndroidUtils {
      *
      * @return a [VideoConfig] for test
      */
-    fun fakeValidVideoConfig() = VideoConfig()
+    fun fakeValidVideoConfig() = VideoConfig(
+        resolution = Size(640, 360)
+    )
 
 
     /**
