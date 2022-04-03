@@ -15,8 +15,8 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.ts.descriptors
 
+import io.github.thibaultbee.streampack.internal.utils.extractArray
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
-import io.github.thibaultbee.streampack.utils.extractArray
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 import java.nio.ByteBuffer

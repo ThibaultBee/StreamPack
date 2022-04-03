@@ -16,10 +16,16 @@
 package io.github.thibaultbee.streampack.streamers.interfaces
 
 import java.io.File
+import java.io.OutputStream
 
 interface IFileStreamer {
     /**
-     * [File] where to write data.
+     * [File] where o write the stream.
      */
     var file: File?
+
+    /**
+     * [OutputStream] where to write the stream.
+     */
+    var outputStream: OutputStream?
 }

@@ -16,24 +16,26 @@
 package io.github.thibaultbee.streampack.internal.endpoints
 
 import io.github.thibaultbee.streampack.internal.data.Packet
+import io.github.thibaultbee.streampack.internal.utils.extractArray
 import io.github.thibaultbee.streampack.logger.ILogger
 import java.io.File
 import java.io.FileOutputStream
+import java.io.OutputStream
 
 
 class FileWriter(val logger: ILogger) : IEndpoint {
     var file: File? = null
         set(value) {
             value?.let {
-                fileOutputStream = FileOutputStream(value, false)
+                outputStream = FileOutputStream(value, false)
             }
             field = value
         }
 
-    private var fileOutputStream: FileOutputStream? = null
+    var outputStream: OutputStream? = null
 
     override fun startStream() {
-        if (fileOutputStream == null) {
+        if (outputStream == null) {
             throw UnsupportedOperationException("Set a file before trying to write it")
         }
     }
@@ -41,12 +43,12 @@ class FileWriter(val logger: ILogger) : IEndpoint {
     override fun configure(config: Int) {} // Nothing to configure
 
     override fun write(packet: Packet) {
-        fileOutputStream?.channel?.write(packet.buffer)
+        outputStream?.write(packet.buffer.extractArray())
             ?: throw UnsupportedOperationException("Set a file before trying to write it")
     }
 
     override fun stopStream() {
-        fileOutputStream?.channel?.close()
+        outputStream?.close()
     }
 
     override fun release() {

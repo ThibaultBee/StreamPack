@@ -1,6 +1,6 @@
 package io.github.thibaultbee.streampack.internal.muxers.flv.amf.primitives
 
-import io.github.thibaultbee.streampack.utils.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extractArray
 import org.junit.Assert.*
 import org.junit.Test
 

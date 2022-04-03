@@ -17,19 +17,24 @@ package io.github.thibaultbee.streampack.app.utils
 
 import android.Manifest
 import android.content.Context
+import android.os.Build
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.app.configuration.Configuration
 import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
+import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
+import io.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
+import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
+import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
-import io.github.thibaultbee.streampack.streamers.interfaces.*
 import io.github.thibaultbee.streampack.utils.CameraSettings
 import io.github.thibaultbee.streampack.utils.getBackCameraList
 import io.github.thibaultbee.streampack.utils.getFrontCameraList
 import io.github.thibaultbee.streampack.utils.isBackCamera
 import java.io.File
+
 
 class StreamerManager(
     private val context: Context,
@@ -87,7 +92,9 @@ class StreamerManager(
                 Manifest.permission.RECORD_AUDIO
             )
             getFileStreamer()?.let {
-                permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+                    permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                }
             }
             return permissions
         }
@@ -106,7 +113,7 @@ class StreamerManager(
         getCameraStreamer()?.stopPreview()
     }
 
-    suspend fun startStream(filesDir: File) {
+    suspend fun startStream() {
         if (getLiveStreamer() != null) {
             getSrtLiveStreamer()?.let {
                 it.streamId =
@@ -123,10 +130,21 @@ class StreamerManager(
         }
 
         getFileStreamer()?.let {
-            it.file = File(
-                filesDir,
-                configuration.endpoint.file.filename
-            )
+            /**
+             * Use OutputStream.
+             * FYI, outputStream is closed by stopStream
+             */
+            it.outputStream =
+                context.createVideoMediaOutputStream(configuration.endpoint.file.filename)
+                    ?: throw Exception("Unable to create video output stream")
+            /**
+             *  Or use [File].
+             *  It is not appropriate to directly access a [File]. Use Androidx FileProvider instead.
+             */
+//            it.file = File(
+//                filesDir,
+//                configuration.endpoint.file.filename
+//            )
         }
 
         streamer?.startStream()

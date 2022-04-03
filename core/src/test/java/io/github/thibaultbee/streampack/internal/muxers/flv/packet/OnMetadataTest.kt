@@ -16,10 +16,9 @@
 package io.github.thibaultbee.streampack.internal.muxers.flv.packet
 
 import android.content.Context
-import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.VideoConfig
+import io.github.thibaultbee.streampack.internal.utils.extractArray
 import io.github.thibaultbee.streampack.utils.MockUtils
-import io.github.thibaultbee.streampack.utils.extractArray
 import io.mockk.mockk
 import org.junit.Assert.assertArrayEquals
 import org.junit.Before
@@ -27,11 +26,6 @@ import org.junit.Test
 
 class OnMetadataTest {
     private val context = mockk<Context>()
-
-    @Before
-    fun startUp() {
-
-    }
 
     @Test
     fun videoOnlyTest() {

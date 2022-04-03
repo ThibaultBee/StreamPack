@@ -111,7 +111,7 @@ class PreviewFragment : Fragment() {
          * [ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE] in [onCreate] or [onResume].
          */
         requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
-        viewModel.startStream(requireContext().filesDir)
+        viewModel.startStream()
     }
 
     private fun unLockScreen() {

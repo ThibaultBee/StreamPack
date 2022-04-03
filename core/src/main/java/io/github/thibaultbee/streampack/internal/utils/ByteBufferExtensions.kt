@@ -91,3 +91,18 @@ fun ByteBuffer.slices(prefix: ByteArray): List<ByteBuffer> {
         ByteBuffer.wrap(array.sliceArray(IntRange(it.first, it.second)))
     }
 }
+
+/**
+ * Returns ByteBuffer array even if [ByteBuffer.hasArray] returns false.
+ *
+ * @return [ByteArray] extracted from [ByteBuffer]
+ */
+fun ByteBuffer.extractArray(): ByteArray {
+    return if (this.hasArray() && !isDirect) {
+        this.array()
+    } else {
+        val byteArray = ByteArray(this.remaining())
+        this.get(byteArray)
+        byteArray
+    }
+}

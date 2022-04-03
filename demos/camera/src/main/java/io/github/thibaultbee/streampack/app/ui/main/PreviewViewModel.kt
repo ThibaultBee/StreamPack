@@ -108,10 +108,10 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
         }
     }
 
-    fun startStream(filesDir: File) {
+    fun startStream() {
         viewModelScope.launch {
             try {
-                streamerManager.startStream(filesDir)
+                streamerManager.startStream()
             } catch (e: Throwable) {
                 Log.e(TAG, "startStream failed", e)
                 streamerError.postValue("startStream: ${e.message ?: "Unknown error"}")

@@ -18,30 +18,28 @@ package io.github.thibaultbee.streampack.internal.endpoints
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.utils.FakeLogger
 import io.github.thibaultbee.streampack.utils.Utils
+import org.junit.After
 import org.junit.Assert.*
 import org.junit.Test
 import java.io.File
 import java.nio.ByteBuffer
 
 class FileWriterTest {
-    private fun createTempFile(): File {
+    private val filePublisher = FileWriter(FakeLogger())
+
+    @After
+    fun tearDown() {
+        filePublisher.release()
+    }
+
+    private fun createTestFile(): File {
         val tmpFile = File.createTempFile("test", ".tmp")
         tmpFile.deleteOnExit()
         return tmpFile
     }
 
     @Test
-    fun fileExistTest() {
-        val tmpFile = createTempFile()
-        val filePublisher = FileWriter(FakeLogger())
-        filePublisher.file = tmpFile
-        assertTrue(tmpFile.exists())
-        filePublisher.release()
-    }
-
-    @Test
-    fun startStreamWithNullFileTest() {
-        val filePublisher = FileWriter(FakeLogger())
+    fun `startStream with non existing file test`() {
         try {
             filePublisher.startStream()
             fail("Null file must not be streamable")
@@ -51,8 +49,7 @@ class FileWriterTest {
     }
 
     @Test
-    fun writeToNullFileTest() {
-        val filePublisher = FileWriter(FakeLogger())
+    fun `write to non existing file test`() {
         try {
             val randomArray = Utils.generateRandomArray(1024)
             filePublisher.startStream()
@@ -69,9 +66,9 @@ class FileWriterTest {
     }
 
     @Test
-    fun writeToFileTest() {
-        val tmpFile = createTempFile()
-        val filePublisher = FileWriter(FakeLogger())
+    fun `write buffer to file test`() {
+        val tmpFile = createTestFile()
+
         filePublisher.file = tmpFile
         val randomArray = Utils.generateRandomArray(1024)
         try {
@@ -79,6 +76,53 @@ class FileWriterTest {
             filePublisher.write(
                 Packet(
                     ByteBuffer.wrap(randomArray),
+                    ts = 0
+                )
+            )
+            assertArrayEquals(randomArray, tmpFile.readBytes())
+            filePublisher.stopStream()
+        } catch (e: Exception) {
+            fail()
+        }
+        filePublisher.release()
+    }
+
+    @Test
+    fun `write buffer to outputStream test`() {
+        val tmpFile = createTestFile()
+
+        filePublisher.outputStream = tmpFile.outputStream()
+        val randomArray = Utils.generateRandomArray(1024)
+        try {
+            filePublisher.startStream()
+            filePublisher.write(
+                Packet(
+                    ByteBuffer.wrap(randomArray),
+                    ts = 0
+                )
+            )
+            assertArrayEquals(randomArray, tmpFile.readBytes())
+            filePublisher.stopStream()
+        } catch (e: Exception) {
+            fail()
+        }
+        filePublisher.release()
+    }
+
+    @Test
+    fun `write direct buffer to outputStream test`() {
+        val tmpFile = createTestFile()
+
+        filePublisher.outputStream = tmpFile.outputStream()
+        val randomArray = Utils.generateRandomArray(1024)
+        val directBuffer = ByteBuffer.allocateDirect(1024)
+        directBuffer.put(randomArray)
+        directBuffer.rewind()
+        try {
+            filePublisher.startStream()
+            filePublisher.write(
+                Packet(
+                    directBuffer,
                     ts = 0
                 )
             )

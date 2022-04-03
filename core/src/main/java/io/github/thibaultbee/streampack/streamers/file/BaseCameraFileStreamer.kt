@@ -26,6 +26,7 @@ import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
 import java.io.File
+import java.io.OutputStream
 
 /**
  * A [BaseCameraStreamer] that sends microphone and camera frames to a [File].
@@ -54,22 +55,47 @@ open class BaseCameraFileStreamer(
     private val fileWriter = endpoint as FileWriter
 
     /**
-     * Get/Set [FileWriter] file. If no file has been set. [FileWriter] uses a default temporary file.
+     * Get/Set file.
+     * To set an [OutputStream] instead, see [outputStream].
+     *
+     * @see [outputStream]
      */
     override var file: File?
         /**
-         * Get file writer file.
+         * Get registered [File].
          *
-         * @return file where [FileWriter] writes
+         * @return file where to write the stream
          */
         get() = fileWriter.file
         /**
-         * Set file writer file.
+         * Set [File].
          *
-         * @param value [File] where [FileWriter] writes
+         * @param value [File] where to write the stream
          */
         set(value) {
             fileWriter.file = value
+        }
+
+    /**
+     * Get/Set outputStream. outputStream will be closed on [stopStream].
+     * To set an [File] instead, see [file].
+     *
+     * @see file
+     */
+    override var outputStream: OutputStream?
+        /**
+         * Get registered [OutputStream].
+         *
+         * @return file where to write the stream
+         */
+        get() = fileWriter.outputStream
+        /**
+         * Set [OutputStream].
+         *
+         * @param value [OutputStream] to write the stream
+         */
+        set(value) {
+            fileWriter.outputStream = value
         }
 
     /**
