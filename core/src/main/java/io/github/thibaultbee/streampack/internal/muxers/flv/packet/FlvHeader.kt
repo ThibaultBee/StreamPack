@@ -22,7 +22,8 @@ import kotlin.experimental.or
 
 class FlvHeader(private val hasAudio: Boolean, private val hasVideo: Boolean) {
     companion object {
-        private const val HEADER_SIZE = 13 // 9 + 4 for PreviousTagSize0
+        private const val DATA_OFFSET = 9
+        private const val HEADER_SIZE = DATA_OFFSET + 4 // 9 + 4 for PreviousTagSize0
     }
 
     fun write(buffer: ByteBuffer) {
@@ -31,7 +32,7 @@ class FlvHeader(private val hasAudio: Boolean, private val hasVideo: Boolean) {
         buffer.put(0x56) // 'V'
         buffer.put(0x01) // Version
         buffer.put(hasVideo.toByte() or (hasAudio.toByte() shl 2).toByte())
-        buffer.putInt(HEADER_SIZE)
+        buffer.putInt(DATA_OFFSET)
         buffer.putInt(0) // PreviousTagSize0
     }
 
