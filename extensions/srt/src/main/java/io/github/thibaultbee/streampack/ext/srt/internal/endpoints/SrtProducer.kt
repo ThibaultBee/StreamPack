@@ -44,6 +44,7 @@ class SrtProducer(
 
     private var socket = Socket()
     private var bitrate = 0L
+    private var isOnError = false
 
     companion object {
         private const val PAYLOAD_SIZE = 1316
@@ -105,6 +106,7 @@ class SrtProducer(
             }
             socket.setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
             socket.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
+            isOnError = false
             socket.connect(ip, port)
             onConnectionListener?.onSuccess()
         } catch (e: Exception) {
@@ -121,6 +123,8 @@ class SrtProducer(
     }
 
     override fun write(packet: Packet) {
+        if (isOnError) return
+
         packet as SrtPacket
         val boundary = when {
             packet.isFirstPacketFrame && packet.isLastPacketFrame -> Boundary.SOLO
@@ -138,7 +142,13 @@ class SrtProducer(
                     boundary = boundary
                 )
             }
-        socket.send(packet.buffer, msgCtrl)
+
+        try {
+            socket.send(packet.buffer, msgCtrl)
+        } catch (e: Exception) {
+            isOnError = true
+            throw e
+        }
     }
 
     override fun startStream() {

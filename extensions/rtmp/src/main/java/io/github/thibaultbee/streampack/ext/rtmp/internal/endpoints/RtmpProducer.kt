@@ -16,7 +16,6 @@
 package io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints
 
 import io.github.thibaultbee.streampack.internal.data.Packet
-import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.logger.ILogger
@@ -34,6 +33,7 @@ class RtmpProducer(
     override var onConnectionListener: OnConnectionListener? = null
 
     private var socket = Rtmp()
+    private var isOnError = false
 
     override fun configure(config: Int) {
     }
@@ -41,6 +41,7 @@ class RtmpProducer(
     override suspend fun connect(url: String) {
         withContext(coroutineDispatcher) {
             try {
+                isOnError = false
                 socket.connect("$url live=1")
                 onConnectionListener?.onSuccess()
             } catch (e: Exception) {
@@ -57,9 +58,13 @@ class RtmpProducer(
     }
 
     override fun write(packet: Packet) {
+        if (isOnError) return
+
         try {
             socket.write(packet.buffer)
         } catch (e: SocketException) {
+            disconnect()
+            isOnError = true
             onConnectionListener?.onLost(e.message ?: "Socket error")
             logger.e(this, "Error while writing packet to socket", e)
             throw e
