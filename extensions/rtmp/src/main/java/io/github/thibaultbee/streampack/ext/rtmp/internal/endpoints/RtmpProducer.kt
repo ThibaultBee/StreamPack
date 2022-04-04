@@ -24,6 +24,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import video.api.rtmpdroid.Rtmp
+import java.net.SocketException
 
 class RtmpProducer(
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -56,7 +57,13 @@ class RtmpProducer(
     }
 
     override fun write(packet: Packet) {
-        socket.write(packet.buffer)
+        try {
+            socket.write(packet.buffer)
+        } catch (e: SocketException) {
+            onConnectionListener?.onLost(e.message ?: "Socket error")
+            logger.e(this, "Error while writing packet to socket", e)
+            throw e
+        }
     }
 
     override fun startStream() {
