@@ -15,9 +15,7 @@
  */
 package io.github.thibaultbee.streampack.streamers.live
 
-import android.Manifest
 import android.content.Context
-import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
@@ -55,7 +53,7 @@ open class BaseScreenRecorderLiveStreamer(
     initialOnErrorListener = initialOnErrorListener
 ),
     ILiveStreamer {
-    private val liveProducer = endpoint
+    private val liveProducer = endpoint.apply { onConnectionListener = initialOnConnectionListener }
 
     /**
      * Listener to manage connection.

@@ -55,7 +55,7 @@ open class BaseAudioOnlyLiveStreamer(
     endpoint = endpoint,
     initialOnErrorListener = initialOnErrorListener,
 ), ILiveStreamer {
-    private val liveProducer = endpoint
+    private val liveProducer = endpoint.apply { onConnectionListener = initialOnConnectionListener }
 
     /**
      * Listener to manage connection.
