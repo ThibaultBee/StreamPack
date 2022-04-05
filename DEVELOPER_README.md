@@ -100,12 +100,12 @@ If your video source is a `ByteBuffer` source, set:
 
 ## Encoders
 
-They implement the `IMuxer` interface.
+Both `AudioMediaCodecEncoder` and `VideoMediaCodecEncoder` inherit from `MediaCodecEncoder`. They
+are using Android `MediaCodec` API in asynchronous mode.
 
 ## Muxers
 
-Both `AudioMediaCodecEncoder` and `VideoMediaCodecEncoder` inherit from `MediaCodecEncoder`. They
-are using Android `MediaCodec` API in asynchronous mode
+They implement the `IMuxer` interface.
 
 ## Endpoints
 
