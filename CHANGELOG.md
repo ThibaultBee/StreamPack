@@ -2,6 +2,23 @@ Change Log
 ==========
 
 
+Version 2.1.0
+-------------
+
+## Features:
+
+- `FileStreamers` also takes an `OutputStream` as a parameter (as well as a `File`)
+
+## Bug fixes:
+
+- Send a `onLost` event when the RTMP connection is lost
+- Use initial connection listener
+- Fix FLV header for `FileStreamers` (wasn't written correctly)
+
+## Other changes:
+
+- Add github actions for Android instrumented test
+
 Version 2.0.0
 -------------
 
