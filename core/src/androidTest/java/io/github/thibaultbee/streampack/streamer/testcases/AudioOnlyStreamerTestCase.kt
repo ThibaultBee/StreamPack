@@ -15,32 +15,27 @@
  */
 package io.github.thibaultbee.streampack.streamer.testcases
 
-import android.content.Context
-import androidx.test.platform.app.InstrumentationRegistry
-import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
+import android.Manifest
+import androidx.test.rule.GrantPermissionRule
+import io.github.thibaultbee.streampack.streamers.bases.BaseAudioOnlyStreamer
 import io.github.thibaultbee.streampack.utils.AndroidUtils
-import io.github.thibaultbee.streampack.utils.FakeAndroidLogger
-import org.junit.After
 import org.junit.Assert.fail
+import org.junit.Rule
 import org.junit.Test
 
-abstract class StreamerTestCase {
-    protected val logger = FakeAndroidLogger()
-    protected val context: Context = InstrumentationRegistry.getInstrumentation().context
+abstract class AudioOnlyStreamerTestCase :
+    StreamerTestCase() {
+    abstract override val streamer: BaseAudioOnlyStreamer
 
-    abstract val streamer: BaseStreamer
-
-    @After
-    open fun tearDown() {
-        streamer.release()
-    }
+    @get:Rule
+    val runtimePermissionRule: GrantPermissionRule =
+        GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO)
 
     @Test
-    open fun defaultUsageTest() {
+    override fun defaultUsageTest() {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                AndroidUtils.fakeValidAudioConfig()
             )
             streamer.startStream()
             streamer.stopStream()
@@ -51,13 +46,10 @@ abstract class StreamerTestCase {
     }
 
     @Test
-    open fun defaultUsageTest2() {
+    override fun defaultUsageTest2() {
         try {
             streamer.configure(
                 AndroidUtils.fakeValidAudioConfig()
-            )
-            streamer.configure(
-                AndroidUtils.fakeValidVideoConfig()
             )
             streamer.startStream()
             streamer.stopStream()
@@ -69,7 +61,7 @@ abstract class StreamerTestCase {
 
     // Single method calls
     @Test
-    open fun configureAudioTest() {
+    override fun configureAudioTest() {
         try {
             streamer.configure(
                 AndroidUtils.fakeValidAudioConfig()
@@ -80,87 +72,45 @@ abstract class StreamerTestCase {
     }
 
     @Test
-    open fun configureVideoTest() {
+    override fun configureVideoTest() {
         try {
             streamer.configure(
                 AndroidUtils.fakeValidVideoConfig()
             )
+            fail("Must not be possible to configure video")
         } catch (e: Exception) {
-            fail("Must be possible to only configure video without exception: $e")
         }
     }
 
     @Test
-    open fun configureTest() {
+    override fun configureTest() {
         try {
             streamer.configure(
                 AndroidUtils.fakeValidAudioConfig(),
                 AndroidUtils.fakeValidVideoConfig()
             )
+            fail("Must not be possible to configure video")
         } catch (e: Exception) {
-            fail("Must be possible to only configure without exception: $e")
         }
     }
 
     @Test
-    open fun configureErrorTest() {
+    override fun configureErrorTest() {
         try {
             streamer.configure(
-                AndroidUtils.fakeInvalidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                AndroidUtils.fakeInvalidAudioConfig()
             )
             fail("Invalid configuration must throw an exception")
         } catch (e: Exception) {
         }
     }
 
-    @Test
-    fun startStreamTest() {
-        try {
-            streamer.startStream()
-            fail("startStream without configuration must throw an exception")
-        } catch (e: Exception) {
-        }
-    }
-
-    @Test
-    fun stopStreamTest() {
-        try {
-            streamer.stopStream()
-        } catch (e: Exception) {
-            fail("Must be possible to only stopStream without exception: $e")
-        }
-    }
-
-    @Test
-    fun releaseTest() {
-        try {
-            streamer.release()
-        } catch (e: Exception) {
-            fail("Must be possible to only release without exception: $e")
-        }
-    }
-
     // Multiple methods calls
     @Test
-    fun configureStartStreamTest() {
+    override fun configureReleaseTest() {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
-            )
-            streamer.startStream()
-            fail("startStream without startPreview must failed")
-        } catch (e: Exception) {
-        }
-    }
-
-    @Test
-    open fun configureReleaseTest() {
-        try {
-            streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                AndroidUtils.fakeValidAudioConfig()
             )
             streamer.release()
         } catch (e: Exception) {
@@ -169,11 +119,10 @@ abstract class StreamerTestCase {
     }
 
     @Test
-    open fun configureStopStreamTest() {
+    override fun configureStopStreamTest() {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                AndroidUtils.fakeValidAudioConfig()
             )
             streamer.stopStream()
         } catch (e: Exception) {
@@ -182,11 +131,10 @@ abstract class StreamerTestCase {
     }
 
     @Test
-    open fun startStreamReleaseTest() {
+    override fun startStreamReleaseTest() {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                AndroidUtils.fakeValidAudioConfig()
             )
             streamer.startStream()
             streamer.release()
@@ -196,11 +144,10 @@ abstract class StreamerTestCase {
     }
 
     @Test
-    open fun startStreamStopStreamTest() {
+    override fun startStreamStopStreamTest() {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                AndroidUtils.fakeValidAudioConfig()
             )
             streamer.startStream()
             streamer.stopStream()
@@ -209,27 +156,11 @@ abstract class StreamerTestCase {
         }
     }
 
-    // Stress test
     @Test
-    open fun multipleConfigureTest() {
-        try {
-            (0..10).forEach { _ ->
-                streamer.configure(
-                    AndroidUtils.fakeValidAudioConfig(),
-                    AndroidUtils.fakeValidVideoConfig()
-                )
-            }
-        } catch (e: Exception) {
-            fail("Must be possible to call configure multiple times but catches exception: $e")
-        }
-    }
-
-    @Test
-    open fun multipleStartStreamStopStreamTest() {
+    override fun multipleStartStreamStopStreamTest() {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                AndroidUtils.fakeValidAudioConfig()
             )
             (0..10).forEach { _ ->
                 streamer.startStream()
@@ -237,6 +168,19 @@ abstract class StreamerTestCase {
             }
         } catch (e: Exception) {
             fail("Must be possible to startStream/stopStream multiple times but catches exception: $e")
+        }
+    }
+
+    @Test
+    override fun multipleConfigureTest() {
+        try {
+            (0..10).forEach { _ ->
+                streamer.configure(
+                    AndroidUtils.fakeValidAudioConfig()
+                )
+            }
+        } catch (e: Exception) {
+            fail("Must be possible to call configure multiple times but catches exception: $e")
         }
     }
 }

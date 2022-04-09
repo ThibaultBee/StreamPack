@@ -71,41 +71,47 @@ class StreamerFactory(
 
 
     private fun createStreamer(context: Context): IStreamer {
-        return if (configuration.video.enable) {
-            when (configuration.endpoint.endpointType) {
-                EndpointType.TS_FILE -> CameraTsFileStreamer(
-                    context,
-                    enableAudio = enableAudio,
-                    tsServiceInfo = tsServiceInfo
-                )
-                EndpointType.FLV_FILE -> CameraFlvFileStreamer(
-                    context,
-                    enableAudio = enableAudio
-                )
-                EndpointType.SRT -> CameraSrtLiveStreamer(
-                    context,
-                    enableAudio = enableAudio,
-                    tsServiceInfo = tsServiceInfo,
-                    bitrateRegulatorFactory = bitrateRegulatorFactory,
-                    bitrateRegulatorConfig = bitrateRegulatorConfig
-                )
-                EndpointType.RTMP -> CameraRtmpLiveStreamer(
-                    context,
-                    enableAudio = enableAudio
-                )
+        return when {
+            configuration.video.enable -> {
+                when (configuration.endpoint.endpointType) {
+                    EndpointType.TS_FILE -> CameraTsFileStreamer(
+                        context,
+                        enableAudio = enableAudio,
+                        tsServiceInfo = tsServiceInfo
+                    )
+                    EndpointType.FLV_FILE -> CameraFlvFileStreamer(
+                        context,
+                        enableAudio = enableAudio
+                    )
+                    EndpointType.SRT -> CameraSrtLiveStreamer(
+                        context,
+                        enableAudio = enableAudio,
+                        tsServiceInfo = tsServiceInfo,
+                        bitrateRegulatorFactory = bitrateRegulatorFactory,
+                        bitrateRegulatorConfig = bitrateRegulatorConfig
+                    )
+                    EndpointType.RTMP -> CameraRtmpLiveStreamer(
+                        context,
+                        enableAudio = enableAudio
+                    )
+                }
             }
-        } else {
-            when (configuration.endpoint.endpointType) {
-                EndpointType.TS_FILE -> AudioOnlyTsFileStreamer(
-                    context,
-                    tsServiceInfo = tsServiceInfo
-                )
-                EndpointType.FLV_FILE -> AudioOnlyFlvFileStreamer(context)
-                EndpointType.SRT -> AudioOnlySrtLiveStreamer(
-                    context,
-                    tsServiceInfo = tsServiceInfo
-                )
-                EndpointType.RTMP -> AudioOnlyRtmpLiveStreamer(context)
+            configuration.audio.enable -> {
+                when (configuration.endpoint.endpointType) {
+                    EndpointType.TS_FILE -> AudioOnlyTsFileStreamer(
+                        context,
+                        tsServiceInfo = tsServiceInfo
+                    )
+                    EndpointType.FLV_FILE -> AudioOnlyFlvFileStreamer(context)
+                    EndpointType.SRT -> AudioOnlySrtLiveStreamer(
+                        context,
+                        tsServiceInfo = tsServiceInfo
+                    )
+                    EndpointType.RTMP -> AudioOnlyRtmpLiveStreamer(context)
+                }
+            }
+            else -> {
+                throw IllegalStateException("StreamerFactory: You must enable at least one of audio or video")
             }
         }
     }
@@ -130,8 +136,13 @@ class StreamerFactory(
             enableEchoCanceler = configuration.audio.enableEchoCanceler,
             enableNoiseSuppressor = configuration.audio.enableNoiseSuppressor
         )
+        if (configuration.video.enable) {
+            streamer.configure(videoConfig)
+        }
 
-        streamer.configure(audioConfig, videoConfig)
+        if (configuration.audio.enable) {
+            streamer.configure(audioConfig)
+        }
 
         return streamer
     }

@@ -18,6 +18,8 @@ package io.github.thibaultbee.streampack.streamers.live
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
+import io.github.thibaultbee.streampack.data.AudioConfig
+import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioCapture
@@ -25,6 +27,7 @@ import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.logger.StreamPackLogger
+import io.github.thibaultbee.streampack.streamers.bases.BaseAudioOnlyStreamer
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 
@@ -45,12 +48,9 @@ open class BaseAudioOnlyLiveStreamer(
     endpoint: ILiveEndpoint,
     initialOnErrorListener: OnErrorListener? = null,
     initialOnConnectionListener: OnConnectionListener? = null
-) : BaseStreamer(
+) : BaseAudioOnlyStreamer(
     context = context,
     logger = logger,
-    videoCapture = null,
-    audioCapture = AudioCapture(logger),
-    manageVideoOrientation = false,
     muxer = muxer,
     endpoint = endpoint,
     initialOnErrorListener = initialOnErrorListener,

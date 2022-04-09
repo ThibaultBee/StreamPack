@@ -310,7 +310,11 @@ class ScreenRecorderService : Service() {
 
             streamer.activityResult = activityResult
 
-            streamer.configure(audioConfig, videoConfig)
+            if (hasAudio) {
+                streamer.configure(audioConfig, videoConfig)
+            } else {
+                streamer.configure(videoConfig)
+            }
 
             try {
                 runBlocking {

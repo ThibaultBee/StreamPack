@@ -18,12 +18,15 @@ package io.github.thibaultbee.streampack.streamers.file
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
+import io.github.thibaultbee.streampack.data.AudioConfig
+import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.endpoints.FileWriter
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioCapture
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.logger.StreamPackLogger
+import io.github.thibaultbee.streampack.streamers.bases.BaseAudioOnlyStreamer
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
@@ -43,12 +46,9 @@ open class BaseAudioOnlyFileStreamer(
     logger: ILogger = StreamPackLogger(),
     muxer: IMuxer,
     initialOnErrorListener: OnErrorListener? = null
-) : BaseStreamer(
+) : BaseAudioOnlyStreamer(
     context = context,
     logger = logger,
-    videoCapture = null,
-    audioCapture = AudioCapture(logger),
-    manageVideoOrientation = false,
     muxer = muxer,
     endpoint = FileWriter(logger = logger),
     initialOnErrorListener = initialOnErrorListener

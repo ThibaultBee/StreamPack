@@ -42,6 +42,27 @@ interface IStreamer {
     val settings: IBaseStreamerSettings
 
     /**
+     * Configures only audio settings.
+     *
+     * @param audioConfig Audio configuration to set
+     *
+     * @throws [StreamPackError] if configuration can not be applied.
+     * @see [release]
+     */
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
+    fun configure(audioConfig: AudioConfig)
+
+    /**
+     * Configures only video settings.
+     *
+     * @param videoConfig Video configuration to set
+     *
+     * @throws [StreamPackError] if configuration can not be applied.
+     * @see [release]
+     */
+    fun configure(videoConfig: VideoConfig)
+
+    /**
      * Configures both video and audio settings.
      *
      * @param audioConfig Audio configuration to set
@@ -51,7 +72,7 @@ interface IStreamer {
      * @see [release]
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    fun configure(audioConfig: AudioConfig? = null, videoConfig: VideoConfig? = null)
+    fun configure(audioConfig: AudioConfig, videoConfig: VideoConfig)
 
     /**
      * Starts audio/video stream.

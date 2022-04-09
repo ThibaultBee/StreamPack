@@ -30,7 +30,7 @@ import org.junit.Test
 abstract class CameraStreamerTestCase :
     StreamerTestCase() {
     abstract override val streamer: BaseCameraStreamer
-    private lateinit var surface : Surface
+    private lateinit var surface: Surface
 
     @Before
     fun setUp() {
@@ -58,6 +58,24 @@ abstract class CameraStreamerTestCase :
             streamer.startStream()
             streamer.stopStream()
             streamer.stopPreview()
+            streamer.release()
+        } catch (e: Exception) {
+            fail("Default usage must not throw exception $e")
+        }
+    }
+
+    @Test
+    override fun defaultUsageTest2() {
+        try {
+            streamer.configure(
+                AndroidUtils.fakeValidAudioConfig()
+            )
+            streamer.configure(
+                AndroidUtils.fakeValidVideoConfig()
+            )
+            streamer.startPreview(surface)
+            streamer.startStream()
+            streamer.stopStream()
             streamer.release()
         } catch (e: Exception) {
             fail("Default usage must not throw exception $e")

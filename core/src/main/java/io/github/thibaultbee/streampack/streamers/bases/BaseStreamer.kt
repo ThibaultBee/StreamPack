@@ -184,52 +184,84 @@ abstract class BaseStreamer(
     }
 
     /**
-     * Configures both video and audio settings.
+     * Configures audio settings.
      * It is the first method to call after a [BaseStreamer] instantiation.
-     * It must be call when both stream and capture are not running.
+     * It must be call when both stream and audio capture are not running.
+     *
+     * Use [IConfigurationHelper] to get value limits.
+     *
+     * @param audioConfig Audio configuration to set
+     *
+     * @throws [StreamPackError] if configuration can not be applied.
+     */
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
+    override fun configure(audioConfig: AudioConfig) {
+        require(hasAudio) { "Do not need to set audio as it is a video only streamer" }
+
+        // Keep settings when we need to reconfigure
+        this.audioConfig = audioConfig
+
+        try {
+            audioCapture?.configure(audioConfig)
+            audioEncoder?.configure(audioConfig)
+
+            endpoint.configure((videoConfig?.startBitrate ?: 0) + audioConfig.startBitrate)
+        } catch (e: Exception) {
+            release()
+            throw StreamPackError(e)
+        }
+    }
+
+    /**
+     * Configures video settings.
+     * It is the first method to call after a [BaseStreamer] instantiation.
+     * It must be call when both stream and video capture are not running.
      *
      * Use [IConfigurationHelper] to get value limits.
      *
      * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
      * to video encoder default level and default profile.
      *
-     * Inside, it creates most of record and encoders object.
+     * @param videoConfig Video configuration to set
+     *
+     * @throws [StreamPackError] if configuration can not be applied.
+     */
+    override fun configure(videoConfig: VideoConfig) {
+        require(hasVideo) { "Do not need to set video as it is a audio only streamer" }
+
+        // Keep settings when we need to reconfigure
+        this.videoConfig = videoConfig
+
+        try {
+            videoCapture?.configure(videoConfig)
+            videoEncoder?.configure(videoConfig)
+
+            endpoint.configure(videoConfig.startBitrate + (audioConfig?.startBitrate ?: 0))
+        } catch (e: Exception) {
+            release()
+            throw StreamPackError(e)
+        }
+    }
+
+    /**
+     * Configures both video and audio settings.
+     * It is the first method to call after a [BaseStreamer] instantiation.
+     * It must be call when both stream and audio and video capture are not running.
+     *
+     * Use [IConfigurationHelper] to get value limits.
+     *
+     * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
+     * to video encoder default level and default profile.
      *
      * @param audioConfig Audio configuration to set
      * @param videoConfig Video configuration to set
      *
      * @throws [StreamPackError] if configuration can not be applied.
-     * @see [release]
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    override fun configure(audioConfig: AudioConfig?, videoConfig: VideoConfig?) {
-        if (hasAudio) {
-            require(audioConfig != null) { "Requires audio config" }
-        }
-        if (hasVideo) {
-            require(videoConfig != null) { "Requires video config" }
-        }
-
-        // Keep settings when we need to reconfigure
-        this.videoConfig = videoConfig
-        this.audioConfig = audioConfig
-
-        try {
-            audioConfig?.let {
-                audioCapture?.configure(it)
-                audioEncoder?.configure(it)
-            }
-
-            videoConfig?.let {
-                videoCapture?.configure(it)
-                videoEncoder?.configure(it)
-            }
-
-            endpoint.configure((videoConfig?.startBitrate ?: 0) + (audioConfig?.startBitrate ?: 0))
-        } catch (e: Exception) {
-            release()
-            throw StreamPackError(e)
-        }
+    override fun configure(audioConfig: AudioConfig, videoConfig: VideoConfig) {
+        configure(audioConfig)
+        configure(videoConfig)
     }
 
     /**
@@ -246,9 +278,11 @@ abstract class BaseStreamer(
 
             val streams = mutableListOf<Config>()
             if (hasVideo) {
+                require(videoConfig != null) { "Requires video config" }
                 streams.add(videoConfig!!)
             }
             if (hasAudio) {
+                require(audioConfig != null) { "Requires video config" }
                 streams.add(audioConfig!!)
             }
 
