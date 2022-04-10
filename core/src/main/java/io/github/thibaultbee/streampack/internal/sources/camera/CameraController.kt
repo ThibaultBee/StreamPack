@@ -18,6 +18,8 @@ package io.github.thibaultbee.streampack.internal.sources.camera
 import android.Manifest
 import android.content.Context
 import android.hardware.camera2.*
+import android.hardware.camera2.CameraDevice.AUDIO_RESTRICTION_NONE
+import android.hardware.camera2.CameraDevice.AUDIO_RESTRICTION_VIBRATION_SOUND
 import android.os.Build
 import android.util.Range
 import android.view.Surface
@@ -229,6 +231,19 @@ class CameraController(
 
     fun release() {
         threadManager.release()
+    }
+
+
+    fun muteVibrationAndSound() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            camera?.cameraAudioRestriction = AUDIO_RESTRICTION_VIBRATION_SOUND
+        }
+    }
+
+    fun unmuteVibrationAndSound() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            camera?.cameraAudioRestriction = AUDIO_RESTRICTION_NONE
+        }
     }
 
     private fun updateCaptureSession() {
