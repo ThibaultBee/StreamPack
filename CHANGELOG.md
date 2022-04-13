@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 2.2.0
+-------------
+
+## Features:
+
+- Add `configure` for audio only and for video only
+- Disable ringtones and alerts when camera is in streaming mode
 
 Version 2.1.0
 -------------
