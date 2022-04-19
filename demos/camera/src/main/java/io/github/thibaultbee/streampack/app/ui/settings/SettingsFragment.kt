@@ -232,6 +232,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
         if (audioEncoderListPreference.entry == null) {
             audioEncoderListPreference.value = MediaFormat.MIMETYPE_AUDIO_AAC
         }
+        audioEncoderListPreference.setOnPreferenceChangeListener { _, newValue ->
+            loadAudioSettings(newValue as String)
+            true
+        }
 
         loadAudioSettings(audioEncoderListPreference.value)
     }
@@ -275,7 +279,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 .toTypedArray()
         audioSampleRateListPreference.entryValues = sampleRates.map { "$it" }.toTypedArray()
         if (audioSampleRateListPreference.entry == null) {
-            audioSampleRateListPreference.value = "44100"
+            audioSampleRateListPreference.value = when {
+                sampleRates.contains(44100) -> "44100"
+                sampleRates.contains(48000) -> "48000"
+                else -> "${sampleRates.first()}"
+            }
         }
 
         // Inflates audio byte format

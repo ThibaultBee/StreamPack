@@ -16,10 +16,12 @@
 package io.github.thibaultbee.streampack.internal.muxers.ts.packets
 
 import android.media.MediaFormat
+import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.ITSElement
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.Service
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.Stream
+import io.github.thibaultbee.streampack.internal.utils.put
 import io.github.thibaultbee.streampack.internal.utils.putShort
 import java.nio.ByteBuffer
 
@@ -45,9 +47,14 @@ class Pmt(
     }
 
     override val bitSize: Int
-        get() = 32 + 40 * streams.size
+        get() = 32 + 40 * streams.size + 8 * programInfoLength
     override val size: Int
         get() = bitSize / Byte.SIZE_BITS
+
+    private val programInfoLength: Int
+        get() = getProgramInfoLength(MediaFormat.MIMETYPE_AUDIO_OPUS) * streams.filter { it.config.mimeType == MediaFormat.MIMETYPE_AUDIO_OPUS }.size + getProgramInfoLength(
+            MediaFormat.MIMETYPE_VIDEO_HEVC
+        ) * streams.filter { it.config.mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC }.size
 
     fun write() {
         if (service.pcrPid != null) {
@@ -71,12 +78,42 @@ class Pmt(
                 (0b111 shl 13) // Reserved
                         or (it.pid.toInt())
             )
-            buffer.putShort(0b1111 shl 12) // Reserved + First two bits of ES_info_length shall be '00' + ES_info_length
-            // TODO: ES Info
+            buffer.putShort(
+                (0b1111 shl 12) // Reserved
+                        or getProgramInfoLength(it.config.mimeType)
+            ) // First two bits of ES_info_length shall be '00' + ES_info_length
+
+            // Registration descriptor
+            if (it.config.mimeType == MediaFormat.MIMETYPE_AUDIO_OPUS) {
+                putRegistrationDescriptor(buffer, "Opus")
+                buffer.put(0x7F)
+                buffer.put(0x02)
+                buffer.put(0x80.toByte())
+                buffer.put(AudioConfig.getNumberOfChannels((it.config as AudioConfig).channelConfig))
+            } else if (it.config.mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC) {
+                putRegistrationDescriptor(buffer, "HEVC")
+            }
         }
 
         buffer.rewind()
         return buffer
+    }
+
+    private fun getProgramInfoLength(mimeType: String): Int {
+        return when (mimeType) {
+            MediaFormat.MIMETYPE_AUDIO_OPUS -> 10
+            MediaFormat.MIMETYPE_VIDEO_HEVC -> 6
+            else -> 0
+        }
+    }
+
+    private fun putRegistrationDescriptor(buffer: ByteBuffer, tag: String) {
+        require(tag.length == 4) { "Tag must be 4 characters long" }
+        buffer.put(Descriptor.REGISTRATION.value)
+        buffer.put(4)
+        tag.forEach {
+            buffer.put(it.code)
+        }
     }
 
     enum class StreamType(val value: Byte) {
@@ -115,5 +152,16 @@ class Pmt(
                 else -> PRIVATE_DATA
             }
         }
+    }
+
+    enum class Descriptor(val value: Byte) {
+        VIDEO_STREAM(0x02),
+        REGISTRATION(0x05),
+        ISO_639_LANGUAGE(0x0a),
+        IOD(0x1d),
+        SL(0x1e),
+        FMC(0x1f),
+        METADATA(0x26),
+        METADATA_STD(0x27)
     }
 }

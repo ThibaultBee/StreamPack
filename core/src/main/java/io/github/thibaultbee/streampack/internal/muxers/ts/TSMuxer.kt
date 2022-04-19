@@ -32,6 +32,7 @@ import io.github.thibaultbee.streampack.internal.muxers.ts.utils.MuxerConst
 import io.github.thibaultbee.streampack.internal.muxers.ts.utils.TSConst
 import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.ADTS
 import io.github.thibaultbee.streampack.internal.utils.isVideo
+import io.github.thibaultbee.streampack.internal.utils.put
 import java.nio.ByteBuffer
 import java.util.*
 import kotlin.random.Random
@@ -126,7 +127,6 @@ class TSMuxer(
                 }
             }
             MediaFormat.MIMETYPE_AUDIO_AAC -> {
-                // Encapsulates RAW AAC with ADTS
                 val buffer =
                     ByteBuffer.allocate(frame.buffer.remaining() + 7) // 7 = ADTS - protectionAbsent
                 val adts =
@@ -137,7 +137,8 @@ class TSMuxer(
                 buffer.rewind()
                 frame.buffer = buffer
             }
-            else -> TODO("Format not yet implemented")
+            MediaFormat.MIMETYPE_AUDIO_OPUS -> {} // TODO: optional control header
+            else -> throw IllegalArgumentException("Unsupported mimeType ${frame.mimeType}")
         }
 
         synchronized(this) {
