@@ -45,7 +45,7 @@ class AudioConfig(
      * Audio capture sample rate in Hz.
      * From [AudioRecord API](https://developer.android.com/reference/android/media/AudioRecord?hl=en#AudioRecord(int,%20int,%20int,%20int,%20int)): "44100Hz is currently the only rate that is guaranteed to work on all devices, but other rates such as 22050, 16000, and 11025 may work on some devices."
      */
-    val sampleRate: Int = 44100,
+    val sampleRate: Int = getDefaultSampleRate(mimeType),
 
     /**
      * Audio channel configuration.
@@ -82,6 +82,12 @@ class AudioConfig(
     }
 
     companion object {
+        private fun getDefaultSampleRate(mimeType: String) = when (mimeType) {
+            MediaFormat.MIMETYPE_AUDIO_AAC -> 44100
+            MediaFormat.MIMETYPE_AUDIO_OPUS -> 48000
+            else -> throw InvalidParameterException("Mimetype not supported: $mimeType")
+        }
+
         /**
          * Returns number of channels from a channel configuration.
          *

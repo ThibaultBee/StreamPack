@@ -29,7 +29,8 @@ class AudioTSMuxerHelper : IAudioMuxerHelper {
     /**
      * Get TS Muxer supported audio encoders list
      */
-    override val supportedEncoders = listOf(MediaFormat.MIMETYPE_AUDIO_AAC)
+    override val supportedEncoders =
+        listOf(MediaFormat.MIMETYPE_AUDIO_AAC, MediaFormat.MIMETYPE_AUDIO_OPUS)
 
     override fun getSupportedSampleRates(): List<Int>? = null
 

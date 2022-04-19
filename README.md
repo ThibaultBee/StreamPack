@@ -53,7 +53,7 @@ android {
     * Video only mode
     * Device video capabilities
 * Audio:
-    * Codec: AAC-LC
+    * Codec: AAC-LC or Opus
     * Configurable bitrate, sample rate, stereo/mono, data format
     * Processing: Noise suppressor or echo cancellation
     * Audio only mode
