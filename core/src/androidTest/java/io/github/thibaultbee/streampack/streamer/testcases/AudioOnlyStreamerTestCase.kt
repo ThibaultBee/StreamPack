@@ -107,6 +107,18 @@ abstract class AudioOnlyStreamerTestCase :
 
     // Multiple methods calls
     @Test
+    override fun configureStartStreamTest() {
+        try {
+            streamer.configure(
+                AndroidUtils.fakeValidAudioConfig()
+            )
+            streamer.startStream()
+        } catch (e: Exception) {
+            fail("Must be possible to configure/startStream but catches exception: $e")
+        }
+    }
+
+    @Test
     override fun configureReleaseTest() {
         try {
             streamer.configure(
