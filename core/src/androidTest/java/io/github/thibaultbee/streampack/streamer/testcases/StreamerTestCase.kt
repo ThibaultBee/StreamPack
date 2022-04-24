@@ -143,7 +143,7 @@ abstract class StreamerTestCase {
 
     // Multiple methods calls
     @Test
-    fun configureStartStreamTest() {
+    open fun configureStartStreamTest() {
         try {
             streamer.configure(
                 AndroidUtils.fakeValidAudioConfig(),
