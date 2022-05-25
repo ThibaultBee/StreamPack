@@ -26,7 +26,7 @@ class PesHeaderTest {
     @Test
     fun `pes header with pts and dts test`() {
         val expectedPesHeader = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/muxer/pes-header.ts")
+            ResourcesUtils.readResources("test-samples/muxer/ts/pes-header.ts")
         )
 
         val pesHeader = PesHeader(

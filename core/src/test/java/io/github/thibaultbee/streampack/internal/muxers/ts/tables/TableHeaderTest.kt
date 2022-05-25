@@ -26,7 +26,7 @@ class TableHeaderTest {
     @Test
     fun `simple table header test`() {
         val expectedTableHeader = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/muxer/table-header.ts")
+            ResourcesUtils.readResources("test-samples/muxer/ts/table-header.ts")
         )
 
         val tableHeader = TableHeader(
