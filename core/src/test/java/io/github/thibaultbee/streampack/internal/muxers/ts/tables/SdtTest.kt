@@ -30,7 +30,7 @@ class SdtTest {
     @Test
     fun `simple sdt test`() {
         val expectedBuffer = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/muxer/sdt.ts")
+            ResourcesUtils.readResources("test-samples/muxer/ts/sdt.ts")
         )
         val listener = AssertEqualsSingleBufferMockMuxerListener(expectedBuffer)
         val services = listOf(
