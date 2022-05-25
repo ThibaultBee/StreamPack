@@ -33,7 +33,7 @@ class PmtTest {
     @Test
     fun `simple pmt test`() {
         val expectedBuffer = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/muxer/pmt.ts")
+            ResourcesUtils.readResources("test-samples/muxer/ts/pmt.ts")
         )
         val listener = AssertEqualsSingleBufferMockMuxerListener(expectedBuffer)
         val service =

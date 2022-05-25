@@ -52,12 +52,12 @@ class PesTest {
         MockUtils.mockTimeUtils(1433034)
 
         val rawData = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/muxer/pes-video1/raw")
+            ResourcesUtils.readResources("test-samples/muxer/ts/pes-video1/raw")
         )
         val frame =
             Frame(rawData, MediaFormat.MIMETYPE_VIDEO_AVC, 1433334, 1400000, isKeyFrame = true)
 
-        val expectedBuffers = readFrames("test-samples/muxer/pes-video1")
+        val expectedBuffers = readFrames("test-samples/muxer/ts/pes-video1")
         Pes(
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
             Stream(VideoConfig(profile = 0, level = 0), 256),
@@ -72,12 +72,12 @@ class PesTest {
         MockUtils.mockTimeUtils(700000)
 
         val rawData = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/muxer/pes-audio1/raw.aac")
+            ResourcesUtils.readResources("test-samples/muxer/ts/pes-audio1/raw.aac")
         )
         val frame =
             Frame(rawData, MediaFormat.MIMETYPE_AUDIO_AAC, 1400000, null, isKeyFrame = true)
 
-        val expectedBuffers = readFrames("test-samples/muxer/pes-audio1")
+        val expectedBuffers = readFrames("test-samples/muxer/ts/pes-audio1")
         Pes(
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
             Stream(AudioConfig(), 256),
@@ -92,12 +92,12 @@ class PesTest {
         MockUtils.mockTimeUtils(700000)
 
         val rawData = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/muxer/pes-audio2/raw.aac")
+            ResourcesUtils.readResources("test-samples/muxer/ts/pes-audio2/raw.aac")
         )
         val frame =
             Frame(rawData, MediaFormat.MIMETYPE_AUDIO_AAC, 1400000, null, isKeyFrame = true)
 
-        val expectedBuffers = readFrames("test-samples/muxer/pes-audio2")
+        val expectedBuffers = readFrames("test-samples/muxer/ts/pes-audio2")
         Pes(
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
             Stream(AudioConfig(), 256),
