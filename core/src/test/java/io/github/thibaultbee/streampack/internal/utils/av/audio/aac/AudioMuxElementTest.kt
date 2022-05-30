@@ -9,7 +9,6 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
-import java.nio.ByteBuffer
 
 class AudioMuxElementTest {
     @Test
@@ -34,13 +33,11 @@ class AudioMuxElementTest {
 
     @Test
     fun `test AudioMuxElement`() {
-        val expectedAudioMuxElement = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/audio/latm/aac-lc-44100Hz-mono/audio-mux-element")
-        )
+        val expectedAudioMuxElement =
+            ResourcesUtils.readByteBuffer("test-samples/audio/latm/aac-lc-44100Hz-mono/audio-mux-element")
 
-        val payload = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/audio/latm/aac-lc-44100Hz-mono/frame.raw")
-        )
+        val payload =
+            ResourcesUtils.readByteBuffer("test-samples/audio/latm/aac-lc-44100Hz-mono/frame.raw")
 
         val config = AudioConfig(
             mimeType = MediaFormat.MIMETYPE_AUDIO_AAC,

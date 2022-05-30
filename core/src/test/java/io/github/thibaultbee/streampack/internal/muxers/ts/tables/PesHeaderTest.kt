@@ -20,14 +20,11 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert
 import org.junit.Test
-import java.nio.ByteBuffer
 
 class PesHeaderTest {
     @Test
     fun `pes header with pts and dts test`() {
-        val expectedPesHeader = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/muxer/ts/pes-header.ts")
-        )
+        val expectedPesHeader = ResourcesUtils.readByteBuffer("test-samples/muxer/ts/pes-header.ts")
 
         val pesHeader = PesHeader(
             streamId = 224,

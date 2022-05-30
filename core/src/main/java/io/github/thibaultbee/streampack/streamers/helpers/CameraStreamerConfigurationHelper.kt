@@ -21,6 +21,7 @@ import android.util.Size
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.IVideoMuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxerHelper
+import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4MuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxerHelper
 import io.github.thibaultbee.streampack.internal.sources.camera.getCameraFpsList
 import io.github.thibaultbee.streampack.internal.sources.camera.getCameraOutputStreamSizes
@@ -34,8 +35,8 @@ class CameraStreamerConfigurationHelper(muxerHelper: IMuxerHelper) :
     StreamerConfigurationHelper(muxerHelper) {
     companion object {
         val flvHelper = CameraStreamerConfigurationHelper(FlvMuxerHelper())
-
         val tsHelper = CameraStreamerConfigurationHelper(TSMuxerHelper())
+        val mp4Helper = CameraStreamerConfigurationHelper(MP4MuxerHelper())
     }
 
     override val video = VideoCameraStreamerConfigurationHelper(muxerHelper.video)

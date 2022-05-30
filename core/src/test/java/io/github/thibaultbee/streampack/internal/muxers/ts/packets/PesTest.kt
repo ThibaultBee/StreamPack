@@ -51,9 +51,7 @@ class PesTest {
     fun `single video frame to pes test`() {
         MockUtils.mockTimeUtils(1433034)
 
-        val rawData = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/muxer/ts/pes-video1/raw")
-        )
+        val rawData = ResourcesUtils.readByteBuffer("test-samples/muxer/ts/pes-video1/raw")
         val frame =
             Frame(rawData, MediaFormat.MIMETYPE_VIDEO_AVC, 1433334, 1400000, isKeyFrame = true)
 
@@ -71,9 +69,7 @@ class PesTest {
     fun `single audio frame to pes test`() {
         MockUtils.mockTimeUtils(700000)
 
-        val rawData = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/muxer/ts/pes-audio1/raw.aac")
-        )
+        val rawData = ResourcesUtils.readByteBuffer("test-samples/muxer/ts/pes-audio1/raw.aac")
         val frame =
             Frame(rawData, MediaFormat.MIMETYPE_AUDIO_AAC, 1400000, null, isKeyFrame = true)
 
@@ -91,9 +87,7 @@ class PesTest {
     fun `single audio frame with stuffing length = 1 to pes test`() {
         MockUtils.mockTimeUtils(700000)
 
-        val rawData = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/muxer/ts/pes-audio2/raw.aac")
-        )
+        val rawData = ResourcesUtils.readByteBuffer("test-samples/muxer/ts/pes-audio2/raw.aac")
         val frame =
             Frame(rawData, MediaFormat.MIMETYPE_AUDIO_AAC, 1400000, null, isKeyFrame = true)
 

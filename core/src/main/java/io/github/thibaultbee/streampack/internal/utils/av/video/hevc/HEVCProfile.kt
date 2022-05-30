@@ -32,5 +32,4 @@ enum class HEVCProfile(val value: Short) {
         fun fromProfileIdc(profileIdc: Short) =
             values().first { it.value == profileIdc }
     }
-
 }
