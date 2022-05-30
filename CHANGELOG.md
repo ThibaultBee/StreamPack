@@ -1,6 +1,17 @@
 Change Log
 ==========
 
+Version 2.3.0
+-------------
+
+## Features:
+
+- Add support for OPUS audio codec (TS File streamer and SRT streamer only)
+
+## Bug fixes:
+
+- Obfuscation of RTMP extension
+
 Version 2.2.0
 -------------
 
