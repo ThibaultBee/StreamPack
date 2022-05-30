@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.streamer.testcases
 
 import android.content.Context
+import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import io.github.thibaultbee.streampack.utils.AndroidUtils
@@ -29,6 +30,10 @@ abstract class StreamerTestCase {
     protected val context: Context = InstrumentationRegistry.getInstrumentation().context
 
     abstract val streamer: BaseStreamer
+
+    companion object {
+        private const val TAG = "StreamerTestCase"
+    }
 
     @After
     open fun tearDown() {
@@ -46,6 +51,7 @@ abstract class StreamerTestCase {
             streamer.stopStream()
             streamer.release()
         } catch (e: Exception) {
+            Log.e(TAG, "defaultUsageTest: exception: ", e)
             fail("Default usage must not throw exception $e")
         }
     }
@@ -63,6 +69,7 @@ abstract class StreamerTestCase {
             streamer.stopStream()
             streamer.release()
         } catch (e: Exception) {
+            Log.e(TAG, "defaultUsageTest2: exception: ", e)
             fail("Default usage must not throw exception $e")
         }
     }
@@ -75,6 +82,7 @@ abstract class StreamerTestCase {
                 AndroidUtils.fakeValidAudioConfig()
             )
         } catch (e: Exception) {
+            Log.e(TAG, "configureAudioTest: exception: ", e)
             fail("Must be possible to only configure audio without exception: $e")
         }
     }
@@ -86,6 +94,7 @@ abstract class StreamerTestCase {
                 AndroidUtils.fakeValidVideoConfig()
             )
         } catch (e: Exception) {
+            Log.e(TAG, "configureVideoTest: exception: ", e)
             fail("Must be possible to only configure video without exception: $e")
         }
     }
@@ -98,6 +107,7 @@ abstract class StreamerTestCase {
                 AndroidUtils.fakeValidVideoConfig()
             )
         } catch (e: Exception) {
+            Log.e(TAG, "configureTest: exception: ", e)
             fail("Must be possible to only configure without exception: $e")
         }
     }
@@ -128,6 +138,7 @@ abstract class StreamerTestCase {
         try {
             streamer.stopStream()
         } catch (e: Exception) {
+            Log.e(TAG, "stopStreamTest: exception: ", e)
             fail("Must be possible to only stopStream without exception: $e")
         }
     }
@@ -137,6 +148,7 @@ abstract class StreamerTestCase {
         try {
             streamer.release()
         } catch (e: Exception) {
+            Log.e(TAG, "releaseTest: exception: ", e)
             fail("Must be possible to only release without exception: $e")
         }
     }
@@ -164,6 +176,7 @@ abstract class StreamerTestCase {
             )
             streamer.release()
         } catch (e: Exception) {
+            Log.e(TAG, "configureReleaseTest: exception: ", e)
             fail("Must be possible to configure/release but catches exception: $e")
         }
     }
@@ -177,6 +190,7 @@ abstract class StreamerTestCase {
             )
             streamer.stopStream()
         } catch (e: Exception) {
+            Log.e(TAG, "configureStopStreamTest: exception: ", e)
             fail("Must be possible to configure/stopStream but catches exception: $e")
         }
     }
@@ -191,6 +205,7 @@ abstract class StreamerTestCase {
             streamer.startStream()
             streamer.release()
         } catch (e: Exception) {
+            Log.e(TAG, "startStreamReleaseTest: exception: ", e)
             fail("Must be possible to startStream/release but catches exception: $e")
         }
     }
@@ -205,6 +220,7 @@ abstract class StreamerTestCase {
             streamer.startStream()
             streamer.stopStream()
         } catch (e: Exception) {
+            Log.e(TAG, "startStreamStopStreamTest: exception: ", e)
             fail("Must be possible to startStream/stopStream but catches exception: $e")
         }
     }
@@ -220,6 +236,7 @@ abstract class StreamerTestCase {
                 )
             }
         } catch (e: Exception) {
+            Log.e(TAG, "multipleConfigureTest: exception: ", e)
             fail("Must be possible to call configure multiple times but catches exception: $e")
         }
     }
@@ -236,6 +253,7 @@ abstract class StreamerTestCase {
                 streamer.stopStream()
             }
         } catch (e: Exception) {
+            Log.e(TAG, "multipleStartStreamStopStreamTest: exception: ", e)
             fail("Must be possible to startStream/stopStream multiple times but catches exception: $e")
         }
     }

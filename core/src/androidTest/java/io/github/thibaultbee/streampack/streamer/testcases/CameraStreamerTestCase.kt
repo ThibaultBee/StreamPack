@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.streamer.testcases
 
 import android.Manifest
 import android.graphics.SurfaceTexture
+import android.util.Log
 import android.view.Surface
 import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
@@ -31,6 +32,10 @@ abstract class CameraStreamerTestCase :
     StreamerTestCase() {
     abstract override val streamer: BaseCameraStreamer
     private lateinit var surface: Surface
+
+    companion object {
+        private const val TAG = "CameraStreamerTestCase"
+    }
 
     @Before
     fun setUp() {
@@ -60,6 +65,7 @@ abstract class CameraStreamerTestCase :
             streamer.stopPreview()
             streamer.release()
         } catch (e: Exception) {
+            Log.e(TAG, "defaultUsageTest: exception: ", e)
             fail("Default usage must not throw exception $e")
         }
     }
@@ -78,6 +84,7 @@ abstract class CameraStreamerTestCase :
             streamer.stopStream()
             streamer.release()
         } catch (e: Exception) {
+            Log.e(TAG, "defaultUsageTest2: exception: ", e)
             fail("Default usage must not throw exception $e")
         }
     }
@@ -111,6 +118,7 @@ abstract class CameraStreamerTestCase :
             )
             streamer.stopPreview()
         } catch (e: Exception) {
+            Log.e(TAG, "configureStopPreviewTest: exception: ", e)
             fail("Must be possible to configure/stopPreview but catches exception: $e")
         }
     }
@@ -125,6 +133,7 @@ abstract class CameraStreamerTestCase :
             streamer.startPreview(surface)
             streamer.release()
         } catch (e: Exception) {
+            Log.e(TAG, "startPreviewReleaseTest: exception: ", e)
             fail("Must be possible to startPreview/release but catches exception: $e")
         }
     }
@@ -139,6 +148,7 @@ abstract class CameraStreamerTestCase :
             streamer.startPreview(surface)
             streamer.stopPreview()
         } catch (e: Exception) {
+            Log.e(TAG, "startPreviewStopPreviewTest: exception: ", e)
             fail("Must be possible to startPreview/stopPreview but catches exception: $e")
         }
     }
@@ -153,6 +163,7 @@ abstract class CameraStreamerTestCase :
             streamer.startPreview(surface)
             streamer.stopStream()
         } catch (e: Exception) {
+            Log.e(TAG, "startPreviewStopStreamTest: exception: ", e)
             fail("Must be possible to startPreview/stopStream but catches exception: $e")
         }
     }
@@ -169,6 +180,7 @@ abstract class CameraStreamerTestCase :
             streamer.startStream()
             streamer.release()
         } catch (e: Exception) {
+            Log.e(TAG, "startStreamReleaseTest: exception: ", e)
             fail("Must be possible to startStream/release but catches exception: $e")
         }
     }
@@ -185,6 +197,7 @@ abstract class CameraStreamerTestCase :
             streamer.startStream()
             streamer.stopPreview()
         } catch (e: Exception) {
+            Log.e(TAG, "startStreamStopPreviewTest: exception: ", e)
             fail("Must be possible to startStream/stopPreview but catches exception: $e")
         }
     }
@@ -200,6 +213,7 @@ abstract class CameraStreamerTestCase :
             streamer.startStream()
             streamer.stopStream()
         } catch (e: Exception) {
+            Log.e(TAG, "startStreamStopStreamTest: exception: ", e)
             fail("Must be possible to startStream/stopStream but catches exception: $e")
         }
     }
@@ -216,6 +230,7 @@ abstract class CameraStreamerTestCase :
                 streamer.stopPreview()
             }
         } catch (e: Exception) {
+            Log.e(TAG, "multipleStartPreviewStopPreviewTest: exception: ", e)
             fail("Must be possible to startPreview/stopPreview multiple times but catches exception: $e")
         }
     }
@@ -233,6 +248,7 @@ abstract class CameraStreamerTestCase :
                 streamer.stopStream()
             }
         } catch (e: Exception) {
+            Log.e(TAG, "multipleStartStreamStopStreamTest: exception: ", e)
             fail("Must be possible to startStream/stopStream multiple times but catches exception: $e")
         }
     }
