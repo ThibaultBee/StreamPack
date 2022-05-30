@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.streamer.testcases
 
 import android.Manifest
+import android.util.Log
 import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.streamers.bases.BaseAudioOnlyStreamer
 import io.github.thibaultbee.streampack.utils.AndroidUtils
@@ -26,6 +27,10 @@ import org.junit.Test
 abstract class AudioOnlyStreamerTestCase :
     StreamerTestCase() {
     abstract override val streamer: BaseAudioOnlyStreamer
+
+    companion object {
+        private const val TAG = "AudioOnlyStreamerTestCase"
+    }
 
     @get:Rule
     val runtimePermissionRule: GrantPermissionRule =
@@ -41,6 +46,7 @@ abstract class AudioOnlyStreamerTestCase :
             streamer.stopStream()
             streamer.release()
         } catch (e: Exception) {
+            Log.e(TAG, "defaultUsageTest: exception: ", e)
             fail("Default usage must not throw exception $e")
         }
     }
@@ -55,6 +61,7 @@ abstract class AudioOnlyStreamerTestCase :
             streamer.stopStream()
             streamer.release()
         } catch (e: Exception) {
+            Log.e(TAG, "defaultUsageTest2: exception: ", e)
             fail("Default usage must not throw exception $e")
         }
     }
@@ -67,6 +74,7 @@ abstract class AudioOnlyStreamerTestCase :
                 AndroidUtils.fakeValidAudioConfig()
             )
         } catch (e: Exception) {
+            Log.e(TAG, "configureAudioTest: exception: ", e)
             fail("Must be possible to only configure audio without exception: $e")
         }
     }
@@ -114,6 +122,7 @@ abstract class AudioOnlyStreamerTestCase :
             )
             streamer.startStream()
         } catch (e: Exception) {
+            Log.e(TAG, "configureStartStreamTest: exception: ", e)
             fail("Must be possible to configure/startStream but catches exception: $e")
         }
     }
@@ -126,6 +135,7 @@ abstract class AudioOnlyStreamerTestCase :
             )
             streamer.release()
         } catch (e: Exception) {
+            Log.e(TAG, "configureReleaseTest: exception: ", e)
             fail("Must be possible to configure/release but catches exception: $e")
         }
     }
@@ -138,6 +148,7 @@ abstract class AudioOnlyStreamerTestCase :
             )
             streamer.stopStream()
         } catch (e: Exception) {
+            Log.e(TAG, "configureStopStreamTest: exception: ", e)
             fail("Must be possible to configure/stopStream but catches exception: $e")
         }
     }
@@ -151,6 +162,7 @@ abstract class AudioOnlyStreamerTestCase :
             streamer.startStream()
             streamer.release()
         } catch (e: Exception) {
+            Log.e(TAG, "startStreamReleaseTest: exception: ", e)
             fail("Must be possible to startStream/release but catches exception: $e")
         }
     }
@@ -164,6 +176,7 @@ abstract class AudioOnlyStreamerTestCase :
             streamer.startStream()
             streamer.stopStream()
         } catch (e: Exception) {
+            Log.e(TAG, "startStreamStopStreamTest: exception: ", e)
             fail("Must be possible to startStream/stopStream but catches exception: $e")
         }
     }
@@ -179,6 +192,7 @@ abstract class AudioOnlyStreamerTestCase :
                 streamer.stopStream()
             }
         } catch (e: Exception) {
+            Log.e(TAG, "multipleStartStreamStopStreamTest: exception: ", e)
             fail("Must be possible to startStream/stopStream multiple times but catches exception: $e")
         }
     }
@@ -192,6 +206,7 @@ abstract class AudioOnlyStreamerTestCase :
                 )
             }
         } catch (e: Exception) {
+            Log.e(TAG, "multipleConfigureTest: exception: ", e)
             fail("Must be possible to call configure multiple times but catches exception: $e")
         }
     }
