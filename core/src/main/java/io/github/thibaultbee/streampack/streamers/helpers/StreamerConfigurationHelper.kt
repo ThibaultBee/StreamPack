@@ -22,6 +22,7 @@ import io.github.thibaultbee.streampack.internal.muxers.IAudioMuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.IVideoMuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxerHelper
+import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4MuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxerHelper
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 
@@ -36,6 +37,7 @@ open class StreamerConfigurationHelper(muxerHelper: IMuxerHelper) :
     companion object {
         fun createFlvHelper() = StreamerConfigurationHelper(FlvMuxerHelper())
         fun createTsHelper() = StreamerConfigurationHelper(TSMuxerHelper())
+        fun createMp4Helper() = StreamerConfigurationHelper(MP4MuxerHelper())
     }
 
     override val audio =

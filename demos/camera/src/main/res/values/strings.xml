@@ -33,6 +33,7 @@
     <string name="to_flv_file">Write to a FLV file</string>
     <string name="to_srt">Stream to a remote SRT device</string>
     <string name="to_rtmp">Stream to a remote RTMP device</string>
+    <string name="to_mp4_file">Write to a MP4 file</string>
     <string name="srt_server_key">srt_server_key</string>
     <string name="ts_endpoint_file_key">ts_endpoint_file_key</string>
     <string name="file">File</string>

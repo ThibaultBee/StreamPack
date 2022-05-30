@@ -20,4 +20,9 @@ object TimeUtils {
      * Gets current time from a unique source. Uses it for timestamp.
      */
     fun currentTime() = System.nanoTime() / 1000 // to µs
+
+    /**
+     * Number of time units in a second.
+     */
+    const val TIME_SCALE = 1_000_000
 }

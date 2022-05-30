@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.internal.muxers.flv.packet
 import android.media.AudioFormat
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.AudioConfig
+import io.github.thibaultbee.streampack.internal.utils.av.audio.AudioSpecificConfig
 import io.github.thibaultbee.streampack.internal.utils.put
 import java.io.IOException
 import java.nio.ByteBuffer

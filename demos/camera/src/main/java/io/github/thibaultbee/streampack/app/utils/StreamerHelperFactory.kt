@@ -27,6 +27,7 @@ class StreamerHelperFactory(
             EndpointType.FLV_FILE -> CameraStreamerConfigurationHelper.createFlvHelper()
             EndpointType.SRT -> CameraStreamerConfigurationHelper.createTsHelper()
             EndpointType.RTMP -> CameraStreamerConfigurationHelper.createFlvHelper()
+            EndpointType.MP4_FILE -> CameraStreamerConfigurationHelper.createMp4Helper()
         }
     }
 }

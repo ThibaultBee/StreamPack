@@ -15,6 +15,11 @@
  */
 package io.github.thibaultbee.streampack.utils
 
+import java.nio.ByteBuffer
+
 object ResourcesUtils {
     fun readResources(file: String) = this.javaClass.classLoader!!.getResource(file)!!.readBytes()
+    fun readByteBuffer(file: String): ByteBuffer = ByteBuffer.wrap(readResources(file))
+    fun readMP4Resources(file: String) = readResources("test-samples/muxer/mp4/$file")
+    fun readMP4ByteBuffer(file: String): ByteBuffer = ByteBuffer.wrap(readMP4Resources(file))
 }

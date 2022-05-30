@@ -17,6 +17,8 @@ package io.github.thibaultbee.streampack.internal.muxers.flv.packet
 
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.VideoConfig
+import io.github.thibaultbee.streampack.internal.utils.av.video.AVCDecoderConfigurationRecord
+import io.github.thibaultbee.streampack.internal.utils.av.video.HEVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.internal.utils.av.video.getStartCodeSize
 import io.github.thibaultbee.streampack.internal.utils.av.video.removeStartCode
 import io.github.thibaultbee.streampack.internal.utils.put
@@ -86,10 +88,10 @@ class VideoTag(
         if (isSequenceHeader) {
             when (videoConfig.mimeType) {
                 MediaFormat.MIMETYPE_VIDEO_AVC -> {
-                    AVCDecoderConfigurationRecord(buffers[0], buffers[1]).write(buffer)
+                    AVCDecoderConfigurationRecord.fromSPSAndPPS(buffers[0], buffers[1]).write(buffer)
                 }
                 MediaFormat.MIMETYPE_VIDEO_HEVC -> {
-                    HEVCDecoderConfigurationRecord(buffers[0], buffers[1], buffers[2]).write(buffer)
+                    HEVCDecoderConfigurationRecord.fromSPSandPPSandVPS(buffers[0], buffers[1], buffers[2]).write(buffer)
                 }
                 else -> {
                     throw IOException("Mimetype ${videoConfig.mimeType} is not supported")

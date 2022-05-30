@@ -308,8 +308,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
             mapOf(
                 EndpointType.TS_FILE to getString(R.string.to_ts_file),
                 EndpointType.FLV_FILE to getString(R.string.to_flv_file),
+                EndpointType.MP4_FILE to getString(R.string.to_mp4_file),
                 EndpointType.SRT to getString(R.string.to_srt),
-                EndpointType.RTMP to getString(R.string.to_rtmp),
+                EndpointType.RTMP to getString(R.string.to_rtmp)
             )
         val supportedEndpoint = EndpointType.values().map { "${it.id}" }.toTypedArray()
         endpointTypePreference.setDefaultValue(EndpointType.SRT.id)
@@ -385,6 +386,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 }
                 endpoint.hasTSCapabilities -> {
                     FileExtension.TS.extension
+                }
+                endpoint.hasMP4Capabilities -> {
+                    FileExtension.MP4.extension
                 }
                 else -> {
                     throw IOException("Unknown file type")

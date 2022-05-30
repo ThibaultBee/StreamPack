@@ -13,21 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.muxers.flv.packet
+package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
-import android.media.MediaFormat
-import io.github.thibaultbee.streampack.data.AudioConfig
-import java.nio.ByteBuffer
-
-class AudioSpecificConfig(
-    private val decoderSpecificInformation: ByteBuffer,
-    private val audioConfig: AudioConfig
-) {
-    fun write(buffer: ByteBuffer) {
-        if (audioConfig.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
-            buffer.put(decoderSpecificInformation)
-        } else {
-            throw NotImplementedError("No support for ${audioConfig.mimeType}")
-        }
-    }
-}
+class NullMediaHeaderBox : FullBox("nmhd", 0, 0)
