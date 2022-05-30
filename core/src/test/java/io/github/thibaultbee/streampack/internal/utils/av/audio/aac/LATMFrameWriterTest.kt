@@ -9,18 +9,15 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
-import java.nio.ByteBuffer
 
 class LATMFrameWriterTest {
     @Test
     fun `test AAC-LC 44100Hz mono with payload`() {
-        val expectedLatm = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/audio/latm/aac-lc-44100Hz-mono/aac.latm")
-        )
+        val expectedLatm =
+            ResourcesUtils.readByteBuffer("test-samples/audio/latm/aac-lc-44100Hz-mono/aac.latm")
 
-        val payload = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/audio/latm/aac-lc-44100Hz-mono/frame.raw")
-        )
+        val payload =
+            ResourcesUtils.readByteBuffer("test-samples/audio/latm/aac-lc-44100Hz-mono/frame.raw")
 
         val config = AudioConfig(
             mimeType = MediaFormat.MIMETYPE_AUDIO_AAC,

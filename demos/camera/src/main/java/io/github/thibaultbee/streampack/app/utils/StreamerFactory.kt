@@ -31,10 +31,7 @@ import io.github.thibaultbee.streampack.ext.srt.streamers.AudioOnlySrtLiveStream
 import io.github.thibaultbee.streampack.ext.srt.streamers.CameraSrtLiveStreamer
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.regulator.IBitrateRegulatorFactory
-import io.github.thibaultbee.streampack.streamers.file.AudioOnlyFlvFileStreamer
-import io.github.thibaultbee.streampack.streamers.file.AudioOnlyTsFileStreamer
-import io.github.thibaultbee.streampack.streamers.file.CameraFlvFileStreamer
-import io.github.thibaultbee.streampack.streamers.file.CameraTsFileStreamer
+import io.github.thibaultbee.streampack.streamers.file.*
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 
 class StreamerFactory(
@@ -83,6 +80,10 @@ class StreamerFactory(
                         context,
                         enableAudio = enableAudio
                     )
+                    EndpointType.MP4_FILE -> CameraMp4FileStreamer(
+                        context,
+                        enableAudio = enableAudio
+                    )
                     EndpointType.SRT -> CameraSrtLiveStreamer(
                         context,
                         enableAudio = enableAudio,
@@ -103,6 +104,7 @@ class StreamerFactory(
                         tsServiceInfo = tsServiceInfo
                     )
                     EndpointType.FLV_FILE -> AudioOnlyFlvFileStreamer(context)
+                    EndpointType.MP4_FILE -> AudioOnlyMp4FileStreamer(context)
                     EndpointType.SRT -> AudioOnlySrtLiveStreamer(
                         context,
                         tsServiceInfo = tsServiceInfo

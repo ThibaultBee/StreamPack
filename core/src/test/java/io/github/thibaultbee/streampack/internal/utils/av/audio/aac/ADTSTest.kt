@@ -4,14 +4,13 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
-import java.nio.ByteBuffer
 
 class ADTSTest {
     @Test
     fun `test ADTS with payload size of 378 bytes`() {
-        val expectedAdts = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/audio/adts/adts-378bytes")
-        )
+        val expectedAdts =
+            ResourcesUtils.readByteBuffer("test-samples/audio/adts/adts-378bytes")
+
         val adts = ADTS(
             protectionAbsent = true, // No CRC protection
             sampleRate = 44100,
@@ -27,9 +26,7 @@ class ADTSTest {
 
     @Test
     fun `test ADTS with payload size of 516 bytes`() {
-        val expectedAdts = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/audio/adts/adts-516bytes")
-        )
+        val expectedAdts = ResourcesUtils.readByteBuffer("test-samples/audio/adts/adts-516bytes")
         val adts = ADTS(
             protectionAbsent = true, // No CRC protection
             sampleRate = 44100,

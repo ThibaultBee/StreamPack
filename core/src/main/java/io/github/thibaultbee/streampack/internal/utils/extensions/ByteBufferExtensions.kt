@@ -17,8 +17,6 @@ package io.github.thibaultbee.streampack.internal.utils.extensions
 
 import io.github.thibaultbee.streampack.internal.utils.av.video.getStartCodeSize
 import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets
-
 
 fun ByteBuffer.put(i: Int, i1: Int) {
     put(i, i1.toByte())
@@ -37,9 +35,18 @@ fun ByteBuffer.putInt24(i: Int) {
     put(i.toByte())
 }
 
+
 fun ByteBuffer.putLong48(i: Long) {
     putShort(i shr 32)
     putInt(i.toInt())
+}
+
+fun ByteBuffer.putInt(l: Long) {
+    putInt(l.toInt())
+}
+
+fun ByteBuffer.putInt(d: Double) {
+    putInt(d.toInt())
 }
 
 fun ByteBuffer.putShort(l: Long) {
@@ -50,10 +57,33 @@ fun ByteBuffer.putShort(i: Int) {
     putShort(i.toShort())
 }
 
+fun ByteBuffer.putShort(f: Float) {
+    putShort(f.toInt().toShort())
+}
+
+fun ByteBuffer.putShort(d: Double) {
+    putShort(d.toInt().toShort())
+}
+
 fun ByteBuffer.putString(s: String) {
-    for (c in s.toByteArray(StandardCharsets.UTF_8)) {
-        put(c)
-    }
+    put(s.toByteArray())
+}
+
+fun ByteBuffer.putFixed88(f: Float) {
+    putShort(f * 256.0)
+}
+
+fun ByteBuffer.putFixed1616(f: Float) {
+    putInt(f * 65536.0)
+}
+
+fun ByteBuffer.putFixed1616(i: Int) {
+    putInt(i * 65536.0)
+}
+
+fun ByteBuffer.put3x3Matrix(matrix: IntArray) {
+    require(matrix.size == 9) { "transformationMatrix must be a 9-element array" }
+    matrix.forEach { putInt(it) }
 }
 
 fun ByteBuffer.put(buffer: ByteBuffer, offset: Int, length: Int) {

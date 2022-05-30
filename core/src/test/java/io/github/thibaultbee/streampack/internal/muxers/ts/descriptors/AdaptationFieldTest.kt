@@ -25,9 +25,7 @@ class AdaptationFieldTest {
 
     @Test
     fun `adaptation field with pcr`() {
-        val expectedAdaptationField = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/muxer/ts/adaptation-field.ts")
-        )
+        val expectedAdaptationField = ResourcesUtils.readByteBuffer("test-samples/muxer/ts/adaptation-field.ts")
 
         val adaptationField = AdaptationField(
             discontinuityIndicator = false,

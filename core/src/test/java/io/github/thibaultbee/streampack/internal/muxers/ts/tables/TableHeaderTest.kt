@@ -20,14 +20,12 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert
 import org.junit.Test
-import java.nio.ByteBuffer
 
 class TableHeaderTest {
     @Test
     fun `simple table header test`() {
-        val expectedTableHeader = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/muxer/ts/table-header.ts")
-        )
+        val expectedTableHeader =
+            ResourcesUtils.readByteBuffer("test-samples/muxer/ts/table-header.ts")
 
         val tableHeader = TableHeader(
             tableId = 2,

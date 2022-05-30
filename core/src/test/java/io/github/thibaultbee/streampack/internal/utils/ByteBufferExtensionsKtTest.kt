@@ -187,4 +187,16 @@ class ByteBufferExtensionsKtTest {
             expectedArray, resultBuffer.extractArray()
         )
     }
+
+    @Test
+    fun `putString test`() {
+        val value = "Hello World"
+        val testBuffer = ByteBuffer.allocate(value.length)
+        testBuffer.putString(value)
+        testBuffer.rewind()
+        assertArrayEquals(
+            value.toByteArray(),
+            testBuffer.extractArray()
+        )
+    }
 }

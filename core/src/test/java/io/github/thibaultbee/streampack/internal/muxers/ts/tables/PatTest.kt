@@ -30,9 +30,7 @@ class PatTest {
      */
     @Test
     fun `simple pat test`() {
-        val expectedBuffer = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/muxer/ts/pat.ts")
-        )
+        val expectedBuffer = ResourcesUtils.readByteBuffer("test-samples/muxer/ts/pat.ts")
         val listener = AssertEqualsSingleBufferMockMuxerListener(expectedBuffer)
         val service = Service(
             TsServiceInfo(
