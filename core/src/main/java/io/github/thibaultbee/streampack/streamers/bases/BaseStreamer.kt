@@ -282,7 +282,7 @@ abstract class BaseStreamer(
                 streams.add(videoConfig!!)
             }
             if (hasAudio) {
-                require(audioConfig != null) { "Requires video config" }
+                require(audioConfig != null) { "Requires audio config" }
                 streams.add(audioConfig!!)
             }
 
