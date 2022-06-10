@@ -160,7 +160,7 @@ abstract class MediaCodecEncoder<T>(
     }
 
     protected fun createCodec(format: MediaFormat): MediaCodec {
-        logger.e(this, "createCodec: $format")
+        logger.d(this, "createCodec: $format")
         val mediaCodecList = MediaCodecList(MediaCodecList.REGULAR_CODECS)
         val encoderName = mediaCodecList.findEncoderForFormat(format)
         encoderName?.let { return MediaCodec.createByCodecName(encoderName) }
