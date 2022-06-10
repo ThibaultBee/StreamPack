@@ -71,8 +71,8 @@ abstract class BaseStreamer(
     override var onErrorListener: OnErrorListener? = initialOnErrorListener
     override val helper = StreamerConfigurationHelper(muxer.helper)
 
-    private var audioTsStreamId: Int? = null
-    private var videoTsStreamId: Int? = null
+    private var audioStreamId: Int? = null
+    private var videoStreamId: Int? = null
 
     // Keep video configuration
     protected var videoConfig: VideoConfig? = null
@@ -94,7 +94,7 @@ abstract class BaseStreamer(
         }
 
         override fun onOutputFrame(frame: Frame) {
-            audioTsStreamId?.let {
+            audioStreamId?.let {
                 try {
                     this@BaseStreamer.muxer.encode(frame, it)
                 } catch (e: Exception) {
@@ -110,7 +110,7 @@ abstract class BaseStreamer(
         }
 
         override fun onOutputFrame(frame: Frame) {
-            videoTsStreamId?.let {
+            videoStreamId?.let {
                 try {
                     frame.pts += videoCapture!!.timestampOffset
                     frame.dts = if (frame.dts != null) {
@@ -147,9 +147,10 @@ abstract class BaseStreamer(
     private fun onStreamError(error: StreamPackError) {
         try {
             stopStream()
-            onErrorListener?.onError(error)
         } catch (e: Exception) {
             Logger.e(TAG, "onStreamError: Can't stop stream")
+        } finally {
+            onErrorListener?.onError(error)
         }
     }
 
@@ -286,8 +287,8 @@ abstract class BaseStreamer(
             }
 
             val streamsIdMap = this.muxer.addStreams(streams)
-            videoConfig?.let { videoTsStreamId = streamsIdMap[videoConfig as Config] }
-            audioConfig?.let { audioTsStreamId = streamsIdMap[audioConfig as Config] }
+            videoConfig?.let { videoStreamId = streamsIdMap[videoConfig as Config] }
+            audioConfig?.let { audioStreamId = streamsIdMap[audioConfig as Config] }
 
             muxer.startStream()
 

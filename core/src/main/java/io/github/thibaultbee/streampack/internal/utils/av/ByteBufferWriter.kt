@@ -24,7 +24,7 @@ abstract class ByteBufferWriter {
     open val bitSize: Int
         get() = size * Byte.SIZE_BITS
 
-    fun toByteBuffer(): ByteBuffer {
+    open fun toByteBuffer(): ByteBuffer {
         val output = ByteBuffer.allocate(size)
         write(output)
         output.rewind()

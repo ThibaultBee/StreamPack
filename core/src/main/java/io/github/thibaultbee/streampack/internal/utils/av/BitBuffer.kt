@@ -107,6 +107,10 @@ open class BitBuffer(
         buffer.position(ceil(bitPosition.toDouble() / Byte.SIZE_BITS).toInt())
     }
 
+    fun put(b: Short, numBits: Int = Byte.SIZE_BITS) {
+        put(if (b < 0) b.toInt() + 256 else b.toInt(), numBits)
+    }
+
     fun put(b: Byte, numBits: Int = Byte.SIZE_BITS) {
         put(if (b < 0) b.toInt() + 256 else b.toInt(), numBits)
     }

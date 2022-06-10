@@ -20,9 +20,9 @@ import java.nio.ByteBuffer
 class PixelAspectRatioBox(private val hSpacing: Int, private val vSpacing: Int) : Box("pasp") {
     override val size: Int = super.size + 8
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        buffer.putInt(hSpacing)
-        buffer.putInt(vSpacing)
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        output.putInt(hSpacing)
+        output.putInt(vSpacing)
     }
 }

@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
-import io.github.thibaultbee.streampack.internal.utils.putString
+import io.github.thibaultbee.streampack.internal.utils.extensions.putString
 import java.nio.ByteBuffer
 
 sealed class DataEntryBox(type: String, flags: Int) : FullBox(type, 0, flags)
@@ -30,11 +30,11 @@ class DataEntryUrlBox(private val location: String? = null) :
     ) {
     override val size: Int = super.size + (location?.let { it.length + 1 } ?: 0)
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
+    override fun write(output: ByteBuffer) {
+        super.write(output)
         location?.let {
-            buffer.putString(it)
-            buffer.put(0.toByte())
+            output.putString(it)
+            output.put(0.toByte())
         }
     }
 }
@@ -43,13 +43,13 @@ class DataEntryUrnBox(private val name: String, private val location: String? = 
     DataEntryBox("urn ", flags) {
     override val size: Int = super.size + name.length + 1 + (location?.let { it.length + 1 } ?: 0)
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        buffer.putString(name)
-        buffer.put(0.toByte())
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        output.putString(name)
+        output.put(0.toByte())
         location?.let {
-            buffer.putString(it)
-            buffer.put(0.toByte())
+            output.putString(it)
+            output.put(0.toByte())
         }
     }
 }

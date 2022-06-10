@@ -20,15 +20,15 @@ import java.nio.ByteBuffer
 class MediaInformationBox(
     private val mhd: TypeMediaHeaderBox,
     private val dinf: DataInformationBox,
-    private val stbl: SampleTableBox
+    val stbl: SampleTableBox
 ) :
     Box("minf") {
     override val size: Int = super.size + mhd.size + dinf.size + stbl.size
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        mhd.write(buffer)
-        dinf.write(buffer)
-        stbl.write(buffer)
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        mhd.write(output)
+        dinf.write(output)
+        stbl.write(output)
     }
 }

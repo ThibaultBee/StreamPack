@@ -253,7 +253,7 @@ data class AudioSpecificConfig(
         fun fromMediaFormat(
             format: MediaFormat,
         ): AudioSpecificConfig {
-            val audioObjectType = AudioObjectType.fromMimeType(
+            val audioObjectType = AudioObjectType.fromProfile(
                 format.getString(MediaFormat.KEY_MIME)!!,
                 format.getInteger(MediaFormat.KEY_AAC_PROFILE)
             )
@@ -264,7 +264,7 @@ data class AudioSpecificConfig(
                 audioObjectType,
                 channelConfig,
                 frameLengthFlag = false,
-                dependsOnCodeCoder = false,
+                dependsOnCoreCoder = false,
                 extensionFlag = false
             )
             return AudioSpecificConfig(
@@ -278,14 +278,14 @@ data class AudioSpecificConfig(
         fun fromAudioConfig(
             config: AudioConfig,
         ): AudioSpecificConfig {
-            val audioObjectType = AudioObjectType.fromMimeType(config.mimeType, config.profile)
+            val audioObjectType = AudioObjectType.fromProfile(config.mimeType, config.profile)
             val channelConfig = ChannelConfiguration.fromChannelConfig(config.channelConfig)
 
             val specificConfig = GASpecificConfig(
                 audioObjectType,
                 channelConfig,
                 frameLengthFlag = false,
-                dependsOnCodeCoder = false,
+                dependsOnCoreCoder = false,
                 extensionFlag = false
             )
             return AudioSpecificConfig(
@@ -298,11 +298,11 @@ data class AudioSpecificConfig(
 
         fun writeFromByteBuffer(
             buffer: ByteBuffer,
-            esds: ByteBuffer,
+            decoderSpecificInfo: ByteBuffer,
             audioConfig: AudioConfig
         ) {
             if (audioConfig.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
-                buffer.put(esds)
+                buffer.put(decoderSpecificInfo)
             } else {
                 throw NotImplementedError("No support for ${audioConfig.mimeType}")
             }

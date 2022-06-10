@@ -21,8 +21,8 @@ import java.nio.ByteBuffer
 class AVCConfigurationBox(private val config: AVCDecoderConfigurationRecord) : Box("avcC") {
     override val size: Int = super.size + config.size
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        config.write(buffer)
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        config.write(output)
     }
 }

@@ -136,7 +136,7 @@ class TSMuxer(
                             frame.buffer, pes.stream.config as AudioConfig
                         ).toByteBuffer()
                     } else {
-                        LATMFrameWriter.fromEsds(frame.buffer, frame.extra!!.first()).toByteBuffer()
+                        LATMFrameWriter.fromDecoderSpecificInfo(frame.buffer, frame.extra!!.first()).toByteBuffer()
                     }
             }
             MediaFormat.MIMETYPE_AUDIO_OPUS -> {} // TODO: optional control header

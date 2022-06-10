@@ -35,7 +35,6 @@ fun ByteBuffer.putInt24(i: Int) {
     put(i.toByte())
 }
 
-
 fun ByteBuffer.putLong48(i: Long) {
     putShort(i shr 32)
     putInt(i.toInt())
@@ -180,4 +179,9 @@ fun ByteBuffer.extractRbsp(headerLength: Int): ByteBuffer {
     rbsp.limit(rbsp.position())
     rbsp.rewind()
     return rbsp
+}
+
+fun ByteBuffer.clone(): ByteBuffer {
+    val clone = ByteBuffer.allocate(this.remaining())
+    return clone.put(this).apply { rewind() }
 }

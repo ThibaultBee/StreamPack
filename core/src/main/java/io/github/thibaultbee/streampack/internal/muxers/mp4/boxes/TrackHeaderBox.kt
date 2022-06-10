@@ -17,10 +17,10 @@ package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
 import android.util.Size
 import io.github.thibaultbee.streampack.internal.muxers.mp4.utils.TimeUtils
-import io.github.thibaultbee.streampack.internal.utils.put3x3Matrix
-import io.github.thibaultbee.streampack.internal.utils.putFixed1616
-import io.github.thibaultbee.streampack.internal.utils.putFixed88
-import io.github.thibaultbee.streampack.internal.utils.putInt
+import io.github.thibaultbee.streampack.internal.utils.extensions.put3x3Matrix
+import io.github.thibaultbee.streampack.internal.utils.extensions.putFixed1616
+import io.github.thibaultbee.streampack.internal.utils.extensions.putFixed88
+import io.github.thibaultbee.streampack.internal.utils.extensions.putInt
 import java.nio.ByteBuffer
 
 class TrackHeaderBox(
@@ -59,33 +59,33 @@ class TrackHeaderBox(
             20
         } + 60
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
+    override fun write(output: ByteBuffer) {
+        super.write(output)
         when (version) {
             1.toByte() -> {
-                buffer.putLong(creationTime)
-                buffer.putLong(modificationTime)
-                buffer.putInt(id)
-                buffer.putInt(0) // reserved
-                buffer.putLong(duration)
+                output.putLong(creationTime)
+                output.putLong(modificationTime)
+                output.putInt(id)
+                output.putInt(0) // reserved
+                output.putLong(duration)
             }
             0.toByte() -> {
-                buffer.putInt(creationTime)
-                buffer.putInt(modificationTime)
-                buffer.putInt(id)
-                buffer.putInt(0) // reserved
-                buffer.putInt(duration)
+                output.putInt(creationTime)
+                output.putInt(modificationTime)
+                output.putInt(id)
+                output.putInt(0) // reserved
+                output.putInt(duration)
             }
             else -> throw IllegalArgumentException("version must be 0 or 1")
         }
-        buffer.put(ByteArray(8))
-        buffer.putShort(layer) // layer
-        buffer.putShort(alternateGroup) // alternate_group
-        buffer.putFixed88(volume)
-        buffer.putShort(0) // reserved
-        buffer.put3x3Matrix(transformationMatrix)
-        buffer.putFixed1616(resolution.width.toFloat())
-        buffer.putFixed1616(resolution.height.toFloat())
+        output.put(ByteArray(8))
+        output.putShort(layer) // layer
+        output.putShort(alternateGroup) // alternate_group
+        output.putFixed88(volume)
+        output.putShort(0) // reserved
+        output.put3x3Matrix(transformationMatrix)
+        output.putFixed1616(resolution.width.toFloat())
+        output.putFixed1616(resolution.height.toFloat())
     }
 
     enum class TrackFlag(val value: Int) {

@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2023 Thibault B.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.github.thibaultbee.streampack.internal.utils.av.audio.aac
 
 import android.media.AudioFormat
@@ -26,8 +41,8 @@ class LATMFrameWriterTest {
             profile = MediaCodecInfo.CodecProfileLevel.AACObjectLC
         )
 
-        val esds = AudioSpecificConfig.fromAudioConfig(config).toByteBuffer()
-        val latm = LATMFrameWriter.fromEsds(payload, esds)
+        val decoderSpecificInfo = AudioSpecificConfig.fromAudioConfig(config).toByteBuffer()
+        val latm = LATMFrameWriter.fromDecoderSpecificInfo(payload, decoderSpecificInfo)
         assertArrayEquals(
             expectedLatm.array(),
             latm.toByteBuffer().extractArray()
@@ -36,18 +51,16 @@ class LATMFrameWriterTest {
 
     @Test
     fun `test AAC-HE 44100Hz mono with payload`() {
-        val expectedLatm = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/audio/latm/aac-he-44100Hz-mono/aac.latm")
-        )
+        val expectedLatm =
+            ResourcesUtils.readByteBuffer("test-samples/audio/latm/aac-he-44100Hz-mono/aac.latm")
 
-        val esds = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/audio/latm/aac-he-44100Hz-mono/esds.raw")
-        )
-        val payload = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/audio/latm/aac-he-44100Hz-mono/frame.raw")
-        )
+        val decoderSpecificInfo =
+            ResourcesUtils.readByteBuffer("test-samples/audio/latm/aac-he-44100Hz-mono/esds.raw")
 
-        val latm = LATMFrameWriter.fromEsds(payload, esds)
+        val payload =
+            ResourcesUtils.readByteBuffer("test-samples/audio/latm/aac-he-44100Hz-mono/frame.raw")
+
+        val latm = LATMFrameWriter.fromDecoderSpecificInfo(payload, decoderSpecificInfo)
         assertArrayEquals(
             expectedLatm.array(),
             latm.toByteBuffer().extractArray()
@@ -56,18 +69,16 @@ class LATMFrameWriterTest {
 
     @Test
     fun `test AAC-HEv2 44100Hz stereo with payload`() {
-        val expectedLatm = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/audio/latm/aac-hev2-44100Hz-stereo/aac.latm")
-        )
+        val expectedLatm =
+            ResourcesUtils.readByteBuffer("test-samples/audio/latm/aac-hev2-44100Hz-stereo/aac.latm")
 
-        val esds = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/audio/latm/aac-hev2-44100Hz-stereo/esds.raw")
-        )
-        val payload = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/audio/latm/aac-hev2-44100Hz-stereo/frame.raw")
-        )
+        val decoderSpecificInfo =
+            ResourcesUtils.readByteBuffer("test-samples/audio/latm/aac-hev2-44100Hz-stereo/esds.raw")
 
-        val latm = LATMFrameWriter.fromEsds(payload, esds)
+        val payload =
+            ResourcesUtils.readByteBuffer("test-samples/audio/latm/aac-hev2-44100Hz-stereo/frame.raw")
+
+        val latm = LATMFrameWriter.fromDecoderSpecificInfo(payload, decoderSpecificInfo)
         assertArrayEquals(
             expectedLatm.array(),
             latm.toByteBuffer().extractArray()

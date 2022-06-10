@@ -15,19 +15,19 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
-import io.github.thibaultbee.streampack.internal.utils.putString
+import io.github.thibaultbee.streampack.internal.utils.extensions.putString
 import java.nio.ByteBuffer
 
 class HandlerBox(private val type: HandlerType, private val name: String) : FullBox("hdlr", 0, 0) {
     override val size: Int = super.size + type.value.length + name.length + 17
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        buffer.putInt(0) // pre_defined
-        buffer.putString(type.value)
-        buffer.put(ByteArray(12)) // reserved
-        buffer.putString(name)
-        buffer.put(0.toByte()) // Null terminated string
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        output.putInt(0) // pre_defined
+        output.putString(type.value)
+        output.put(ByteArray(12)) // reserved
+        output.putString(name)
+        output.put(0.toByte()) // Null terminated string
     }
 
     enum class HandlerType(val value: String) {

@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
 import io.github.thibaultbee.streampack.internal.muxers.mp4.utils.TimeUtils
-import io.github.thibaultbee.streampack.internal.utils.putInt
+import io.github.thibaultbee.streampack.internal.utils.extensions.putInt
 import java.nio.ByteBuffer
 
 class MediaHeaderBox(
@@ -33,26 +33,26 @@ class MediaHeaderBox(
         16
     } + 4
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
+    override fun write(output: ByteBuffer) {
+        super.write(output)
         when (version) {
             1.toByte() -> {
-                buffer.putLong(creationTime)
-                buffer.putLong(modificationTime)
-                buffer.putInt(timescale)
-                buffer.putLong(duration)
+                output.putLong(creationTime)
+                output.putLong(modificationTime)
+                output.putInt(timescale)
+                output.putLong(duration)
             }
             0.toByte() -> {
-                buffer.putInt(creationTime)
-                buffer.putInt(modificationTime)
-                buffer.putInt(timescale)
-                buffer.putInt(duration)
+                output.putInt(creationTime)
+                output.putInt(modificationTime)
+                output.putInt(timescale)
+                output.putInt(duration)
             }
             else -> {
                 throw IllegalArgumentException("Version must be 0 or 1")
             }
         }
-        buffer.putShort(language)
-        buffer.putShort(0) // pre_defined
+        output.putShort(language)
+        output.putShort(0) // pre_defined
     }
 }

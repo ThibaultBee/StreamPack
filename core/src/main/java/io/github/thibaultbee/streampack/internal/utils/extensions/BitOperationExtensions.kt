@@ -55,6 +55,11 @@ infix fun Byte.shr(i: Int) =
 infix fun Byte.or(b: Byte) =
     this.toInt() or b.toInt()
 
+
+infix fun Byte.or(other: Int) =
+    this.toInt() or other
+
+
 fun Int.toBitList(): List<Boolean> {
     val list = mutableListOf<Boolean>()
     for (i in Int.SIZE_BITS downTo 0) {
@@ -62,3 +67,4 @@ fun Int.toBitList(): List<Boolean> {
     }
     return list
 }
+

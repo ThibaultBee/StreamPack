@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Thibault B.
+ * Copyright (C) 2023 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.muxers.mp4.models
+package io.github.thibaultbee.streampack.internal.utils.av.descriptors
 
 import java.nio.ByteBuffer
 
-data class SampleToChunk(
-    val firstChunk: Int,
-    val samplesPerChunk: Int,
-    val sampleDescriptionId: Int
+class AudioSpecificConfigDescriptor(
+    upStream: Boolean,
+    bufferSize: Int,
+    maxBitrate: Int,
+    avgBitrate: Int,
+    audioSpecificConfig: ByteBuffer,
+) : DecoderConfigDescriptor(
+    ObjectTypeIndication.AUDIO_ISO_14496_3_AAC,
+    StreamType.AudioStream,
+    upStream,
+    bufferSize,
+    maxBitrate,
+    avgBitrate,
+    DecoderSpecificInfo(audioSpecificConfig)
 )
-
-fun ByteBuffer.put(c: SampleToChunk) {
-    putInt(c.firstChunk)
-    putInt(c.samplesPerChunk)
-    putInt(c.sampleDescriptionId)
-}

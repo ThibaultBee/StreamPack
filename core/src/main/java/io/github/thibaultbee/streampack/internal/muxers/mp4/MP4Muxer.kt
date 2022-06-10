@@ -18,37 +18,57 @@ package io.github.thibaultbee.streampack.internal.muxers.mp4
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.data.Packet
+import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.FileTypeBox
-import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.MediaDataBox
-import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.MovieBox
-import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.MovieHeaderBox
-import io.github.thibaultbee.streampack.internal.utils.isVideo
+import io.github.thibaultbee.streampack.internal.muxers.mp4.models.*
+import io.github.thibaultbee.streampack.internal.utils.TimeUtils
+import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
+import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
 import java.nio.ByteBuffer
 
-class MP4Muxer(initialListener: IMuxerListener? = null) : IMuxer {
+class MP4Muxer(
+    initialListener: IMuxerListener? = null,
+    private val timescale: Int = DEFAULT_TIMESCALE,
+    private val segmenterFactory: MP4SegmenterFactory = DefaultMP4SegmenterFactory()
+) : IMuxer {
     override val helper = MP4MuxerHelper()
-    override var manageVideoOrientation: Boolean = false
+    override lateinit var orientationProvider: IOrientationProvider
 
     override var listener: IMuxerListener? = initialListener
-    private val tracks = mutableListOf<MP4Track>()
-    private var fileOffset: Long = 0
+    private val tracks = mutableListOf<Track>()
+    private val hasAudio: Boolean
+        get() = tracks.any { it.config.mimeType.isAudio }
+    private val hasVideo: Boolean
+        get() = tracks.any { it.config.mimeType.isVideo }
+
+    private var currentSegment: Segment? = null
+    private var segmenter: MP4Segmenter? = null
+
+    private var dataOffset: Long = 0
+    private var sequenceNumber = DEFAULT_SEQUENCE_NUMBER
+    private var hasWriteMoov = false
 
     override fun encode(frame: Frame, streamPid: Int) {
-        getTrack(streamPid).write(frame, fileOffset)
+        synchronized(this) {
+            if (segmenter!!.mustWriteSegment(frame)) {
+                writeSegment()
+            }
+            currentSegment!!.add(frame, streamPid)
+        }
     }
 
     override fun addStreams(streamsConfig: List<Config>): Map<Config, Int> {
-        val newTrack = mutableListOf<MP4Track>()
+        val newTracks = mutableListOf<Track>()
         streamsConfig.forEach { config ->
-            newTrack.add(MP4Track(getNewId(), config, 100) { buffer -> writeBuffer(buffer) })
+            val track = Track(getNewId(), config, timescale)
+            newTracks.add(track)
+            tracks.add(track)
         }
 
-        tracks.addAll(newTrack)
-
         val streamMap = mutableMapOf<Config, Int>()
-        newTrack.forEach { streamMap[it.config] = it.id }
+        newTracks.forEach { streamMap[it.config] = it.id }
         return streamMap
     }
 
@@ -56,25 +76,18 @@ class MP4Muxer(initialListener: IMuxerListener? = null) : IMuxer {
     }
 
     override fun startStream() {
-        writeBuffer(FileTypeBox().write())
-        writeBuffer(MediaDataBox().write())
+        writeBuffer(FileTypeBox().toByteBuffer())
+        currentSegment = createNewSegment(MovieBoxFactory(timescale))
+        segmenter = segmenterFactory.build(hasAudio, hasVideo)
     }
 
     override fun stopStream() {
-        tracks.forEach { it.writeLastChunk() }
-        val timescale = try {
-            tracks.first { it.config.mimeType.isVideo }.timescale
-        } catch (e: NoSuchElementException) {
-            tracks[0].timescale
-        }
-        val mvhd = MovieHeaderBox(
-            version = 0,
-            duration = tracks.maxOf { it.totalDuration * timescale / it.timescale },
-            timescale = timescale,
-            nextTrackId = tracks[0].id
-        )
-        val moov = MovieBox(mvhd, tracks.map { it.getTrak() })
-        writeBuffer(moov.write())
+        writeSegment(createNewFragment = false)
+        // TODO write mfra
+        sequenceNumber = DEFAULT_SEQUENCE_NUMBER
+        hasWriteMoov = false
+        currentSegment = null
+        segmenter = null
     }
 
     override fun release() {
@@ -91,8 +104,27 @@ class MP4Muxer(initialListener: IMuxerListener? = null) : IMuxer {
         throw IndexOutOfBoundsException("No empty ID left")
     }
 
-    private fun getTrack(id: Int): MP4Track {
-        return tracks.first { it.id == id }
+    private fun createNewSegment(movieBoxFactory: AbstractMovieBoxFactory): Segment {
+        return Segment(
+            tracks,
+            movieBoxFactory
+        ) { buffer -> writeBuffer(buffer) }
+    }
+
+    private fun writeSegment(
+        createNewFragment: Boolean = true,
+    ) {
+        currentSegment?.let {
+            if (!it.hasData) {
+                return
+            }
+
+            it.write(dataOffset)
+        }
+
+        if (createNewFragment) {
+            currentSegment = createNewSegment(MovieFragmentBoxFactory(sequenceNumber++))
+        }
     }
 
     private fun writeBuffer(buffer: ByteBuffer) {
@@ -100,7 +132,12 @@ class MP4Muxer(initialListener: IMuxerListener? = null) : IMuxer {
         val packet = Packet(buffer, 0)
         listener?.let {
             it.onOutputFrame(packet)
-            fileOffset += size
+            dataOffset += size
         }
+    }
+
+    companion object {
+        private const val DEFAULT_SEQUENCE_NUMBER = 1
+        private const val DEFAULT_TIMESCALE = TimeUtils.TIME_SCALE
     }
 }

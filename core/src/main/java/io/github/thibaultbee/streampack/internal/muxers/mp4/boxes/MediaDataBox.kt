@@ -15,4 +15,15 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
-class MediaDataBox : Box("mdat")
+import java.nio.ByteBuffer
+
+class MediaDataBox(dataSize: Int) : Box("mdat") {
+    override val size: Int = super.size + dataSize
+
+    fun writeHeader(): ByteBuffer {
+        val buffer = ByteBuffer.allocateDirect(super.size)
+        write(buffer)
+        buffer.rewind()
+        return buffer
+    }
+}
