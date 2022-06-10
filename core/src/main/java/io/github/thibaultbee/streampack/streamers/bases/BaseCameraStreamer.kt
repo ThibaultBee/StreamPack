@@ -123,7 +123,7 @@ open class BaseCameraStreamer(
      * @see [startPreview]
      */
     override fun stopPreview() {
-        stopStreamImpl()
+        stopStream()
         cameraCapture.stopPreview()
     }
 
