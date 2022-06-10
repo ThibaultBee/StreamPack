@@ -81,7 +81,7 @@ enum class AudioObjectType(val value: Int) {
             return values().first { it.value == value }
         }
 
-        fun fromMimeType(mimeType: String, profile: Int) = when (mimeType) {
+        fun fromProfile(mimeType: String, profile: Int) = when (mimeType) {
             MediaFormat.MIMETYPE_AUDIO_AAC -> {
                 when (profile) {
                     MediaCodecInfo.CodecProfileLevel.AACObjectMain -> AAC_MAIN

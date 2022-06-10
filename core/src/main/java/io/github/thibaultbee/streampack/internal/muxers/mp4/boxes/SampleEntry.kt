@@ -16,20 +16,20 @@
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
 import android.util.Size
-import io.github.thibaultbee.streampack.internal.utils.put
-import io.github.thibaultbee.streampack.internal.utils.putFixed1616
-import io.github.thibaultbee.streampack.internal.utils.putShort
-import io.github.thibaultbee.streampack.internal.utils.putString
+import io.github.thibaultbee.streampack.internal.utils.extensions.put
+import io.github.thibaultbee.streampack.internal.utils.extensions.putFixed1616
+import io.github.thibaultbee.streampack.internal.utils.extensions.putShort
+import io.github.thibaultbee.streampack.internal.utils.extensions.putString
 import java.nio.ByteBuffer
 
 sealed class SampleEntry(type: String, private val dataReferenceId: Short, val version: Int = 0) :
     Box(type) {
     override val size: Int = super.size + 8
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        buffer.put(ByteArray(6))
-        buffer.putShort(dataReferenceId)
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        output.put(ByteArray(6))
+        output.putShort(dataReferenceId)
     }
 }
 
@@ -53,26 +53,26 @@ open class VisualSampleEntry(
     override val size: Int =
         super.size + 70 + otherBoxes.sumOf { it.size } + (clap?.size ?: 0) + (pasp?.size ?: 0)
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        buffer.put(ByteArray(16)) // pre_defined + reserved + pre_defined
-        buffer.putShort(resolution.width)
-        buffer.putShort(resolution.height)
-        buffer.putFixed1616(horizontalResolution)
-        buffer.putFixed1616(verticalResolution)
-        buffer.putInt(0) // reserved
-        buffer.putShort(frameCount) // reserved
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        output.put(ByteArray(16)) // pre_defined + reserved + pre_defined
+        output.putShort(resolution.width)
+        output.putShort(resolution.height)
+        output.putFixed1616(horizontalResolution)
+        output.putFixed1616(verticalResolution)
+        output.putInt(0) // reserved
+        output.putShort(frameCount) // reserved
         compressorName?.let {
-            buffer.put(it.length)
-            buffer.putString(it)
+            output.put(it.length)
+            output.putString(it)
         }
-        buffer.put(ByteArray(32 - (compressorName?.let { it.length + 1 /* size */ }
+        output.put(ByteArray(32 - (compressorName?.let { it.length + 1 /* size */ }
             ?: 0))) // reserved
-        buffer.putShort(depth)
-        buffer.putShort(-1) // pre_defined
-        otherBoxes.forEach { it.write(buffer) }
-        clap?.write(buffer)
-        pasp?.write(buffer)
+        output.putShort(depth)
+        output.putShort(-1) // pre_defined
+        otherBoxes.forEach { it.write(output) }
+        clap?.write(output)
+        pasp?.write(output)
     }
 }
 
@@ -81,9 +81,9 @@ class AVCSampleEntry(
     horizontalResolution: Int = 72,
     verticalResolution: Int = 72,
     frameCount: Short = 1,
-    compressorName: String? = null,
+    compressorName: String? = "AVC Coding",
     depth: Short = 0x0018,
-    avcc: AVCConfigurationBox,
+    avcC: AVCConfigurationBox,
     btrt: BitRateBox? = null,
     extensionDescriptorsBox: List<Box> = emptyList(),
     clap: CleanApertureBox? = null,
@@ -96,7 +96,7 @@ class AVCSampleEntry(
     frameCount,
     compressorName,
     depth,
-    mutableListOf<Box>(avcc).apply {
+    mutableListOf<Box>(avcC).apply {
         btrt?.let { add(it) }
         addAll(extensionDescriptorsBox)
     },
@@ -108,7 +108,7 @@ class MP4AudioSampleEntry(
     channelCount: Short,
     sampleSize: Short,
     sampleRate: Int,
-    private val edts: ByteBuffer,
+    esds: ESDSBox,
     btrt: BitRateBox? = null,
 ) :
     AudioSampleEntry(
@@ -117,14 +117,9 @@ class MP4AudioSampleEntry(
         channelCount,
         sampleSize,
         sampleRate,
-        mutableListOf<Box>().apply { btrt?.let { add(it) } }) {
-    override val size: Int = super.size + edts.remaining()
-
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        buffer.put(edts)
-    }
-}
+        mutableListOf<Box>(esds).apply {
+            btrt?.let { add(it) }
+        })
 
 open class AudioSampleEntry(
     type: String,
@@ -133,17 +128,17 @@ open class AudioSampleEntry(
     private val sampleSize: Short,
     private val sampleRate: Int,
     private val otherBoxes: List<Box> = emptyList(),
-) : SampleEntry(type, 3, version) {
+) : SampleEntry(type, 1, version) {
     override val size: Int = super.size + 20 + otherBoxes.sumOf { it.size }
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        buffer.putShort(version)
-        buffer.put(ByteArray(6)) // reserved
-        buffer.putShort(channelCount)
-        buffer.putShort(sampleSize)
-        buffer.putInt(0) // pre_defined + reserved
-        buffer.putFixed1616(sampleRate)
-        otherBoxes.forEach { it.write(buffer) }
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        output.putShort(version)
+        output.put(ByteArray(6)) // reserved
+        output.putShort(channelCount)
+        output.putShort(sampleSize)
+        output.putInt(0) // pre_defined + reserved
+        output.putInt(sampleRate shl 16)
+        otherBoxes.forEach { it.write(output) }
     }
 }

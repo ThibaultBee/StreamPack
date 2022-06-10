@@ -25,7 +25,7 @@ data class GASpecificConfig(
     val channelConfiguration: ChannelConfiguration,
 
     val frameLengthFlag: Boolean,
-    val dependsOnCodeCoder: Boolean,
+    val dependsOnCoreCoder: Boolean,
     val extensionFlag: Boolean,
 
     val coreCoderDelay: Short? = null,
@@ -39,7 +39,7 @@ data class GASpecificConfig(
     val extensionFlag3: Boolean? = null
 ) : SpecificConfig() {
     override val bitSize =
-        3 + if (dependsOnCodeCoder) 14 else 0 + if (channelConfiguration == ChannelConfiguration.SPECIFIC) {
+        3 + if (dependsOnCoreCoder) 14 else 0 + if (channelConfiguration == ChannelConfiguration.SPECIFIC) {
             programConfigElement!!.bitSize
         } else {
             0

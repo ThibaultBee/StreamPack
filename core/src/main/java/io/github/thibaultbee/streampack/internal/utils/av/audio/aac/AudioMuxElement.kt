@@ -115,11 +115,11 @@ class AudioMuxElement(
             )
         }
 
-        fun fromEsds(payload: ByteBuffer, esds: ByteBuffer): AudioMuxElement {
+        fun fromDecoderSpecificInfo(payload: ByteBuffer, decoderSpecificInfo: ByteBuffer): AudioMuxElement {
             return AudioMuxElement(
                 muxConfigPresent = true,
                 useSameStreamMuxConfig = false,
-                StreamMuxConfig.fromEsds(esds),
+                StreamMuxConfig.fromDecoderSpecificInfo(decoderSpecificInfo),
                 payload = payload
             )
         }
@@ -249,9 +249,9 @@ class StreamMuxConfig(
             )
         }
 
-        fun fromEsds(esds: ByteBuffer): StreamMuxConfig {
-            val audioSpecificConfig = AudioSpecificConfig.parse(esds)
-            esds.rewind()
+        fun fromDecoderSpecificInfo(decoderSpecificInfo: ByteBuffer): StreamMuxConfig {
+            val audioSpecificConfig = AudioSpecificConfig.parse(decoderSpecificInfo)
+            decoderSpecificInfo.rewind()
             return StreamMuxConfig(
                 allStreamsSameTimeFraming = true,
                 numSubFrames = 0,
@@ -259,7 +259,7 @@ class StreamMuxConfig(
                 numLayer = 0,
                 frameLengthType = 0,
                 audioSpecificConfig = BitBuffer(
-                    esds,
+                    decoderSpecificInfo,
                     bitEnd = audioSpecificConfig.bitSize - 1
                 )
             )

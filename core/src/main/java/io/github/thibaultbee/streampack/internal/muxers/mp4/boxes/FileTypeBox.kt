@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
-import io.github.thibaultbee.streampack.internal.utils.putString
+import io.github.thibaultbee.streampack.internal.utils.extensions.putString
 import java.nio.ByteBuffer
 
 class FileTypeBox(
@@ -30,10 +30,10 @@ class FileTypeBox(
 
     override val size: Int = super.size + 8 + compatibleBrands.sumOf { it.length }
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        buffer.putString(majorBrand)
-        buffer.putInt(minorVersion)
-        compatibleBrands.forEach { buffer.putString(it) }
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        output.putString(majorBrand)
+        output.putInt(minorVersion)
+        compatibleBrands.forEach { output.putString(it) }
     }
 }

@@ -20,9 +20,9 @@ import java.nio.ByteBuffer
 class SyncSampleBox(private val sampleNumber: List<Int>) : FullBox("stss", 0, 0) {
     override val size: Int = super.size + 4 + 4 * sampleNumber.size
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        buffer.putInt(sampleNumber.size)
-        sampleNumber.forEach { buffer.putInt(it) }
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        output.putInt(sampleNumber.size)
+        sampleNumber.forEach { output.putInt(it) }
     }
 }

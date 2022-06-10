@@ -24,10 +24,10 @@ class BitRateBox(
 ) : Box("btrt") {
     override val size: Int = super.size + 12
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        buffer.putInt(bufferSizeDB)
-        buffer.putInt(maxBitrate)
-        buffer.putInt(avgBitrate)
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        output.putInt(bufferSizeDB)
+        output.putInt(maxBitrate)
+        output.putInt(avgBitrate)
     }
 }

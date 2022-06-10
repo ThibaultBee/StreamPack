@@ -15,12 +15,14 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
-import io.github.thibaultbee.streampack.internal.utils.putInt24
-import io.github.thibaultbee.streampack.internal.utils.putString
+import io.github.thibaultbee.streampack.internal.utils.av.ByteBufferWriter
+import io.github.thibaultbee.streampack.internal.utils.extensions.putInt24
+import io.github.thibaultbee.streampack.internal.utils.extensions.putString
 import java.nio.ByteBuffer
 
-sealed class Box(private val type: String, private val isCompact: Boolean = true) {
-    open val size: Int = 8 + if (!isCompact) {
+sealed class Box(private val type: String, private val isCompact: Boolean = true) :
+    ByteBufferWriter() {
+    override val size: Int = 8 + if (!isCompact) {
         8
     } else {
         0
@@ -30,30 +32,20 @@ sealed class Box(private val type: String, private val isCompact: Boolean = true
         0
     }
 
-    open fun write(buffer: ByteBuffer) {
+    override fun write(output: ByteBuffer) {
         if (isCompact) {
-            buffer.putInt(size)
+            output.putInt(size)
         } else {
-            buffer.putInt(1)
+            output.putInt(1)
         }
 
-        buffer.putString(type)
+        output.putString(type)
         if (!isCompact) {
             throw NotImplementedError("Large size not implemented yet")
         }
         if (type == "uuid") {
             throw NotImplementedError("UUID not implemented yet")
         }
-    }
-
-    fun write(): ByteBuffer {
-        val buffer = ByteBuffer.allocateDirect(size)
-
-        write(buffer)
-
-        buffer.rewind()
-
-        return buffer
     }
 }
 
@@ -65,9 +57,9 @@ abstract class FullBox(
 ) : Box(type, isCompact) {
     override val size: Int = super.size + 4
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        buffer.put(version)
-        buffer.putInt24(flags)
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        output.put(version)
+        output.putInt24(flags)
     }
 }

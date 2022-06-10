@@ -20,8 +20,8 @@ import java.nio.ByteBuffer
 class DataInformationBox(private val dref: DataReferenceBox) : Box("dinf") {
     override val size: Int = super.size + dref.size
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        dref.write(buffer)
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        dref.write(output)
     }
 }

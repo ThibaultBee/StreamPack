@@ -33,10 +33,10 @@ class VideoMediaHeaderBox(
 
     override val size: Int = super.size + 8
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        buffer.putShort(graphicsMode) // graphics mode
-        opColor.forEach { buffer.putShort(it) } // op color
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        output.putShort(graphicsMode) // graphics mode
+        opColor.forEach { output.putShort(it) } // op color
     }
 }
 
@@ -45,9 +45,9 @@ class SoundMediaHeaderBox(
 ) : TypeMediaHeaderBox("smhd", 0, 0) {
     override val size: Int = super.size + 4
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        buffer.putShort(balance)
-        buffer.putShort(0) // reserved
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        output.putShort(balance)
+        output.putShort(0) // reserved
     }
 }

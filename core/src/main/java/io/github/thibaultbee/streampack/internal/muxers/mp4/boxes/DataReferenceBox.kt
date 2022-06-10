@@ -26,9 +26,9 @@ class DataReferenceBox(private val entries: List<DataEntryBox>) : FullBox("dref"
 
     override val size: Int = super.size + 4 + entries.sumOf { it.size }
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        buffer.putInt(entries.size)
-        entries.forEach { it.write(buffer) }
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        output.putInt(entries.size)
+        entries.forEach { it.write(output) }
     }
 }

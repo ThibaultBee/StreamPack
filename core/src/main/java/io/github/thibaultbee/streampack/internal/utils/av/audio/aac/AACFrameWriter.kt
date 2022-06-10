@@ -55,9 +55,9 @@ class LATMFrameWriter(
     }
 
     companion object {
-        fun fromEsds(frameBuffer: ByteBuffer, esds: ByteBuffer): LATMFrameWriter {
+        fun fromDecoderSpecificInfo(frameBuffer: ByteBuffer, decoderSpecificInfo: ByteBuffer): LATMFrameWriter {
             return LATMFrameWriter(
-                AudioMuxElement.fromEsds(frameBuffer, esds)
+                AudioMuxElement.fromDecoderSpecificInfo(frameBuffer, decoderSpecificInfo)
             )
         }
     }

@@ -20,8 +20,8 @@ import java.nio.ByteBuffer
 class CleanApertureBox : Box("clap") {
     override val size: Int = super.size
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
+    override fun write(output: ByteBuffer) {
+        super.write(output)
         throw NotImplementedError("CleanApertureBox is not implemented yet")
     }
 }

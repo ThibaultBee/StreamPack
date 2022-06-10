@@ -20,9 +20,9 @@ import java.nio.ByteBuffer
 class TrackBox(val tkhd: TrackHeaderBox, val mdia: MediaBox) : Box("trak") {
     override val size: Int = super.size + tkhd.size + mdia.size
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        tkhd.write(buffer)
-        mdia.write(buffer)
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        tkhd.write(output)
+        mdia.write(output)
     }
 }

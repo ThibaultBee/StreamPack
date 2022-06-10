@@ -29,10 +29,10 @@ class SampleSizeBox(
 
     override val size: Int = super.size + 8 + (sampleSizeEntries?.size ?: 0) * 4
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        buffer.putInt(sampleSize)
-        buffer.putInt(sampleSizeEntries?.size ?: 0)
-        sampleSizeEntries?.forEach { buffer.putInt(it) }
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        output.putInt(sampleSize)
+        output.putInt(sampleSizeEntries?.size ?: 0)
+        sampleSizeEntries?.forEach { output.putInt(it) }
     }
 }

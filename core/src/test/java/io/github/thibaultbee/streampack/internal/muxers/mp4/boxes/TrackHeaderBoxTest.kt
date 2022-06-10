@@ -15,8 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
-import android.util.Size
-import io.github.thibaultbee.streampack.internal.utils.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
 import io.github.thibaultbee.streampack.utils.MockUtils
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
@@ -38,7 +37,7 @@ class TrackHeaderBoxTest {
             duration = 45000,
             resolution = MockUtils.mockSize(2048, 1152)
         )
-        val buffer = tkhd.write()
+        val buffer = tkhd.toByteBuffer()
         assertArrayEquals(expectedBuffer.extractArray(), buffer.extractArray())
     }
 }

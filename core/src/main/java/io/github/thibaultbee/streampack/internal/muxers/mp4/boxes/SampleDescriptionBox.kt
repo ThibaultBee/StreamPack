@@ -28,9 +28,9 @@ class SampleDescriptionBox(private val sampleEntries: List<SampleEntry>) : FullB
 
     override val size: Int = super.size + 4 + sampleEntries.sumOf { it.size }
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
-        buffer.putInt(sampleEntries.size)
-        sampleEntries.forEach { it.write(buffer) }
+    override fun write(output: ByteBuffer) {
+        super.write(output)
+        output.putInt(sampleEntries.size)
+        sampleEntries.forEach { it.write(output) }
     }
 }

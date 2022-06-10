@@ -16,10 +16,10 @@
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
 import io.github.thibaultbee.streampack.internal.muxers.mp4.utils.TimeUtils
-import io.github.thibaultbee.streampack.internal.utils.put3x3Matrix
-import io.github.thibaultbee.streampack.internal.utils.putFixed1616
-import io.github.thibaultbee.streampack.internal.utils.putFixed88
-import io.github.thibaultbee.streampack.internal.utils.putInt
+import io.github.thibaultbee.streampack.internal.utils.extensions.put3x3Matrix
+import io.github.thibaultbee.streampack.internal.utils.extensions.putFixed1616
+import io.github.thibaultbee.streampack.internal.utils.extensions.putFixed88
+import io.github.thibaultbee.streampack.internal.utils.extensions.putInt
 import java.nio.ByteBuffer
 
 class MovieHeaderBox(
@@ -53,28 +53,28 @@ class MovieHeaderBox(
         16
     } + 80
 
-    override fun write(buffer: ByteBuffer) {
-        super.write(buffer)
+    override fun write(output: ByteBuffer) {
+        super.write(output)
         when (version) {
             1.toByte() -> {
-                buffer.putLong(creationTime)
-                buffer.putLong(modificationTime)
-                buffer.putInt(timescale)
-                buffer.putLong(duration)
+                output.putLong(creationTime)
+                output.putLong(modificationTime)
+                output.putInt(timescale)
+                output.putLong(duration)
             }
             0.toByte() -> {
-                buffer.putInt(creationTime)
-                buffer.putInt(modificationTime)
-                buffer.putInt(timescale)
-                buffer.putInt(duration)
+                output.putInt(creationTime)
+                output.putInt(modificationTime)
+                output.putInt(timescale)
+                output.putInt(duration)
             }
             else -> throw IllegalArgumentException("version must be 0 or 1")
         }
-        buffer.putFixed1616(rate)
-        buffer.putFixed88(volume)
-        buffer.put(ByteArray(10)) // reserved
-        buffer.put3x3Matrix(transformationMatrix)
-        buffer.put(ByteArray(24)) // pre_defined
-        buffer.putInt(nextTrackId)
+        output.putFixed1616(rate)
+        output.putFixed88(volume)
+        output.put(ByteArray(10)) // reserved
+        output.put3x3Matrix(transformationMatrix)
+        output.put(ByteArray(24)) // pre_defined
+        output.putInt(nextTrackId)
     }
 }
