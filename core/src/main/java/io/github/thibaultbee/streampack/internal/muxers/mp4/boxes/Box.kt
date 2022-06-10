@@ -46,7 +46,7 @@ sealed class Box(private val type: String, private val isCompact: Boolean = true
         }
     }
 
-    fun write(): ByteBuffer {
+    open fun write(): ByteBuffer {
         val buffer = ByteBuffer.allocateDirect(size)
 
         write(buffer)

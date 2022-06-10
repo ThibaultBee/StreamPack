@@ -15,16 +15,26 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
-import io.github.thibaultbee.streampack.internal.muxers.mp4.models.SampleToChunk
-import io.github.thibaultbee.streampack.internal.muxers.mp4.models.put
 import java.nio.ByteBuffer
 
-class SampleToChunkBox(private val chunkEntries: List<SampleToChunk>) : FullBox("stsc", 0, 0) {
+class SampleToChunkBox(private val chunkEntries: List<Entry>) : FullBox("stsc", 0, 0) {
     override val size: Int = super.size + 4 + 12 * chunkEntries.size
 
     override fun write(buffer: ByteBuffer) {
         super.write(buffer)
         buffer.putInt(chunkEntries.size)
         chunkEntries.forEach { buffer.put(it) }
+    }
+
+    data class Entry(
+        val firstChunk: Int,
+        var samplesPerChunk: Int,
+        val sampleDescriptionId: Int
+    )
+
+    fun ByteBuffer.put(c: Entry) {
+        putInt(c.firstChunk)
+        putInt(c.samplesPerChunk)
+        putInt(c.sampleDescriptionId)
     }
 }

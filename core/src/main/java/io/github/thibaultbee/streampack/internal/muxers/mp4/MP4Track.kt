@@ -22,21 +22,23 @@ import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.*
-import io.github.thibaultbee.streampack.internal.muxers.mp4.models.Chunk
-import io.github.thibaultbee.streampack.internal.muxers.mp4.models.DecodingTime
-import io.github.thibaultbee.streampack.internal.muxers.mp4.models.SampleToChunk
+import io.github.thibaultbee.streampack.internal.muxers.mp4.models.SampleDependsOn
+import io.github.thibaultbee.streampack.internal.muxers.mp4.models.SampleFlags
+import io.github.thibaultbee.streampack.internal.muxers.mp4.models.Samples
 import io.github.thibaultbee.streampack.internal.utils.TimeUtils
 import io.github.thibaultbee.streampack.internal.utils.av.video.AVCDecoderConfigurationRecord
+import io.github.thibaultbee.streampack.internal.utils.clone
 import java.nio.ByteBuffer
 
 class MP4Track(
     val id: Int,
     val config: Config,
-    private val numOfSamplePerChunk: Int,
-    var onNewChunk: (ByteBuffer) -> Unit
+    var onNewSample: (ByteBuffer) -> Unit
 ) {
     private var firstTimestamp: Long = 0
     private var _totalDuration: Long = 0
+    val dataSize: Int
+        get() = currentSamples.size
     val totalDuration: Long
         get() = _totalDuration
     val timescale = TimeUtils.TIME_SCALE
@@ -51,16 +53,17 @@ class MP4Track(
 
     private val sampleSizes = mutableListOf<Int>()
 
-    private val chunkOffsets = mutableListOf<Long>()
+    private val chunkSizes = mutableListOf<Int>()
 
-    private var currentChunk = Chunk(firstChunk = 1, sampleDescriptionId = 1)
-    private val sampleToChunks = mutableListOf<SampleToChunk>()
+    private var currentSamples = Samples(firstChunk = 1, sampleDescriptionId = 1)
+    private val sampleToChunks = mutableListOf<SampleToChunkBox.Entry>()
+    private lateinit var currentSampleToChunks: SampleToChunkBox.Entry
 
     init {
         require(id != 0) { "id must be greater than 0" }
     }
 
-    fun write(frame: Frame, frameOffset: Long) {
+    fun add(frame: Frame) {
         frame.extra?.let {
             extradata.add(it)
         }
@@ -83,31 +86,36 @@ class MP4Track(
 
         sampleSizes.add(frame.buffer.remaining())
 
-        if (currentChunk.size == numOfSamplePerChunk) {
-            writeCurrentChunk()
-            chunkOffsets.add(frameOffset)
-            currentChunk = Chunk(
-                firstChunk = currentChunk.firstChunk + 1,
-                sampleDescriptionId = currentChunk.sampleDescriptionId
+        // New chunk
+        if (currentSamples.size == 0) {
+            currentSampleToChunks = SampleToChunkBox.Entry(
+                currentSamples.firstChunk,
+                0,
+                currentSamples.sampleDescriptionId
             )
-        } else {
-            currentChunk.add(frame)
+            sampleToChunks.add(
+                currentSampleToChunks
+            )
+        }
+
+        frame.buffer = frame.buffer.clone() // Do not keep mediacodec buffer
+        currentSamples.add(frame)
+        currentSampleToChunks.samplesPerChunk++
+    }
+
+    fun write() {
+        if (currentSamples.size > 0) {
+            currentSamples.samples.forEach { onNewSample(it.buffer) }
+            chunkSizes.add(currentSamples.size)
+
+            currentSamples = Samples(
+                firstChunk = currentSamples.firstChunk + 1,
+                sampleDescriptionId = currentSamples.sampleDescriptionId
+            )
         }
     }
 
-    private fun writeCurrentChunk() {
-        sampleToChunks.add(currentChunk.toSampleToChunk())
-        val byteBuffer = currentChunk.write()
-        onNewChunk(byteBuffer)
-    }
-
-    fun writeLastChunk() {
-        if (currentChunk.size > 0) {
-            writeCurrentChunk()
-        }
-    }
-
-    fun getTrak(): TrackBox {
+    fun createTrak(firstChunkOffset: Int): TrackBox {
         val tkhd = createTrackHeaderBox(config)
         val mdhd =
             MediaHeaderBox(version = 0, timescale = timescale, duration = totalDuration)
@@ -119,13 +127,14 @@ class MP4Track(
         val stss = createSyncSampleBox()
         val stsc = createSampleToChunkBox()
         val stsz = SampleSizeBox(sampleSizeEntries = sampleSizes)
-        val co = ChunkLargeOffsetBox(chunkOffsets)
+        val co = createChunkOffsetBox(firstChunkOffset)
 
         val stbl = SampleTableBox(stsd, stts, stss, stsc, stsz, co)
         val minf = MediaInformationBox(mhd, dinf, stbl)
         val mdia = MediaBox(mdhd, hdlr, minf)
         return TrackBox(tkhd, mdia)
     }
+
 
     private fun createTrackHeaderBox(config: Config): TrackHeaderBox {
         val resolution = when (config) {
@@ -152,18 +161,29 @@ class MP4Track(
     }
 
     private fun createSampleToChunkBox(): SampleToChunkBox {
-        val sampleToChunkEntries = mutableListOf<SampleToChunk>()
-        sampleToChunks.forEachIndexed { index, sampleToChunk ->
-            if (index != 0) {
-                val previousSampleToChunk = sampleToChunks[index - 1]
-                if ((sampleToChunk.samplesPerChunk != previousSampleToChunk.samplesPerChunk)
-                    || (sampleToChunk.sampleDescriptionId != previousSampleToChunk.sampleDescriptionId)
+        val filteredSampleToChunkEntries = mutableListOf<SampleToChunkBox.Entry>()
+        sampleToChunks.forEach {
+            try {
+                val last = filteredSampleToChunkEntries.last()
+                if ((last.samplesPerChunk != it.samplesPerChunk)
+                    || (last.sampleDescriptionId != it.sampleDescriptionId)
                 ) {
-                    sampleToChunkEntries.add(sampleToChunk)
+                    filteredSampleToChunkEntries.add(it)
                 }
+            } catch (e: NoSuchElementException) {
+                filteredSampleToChunkEntries.add(it)
             }
         }
-        return SampleToChunkBox(sampleToChunkEntries)
+
+        return SampleToChunkBox(filteredSampleToChunkEntries)
+    }
+
+    private fun createChunkOffsetBox(firstChunkOffset: Int): ChunkLargeOffsetBox {
+        val chunkOffsets = mutableListOf(firstChunkOffset.toLong())
+        chunkSizes.forEach {
+            chunkOffsets.add(chunkOffsets.last() + it.toLong())
+        }
+        return ChunkLargeOffsetBox(chunkOffsets)
     }
 
     private fun createTimeToSampleBox(): TimeToSampleBox {
@@ -173,20 +193,22 @@ class MP4Track(
                 sampleDurations.add((dts - sampleDts[index - 1]).toInt())
             }
         }
-        val sampleEntries = mutableListOf<DecodingTime>()
+        val filteredTimeToSampleEntries = mutableListOf<TimeToSampleBox.Entry>()
         var count = 1
-        sampleDurations.forEachIndexed { index, duration ->
-            if (index != 0) {
-                val previousDuration = sampleDurations[index - 1]
-                if (duration == previousDuration) {
+        sampleDurations.forEach { duration ->
+            try {
+                val last = filteredTimeToSampleEntries.last()
+                if (duration != last.delta) {
+                    filteredTimeToSampleEntries.add(TimeToSampleBox.Entry(count, duration))
                     count++
-                } else {
-                    sampleEntries.add(DecodingTime(count, previousDuration))
-                    count = 1
                 }
+            } catch (e: NoSuchElementException) {
+                filteredTimeToSampleEntries.add(TimeToSampleBox.Entry(count, duration))
+                count++
             }
         }
-        return TimeToSampleBox(sampleEntries)
+
+        return TimeToSampleBox(filteredTimeToSampleEntries)
     }
 
     private fun createSampleDescriptionBox(): SampleDescriptionBox {
@@ -223,6 +245,41 @@ class MP4Track(
         } else {
             null
         }
+    }
+
+    fun createTref(): TrackExtendsBox {
+        return TrackExtendsBox(id)
+    }
+
+    fun createTraf(baseDataOffset: Long, moofSize: Int): TrackFragmentBox {
+        val tfhd = createTrackFragmentHeaderBox(baseDataOffset)
+        val tfdt = null //TrackFragmentBaseMediaDecodeTimeBox(0)
+        val trun = createTrackRunBox(moofSize)
+        return TrackFragmentBox(tfhd, tfdt, trun)
+    }
+
+    private fun createTrackFragmentHeaderBox(baseDataOffset: Long): TrackFragmentHeaderBox {
+        return TrackFragmentHeaderBox(
+            id = id,
+            baseDataOffset = baseDataOffset,
+            defaultSampleFlags = SampleFlags(
+                dependsOn = SampleDependsOn.OTHERS,
+                isNonSyncSample = true
+            )
+        )
+    }
+
+    private fun createTrackRunBox(moofSize: Int): TrackRunBox {
+        val entries = currentSamples.samples.map { TrackRunBox.Entry(size = it.buffer.remaining()) }
+        return TrackRunBox(
+            version = 0,
+            dataOffset = moofSize,
+            firstSampleFlags = SampleFlags(
+                dependsOn = SampleDependsOn.NO_OTHER,
+                isNonSyncSample = false,
+            ),
+            entries = entries
+        )
     }
 }
 

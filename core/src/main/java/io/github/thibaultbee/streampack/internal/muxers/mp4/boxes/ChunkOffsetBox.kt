@@ -17,9 +17,13 @@ package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
 import java.nio.ByteBuffer
 
-abstract class BaseChunkOffsetBox(type: String) : FullBox(type, 0, 0)
+abstract class BaseChunkOffsetBox<T>(type: String, protected var chunkOffsetEntries: List<T>) :
+    FullBox(type, 0, 0) {
+    abstract fun updateFirstChunkOffset(firstChunkOffset: T)
+}
 
-class ChunkOffsetBox(private val chunkOffsetEntries: List<Int>) : BaseChunkOffsetBox("stco") {
+class ChunkOffsetBox(chunkOffsetEntries: List<Int>) :
+    BaseChunkOffsetBox<Int>("stco", chunkOffsetEntries) {
     override val size: Int = super.size + 4 + 4 * chunkOffsetEntries.size
 
     override fun write(buffer: ByteBuffer) {
@@ -27,14 +31,23 @@ class ChunkOffsetBox(private val chunkOffsetEntries: List<Int>) : BaseChunkOffse
         buffer.putInt(chunkOffsetEntries.size)
         chunkOffsetEntries.forEach { buffer.putInt(it) }
     }
+
+    override fun updateFirstChunkOffset(offset: Int) {
+        chunkOffsetEntries = chunkOffsetEntries.map { it + offset }
+    }
 }
 
-class ChunkLargeOffsetBox(private val chunkOffsetEntries: List<Long>) : BaseChunkOffsetBox("co64") {
+class ChunkLargeOffsetBox(chunkOffsetEntries: List<Long>) :
+    BaseChunkOffsetBox<Long>("co64", chunkOffsetEntries) {
     override val size: Int = super.size + 4 + 8 * chunkOffsetEntries.size
 
     override fun write(buffer: ByteBuffer) {
         super.write(buffer)
         buffer.putInt(chunkOffsetEntries.size)
         chunkOffsetEntries.forEach { buffer.putLong(it) }
+    }
+
+    override fun updateFirstChunkOffset(firstChunkOffset: Long) {
+        chunkOffsetEntries = chunkOffsetEntries.map { it + firstChunkOffset }
     }
 }

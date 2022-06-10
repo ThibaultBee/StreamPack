@@ -17,22 +17,14 @@ package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
 import java.nio.ByteBuffer
 
-class MovieBox(
-    private val mvhd: MovieHeaderBox,
-    val trak: List<TrackBox>,
-    private val mvex: MovieExtendsBox? = null
-) : Box("moov") {
-    init {
-        require(trak.isNotEmpty()) { "At least one track is required" }
-        require(trak.distinctBy { it.tkhd.id }.size == trak.size) { "All tracks must have different trackId" }
-    }
+class MovieFragmentRandomAccessBox(private val traf: List<TrackFragmentRandomAccessBox>) :
+    Box("mfra") {
+    constructor(traf: TrackFragmentRandomAccessBox) : this(listOf(traf))
 
-    override val size: Int = super.size + mvhd.size + trak.sumOf { it.size } + (mvex?.size ?: 0)
+    override val size: Int = super.size + traf.sumOf { it.size }
 
     override fun write(buffer: ByteBuffer) {
         super.write(buffer)
-        mvhd.write(buffer)
-        trak.forEach { it.write(buffer) }
-        mvex?.write(buffer)
+        traf.forEach { it.write(buffer) }
     }
 }

@@ -20,7 +20,7 @@ import java.nio.ByteBuffer
 class MediaBox(
     private val mdhd: MediaHeaderBox,
     private val hdlr: HandlerBox,
-    private val minf: MediaInformationBox
+    val minf: MediaInformationBox
 ) : Box("mdia") {
     override val size: Int = super.size + mdhd.size + hdlr.size + minf.size
 

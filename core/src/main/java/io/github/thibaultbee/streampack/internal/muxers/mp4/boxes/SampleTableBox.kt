@@ -23,10 +23,10 @@ class SampleTableBox(
     private val stss: SyncSampleBox? = null,
     private val stsc: SampleToChunkBox,
     private val stsz: SampleSizeBox,
-    private val co: BaseChunkOffsetBox
+    val co64: ChunkLargeOffsetBox
 ) : Box("stbl") {
     override val size: Int =
-        super.size + stsd.size + stts.size + (stss?.size ?: 0) + stsc.size + stsz.size + co.size
+        super.size + stsd.size + stts.size + (stss?.size ?: 0) + stsc.size + stsz.size + co64.size
 
     override fun write(buffer: ByteBuffer) {
         super.write(buffer)
@@ -35,6 +35,6 @@ class SampleTableBox(
         stss?.write(buffer)
         stsc.write(buffer)
         stsz.write(buffer)
-        co.write(buffer)
+        co64.write(buffer)
     }
 }

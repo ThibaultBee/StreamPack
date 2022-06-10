@@ -13,13 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.muxers.mp4.models
+package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
 import java.nio.ByteBuffer
 
-data class DecodingTime(val count: Int, val delta: Int)
+class TrackFragmentBox(
+    private val tfhd: TrackFragmentHeaderBox,
+    private val tfdt: TrackFragmentBaseMediaDecodeTimeBox? = null,
+    private val trun: TrackRunBox? = null
+) : Box("traf") {
+    override val size: Int =
+        super.size + tfhd.size + (tfdt?.size ?: 0) + (trun?.size ?: 0)
 
-fun ByteBuffer.put(d: DecodingTime) {
-    putInt(d.count)
-    putInt(d.delta)
+    override fun write(buffer: ByteBuffer) {
+        super.write(buffer)
+        tfhd.write(buffer)
+        tfdt?.write(buffer)
+        trun?.write(buffer)
+    }
 }

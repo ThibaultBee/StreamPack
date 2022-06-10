@@ -13,18 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.muxers.mp4.models
+package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
 import java.nio.ByteBuffer
 
-data class SampleToChunk(
-    val firstChunk: Int,
-    val samplesPerChunk: Int,
-    val sampleDescriptionId: Int
-)
+class MovieFragmentHeaderBox(private val sequenceNumber: Int) : FullBox("mfhd", 0, 0) {
+    override val size: Int = super.size + 4
 
-fun ByteBuffer.put(c: SampleToChunk) {
-    putInt(c.firstChunk)
-    putInt(c.samplesPerChunk)
-    putInt(c.sampleDescriptionId)
+    override fun write(buffer: ByteBuffer) {
+        super.write(buffer)
+        buffer.putInt(sequenceNumber)
+    }
 }

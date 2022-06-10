@@ -5,14 +5,15 @@ import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 
-class TimeToSampleBoxTest {
+class TrackFragmentBaseMediaDecodeTimeBoxTest {
     @Test
-    fun `write valid stts test`() {
-        val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("stts.box")
-        val stts = TimeToSampleBox(
-            listOf(TimeToSampleBox.Entry(1350, 512))
+    fun `write valid tfdt test`() {
+        val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("tfdt.box")
+        val tfdt = TrackFragmentBaseMediaDecodeTimeBox(
+            baseMediaDecodeTime = 15360,
+            version = 1
         )
-        val buffer = stts.write()
+        val buffer = tfdt.write()
         assertArrayEquals(expectedBuffer.extractArray(), buffer.extractArray())
     }
 }

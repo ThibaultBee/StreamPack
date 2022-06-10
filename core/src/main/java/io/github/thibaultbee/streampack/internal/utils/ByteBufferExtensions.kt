@@ -136,3 +136,8 @@ fun ByteBuffer.extractArray(): ByteArray {
         byteArray
     }
 }
+
+fun ByteBuffer.clone(): ByteBuffer {
+    val clone = ByteBuffer.allocate(this.remaining())
+    return clone.put(this).apply { rewind() }
+}

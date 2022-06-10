@@ -15,24 +15,23 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
+import io.github.thibaultbee.streampack.internal.utils.putInt
 import java.nio.ByteBuffer
 
-class MovieBox(
-    private val mvhd: MovieHeaderBox,
-    val trak: List<TrackBox>,
-    private val mvex: MovieExtendsBox? = null
-) : Box("moov") {
-    init {
-        require(trak.isNotEmpty()) { "At least one track is required" }
-        require(trak.distinctBy { it.tkhd.id }.size == trak.size) { "All tracks must have different trackId" }
+class TrackFragmentBaseMediaDecodeTimeBox(private val baseMediaDecodeTime: Long, version: Byte) :
+    FullBox("tfdt", version, 0) {
+    override val size: Int = super.size + if (version == 1.toByte()) {
+        8
+    } else {
+        4
     }
-
-    override val size: Int = super.size + mvhd.size + trak.sumOf { it.size } + (mvex?.size ?: 0)
 
     override fun write(buffer: ByteBuffer) {
         super.write(buffer)
-        mvhd.write(buffer)
-        trak.forEach { it.write(buffer) }
-        mvex?.write(buffer)
+        when (version) {
+            1.toByte() -> buffer.putLong(baseMediaDecodeTime)
+            0.toByte() -> buffer.putInt(baseMediaDecodeTime)
+            else -> throw IllegalArgumentException("version must be 0 or 1")
+        }
     }
 }

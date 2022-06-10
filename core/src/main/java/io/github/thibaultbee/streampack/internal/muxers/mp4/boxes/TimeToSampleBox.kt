@@ -15,12 +15,10 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
-import io.github.thibaultbee.streampack.internal.muxers.mp4.models.DecodingTime
-import io.github.thibaultbee.streampack.internal.muxers.mp4.models.put
 import java.nio.ByteBuffer
 
 class TimeToSampleBox(
-    private val decodingTimes: List<DecodingTime>
+    private val decodingTimes: List<Entry>
 ) : FullBox("stts", 0, 0) {
     override val size: Int = super.size + 4 + 8 * decodingTimes.size
 
@@ -28,5 +26,12 @@ class TimeToSampleBox(
         super.write(buffer)
         buffer.putInt(decodingTimes.size)
         decodingTimes.forEach { buffer.put(it) }
+    }
+
+    data class Entry(val count: Int, val delta: Int)
+
+    fun ByteBuffer.put(d: Entry) {
+        putInt(d.count)
+        putInt(d.delta)
     }
 }

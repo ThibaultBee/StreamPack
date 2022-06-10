@@ -18,12 +18,10 @@ package io.github.thibaultbee.streampack.internal.muxers.mp4.models
 import io.github.thibaultbee.streampack.internal.data.Frame
 import java.nio.ByteBuffer
 
-data class Chunk(val firstChunk: Int, val sampleDescriptionId: Int) {
-    private val samples = mutableListOf<Frame>()
+data class Samples(val firstChunk: Int, val sampleDescriptionId: Int) {
+    val samples = mutableListOf<Frame>()
     val size: Int
         get() = samples.sumOf { it.buffer.remaining() }
-    val samplesPerChunk: Int
-        get() = samples.size
 
     fun add(frame: Frame) {
         samples.add(frame)
@@ -42,18 +40,4 @@ data class Chunk(val firstChunk: Int, val sampleDescriptionId: Int) {
     fun write(buffer: ByteBuffer) {
         samples.forEach { buffer.put(it.buffer) }
     }
-
-    fun toSampleToChunk(): SampleToChunk {
-        return SampleToChunk(
-            firstChunk = firstChunk,
-            samplesPerChunk = samplesPerChunk,
-            sampleDescriptionId = sampleDescriptionId
-        )
-    }
-}
-
-fun ByteBuffer.putSampleToChunk(c: Chunk) {
-    putInt(c.firstChunk)
-    putInt(c.samplesPerChunk)
-    putInt(c.sampleDescriptionId)
 }

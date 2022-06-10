@@ -20,10 +20,7 @@ import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
-import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.FileTypeBox
-import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.MediaDataBox
-import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.MovieBox
-import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.MovieHeaderBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.*
 import io.github.thibaultbee.streampack.internal.utils.isVideo
 import java.nio.ByteBuffer
 
@@ -34,15 +31,23 @@ class MP4Muxer(initialListener: IMuxerListener? = null) : IMuxer {
     override var listener: IMuxerListener? = initialListener
     private val tracks = mutableListOf<MP4Track>()
     private var fileOffset: Long = 0
+    private var sequenceNumber = 0
+    private var hasWriteMoov = false
 
     override fun encode(frame: Frame, streamPid: Int) {
-        getTrack(streamPid).write(frame, fileOffset)
+        val track = getTrack(streamPid)
+        synchronized(this) {
+            if (shouldWriteFragment(frame)) {
+                writeFragment()
+            }
+            track.add(frame)
+        }
     }
 
     override fun addStreams(streamsConfig: List<Config>): Map<Config, Int> {
         val newTrack = mutableListOf<MP4Track>()
         streamsConfig.forEach { config ->
-            newTrack.add(MP4Track(getNewId(), config, 100) { buffer -> writeBuffer(buffer) })
+            newTrack.add(MP4Track(getNewId(), config) { buffer -> writeBuffer(buffer) })
         }
 
         tracks.addAll(newTrack)
@@ -57,24 +62,11 @@ class MP4Muxer(initialListener: IMuxerListener? = null) : IMuxer {
 
     override fun startStream() {
         writeBuffer(FileTypeBox().write())
-        writeBuffer(MediaDataBox().write())
     }
 
     override fun stopStream() {
-        tracks.forEach { it.writeLastChunk() }
-        val timescale = try {
-            tracks.first { it.config.mimeType.isVideo() }.timescale
-        } catch (e: NoSuchElementException) {
-            tracks[0].timescale
-        }
-        val mvhd = MovieHeaderBox(
-            version = 0,
-            duration = tracks.maxOf { it.totalDuration * timescale / it.timescale },
-            timescale = timescale,
-            nextTrackId = tracks[0].id
-        )
-        val moov = MovieBox(mvhd, tracks.map { it.getTrak() })
-        writeBuffer(moov.write())
+        writeFragment()
+        // TODO write mfra
     }
 
     override fun release() {
@@ -95,6 +87,23 @@ class MP4Muxer(initialListener: IMuxerListener? = null) : IMuxer {
         return tracks.first { it.id == id }
     }
 
+    private fun writeFragment() {
+        if (tracks.sumOf { it.dataSize } != 0) {
+            if (hasWriteMoov) {
+                writeBuffer(createMoof().write())
+            } else {
+                writeBuffer(createMoov().write())
+                hasWriteMoov = true
+            }
+            writeBuffer(MediaDataBox(getDataSize()).write())
+            tracks.forEach { it.write() }
+        }
+    }
+
+    private fun getDataSize(): Int {
+        return tracks.sumOf { it.dataSize }
+    }
+
     private fun writeBuffer(buffer: ByteBuffer) {
         val size = buffer.remaining()
         val packet = Packet(buffer, 0)
@@ -102,5 +111,47 @@ class MP4Muxer(initialListener: IMuxerListener? = null) : IMuxer {
             it.onOutputFrame(packet)
             fileOffset += size
         }
+    }
+
+    private fun createMoov(): MovieBox {
+        val timescale = try {
+            tracks.first { it.config.mimeType.isVideo() }.timescale
+        } catch (e: NoSuchElementException) {
+            tracks[0].timescale
+        }
+        val mvhd = MovieHeaderBox(
+            version = 0,
+            duration = tracks.maxOf { it.totalDuration * timescale / it.timescale },
+            timescale = timescale,
+            nextTrackId = tracks[0].id
+        )
+        val moov = MovieBox(
+            mvhd,
+            tracks.map { it.createTrak(0) },
+            MovieExtendsBox(tracks.map { it.createTref() })
+        )
+
+        moov.trak.forEach { trak ->
+            trak.mdia.minf.stbl.co64.updateFirstChunkOffset(fileOffset + moov.size + 8) // 8 - MediaBoxHeader // TODO: multitrak
+        }
+        return moov
+    }
+
+    private fun createMoof(): MovieFragmentBox {
+        val mfhd = MovieFragmentHeaderBox(
+            sequenceNumber = sequenceNumber++,
+        )
+        return MovieFragmentBox(mfhd, tracks.map { it.createTraf(fileOffset, getMoofSize()) })
+    }
+
+    private fun getMoofSize(): Int {
+        val mfhd = MovieFragmentHeaderBox(
+            sequenceNumber = sequenceNumber++,
+        )
+        return MovieFragmentBox(mfhd, tracks.map { it.createTraf(fileOffset, 0) }).size
+    }
+
+    private fun shouldWriteFragment(frame: Frame): Boolean {
+        return frame.mimeType.isVideo() && frame.isKeyFrame
     }
 }

@@ -15,24 +15,25 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
+import io.github.thibaultbee.streampack.internal.muxers.mp4.models.SampleFlags
+import io.github.thibaultbee.streampack.internal.muxers.mp4.models.putInt
 import java.nio.ByteBuffer
 
-class MovieBox(
-    private val mvhd: MovieHeaderBox,
-    val trak: List<TrackBox>,
-    private val mvex: MovieExtendsBox? = null
-) : Box("moov") {
-    init {
-        require(trak.isNotEmpty()) { "At least one track is required" }
-        require(trak.distinctBy { it.tkhd.id }.size == trak.size) { "All tracks must have different trackId" }
-    }
-
-    override val size: Int = super.size + mvhd.size + trak.sumOf { it.size } + (mvex?.size ?: 0)
+class TrackExtendsBox(
+    private val id: Int,
+    private val defaultSampleDescriptionIndex: Int = 1,
+    private val defaultSampleDuration: Int = 0,
+    private val defaultSampleSize: Int = 0,
+    private val defaultSampleFlags: SampleFlags = SampleFlags(isNonSyncSample = false)
+) : FullBox("trex", 0, 0) {
+    override val size: Int = super.size + 20
 
     override fun write(buffer: ByteBuffer) {
         super.write(buffer)
-        mvhd.write(buffer)
-        trak.forEach { it.write(buffer) }
-        mvex?.write(buffer)
+        buffer.putInt(id)
+        buffer.putInt(defaultSampleDescriptionIndex)
+        buffer.putInt(defaultSampleDuration)
+        buffer.putInt(defaultSampleSize)
+        buffer.putInt(defaultSampleFlags)
     }
 }

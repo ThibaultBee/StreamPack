@@ -40,3 +40,7 @@ infix fun Byte.shl(i: Int): Int {
 infix fun Byte.shr(i: Int): Int {
     return this.toInt() shr i
 }
+
+infix fun Byte.or(other: Int): Int {
+    return this.toInt() or other
+}
