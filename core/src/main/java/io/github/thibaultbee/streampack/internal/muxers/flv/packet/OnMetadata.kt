@@ -39,7 +39,7 @@ class OnMetadata(context: Context, manageVideoOrientation: Boolean, streams: Lis
                         "audiocodecid",
                         SoundFormat.fromMimeType(it.mimeType).value.toDouble()
                     )
-                    ecmaArray.add("audiodatarate", it.startBitrate.toDouble())
+                    ecmaArray.add("audiodatarate", it.startBitrate.toDouble() / 1000) // to Kpbs
                     ecmaArray.add("audiosamplerate", it.sampleRate.toDouble())
                     ecmaArray.add(
                         "audiosamplesize",
@@ -61,7 +61,7 @@ class OnMetadata(context: Context, manageVideoOrientation: Boolean, streams: Lis
                         "videocodecid",
                         CodecID.fromMimeType(it.mimeType).value.toDouble()
                     )
-                    ecmaArray.add("videodatarate", it.startBitrate.toDouble())
+                    ecmaArray.add("videodatarate", it.startBitrate.toDouble() / 1000) // to Kpbs
                     ecmaArray.add("width", resolution.width.toDouble())
                     ecmaArray.add("height", resolution.height.toDouble())
                     ecmaArray.add("framerate", it.fps.toDouble())
