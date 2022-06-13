@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+Version 2.3.1
+-------------
+
+## Bug fixes:
+
+- Camera streamer: fix the stream after a `stopPreview`
+- Live streamer: disconnect if an exception happens in `startStreaming(String)`
+- Fix log/exception messages
+
 Version 2.3.0
 -------------
 
