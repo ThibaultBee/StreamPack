@@ -96,6 +96,11 @@ open class BaseAudioOnlyLiveStreamer(
      */
     override suspend fun startStream(url: String) {
         connect(url)
-        startStream()
+        try {
+            startStream()
+        } catch (e: Exception) {
+            disconnect()
+            throw e
+        }
     }
 }
