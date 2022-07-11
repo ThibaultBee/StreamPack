@@ -203,6 +203,7 @@ abstract class BaseStreamer(
 
         try {
             audioCapture?.configure(audioConfig)
+            audioEncoder?.release()
             audioEncoder?.configure(audioConfig)
 
             endpoint.configure((videoConfig?.startBitrate ?: 0) + audioConfig.startBitrate)
@@ -234,6 +235,7 @@ abstract class BaseStreamer(
 
         try {
             videoCapture?.configure(videoConfig)
+            videoEncoder?.release()
             videoEncoder?.configure(videoConfig)
 
             endpoint.configure(videoConfig.startBitrate + (audioConfig?.startBitrate ?: 0))
