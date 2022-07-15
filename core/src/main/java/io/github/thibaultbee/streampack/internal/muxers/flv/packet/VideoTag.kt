@@ -20,6 +20,7 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.utils.av.video.getStartCodeSize
 import io.github.thibaultbee.streampack.internal.utils.av.video.removeStartCode
 import io.github.thibaultbee.streampack.internal.utils.put
+import io.github.thibaultbee.streampack.internal.utils.putInt24
 import java.io.IOException
 import java.nio.ByteBuffer
 
@@ -65,10 +66,11 @@ class VideoTag(
         )
         if (videoConfig.mimeType == MediaFormat.MIMETYPE_VIDEO_AVC) {
             if (isSequenceHeader) {
-                buffer.putInt(AVCPacketType.SEQUENCE.value) // AVC sequence header + CompositionTime
+                buffer.put(AVCPacketType.SEQUENCE.value) // AVC sequence header
             } else {
-                buffer.putInt(AVCPacketType.NALU.value shl 31) // AVC NALU + TODO: CompositionTime
+                buffer.put(AVCPacketType.NALU.value) // AVC NALU
             }
+            buffer.putInt24(0) // TODO: CompositionTime
         }
     }
 
