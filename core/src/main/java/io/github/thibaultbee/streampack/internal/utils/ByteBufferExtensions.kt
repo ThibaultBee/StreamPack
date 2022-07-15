@@ -93,6 +93,18 @@ fun ByteBuffer.slices(prefix: ByteArray): List<ByteBuffer> {
 }
 
 /**
+ * Check if [ByteBuffer] starts with [prefix].
+ */
+fun ByteBuffer.startsWith(prefix: ByteArray): Boolean {
+    for (i in prefix.indices) {
+        if (this.get(i) != prefix[i]) {
+            return false
+        }
+    }
+    return true
+}
+
+/**
  * Returns ByteBuffer array even if [ByteBuffer.hasArray] returns false.
  *
  * @return [ByteArray] extracted from [ByteBuffer]

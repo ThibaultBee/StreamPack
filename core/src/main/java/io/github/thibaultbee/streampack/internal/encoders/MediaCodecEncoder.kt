@@ -25,7 +25,9 @@ import android.os.HandlerThread
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.events.EventHandler
+import io.github.thibaultbee.streampack.internal.utils.extractArray
 import io.github.thibaultbee.streampack.internal.utils.slices
+import io.github.thibaultbee.streampack.internal.utils.startsWith
 import io.github.thibaultbee.streampack.logger.ILogger
 import java.nio.ByteBuffer
 import java.security.InvalidParameterException
@@ -74,17 +76,29 @@ abstract class MediaCodecEncoder<T>(
                          * Drops codec data. They are already passed in the extra buffer.
                          */
                         if (info.flags != MediaCodec.BUFFER_FLAG_CODEC_CONFIG) {
+                            val extra = if (isKeyFrame) {
+                                generateExtra(codec.outputFormat)
+                            } else {
+                                null
+                            }
+
+                            // Remove startCode + sps + startCode + pps
+                            var frameBuffer = buffer
+                            extra?.let { it ->
+                                var prefix = ByteArray(0)
+                                it.forEach { csd -> prefix = prefix.plus(csd.extractArray()) }
+                                if (buffer.startsWith(prefix)) {
+                                    buffer.position(prefix.size)
+                                    frameBuffer = buffer.slice()
+                                }
+                            }
                             Frame(
-                                buffer,
+                                frameBuffer,
                                 codec.outputFormat.getString(MediaFormat.KEY_MIME)!!,
                                 info.presentationTimeUs, // pts
                                 null, // dts
                                 isKeyFrame,
-                                if (isKeyFrame) {
-                                    generateExtra(codec.outputFormat)
-                                } else {
-                                    null
-                                }
+                                extra
                             ).let { frame ->
                                 encoderListener.onOutputFrame(
                                     frame
@@ -98,7 +112,7 @@ abstract class MediaCodecEncoder<T>(
                 } catch (e: IllegalStateException) {
                     isOnError = true
                     logger.w(this, "onOutputBufferAvailable called while stopped")
-                } catch (e : StreamPackError) {
+                } catch (e: StreamPackError) {
                     isOnError = true
                     reportError(e)
                 }
@@ -129,13 +143,15 @@ abstract class MediaCodecEncoder<T>(
                             )
                         }
                     }
-                        ?: reportError(StreamPackError(
-                            UnsupportedOperationException("MediaCodecEncoder: can't get input buffer")
-                        ))
+                        ?: reportError(
+                            StreamPackError(
+                                UnsupportedOperationException("MediaCodecEncoder: can't get input buffer")
+                            )
+                        )
                 } catch (e: IllegalStateException) {
                     isOnError = true
                     logger.w(this, "onInputBufferAvailable called while stopped")
-                } catch (e : StreamPackError) {
+                } catch (e: StreamPackError) {
                     isOnError = true
                     reportError(e)
                 }
