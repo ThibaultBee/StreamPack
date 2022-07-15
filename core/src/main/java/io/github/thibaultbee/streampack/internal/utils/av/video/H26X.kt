@@ -18,10 +18,12 @@ package io.github.thibaultbee.streampack.internal.utils.av.video
 import java.nio.ByteBuffer
 
 fun ByteBuffer.getStartCodeSize(): Int {
-    return if (this.getInt(0) == 0x00000001) {
+    return if (this.get(0) == 0x00.toByte() && this.get(1) == 0x00.toByte()
+        && this.get(2) == 0x00.toByte() && this.get(3) == 0x01.toByte()
+    ) {
         4
-    } else if (this.get(0).toInt() == 0x00 && this.get(1).toInt() == 0x00
-        && this.get(2).toInt() == 0x01
+    } else if (this.get(0) == 0x00.toByte() && this.get(1) == 0x00.toByte()
+        && this.get(2) == 0x01.toByte()
     ) {
         3
     } else {
