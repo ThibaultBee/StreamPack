@@ -17,4 +17,12 @@ jobs:
         run: chmod +x gradlew
       - name: Build
         run: ./gradlew build
+      - name: Assemble
+        run: ./gradlew assembleDebug
+      - name: Upload APKs
+        uses: actions/upload-artifact@v3
+        with:
+          name: apks
+          path: |
+            demos/**/build/outputs/apk/debug/*.apk
 
