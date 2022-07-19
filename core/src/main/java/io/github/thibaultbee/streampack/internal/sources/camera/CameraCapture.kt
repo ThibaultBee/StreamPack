@@ -43,10 +43,13 @@ class CameraCapture(
             }
             runBlocking {
                 val restartStream = isStreaming
+                val restartPreview = isPreviewing
                 stopPreview()
-                startPreview(value, restartStream)
+                field = value
+                if (restartPreview) {
+                    startPreview(value, restartStream)
+                }
             }
-            field = value
         }
     private var cameraController = CameraController(context, logger = logger)
     var settings = CameraSettings(context, cameraController)
@@ -59,7 +62,7 @@ class CameraCapture(
 
     private var fps: Int = 30
     private var isStreaming = false
-    internal var isPreviewing = false
+    private var isPreviewing = false
 
     override fun configure(config: VideoConfig) {
         this.fps = config.fps
