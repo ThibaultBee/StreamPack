@@ -45,7 +45,6 @@ abstract class CameraStreamerTestCase :
     @After
     override fun tearDown() {
         super.tearDown()
-        surface.release()
     }
 
     @get:Rule
