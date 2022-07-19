@@ -39,7 +39,7 @@ interface ICameraStreamer {
      * @see [stopPreview]
      */
     @RequiresPermission(allOf = [Manifest.permission.CAMERA])
-    fun startPreview(previewSurface: Surface, cameraId: String = "0")
+    fun startPreview(previewSurface: Surface, cameraId: String = camera)
 
     /**
      * Stops capture.
