@@ -21,6 +21,7 @@ import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.muxers.flv.amf.containers.AmfContainer
 import io.github.thibaultbee.streampack.internal.muxers.flv.amf.containers.AmfEcmaArray
+import io.github.thibaultbee.streampack.internal.utils.numOfBits
 import java.io.IOException
 import java.nio.ByteBuffer
 
@@ -43,7 +44,7 @@ class OnMetadata(context: Context, manageVideoOrientation: Boolean, streams: Lis
                     ecmaArray.add("audiosamplerate", it.sampleRate.toDouble())
                     ecmaArray.add(
                         "audiosamplesize",
-                        AudioConfig.getNumOfBytesPerSample(it.byteFormat).toDouble()
+                        it.byteFormat.numOfBits().toDouble()
                     )
                     ecmaArray.add(
                         "stereo",
