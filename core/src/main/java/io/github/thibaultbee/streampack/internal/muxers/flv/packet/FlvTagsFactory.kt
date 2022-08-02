@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.internal.muxers.flv.packet
 
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.internal.data.Frame
+import io.github.thibaultbee.streampack.internal.utils.isAudio
 
 class FlvTagFactory(
     private val frame: Frame,
@@ -25,7 +26,7 @@ class FlvTagFactory(
 ) {
     fun build(): List<FlvTag> {
         val flvTags = mutableListOf<FlvTag>()
-        if (alsoWriteSequenceHeader && frame.isKeyFrame) {
+        if (alsoWriteSequenceHeader && (frame.isKeyFrame || frame.mimeType.isAudio())) {
             // Create a reference FlvTag
             flvTags.add(FlvTag.createFlvTag(frame, isSequenceHeader = true, config))
         }
