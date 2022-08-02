@@ -26,6 +26,7 @@ import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.events.EventHandler
 import io.github.thibaultbee.streampack.internal.utils.extractArray
+import io.github.thibaultbee.streampack.internal.utils.isAudio
 import io.github.thibaultbee.streampack.internal.utils.slices
 import io.github.thibaultbee.streampack.internal.utils.startsWith
 import io.github.thibaultbee.streampack.logger.ILogger
@@ -71,12 +72,13 @@ abstract class MediaCodecEncoder<T>(
 
                 try {
                     mediaCodec?.getOutputBuffer(index)?.let { buffer ->
+                        val mimeType = codec.outputFormat.getString(MediaFormat.KEY_MIME)!!
                         val isKeyFrame = info.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME
                         /**
                          * Drops codec data. They are already passed in the extra buffer.
                          */
                         if (info.flags != MediaCodec.BUFFER_FLAG_CODEC_CONFIG) {
-                            val extra = if (isKeyFrame) {
+                            val extra = if (isKeyFrame || mimeType.isAudio()) {
                                 generateExtra(codec.outputFormat)
                             } else {
                                 null
@@ -94,7 +96,7 @@ abstract class MediaCodecEncoder<T>(
                             }
                             Frame(
                                 frameBuffer,
-                                codec.outputFormat.getString(MediaFormat.KEY_MIME)!!,
+                                mimeType,
                                 info.presentationTimeUs, // pts
                                 null, // dts
                                 isKeyFrame,
