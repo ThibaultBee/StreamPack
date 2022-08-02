@@ -43,6 +43,7 @@ import io.github.thibaultbee.streampack.ext.rtmp.streamers.ScreenRecorderRtmpLiv
 import io.github.thibaultbee.streampack.ext.srt.regulator.srt.DefaultSrtBitrateRegulatorFactory
 import io.github.thibaultbee.streampack.ext.srt.streamers.ScreenRecorderSrtLiveStreamer
 import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
+import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
@@ -58,12 +59,10 @@ import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.Con
 import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.ENDPOINT_CONFIG_KEY
 import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.ENDPOINT_TYPE
 import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.IP
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.LEVEL
 import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.MIME_TYPE
 import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.MUXER_CONFIG_KEY
 import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.PASSPHRASE
 import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.PORT
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.PROFILE
 import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.PROVIDER
 import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.RESOLUTION_HEIGHT
 import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.RESOLUTION_WIDTH
@@ -108,8 +107,6 @@ class ScreenRecorderService : Service() {
             const val ENABLE_NOISE_SUPPRESSOR = "enableNoiseSuppressor"
             const val RESOLUTION_WIDTH = "resolutionWidth"
             const val RESOLUTION_HEIGHT = "resolutionHeight"
-            const val LEVEL = "level"
-            const val PROFILE = "profile"
 
             // Endpoint config
             const val ENDPOINT_TYPE = "ENDPOINT_TYPE"
@@ -349,18 +346,27 @@ class ScreenRecorderService : Service() {
     }
 
     private fun createVideoConfigFromBundle(bundle: Bundle): VideoConfig {
+        val mimeType = bundle.getString(MIME_TYPE) ?: MediaFormat.MIMETYPE_VIDEO_AVC
+
+        val deviceRefreshRate =
+            (this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager).getDisplay(
+                Display.DEFAULT_DISPLAY
+            ).refreshRate.toInt()
+        val fps =
+            if (MediaCodecHelper.Video.getFramerateRange(mimeType).contains(deviceRefreshRate)) {
+                deviceRefreshRate
+            } else {
+                30
+            }
+
         return VideoConfig(
-            mimeType = bundle.getString(MIME_TYPE) ?: MediaFormat.MIMETYPE_VIDEO_AVC,
+            mimeType = mimeType,
             startBitrate = bundle.getInt(BITRATE),
             resolution = Size(
                 bundle.getInt(RESOLUTION_WIDTH),
                 bundle.getInt(RESOLUTION_HEIGHT)
             ),
-            fps = (this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager).getDisplay(
-                Display.DEFAULT_DISPLAY
-            ).refreshRate.toInt(),
-            level = bundle.getInt(LEVEL),
-            profile = bundle.getInt(PROFILE)
+            fps = fps
         )
     }
 
