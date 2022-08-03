@@ -1,6 +1,19 @@
 Change Log
 ==========
 
+Version 2.3.2
+-------------
+
+## Features:
+
+- Add apks in the build CI workflow
+- Allow to set camera when camera has not been started
+
+## Bug fixes:
+
+- Multiple fixes on FLV/RTMP
+- demo-screenrecorder: do not set profile nor level
+
 Version 2.3.1
 -------------
 
