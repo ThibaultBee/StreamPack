@@ -10,6 +10,6 @@ dependencies {
     implementation project(':core')
     implementation 'io.github.thibaultbee:srtdroid:1.3.0'
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
     implementation "androidx.core:core-ktx:${androidx_core_version}"
 }
