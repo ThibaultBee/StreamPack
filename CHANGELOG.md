@@ -1,6 +1,17 @@
 Change Log
 ==========
 
+Version 2.3.3
+-------------
+
+## Features:
+
+- srt: Update to srt 1.5.0
+
+## Bug fixes:
+
+- Fix ANR when connecting to a slow network
+
 Version 2.3.2
 -------------
 
