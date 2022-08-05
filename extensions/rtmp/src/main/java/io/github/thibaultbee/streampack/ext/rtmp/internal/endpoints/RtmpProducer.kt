@@ -34,6 +34,7 @@ class RtmpProducer(
 
     private var socket = Rtmp()
     private var isOnError = false
+    private var isConnected = false
 
     override fun configure(config: Int) {
     }
@@ -43,8 +44,10 @@ class RtmpProducer(
             try {
                 isOnError = false
                 socket.connect("$url live=1 flashver=FMLE/3.0\\20(compatible;\\20FMSc/1.0)")
+                isConnected = true
                 onConnectionListener?.onSuccess()
             } catch (e: Exception) {
+                isConnected = false
                 socket = Rtmp()
                 onConnectionListener?.onFailed(e.message ?: "Unknown error")
                 throw e
@@ -54,6 +57,7 @@ class RtmpProducer(
 
     override fun disconnect() {
         socket.close()
+        isConnected = false
         socket = Rtmp()
     }
 
@@ -76,7 +80,12 @@ class RtmpProducer(
     }
 
     override fun stopStream() {
-        socket.deleteStream()
+        if (isConnected) {
+            /**
+             * deleteStream is blocking, if the connection does not exist yet.
+             */
+            socket.deleteStream()
+        }
     }
 
     override fun release() {
