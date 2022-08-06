@@ -34,7 +34,10 @@ class RtmpProducer(
 
     private var socket = Rtmp()
     private var isOnError = false
-    private var isConnected = false
+
+    private var _isConnected = false
+    override val isConnected: Boolean
+        get() = _isConnected
 
     override fun configure(config: Int) {
     }
@@ -44,11 +47,11 @@ class RtmpProducer(
             try {
                 isOnError = false
                 socket.connect("$url live=1 flashver=FMLE/3.0\\20(compatible;\\20FMSc/1.0)")
-                isConnected = true
+                _isConnected = true
                 onConnectionListener?.onSuccess()
             } catch (e: Exception) {
-                isConnected = false
                 socket = Rtmp()
+                _isConnected = false
                 onConnectionListener?.onFailed(e.message ?: "Unknown error")
                 throw e
             }
@@ -57,7 +60,7 @@ class RtmpProducer(
 
     override fun disconnect() {
         socket.close()
-        isConnected = false
+        _isConnected = false
         socket = Rtmp()
     }
 
@@ -69,6 +72,7 @@ class RtmpProducer(
         } catch (e: SocketException) {
             disconnect()
             isOnError = true
+            _isConnected = false
             onConnectionListener?.onLost(e.message ?: "Socket error")
             logger.e(this, "Error while writing packet to socket", e)
             throw e

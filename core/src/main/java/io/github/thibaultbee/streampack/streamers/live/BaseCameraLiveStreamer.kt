@@ -65,6 +65,12 @@ open class BaseCameraLiveStreamer(
         }
 
     /**
+     * Check if the streamer is connected to the server.
+     */
+    override val isConnected: Boolean
+        get() = liveProducer.isConnected
+
+    /**
      * Connect to an remove server.
      * To avoid creating an unresponsive UI, do not call on main thread.
      *

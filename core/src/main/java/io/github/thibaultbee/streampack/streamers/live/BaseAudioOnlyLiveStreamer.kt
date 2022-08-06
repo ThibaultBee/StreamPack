@@ -15,14 +15,9 @@
  */
 package io.github.thibaultbee.streampack.streamers.live
 
-import android.Manifest
 import android.content.Context
-import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.data.AudioConfig
-import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
-import io.github.thibaultbee.streampack.internal.sources.AudioCapture
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
@@ -65,6 +60,12 @@ open class BaseAudioOnlyLiveStreamer(
             liveProducer.onConnectionListener = value
             field = value
         }
+
+    /**
+     * Check if the streamer is connected to the server.
+     */
+    override val isConnected: Boolean
+        get() = liveProducer.isConnected
 
     /**
      * Connect to an remove server.
