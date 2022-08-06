@@ -38,7 +38,7 @@ import java.net.URI
 
 class SrtProducer(
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    val logger: ILogger
+    private val logger: ILogger
 ) : ILiveEndpoint {
     override var onConnectionListener: OnConnectionListener? = null
 
@@ -50,14 +50,12 @@ class SrtProducer(
         private const val PAYLOAD_SIZE = 1316
     }
 
-
     /**
      * Get/set SRT stream ID
      */
     var streamId: String
         get() = socket.getSockFlag(SockOpt.STREAMID) as String
         set(value) = socket.setSockFlag(SockOpt.STREAMID, value)
-
 
     /**
      * Get/set SRT stream passPhrase
@@ -66,12 +64,14 @@ class SrtProducer(
         get() = socket.getSockFlag(SockOpt.PASSPHRASE) as String
         set(value) = socket.setSockFlag(SockOpt.PASSPHRASE, value)
 
-
     /**
      * Get SRT stats
      */
     val stats: Stats
         get() = socket.bistats(clear = true, instantaneous = true)
+
+    override val isConnected: Boolean
+        get() = socket.isConnected
 
     override fun configure(config: Int) {
         this.bitrate = config.toLong()

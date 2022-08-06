@@ -24,6 +24,11 @@ interface ILiveEndpoint : IEndpoint {
     var onConnectionListener: OnConnectionListener?
 
     /**
+     * Check if the endpoint is connected to the server.
+     */
+    val isConnected: Boolean
+
+    /**
      * Connect to a server.
      * To avoid creating an unresponsive UI, do not call on main thread.
      *

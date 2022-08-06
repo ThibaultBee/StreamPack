@@ -24,6 +24,11 @@ interface ILiveStreamer {
     var onConnectionListener: OnConnectionListener?
 
     /**
+     * Check if the streamer is connected to the server.
+     */
+    val isConnected: Boolean
+
+    /**
      * Connect to an remove server.
      * To avoid creating an unresponsive UI, do not call on main thread.
      *
