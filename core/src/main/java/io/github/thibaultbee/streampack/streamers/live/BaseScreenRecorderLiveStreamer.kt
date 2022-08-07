@@ -95,7 +95,7 @@ open class BaseScreenRecorderLiveStreamer(
      * Same as calling [connect], then [startStream].
      * To avoid creating an unresponsive UI, do not call on main thread.
      *
-     * @param url server url (syntax: rtmp://server/streamKey or srt://ip:port)
+     * @param url server url (syntax: rtmp://server/app/streamKey or srt://ip:port)
      * @throws Exception if connection has failed or configuration has failed or [startStream] has failed too.
      */
     override suspend fun startStream(url: String) {
