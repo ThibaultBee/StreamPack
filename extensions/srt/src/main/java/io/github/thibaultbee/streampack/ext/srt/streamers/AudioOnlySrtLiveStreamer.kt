@@ -20,12 +20,12 @@ import io.github.thibaultbee.streampack.ext.srt.internal.endpoints.SrtProducer
 import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
 import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
+import io.github.thibaultbee.streampack.internal.utils.defaultTsServiceInfo
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
-import io.github.thibaultbee.streampack.utils.Utils
 
 /**
  * A [BaseAudioOnlyLiveStreamer] that sends only microphone frames to a remote Secure Reliable Transport
@@ -39,7 +39,7 @@ import io.github.thibaultbee.streampack.utils.Utils
  */
 class AudioOnlySrtLiveStreamer(
     context: Context,
-    tsServiceInfo: TsServiceInfo = Utils.defaultTsServiceInfo,
+    tsServiceInfo: TsServiceInfo = context.defaultTsServiceInfo,
     logger: ILogger = StreamPackLogger(),
     initialOnErrorListener: OnErrorListener? = null,
     initialOnConnectionListener: OnConnectionListener? = null
