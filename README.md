@@ -117,10 +117,9 @@ side, you should be able to watch this live stream.
 To simplify development, StreamPack provides an `AutoFitSurfaceView`.
 
 ```xml
-<io.github.thibaultbee.streampack.views.AutoFitSurfaceView 
-        android:id="@+id/surface"
-        android:layout_width="match_parent" 
-        android:layout_height="match_parent" />
+
+<io.github.thibaultbee.streampack.views.AutoFitSurfaceView android:id="@+id/surface"
+    android:layout_width="match_parent" android:layout_height="match_parent" />
 ```
 
 3. Instantiates the streamer (main live streaming class)
@@ -176,10 +175,10 @@ the [API documentation](https://thibaultbee.github.io/StreamPack).
 You need to add the following permissions in your `AndroidManifest.xml`:
 
 ```xml
-<uses-permission android:name="android.permission.RECORD_AUDIO" />
-<uses-permission android:name="android.permission.CAMERA" />
-<uses-permission android:name="android.permission.INTERNET" />
-<!-- Application requires android.permission.WRITE_EXTERNAL_STORAGE only for IFileStreamer implementation` -->
+
+<uses-permission android:name="android.permission.RECORD_AUDIO" /><uses-permission
+android:name="android.permission.CAMERA" /><uses-permission
+android:name="android.permission.INTERNET" /><!-- Application requires android.permission.WRITE_EXTERNAL_STORAGE only for IFileStreamer implementation` -->
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
 
@@ -190,8 +189,9 @@ permission: `android.permission.RECORD_AUDIO`, `android.permission.CAMERA` and
 For the PlayStore, your application might declare this in its `AndroidManifest.xml`
 
 ```xml
-<uses-feature android:name="android.hardware.camera" android:required="true" />
-<uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+
+<uses-feature android:name="android.hardware.camera" android:required="true" /><uses-feature
+android:name="android.hardware.camera.autofocus" android:required="false" />
 ```
 
 ## Tips
@@ -265,6 +265,13 @@ Moreover you can check exposure range and step with:
 streamer.settings.camera.exposure.availableCompensationRange
 streamer.settings.camera.exposure.availableCompensationStep
 ```
+
+### Screen recorder Service
+
+To record the screen, you have to use one of the `ScreenRecorderStreamers` inside
+an [Android Service](https://developer.android.com/guide/components/services). To simplify this
+integration, StreamPack provides several `ScreenRecorderService` classes. Extends one of these class
+and overrides `onNotification` to customise the notification.
 
 ### Android SDK version
 

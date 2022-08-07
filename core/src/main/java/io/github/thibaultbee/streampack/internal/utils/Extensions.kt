@@ -15,6 +15,11 @@
  */
 package io.github.thibaultbee.streampack.internal.utils
 
+import android.content.Context
+import io.github.thibaultbee.streampack.R
+import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
+import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
+
 fun Any.numOfBits(): Int {
     return when (this) {
         is Byte -> 8
@@ -29,3 +34,19 @@ fun Any.numOfBits(): Int {
         else -> throw IllegalArgumentException("Unsupported type: ${this.javaClass.name}")
     }
 }
+
+inline fun <reified T> BaseStreamer.getStreamer(): T? {
+    return if (this is T) {
+        this
+    } else {
+        null
+    }
+}
+
+val Context.defaultTsServiceInfo
+    get() = TsServiceInfo(
+        TsServiceInfo.ServiceType.DIGITAL_TV,
+        0x4698,
+        getString(R.string.ts_service_default_name),
+        getString(R.string.ts_service_default_provider_name)
+    )

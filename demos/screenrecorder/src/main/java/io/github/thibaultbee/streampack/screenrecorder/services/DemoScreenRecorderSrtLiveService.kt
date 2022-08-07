@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.utils
+package io.github.thibaultbee.streampack.screenrecorder.services
 
-import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
+import io.github.thibaultbee.streampack.ext.srt.services.ScreenRecorderSrtLiveService
+import io.github.thibaultbee.streampack.screenrecorder.R
 
-object Utils {
-    val defaultTsServiceInfo = TsServiceInfo(
-        TsServiceInfo.ServiceType.DIGITAL_TV,
-        0x4698,
-        "StreamPack",
-        "Thibault B."
-    )
-}
+class DemoScreenRecorderSrtLiveService : ScreenRecorderSrtLiveService(
+    notificationId = 0x4569,
+    channelId = "io.github.thibaultbee.streampack.screenrecorder.demo.srt",
+    channelNameResourceId = R.string.app_name
+)

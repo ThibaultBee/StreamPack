@@ -19,44 +19,37 @@ import android.Manifest
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.os.Build
+import android.content.pm.PackageManager
+import android.hardware.display.DisplayManager
 import android.os.Bundle
 import android.util.Log
+import android.view.Display
 import android.view.Menu
 import android.view.MenuInflater
 import android.widget.PopupMenu
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import com.tbruyelle.rxpermissions3.RxPermissions
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.ACTIVITY_RESULT_KEY
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.AUDIO_CONFIG_KEY
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.BITRATE
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.BYTE_FORMAT
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.CHANNEL_CONFIG
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.ENABLE_BITRATE_REGULATION
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.ENABLE_ECHO_CANCELER
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.ENABLE_NOISE_SUPPRESSOR
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.ENDPOINT_CONFIG_KEY
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.ENDPOINT_TYPE
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.IP
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.MIME_TYPE
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.MUXER_CONFIG_KEY
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.PASSPHRASE
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.PORT
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.PROVIDER
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.RESOLUTION_HEIGHT
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.RESOLUTION_WIDTH
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.RTMP_URL
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.SAMPLE_RATE
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.SERVICE
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.STREAM_ID
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.VIDEO_BITRATE_REGULATION_LOWER
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.VIDEO_BITRATE_REGULATION_UPPER
-import io.github.thibaultbee.streampack.screenrecorder.ScreenRecorderService.ConfigKeys.Companion.VIDEO_CONFIG_KEY
+import io.github.thibaultbee.streampack.data.AudioConfig
+import io.github.thibaultbee.streampack.data.BitrateRegulatorConfig
+import io.github.thibaultbee.streampack.data.VideoConfig
+import io.github.thibaultbee.streampack.ext.rtmp.services.ScreenRecorderRtmpLiveService
+import io.github.thibaultbee.streampack.ext.srt.services.ScreenRecorderSrtLiveService
+import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
+import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
+import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
+import io.github.thibaultbee.streampack.internal.utils.getStreamer
 import io.github.thibaultbee.streampack.screenrecorder.databinding.ActivityMainBinding
+import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
+import io.github.thibaultbee.streampack.screenrecorder.services.DemoScreenRecorderRtmpLiveService
+import io.github.thibaultbee.streampack.screenrecorder.services.DemoScreenRecorderSrtLiveService
 import io.github.thibaultbee.streampack.screenrecorder.settings.SettingsActivity
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
+import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
+import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStreamer
+import kotlinx.coroutines.runBlocking
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -65,6 +58,7 @@ class MainActivity : AppCompatActivity() {
         Configuration(this)
     }
     private val rxPermissions: RxPermissions by lazy { RxPermissions(this) }
+    private lateinit var streamer: BaseScreenRecorderLiveStreamer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,89 +90,164 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
             } else {
-                stopService(Intent(this, ScreenRecorderService::class.java))
+                stopService()
             }
         }
     }
 
     private var getContent =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            val intent = Intent(this, ScreenRecorderService::class.java)
-            createAudioConfigBundle()?.let {
-                intent.putExtra(AUDIO_CONFIG_KEY, it)
+            when (configuration.endpoint.type) {
+                EndpointType.SRT -> {
+                    ScreenRecorderSrtLiveService.launch(
+                        this,
+                        DemoScreenRecorderSrtLiveService::class.java,
+                        configuration.audio.enable,
+                        TsServiceInfo(
+                            TsServiceInfo.ServiceType.DIGITAL_TV,
+                            0x4698,
+                            configuration.muxer.service,
+                            configuration.muxer.provider
+                        ),
+                        configuration.endpoint.srt.enableBitrateRegulation,
+                        BitrateRegulatorConfig(videoBitrateRange = configuration.endpoint.srt.videoBitrateRange),
+                        { streamer ->
+                            this.streamer = streamer.apply {
+                                activityResult = result
+                            }
+                            try {
+                                configureAndStart()
+                                moveTaskToBack(true)
+                            } catch (e: Exception) {
+                                this@MainActivity.showAlertDialog(
+                                    this@MainActivity,
+                                    "Error",
+                                    e.message ?: "Unknown error"
+                                )
+                                binding.liveButton.isChecked = false
+                                Log.e(tag, "Error while starting streamer", e)
+                            }
+                        },
+                        {
+                            binding.liveButton.isChecked = false
+                            Log.i(tag, "Service disconnected")
+                        })
+                }
+                EndpointType.RTMP -> {
+                    ScreenRecorderRtmpLiveService.launch(
+                        this,
+                        DemoScreenRecorderRtmpLiveService::class.java,
+                        configuration.audio.enable,
+                        { streamer ->
+                            this.streamer = streamer.apply {
+                                activityResult = result
+                            }
+                            try {
+                                configureAndStart()
+                                moveTaskToBack(true)
+                            } catch (e: Exception) {
+                                this@MainActivity.showAlertDialog(
+                                    this@MainActivity,
+                                    "Error",
+                                    e.message ?: "Unknown error"
+                                )
+                                binding.liveButton.isChecked = false
+                                Log.e(tag, "Error while starting streamer", e)
+                            }
+                        },
+                        {
+                            this@MainActivity.showAlertDialog(
+                                this@MainActivity,
+                                "Error",
+                                "Service disconnected"
+                            )
+                            binding.liveButton.isChecked = false
+                            Log.i(tag, "Service disconnected")
+                        })
+                }
             }
-            intent.putExtra(VIDEO_CONFIG_KEY, createVideoConfigBundle())
-            intent.putExtra(MUXER_CONFIG_KEY, createMuxerConfigBundle())
-            intent.putExtra(ENDPOINT_CONFIG_KEY, createEndpointConfigBundle())
-            intent.putExtra(ACTIVITY_RESULT_KEY, result)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(intent)
+        }
+
+    private fun configureAndStart() {
+        val deviceRefreshRate =
+            (this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager).getDisplay(
+                Display.DEFAULT_DISPLAY
+            ).refreshRate.toInt()
+        val fps =
+            if (MediaCodecHelper.Video.getFramerateRange(configuration.video.encoder)
+                    .contains(deviceRefreshRate)
+            ) {
+                deviceRefreshRate
             } else {
-                startService(intent)
+                30
             }
-            moveTaskToBack(true)
+
+        val videoConfig = VideoConfig(
+            mimeType = configuration.video.encoder,
+            startBitrate = configuration.video.bitrate * 1000, // to b/s
+            resolution = configuration.video.resolution,
+            fps = fps
+        )
+        streamer.configure(videoConfig)
+
+        if (configuration.audio.enable) {
+            val audioConfig = AudioConfig(
+                mimeType = configuration.audio.encoder,
+                startBitrate = configuration.audio.bitrate,
+                sampleRate = configuration.audio.sampleRate,
+                channelConfig = AudioConfig.getChannelConfig(configuration.audio.numberOfChannels),
+                byteFormat = configuration.audio.byteFormat,
+                enableEchoCanceler = configuration.audio.enableEchoCanceler,
+                enableNoiseSuppressor = configuration.audio.enableNoiseSuppressor
+            )
+
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.RECORD_AUDIO
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                streamer.configure(audioConfig)
+            } else {
+                throw SecurityException("Permission RECORD_AUDIO must have been granted!")
+            }
         }
 
-    private fun createMuxerConfigBundle(): Bundle {
-        val bundle = Bundle()
-        bundle.putString(PROVIDER, configuration.muxer.provider)
-        bundle.putString(SERVICE, configuration.muxer.service)
-        return bundle
-    }
+        runBlocking {
+            streamer.getStreamer<ISrtLiveStreamer>()?.let {
+                it.streamId =
+                    configuration.endpoint.srt.streamID
+                it.passPhrase =
+                    configuration.endpoint.srt.passPhrase
+                it.connect(
+                    configuration.endpoint.srt.ip,
+                    configuration.endpoint.srt.port
+                )
+            } ?: streamer.getStreamer<ILiveStreamer>()?.connect(
+                configuration.endpoint.rtmp.url
+            )
 
-    private fun createEndpointConfigBundle(): Bundle {
-        val bundle = Bundle()
-        bundle.putInt(ENDPOINT_TYPE, configuration.endpoint.type.id)
-
-        // Srt
-        bundle.putString(IP, configuration.endpoint.srt.ip)
-        bundle.putInt(PORT, configuration.endpoint.srt.port)
-        bundle.putString(PASSPHRASE, configuration.endpoint.srt.passPhrase)
-        bundle.putString(STREAM_ID, configuration.endpoint.srt.streamID)
-        bundle.putBoolean(
-            ENABLE_BITRATE_REGULATION,
-            configuration.endpoint.srt.enableBitrateRegulation
-        )
-        bundle.putInt(
-            VIDEO_BITRATE_REGULATION_LOWER,
-            configuration.endpoint.srt.videoBitrateRange.lower
-        )
-        bundle.putInt(
-            VIDEO_BITRATE_REGULATION_UPPER,
-            configuration.endpoint.srt.videoBitrateRange.upper
-        )
-
-        // RTMP
-        bundle.putString(
-            RTMP_URL,
-            configuration.endpoint.rtmp.url
-        )
-        return bundle
-    }
-
-    private fun createAudioConfigBundle(): Bundle? {
-        return if (configuration.audio.enable) {
-            val bundle = Bundle()
-            bundle.putString(MIME_TYPE, configuration.audio.encoder)
-            bundle.putInt(BITRATE, configuration.audio.bitrate)
-            bundle.putInt(SAMPLE_RATE, configuration.audio.sampleRate)
-            bundle.putInt(CHANNEL_CONFIG, configuration.audio.numberOfChannels)
-            bundle.putInt(BYTE_FORMAT, configuration.audio.byteFormat)
-            bundle.putBoolean(ENABLE_ECHO_CANCELER, configuration.audio.enableEchoCanceler)
-            bundle.putBoolean(ENABLE_NOISE_SUPPRESSOR, configuration.audio.enableNoiseSuppressor)
-            bundle
-        } else {
-            null
+            streamer.startStream()
         }
     }
 
-    private fun createVideoConfigBundle(): Bundle {
-        val bundle = Bundle()
-        bundle.putString(MIME_TYPE, configuration.video.encoder)
-        bundle.putInt(BITRATE, configuration.video.bitrate * 1000)  // to b/s
-        bundle.putInt(RESOLUTION_WIDTH, configuration.video.resolution.width)
-        bundle.putInt(RESOLUTION_HEIGHT, configuration.video.resolution.height)
-        return bundle
+    private fun stopService() {
+        streamer.stopStream()
+        streamer.disconnect()
+
+        when (configuration.endpoint.type) {
+            EndpointType.SRT -> stopService(
+                Intent(
+                    this,
+                    DemoScreenRecorderSrtLiveService::class.java
+                )
+            )
+            EndpointType.RTMP -> stopService(
+                Intent(
+                    this,
+                    DemoScreenRecorderRtmpLiveService::class.java
+                )
+            )
+        }
     }
 
     private fun showPopup() {
@@ -206,14 +275,43 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    fun showPermissionAlertDialog(context: Context, afterPositiveButton: () -> Unit = {}) {
+    private fun showAlertDialog(
+        context: Context,
+        title: String,
+        message: String,
+        afterPositiveButton: () -> Unit = {}
+    ) {
         AlertDialog.Builder(context)
-            .setTitle(R.string.permission)
-            .setMessage(R.string.permission_not_granted)
+            .setTitle(title)
+            .setMessage(message)
             .setPositiveButton(android.R.string.ok) { dialogInterface: DialogInterface, _: Int ->
                 dialogInterface.dismiss()
                 afterPositiveButton()
             }
             .show()
     }
+
+    private fun showAlertDialog(
+        context: Context,
+        titleResourceId: Int,
+        messageResourceId: Int,
+        afterPositiveButton: () -> Unit = {}
+    ) {
+        AlertDialog.Builder(context)
+            .setTitle(titleResourceId)
+            .setMessage(messageResourceId)
+            .setPositiveButton(android.R.string.ok) { dialogInterface: DialogInterface, _: Int ->
+                dialogInterface.dismiss()
+                afterPositiveButton()
+            }
+            .show()
+    }
+
+    private fun showPermissionAlertDialog(context: Context, afterPositiveButton: () -> Unit = {}) =
+        showAlertDialog(
+            context,
+            R.string.permission,
+            R.string.permission_not_granted,
+            afterPositiveButton
+        )
 }
