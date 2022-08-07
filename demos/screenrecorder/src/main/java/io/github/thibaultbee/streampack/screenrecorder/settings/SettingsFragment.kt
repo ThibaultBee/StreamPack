@@ -187,6 +187,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
         audioEncoderListPreference.entryValues = supportedAudioEncoder.toTypedArray()
         audioEncoderListPreference.entries =
             supportedAudioEncoder.map { supportedAudioEncoderName[it] }.toTypedArray()
+        if (audioEncoderListPreference.entry == null) {
+            audioEncoderListPreference.value = MediaFormat.MIMETYPE_AUDIO_AAC
+        }
         audioEncoderListPreference.setOnPreferenceChangeListener { _, newValue ->
             loadAudioSettings(newValue as String)
             true
