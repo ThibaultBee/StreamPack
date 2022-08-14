@@ -70,12 +70,12 @@ import io.github.thibaultbee.streampack.utils.NotificationUtils
 abstract class BaseScreenRecorderService(
     protected val logger: ILogger = StreamPackLogger(),
     private val notificationId: Int = DEFAULT_NOTIFICATION_ID,
-    private val channelId: String = DEFAULT_NOTIFICATION_CHANNEL_ID,
-    @StringRes private val channelNameResourceId: Int = R.string.default_channel_name,
-    @StringRes private val channelDescriptionResourceId: Int = 0,
-    @DrawableRes private val notificationIconResourceId: Int = R.drawable.ic_baseline_linked_camera_24
+    protected val channelId: String = DEFAULT_NOTIFICATION_CHANNEL_ID,
+    @StringRes protected val channelNameResourceId: Int = R.string.default_channel_name,
+    @StringRes protected val channelDescriptionResourceId: Int = 0,
+    @DrawableRes protected val notificationIconResourceId: Int = R.drawable.ic_baseline_linked_camera_24
 ) : Service() {
-    private var streamer: BaseScreenRecorderStreamer? = null
+    protected var streamer: BaseScreenRecorderStreamer? = null
     private val binder = ScreenRecorderServiceBinder()
     private val notificationUtils: NotificationUtils by lazy {
         NotificationUtils(this, channelId, notificationId)
