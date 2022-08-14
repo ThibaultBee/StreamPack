@@ -6,7 +6,7 @@
     <string name="menu_actions">Menu actions</string>
 
     <string name="record_screen">Record screen</string>
-    <string name="stop">Stop</string>
+    <string name="stop">STOP</string>
 
     <!--Settings activity -->
     <string name="resolution">Resolution</string>
@@ -90,6 +90,7 @@
     <string name="audio_byte_format_8bit">8 bits</string>
     <string name="audio_byte_format_16bit">16 bits</string>
     <string name="audio_byte_format_float">Float</string>
+    <string name="live_in_progress">In progress…</string>
 
 
 </resources>
