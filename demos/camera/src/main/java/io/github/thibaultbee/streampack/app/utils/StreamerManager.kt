@@ -18,7 +18,6 @@ package io.github.thibaultbee.streampack.app.utils
 import android.Manifest
 import android.content.Context
 import android.os.Build
-import android.view.Surface
 import android.view.SurfaceHolder
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.app.configuration.Configuration
@@ -26,15 +25,9 @@ import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStr
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.StreamerLifeCycleObserver
-import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
-import io.github.thibaultbee.streampack.utils.CameraSettings
-import io.github.thibaultbee.streampack.utils.getBackCameraList
-import io.github.thibaultbee.streampack.utils.getFrontCameraList
-import io.github.thibaultbee.streampack.utils.isBackCamera
+import io.github.thibaultbee.streampack.utils.*
 import java.io.File
 
 
@@ -51,44 +44,20 @@ class StreamerManager(
         }
 
     var onConnectionListener: OnConnectionListener?
-        get() = getLiveStreamer()?.onConnectionListener
+        get() = streamer?.getLiveStreamer()?.onConnectionListener
         set(value) {
-            getLiveStreamer()?.onConnectionListener = value
+            streamer?.getLiveStreamer()?.onConnectionListener = value
         }
 
     val cameraId: String?
-        get() = getCameraStreamer()?.camera
+        get() = streamer?.getCameraStreamer()?.camera
 
     val streamerLifeCycleObserver: StreamerLifeCycleObserver by lazy {
         StreamerLifeCycleObserver(streamer!!)
     }
 
-    private inline fun <reified T> getStreamer(): T? {
-        return if (streamer is T) {
-            streamer as T
-        } else {
-            null
-        }
-    }
-
-    private fun getBaseStreamer(): IStreamer? {
-        return getStreamer<IStreamer>()
-    }
-
-    private fun getCameraStreamer(): ICameraStreamer? {
-        return getStreamer<ICameraStreamer>()
-    }
-
     private fun getSrtLiveStreamer(): ISrtLiveStreamer? {
-        return getStreamer<ISrtLiveStreamer>()
-    }
-
-    private fun getLiveStreamer(): ILiveStreamer? {
-        return getStreamer<ILiveStreamer>()
-    }
-
-    private fun getFileStreamer(): IFileStreamer? {
-        return getStreamer<IFileStreamer>()
+        return streamer?.getStreamer<ISrtLiveStreamer>()
     }
 
     val requiredPermissions: List<String>
@@ -97,7 +66,7 @@ class StreamerManager(
                 Manifest.permission.CAMERA,
                 Manifest.permission.RECORD_AUDIO
             )
-            getFileStreamer()?.let {
+            streamer?.getFileStreamer()?.let {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
                     permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 }
@@ -112,15 +81,15 @@ class StreamerManager(
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
     fun startPreview(surfaceHolder: SurfaceHolder) {
-        getCameraStreamer()?.startPreview(surfaceHolder)
+        streamer?.getCameraStreamer()?.startPreview(surfaceHolder)
     }
 
     fun stopPreview() {
-        getCameraStreamer()?.stopPreview()
+        streamer?.getCameraStreamer()?.stopPreview()
     }
 
     suspend fun startStream() {
-        if (getLiveStreamer() != null) {
+        if (streamer?.getLiveStreamer() != null) {
             getSrtLiveStreamer()?.let {
                 it.streamId =
                     configuration.endpoint.srt.streamID
@@ -130,12 +99,12 @@ class StreamerManager(
                     configuration.endpoint.srt.ip,
                     configuration.endpoint.srt.port
                 )
-            } ?: getLiveStreamer()?.connect(
+            } ?: streamer?.getLiveStreamer()?.connect(
                 configuration.endpoint.rtmp.url
             )
         }
 
-        getFileStreamer()?.let {
+        streamer?.getFileStreamer()?.let {
             /**
              * Use OutputStream.
              * FYI, outputStream is closed by stopStream
@@ -158,7 +127,7 @@ class StreamerManager(
 
     fun stopStream() {
         streamer?.stopStream()
-        getLiveStreamer()?.disconnect()
+        streamer?.getLiveStreamer()?.disconnect()
     }
 
     fun release() {
@@ -166,7 +135,7 @@ class StreamerManager(
     }
 
     fun toggleCamera() {
-        getCameraStreamer()?.let {
+        streamer?.getCameraStreamer()?.let {
             if (context.isBackCamera(it.camera)) {
                 it.camera = context.getFrontCameraList()[0]
             } else {
@@ -177,7 +146,7 @@ class StreamerManager(
 
     val cameraSettings: CameraSettings?
         get() {
-            val settings = getBaseStreamer()?.settings
+            val settings = streamer?.settings
             return if (settings is IBaseCameraStreamerSettings) {
                 settings.camera
             } else {
@@ -186,8 +155,8 @@ class StreamerManager(
         }
 
     var isMuted: Boolean
-        get() = getBaseStreamer()?.settings?.audio?.isMuted ?: true
+        get() = streamer?.settings?.audio?.isMuted ?: true
         set(value) {
-            getBaseStreamer()?.settings?.audio?.isMuted = value
+            streamer?.settings?.audio?.isMuted = value
         }
 }

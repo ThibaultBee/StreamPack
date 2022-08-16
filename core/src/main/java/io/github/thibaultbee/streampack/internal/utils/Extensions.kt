@@ -18,7 +18,6 @@ package io.github.thibaultbee.streampack.internal.utils
 import android.content.Context
 import io.github.thibaultbee.streampack.R
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
-import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 
 fun Any.numOfBits(): Int {
     return when (this) {
@@ -32,14 +31,6 @@ fun Any.numOfBits(): Int {
         is Char -> 16
         is String -> 8 * this.length
         else -> throw IllegalArgumentException("Unsupported type: ${this.javaClass.name}")
-    }
-}
-
-inline fun <reified T> IStreamer.getStreamer(): T? {
-    return if (this is T) {
-        this
-    } else {
-        null
     }
 }
 
