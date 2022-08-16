@@ -222,6 +222,9 @@ class PreviewFragment : Fragment() {
 
         // Wait till streamer exists to create the SurfaceView (and call startCapture).
         binding.preview.visibility = View.VISIBLE
+
+        // Wait till streamer exists
+        lifecycle.addObserver(viewModel.streamerLifeCycleObserver)
     }
 
     @SuppressLint("MissingPermission")

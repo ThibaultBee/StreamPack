@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.internal.utils
 import android.content.Context
 import io.github.thibaultbee.streampack.R
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
-import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
+import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 
 fun Any.numOfBits(): Int {
     return when (this) {
@@ -35,7 +35,7 @@ fun Any.numOfBits(): Int {
     }
 }
 
-inline fun <reified T> BaseStreamer.getStreamer(): T? {
+inline fun <reified T> IStreamer.getStreamer(): T? {
     return if (this is T) {
         this
     } else {
