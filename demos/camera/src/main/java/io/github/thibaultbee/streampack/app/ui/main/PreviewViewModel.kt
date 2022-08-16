@@ -21,7 +21,6 @@ import android.hardware.camera2.CaptureResult
 import android.util.Log
 import android.util.Range
 import android.util.Rational
-import android.view.Surface
 import android.view.SurfaceHolder
 import androidx.annotation.RequiresPermission
 import androidx.databinding.Bindable
@@ -33,14 +32,17 @@ import io.github.thibaultbee.streampack.app.utils.StreamerManager
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
+import io.github.thibaultbee.streampack.streamers.StreamerLifeCycleObserver
 import io.github.thibaultbee.streampack.utils.isFrameRateSupported
 import kotlinx.coroutines.launch
-import java.io.File
 
 class PreviewViewModel(private val streamerManager: StreamerManager) : ObservableViewModel() {
     companion object {
         private const val TAG = "PreviewViewModel"
     }
+
+    val streamerLifeCycleObserver: StreamerLifeCycleObserver
+        get() = streamerManager.streamerLifeCycleObserver
 
     val cameraId: String?
         get() = streamerManager.cameraId
