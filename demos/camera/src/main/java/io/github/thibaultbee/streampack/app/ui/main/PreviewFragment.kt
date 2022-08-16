@@ -18,7 +18,6 @@ package io.github.thibaultbee.streampack.app.ui.main
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -27,7 +26,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import io.github.thibaultbee.streampack.app.configuration.Configuration
@@ -213,7 +211,7 @@ class PreviewFragment : Fragment() {
                 binding.preview.setAspectRatio(previewSize.width, previewSize.height)
 
                 // To ensure that size is set, initialize camera in the view's thread
-                binding.preview.post { viewModel.startPreview(holder.surface) }
+                binding.preview.post { viewModel.startPreview(holder) }
             }
         }
     }

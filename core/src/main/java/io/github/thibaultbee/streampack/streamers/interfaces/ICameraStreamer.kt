@@ -17,6 +17,9 @@ package io.github.thibaultbee.streampack.streamers.interfaces
 
 import android.Manifest
 import android.view.Surface
+import android.view.SurfaceHolder
+import android.view.SurfaceView
+import android.view.TextureView
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
@@ -36,10 +39,52 @@ interface ICameraStreamer {
      * Starts audio and video capture.
      * [BaseStreamer.configure] must have been called at least once.
      *
+     * @param previewSurface The [Surface] used for camera preview
+     * @param cameraId The camera id where to start preview
+     *
      * @see [stopPreview]
      */
     @RequiresPermission(allOf = [Manifest.permission.CAMERA])
     fun startPreview(previewSurface: Surface, cameraId: String = camera)
+
+    /**
+     * Starts audio and video capture.
+     * [BaseStreamer.configure] must have been called at least once.
+     *
+     * @param surfaceView The [SurfaceView] used for camera preview
+     * @param cameraId The camera id where to start preview
+     *
+     * @see [stopPreview]
+     */
+    @RequiresPermission(allOf = [Manifest.permission.CAMERA])
+    fun startPreview(surfaceView: SurfaceView, cameraId: String = camera) =
+        startPreview(surfaceView.holder.surface, cameraId)
+
+    /**
+     * Starts audio and video capture.
+     * [BaseStreamer.configure] must have been called at least once.
+     *
+     * @param surfaceHolder The [SurfaceHolder] used for camera preview
+     * @param cameraId The camera id where to start preview
+     *
+     * @see [stopPreview]
+     */
+    @RequiresPermission(allOf = [Manifest.permission.CAMERA])
+    fun startPreview(surfaceHolder: SurfaceHolder, cameraId: String = camera) =
+        startPreview(surfaceHolder.surface, cameraId)
+
+    /**
+     * Starts audio and video capture.
+     * [BaseStreamer.configure] must have been called at least once.
+     *
+     * @param textureView The [TextureView] used for camera preview
+     * @param cameraId The camera id where to start preview
+     *
+     * @see [stopPreview]
+     */
+    @RequiresPermission(allOf = [Manifest.permission.CAMERA])
+    fun startPreview(textureView: TextureView, cameraId: String = camera) =
+        startPreview(Surface(textureView.surfaceTexture), cameraId)
 
     /**
      * Stops capture.
