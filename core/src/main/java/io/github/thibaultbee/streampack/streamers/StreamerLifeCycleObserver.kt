@@ -17,11 +17,9 @@ package io.github.thibaultbee.streampack.streamers
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import io.github.thibaultbee.streampack.internal.utils.getStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
-
+import io.github.thibaultbee.streampack.utils.getCameraStreamer
+import io.github.thibaultbee.streampack.utils.getLiveStreamer
 
 /**
  * Add [DefaultLifecycleObserver] to a streamer.
@@ -36,9 +34,9 @@ import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
  */
 open class StreamerLifeCycleObserver(var streamer: IStreamer) : DefaultLifecycleObserver {
     override fun onPause(owner: LifecycleOwner) {
-        streamer.getStreamer<ICameraStreamer>()?.stopPreview()
+        streamer.getCameraStreamer()?.stopPreview()
         streamer.stopStream()
-        streamer.getStreamer<ILiveStreamer>()?.let {
+        streamer.getLiveStreamer()?.let {
             if (it.isConnected) {
                 it.disconnect()
             }

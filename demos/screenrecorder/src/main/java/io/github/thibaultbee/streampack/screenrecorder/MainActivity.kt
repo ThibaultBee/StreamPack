@@ -40,7 +40,7 @@ import io.github.thibaultbee.streampack.ext.srt.services.ScreenRecorderSrtLiveSe
 import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
 import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
-import io.github.thibaultbee.streampack.internal.utils.getStreamer
+import io.github.thibaultbee.streampack.utils.getStreamer
 import io.github.thibaultbee.streampack.screenrecorder.databinding.ActivityMainBinding
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
 import io.github.thibaultbee.streampack.screenrecorder.services.DemoScreenRecorderRtmpLiveService
