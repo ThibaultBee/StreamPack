@@ -22,6 +22,7 @@ import android.util.Log
 import android.util.Range
 import android.util.Rational
 import android.view.Surface
+import android.view.SurfaceHolder
 import androidx.annotation.RequiresPermission
 import androidx.databinding.Bindable
 import androidx.lifecycle.MutableLiveData
@@ -86,10 +87,10 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-    fun startPreview(previewSurface: Surface) {
+    fun startPreview(surfaceHolder: SurfaceHolder) {
         viewModelScope.launch {
             try {
-                streamerManager.startPreview(previewSurface)
+                streamerManager.startPreview(surfaceHolder)
                 notifyCameraChange()
             } catch (e: Throwable) {
                 Log.e(TAG, "startPreview failed", e)

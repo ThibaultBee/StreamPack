@@ -19,6 +19,7 @@ import android.Manifest
 import android.content.Context
 import android.os.Build
 import android.view.Surface
+import android.view.SurfaceHolder
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.app.configuration.Configuration
 import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
@@ -105,8 +106,8 @@ class StreamerManager(
     }
 
     @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-    fun startPreview(previewSurface: Surface) {
-        getCameraStreamer()?.startPreview(previewSurface)
+    fun startPreview(surfaceHolder: SurfaceHolder) {
+        getCameraStreamer()?.startPreview(surfaceHolder)
     }
 
     fun stopPreview() {

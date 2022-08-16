@@ -114,12 +114,19 @@ side, you should be able to watch this live stream.
 
 2. Creates a `SurfaceView` to display camera preview in your layout
 
-To simplify development, StreamPack provides an `AutoFitSurfaceView`.
+As a camera preview, you can use a `SurfaceView`, a `TextureView`, a `CameraX` `PreviewView`, or any
+object where you can have access to a `Surface`.
+
+To simplify integration, StreamPack provides an `AutoFitSurfaceView`.
 
 ```xml
 
-<io.github.thibaultbee.streampack.views.AutoFitSurfaceView android:id="@+id/surface"
-    android:layout_width="match_parent" android:layout_height="match_parent" />
+<layout>
+    <io.github.thibaultbee.streampack.views.AutoFitSurfaceView
+            android:id="@+id/preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+</layout>
 ```
 
 3. Instantiates the streamer (main live streaming class)
@@ -149,7 +156,10 @@ streamer.configure(audioConfig, videoConfig)
 5. Starts the camera preview
 
 ```kotlin
-streamer.startPreview(surface) // surface from AutoFitSurfaceView, SurfaceView or TextureView: where to display preview
+/**
+ * preview: where to display preview. Its could be a SurfaceView, a TextureView or CameraX PreviewView,...
+ */
+streamer.startPreview(preview) 
 ```
 
 6. Starts the live streaming
@@ -176,10 +186,13 @@ You need to add the following permissions in your `AndroidManifest.xml`:
 
 ```xml
 
-<uses-permission android:name="android.permission.RECORD_AUDIO" /><uses-permission
-android:name="android.permission.CAMERA" /><uses-permission
-android:name="android.permission.INTERNET" /><!-- Application requires android.permission.WRITE_EXTERNAL_STORAGE only for IFileStreamer implementation` -->
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<manifest>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CAMERA" />\
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Application requires android.permission.WRITE_EXTERNAL_STORAGE only for IFileStreamer implementation` -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+</manifest>
 ```
 
 Your application also has to request the following dangerous
@@ -190,8 +203,10 @@ For the PlayStore, your application might declare this in its `AndroidManifest.x
 
 ```xml
 
-<uses-feature android:name="android.hardware.camera" android:required="true" /><uses-feature
-android:name="android.hardware.camera.autofocus" android:required="false" />
+<manifest>
+    <uses-feature android:name="android.hardware.camera" android:required="true" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+</manifest>
 ```
 
 ## Tips
