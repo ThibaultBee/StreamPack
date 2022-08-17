@@ -169,8 +169,8 @@ fun Context.getZoomRatioRange(cameraId: String): Range<Float> {
         getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE)
             ?: Range(1f, 1f)
     } else {
-        // Not supported
-        Range(1f, 1f)
+        getCameraCharacteristics(cameraId).get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM)
+            ?.let { maxZoom -> Range(1f, maxZoom) } ?: Range(1f, 1f)
     }
 }
 
