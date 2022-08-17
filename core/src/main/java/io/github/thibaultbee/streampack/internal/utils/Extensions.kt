@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.internal.utils
 
 import android.content.Context
+import android.util.Range
 import io.github.thibaultbee.streampack.R
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 
@@ -41,3 +42,10 @@ val Context.defaultTsServiceInfo
         getString(R.string.ts_service_default_name),
         getString(R.string.ts_service_default_provider_name)
     )
+
+fun <T : Comparable<T>> T.clamp(min: T, max: T) =
+    if (this < min) min else if (this > max) max else this
+
+fun <T : Comparable<T>> T.clamp(range: Range<T>) =
+    this.clamp(range.lower, range.upper)
+
