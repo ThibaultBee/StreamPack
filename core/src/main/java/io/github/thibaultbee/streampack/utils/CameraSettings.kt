@@ -16,6 +16,8 @@
 package io.github.thibaultbee.streampack.utils
 
 import android.content.Context
+import android.graphics.Rect
+import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.CaptureResult
 import android.os.Build
@@ -24,6 +26,7 @@ import android.util.Rational
 import io.github.thibaultbee.streampack.internal.sources.camera.CameraController
 import io.github.thibaultbee.streampack.internal.utils.clamp
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
+
 
 /**
  * Use to change camera settings.
@@ -188,10 +191,11 @@ class Exposure(private val context: Context, private val cameraController: Camer
 
 
 class Zoom(private val context: Context, private val cameraController: CameraController) {
+    // Keep the zoomRation for Android version < R
+    private var persistentZoomRatio = 1f
+
     /**
      * Get current camera zoom ratio range.
-     *
-     * Only for Android version >= R (30)
      *
      * @return zoom ratio range.
      *
@@ -214,7 +218,9 @@ class Zoom(private val context: Context, private val cameraController: CameraCon
         get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             cameraController.getSetting(CaptureRequest.CONTROL_ZOOM_RATIO) ?: 1f
         } else {
-            1f
+            synchronized(this) {
+                persistentZoomRatio
+            }
         }
         /**
          * Set the zoom ratio.
@@ -227,8 +233,37 @@ class Zoom(private val context: Context, private val cameraController: CameraCon
                     CaptureRequest.CONTROL_ZOOM_RATIO,
                     value.clamp(availableRatioRange)
                 )
+            } else {
+                synchronized(this) {
+                    val clampedValue = value.clamp(availableRatioRange)
+                    cameraController.cameraId?.let { cameraId ->
+                        cameraController.setSetting(
+                            CaptureRequest.SCALER_CROP_REGION,
+                            getCropRegion(
+                                context.getCameraCharacteristics(cameraId),
+                                clampedValue
+                            )
+                        )
+                    }
+                    persistentZoomRatio = clampedValue
+                }
             }
         }
+
+
+    /**
+     * Calculates sensor crop region for a zoom ratio (zoom >= 1.0).
+     *
+     * @return the crop region.
+     */
+    private fun getCropRegion(characteristics: CameraCharacteristics, zoomRatio: Float): Rect {
+        val sensorRect = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)!!
+        val xCenter: Int = sensorRect.width() / 2
+        val yCenter: Int = sensorRect.height() / 2
+        val xDelta = (0.5f * sensorRect.width() / zoomRatio).toInt()
+        val yDelta = (0.5f * sensorRect.height() / zoomRatio).toInt()
+        return Rect(xCenter - xDelta, yCenter - yDelta, xCenter + xDelta, yCenter + yDelta)
+    }
 }
 
 
