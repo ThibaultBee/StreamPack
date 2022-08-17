@@ -22,6 +22,7 @@ import android.os.Build
 import android.util.Range
 import android.util.Rational
 import io.github.thibaultbee.streampack.internal.sources.camera.CameraController
+import io.github.thibaultbee.streampack.internal.utils.clamp
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 
 /**
@@ -178,7 +179,10 @@ class Exposure(private val context: Context, private val cameraController: Camer
          * @param value exposure compensation
          */
         set(value) {
-            cameraController.setSetting(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, value)
+            cameraController.setSetting(
+                CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION,
+                value.clamp(availableCompensationRange)
+            )
         }
 }
 
@@ -197,15 +201,15 @@ class Zoom(private val context: Context, private val cameraController: CameraCon
         get() = cameraController.cameraId?.let { context.getZoomRatioRange(it) } ?: Range(1f, 1f)
 
     /**
-     * Set or get exposure compensation.
+     * Set or get the current zoom ratio.
      *
      * @see [availableRatioRange]
      */
     var zoomRatio: Float
         /**
-         * Get the exposure compensation.
+         * Get the zoom ratio.
          *
-         * @return exposure compensation
+         * @return the current zoom ratio
          */
         get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             cameraController.getSetting(CaptureRequest.CONTROL_ZOOM_RATIO) ?: 1f
@@ -213,13 +217,16 @@ class Zoom(private val context: Context, private val cameraController: CameraCon
             1f
         }
         /**
-         * Set the exposure compensation.
+         * Set the zoom ratio.
          *
-         * @param value exposure compensation
+         * @param value zoom ratio
          */
         set(value) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                cameraController.setSetting(CaptureRequest.CONTROL_ZOOM_RATIO, value)
+                cameraController.setSetting(
+                    CaptureRequest.CONTROL_ZOOM_RATIO,
+                    value.clamp(availableRatioRange)
+                )
             }
         }
 }
@@ -289,7 +296,10 @@ class Focus(private val context: Context, private val cameraController: CameraCo
          * @param value lens focus distance
          */
         set(value) {
-            cameraController.setSetting(CaptureRequest.LENS_FOCUS_DISTANCE, value)
+            cameraController.setSetting(
+                CaptureRequest.LENS_FOCUS_DISTANCE,
+                value.clamp(availableLensDistanceRange)
+            )
         }
 }
 
