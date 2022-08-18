@@ -1,6 +1,22 @@
 Change Log
 ==========
 
+Version 2.4.0
+-------------
+
+## Features:
+
+- The screen recorder services have been moved to the library (instead of the example)
+- Add zoom ratio API support for Android < R
+- Introducing a life cycle observer for streamers called `StreamerLifeCycleObserver`
+- Overload camera streamers' `startPreview` API to take a `SurfaceView` or a `TextureView` as input
+  parameter
+- Add `isConnected` field in live streamers
+
+## Bug fixes:
+
+- Clamp camera range settings: zoom, exposure,...
+
 Version 2.3.3
 -------------
 
