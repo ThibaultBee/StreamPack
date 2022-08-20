@@ -114,8 +114,8 @@ side, you should be able to watch this live stream.
 
 2. Creates a `SurfaceView` to display camera preview in your layout
 
-As a camera preview, you can use a `SurfaceView`, a `TextureView`, a `CameraX` `PreviewView`, or any
-object where you can have access to a `Surface`.
+As a camera preview, you can use a `SurfaceView`, a `TextureView` or any
+`View` where that can provide a `Surface`.
 
 To simplify integration, StreamPack provides an `AutoFitSurfaceView`.
 
@@ -157,7 +157,7 @@ streamer.configure(audioConfig, videoConfig)
 
 ```kotlin
 /**
- * preview: where to display preview. Its could be a SurfaceView, a TextureView or CameraX PreviewView,...
+ * preview: where to display preview. Its could be a SurfaceView, a TextureView,...
  */
 streamer.startPreview(preview) 
 ```
