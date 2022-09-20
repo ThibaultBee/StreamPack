@@ -16,7 +16,6 @@
 package io.github.thibaultbee.streampack.internal.encoders
 
 import android.media.MediaCodec
-import android.media.MediaCodecList
 import android.media.MediaFormat
 import android.os.Build
 import android.os.Bundle
@@ -31,7 +30,7 @@ import io.github.thibaultbee.streampack.internal.utils.slices
 import io.github.thibaultbee.streampack.internal.utils.startsWith
 import io.github.thibaultbee.streampack.logger.ILogger
 import java.nio.ByteBuffer
-import java.security.InvalidParameterException
+
 
 abstract class MediaCodecEncoder<T>(
     override val encoderListener: IEncoderListener,
@@ -178,11 +177,9 @@ abstract class MediaCodecEncoder<T>(
     }
 
     protected fun createCodec(format: MediaFormat): MediaCodec {
-        logger.d(this, "createCodec: $format")
-        val mediaCodecList = MediaCodecList(MediaCodecList.REGULAR_CODECS)
-        val encoderName = mediaCodecList.findEncoderForFormat(format)
-        encoderName?.let { return MediaCodec.createByCodecName(encoderName) }
-            ?: throw InvalidParameterException("Failed to create codec for: $format")
+        val encoderName = MediaCodecHelper.findEncoder(format)
+        logger.i(this, "Selected encoder $encoderName")
+        return MediaCodec.createByCodecName(encoderName)
     }
 
     protected fun configureCodec(codec: MediaCodec, format: MediaFormat, handlerName: String) {
