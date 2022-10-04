@@ -13,21 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.muxers.flv.packet
+package io.github.thibaultbee.streampack.internal.utils.av.video.hevc
 
-import android.media.MediaFormat
-import io.github.thibaultbee.streampack.data.AudioConfig
-import java.nio.ByteBuffer
+enum class HEVCProfile(val value: Short) {
+    MAIN(1),
+    MAIN_10(2),
+    MAIN_STILL_PICTURE(3),
+    REXT(4),
+    HIGH_THROUGHPUT(5),
+    MULTIVIEW_MAIN(6),
+    SCALABLE_MAIN(7),
+    THREED_MAIN(8),
+    SCREEN_EXTENDED(9),
+    SCALABLE_REXT(10),
+    HIGH_THROUGHPUT_SCREEN_EXTENDED(11);
 
-class AudioSpecificConfig(
-    private val decoderSpecificInformation: ByteBuffer,
-    private val audioConfig: AudioConfig
-) {
-    fun write(buffer: ByteBuffer) {
-        if (audioConfig.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
-            buffer.put(decoderSpecificInformation)
-        } else {
-            throw NotImplementedError("No support for ${audioConfig.mimeType}")
-        }
+    companion object {
+        fun fromProfileIdc(profileIdc: Short) =
+            values().first { it.value == profileIdc }
     }
+
 }

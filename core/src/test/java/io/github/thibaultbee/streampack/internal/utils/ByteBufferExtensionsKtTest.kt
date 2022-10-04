@@ -1,38 +1,18 @@
 package io.github.thibaultbee.streampack.internal.utils
 
-import org.junit.Assert.*
+import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.nio.ByteBuffer
 
 class ByteBufferExtensionsKtTest {
     @Test
     fun `slices with multiple prefix`() {
-        val testBuffer =
-            ByteBuffer.wrap(
-                byteArrayOf(
-                    0,
-                    0,
-                    0,
-                    1,
-                    24,
-                    53,
-                    2,
-                    0,
-                    0,
-                    0,
-                    1,
-                    34,
-                    45,
-                    98,
-                    0,
-                    0,
-                    0,
-                    1,
-                    3,
-                    56,
-                    2
-                )
+        val testBuffer = ByteBuffer.wrap(
+            byteArrayOf(
+                0, 0, 0, 1, 24, 53, 2, 0, 0, 0, 1, 34, 45, 98, 0, 0, 0, 1, 3, 56, 2
             )
+        )
 
         val resultBuffers = testBuffer.slices(
             byteArrayOf(0, 0, 0, 1)
@@ -47,17 +27,11 @@ class ByteBufferExtensionsKtTest {
 
     @Test
     fun `slices without prefix`() {
-        val testBuffer =
-            ByteBuffer.wrap(
-                byteArrayOf(
-                    2,
-                    0,
-                    1,
-                    24,
-                    3,
-                    53
-                )
+        val testBuffer = ByteBuffer.wrap(
+            byteArrayOf(
+                2, 0, 1, 24, 3, 53
             )
+        )
 
         val resultBuffers = testBuffer.slices(
             byteArrayOf(0, 0, 0, 1)
@@ -69,17 +43,11 @@ class ByteBufferExtensionsKtTest {
 
     @Test
     fun `slices with single prefix at start`() {
-        val testBuffer =
-            ByteBuffer.wrap(
-                byteArrayOf(
-                    0,
-                    0,
-                    0,
-                    1,
-                    24,
-                    53
-                )
+        val testBuffer = ByteBuffer.wrap(
+            byteArrayOf(
+                0, 0, 0, 1, 24, 53
             )
+        )
 
         val resultBuffers = testBuffer.slices(
             byteArrayOf(0, 0, 0, 1)
@@ -92,20 +60,11 @@ class ByteBufferExtensionsKtTest {
 
     @Test
     fun `slices with single prefix`() {
-        val testBuffer =
-            ByteBuffer.wrap(
-                byteArrayOf(
-                    2,
-                    3,
-                    4,
-                    0,
-                    0,
-                    0,
-                    1,
-                    24,
-                    53
-                )
+        val testBuffer = ByteBuffer.wrap(
+            byteArrayOf(
+                2, 3, 4, 0, 0, 0, 1, 24, 53
             )
+        )
 
         val resultBuffers = testBuffer.slices(
             byteArrayOf(0, 0, 0, 1)
@@ -114,9 +73,115 @@ class ByteBufferExtensionsKtTest {
             1, resultBuffers.size
         )
         assertArrayEquals(
-            testBuffer.array()
-                .sliceArray(IntRange(3, 8)),
-            resultBuffers[0].array()
+            testBuffer.array().sliceArray(IntRange(3, 8)), resultBuffers[0].array()
+        )
+    }
+
+    @Test
+    fun `extractRbsp with single emulation prevention byte`() {
+        val testBuffer = ByteBuffer.wrap(
+            byteArrayOf(
+                66,
+                0,
+                0,
+                3,
+                1
+            )
+        )
+        val expectedArray = byteArrayOf(
+            66,
+            0,
+            0,
+            1
+        )
+        val resultBuffer = testBuffer.extractRbsp(0)
+
+        assertArrayEquals(
+            expectedArray, resultBuffer.extractArray()
+        )
+    }
+
+    @Test
+    fun `extractRbsp with start code and with multiple emulation prevention bytes`() {
+        val testBuffer = ByteBuffer.wrap(
+            byteArrayOf(
+                0,
+                0,
+                0,
+                1,
+                66,
+                1,
+                1,
+                1,
+                96,
+                0,
+                0,
+                3,
+                0,
+                -80,
+                0,
+                0,
+                3,
+                0,
+                0,
+                3,
+                0,
+                60,
+                -96,
+                8,
+                8,
+                5,
+                7,
+                19,
+                -27,
+                -82,
+                -28,
+                -55,
+                46,
+                -96,
+                11,
+                -76,
+                40,
+                74
+            )
+        )
+        val expectedArray = byteArrayOf(
+            66,
+            1,
+            1,
+            1,
+            96,
+            0,
+            0,
+            0,
+            -80,
+            0,
+            0,
+            0,
+            0,
+            0,
+            60,
+            -96,
+            8,
+            8,
+            5,
+            7,
+            19,
+            -27,
+            -82,
+            -28,
+            -55,
+            46,
+            -96,
+            11,
+            -76,
+            40,
+            74
+        )
+        val resultBuffer = testBuffer.extractRbsp(2)
+
+        assertArrayEquals(
+            expectedArray, resultBuffer.extractArray()
         )
     }
 }
