@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.utils
 
+import io.github.thibaultbee.streampack.internal.utils.av.video.getStartCodeSize
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
@@ -36,6 +37,11 @@ fun ByteBuffer.putInt24(i: Int) {
     put(i.toByte())
 }
 
+fun ByteBuffer.putLong48(i: Long) {
+    putShort(i shr 32)
+    putInt(i.toInt())
+}
+
 fun ByteBuffer.putShort(l: Long) {
     putShort(l.toShort())
 }
@@ -50,12 +56,20 @@ fun ByteBuffer.putString(s: String) {
     }
 }
 
-fun ByteBuffer.indexesOf(prefix: ByteArray): List<Int> {
+fun ByteBuffer.put(buffer: ByteBuffer, offset: Int, length: Int) {
+    val limit = buffer.limit()
+    buffer.position(offset)
+    buffer.limit(offset + length)
+    this.put(buffer)
+    buffer.limit(limit)
+}
+
+fun ByteBuffer.indicesOf(prefix: ByteArray): List<Int> {
     if (prefix.isEmpty()) {
         return emptyList()
     }
 
-    val indexes = mutableListOf<Int>()
+    val indices = mutableListOf<Int>()
 
     outer@ for (i in 0 until this.limit() - prefix.size + 1) {
         for (j in prefix.indices) {
@@ -63,9 +77,9 @@ fun ByteBuffer.indexesOf(prefix: ByteArray): List<Int> {
                 continue@outer
             }
         }
-        indexes.add(i)
+        indices.add(i)
     }
-    return indexes
+    return indices
 }
 
 /**
@@ -76,7 +90,7 @@ fun ByteBuffer.slices(prefix: ByteArray): List<ByteBuffer> {
     val slices = mutableListOf<Pair<Int, Int>>()
 
     // Get all occurrence of prefix in buffer
-    val indexes = this.indexesOf(prefix)
+    val indexes = this.indicesOf(prefix)
     // Get slices
     indexes.forEachIndexed { index, i ->
         val nextPosition = if (indexes.indices.contains(index + 1)) {
@@ -117,4 +131,23 @@ fun ByteBuffer.extractArray(): ByteArray {
         this.get(byteArray)
         byteArray
     }
+}
+
+fun ByteBuffer.extractRbsp(headerLength: Int): ByteBuffer {
+    val rbsp = ByteBuffer.allocateDirect(this.remaining())
+
+    val indices = this.indicesOf(byteArrayOf(0x00, 0x00, 0x03))
+
+    rbsp.put(this, this.getStartCodeSize(), headerLength)
+
+    var previous = this.position()
+    indices.forEach {
+        rbsp.put(this, previous, it + 2 - previous)
+        previous = it + 3 // skip emulation_prevention_three_byte
+    }
+    rbsp.put(this, previous, this.limit() - previous)
+
+    rbsp.limit(rbsp.position())
+    rbsp.rewind()
+    return rbsp
 }

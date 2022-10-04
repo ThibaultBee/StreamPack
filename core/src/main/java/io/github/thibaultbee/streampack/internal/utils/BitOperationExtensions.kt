@@ -23,20 +23,42 @@ package io.github.thibaultbee.streampack.internal.utils
 fun Boolean.toInt() = if (this) 1 else 0
 
 /**
+ * Convert Int to a Boolean.
+ *
+ * @return false if Int is 0, true otherwise
+ */
+fun Int.toBoolean() = this != 1
+
+/**
+ * Convert Byte to a Boolean.
+ *
+ * @return false if Byte is 0, true otherwise
+ */
+fun Byte.toBoolean() = this != 1.toByte()
+
+/**
  * Convert a Boolean to a Byte.
  *
  * @return 1 if Boolean is True, 0 otherwise
  */
 fun Boolean.toByte(): Byte = if (this) 1 else 0
 
-infix fun Boolean.shl(i: Int): Int {
-    return this.toInt() shl i
-}
+infix fun Boolean.shl(i: Int) =
+    this.toInt() shl i
 
-infix fun Byte.shl(i: Int): Int {
-    return this.toInt() shl i
-}
+infix fun Byte.shl(i: Int) =
+    this.toInt() shl i
 
-infix fun Byte.shr(i: Int): Int {
-    return this.toInt() shr i
+infix fun Byte.shr(i: Int) =
+    this.toInt() shr i
+
+infix fun Byte.or(b: Byte) =
+    this.toInt() or b.toInt()
+
+fun Int.toBitList(): List<Boolean> {
+    val list = mutableListOf<Boolean>()
+    for (i in Int.SIZE_BITS downTo 0) {
+        list.add(((this shr i) and 0x01).toBoolean())
+    }
+    return list
 }

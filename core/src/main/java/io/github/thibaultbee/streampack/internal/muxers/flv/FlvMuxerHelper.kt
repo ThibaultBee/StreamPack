@@ -41,7 +41,12 @@ class VideoFlvMuxerHelper : IVideoMuxerHelper {
                 } catch (e: Exception) {
                     null
                 }
-            }.filter { listOf(MediaFormat.MIMETYPE_VIDEO_AVC).contains(it) }
+            }.filter {
+                listOf(
+                    MediaFormat.MIMETYPE_VIDEO_AVC,
+                    MediaFormat.MIMETYPE_VIDEO_HEVC
+                ).contains(it)
+            }
         }
 }
 

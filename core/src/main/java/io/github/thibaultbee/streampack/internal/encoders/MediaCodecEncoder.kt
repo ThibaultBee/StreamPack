@@ -243,7 +243,10 @@ abstract class MediaCodecEncoder<T>(
              * They all start with a start code 0x00000001.
              */
             if (format.getString(MediaFormat.KEY_MIME) == MediaFormat.MIMETYPE_VIDEO_HEVC) {
-                extra.addAll(it.slices(byteArrayOf(0x00, 0x00, 0x00, 0x01)))
+                val parameterSets = it.slices(byteArrayOf(0x00, 0x00, 0x00, 0x01))
+                extra.add(parameterSets[1]) // SPS
+                extra.add(parameterSets[0]) // PPS
+                extra.add(parameterSets[2]) // VPS
             } else {
                 extra.add(it.duplicate())
             }

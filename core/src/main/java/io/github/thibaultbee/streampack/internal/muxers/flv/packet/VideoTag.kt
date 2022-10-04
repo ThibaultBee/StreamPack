@@ -17,6 +17,8 @@ package io.github.thibaultbee.streampack.internal.muxers.flv.packet
 
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.VideoConfig
+import io.github.thibaultbee.streampack.internal.utils.av.video.avc.AVCDecoderConfigurationRecord
+import io.github.thibaultbee.streampack.internal.utils.av.video.hevc.HEVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.internal.utils.av.video.getStartCodeSize
 import io.github.thibaultbee.streampack.internal.utils.av.video.removeStartCode
 import io.github.thibaultbee.streampack.internal.utils.put
@@ -52,6 +54,13 @@ class VideoTag(
                 require(buffers.size == 2) { "Both SPS and PPS are expected in sequence mode" }
             }
         }
+        if (videoConfig.mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC) {
+            if (!isSequenceHeader) {
+                require(buffers.size == 1) { "Only one buffer is expected for raw frame" }
+            } else {
+                require(buffers.size == 3) { "Both SPS, PPS and VPS are expected in sequence mode" }
+            }
+        }
     }
 
     override fun writeTagHeader(buffer: ByteBuffer) {
@@ -64,7 +73,9 @@ class VideoTag(
             (frameType.value shl 4) or // Frame Type
                     (CodecID.fromMimeType(videoConfig.mimeType).value) // CodecId
         )
-        if (videoConfig.mimeType == MediaFormat.MIMETYPE_VIDEO_AVC) {
+        if ((videoConfig.mimeType == MediaFormat.MIMETYPE_VIDEO_AVC)
+            || (videoConfig.mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC)
+        ) {
             if (isSequenceHeader) {
                 buffer.put(AVCPacketType.SEQUENCE.value) // AVC sequence header
             } else {
@@ -78,7 +89,9 @@ class VideoTag(
 
     private fun computeHeaderSize(): Int {
         var size = VIDEO_TAG_HEADER_SIZE
-        if (videoConfig.mimeType == MediaFormat.MIMETYPE_VIDEO_AVC) {
+        if ((videoConfig.mimeType == MediaFormat.MIMETYPE_VIDEO_AVC)
+            || (videoConfig.mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC)
+        ) {
             size += 4 // AVCPacketType & CompositionTime
         }
         return size
@@ -88,10 +101,15 @@ class VideoTag(
         if (isSequenceHeader) {
             when (videoConfig.mimeType) {
                 MediaFormat.MIMETYPE_VIDEO_AVC -> {
-                    AVCDecoderConfigurationRecord(buffers[0], buffers[1]).write(buffer)
+                    AVCDecoderConfigurationRecord.fromParameterSets(buffers[0], buffers[1])
+                        .write(buffer)
                 }
                 MediaFormat.MIMETYPE_VIDEO_HEVC -> {
-                    HEVCDecoderConfigurationRecord(buffers[0], buffers[1], buffers[2]).write(buffer)
+                    HEVCDecoderConfigurationRecord.fromParameterSets(
+                        buffers[0],
+                        buffers[1],
+                        buffers[2]
+                    ).write(buffer)
                 }
                 else -> {
                     throw IOException("Mimetype ${videoConfig.mimeType} is not supported")
@@ -141,7 +159,7 @@ enum class CodecID(val value: Int) {
     VP6_ALPHA(5),
     SCREEN_2(6),
     AVC(7),
-    HEVC(12);
+    HEVC(12); // Not standards
 
     fun toMimeType() = when (this) {
         SORENSON_H263 -> MediaFormat.MIMETYPE_VIDEO_H263

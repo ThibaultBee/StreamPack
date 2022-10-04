@@ -59,16 +59,20 @@ class RtmpProducer(
     }
 
     override fun disconnect() {
-        socket.close()
-        _isConnected = false
-        socket = Rtmp()
+        synchronized(this) {
+            socket.close()
+            _isConnected = false
+            socket = Rtmp()
+        }
     }
 
     override fun write(packet: Packet) {
         if (isOnError) return
 
         try {
-            socket.write(packet.buffer)
+            synchronized(this) {
+                socket.write(packet.buffer)
+            }
         } catch (e: SocketException) {
             disconnect()
             isOnError = true
