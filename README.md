@@ -12,7 +12,7 @@ Get StreamPack core latest artifacts on mavenCentral:
 
 ```groovy
 dependencies {
-    implementation 'io.github.thibaultbee:streampack:2.4.0'
+    implementation 'io.github.thibaultbee:streampack:2.4.1'
 }
 ```
 
@@ -20,7 +20,7 @@ If you want to use RTMP, you need to add the following dependency:
 
 ```groovy
 dependencies {
-    implementation 'io.github.thibaultbee:streampack-extension-rtmp:2.4.0'
+    implementation 'io.github.thibaultbee:streampack-extension-rtmp:2.4.1'
 }
 ```
 
@@ -28,11 +28,11 @@ If you want to use SRT, you need to add the following dependency:
 
 ```groovy
 dependencies {
-    implementation 'io.github.thibaultbee:streampack-extension-srt:2.4.0'
+    implementation 'io.github.thibaultbee:streampack-extension-srt:2.4.1'
 }
 ```
 
-If you use both RTMP and SRT, you migh have a conflict with libssl.so and libcrypto.so because they
+If you use both RTMP and SRT, you might have a conflict with libssl.so and libcrypto.so because they
 are both includes in native dependencies. To solve this, you can add in your `build.gradle`:
 
 ```groovy

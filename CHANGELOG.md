@@ -1,6 +1,17 @@
 Change Log
 ==========
 
+Version 2.4.1
+-------------
+
+## Features:
+
+- Add sources in release packages
+
+## Bug fixes:
+
+- Fix a crash in rtmpdroid in stopStream (in nativeClose)
+
 Version 2.4.0
 -------------
 
