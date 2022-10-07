@@ -42,9 +42,8 @@ def getRepositoryPassword() {
 
 android {
     publishing {
-        multipleVariants {
+        singleVariant("release") {
             withSourcesJar()
-            allVariants()
         }
     }
 }
