@@ -58,7 +58,7 @@ android {
     * Processing: Noise suppressor or echo cancellation
     * Audio only mode
     * Device audio capabilities
-* Network: RTMP or SRT
+* Network: RTMP/RTMPS or SRT
     * Ultra low-latency based on [SRT](https://github.com/Haivision/srt)
     * Network adaptive bitrate mechanism for [SRT](https://github.com/Haivision/srt)
 
