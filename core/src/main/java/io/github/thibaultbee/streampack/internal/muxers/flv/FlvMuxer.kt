@@ -41,6 +41,7 @@ class FlvMuxer(
     private val hasVideo: Boolean
         get() = streams.any { it.mimeType.isVideo() }
     private var startUpTime: Long? = null
+    private var hasFirstFrame = false
 
     init {
         initialStreams?.let { streams.addAll(it) }
@@ -49,6 +50,26 @@ class FlvMuxer(
     override var manageVideoOrientation: Boolean = false
 
     override fun encode(frame: Frame, streamPid: Int) {
+        if (!hasFirstFrame) {
+            // Wait for first frame
+            if (hasVideo) {
+                // Expected first video key frame
+                if (frame.mimeType.isVideo() && frame.isKeyFrame) {
+                    startUpTime = frame.pts
+                    hasFirstFrame = true
+                } else {
+                    return
+                }
+            } else {
+                // Audio only
+                startUpTime = frame.pts
+                hasFirstFrame = true
+            }
+        }
+        if (frame.pts < startUpTime!!) {
+            return
+        }
+
         frame.pts -= startUpTime!!
         val flvTags = FlvTagFactory(frame, true, streams[streamPid]).build()
         flvTags.forEach {
@@ -86,12 +107,11 @@ class FlvMuxer(
                 TimeUtils.currentTime()
             )
         )
-
-        startUpTime = TimeUtils.currentTime()
     }
 
     override fun stopStream() {
         startUpTime = null
+        hasFirstFrame = false
         streams.clear()
     }
 
