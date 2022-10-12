@@ -1,6 +1,17 @@
 Change Log
 ==========
 
+Version 2.4.2
+-------------
+
+## Experimental:
+
+- Add HEVC for RTMP
+
+## Bug fixes:
+
+- flv: First frame timestamp must be at 0
+
 Version 2.4.1
 -------------
 
