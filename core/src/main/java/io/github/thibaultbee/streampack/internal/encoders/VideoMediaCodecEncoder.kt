@@ -85,10 +85,17 @@ class VideoMediaCodecEncoder(
         _bitrate = videoConfig.startBitrate
 
         videoFormat.setInteger(MediaFormat.KEY_FRAME_RATE, videoConfig.fps)
-        videoFormat.setInteger(
-            MediaFormat.KEY_COLOR_FORMAT,
-            MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
-        )
+        if (useSurfaceMode) {
+            videoFormat.setInteger(
+                MediaFormat.KEY_COLOR_FORMAT,
+                MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
+            )
+        } else {
+            videoFormat.setInteger(
+                MediaFormat.KEY_COLOR_FORMAT,
+                MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible
+            )
+        }
         videoFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1) // 1s between I frame
 
         if (useConfigProfileLevel) {
