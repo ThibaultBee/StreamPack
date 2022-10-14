@@ -124,7 +124,9 @@ class StreamerFactory(
             mimeType = configuration.video.encoder,
             startBitrate = configuration.video.bitrate * 1000, // to b/s
             resolution = configuration.video.resolution,
-            fps = configuration.video.fps
+            fps = configuration.video.fps,
+            profile = configuration.video.profile,
+            level = configuration.video.level
         )
 
         val audioConfig = AudioConfig(

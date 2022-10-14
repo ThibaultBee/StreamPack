@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.app.ui.settings
 
 import android.media.AudioFormat
+import android.media.MediaCodecInfo.CodecProfileLevel
 import android.media.MediaFormat
 import android.os.Bundle
 import android.text.InputFilter
@@ -27,6 +28,9 @@ import io.github.thibaultbee.streampack.app.models.EndpointType
 import io.github.thibaultbee.streampack.app.models.FileExtension
 import io.github.thibaultbee.streampack.app.utils.DialogUtils
 import io.github.thibaultbee.streampack.app.utils.StreamerHelperFactory
+import io.github.thibaultbee.streampack.app.utils.toString
+import io.github.thibaultbee.streampack.data.VideoConfig
+import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
 import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationHelper
 import io.github.thibaultbee.streampack.utils.getCameraList
 import io.github.thibaultbee.streampack.utils.isFrameRateSupported
@@ -57,6 +61,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private val videoBitrateSeekBar: SeekBarPreference by lazy {
         this.findPreference(getString(R.string.video_bitrate_key))!!
+    }
+
+    private val videoProfileLevelListPreference: ListPreference by lazy {
+        this.findPreference(getString(R.string.video_profile_level_key))!!
     }
 
     private val audioEnablePreference: SwitchPreference by lazy {
@@ -213,6 +221,20 @@ class SettingsFragment : PreferenceFragmentCompat() {
         streamerHelper.video.getSupportedBitrates(encoder).run {
             videoBitrateSeekBar.min = maxOf(videoBitrateSeekBar.min, lower / 1000) // to kb/s
             videoBitrateSeekBar.max = minOf(videoBitrateSeekBar.max, upper / 1000) // to kb/s
+        }
+
+        // Inflates profile and level
+        val profileLevels = MediaCodecHelper.getProfileLevel(encoder)
+            .map {
+                it.toString(requireContext(), encoder)
+            }.toTypedArray()
+        videoProfileLevelListPreference.entries = profileLevels
+        videoProfileLevelListPreference.entryValues = profileLevels
+        if (videoProfileLevelListPreference.entry == null) {
+            videoProfileLevelListPreference.value = CodecProfileLevel().apply {
+                profile = VideoConfig.getBestProfile(encoder)
+                level = VideoConfig.getBestLevel(encoder, profile)
+            }.toString(requireContext(), encoder)
         }
     }
 

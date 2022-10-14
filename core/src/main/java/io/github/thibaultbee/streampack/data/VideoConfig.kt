@@ -17,13 +17,14 @@ package io.github.thibaultbee.streampack.data
 
 import android.content.Context
 import android.media.MediaCodecInfo.CodecProfileLevel
+import android.media.MediaCodecInfo.CodecProfileLevel.*
 import android.media.MediaFormat
-import android.os.Build
 import android.util.Size
+import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
 import io.github.thibaultbee.streampack.internal.utils.isPortrait
 import io.github.thibaultbee.streampack.internal.utils.isVideo
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
-import java.io.IOException
+import java.security.InvalidParameterException
 
 /**
  * Video configuration class.
@@ -56,16 +57,44 @@ class VideoConfig(
      * Video encoder profile. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile.
      * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
      */
-    val profile: Int = getDefaultProfile(mimeType),
+    val profile: Int = getBestProfile(mimeType),
     /**
      * Video encoder level. Encoders may not support requested level. In this case, StreamPack fallbacks to default level.
      * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
      */
-    val level: Int = getDefaultLevel(mimeType)
+    val level: Int = getBestLevel(mimeType, profile)
 ) : Config(mimeType, startBitrate) {
     init {
         require(mimeType.isVideo()) { "MimeType must be video" }
     }
+
+    constructor(
+        /**
+         * Video encoder mime type.
+         * Only [MediaFormat.MIMETYPE_VIDEO_AVC] and [MediaFormat.MIMETYPE_VIDEO_HEVC] are supported yet.
+         *
+         * **See Also:** [MediaFormat MIMETYPE_VIDEO_*](https://developer.android.com/reference/android/media/MediaFormat)
+         */
+        mimeType: String = MediaFormat.MIMETYPE_VIDEO_AVC,
+        /**
+         * Video encoder bitrate in bits/s.
+         */
+        startBitrate: Int = 2000000,
+        /**
+         * Video output resolution in pixel.
+         */
+        resolution: Size = Size(1280, 720),
+        /**
+         * Video framerate.
+         * This is a best effort as few camera can not generate a fixed framerate.
+         */
+        fps: Int = 30,
+        /**
+         * Video encoder profile/level. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile.
+         * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
+         */
+        profileLevel: CodecProfileLevel
+    ) : this(mimeType, startBitrate, resolution, fps, profileLevel.profile, profileLevel.level)
 
     /**
      * Get resolution according to device orientation
@@ -82,22 +111,43 @@ class VideoConfig(
     }
 
     companion object {
-        private fun getDefaultProfile(mimeType: String) =
-            when (mimeType) {
-                MediaFormat.MIMETYPE_VIDEO_AVC -> CodecProfileLevel.AVCProfileHigh
-                MediaFormat.MIMETYPE_VIDEO_HEVC -> CodecProfileLevel.HEVCProfileMain
-                else -> throw IOException("Not supported mime type: $mimeType")
+        // Higher priority first
+        private val avcProfilePriority = listOf(
+            AVCProfileHigh,
+            AVCProfileMain,
+            AVCProfileExtended,
+            AVCProfileBaseline
+        )
+
+        private val hevcProfilePriority = listOf(
+            HEVCProfileMain
+        )
+
+        /**
+         * Return the higher profile with the higher level
+         */
+        fun getBestProfile(mimeType: String): Int {
+            val profilePriority = when (mimeType) {
+                MediaFormat.MIMETYPE_VIDEO_AVC -> avcProfilePriority
+                MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcProfilePriority
+                else -> throw InvalidParameterException("Profile for $mimeType is not supported")
             }
 
-
-        private fun getDefaultLevel(mimeType: String) = when (mimeType) {
-            MediaFormat.MIMETYPE_VIDEO_AVC -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                CodecProfileLevel.AVCLevel62
-            } else {
-                CodecProfileLevel.AVCLevel52
+            val profileLevelList = MediaCodecHelper.getProfileLevel(mimeType)
+            for (profile in profilePriority) {
+                if (profileLevelList.any { it.profile == profile }) {
+                    return profile
+                }
             }
-            MediaFormat.MIMETYPE_VIDEO_HEVC -> CodecProfileLevel.HEVCMainTierLevel62
-            else -> throw IOException("Not supported mime type: $mimeType")
+
+            throw UnsupportedOperationException("Failed to find a profile for $mimeType")
+        }
+
+        fun getBestLevel(mimeType: String, profile: Int): Int {
+            val profileLevelList = MediaCodecHelper.getProfileLevel(mimeType)
+            return profileLevelList
+                .filter { it.profile == profile }
+                .maxOf { it.level }
         }
     }
 }

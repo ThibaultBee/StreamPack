@@ -18,22 +18,29 @@ package io.github.thibaultbee.streampack.app.configuration
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Resources
+import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.util.Range
 import android.util.Size
 import androidx.preference.PreferenceManager
 import io.github.thibaultbee.streampack.app.R
 import io.github.thibaultbee.streampack.app.models.EndpointType
+import io.github.thibaultbee.streampack.app.utils.ProfileLevelDisplay
 
 class Configuration(context: Context) {
     private val sharedPref = PreferenceManager.getDefaultSharedPreferences(context)
     private val resources = context.resources
-    val video = Video(sharedPref, resources)
+    private val profileLevelDisplay = ProfileLevelDisplay(context)
+    val video = Video(sharedPref, resources, profileLevelDisplay)
     val audio = Audio(sharedPref, resources)
     val muxer = Muxer(sharedPref, resources)
     val endpoint = Endpoint(sharedPref, resources)
 
-    class Video(private val sharedPref: SharedPreferences, private val resources: Resources) {
+    class Video(
+        private val sharedPref: SharedPreferences,
+        private val resources: Resources,
+        private val profileLevelDisplay: ProfileLevelDisplay
+    ) {
         var enable: Boolean = true
             get() = sharedPref.getBoolean(resources.getString(R.string.video_enable_key), field)
 
@@ -61,6 +68,28 @@ class Configuration(context: Context) {
 
         var bitrate: Int = 2000
             get() = sharedPref.getInt(resources.getString(R.string.video_bitrate_key), field)
+
+        var profile: Int = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline
+            get() {
+                val profileName =
+                    sharedPref.getString(resources.getString(R.string.video_profile_level_key), null)
+                        ?.let { it.split("/")[0] } ?: profileLevelDisplay.getProfileName(
+                        encoder,
+                        field
+                    )
+                return profileLevelDisplay.getProfile(encoder, profileName)
+            }
+
+        var level: Int = MediaCodecInfo.CodecProfileLevel.AVCLevel1
+            get() {
+                val levelName =
+                    sharedPref.getString(resources.getString(R.string.video_profile_level_key), null)
+                        ?.let { it.split("/")[1] } ?: profileLevelDisplay.getLevelName(
+                        encoder,
+                        field
+                    )
+                return profileLevelDisplay.getLevel(encoder, levelName)
+            }
     }
 
     class Audio(private val sharedPref: SharedPreferences, private val resources: Resources) {
