@@ -58,6 +58,7 @@ class VideoMediaCodecEncoder(
         mediaCodec = try {
             createVideoCodec(config, true)
         } catch (e: MediaCodec.CodecException) {
+            logger.i(this, "Fallback with default profile and level")
             createVideoCodec(config, false)
         }.apply { codecSurface?.surface = createInputSurface() }
     }

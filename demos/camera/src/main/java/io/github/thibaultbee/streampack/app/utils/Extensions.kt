@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.app.utils
 
 import android.content.ContentValues
 import android.content.Context
+import android.media.MediaCodecInfo
 import android.os.Build
 import android.provider.MediaStore
 import java.io.OutputStream
@@ -44,4 +45,14 @@ fun Context.createVideoMediaOutputStream(name: String): OutputStream? {
         ?: throw Exception("Unable to create video file")
 
     return resolver.openOutputStream(video)
+}
+
+fun MediaCodecInfo.CodecProfileLevel.toString(context: Context, mimeType: String): String {
+    val profileLevelDisplay = ProfileLevelDisplay(context)
+    return "${
+        profileLevelDisplay.getProfileName(
+            mimeType,
+            profile
+        )
+    }/${profileLevelDisplay.getLevelName(mimeType, level)}"
 }

@@ -40,6 +40,11 @@
                 app:title="@string/video_bitrate"
                 app:useSimpleSummaryProvider="true" />
 
+            <ListPreference
+                app:key="@string/video_profile_level_key"
+                app:title="@string/video_profile_level"
+                app:useSimpleSummaryProvider="true" />
+
         </PreferenceCategory>
 
     </PreferenceCategory>
@@ -101,7 +106,7 @@
         </PreferenceCategory>
 
     </PreferenceCategory>
-    
+
     <PreferenceCategory app:title="@string/endpoint">
         <ListPreference
             app:defaultValue="2"
