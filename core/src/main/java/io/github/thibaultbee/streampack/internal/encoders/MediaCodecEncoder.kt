@@ -21,6 +21,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
+import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.events.EventHandler
@@ -32,19 +33,23 @@ import io.github.thibaultbee.streampack.logger.ILogger
 import java.nio.ByteBuffer
 
 
-abstract class MediaCodecEncoder<T>(
+abstract class MediaCodecEncoder<T : Config>(
     override val encoderListener: IEncoderListener,
     val logger: ILogger
 ) :
-    EventHandler(), IEncoder<T> {
+    EventHandler(), IEncoder<Config> {
     protected var mediaCodec: MediaCodec? = null
+        set(value) {
+            field = value
+            onNewMediaCodec()
+        }
     private var callbackThread: HandlerThread? = null
     private var handler: Handler? = null
     private val lock = Object()
     private var isStopped = true
     private var isOnError = false
 
-    protected var _bitrate = 0
+    private var _bitrate = 0
     var bitrate: Int = 0
         get() = _bitrate
         set(value) {
@@ -176,16 +181,21 @@ abstract class MediaCodecEncoder<T>(
         }
     }
 
-    protected fun createCodec(format: MediaFormat): MediaCodec {
+    open fun onNewMediaCodec() {}
+
+    open fun createMediaFormat(config: Config, withProfileLevel: Boolean) =
+        config.getFormat(withProfileLevel)
+
+    private fun createCodec(config: Config, withProfileLevel: Boolean): MediaCodec {
+        val format = createMediaFormat(config, withProfileLevel)
+
         val encoderName = MediaCodecHelper.findEncoder(format)
         logger.i(this, "Selected encoder $encoderName")
-        return MediaCodec.createByCodecName(encoderName)
-    }
+        val codec = MediaCodec.createByCodecName(encoderName)
 
-    protected fun configureCodec(codec: MediaCodec, format: MediaFormat, handlerName: String) {
         // Apply configuration
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            createHandler(handlerName)
+            createHandler("$encoderName.thread")
             codec.setCallback(encoderCallback, handler)
         } else {
             codec.setCallback(encoderCallback)
@@ -195,6 +205,23 @@ abstract class MediaCodecEncoder<T>(
             codec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
         } catch (e: Exception) {
             codec.release()
+            throw e
+        }
+
+        return codec
+    }
+
+    override fun configure(config: Config) {
+        _bitrate = config.startBitrate
+        try {
+            mediaCodec = try {
+                createCodec(config, true)
+            } catch (e: Exception) {
+                logger.i(this, "Fallback without profile and level (reason: ${e})")
+                createCodec(config, false)
+            }
+        } catch (e: Exception) {
+            logger.e(this, "Failed to create encoder for $config")
             throw e
         }
     }

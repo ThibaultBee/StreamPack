@@ -19,6 +19,7 @@ import android.content.Context
 import android.media.MediaCodecInfo.CodecProfileLevel
 import android.media.MediaCodecInfo.CodecProfileLevel.*
 import android.media.MediaFormat
+import android.os.Build
 import android.util.Size
 import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
 import io.github.thibaultbee.streampack.internal.utils.isPortrait
@@ -110,13 +111,42 @@ class VideoConfig(
         }
     }
 
+    /**
+     * Get the media format from the video configuration
+     *
+     * @return the corresponding video media format
+     */
+    override fun getFormat(withProfileLevel: Boolean): MediaFormat {
+        val format = MediaFormat.createVideoFormat(
+            mimeType,
+            resolution.width,
+            resolution.height
+        )
+
+        // Extended video format
+        format.setInteger(MediaFormat.KEY_BIT_RATE, startBitrate)
+        format.setInteger(MediaFormat.KEY_FRAME_RATE, fps)
+        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1) // 1s between I frame
+
+        if (withProfileLevel) {
+            format.setInteger(MediaFormat.KEY_PROFILE, profile)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                format.setInteger(MediaFormat.KEY_LEVEL, level)
+            }
+        }
+
+        return format
+    }
+
     companion object {
         // Higher priority first
         private val avcProfilePriority = listOf(
             AVCProfileHigh,
             AVCProfileMain,
             AVCProfileExtended,
-            AVCProfileBaseline
+            AVCProfileBaseline,
+            AVCProfileConstrainedHigh,
+            AVCProfileConstrainedBaseline
         )
 
         private val hevcProfilePriority = listOf(
@@ -143,12 +173,8 @@ class VideoConfig(
             throw UnsupportedOperationException("Failed to find a profile for $mimeType")
         }
 
-        fun getBestLevel(mimeType: String, profile: Int): Int {
-            val profileLevelList = MediaCodecHelper.getProfileLevel(mimeType)
-            return profileLevelList
-                .filter { it.profile == profile }
-                .maxOf { it.level }
-        }
+        fun getBestLevel(mimeType: String, profile: Int) =
+            MediaCodecHelper.getMaxLevel(mimeType, profile)
     }
 }
 

@@ -60,7 +60,7 @@ class PesTest {
         val expectedBuffers = readFrames("test-samples/muxer/pes-video1")
         Pes(
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
-            Stream(VideoConfig(), 256),
+            Stream(VideoConfig(profile = 0, level = 0), 256),
             true
         ).run {
             write(frame)

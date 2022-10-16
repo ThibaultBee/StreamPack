@@ -18,12 +18,11 @@ package io.github.thibaultbee.streampack.internal.encoders
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.SurfaceTexture
-import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
-import android.os.Build
 import android.util.Size
 import android.view.Surface
+import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.gl.EGlSurface
 import io.github.thibaultbee.streampack.internal.gl.FullFrameRect
@@ -54,38 +53,22 @@ class VideoMediaCodecEncoder(
         null
     }
 
-    override fun configure(config: VideoConfig) {
-        mediaCodec = try {
-            createVideoCodec(config, true)
-        } catch (e: MediaCodec.CodecException) {
-            logger.i(this, "Fallback with default profile and level")
-            createVideoCodec(config, false)
-        }.apply { codecSurface?.surface = createInputSurface() }
+    override fun onNewMediaCodec() {
+        mediaCodec?.let {
+            codecSurface?.surface = it.createInputSurface()
+        }
     }
 
-    private fun createVideoCodec(
-        videoConfig: VideoConfig,
-        useConfigProfileLevel: Boolean
-    ): MediaCodec {
-        val resolution = if (manageVideoOrientation) {
-            videoConfig.getOrientedResolution(context)
-        } else {
-            videoConfig.resolution
+    override fun createMediaFormat(config: Config, withProfileLevel: Boolean): MediaFormat {
+        val videoConfig = config as VideoConfig
+        val videoFormat = super.createMediaFormat(config, withProfileLevel)
+        if (manageVideoOrientation) {
+            // Override previous format
+            val resolution = videoConfig.getOrientedResolution(context)
+            videoFormat.setInteger(MediaFormat.KEY_WIDTH, resolution.width)
+            videoFormat.setInteger(MediaFormat.KEY_HEIGHT, resolution.height)
         }
-        val videoFormat = MediaFormat.createVideoFormat(
-            videoConfig.mimeType,
-            resolution.width,
-            resolution.height
-        )
 
-        // Create codec
-        val codec = createCodec(videoFormat)
-
-        // Extended video format
-        videoFormat.setInteger(MediaFormat.KEY_BIT_RATE, videoConfig.startBitrate)
-        _bitrate = videoConfig.startBitrate
-
-        videoFormat.setInteger(MediaFormat.KEY_FRAME_RATE, videoConfig.fps)
         if (useSurfaceMode) {
             videoFormat.setInteger(
                 MediaFormat.KEY_COLOR_FORMAT,
@@ -97,18 +80,7 @@ class VideoMediaCodecEncoder(
                 MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible
             )
         }
-        videoFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1) // 1s between I frame
-
-        if (useConfigProfileLevel) {
-            videoFormat.setInteger(MediaFormat.KEY_PROFILE, videoConfig.profile)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                videoFormat.setInteger(MediaFormat.KEY_LEVEL, videoConfig.level)
-            }
-        }
-
-        // Apply configuration
-        configureCodec(codec, videoFormat, "VMediaCodecThread")
-        return codec
+        return videoFormat
     }
 
     override fun startStream() {

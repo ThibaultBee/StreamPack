@@ -28,27 +28,40 @@ object MediaCodecHelper {
     private val codecList = MediaCodecList(MediaCodecList.REGULAR_CODECS)
 
     /**
+     * On Build.VERSION_CODES.LOLLIPOP, format must not contain a frame rate.
+     * Use format.setString(MediaFormat.KEY_FRAME_RATE, null) to clear any existing frame
+     * rate setting in the format.
+     */
+    private fun secureMediaFormatAction(
+        format: MediaFormat,
+        action: ((MediaFormat) -> Any?)
+    ): Any? {
+        val frameRate = try {
+            format.getInteger(MediaFormat.KEY_FRAME_RATE)
+        } catch (e: Exception) {
+            null
+        }
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
+            format.setString(MediaFormat.KEY_FRAME_RATE, null)
+        }
+        val result = action(format)
+
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
+            frameRate?.let { format.setInteger(MediaFormat.KEY_FRAME_RATE, it) }
+        }
+
+        return result
+    }
+
+    /**
      * Get the default encoder that matches [format].
      *
      * @param format the media format
      * @return the encoder name
      */
     fun findEncoder(format: MediaFormat): String {
-        val frameRate = format.getString(MediaFormat.KEY_FRAME_RATE)
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
-            /**
-             * On Build.VERSION_CODES.LOLLIPOP, format must not contain a frame rate.
-             * Use format.setString(MediaFormat.KEY_FRAME_RATE, null) to clear any existing frame
-             * rate setting in the format.
-             */
-            format.setString(MediaFormat.KEY_FRAME_RATE, null)
-        }
-        val encoderName = codecList.findEncoderForFormat(format)
-
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
-            format.setString(MediaFormat.KEY_FRAME_RATE, frameRate)
-        }
-        
+        val encoderName =
+            secureMediaFormatAction(format) { codecList.findEncoderForFormat(format) } as String?
         return encoderName ?: throw InvalidParameterException("Failed to create codec for: $format")
     }
 
@@ -103,6 +116,7 @@ object MediaCodecHelper {
      *
      * @param mimeType the video encoder mime type
      * @return the encoder name list
+     * @see getTypesForName
      */
     fun getNamesForType(mimeType: String): List<String> {
         val encoders = mutableListOf<String>()
@@ -116,13 +130,54 @@ object MediaCodecHelper {
     }
 
     /**
+     * Get the encoders for a particular mime type
+     *
+     * @param name the codec name
+     * @return the encoder name list
+     * @see getNamesForType
+     */
+    fun getTypesForName(name: String): List<String> {
+        return getCodecInfo(name).supportedTypes.toList()
+    }
+
+    /**
      * Get the codec info for a particular encoder/decoder
      *
      * @param name the codec name
      * @return the media codec info
      */
-    private fun getCodecInfo(name: String): MediaCodecInfo {
-        return codecList.codecInfos.first { it.name == name }
+    fun getCodecInfo(name: String): MediaCodecInfo = codecList.codecInfos.first { it.name == name }
+
+    /**
+     * Check if codec is hardware accelerated
+     *
+     * @param codecInfo the codec info
+     * @return trie if the codec is hardware accelerated
+     */
+    fun isHardwareAccelerated(codecInfo: MediaCodecInfo): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            return codecInfo.isHardwareAccelerated
+        }
+
+        return !isSoftwareOnly(codecInfo)
+    }
+
+    // From Exoplayer https://github.com/google/ExoPlayer/blob/dev-v2/library/transformer/src/main/java/com/google/android/exoplayer2/transformer/EncoderUtil.java
+    fun isSoftwareOnly(codecInfo: MediaCodecInfo): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            return codecInfo.isSoftwareOnly
+        }
+
+        val codecName: String = codecInfo.name.lowercase()
+        return if (codecName.startsWith("arc.")) {
+            // App Runtime for Chrome (ARC) codecs
+            false
+        } else codecName.startsWith("omx.google.")
+                || codecName.startsWith("omx.ffmpeg.")
+                || codecName.startsWith("omx.sec.") && codecName.contains(".sw.")
+                || codecName == "omx.qcom.video.decoder.hevcswvdec" || codecName.startsWith("c2.android.")
+                || codecName.startsWith("c2.google.")
+                || !codecName.startsWith("omx.") && !codecName.startsWith("c2.")
     }
 
     /**
@@ -131,9 +186,9 @@ object MediaCodecHelper {
      * @param mimeType the encoder mime type
      * @return the encoder capabilities
      */
-    private fun getCapabilities(mimeType: String): MediaCodecInfo.CodecCapabilities {
+    private fun getCodecCapabilities(mimeType: String): MediaCodecInfo.CodecCapabilities {
         val encoderName = findEncoder(mimeType)
-        return getCapabilities(mimeType, encoderName)
+        return getCodecCapabilities(mimeType, encoderName)
     }
 
     /**
@@ -143,7 +198,10 @@ object MediaCodecHelper {
      * @param name the encoder name
      * @return the encoder capabilities
      */
-    private fun getCapabilities(mimeType: String, name: String): MediaCodecInfo.CodecCapabilities {
+    private fun getCodecCapabilities(
+        mimeType: String,
+        name: String
+    ): MediaCodecInfo.CodecCapabilities {
         val codecInfo = getCodecInfo(name)
         return codecInfo.getCapabilitiesForType(
             mimeType
@@ -159,7 +217,7 @@ object MediaCodecHelper {
     fun getProfileLevel(
         mimeType: String,
     ): List<MediaCodecInfo.CodecProfileLevel> =
-        getCapabilities(mimeType).profileLevels.toList()
+        getCodecCapabilities(mimeType).profileLevels.toList()
 
     /**
      * Get encoder supported profile level list for the specified encoder.
@@ -172,7 +230,96 @@ object MediaCodecHelper {
         mimeType: String,
         name: String
     ): List<MediaCodecInfo.CodecProfileLevel> =
-        getCapabilities(mimeType, name).profileLevels.toList()
+        getCodecCapabilities(mimeType, name).profileLevels.toList()
+
+    /**
+     * Get encoder supported profiles list for the default encoder.
+     *
+     * @param mimeType the encoder mime type
+     * @return the profiles list
+     */
+    fun getProfiles(
+        mimeType: String,
+    ): List<Int> =
+        getProfileLevel(mimeType).map { it.profile }
+
+    /**
+     * Get encoder supported profiles list for the specified encoder.
+     *
+     * @param mimeType the encoder mime type
+     * @param name the encoder name
+     * @return the profiles list
+     */
+    fun getProfiles(
+        mimeType: String,
+        name: String
+    ): List<Int> =
+        getProfileLevel(mimeType, name).map { it.profile }
+
+    /**
+     * Get encoder maximum supported levels for the default encoder.
+     *
+     * @param mimeType the encoder mime type
+     * @param profile the encoder profile
+     * @return the maximum level
+     */
+    fun getMaxLevel(
+        mimeType: String,
+        profile: Int
+    ): Int {
+        return getProfileLevel(mimeType)
+            .filter { it.profile == profile }
+            .maxOf { it.level }
+    }
+
+    /**
+     * Get encoder maximum supported levels for the the specified encoder.
+     *
+     * @param mimeType the encoder mime type
+     * @param name the encoder name
+     * @param profile the encoder profile
+     * @return the maximum level
+     */
+    fun getMaxLevel(
+        mimeType: String,
+        name: String,
+        profile: Int
+    ): Int {
+        return getProfileLevel(mimeType, name)
+            .filter { it.profile == profile }
+            .maxOf { it.level }
+    }
+
+    /**
+     * Check if format is supported by default encoder.
+     *
+     * @param format the media format to check
+     * @return true if format is supported, otherwise false
+     */
+    fun isFormatSupported(format: MediaFormat): Boolean {
+        val mimeType = format.getString(MediaFormat.KEY_MIME) as String
+        return secureMediaFormatAction(format) {
+            getCodecCapabilities(mimeType).isFormatSupported(
+                format
+            )
+        } as Boolean
+    }
+
+    /**
+     * Check if format is supported by default encoder.
+     *
+     * @param format the media format to check
+     * @param name the encoder name
+     * @return true if format is supported, otherwise false
+     */
+    fun isFormatSupported(format: MediaFormat, name: String): Boolean {
+        val mimeType = format.getString(MediaFormat.KEY_MIME) as String
+        return secureMediaFormatAction(format) {
+            getCodecCapabilities(mimeType, name).isFormatSupported(
+                format
+            )
+        } as Boolean
+    }
 
     object Video {
         /**
@@ -211,7 +358,7 @@ object MediaCodecHelper {
         ): MediaCodecInfo.VideoCapabilities {
             require(mimeType.isVideo()) { "MimeType must be video" }
 
-            return getCapabilities(mimeType, name).videoCapabilities
+            return getCodecCapabilities(mimeType, name).videoCapabilities
         }
 
         /**
@@ -329,7 +476,7 @@ object MediaCodecHelper {
         ): MediaCodecInfo.AudioCapabilities {
             require(mimeType.isAudio()) { "MimeType must be audio" }
 
-            return getCapabilities(mimeType, name).audioCapabilities
+            return getCodecCapabilities(mimeType, name).audioCapabilities
         }
 
         /**

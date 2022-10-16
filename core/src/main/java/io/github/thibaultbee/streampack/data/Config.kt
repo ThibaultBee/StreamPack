@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.data
 
 import android.media.MediaFormat
+import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 
 /**
@@ -26,7 +27,7 @@ import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
  */
 open class Config(
     /**
-     * Audio encoder mime type.
+     * The encoder mime type.
      * Only [MediaFormat.MIMETYPE_AUDIO_AAC] is supported yet.
      *
      * **See Also:** [MediaFormat MIMETYPE_AUDIO_*](https://developer.android.com/reference/android/media/MediaFormat)
@@ -34,7 +35,65 @@ open class Config(
     val mimeType: String,
 
     /**
-     * Audio encoder bitrate in bits/s.
+     * The encoder bitrate in bits/s.
      */
-    val startBitrate: Int
-)
+    val startBitrate: Int,
+) {
+    /**
+     * Get the media format from the configuration
+     *
+     * @return the corresponding media format
+     */
+    internal open fun getFormat(withProfileLevel: Boolean = true): MediaFormat {
+        return MediaFormat().apply {
+            setString(MediaFormat.KEY_MIME, mimeType)
+            setInteger(MediaFormat.KEY_BIT_RATE, startBitrate)
+        }
+    }
+
+    /**
+     * Check if this configuration is supported by the default encoder.
+     * If format is not supported, it won't be possible to start a stream.
+     *
+     * @return true if format is supported, otherwise false
+     */
+    val isFormatSupported: Boolean by lazy {
+        if (MediaCodecHelper.isFormatSupported(getFormat(true))) {
+            true
+        } else {
+            MediaCodecHelper.isFormatSupported(getFormat(false))
+        }
+    }
+
+    /**
+     * Check if this configuration is supported by the specified encoder.
+     * If format is not supported, it won't be possible to start a stream.
+     *
+     * @return true if format is supported, otherwise false
+     */
+    fun isFormatSupportedForEncoder(name: String): Boolean {
+        return if (MediaCodecHelper.isFormatSupported(getFormat(true), name)) {
+            true
+        } else {
+            MediaCodecHelper.isFormatSupported(getFormat(false), name)
+        }
+    }
+
+    /**
+     * Get default encoder name.
+     * If name is null, it won't be possible to start a stream.
+     *
+     * @return the default encoder name
+     */
+    val defaultEncodeName: String? by lazy {
+        try {
+            MediaCodecHelper.findEncoder(getFormat(true))
+        } catch (_: Exception) {
+            try {
+                MediaCodecHelper.findEncoder(getFormat(false))
+            } catch (_: Exception) {
+                null
+            }
+        }
+    }
+}

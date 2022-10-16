@@ -16,7 +16,9 @@
 package io.github.thibaultbee.streampack.data
 
 import android.media.AudioFormat
+import android.media.MediaCodecInfo
 import android.media.MediaFormat
+import android.os.Build
 import io.github.thibaultbee.streampack.internal.utils.isAudio
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import java.security.InvalidParameterException
@@ -79,6 +81,41 @@ class AudioConfig(
 ) : Config(mimeType, startBitrate) {
     init {
         require(mimeType.isAudio()) { "MimeType must be audio" }
+    }
+
+    /**
+     * Get the media format from the audio configuration
+     *
+     * @return the corresponding audio media format
+     */
+    override fun getFormat(withProfileLevel: Boolean): MediaFormat {
+        val format = MediaFormat.createAudioFormat(
+            mimeType,
+            sampleRate,
+            getNumberOfChannels(channelConfig)
+        )
+
+        // Extended audio format
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            format.setInteger(
+                MediaFormat.KEY_PCM_ENCODING,
+                byteFormat
+            )
+        }
+        format.setInteger(MediaFormat.KEY_BIT_RATE, startBitrate)
+
+        if (withProfileLevel) {
+            if (mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
+                format.setInteger(
+                    MediaFormat.KEY_AAC_PROFILE,
+                    MediaCodecInfo.CodecProfileLevel.AACObjectLC
+                )
+            }
+        }
+
+        format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 0)
+
+        return format
     }
 
     companion object {

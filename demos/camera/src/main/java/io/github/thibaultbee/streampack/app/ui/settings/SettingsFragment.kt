@@ -16,7 +16,6 @@
 package io.github.thibaultbee.streampack.app.ui.settings
 
 import android.media.AudioFormat
-import android.media.MediaCodecInfo.CodecProfileLevel
 import android.media.MediaFormat
 import android.os.Bundle
 import android.text.InputFilter
@@ -27,8 +26,8 @@ import io.github.thibaultbee.streampack.app.models.EndpointFactory
 import io.github.thibaultbee.streampack.app.models.EndpointType
 import io.github.thibaultbee.streampack.app.models.FileExtension
 import io.github.thibaultbee.streampack.app.utils.DialogUtils
+import io.github.thibaultbee.streampack.app.utils.ProfileLevelDisplay
 import io.github.thibaultbee.streampack.app.utils.StreamerHelperFactory
-import io.github.thibaultbee.streampack.app.utils.toString
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
 import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationHelper
@@ -63,8 +62,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
         this.findPreference(getString(R.string.video_bitrate_key))!!
     }
 
-    private val videoProfileLevelListPreference: ListPreference by lazy {
-        this.findPreference(getString(R.string.video_profile_level_key))!!
+    private val videoProfileListPreference: ListPreference by lazy {
+        this.findPreference(getString(R.string.video_profile_key))!!
+    }
+
+    private val videoLevelListPreference: ListPreference by lazy {
+        this.findPreference(getString(R.string.video_level_key))!!
     }
 
     private val audioEnablePreference: SwitchPreference by lazy {
@@ -165,7 +168,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
         if (videoEncoderListPreference.entry == null) {
             videoEncoderListPreference.value = MediaFormat.MIMETYPE_VIDEO_AVC
         }
-
+        videoEncoderListPreference.setOnPreferenceChangeListener { _, newValue ->
+            loadVideoSettings(newValue as String)
+            true
+        }
         loadVideoSettings(videoEncoderListPreference.value)
     }
 
@@ -223,18 +229,51 @@ class SettingsFragment : PreferenceFragmentCompat() {
             videoBitrateSeekBar.max = minOf(videoBitrateSeekBar.max, upper / 1000) // to kb/s
         }
 
-        // Inflates profile and level
-        val profileLevels = MediaCodecHelper.getProfileLevel(encoder)
+        // Inflates profile
+        val profileLevelDisplay = ProfileLevelDisplay(requireContext())
+        val profiles = streamerHelper.video.getSupportedProfiles(encoder)
             .map {
-                it.toString(requireContext(), encoder)
+                profileLevelDisplay.getProfileName(
+                    encoder,
+                    it
+                )
             }.toTypedArray()
-        videoProfileLevelListPreference.entries = profileLevels
-        videoProfileLevelListPreference.entryValues = profileLevels
-        if (videoProfileLevelListPreference.entry == null) {
-            videoProfileLevelListPreference.value = CodecProfileLevel().apply {
-                profile = VideoConfig.getBestProfile(encoder)
-                level = VideoConfig.getBestLevel(encoder, profile)
-            }.toString(requireContext(), encoder)
+        videoProfileListPreference.entries = profiles
+        videoProfileListPreference.entryValues = profiles
+        if (videoProfileListPreference.entry == null) {
+            videoProfileListPreference.value =
+                profileLevelDisplay.getProfileName(encoder, VideoConfig.getBestProfile(encoder))
+        }
+        videoProfileListPreference.setOnPreferenceChangeListener { _, newValue ->
+            loadVideoLevel(encoder, newValue as String)
+            true
+        }
+
+        loadVideoLevel(encoder, videoProfileListPreference.value)
+    }
+
+    private fun loadVideoLevel(encoder: String, profileName: String) {
+        // Inflates level
+        val profileLevelDisplay = ProfileLevelDisplay(requireContext())
+        val profile = profileLevelDisplay.getProfile(encoder, profileName)
+        val levels = profileLevelDisplay.getAllLevelList(encoder)
+            .filter { it <= MediaCodecHelper.getMaxLevel(encoder, profile) }.map {
+                profileLevelDisplay.getLevelName(
+                    encoder,
+                    it
+                )
+            }.toTypedArray()
+
+        videoLevelListPreference.entries = levels
+        videoLevelListPreference.entryValues = levels
+        if (videoLevelListPreference.entry == null) {
+            videoLevelListPreference.value = profileLevelDisplay.getLevelName(
+                encoder,
+                VideoConfig.getBestLevel(
+                    encoder,
+                    profile
+                )
+            )
         }
     }
 

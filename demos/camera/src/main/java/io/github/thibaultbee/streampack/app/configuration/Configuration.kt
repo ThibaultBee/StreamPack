@@ -72,22 +72,22 @@ class Configuration(context: Context) {
         var profile: Int = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline
             get() {
                 val profileName =
-                    sharedPref.getString(resources.getString(R.string.video_profile_level_key), null)
-                        ?.let { it.split("/")[0] } ?: profileLevelDisplay.getProfileName(
-                        encoder,
-                        field
-                    )
+                    sharedPref.getString(resources.getString(R.string.video_profile_key), null)
+                        ?: profileLevelDisplay.getProfileName(
+                            encoder,
+                            field
+                        )
                 return profileLevelDisplay.getProfile(encoder, profileName)
             }
 
         var level: Int = MediaCodecInfo.CodecProfileLevel.AVCLevel1
             get() {
                 val levelName =
-                    sharedPref.getString(resources.getString(R.string.video_profile_level_key), null)
-                        ?.let { it.split("/")[1] } ?: profileLevelDisplay.getLevelName(
-                        encoder,
-                        field
-                    )
+                    sharedPref.getString(resources.getString(R.string.video_level_key), null)
+                        ?: profileLevelDisplay.getLevelName(
+                            encoder,
+                            field
+                        )
                 return profileLevelDisplay.getLevel(encoder, levelName)
             }
     }

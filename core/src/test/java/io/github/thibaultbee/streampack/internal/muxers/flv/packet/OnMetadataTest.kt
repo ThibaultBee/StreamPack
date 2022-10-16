@@ -191,7 +191,7 @@ class OnMetadataTest {
             context,
             false,
             listOf(
-                VideoConfig(resolution = MockUtils.mockSize(640, 480))
+                VideoConfig(resolution = MockUtils.mockSize(640, 480), profile = 0, level = 0)
             )
         )
         val buffer = onMetadata.write()

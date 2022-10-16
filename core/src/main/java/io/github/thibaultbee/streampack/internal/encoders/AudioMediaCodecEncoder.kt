@@ -15,10 +15,6 @@
  */
 package io.github.thibaultbee.streampack.internal.encoders
 
-import android.media.MediaCodec
-import android.media.MediaCodecInfo
-import android.media.MediaFormat
-import android.os.Build
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
@@ -29,42 +25,4 @@ class AudioMediaCodecEncoder(
     override val onInternalErrorListener: OnErrorListener,
     logger: ILogger
 ) :
-    MediaCodecEncoder<AudioConfig>(encoderListener, logger) {
-
-    override fun configure(config: AudioConfig) {
-        mediaCodec = createAudioCodec(config)
-    }
-
-    private fun createAudioCodec(audioConfig: AudioConfig): MediaCodec {
-        val audioFormat = MediaFormat.createAudioFormat(
-            audioConfig.mimeType,
-            audioConfig.sampleRate,
-            AudioConfig.getNumberOfChannels(audioConfig.channelConfig)
-        )
-
-        // Create codec
-        val codec = createCodec(audioFormat)
-
-        // Extended audio format
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            audioFormat.setInteger(
-                MediaFormat.KEY_PCM_ENCODING,
-                audioConfig.byteFormat
-            )
-        }
-        audioFormat.setInteger(MediaFormat.KEY_BIT_RATE, audioConfig.startBitrate)
-        _bitrate = audioConfig.startBitrate
-
-        if (audioConfig.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
-            audioFormat.setInteger(
-                MediaFormat.KEY_AAC_PROFILE,
-                MediaCodecInfo.CodecProfileLevel.AACObjectLC
-            )
-        }
-        audioFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 0)
-
-        configureCodec(codec, audioFormat, "AMediaCodecThread")
-
-        return codec
-    }
-}
+    MediaCodecEncoder<AudioConfig>(encoderListener, logger)
