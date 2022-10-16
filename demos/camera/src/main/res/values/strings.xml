@@ -100,8 +100,8 @@
     <string name="audio_byte_format_16bit">16 bits</string>
     <string name="audio_byte_format_float">Float</string>
 
-    <string name="video_profile_level">Profile and level</string>
-    <string name="video_profile_level_key">video_profile_level_key</string>
+    <string name="video_profile">Profile</string>
+    <string name="video_profile_key">video_profile_key</string>
     <string name="video_profile_baseline">Baseline</string>
     <string name="video_profile_extended">Extended</string>
     <string name="video_profile_main">Main</string>
@@ -115,6 +115,8 @@
     <string name="video_profile_constrained_baseline">Constrained Baseline</string>
     <string name="video_profile_constrained_high">Constrained High</string>
 
+    <string name="video_level">Level</string>
+    <string name="video_level_key">video_level_key</string>
     <string name="video_level_1">Level1</string>
     <string name="video_level_1b">Level1b</string>
     <string name="video_level_11">Level11</string>
@@ -163,6 +165,7 @@
     <string name="video_level_main_level62">MainLevel62</string>
     <string name="video_level_high_level62">HighLevel62</string>
     <string name="video_level_unknown">Unknown level</string>
+
     <plurals name="camera_frame_rate_not_supported">
         <item quantity="one">Camera %1$s does not support %2$d fps</item>
         <item quantity="other">Cameras %1$s do not support %2$d fps</item>

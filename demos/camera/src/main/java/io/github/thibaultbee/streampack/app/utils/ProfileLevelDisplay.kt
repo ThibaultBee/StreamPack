@@ -92,7 +92,7 @@ class ProfileLevelDisplay(context: Context) {
             HEVCMainTierLevel4 to context.getString(R.string.video_level_main_level4),
             HEVCHighTierLevel4 to context.getString(R.string.video_level_high_level4),
             HEVCMainTierLevel41 to context.getString(R.string.video_level_main_level41),
-            HEVCHighTierLevel41 to context.getString(R.string.video_level_main_level41),
+            HEVCHighTierLevel41 to context.getString(R.string.video_level_high_level41),
             HEVCMainTierLevel5 to context.getString(R.string.video_level_main_level5),
             HEVCHighTierLevel5 to context.getString(R.string.video_level_high_level5),
             HEVCMainTierLevel51 to context.getString(R.string.video_level_main_level51),
@@ -104,7 +104,7 @@ class ProfileLevelDisplay(context: Context) {
             HEVCMainTierLevel61 to context.getString(R.string.video_level_main_level61),
             HEVCHighTierLevel61 to context.getString(R.string.video_level_high_level61),
             HEVCMainTierLevel62 to context.getString(R.string.video_level_main_level62),
-            HEVCHighTierLevel62 to context.getString(R.string.video_level_main_level62),
+            HEVCHighTierLevel62 to context.getString(R.string.video_level_high_level62),
         )
 
     fun getProfileName(mimeType: String, profile: Int): String {
@@ -149,5 +149,13 @@ class ProfileLevelDisplay(context: Context) {
             else -> emptyMap()
         }
         return nameMap.entries.find { it.value == name }!!.key
+    }
+
+    fun getAllLevelList(mimeType: String): Set<Int> {
+        return when (mimeType) {
+            MediaFormat.MIMETYPE_VIDEO_AVC -> avcLevelNameMap
+            MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcLevelNameMap
+            else -> emptyMap()
+        }.keys
     }
 }

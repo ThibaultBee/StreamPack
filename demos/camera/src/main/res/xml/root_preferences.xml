@@ -41,10 +41,14 @@
                 app:useSimpleSummaryProvider="true" />
 
             <ListPreference
-                app:key="@string/video_profile_level_key"
-                app:title="@string/video_profile_level"
+                app:key="@string/video_profile_key"
+                app:title="@string/video_profile"
                 app:useSimpleSummaryProvider="true" />
 
+            <ListPreference
+                app:key="@string/video_level_key"
+                app:title="@string/video_level"
+                app:useSimpleSummaryProvider="true" />
         </PreferenceCategory>
 
     </PreferenceCategory>

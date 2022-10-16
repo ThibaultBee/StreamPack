@@ -16,6 +16,8 @@
 package io.github.thibaultbee.streampack.streamers.helpers
 
 import android.media.AudioFormat
+import android.media.MediaCodecInfo.CodecProfileLevel.*
+import android.media.MediaFormat
 import android.util.Range
 import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
 import io.github.thibaultbee.streampack.internal.muxers.IAudioMuxerHelper
@@ -24,6 +26,7 @@ import io.github.thibaultbee.streampack.internal.muxers.IVideoMuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxerHelper
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
+import java.security.InvalidParameterException
 
 /**
  * Configuration helper for [BaseStreamer].
@@ -148,4 +151,34 @@ open class VideoStreamerConfigurationHelper(private val videoMuxerHelper: IVideo
     fun getSupportedFramerate(
         mimeType: String,
     ) = MediaCodecHelper.Video.getFramerateRange(mimeType)
+
+    /**
+     * Get supported profiles for a [BaseStreamer].
+     * Removes profiles for 10 bits and still images.
+     *
+     * @param mimeType video encoder mime type
+     * @return list of profile
+     */
+    fun getSupportedProfiles(mimeType: String): List<Int> {
+        val profiles = when (mimeType) {
+            MediaFormat.MIMETYPE_VIDEO_AVC -> avcProfiles
+            MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcProfiles
+            else -> throw InvalidParameterException("Unknow mimetype $mimeType")
+        }
+        val supportedProfiles = MediaCodecHelper.getProfiles(mimeType)
+        return supportedProfiles.filter { profiles.contains(it) }
+    }
+
+    private val hevcProfiles = listOf(
+        HEVCProfileMain
+    )
+
+    private val avcProfiles = listOf(
+        AVCProfileBaseline,
+        AVCProfileConstrainedBaseline,
+        AVCProfileConstrainedHigh,
+        AVCProfileExtended,
+        AVCProfileHigh,
+        AVCProfileMain
+    )
 }
