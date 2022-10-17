@@ -23,10 +23,10 @@ class StreamerHelperFactory(
 ) {
     fun build(): CameraStreamerConfigurationHelper {
         return when (endpointType) {
-            EndpointType.TS_FILE -> CameraStreamerConfigurationHelper.createTsHelper()
-            EndpointType.FLV_FILE -> CameraStreamerConfigurationHelper.createFlvHelper()
-            EndpointType.SRT -> CameraStreamerConfigurationHelper.createTsHelper()
-            EndpointType.RTMP -> CameraStreamerConfigurationHelper.createFlvHelper()
+            EndpointType.TS_FILE -> CameraStreamerConfigurationHelper.tsHelper
+            EndpointType.FLV_FILE -> CameraStreamerConfigurationHelper.flvHelper
+            EndpointType.SRT -> CameraStreamerConfigurationHelper.tsHelper
+            EndpointType.RTMP -> CameraStreamerConfigurationHelper.flvHelper
         }
     }
 }

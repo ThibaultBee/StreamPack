@@ -37,8 +37,8 @@ import java.security.InvalidParameterException
 open class StreamerConfigurationHelper(muxerHelper: IMuxerHelper) :
     IConfigurationHelper {
     companion object {
-        fun createFlvHelper() = StreamerConfigurationHelper(FlvMuxerHelper())
-        fun createTsHelper() = StreamerConfigurationHelper(TSMuxerHelper())
+        val flvHelper = StreamerConfigurationHelper(FlvMuxerHelper())
+        val tsHelper = StreamerConfigurationHelper(TSMuxerHelper())
     }
 
     override val audio =
