@@ -126,8 +126,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         // Update supported values with a new helper
         streamerHelper = when (endpointType) {
-            EndpointType.SRT -> StreamerConfigurationHelper.createTsHelper()
-            EndpointType.RTMP -> StreamerConfigurationHelper.createFlvHelper()
+            EndpointType.SRT -> StreamerConfigurationHelper.tsHelper
+            EndpointType.RTMP -> StreamerConfigurationHelper.flvHelper
         }
         loadVideoSettings()
         loadAudioSettings()

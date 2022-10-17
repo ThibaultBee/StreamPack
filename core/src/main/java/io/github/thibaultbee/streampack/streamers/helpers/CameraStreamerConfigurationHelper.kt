@@ -33,11 +33,9 @@ import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 class CameraStreamerConfigurationHelper(muxerHelper: IMuxerHelper) :
     StreamerConfigurationHelper(muxerHelper) {
     companion object {
-        fun createFlvHelper() =
-            CameraStreamerConfigurationHelper(FlvMuxerHelper())
+        val flvHelper = CameraStreamerConfigurationHelper(FlvMuxerHelper())
 
-        fun createTsHelper() =
-            CameraStreamerConfigurationHelper(TSMuxerHelper())
+        val tsHelper = CameraStreamerConfigurationHelper(TSMuxerHelper())
     }
 
     override val video = VideoCameraStreamerConfigurationHelper(muxerHelper.video)
