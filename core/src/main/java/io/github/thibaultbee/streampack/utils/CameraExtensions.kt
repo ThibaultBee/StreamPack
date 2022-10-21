@@ -63,6 +63,14 @@ fun Context.getFrontCameraList() =
     getCameraList().filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_FRONT }
 
 /**
+ * Gets external camera list.
+ *
+ * @return List of external camera ids
+ */
+fun Context.getExternalCameraList() =
+    getCameraList().filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_EXTERNAL }
+
+/**
  * Check if string is a back camera id
  *
  * @return true if string is a back camera id, otherwise false
