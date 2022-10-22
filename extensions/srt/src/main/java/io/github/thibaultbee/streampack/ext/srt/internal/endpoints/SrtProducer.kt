@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.ext.srt.internal.endpoints
 
+import android.net.Uri
 import io.github.thibaultbee.srtdroid.Srt
 import io.github.thibaultbee.srtdroid.enums.Boundary
 import io.github.thibaultbee.srtdroid.enums.ErrorType
@@ -34,7 +35,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.ConnectException
 import java.net.InetSocketAddress
-import java.net.URI
+import java.security.InvalidParameterException
 
 class SrtProducer(
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -59,6 +60,7 @@ class SrtProducer(
 
     /**
      * Get/set SRT stream passPhrase
+     * It is a set only parameter, so getting the value throws an exception.
      */
     var passPhrase: String
         get() = socket.getSockFlag(SockOpt.PASSPHRASE) as String
@@ -79,12 +81,21 @@ class SrtProducer(
 
     override suspend fun connect(url: String) {
         withContext(coroutineDispatcher) {
-            val netUrl = URI(url)
-            connect(netUrl.host, netUrl.port)
+            val uri = Uri.parse(url)
+            if (uri.scheme != "srt") {
+                throw InvalidParameterException("URL $url is not an srt URL")
+            }
+            uri.getQueryParameter("streamid")?.let { streamId = it }
+            uri.getQueryParameter("passphrase")?.let { passPhrase = it }
+            uri.host?.let { connect(it, uri.port) }
+                ?: throw InvalidParameterException("Failed to parse URL $url: unknown host")
         }
     }
 
     suspend fun connect(ip: String, port: Int) = withContext(coroutineDispatcher) {
+        if (ip.isBlank()) {
+            throw InvalidParameterException("Invalid IP $ip")
+        }
         try {
             socket.listener = object : SocketListener {
                 override fun onConnectionLost(
