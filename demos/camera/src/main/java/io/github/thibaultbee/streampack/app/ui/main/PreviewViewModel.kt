@@ -145,6 +145,8 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
          */
         try {
             streamerManager.toggleCamera()
+
+
             notifyCameraChange()
         } catch (e: Exception) {
             Log.e(TAG, "toggleCamera failed", e)

@@ -15,7 +15,9 @@
  */
 package io.github.thibaultbee.streampack.utils
 
+import android.R.bool
 import android.content.Context
+import android.content.pm.PackageManager
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureResult
@@ -24,6 +26,7 @@ import android.util.Range
 import android.util.Rational
 import android.util.Size
 import io.github.thibaultbee.streampack.internal.sources.camera.getCameraFpsList
+
 
 /**
  * Get camera characteristics.
@@ -43,6 +46,8 @@ fun Context.getCameraCharacteristics(cameraId: String): CameraCharacteristics {
  */
 fun Context.getCameraList(): List<String> {
     val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+    supportsExternalCameras()
+    println("CAMERA- all - ${cameraManager.cameraIdList.toList().size}")
     return cameraManager.cameraIdList.toList()
 }
 
@@ -69,6 +74,17 @@ fun Context.getFrontCameraList() =
  */
 fun Context.getExternalCameraList() =
     getCameraList().filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_EXTERNAL }
+
+
+/**
+ * Return true if this kernel supports external cameras, false otherwise.
+ */
+fun Context.supportsExternalCameras(): Boolean? {
+    val response = this.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_EXTERNAL)
+
+    println("CAMERA- external access - $response")
+    return response
+}
 
 /**
  * Check if string is a back camera id
