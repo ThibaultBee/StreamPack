@@ -46,8 +46,9 @@ import io.github.thibaultbee.streampack.utils.getStreamer
  *
  * To customise this service, you have to extend this class.
  *
- * In your AndroidManifest, you have to add
+ * In your AndroidManifest, you have to add:
  *     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+ *     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
  * ...
  *     <service
  *          android:name=".YourScreenRecorderService"
