@@ -20,7 +20,6 @@ import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import io.github.thibaultbee.streampack.utils.AndroidUtils
-import io.github.thibaultbee.streampack.utils.FakeAndroidLogger
 import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Test
@@ -119,7 +118,7 @@ abstract class StreamerTestCase {
                 AndroidUtils.fakeValidVideoConfig()
             )
             fail("Invalid configuration must throw an exception")
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
     }
 
@@ -128,7 +127,7 @@ abstract class StreamerTestCase {
         try {
             streamer.startStream()
             fail("startStream without configuration must throw an exception")
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
     }
 
@@ -162,7 +161,7 @@ abstract class StreamerTestCase {
             )
             streamer.startStream()
             fail("startStream without startPreview must failed")
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
     }
 
