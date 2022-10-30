@@ -186,6 +186,10 @@ class PreviewFragment : Fragment() {
             override fun onPreviewStarted() {
                 viewModel.onPreviewStarted()
             }
+
+            override fun onZoomRationOnPinchChanged(zoomRatio: Float) {
+                viewModel.onZoomRationOnPinchChanged()
+            }
         }
 
         // Wait till streamer exists to set it to the SurfaceView.
