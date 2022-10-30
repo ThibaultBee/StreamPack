@@ -117,17 +117,19 @@ side, you should be able to watch this live stream.
 As a camera preview, you can use a `SurfaceView`, a `TextureView` or any
 `View` where that can provide a `Surface`.
 
-To simplify integration, StreamPack provides an `AutoFitSurfaceView`.
+To simplify integration, StreamPack provides an `StreamerSurfaceView`.
 
 ```xml
 
 <layout>
-    <io.github.thibaultbee.streampack.views.AutoFitSurfaceView
-            android:id="@+id/preview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+    <io.github.thibaultbee.streampack.views.StreamerSurfaceView 
+        android:id="@+id/preview"
+        android:layout_width="match_parent" 
+        android:layout_height="match_parent"
+        app:cameraFacingDirection="back" />
 </layout>
 ```
+`app:cameraFacingDirection` can be `back` or `front`.
 
 3. Instantiates the streamer (main live streaming class)
 
@@ -153,13 +155,13 @@ val videoConfig = VideoConfig(
 streamer.configure(audioConfig, videoConfig)
 ```
 
-5. Starts the camera preview
+5. Inflate the camera preview with the streamer
 
 ```kotlin
 /**
  * preview: where to display preview. Its could be a SurfaceView, a TextureView,...
  */
-streamer.startPreview(preview) 
+preview.streamer = streamer
 ```
 
 6. Starts the live streaming
@@ -173,7 +175,7 @@ streamer.startStream(ip, port)
 ```kotlin
 streamer.stopStream()
 streamer.disconnect()
-streamer.stopPreview()
+streamer.stopPreview() // The StreamerSurfaceView will be automatically stop the preview
 streamer.release()
 ```
 

@@ -18,7 +18,6 @@ package io.github.thibaultbee.streampack.app.utils
 import android.Manifest
 import android.content.Context
 import android.os.Build
-import android.view.SurfaceHolder
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.app.configuration.Configuration
 import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
@@ -28,6 +27,7 @@ import io.github.thibaultbee.streampack.streamers.StreamerLifeCycleObserver
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
 import io.github.thibaultbee.streampack.utils.*
+import io.github.thibaultbee.streampack.views.StreamerSurfaceView
 import java.io.File
 
 
@@ -35,7 +35,7 @@ class StreamerManager(
     private val context: Context,
     private val configuration: Configuration
 ) {
-    private var streamer: IStreamer? = null
+    var streamer: IStreamer? = null
 
     var onErrorListener: OnErrorListener?
         get() = streamer?.onErrorListener
@@ -79,13 +79,8 @@ class StreamerManager(
         streamer = StreamerFactory(context, configuration).build()
     }
 
-    @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-    fun startPreview(surfaceHolder: SurfaceHolder) {
-        streamer?.getCameraStreamer()?.startPreview(surfaceHolder)
-    }
-
-    fun stopPreview() {
-        streamer?.getCameraStreamer()?.stopPreview()
+    fun inflateStreamerView(view: StreamerSurfaceView) {
+        view.streamer = streamer?.getCameraStreamer()
     }
 
     suspend fun startStream() {
