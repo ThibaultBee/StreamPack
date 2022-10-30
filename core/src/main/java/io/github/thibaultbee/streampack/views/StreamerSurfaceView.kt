@@ -16,10 +16,14 @@
 package io.github.thibaultbee.streampack.views
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.AttributeSet
 import android.util.Log
+import android.view.MotionEvent
+import android.view.ScaleGestureDetector
+import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
 import android.view.SurfaceHolder
 import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.R
@@ -43,6 +47,8 @@ open class StreamerSurfaceView @JvmOverloads constructor(
     private val cameraFacingDirection: FacingDirection
     private val defaultCameraId: String?
 
+    var enableZoomOnPinch: Boolean
+
     var streamer: ICameraStreamer? = null
         /**
          * Set the [ICameraStreamer] to use.
@@ -59,6 +65,11 @@ open class StreamerSurfaceView @JvmOverloads constructor(
      * The [Listener] to listen to specific view events.
      */
     var listener: Listener? = null
+
+    private val pinchGesture = ScaleGestureDetector(
+        context,
+        PinchToZoomOnScaleGestureListener()
+    )
 
     init {
         holder.addCallback(StreamerHolderCallback())
@@ -77,9 +88,24 @@ open class StreamerSurfaceView @JvmOverloads constructor(
                     context.getBackCameraList().firstOrNull()
                 }
             }
+
+            enableZoomOnPinch =
+                a.getBoolean(R.styleable.StreamerSurfaceView_enableZoomOnPinch, true)
         } finally {
             a.recycle()
         }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (streamer == null) {
+            return super.onTouchEvent(event)
+        }
+
+        if (enableZoomOnPinch) {
+            pinchGesture.onTouchEvent(event)
+        }
+        return true
     }
 
     private fun startPreviewIfReady(shouldFailSilently: Boolean = false) {
@@ -145,8 +171,21 @@ open class StreamerSurfaceView @JvmOverloads constructor(
         }
     }
 
+    private inner class PinchToZoomOnScaleGestureListener :
+        SimpleOnScaleGestureListener() {
+        override fun onScale(detector: ScaleGestureDetector): Boolean {
+            streamer?.settings?.camera?.zoom?.let {
+                it.onPinch(detector.scaleFactor)
+                listener?.onZoomRationOnPinchChanged(it.zoomRatio)
+            }
+            return true
+        }
+    }
+
+
     interface Listener {
-        fun onPreviewStarted()
+        fun onPreviewStarted() {}
+        fun onZoomRationOnPinchChanged(zoomRatio: Float) {}
     }
 }
 
@@ -160,3 +199,4 @@ enum class FacingDirection(val value: String) {
         }
     }
 }
+

@@ -78,6 +78,10 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
         notifyCameraChange()
     }
 
+    fun onZoomRationOnPinchChanged() {
+        notifyPropertyChanged(BR.zoomRatio)
+    }
+
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun createStreamer() {
         viewModelScope.launch {

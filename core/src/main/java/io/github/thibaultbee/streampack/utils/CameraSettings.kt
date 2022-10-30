@@ -264,6 +264,25 @@ class Zoom(private val context: Context, private val cameraController: CameraCon
         val yDelta = (0.5f * sensorRect.height() / zoomRatio).toInt()
         return Rect(xCenter - xDelta, yCenter - yDelta, xCenter + xDelta, yCenter + yDelta)
     }
+
+    /**
+     * Sets the zoom on pinch scale gesture.
+     *
+     * @param scale the scale factor
+     */
+    fun onPinch(scale: Float) {
+        val scaledRatio: Float = zoomRatio * speedUpZoomByX(scale, 2)
+        // Clamp the ratio with the zoom range.
+        zoomRatio = scaledRatio.clamp(availableRatioRange.lower, availableRatioRange.upper)
+    }
+
+    private fun speedUpZoomByX(scaleFactor: Float, ratio: Int): Float {
+        return if (scaleFactor > 1f) {
+            1.0f + (scaleFactor - 1.0f) * ratio
+        } else {
+            1.0f - (1.0f - scaleFactor) * ratio
+        }
+    }
 }
 
 
