@@ -19,9 +19,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
-import android.view.SurfaceHolder
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,8 +31,7 @@ import io.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import io.github.thibaultbee.streampack.app.utils.DialogUtils
 import io.github.thibaultbee.streampack.app.utils.PermissionManager
 import io.github.thibaultbee.streampack.app.utils.StreamerManager
-import io.github.thibaultbee.streampack.utils.getCameraCharacteristics
-import io.github.thibaultbee.streampack.views.getPreviewOutputSize
+import io.github.thibaultbee.streampack.views.StreamerSurfaceView
 
 class PreviewFragment : Fragment() {
     private lateinit var binding: MainFragmentBinding
@@ -142,7 +139,6 @@ class PreviewFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         requestCameraAndMicrophonePermissions()
-        binding.preview.holder.addCallback(surfaceViewCallback)
     }
 
     @SuppressLint("MissingPermission")
@@ -181,47 +177,19 @@ class PreviewFragment : Fragment() {
         }
     }
 
-    @SuppressLint("MissingPermission")
-    private val surfaceViewCallback = object : SurfaceHolder.Callback {
-        override fun surfaceDestroyed(holder: SurfaceHolder) {
-            viewModel.stopPreview()
-            binding.preview.holder.removeCallback(this)
-        }
-
-        override fun surfaceChanged(
-            holder: SurfaceHolder,
-            format: Int,
-            width: Int,
-            height: Int
-        ) = Unit
-
-        override fun surfaceCreated(holder: SurfaceHolder) {
-            // Selects appropriate preview size and configures view finder
-            viewModel.cameraId?.let {
-                val previewSize = getPreviewOutputSize(
-                    binding.preview.display,
-                    requireContext().getCameraCharacteristics(it),
-                    SurfaceHolder::class.java
-                )
-                Log.d(
-                    TAG,
-                    "View finder size: ${binding.preview.width} x ${binding.preview.height}"
-                )
-                Log.d(TAG, "Selected preview size: $previewSize")
-                binding.preview.setAspectRatio(previewSize.width, previewSize.height)
-
-                // To ensure that size is set, initialize camera in the view's thread
-                binding.preview.post { viewModel.startPreview(holder) }
-            }
-        }
-    }
-
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     private fun createStreamer() {
         viewModel.createStreamer()
 
-        // Wait till streamer exists to create the SurfaceView (and call startCapture).
-        binding.preview.visibility = View.VISIBLE
+        // Set camera settings button when camera is started
+        binding.preview.listener = object : StreamerSurfaceView.Listener {
+            override fun onPreviewStarted() {
+                viewModel.onPreviewStarted()
+            }
+        }
+
+        // Wait till streamer exists to set it to the SurfaceView.
+        viewModel.inflateStreamerView(binding.preview)
 
         // Wait till streamer exists
         lifecycle.addObserver(viewModel.streamerLifeCycleObserver)

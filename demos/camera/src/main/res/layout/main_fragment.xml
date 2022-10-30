@@ -15,11 +15,11 @@
         android:layout_height="match_parent"
         android:keepScreenOn="true">
 
-        <io.github.thibaultbee.streampack.views.AutoFitSurfaceView
+        <io.github.thibaultbee.streampack.views.StreamerSurfaceView
             android:id="@+id/preview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="gone"
+            app:cameraFacingDirection="back"
             app:layout_constraintBottom_toTopOf="@+id/liveButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

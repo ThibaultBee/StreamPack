@@ -21,7 +21,6 @@ import android.hardware.camera2.CaptureResult
 import android.util.Log
 import android.util.Range
 import android.util.Rational
-import android.view.SurfaceHolder
 import androidx.annotation.RequiresPermission
 import androidx.databinding.Bindable
 import androidx.lifecycle.MutableLiveData
@@ -34,6 +33,7 @@ import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.StreamerLifeCycleObserver
 import io.github.thibaultbee.streampack.utils.isFrameRateSupported
+import io.github.thibaultbee.streampack.views.StreamerSurfaceView
 import kotlinx.coroutines.launch
 
 class PreviewViewModel(private val streamerManager: StreamerManager) : ObservableViewModel() {
@@ -43,9 +43,6 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
 
     val streamerLifeCycleObserver: StreamerLifeCycleObserver
         get() = streamerManager.streamerLifeCycleObserver
-
-    val cameraId: String?
-        get() = streamerManager.cameraId
 
     val streamerError = MutableLiveData<String>()
 
@@ -73,6 +70,14 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
         }
     }
 
+    fun inflateStreamerView(view: StreamerSurfaceView) {
+        streamerManager.inflateStreamerView(view)
+    }
+
+    fun onPreviewStarted() {
+        notifyCameraChange()
+    }
+
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun createStreamer() {
         viewModelScope.launch {
@@ -84,29 +89,6 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
             } catch (e: Throwable) {
                 Log.e(TAG, "createStreamer failed", e)
                 streamerError.postValue("createStreamer: ${e.message ?: "Unknown error"}")
-            }
-        }
-    }
-
-    @RequiresPermission(allOf = [Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA])
-    fun startPreview(surfaceHolder: SurfaceHolder) {
-        viewModelScope.launch {
-            try {
-                streamerManager.startPreview(surfaceHolder)
-                notifyCameraChange()
-            } catch (e: Throwable) {
-                Log.e(TAG, "startPreview failed", e)
-                streamerError.postValue("startPreview: ${e.message ?: "Unknown error"}")
-            }
-        }
-    }
-
-    fun stopPreview() {
-        viewModelScope.launch {
-            try {
-                streamerManager.stopPreview()
-            } catch (e: Throwable) {
-                Log.e(TAG, "stopPreview failed", e)
             }
         }
     }
