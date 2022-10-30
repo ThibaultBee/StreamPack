@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
-import io.github.thibaultbee.streampack.logger.ILogger
+import io.github.thibaultbee.streampack.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -27,7 +27,6 @@ import java.net.SocketException
 
 class RtmpProducer(
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    val logger: ILogger
 ) :
     ILiveEndpoint {
     override var onConnectionListener: OnConnectionListener? = null
@@ -78,7 +77,7 @@ class RtmpProducer(
             isOnError = true
             _isConnected = false
             onConnectionListener?.onLost(e.message ?: "Socket error")
-            logger.e(this, "Error while writing packet to socket", e)
+            Logger.e(this, "Error while writing packet to socket", e)
             throw e
         }
     }

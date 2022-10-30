@@ -29,7 +29,6 @@ import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.data.SrtPacket
 import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
-import io.github.thibaultbee.streampack.logger.ILogger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -39,7 +38,6 @@ import java.security.InvalidParameterException
 
 class SrtProducer(
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    private val logger: ILogger
 ) : ILiveEndpoint {
     override var onConnectionListener: OnConnectionListener? = null
 

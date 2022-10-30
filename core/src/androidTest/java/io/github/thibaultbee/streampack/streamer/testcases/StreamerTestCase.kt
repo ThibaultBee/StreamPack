@@ -26,7 +26,6 @@ import org.junit.Assert.fail
 import org.junit.Test
 
 abstract class StreamerTestCase {
-    protected val logger = FakeAndroidLogger()
     protected val context: Context = InstrumentationRegistry.getInstrumentation().context
 
     abstract val streamer: BaseStreamer

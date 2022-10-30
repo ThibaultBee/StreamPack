@@ -28,8 +28,6 @@ import io.github.thibaultbee.streampack.internal.utils.Scheduler
 import io.github.thibaultbee.streampack.internal.utils.defaultTsServiceInfo
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.regulator.IBitrateRegulatorFactory
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
 import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStreamer
@@ -43,7 +41,6 @@ import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStr
  * As an example, see `demo-screenrecorder`.
  *
  * @param context application context
- * @param logger a [ILogger] implementation
  * @param enableAudio [Boolean.true] to also capture audio. False to disable audio capture.
  * @param tsServiceInfo MPEG-TS service description
  * @param bitrateRegulatorFactory a [IBitrateRegulatorFactory] implementation. Use it to customized bitrate regulator.  If bitrateRegulatorConfig is not null, bitrateRegulatorFactory must not be null.
@@ -53,7 +50,6 @@ import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStr
  */
 class ScreenRecorderSrtLiveStreamer(
     context: Context,
-    logger: ILogger = StreamPackLogger(),
     enableAudio: Boolean = true,
     tsServiceInfo: TsServiceInfo = context.defaultTsServiceInfo,
     bitrateRegulatorFactory: IBitrateRegulatorFactory? = null,
@@ -62,10 +58,9 @@ class ScreenRecorderSrtLiveStreamer(
     initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseScreenRecorderLiveStreamer(
     context = context,
-    logger = logger,
     enableAudio = enableAudio,
     muxer = TSMuxer().apply { addService(tsServiceInfo) },
-    endpoint = SrtProducer(logger = logger),
+    endpoint = SrtProducer(),
     initialOnErrorListener = initialOnErrorListener,
     initialOnConnectionListener = initialOnConnectionListener
 ),

@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.internal.endpoints
 
 import io.github.thibaultbee.streampack.internal.data.Packet
+import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.utils.FakeLogger
 import io.github.thibaultbee.streampack.utils.Utils
 import org.junit.After
@@ -25,7 +26,11 @@ import java.io.File
 import java.nio.ByteBuffer
 
 class FileWriterTest {
-    private val filePublisher = FileWriter(FakeLogger())
+    private val filePublisher = FileWriter()
+
+    init {
+        Logger.logger = FakeLogger()
+    }
 
     @After
     fun tearDown() {

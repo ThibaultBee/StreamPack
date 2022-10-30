@@ -25,17 +25,15 @@ import io.github.thibaultbee.streampack.utils.AndroidUtils
 class TsAudioOnlyStreamerTest : AudioOnlyStreamerTestCase() {
     override val streamer = BaseAudioOnlyStreamer(
         context,
-        logger,
         TSMuxer().apply { addService(AndroidUtils.fakeServiceInfo()) },
-        FakeEndpoint(logger),
+        FakeEndpoint(),
     )
 }
 
 class FlvAudioOnlyStreamerTest : AudioOnlyStreamerTestCase() {
     override val streamer = BaseAudioOnlyStreamer(
         context,
-        logger,
         FlvMuxer(context, writeToFile = false),
-        FakeEndpoint(logger),
+        FakeEndpoint(),
     )
 }

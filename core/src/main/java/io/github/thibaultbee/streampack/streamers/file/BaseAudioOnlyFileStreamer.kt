@@ -18,14 +18,9 @@ package io.github.thibaultbee.streampack.streamers.file
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.data.AudioConfig
-import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.endpoints.FileWriter
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
-import io.github.thibaultbee.streampack.internal.sources.AudioCapture
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseAudioOnlyStreamer
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
@@ -37,20 +32,17 @@ import java.io.OutputStream
  * A [BaseStreamer] that sends only microphone frames to a [File].
  *
  * @param context application context
- * @param logger a [ILogger] implementation
  * @param muxer a [IMuxer] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
  */
 open class BaseAudioOnlyFileStreamer(
     context: Context,
-    logger: ILogger = StreamPackLogger(),
     muxer: IMuxer,
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseAudioOnlyStreamer(
     context = context,
-    logger = logger,
     muxer = muxer,
-    endpoint = FileWriter(logger = logger),
+    endpoint = FileWriter(),
     initialOnErrorListener = initialOnErrorListener
 ), IFileStreamer {
     private val fileWriter = endpoint as FileWriter

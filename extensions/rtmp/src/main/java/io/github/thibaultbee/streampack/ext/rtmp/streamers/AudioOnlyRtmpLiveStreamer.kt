@@ -20,28 +20,23 @@ import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.RtmpProducer
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxer
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
 
 /**
  * A [BaseAudioOnlyLiveStreamer] that sends only microphone frames to a remote RTMP device.
  *
  * @param context application context
- * @param logger a [ILogger] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
  * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 class AudioOnlyRtmpLiveStreamer(
     context: Context,
-    logger: ILogger = StreamPackLogger(),
     initialOnErrorListener: OnErrorListener? = null,
     initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseAudioOnlyLiveStreamer(
     context = context,
-    logger = logger,
     muxer = FlvMuxer(context = context, writeToFile = false),
-    endpoint = RtmpProducer(logger = logger),
+    endpoint = RtmpProducer(),
     initialOnErrorListener = initialOnErrorListener,
     initialOnConnectionListener = initialOnConnectionListener
 )

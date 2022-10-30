@@ -20,8 +20,6 @@ import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseAudioOnlyStreamer
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
@@ -30,7 +28,6 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  * A [BaseStreamer] that sends only microphone frames to a remote device.
  *
  * @param context application context
- * @param logger a [ILogger] implementation
  * @param muxer a [IMuxer] implementation
  * @param endpoint a [ILiveEndpoint] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
@@ -38,14 +35,12 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  */
 open class BaseAudioOnlyLiveStreamer(
     context: Context,
-    logger: ILogger = StreamPackLogger(),
     muxer: IMuxer,
     endpoint: ILiveEndpoint,
     initialOnErrorListener: OnErrorListener? = null,
     initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseAudioOnlyStreamer(
     context = context,
-    logger = logger,
     muxer = muxer,
     endpoint = endpoint,
     initialOnErrorListener = initialOnErrorListener,

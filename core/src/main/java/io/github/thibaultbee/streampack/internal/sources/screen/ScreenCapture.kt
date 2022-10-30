@@ -29,12 +29,11 @@ import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.sources.IVideoCapture
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
+import io.github.thibaultbee.streampack.logger.Logger
 import java.nio.ByteBuffer
 
 class ScreenCapture(
-    context: Context,
-    logger: ILogger
+    context: Context
 ) : IVideoCapture {
     override var encoderSurface: Surface? = null
     override val timestampOffset = 0L
@@ -56,12 +55,12 @@ class ScreenCapture(
     private val virtualDisplayCallback = object : VirtualDisplay.Callback() {
         override fun onPaused() {
             super.onPaused()
-            logger.i(this@ScreenCapture, "onPaused")
+            Logger.i(this@ScreenCapture, "onPaused")
         }
 
         override fun onStopped() {
             super.onStopped()
-            logger.i(this@ScreenCapture, "onStopped")
+            Logger.i(this@ScreenCapture, "onStopped")
             onErrorListener?.onError(StreamPackError("Screen capture has been stopped"))
         }
     }
@@ -69,7 +68,7 @@ class ScreenCapture(
     private val mediaProjectionCallback = object : MediaProjection.Callback() {
         override fun onStop() {
             super.onStop()
-            logger.i(this@ScreenCapture, "onStop")
+            Logger.i(this@ScreenCapture, "onStop")
             onErrorListener?.onError(StreamPackError("Screen capture has been stopped"))
         }
     }

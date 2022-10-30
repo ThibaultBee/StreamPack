@@ -20,26 +20,21 @@ import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.internal.utils.defaultTsServiceInfo
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import java.io.File
 
 /**
  * A [BaseAudioOnlyFileStreamer] that sends only microphone frames to a TS [File].
  *
  * @param context application context
- * @param logger a [ILogger] implementation
  * @param tsServiceInfo MPEG-TS service description
  * @param initialOnErrorListener initialize [OnErrorListener]
  */
 class AudioOnlyTsFileStreamer(
     context: Context,
-    logger: ILogger = StreamPackLogger(),
     tsServiceInfo: TsServiceInfo = context.defaultTsServiceInfo,
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseAudioOnlyFileStreamer(
     context = context,
-    logger = logger,
     muxer = TSMuxer().apply { addService(tsServiceInfo) },
     initialOnErrorListener = initialOnErrorListener
 )

@@ -27,10 +27,10 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.utils.TimeUtils
-import io.github.thibaultbee.streampack.logger.ILogger
+import io.github.thibaultbee.streampack.logger.Logger
 import java.nio.ByteBuffer
 
-class AudioCapture(val logger: ILogger) : IAudioCapture {
+class AudioCapture : IAudioCapture {
     private var audioRecord: AudioRecord? = null
     private var mutedByteArray: ByteArray? = null
 
@@ -58,14 +58,14 @@ class AudioCapture(val logger: ILogger) : IAudioCapture {
                 if (AcousticEchoCanceler.isAvailable()) {
                     AcousticEchoCanceler.create(it.audioSessionId).enabled = true
                 } else {
-                    logger.e(this, "Acoustic echo canceler is not available")
+                    Logger.e(this, "Acoustic echo canceler is not available")
                 }
             }
             if (config.enableNoiseSuppressor) {
                 if (NoiseSuppressor.isAvailable()) {
                     NoiseSuppressor.create(it.audioSessionId).enabled = true
                 } else {
-                    logger.e(this, "Noise suppressor is not available")
+                    Logger.e(this, "Noise suppressor is not available")
                 }
             }
         }
@@ -89,7 +89,7 @@ class AudioCapture(val logger: ILogger) : IAudioCapture {
 
     override fun stopStream() {
         if (!isRunning()) {
-            logger.d(this, "Not running")
+            Logger.d(this, "Not running")
             return
         }
 

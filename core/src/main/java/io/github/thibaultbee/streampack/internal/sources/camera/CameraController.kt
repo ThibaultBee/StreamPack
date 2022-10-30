@@ -25,7 +25,7 @@ import android.util.Range
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.error.CameraError
-import io.github.thibaultbee.streampack.logger.ILogger
+import io.github.thibaultbee.streampack.logger.Logger
 import kotlinx.coroutines.*
 import java.security.InvalidParameterException
 import kotlin.coroutines.resume
@@ -33,8 +33,7 @@ import kotlin.coroutines.resumeWithException
 
 class CameraController(
     private val context: Context,
-    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
-    private val logger: ILogger
+    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
     private var camera: CameraDevice? = null
     val cameraId: String?
@@ -51,7 +50,7 @@ class CameraController(
 
     private fun getClosestFpsRange(cameraId: String, fps: Int): Range<Int> {
         var fpsRangeList = context.getCameraFpsList(cameraId)
-        logger.d(this, "$fpsRangeList")
+        Logger.d(this, "$fpsRangeList")
 
         // Get range that contains FPS
         fpsRangeList =
@@ -69,22 +68,21 @@ class CameraController(
             }
         }
 
-        logger.d(this, "Selected Fps range $selectedFpsRange")
+        Logger.d(this, "Selected Fps range $selectedFpsRange")
         return selectedFpsRange
     }
 
     private class CameraDeviceCallback(
         private val cont: CancellableContinuation<CameraDevice>,
-        private val logger: ILogger
     ) : CameraDevice.StateCallback() {
         override fun onOpened(device: CameraDevice) = cont.resume(device)
 
         override fun onDisconnected(camera: CameraDevice) {
-            logger.w(this, "Camera ${camera.id} has been disconnected")
+            Logger.w(this, "Camera ${camera.id} has been disconnected")
         }
 
         override fun onError(camera: CameraDevice, error: Int) {
-            logger.e(this, "Camera ${camera.id} is in error $error")
+            Logger.e(this, "Camera ${camera.id} is in error $error")
 
             val exc = when (error) {
                 ERROR_CAMERA_IN_USE -> CameraError("Camera already in use")
@@ -100,12 +98,11 @@ class CameraController(
 
     private class CameraCaptureSessionCallback(
         private val cont: CancellableContinuation<CameraCaptureSession>,
-        private val logger: ILogger
     ) : CameraCaptureSession.StateCallback() {
         override fun onConfigured(session: CameraCaptureSession) = cont.resume(session)
 
         override fun onConfigureFailed(session: CameraCaptureSession) {
-            logger.e(this, "Camera Session configuration failed")
+            Logger.e(this, "Camera Session configuration failed")
             cont.resumeWithException(CameraError("Camera: failed to configure the capture session"))
         }
     }
@@ -117,7 +114,7 @@ class CameraController(
             failure: CaptureFailure
         ) {
             super.onCaptureFailed(session, request, failure)
-            logger.e(this, "Capture failed  with code ${failure.reason}")
+            Logger.e(this, "Capture failed  with code ${failure.reason}")
         }
     }
 
@@ -129,7 +126,7 @@ class CameraController(
         threadManager.openCamera(
             manager,
             cameraId,
-            CameraDeviceCallback(cont, logger)
+            CameraDeviceCallback(cont)
         )
     }
 
@@ -140,7 +137,7 @@ class CameraController(
         threadManager.createCaptureSession(
             camera,
             targets,
-            CameraCaptureSessionCallback(cont, logger)
+            CameraCaptureSessionCallback(cont)
         )
     }
 

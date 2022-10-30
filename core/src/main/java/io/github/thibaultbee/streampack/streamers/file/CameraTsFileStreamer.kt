@@ -20,28 +20,23 @@ import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.internal.utils.defaultTsServiceInfo
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import java.io.File
 
 /**
  * [BaseCameraFileStreamer] that sends microphone and video frames to a TS [File].
  *
  * @param context application context
- * @param logger a [ILogger] implementation
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
  * @param tsServiceInfo MPEG-TS service description
  * @param initialOnErrorListener initialize [OnErrorListener]
  */
 class CameraTsFileStreamer(
     context: Context,
-    logger: ILogger = StreamPackLogger(),
     enableAudio: Boolean = true,
     tsServiceInfo: TsServiceInfo = context.defaultTsServiceInfo,
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseCameraFileStreamer(
     context = context,
-    logger = logger,
     muxer = TSMuxer().apply { addService(tsServiceInfo) },
     enableAudio = enableAudio,
     initialOnErrorListener = initialOnErrorListener

@@ -30,7 +30,6 @@ import io.github.thibaultbee.streampack.internal.gl.Texture2DProgram
 import io.github.thibaultbee.streampack.internal.utils.getOrientation
 import io.github.thibaultbee.streampack.internal.utils.isPortrait
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
 import java.util.concurrent.Executors
 
 /**
@@ -43,10 +42,9 @@ class VideoMediaCodecEncoder(
     override val onInternalErrorListener: OnErrorListener,
     private val context: Context,
     private val useSurfaceMode: Boolean,
-    private val manageVideoOrientation: Boolean,
-    logger: ILogger
+    private val manageVideoOrientation: Boolean
 ) :
-    MediaCodecEncoder<VideoConfig>(encoderListener, logger) {
+    MediaCodecEncoder<VideoConfig>(encoderListener) {
     var codecSurface = if (useSurfaceMode) {
         CodecSurface(context, manageVideoOrientation)
     } else {

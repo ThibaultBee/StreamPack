@@ -21,8 +21,6 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.internal.endpoints.FileWriter
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
 import java.io.File
@@ -33,22 +31,19 @@ import java.io.OutputStream
  *
  * @param context application context
  * @param muxer a [IMuxer] implementation
- * @param logger a [ILogger] implementation
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
  * @param initialOnErrorListener initialize [OnErrorListener]
  */
 open class BaseCameraFileStreamer(
     context: Context,
-    logger: ILogger = StreamPackLogger(),
     enableAudio: Boolean = true,
     muxer: IMuxer,
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseCameraStreamer(
     context = context,
-    logger = logger,
     enableAudio = enableAudio,
     muxer = muxer,
-    endpoint = FileWriter(logger),
+    endpoint = FileWriter(),
     initialOnErrorListener = initialOnErrorListener
 ),
     IFileStreamer {
