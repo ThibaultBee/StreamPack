@@ -17,12 +17,10 @@ package io.github.thibaultbee.streampack.internal.encoders
 
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
 
 
 class AudioMediaCodecEncoder(
     encoderListener: IEncoderListener,
     override val onInternalErrorListener: OnErrorListener,
-    logger: ILogger
 ) :
-    MediaCodecEncoder<AudioConfig>(encoderListener, logger)
+    MediaCodecEncoder<AudioConfig>(encoderListener)

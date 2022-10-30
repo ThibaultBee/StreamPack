@@ -15,15 +15,20 @@
  */
 package io.github.thibaultbee.streampack.internal.sources
 
+import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.utils.FakeLogger
 import org.junit.Assert
 import org.junit.Test
 import java.nio.ByteBuffer
 
 class AudioCaptureUnitTest {
+    init {
+        Logger.logger = FakeLogger()
+    }
+
     @Test
     fun `assert exception on bad state`() {
-        val audioCapture = AudioCapture(FakeLogger())
+        val audioCapture = AudioCapture()
         try {
             audioCapture.startStream()
             Assert.fail()
@@ -38,7 +43,7 @@ class AudioCaptureUnitTest {
 
     @Test
     fun `assert no exception on bad state`() {
-        val audioCapture = AudioCapture(FakeLogger())
+        val audioCapture = AudioCapture()
         try {
             audioCapture.stopStream()
         } catch (e: Exception) {

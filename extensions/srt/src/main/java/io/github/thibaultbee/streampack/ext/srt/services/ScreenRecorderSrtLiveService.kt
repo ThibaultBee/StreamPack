@@ -25,19 +25,15 @@ import io.github.thibaultbee.streampack.ext.srt.regulator.srt.DefaultSrtBitrateR
 import io.github.thibaultbee.streampack.ext.srt.streamers.ScreenRecorderSrtLiveStreamer
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.internal.utils.defaultTsServiceInfo
-import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
 import io.github.thibaultbee.streampack.streamers.services.BaseScreenRecorderService
 
 open class ScreenRecorderSrtLiveService(
-    logger: ILogger = StreamPackLogger(),
     notificationId: Int = DEFAULT_NOTIFICATION_ID,
     channelId: String = DEFAULT_NOTIFICATION_CHANNEL_ID,
     channelNameResourceId: Int = R.string.default_channel_name,
     channelDescriptionResourceId: Int = 0,
 ) : BaseScreenRecorderService(
-    logger,
     notificationId,
     channelId,
     channelNameResourceId,
@@ -95,7 +91,6 @@ open class ScreenRecorderSrtLiveService(
 
         return ScreenRecorderSrtLiveStreamer(
             applicationContext,
-            logger,
             enableAudio = enableAudio,
             tsServiceInfo = tsServiceInfo,
             bitrateRegulatorFactory = bitrateRegulatorFactory,

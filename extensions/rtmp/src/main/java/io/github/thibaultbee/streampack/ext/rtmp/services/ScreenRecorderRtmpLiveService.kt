@@ -20,19 +20,15 @@ import android.content.Context
 import android.os.Bundle
 import io.github.thibaultbee.streampack.R
 import io.github.thibaultbee.streampack.ext.rtmp.streamers.ScreenRecorderRtmpLiveStreamer
-import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
 import io.github.thibaultbee.streampack.streamers.services.BaseScreenRecorderService
 
 open class ScreenRecorderRtmpLiveService(
-    logger: ILogger = StreamPackLogger(),
     notificationId: Int = DEFAULT_NOTIFICATION_ID,
     channelId: String = DEFAULT_NOTIFICATION_CHANNEL_ID,
     channelNameResourceId: Int = R.string.default_channel_name,
     channelDescriptionResourceId: Int = 0,
 ) : BaseScreenRecorderService(
-    logger,
     notificationId,
     channelId,
     channelNameResourceId,
@@ -43,7 +39,6 @@ open class ScreenRecorderRtmpLiveService(
 
         return ScreenRecorderRtmpLiveStreamer(
             applicationContext,
-            logger,
             enableAudio = enableAudio,
         )
     }

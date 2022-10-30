@@ -22,7 +22,6 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.sources.IVideoCapture
-import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.utils.CameraSettings
 import io.github.thibaultbee.streampack.utils.isFrameRateSupported
 import kotlinx.coroutines.runBlocking
@@ -30,7 +29,6 @@ import java.nio.ByteBuffer
 
 class CameraCapture(
     private val context: Context,
-    logger: ILogger
 ) : IVideoCapture {
     var previewSurface: Surface? = null
     override var encoderSurface: Surface? = null
@@ -51,7 +49,7 @@ class CameraCapture(
                 }
             }
         }
-    private var cameraController = CameraController(context, logger = logger)
+    private var cameraController = CameraController(context)
     var settings = CameraSettings(context, cameraController)
 
     override val timestampOffset = CameraHelper.getTimeOffsetToMonoClock(context, cameraId)

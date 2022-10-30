@@ -20,13 +20,13 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
 import android.view.SurfaceHolder
 import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.R
+import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.utils.getBackCameraList
 import io.github.thibaultbee.streampack.utils.getCameraCharacteristics
@@ -113,7 +113,7 @@ open class StreamerSurfaceView @JvmOverloads constructor(
             streamer?.let {
                 try {
                     val camera = defaultCameraId ?: it.camera
-                    Log.i(TAG, "Starting on camera: $camera")
+                    Logger.i(TAG, "Starting on camera: $camera")
 
                     // Selects appropriate preview size
                     val previewSize = getPreviewOutputSize(
@@ -121,11 +121,11 @@ open class StreamerSurfaceView @JvmOverloads constructor(
                         context.getCameraCharacteristics(camera),
                         SurfaceHolder::class.java
                     )
-                    Log.d(
+                    Logger.d(
                         TAG,
                         "View finder size: $width x $height"
                     )
-                    Log.d(TAG, "Selected preview size: $previewSize")
+                    Logger.d(TAG, "Selected preview size: $previewSize")
                     setAspectRatio(previewSize.width, previewSize.height)
 
                     // To ensure that size is set, initialize camera in the view's thread
@@ -142,7 +142,7 @@ open class StreamerSurfaceView @JvmOverloads constructor(
                     }
                 } catch (e: Exception) {
                     if (shouldFailSilently) {
-                        Log.w(TAG, e.toString(), e)
+                        Logger.w(TAG, e.toString(), e)
                     } else {
                         throw e
                     }

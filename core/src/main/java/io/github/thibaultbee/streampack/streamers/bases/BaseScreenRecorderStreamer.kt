@@ -26,14 +26,11 @@ import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioCapture
 import io.github.thibaultbee.streampack.internal.sources.screen.ScreenCapture
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
 
 /**
  * A [BaseStreamer] that sends microphone and screen frames.
  *
  * @param context application context
- * @param logger a [ILogger] implementation
  * @param enableAudio [Boolean.true] to capture audio
  * @param muxer a [IMuxer] implementation
  * @param endpoint a [IEndpoint] implementation
@@ -41,19 +38,17 @@ import io.github.thibaultbee.streampack.logger.StreamPackLogger
  */
 open class BaseScreenRecorderStreamer(
     context: Context,
-    logger: ILogger = StreamPackLogger(),
     enableAudio: Boolean = true,
     muxer: IMuxer,
     endpoint: IEndpoint,
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseStreamer(
     context = context,
-    videoCapture = ScreenCapture(context, logger = logger),
-    audioCapture = if (enableAudio) AudioCapture(logger) else null,
+    videoCapture = ScreenCapture(context),
+    audioCapture = if (enableAudio) AudioCapture() else null,
     manageVideoOrientation = false,
     muxer = muxer,
     endpoint = endpoint,
-    logger = logger,
     initialOnErrorListener = initialOnErrorListener
 ) {
     private val screenCapture =

@@ -20,8 +20,6 @@ import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 
@@ -29,7 +27,6 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  * A [BaseCameraStreamer] that sends microphone and camera frames to a remote device.
  *
  * @param context application context
- * @param logger a [ILogger] implementation
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
  * @param muxer a [IMuxer] implementation
  * @param endpoint a [ILiveEndpoint] implementation
@@ -38,7 +35,6 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  */
 open class BaseCameraLiveStreamer(
     context: Context,
-    logger: ILogger = StreamPackLogger(),
     enableAudio: Boolean = true,
     muxer: IMuxer,
     endpoint: ILiveEndpoint,
@@ -46,7 +42,6 @@ open class BaseCameraLiveStreamer(
     initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseCameraStreamer(
     context = context,
-    logger = logger,
     enableAudio = enableAudio,
     muxer = muxer,
     endpoint = endpoint,

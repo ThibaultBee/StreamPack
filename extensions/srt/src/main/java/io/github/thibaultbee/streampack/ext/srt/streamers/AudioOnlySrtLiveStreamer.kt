@@ -23,8 +23,6 @@ import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.internal.utils.defaultTsServiceInfo
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
 
 /**
@@ -33,21 +31,18 @@ import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
  *
  * @param context application context
  * @param tsServiceInfo MPEG-TS service description
- * @param logger a [ILogger] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
  * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 class AudioOnlySrtLiveStreamer(
     context: Context,
     tsServiceInfo: TsServiceInfo = context.defaultTsServiceInfo,
-    logger: ILogger = StreamPackLogger(),
     initialOnErrorListener: OnErrorListener? = null,
     initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseAudioOnlyLiveStreamer(
     context = context,
-    logger = logger,
     muxer = TSMuxer().apply { addService(tsServiceInfo) },
-    endpoint = SrtProducer(logger = logger),
+    endpoint = SrtProducer(),
     initialOnErrorListener = initialOnErrorListener,
     initialOnConnectionListener = initialOnConnectionListener
 ),

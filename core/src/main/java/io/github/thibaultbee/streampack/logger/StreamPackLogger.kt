@@ -21,24 +21,44 @@ import android.util.Log
  * Implementation of [ILogger]. Use as default logger in StreamPack.
  * It calls Android [Log].
  */
-class StreamPackLogger: ILogger {
+class StreamPackLogger : ILogger {
     override fun e(obj: Any, message: String, tr: Throwable?) {
-        Log.e(obj.javaClass.simpleName, message, tr)
+        if (obj is String) {
+            Log.e(obj, message, tr)
+        } else {
+            Log.e(obj.javaClass.simpleName, message, tr)
+        }
     }
 
     override fun w(obj: Any, message: String, tr: Throwable?) {
-        Log.w(obj.javaClass.simpleName, message, tr)
+        if (obj is String) {
+            Log.w(obj, message, tr)
+        } else {
+            Log.w(obj.javaClass.simpleName, message, tr)
+        }
     }
 
     override fun i(obj: Any, message: String, tr: Throwable?) {
-        Log.i(obj.javaClass.simpleName, message, tr)
+        if (obj is String) {
+            Log.i(obj, message, tr)
+        } else {
+            Log.i(obj.javaClass.simpleName, message, tr)
+        }
     }
 
     override fun v(obj: Any, message: String, tr: Throwable?) {
-        Log.v(obj.javaClass.simpleName, message, tr)
+        if (obj is String) {
+            Log.v(obj, message, tr)
+        } else {
+            Log.v(obj.javaClass.simpleName, message, tr)
+        }
     }
 
     override fun d(obj: Any, message: String, tr: Throwable?) {
-        Log.d(obj.javaClass.simpleName, message, tr)
+        if (obj is String) {
+            Log.d(obj, message, tr)
+        } else {
+            Log.d(obj.javaClass.simpleName, message, tr)
+        }
     }
 }

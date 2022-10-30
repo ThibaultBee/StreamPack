@@ -16,35 +16,28 @@
 package io.github.thibaultbee.streampack.streamers.bases
 
 import android.content.Context
-import io.github.thibaultbee.streampack.data.AudioConfig
-import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioCapture
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
 
 /**
  * A [BaseStreamer] that sends only microphone frames.
  *
  * @param context application context
- * @param logger a [ILogger] implementation
  * @param muxer a [IMuxer] implementation
  * @param endpoint a [IEndpoint] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
  */
 open class BaseAudioOnlyStreamer(
     context: Context,
-    logger: ILogger = StreamPackLogger(),
     muxer: IMuxer,
     endpoint: IEndpoint,
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseStreamer(
     context = context,
-    logger = logger,
     videoCapture = null,
-    audioCapture = AudioCapture(logger),
+    audioCapture = AudioCapture(),
     manageVideoOrientation = false,
     muxer = muxer,
     endpoint = endpoint,

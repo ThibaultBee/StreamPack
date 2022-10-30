@@ -34,8 +34,7 @@ import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.sources.IAudioCapture
 import io.github.thibaultbee.streampack.internal.sources.IVideoCapture
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
+import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.helpers.StreamerConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
@@ -47,7 +46,6 @@ import java.nio.ByteBuffer
  * Base class of all streamers.
  *
  * @param context application context
- * @param logger a [ILogger] implementation
  * @param videoCapture Video source
  * @param audioCapture Audio source
  * @param manageVideoOrientation Set to [Boolean.true] to rotate video according to device orientation.
@@ -57,7 +55,6 @@ import java.nio.ByteBuffer
  */
 abstract class BaseStreamer(
     private val context: Context,
-    protected val logger: ILogger = StreamPackLogger(),
     protected val audioCapture: IAudioCapture?,
     protected val videoCapture: IVideoCapture?,
     manageVideoOrientation: Boolean,
@@ -150,12 +147,12 @@ abstract class BaseStreamer(
             stopStream()
             onErrorListener?.onError(error)
         } catch (e: Exception) {
-            logger.e(this, "onStreamError: Can't stop stream")
+            Logger.e(this, "onStreamError: Can't stop stream")
         }
     }
 
     protected var audioEncoder = if (audioCapture != null) {
-        AudioMediaCodecEncoder(audioEncoderListener, onInternalErrorListener, logger)
+        AudioMediaCodecEncoder(audioEncoderListener, onInternalErrorListener)
     } else {
         null
     }
@@ -165,8 +162,7 @@ abstract class BaseStreamer(
             onInternalErrorListener,
             context,
             videoCapture.hasSurface,
-            manageVideoOrientation,
-            logger
+            manageVideoOrientation
         )
     } else {
         null

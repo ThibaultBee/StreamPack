@@ -15,11 +15,9 @@
  */
 package io.github.thibaultbee.streampack.logger
 
-import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
-
 /**
  * Logger interface.
- * You can implement a custom [ILogger] and pass it as a parameter of [BaseStreamer]
+ * You can implement a custom [ILogger] and pass it to [Logger.logger]
  * implementation.
  */
 interface ILogger {

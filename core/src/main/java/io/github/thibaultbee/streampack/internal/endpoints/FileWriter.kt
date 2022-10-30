@@ -17,13 +17,12 @@ package io.github.thibaultbee.streampack.internal.endpoints
 
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.utils.extractArray
-import io.github.thibaultbee.streampack.logger.ILogger
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
 
 
-class FileWriter(val logger: ILogger) : IEndpoint {
+class FileWriter : IEndpoint {
     var file: File? = null
         set(value) {
             value?.let {

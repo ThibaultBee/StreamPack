@@ -27,8 +27,6 @@ import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioCapture
 import io.github.thibaultbee.streampack.internal.sources.camera.CameraCapture
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.streamers.settings.BaseCameraStreamerSettings
@@ -41,7 +39,6 @@ import kotlinx.coroutines.runBlocking
  * A [BaseStreamer] that sends microphone and camera frames.
  *
  * @param context application context
- * @param logger a [ILogger] implementation
  * @param enableAudio [Boolean.true] to capture audio
  * @param muxer a [IMuxer] implementation
  * @param endpoint a [IEndpoint] implementation
@@ -49,19 +46,17 @@ import kotlinx.coroutines.runBlocking
  */
 open class BaseCameraStreamer(
     private val context: Context,
-    logger: ILogger = StreamPackLogger(),
     enableAudio: Boolean = true,
     muxer: IMuxer,
     endpoint: IEndpoint,
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseStreamer(
     context = context,
-    videoCapture = CameraCapture(context, logger = logger),
-    audioCapture = if (enableAudio) AudioCapture(logger) else null,
+    videoCapture = CameraCapture(context),
+    audioCapture = if (enableAudio) AudioCapture() else null,
     manageVideoOrientation = true,
     muxer = muxer,
     endpoint = endpoint,
-    logger = logger,
     initialOnErrorListener = initialOnErrorListener
 ), ICameraStreamer {
     private val cameraCapture = videoCapture as CameraCapture

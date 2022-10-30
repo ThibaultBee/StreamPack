@@ -33,8 +33,7 @@ import io.github.thibaultbee.streampack.R
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
+import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 import io.github.thibaultbee.streampack.utils.NotificationUtils
@@ -61,7 +60,6 @@ import io.github.thibaultbee.streampack.utils.getStreamer
  *
  * If you want to keep the notification, you shall not override [BaseScreenRecorderStreamer.onErrorListener] and [ILiveStreamer.onConnectionListener].
  *
- * @param logger a [ILogger] implementation
  * @param notificationId the notification id a unique number
  * @param channelId the notification channel id
  * @param channelNameResourceId A string resource identifier for the user visible name of the notification channel.
@@ -69,7 +67,6 @@ import io.github.thibaultbee.streampack.utils.getStreamer
  * @param notificationIconResourceId A drawable resource identifier for the user visible icon of the notification channel.
  */
 abstract class BaseScreenRecorderService(
-    protected val logger: ILogger = StreamPackLogger(),
     private val notificationId: Int = DEFAULT_NOTIFICATION_ID,
     protected val channelId: String = DEFAULT_NOTIFICATION_CHANNEL_ID,
     @StringRes protected val channelNameResourceId: Int = R.string.default_channel_name,
@@ -115,7 +112,7 @@ abstract class BaseScreenRecorderService(
 
             streamer?.onErrorListener = object : OnErrorListener {
                 override fun onError(error: StreamPackError) {
-                    logger.e(TAG, "An error occurred", error)
+                    Logger.e(TAG, "An error occurred", error)
                     onErrorNotification(error)?.let { notify(it) }
                     stopSelf()
                 }
@@ -124,24 +121,24 @@ abstract class BaseScreenRecorderService(
             liveStreamer?.onConnectionListener =
                 object : OnConnectionListener {
                     override fun onLost(message: String) {
-                        logger.e(TAG, "Connection lost: $message")
+                        Logger.e(TAG, "Connection lost: $message")
                         onConnectionLostNotification(message)?.let { notify(it) }
                         stopSelf()
                     }
 
                     override fun onFailed(message: String) {
-                        logger.e(TAG, "Connection failed: $message")
+                        Logger.e(TAG, "Connection failed: $message")
                         onConnectionFailedNotification(message)?.let { notify(it) }
                         stopSelf()
                     }
 
                     override fun onSuccess() {
-                        logger.i(TAG, "Connection succeeded")
+                        Logger.i(TAG, "Connection succeeded")
                         onConnectionSuccessNotification()?.let { notify(it) }
                     }
                 }
         } catch (e: Exception) {
-            logger.e(this, "An error occurred", e)
+            Logger.e(this, "An error occurred", e)
             onErrorNotification(e)?.let { notify(it) }
             stopSelf()
         }
