@@ -32,12 +32,12 @@ class AudioCaptureUnitTest {
         try {
             audioCapture.startStream()
             Assert.fail()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
         try {
             audioCapture.getFrame(ByteBuffer.allocate(10))
             Assert.fail()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
     }
 

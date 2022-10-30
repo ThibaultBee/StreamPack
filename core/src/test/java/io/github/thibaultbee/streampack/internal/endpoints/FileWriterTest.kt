@@ -48,8 +48,7 @@ class FileWriterTest {
         try {
             filePublisher.startStream()
             fail("Null file must not be streamable")
-        } catch (e: Exception) {
-
+        } catch (_: Exception) {
         }
     }
 
@@ -65,8 +64,7 @@ class FileWriterTest {
                 )
             )
             fail("Null file must not be writable")
-        } catch (e: Exception) {
-
+        } catch (_: Exception) {
         }
     }
 
