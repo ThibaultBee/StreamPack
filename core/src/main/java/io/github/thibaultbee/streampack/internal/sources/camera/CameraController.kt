@@ -154,7 +154,7 @@ class CameraController(
         return camera.createCaptureRequest(CameraDevice.TEMPLATE_RECORD).apply {
             surfaces.forEach { addTarget(it) }
             set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
-            threadManager.setRepeatingRequest(captureSession, build(), captureCallback)
+            threadManager.setRepeatingSingleRequest(captureSession, build(), captureCallback)
         }
     }
 
@@ -208,7 +208,7 @@ class CameraController(
         targets.forEach {
             captureRequest!!.addTarget(it)
         }
-        updateCaptureSession()
+        updateRepeatingSession()
     }
 
     fun addTarget(target: Surface) {
@@ -216,14 +216,14 @@ class CameraController(
 
         captureRequest!!.addTarget(target)
 
-        updateCaptureSession()
+        updateRepeatingSession()
     }
 
     fun removeTarget(target: Surface) {
         require(captureRequest != null) { "capture request must not be null" }
 
         captureRequest!!.removeTarget(target)
-        updateCaptureSession()
+        updateRepeatingSession()
     }
 
     fun release() {
@@ -243,13 +243,24 @@ class CameraController(
         }
     }
 
-    private fun updateCaptureSession() {
+    fun updateRepeatingSession() {
         require(captureSession != null) { "capture session must not be null" }
         require(captureRequest != null) { "capture request must not be null" }
 
-        threadManager.setRepeatingRequest(
+        threadManager.setRepeatingSingleRequest(
             captureSession!!,
             captureRequest!!.build(),
+            captureCallback
+        )
+    }
+
+    private fun updateBurstSession() {
+        require(captureSession != null) { "capture session must not be null" }
+        require(captureRequest != null) { "capture request must not be null" }
+
+        threadManager.captureBurstRequests(
+            captureSession!!,
+            listOf(captureRequest!!.build()),
             captureCallback
         )
     }
@@ -258,10 +269,28 @@ class CameraController(
         return captureRequest?.get(key)
     }
 
-    fun <T> setSetting(key: CaptureRequest.Key<T>, value: T) {
+    fun <T> setRepeatingSetting(key: CaptureRequest.Key<T>, value: T) {
         captureRequest?.let {
             it.set(key, value)
-            updateCaptureSession()
+            updateRepeatingSession()
+        }
+    }
+
+    fun setRepeatingSettings(settingsMap: Map<CaptureRequest.Key<Any>, Any>) {
+        captureRequest?.let {
+            for (item in settingsMap) {
+                it.set(item.key, item.value)
+            }
+            updateRepeatingSession()
+        }
+    }
+
+    fun setBurstSettings(settingsMap: Map<CaptureRequest.Key<Any>, Any>) {
+        captureRequest?.let {
+            for (item in settingsMap) {
+                it.set(item.key, item.value)
+            }
+            updateBurstSession()
         }
     }
 }

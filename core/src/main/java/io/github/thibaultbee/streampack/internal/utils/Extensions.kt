@@ -16,7 +16,10 @@
 package io.github.thibaultbee.streampack.internal.utils
 
 import android.content.Context
+import android.graphics.PointF
+import android.graphics.Rect
 import android.util.Range
+import android.util.Rational
 import io.github.thibaultbee.streampack.R
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 
@@ -43,9 +46,36 @@ val Context.defaultTsServiceInfo
         getString(R.string.ts_service_default_provider_name)
     )
 
-fun <T : Comparable<T>> T.clamp(min: T, max: T) =
-    if (this < min) min else if (this > max) max else this
+fun <T : Comparable<T>> T.clamp(min: T, max: T): T {
+    return if (max >= min) {
+        if (this < min) min else if (this > max) max else this
+    } else {
+        if (this < max) max else if (this > min) min else this
+    }
+}
 
 fun <T : Comparable<T>> T.clamp(range: Range<T>) =
     this.clamp(range.lower, range.upper)
 
+val PointF.isNormalized: Boolean
+    get() = x in 0f..1f && y in 0f..1f
+
+fun PointF.rotate(rotation: Int): PointF {
+    return when (rotation) {
+        0 -> this
+        90 -> PointF(y, 1 - x)
+        180 -> PointF(1 - x, 1 - y)
+        270 -> PointF(1 - y, x)
+        else -> throw IllegalArgumentException("Unsupported rotation: $rotation")
+    }
+}
+
+fun PointF.normalize(width: Int, height: Int): PointF {
+    return PointF(x / width, y / height)
+}
+
+fun PointF.normalize(rect: Rect): PointF {
+    return PointF(x / rect.width(), y / rect.height())
+}
+
+fun Rational.flip() = Rational(denominator, numerator)

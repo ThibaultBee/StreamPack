@@ -132,6 +132,29 @@ fun Context.getAutoWhiteBalanceModes(cameraId: String): List<Int> {
         ?.toList() ?: emptyList()
 }
 
+
+/**
+ * Get if camera supports white balance metering regions.
+ *
+ * @param cameraId camera id
+ * @return true if camera supports metering regions, false otherwise
+ */
+fun Context.getWhiteBalanceMeteringRegionsSupported(cameraId: String): Int {
+    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_MAX_REGIONS_AWB)
+        ?: 0
+}
+
+/**
+ * Get supported auto exposure modes.
+ *
+ * @param cameraId camera id
+ * @return list of supported auto focus modes
+ */
+fun Context.getAutoExposureModes(cameraId: String): List<Int> {
+    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_AVAILABLE_MODES)
+        ?.toList() ?: emptyList()
+}
+
 /**
  * Gets exposure range.
  *
@@ -156,6 +179,18 @@ fun Context.getExposureRange(cameraId: String): Range<Int> {
 fun Context.getExposureStep(cameraId: String): Rational {
     return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP)
         ?: Rational(1, 1)
+}
+
+
+/**
+ * Get if camera supports exposure metering regions.
+ *
+ * @param cameraId camera id
+ * @return true if camera supports metering regions, false otherwise
+ */
+fun Context.getExposureMaxMeteringRegionsSupported(cameraId: String): Int {
+    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_MAX_REGIONS_AE)
+        ?: 0
 }
 
 /**
@@ -200,6 +235,17 @@ fun Context.getLensDistanceRange(cameraId: String): Range<Float> {
 }
 
 /**
+ * Get if camera supports focus metering regions.
+ *
+ * @param cameraId camera id
+ * @return true if camera supports metering regions, false otherwise
+ */
+fun Context.getFocusMaxMeteringRegionsSupported(cameraId: String): Int {
+    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF)
+        ?: 0
+}
+
+/**
  * Checks if the camera supports optical stabilization.
  *
  * @param cameraId camera id
@@ -211,3 +257,37 @@ fun Context.isOpticalStabilizationAvailable(cameraId: String): Boolean =
             CaptureResult.LENS_OPTICAL_STABILIZATION_MODE_ON
         )
         ?: false
+
+/**
+ * Computes rotation required to transform the camera sensor output orientation to the
+ * device's current orientation in degrees.
+ *
+ * @param cameraId The camera to query for the sensor orientation.
+ * @param surfaceRotationDegrees The current device orientation as a Surface constant.
+ * @return Relative rotation of the camera sensor output.
+ */
+fun Context.computeRelativeRotation(
+    cameraId: String,
+    surfaceRotationDegrees: Int
+): Int {
+    val characteristics = getCameraCharacteristics(cameraId)
+    val sensorOrientationDegrees =
+        characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
+
+    // Reverse device orientation for back-facing cameras.
+    val sign = if (characteristics.get(CameraCharacteristics.LENS_FACING) ==
+        CameraCharacteristics.LENS_FACING_FRONT
+    ) {
+        1
+    } else if (characteristics.get(CameraCharacteristics.LENS_FACING) ==
+        CameraCharacteristics.LENS_FACING_BACK
+    ) {
+        -1
+    } else {
+        throw IllegalStateException("Unknown lens facing")
+    }
+
+    // Calculate desired orientation relative to camera orientation to make
+    // the image upright relative to the device orientation.
+    return (sensorOrientationDegrees!! - surfaceRotationDegrees * sign + 360) % 360
+}

@@ -3,5 +3,6 @@
     <declare-styleable name="StreamerSurfaceView">
         <attr name="cameraFacingDirection" format="string" />
         <attr name="enableZoomOnPinch" format="boolean" />
+        <attr name="enableTapToFocus" format="boolean" />
     </declare-styleable>
 </resources>

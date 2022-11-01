@@ -16,14 +16,16 @@
 package io.github.thibaultbee.streampack.views
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.PointF
+import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
 import android.view.SurfaceHolder
+import android.view.ViewConfiguration
 import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.R
 import io.github.thibaultbee.streampack.logger.Logger
@@ -31,6 +33,7 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.utils.getBackCameraList
 import io.github.thibaultbee.streampack.utils.getCameraCharacteristics
 import io.github.thibaultbee.streampack.utils.getFrontCameraList
+
 
 /**
  * A [AutoFitSurfaceView] that manages [ICameraStreamer] preview.
@@ -48,6 +51,9 @@ open class StreamerSurfaceView @JvmOverloads constructor(
     private val defaultCameraId: String?
 
     var enableZoomOnPinch: Boolean
+    var enableTapToFocus: Boolean
+
+    private var touchUpEvent: MotionEvent? = null
 
     var streamer: ICameraStreamer? = null
         /**
@@ -91,12 +97,13 @@ open class StreamerSurfaceView @JvmOverloads constructor(
 
             enableZoomOnPinch =
                 a.getBoolean(R.styleable.StreamerSurfaceView_enableZoomOnPinch, true)
+            enableTapToFocus =
+                a.getBoolean(R.styleable.StreamerSurfaceView_enableTapToFocus, true)
         } finally {
             a.recycle()
         }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (streamer == null) {
             return super.onTouchEvent(event)
@@ -105,7 +112,39 @@ open class StreamerSurfaceView @JvmOverloads constructor(
         if (enableZoomOnPinch) {
             pinchGesture.onTouchEvent(event)
         }
+        val isSingleTouch = event.pointerCount == 1
+        val isUpEvent = event.action == MotionEvent.ACTION_UP
+        val notALongPress =
+            (event.eventTime - event.downTime < ViewConfiguration.getLongPressTimeout())
+        if (isSingleTouch && isUpEvent && notALongPress) {
+            // If the event is a click, invoke tap-to-focus and forward it to user's
+            // OnClickListener#onClick.
+            touchUpEvent = event
+            performClick()
+            // A click has been detected and forwarded. Consume the event so onClick won't be
+            // invoked twice.
+            return true
+        }
+
         return true
+    }
+
+    override fun performClick(): Boolean {
+        streamer?.let { it ->
+            if (enableTapToFocus) {
+                // mTouchUpEvent == null means it's an accessibility click. Focus at the center instead.
+                val x = touchUpEvent?.x ?: (width / 2f)
+                val y = touchUpEvent?.y ?: (height / 2f)
+                it.settings.camera.focusMetering.onTap(
+                    PointF(x, y),
+                    Rect(this.x.toInt(), this.y.toInt(), width, height),
+                    PreviewUtils.getSurfaceOrientation(display.rotation)
+                )
+            }
+
+        }
+        touchUpEvent = null
+        return super.performClick()
     }
 
     private fun startPreviewIfReady(shouldFailSilently: Boolean = false) {
