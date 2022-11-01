@@ -25,7 +25,7 @@ import android.view.Surface
  *
  * @return an integer equals to the current device orientation
  */
-fun Context.getOrientation(): Int {
+fun Context.getDeviceOrientation(): Int {
     val displayManager = this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
     return when (val displayRotation =
         displayManager.getDisplay(Display.DEFAULT_DISPLAY).rotation) {
@@ -44,7 +44,14 @@ fun Context.getOrientation(): Int {
  *
  * @return true if the device is in portrait, otherwise false
  */
-fun Context.isPortrait(): Boolean {
-    val orientation = this.getOrientation()
+fun Context.isDevicePortrait(): Boolean {
+    val orientation = this.getDeviceOrientation()
     return orientation == 90 || orientation == 270
 }
+
+/**
+ * Check if the device is in landscape.
+ *
+ * @return true if the device is in landscape, otherwise false
+ */
+fun Context.isDeviceLandscape() = !isDevicePortrait()
