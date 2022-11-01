@@ -22,7 +22,7 @@ import android.media.MediaFormat
 import android.os.Build
 import android.util.Size
 import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
-import io.github.thibaultbee.streampack.internal.utils.isPortrait
+import io.github.thibaultbee.streampack.internal.utils.isDevicePortrait
 import io.github.thibaultbee.streampack.internal.utils.isVideo
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import java.security.InvalidParameterException
@@ -104,7 +104,7 @@ class VideoConfig(
      * @return oriented resolution
      */
     fun getOrientedResolution(context: Context): Size {
-        return if (context.isPortrait()) {
+        return if (context.isDevicePortrait()) {
             Size(resolution.height, resolution.width)
         } else {
             Size(resolution.width, resolution.height)

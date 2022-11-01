@@ -27,8 +27,8 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.gl.EGlSurface
 import io.github.thibaultbee.streampack.internal.gl.FullFrameRect
 import io.github.thibaultbee.streampack.internal.gl.Texture2DProgram
-import io.github.thibaultbee.streampack.internal.utils.getOrientation
-import io.github.thibaultbee.streampack.internal.utils.isPortrait
+import io.github.thibaultbee.streampack.internal.utils.getDeviceOrientation
+import io.github.thibaultbee.streampack.internal.utils.isDevicePortrait
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import java.util.concurrent.Executors
 
@@ -133,14 +133,14 @@ class VideoMediaCodecEncoder(
                 fullFrameRect = FullFrameRect(Texture2DProgram()).apply {
                     textureId = createTextureObject()
                     setMVPMatrixAndViewPort(
-                        context.getOrientation().toFloat(),
+                        context.getDeviceOrientation().toFloat(),
                         Size(width, height)
                     )
                 }
 
                 surfaceTexture = attachOrBuildSurfaceTexture(surfaceTexture).apply {
                     if (manageVideoOrientation) {
-                        if (context.isPortrait()) {
+                        if (context.isDevicePortrait()) {
                             setDefaultBufferSize(height, width)
                         } else {
                             setDefaultBufferSize(width, height)
