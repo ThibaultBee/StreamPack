@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.listeners
 
 /**
- * Interface of Secure Reliable Transport (SRT) Protocol listener
+ * Interface for streamer with remote connection.
  */
 interface OnConnectionListener {
     /**
