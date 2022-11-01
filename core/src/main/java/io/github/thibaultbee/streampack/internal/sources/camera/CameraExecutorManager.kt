@@ -63,12 +63,21 @@ class CameraExecutorManager : ICameraThreadManager {
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
-    override fun setRepeatingRequest(
+    override fun setRepeatingSingleRequest(
         captureSession: CameraCaptureSession,
         captureRequest: CaptureRequest,
         callback: CameraCaptureSession.CaptureCallback
-    ) {
-        captureSession.setSingleRepeatingRequest(captureRequest, cameraExecutor, callback)
+    ): Int {
+        return captureSession.setSingleRepeatingRequest(captureRequest, cameraExecutor, callback)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    override fun captureBurstRequests(
+        captureSession: CameraCaptureSession,
+        captureRequests: List<CaptureRequest>,
+        callback: CameraCaptureSession.CaptureCallback
+    ): Int {
+        return captureSession.captureBurstRequests(captureRequests, cameraExecutor, callback)
     }
 
     override fun release() {

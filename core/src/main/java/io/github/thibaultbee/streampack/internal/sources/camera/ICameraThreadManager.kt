@@ -58,12 +58,27 @@ interface ICameraThreadManager {
      * @param captureSession the [CameraCaptureSession]
      * @param captureRequest the [CaptureRequest]
      * @param callback an implementation of [CameraCaptureSession.CaptureCallback]
+     * @return A unique capture sequence ID
      */
-    fun setRepeatingRequest(
+    fun setRepeatingSingleRequest(
         captureSession: CameraCaptureSession,
         captureRequest: CaptureRequest,
         callback: CameraCaptureSession.CaptureCallback
-    )
+    ): Int
+
+    /**
+     * Capture multiple burst requests.
+     *
+     * @param captureSession the [CameraCaptureSession]
+     * @param captureRequests the list of [CaptureRequest]
+     * @param callback an implementation of [CameraCaptureSession.CaptureCallback]
+     * @return A unique capture sequence ID
+     */
+    fun captureBurstRequests(
+        captureSession: CameraCaptureSession,
+        captureRequests: List<CaptureRequest>,
+        callback: CameraCaptureSession.CaptureCallback
+    ): Int
 
     /**
      * Release internal object.

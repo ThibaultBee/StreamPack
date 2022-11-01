@@ -51,12 +51,20 @@ class CameraHandlerManager : ICameraThreadManager {
         camera.createCaptureSession(targets, callback, cameraHandler)
     }
 
-    override fun setRepeatingRequest(
+    override fun setRepeatingSingleRequest(
         captureSession: CameraCaptureSession,
         captureRequest: CaptureRequest,
         callback: CameraCaptureSession.CaptureCallback
-    ) {
-        captureSession.setRepeatingRequest(captureRequest, callback, cameraHandler)
+    ): Int {
+        return captureSession.setRepeatingRequest(captureRequest, callback, cameraHandler)
+    }
+
+    override fun captureBurstRequests(
+        captureSession: CameraCaptureSession,
+        captureRequests: List<CaptureRequest>,
+        callback: CameraCaptureSession.CaptureCallback
+    ): Int {
+        return captureSession.captureBurst(captureRequests, callback, cameraHandler)
     }
 
     override fun release() {
