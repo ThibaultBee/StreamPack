@@ -17,28 +17,29 @@ package io.github.thibaultbee.streampack.internal.endpoints
 
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.logger.Logger
+import io.github.thibaultbee.streampack.utils.TAG
 
 /**
  * A fake endpoint for test purpose.
  */
 class FakeEndpoint() : IEndpoint {
     override fun startStream() {
-        Logger.d(this, "startStream called")
+        Logger.d(TAG, "startStream called")
     }
 
     override fun configure(config: Int) {
-        Logger.d(this, "configure called with bitrate = $config")
+        Logger.d(TAG, "configure called with bitrate = $config")
     }
 
     override fun write(packet: Packet) {
-        Logger.d(this, "write called (packet size = ${packet.buffer.remaining()})")
+        Logger.d(TAG, "write called (packet size = ${packet.buffer.remaining()})")
     }
 
     override fun stopStream() {
-        Logger.d(this, "stopStream called")
+        Logger.d(TAG, "stopStream called")
     }
 
     override fun release() {
-        Logger.d(this, "release called")
+        Logger.d(TAG, "release called")
     }
 }

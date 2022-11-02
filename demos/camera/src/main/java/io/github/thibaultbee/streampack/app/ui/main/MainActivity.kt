@@ -25,11 +25,11 @@ import androidx.appcompat.app.AppCompatActivity
 import io.github.thibaultbee.streampack.app.R
 import io.github.thibaultbee.streampack.app.databinding.MainActivityBinding
 import io.github.thibaultbee.streampack.app.ui.settings.SettingsActivity
+import io.github.thibaultbee.streampack.utils.TAG
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: MainActivityBinding
-    private val tag = this::class.java.simpleName
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
                 goToSettingsActivity()
                 true
             } else {
-                Log.e(tag, "Unknown menu item ${it.itemId}")
+                Log.e(TAG, "Unknown menu item ${it.itemId}")
                 false
             }
         }

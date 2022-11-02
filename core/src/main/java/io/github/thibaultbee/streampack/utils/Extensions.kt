@@ -32,3 +32,7 @@ fun Context.hasSystemFeature(featureName: String) = packageManager.hasSystemFeat
  * @return true if the feature is supported, false otherwises
  */
 fun Context.hasExternalCamera() = hasSystemFeature(PackageManager.FEATURE_CAMERA_EXTERNAL)
+
+
+val Any.TAG: String
+    get() = this::class.java.simpleName

@@ -26,6 +26,7 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.error.CameraError
 import io.github.thibaultbee.streampack.logger.Logger
+import io.github.thibaultbee.streampack.utils.TAG
 import kotlinx.coroutines.*
 import java.security.InvalidParameterException
 import kotlin.coroutines.resume
@@ -50,7 +51,7 @@ class CameraController(
 
     private fun getClosestFpsRange(cameraId: String, fps: Int): Range<Int> {
         var fpsRangeList = context.getCameraFpsList(cameraId)
-        Logger.d(this, "$fpsRangeList")
+        Logger.i(TAG, "Supported FPS range list: $fpsRangeList")
 
         // Get range that contains FPS
         fpsRangeList =
@@ -68,7 +69,7 @@ class CameraController(
             }
         }
 
-        Logger.d(this, "Selected Fps range $selectedFpsRange")
+        Logger.d(TAG, "Selected Fps range $selectedFpsRange")
         return selectedFpsRange
     }
 
@@ -78,11 +79,11 @@ class CameraController(
         override fun onOpened(device: CameraDevice) = cont.resume(device)
 
         override fun onDisconnected(camera: CameraDevice) {
-            Logger.w(this, "Camera ${camera.id} has been disconnected")
+            Logger.w(TAG, "Camera ${camera.id} has been disconnected")
         }
 
         override fun onError(camera: CameraDevice, error: Int) {
-            Logger.e(this, "Camera ${camera.id} is in error $error")
+            Logger.e(TAG, "Camera ${camera.id} is in error $error")
 
             val exc = when (error) {
                 ERROR_CAMERA_IN_USE -> CameraError("Camera already in use")
@@ -102,7 +103,7 @@ class CameraController(
         override fun onConfigured(session: CameraCaptureSession) = cont.resume(session)
 
         override fun onConfigureFailed(session: CameraCaptureSession) {
-            Logger.e(this, "Camera Session configuration failed")
+            Logger.e(TAG, "Camera Session configuration failed")
             cont.resumeWithException(CameraError("Camera: failed to configure the capture session"))
         }
     }
@@ -114,7 +115,7 @@ class CameraController(
             failure: CaptureFailure
         ) {
             super.onCaptureFailed(session, request, failure)
-            Logger.e(this, "Capture failed  with code ${failure.reason}")
+            Logger.e(TAG, "Capture failed  with code ${failure.reason}")
         }
     }
 

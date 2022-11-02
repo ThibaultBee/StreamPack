@@ -32,15 +32,12 @@ import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.StreamerLifeCycleObserver
+import io.github.thibaultbee.streampack.utils.TAG
 import io.github.thibaultbee.streampack.utils.isFrameRateSupported
 import io.github.thibaultbee.streampack.views.StreamerSurfaceView
 import kotlinx.coroutines.launch
 
 class PreviewViewModel(private val streamerManager: StreamerManager) : ObservableViewModel() {
-    companion object {
-        private const val TAG = "PreviewViewModel"
-    }
-
     val streamerLifeCycleObserver: StreamerLifeCycleObserver
         get() = streamerManager.streamerLifeCycleObserver
 

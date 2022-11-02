@@ -37,6 +37,7 @@ import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 import io.github.thibaultbee.streampack.utils.NotificationUtils
+import io.github.thibaultbee.streampack.utils.TAG
 import io.github.thibaultbee.streampack.utils.getStreamer
 
 
@@ -138,7 +139,7 @@ abstract class BaseScreenRecorderService(
                     }
                 }
         } catch (e: Exception) {
-            Logger.e(this, "An error occurred", e)
+            Logger.e(TAG, "An error occurred", e)
             onErrorNotification(e)?.let { notify(it) }
             stopSelf()
         }
@@ -242,8 +243,6 @@ abstract class BaseScreenRecorderService(
     }
 
     companion object {
-        const val TAG = "ScreenRecorderService"
-
         const val DEFAULT_NOTIFICATION_CHANNEL_ID =
             "io.github.thibaultbee.streampack.streamers.services"
         const val DEFAULT_NOTIFICATION_ID = 3782

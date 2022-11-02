@@ -20,6 +20,7 @@ import android.util.Log
 import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.streamers.bases.BaseAudioOnlyStreamer
 import io.github.thibaultbee.streampack.utils.AndroidUtils
+import io.github.thibaultbee.streampack.utils.TAG
 import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
@@ -27,10 +28,6 @@ import org.junit.Test
 abstract class AudioOnlyStreamerTestCase :
     StreamerTestCase() {
     abstract override val streamer: BaseAudioOnlyStreamer
-
-    companion object {
-        private const val TAG = "AudioOnlyStreamerTestCase"
-    }
 
     @get:Rule
     val runtimePermissionRule: GrantPermissionRule =

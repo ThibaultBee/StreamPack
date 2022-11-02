@@ -7,23 +7,23 @@ object Logger : ILogger {
      */
     var logger: ILogger = StreamPackLogger()
 
-    override fun e(obj: Any, message: String, tr: Throwable?) {
-        logger.e(obj, message, tr)
+    override fun e(tag: String, message: String, tr: Throwable?) {
+        logger.e(tag, message, tr)
     }
 
-    override fun w(obj: Any, message: String, tr: Throwable?) {
-        logger.w(obj, message, tr)
+    override fun w(tag: String, message: String, tr: Throwable?) {
+        logger.w(tag, message, tr)
     }
 
-    override fun i(obj: Any, message: String, tr: Throwable?) {
-        logger.i(obj, message, tr)
+    override fun i(tag: String, message: String, tr: Throwable?) {
+        logger.i(tag, message, tr)
     }
 
-    override fun v(obj: Any, message: String, tr: Throwable?) {
-        logger.v(obj, message, tr)
+    override fun v(tag: String, message: String, tr: Throwable?) {
+        logger.v(tag, message, tr)
     }
 
-    override fun d(obj: Any, message: String, tr: Throwable?) {
-        logger.d(obj, message, tr)
+    override fun d(tag: String, message: String, tr: Throwable?) {
+        logger.d(tag, message, tr)
     }
 }

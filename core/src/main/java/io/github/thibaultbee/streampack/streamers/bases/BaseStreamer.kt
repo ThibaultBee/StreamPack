@@ -39,6 +39,7 @@ import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.helpers.StreamerConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import io.github.thibaultbee.streampack.streamers.settings.BaseStreamerSettings
+import io.github.thibaultbee.streampack.utils.TAG
 import java.nio.ByteBuffer
 
 
@@ -147,7 +148,7 @@ abstract class BaseStreamer(
             stopStream()
             onErrorListener?.onError(error)
         } catch (e: Exception) {
-            Logger.e(this, "onStreamError: Can't stop stream")
+            Logger.e(TAG, "onStreamError: Can't stop stream")
         }
     }
 

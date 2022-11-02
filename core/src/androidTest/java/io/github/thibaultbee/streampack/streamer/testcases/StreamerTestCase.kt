@@ -20,6 +20,7 @@ import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import io.github.thibaultbee.streampack.utils.AndroidUtils
+import io.github.thibaultbee.streampack.utils.TAG
 import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Test
@@ -28,10 +29,6 @@ abstract class StreamerTestCase {
     protected val context: Context = InstrumentationRegistry.getInstrumentation().context
 
     abstract val streamer: BaseStreamer
-
-    companion object {
-        private const val TAG = "StreamerTestCase"
-    }
 
     @After
     open fun tearDown() {
