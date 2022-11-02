@@ -36,10 +36,6 @@ import io.github.thibaultbee.streampack.views.StreamerSurfaceView
 class PreviewFragment : Fragment() {
     private lateinit var binding: MainFragmentBinding
 
-    companion object {
-        private const val TAG = "PreviewFragment"
-    }
-
     private val viewModel: PreviewViewModel by lazy {
         ViewModelProvider(
             this,

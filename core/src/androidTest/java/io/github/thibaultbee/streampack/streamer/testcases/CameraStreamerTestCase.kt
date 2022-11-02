@@ -22,6 +22,7 @@ import android.view.Surface
 import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.utils.AndroidUtils
+import io.github.thibaultbee.streampack.utils.TAG
 import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Before
@@ -32,10 +33,6 @@ abstract class CameraStreamerTestCase :
     StreamerTestCase() {
     abstract override val streamer: BaseCameraStreamer
     private lateinit var surface: Surface
-
-    companion object {
-        private const val TAG = "CameraStreamerTestCase"
-    }
 
     @Before
     fun setUp() {

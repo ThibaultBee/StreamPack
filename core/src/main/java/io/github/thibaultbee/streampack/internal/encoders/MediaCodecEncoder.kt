@@ -30,6 +30,7 @@ import io.github.thibaultbee.streampack.internal.utils.isAudio
 import io.github.thibaultbee.streampack.internal.utils.slices
 import io.github.thibaultbee.streampack.internal.utils.startsWith
 import io.github.thibaultbee.streampack.logger.Logger
+import io.github.thibaultbee.streampack.utils.TAG
 import java.nio.ByteBuffer
 
 
@@ -116,7 +117,7 @@ abstract class MediaCodecEncoder<T : Config>(
                         ?: reportError(StreamPackError(UnsupportedOperationException("MediaCodecEncoder: can't get output buffer")))
                 } catch (e: IllegalStateException) {
                     isOnError = true
-                    Logger.w(this, "onOutputBufferAvailable called while stopped")
+                    Logger.w(TAG, "onOutputBufferAvailable called while stopped")
                 } catch (e: StreamPackError) {
                     isOnError = true
                     reportError(e)
@@ -155,7 +156,7 @@ abstract class MediaCodecEncoder<T : Config>(
                         )
                 } catch (e: IllegalStateException) {
                     isOnError = true
-                    Logger.w(this, "onInputBufferAvailable called while stopped")
+                    Logger.w(TAG, "onInputBufferAvailable called while stopped")
                 } catch (e: StreamPackError) {
                     isOnError = true
                     reportError(e)
@@ -164,7 +165,7 @@ abstract class MediaCodecEncoder<T : Config>(
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
-            Logger.i(this, "Format changed : $format")
+            Logger.i(TAG, "Format changed : $format")
         }
 
         override fun onError(codec: MediaCodec, e: MediaCodec.CodecException) {
@@ -189,7 +190,7 @@ abstract class MediaCodecEncoder<T : Config>(
         val format = createMediaFormat(config, withProfileLevel)
 
         val encoderName = MediaCodecHelper.findEncoder(format)
-        Logger.i(this, "Selected encoder $encoderName")
+        Logger.i(TAG, "Selected encoder $encoderName")
         val codec = MediaCodec.createByCodecName(encoderName)
 
         // Apply configuration
@@ -216,11 +217,11 @@ abstract class MediaCodecEncoder<T : Config>(
             mediaCodec = try {
                 createCodec(config, true)
             } catch (e: Exception) {
-                Logger.i(this, "Fallback without profile and level (reason: ${e})")
+                Logger.i(TAG, "Fallback without profile and level (reason: ${e})")
                 createCodec(config, false)
             }
         } catch (e: Exception) {
-            Logger.e(this, "Failed to create encoder for $config")
+            Logger.e(TAG, "Failed to create encoder for $config")
             throw e
         }
     }
@@ -247,7 +248,7 @@ abstract class MediaCodecEncoder<T : Config>(
                 mediaCodec?.stop()
             }
         } catch (e: IllegalStateException) {
-            Logger.d(this, "Not running")
+            Logger.d(TAG, "Not running")
         }
     }
 

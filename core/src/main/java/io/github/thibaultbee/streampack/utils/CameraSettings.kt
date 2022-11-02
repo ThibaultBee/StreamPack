@@ -628,7 +628,7 @@ class FocusMetering(
         val maxWbRegion = whiteBalance.maxNumOfMeteringRegions
 
         if (maxAFRegion == 0 && maxAERegion == 0 && maxWbRegion == 0) {
-            Logger.w(this, "No metering regions available")
+            Logger.w(TAG, "No metering regions available")
             return
         }
 

@@ -28,6 +28,7 @@ import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.utils.TimeUtils
 import io.github.thibaultbee.streampack.logger.Logger
+import io.github.thibaultbee.streampack.utils.TAG
 import java.nio.ByteBuffer
 
 class AudioCapture : IAudioCapture {
@@ -58,14 +59,14 @@ class AudioCapture : IAudioCapture {
                 if (AcousticEchoCanceler.isAvailable()) {
                     AcousticEchoCanceler.create(it.audioSessionId).enabled = true
                 } else {
-                    Logger.e(this, "Acoustic echo canceler is not available")
+                    Logger.e(TAG, "Acoustic echo canceler is not available")
                 }
             }
             if (config.enableNoiseSuppressor) {
                 if (NoiseSuppressor.isAvailable()) {
                     NoiseSuppressor.create(it.audioSessionId).enabled = true
                 } else {
-                    Logger.e(this, "Noise suppressor is not available")
+                    Logger.e(TAG, "Noise suppressor is not available")
                 }
             }
         }
@@ -89,7 +90,7 @@ class AudioCapture : IAudioCapture {
 
     override fun stopStream() {
         if (!isRunning()) {
-            Logger.d(this, "Not running")
+            Logger.d(TAG, "Not running")
             return
         }
 

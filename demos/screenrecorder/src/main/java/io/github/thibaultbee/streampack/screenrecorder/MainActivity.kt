@@ -49,11 +49,11 @@ import io.github.thibaultbee.streampack.screenrecorder.settings.SettingsActivity
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStreamer
+import io.github.thibaultbee.streampack.utils.TAG
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private val tag = this::class.simpleName
     private val configuration by lazy {
         Configuration(this)
     }
@@ -125,12 +125,12 @@ class MainActivity : AppCompatActivity() {
                                     e.message ?: "Unknown error"
                                 )
                                 binding.liveButton.isChecked = false
-                                Log.e(tag, "Error while starting streamer", e)
+                                Log.e(TAG, "Error while starting streamer", e)
                             }
                         },
                         {
                             binding.liveButton.isChecked = false
-                            Log.i(tag, "Service disconnected")
+                            Log.i(TAG, "Service disconnected")
                         })
                 }
                 EndpointType.RTMP -> {
@@ -152,7 +152,7 @@ class MainActivity : AppCompatActivity() {
                                     e.message ?: "Unknown error"
                                 )
                                 binding.liveButton.isChecked = false
-                                Log.e(tag, "Error while starting streamer", e)
+                                Log.e(TAG, "Error while starting streamer", e)
                             }
                         },
                         {
@@ -162,7 +162,7 @@ class MainActivity : AppCompatActivity() {
                                 "Service disconnected"
                             )
                             binding.liveButton.isChecked = false
-                            Log.i(tag, "Service disconnected")
+                            Log.i(TAG, "Service disconnected")
                         })
                 }
             }
@@ -259,7 +259,7 @@ class MainActivity : AppCompatActivity() {
             if (it.itemId == R.id.action_settings) {
                 goToSettingsActivity()
             } else {
-                Log.e(tag, "Unknown menu item ${it.itemId}")
+                Log.e(TAG, "Unknown menu item ${it.itemId}")
             }
             true
         }

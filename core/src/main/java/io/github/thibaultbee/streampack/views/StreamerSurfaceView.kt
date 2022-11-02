@@ -30,6 +30,7 @@ import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.R
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
+import io.github.thibaultbee.streampack.utils.TAG
 import io.github.thibaultbee.streampack.utils.getBackCameraList
 import io.github.thibaultbee.streampack.utils.getCameraCharacteristics
 import io.github.thibaultbee.streampack.utils.getFrontCameraList
@@ -191,8 +192,6 @@ open class StreamerSurfaceView @JvmOverloads constructor(
     }
 
     companion object {
-        private val TAG = StreamerSurfaceView::class.java.simpleName
-
         private val DEFAULT_CAMERA_FACING = FacingDirection.BACK
     }
 

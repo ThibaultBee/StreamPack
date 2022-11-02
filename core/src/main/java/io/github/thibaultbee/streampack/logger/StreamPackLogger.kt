@@ -22,43 +22,23 @@ import android.util.Log
  * It calls Android [Log].
  */
 class StreamPackLogger : ILogger {
-    override fun e(obj: Any, message: String, tr: Throwable?) {
-        if (obj is String) {
-            Log.e(obj, message, tr)
-        } else {
-            Log.e(obj.javaClass.simpleName, message, tr)
-        }
+    override fun e(tag: String, message: String, tr: Throwable?) {
+        Log.e(tag, message, tr)
     }
 
-    override fun w(obj: Any, message: String, tr: Throwable?) {
-        if (obj is String) {
-            Log.w(obj, message, tr)
-        } else {
-            Log.w(obj.javaClass.simpleName, message, tr)
-        }
+    override fun w(tag: String, message: String, tr: Throwable?) {
+        Log.w(tag, message, tr)
     }
 
-    override fun i(obj: Any, message: String, tr: Throwable?) {
-        if (obj is String) {
-            Log.i(obj, message, tr)
-        } else {
-            Log.i(obj.javaClass.simpleName, message, tr)
-        }
+    override fun i(tag: String, message: String, tr: Throwable?) {
+        Log.i(tag, message, tr)
     }
 
-    override fun v(obj: Any, message: String, tr: Throwable?) {
-        if (obj is String) {
-            Log.v(obj, message, tr)
-        } else {
-            Log.v(obj.javaClass.simpleName, message, tr)
-        }
+    override fun v(tag: String, message: String, tr: Throwable?) {
+        Log.v(tag, message, tr)
     }
 
-    override fun d(obj: Any, message: String, tr: Throwable?) {
-        if (obj is String) {
-            Log.d(obj, message, tr)
-        } else {
-            Log.d(obj.javaClass.simpleName, message, tr)
-        }
+    override fun d(tag: String, message: String, tr: Throwable?) {
+        Log.d(tag, message, tr)
     }
 }

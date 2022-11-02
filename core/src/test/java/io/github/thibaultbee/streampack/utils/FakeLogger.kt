@@ -18,9 +18,9 @@ package io.github.thibaultbee.streampack.utils
 import io.github.thibaultbee.streampack.logger.ILogger
 
 class FakeLogger : ILogger {
-    override fun e(obj: Any, message: String, tr: Throwable?) = println("E:$message")
-    override fun w(obj: Any, message: String, tr: Throwable?) = println("W:$message")
-    override fun i(obj: Any, message: String, tr: Throwable?) = println("I:$message")
-    override fun v(obj: Any, message: String, tr: Throwable?) = println("V:$message")
-    override fun d(obj: Any, message: String, tr: Throwable?) = println("D:$message")
+    override fun e(tag: String, message: String, tr: Throwable?) = println("E:$tag:$message")
+    override fun w(tag: String, message: String, tr: Throwable?) = println("W:$tag:$message")
+    override fun i(tag: String, message: String, tr: Throwable?) = println("I:$tag:$message")
+    override fun v(tag: String, message: String, tr: Throwable?) = println("V:$tag:$message")
+    override fun d(tag: String, message: String, tr: Throwable?) = println("D:$tag:$message")
 }
