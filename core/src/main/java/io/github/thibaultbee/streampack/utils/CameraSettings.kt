@@ -619,6 +619,11 @@ class FocusMetering(
         awbPoints: List<PointF>,
         fovAspectRatio: Rational
     ) {
+        if (afPoints.isEmpty() && aePoints.isEmpty() && awbPoints.isEmpty()) {
+            Logger.e(TAG, "No focus/metering points provided")
+            return
+        }
+
         val cameraId = cameraController.cameraId ?: throw IllegalStateException("Camera ID is null")
 
         disableAutoCancel()
