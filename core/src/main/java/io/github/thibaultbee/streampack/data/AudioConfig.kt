@@ -164,4 +164,7 @@ class AudioConfig(
             else -> throw InvalidParameterException("Byte format not supported: $byteFormat")
         }
     }
+
+    override fun toString() =
+        "AudioConfig(mimeType=$mimeType, startBitrate=$startBitrate, sampleRate=$sampleRate, channelConfig=$channelConfig, byteFormat=$byteFormat, enableEchoCanceler=$enableEchoCanceler, enableNoiseSuppressor=$enableNoiseSuppressor)"
 }

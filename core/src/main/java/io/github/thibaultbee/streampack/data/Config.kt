@@ -96,4 +96,6 @@ open class Config(
             }
         }
     }
+
+    override fun toString() = "Config(mimeType='$mimeType', startBitrate=$startBitrate)"
 }
