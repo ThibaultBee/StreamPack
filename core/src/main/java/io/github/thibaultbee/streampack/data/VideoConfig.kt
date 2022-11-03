@@ -176,5 +176,8 @@ class VideoConfig(
         fun getBestLevel(mimeType: String, profile: Int) =
             MediaCodecHelper.getMaxLevel(mimeType, profile)
     }
+
+    override fun toString() =
+        "VideoConfig(mimeType='$mimeType', startBitrate=$startBitrate, resolution=$resolution, fps=$fps, profile=$profile, level=$level)"
 }
 
