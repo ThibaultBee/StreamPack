@@ -58,14 +58,7 @@ class VideoMediaCodecEncoder(
     }
 
     override fun createMediaFormat(config: Config, withProfileLevel: Boolean): MediaFormat {
-        val videoConfig = config as VideoConfig
         val videoFormat = super.createMediaFormat(config, withProfileLevel)
-        if (manageVideoOrientation) {
-            // Override previous format
-            val resolution = videoConfig.getOrientedResolution(context)
-            videoFormat.setInteger(MediaFormat.KEY_WIDTH, resolution.width)
-            videoFormat.setInteger(MediaFormat.KEY_HEIGHT, resolution.height)
-        }
 
         if (useSurfaceMode) {
             videoFormat.setInteger(
@@ -79,6 +72,16 @@ class VideoMediaCodecEncoder(
             )
         }
         return videoFormat
+    }
+
+    override fun extendMediaFormat(config: Config, format: MediaFormat) {
+        val videoConfig = config as VideoConfig
+        if (manageVideoOrientation) {
+            // Override previous format
+            val resolution = videoConfig.getOrientedResolution(context)
+            format.setInteger(MediaFormat.KEY_WIDTH, resolution.width)
+            format.setInteger(MediaFormat.KEY_HEIGHT, resolution.height)
+        }
     }
 
     override fun startStream() {

@@ -186,12 +186,21 @@ abstract class MediaCodecEncoder<T : Config>(
     open fun createMediaFormat(config: Config, withProfileLevel: Boolean) =
         config.getFormat(withProfileLevel)
 
+    open fun extendMediaFormat(config: Config, format: MediaFormat) {}
+
     private fun createCodec(config: Config, withProfileLevel: Boolean): MediaCodec {
         val format = createMediaFormat(config, withProfileLevel)
 
         val encoderName = MediaCodecHelper.findEncoder(format)
         Logger.i(TAG, "Selected encoder $encoderName")
         val codec = MediaCodec.createByCodecName(encoderName)
+
+        /**
+         * This is a workaround because few Samsung devices (such as Samsung Galaxy J7 Prime does
+         * not find any encoder if the width and height are oriented to portrait.
+         * We defer orientation of width and height to here.
+         */
+        extendMediaFormat(config, format)
 
         // Apply configuration
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
