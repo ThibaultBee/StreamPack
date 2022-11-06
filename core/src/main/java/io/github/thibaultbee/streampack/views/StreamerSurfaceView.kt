@@ -205,7 +205,6 @@ open class StreamerSurfaceView @JvmOverloads constructor(
 
         override fun surfaceDestroyed(holder: SurfaceHolder) {
             streamer?.stopPreview()
-            holder.addCallback(null)
         }
     }
 
