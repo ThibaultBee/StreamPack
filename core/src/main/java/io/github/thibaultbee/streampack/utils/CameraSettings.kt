@@ -30,7 +30,6 @@ import io.github.thibaultbee.streampack.internal.sources.camera.CameraController
 import io.github.thibaultbee.streampack.internal.utils.*
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
-import io.github.thibaultbee.streampack.views.PreviewUtils
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -699,7 +698,7 @@ class FocusMetering(
             listOf(normalizedPoint),
             listOf(normalizedPoint),
             emptyList(),
-            if (PreviewUtils.isPortrait(relativeRotation)) {
+            if (OrientationUtils.isPortrait(relativeRotation)) {
                 Rational(fovRect.height(), fovRect.width())
             } else {
                 Rational(fovRect.width(), fovRect.height())

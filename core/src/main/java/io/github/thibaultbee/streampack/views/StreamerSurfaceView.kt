@@ -30,10 +30,7 @@ import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.R
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
-import io.github.thibaultbee.streampack.utils.TAG
-import io.github.thibaultbee.streampack.utils.getBackCameraList
-import io.github.thibaultbee.streampack.utils.getCameraCharacteristics
-import io.github.thibaultbee.streampack.utils.getFrontCameraList
+import io.github.thibaultbee.streampack.utils.*
 
 
 /**
@@ -139,7 +136,7 @@ open class StreamerSurfaceView @JvmOverloads constructor(
                 it.settings.camera.focusMetering.onTap(
                     PointF(x, y),
                     Rect(this.x.toInt(), this.y.toInt(), width, height),
-                    PreviewUtils.getSurfaceOrientation(display.rotation)
+                    OrientationUtils.getSurfaceOrientation(display.rotation)
                 )
             }
 
