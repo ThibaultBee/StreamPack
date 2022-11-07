@@ -26,6 +26,7 @@ import io.github.thibaultbee.streampack.internal.utils.isDevicePortrait
 import io.github.thibaultbee.streampack.internal.utils.isVideo
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import java.security.InvalidParameterException
+import kotlin.math.roundToInt
 
 /**
  * Video configuration class.
@@ -63,7 +64,15 @@ class VideoConfig(
      * Video encoder level. Encoders may not support requested level. In this case, StreamPack fallbacks to default level.
      * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
      */
-    val level: Int = getBestLevel(mimeType, profile)
+    val level: Int = getBestLevel(mimeType, profile),
+    /**
+     * Video encoder I-frame interval in seconds.
+     * This is a best effort as few camera can not generate a fixed framerate.
+     * For live streaming, I-frame interval should be really low. For recording, I-frame interval should be higher.
+     * A value of 0 means that each frame is an I-frame.
+     * On device with API < 25, this value will be rounded to an integer. So don't expect a precise value and any value < 0.5 will be considered as 0.
+     */
+    val gopSize: Float = 1f  // 1s between I frames
 ) : Config(mimeType, startBitrate) {
     init {
         require(mimeType.isVideo()) { "MimeType must be video" }
@@ -94,8 +103,22 @@ class VideoConfig(
          * Video encoder profile/level. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile.
          * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
          */
-        profileLevel: CodecProfileLevel
-    ) : this(mimeType, startBitrate, resolution, fps, profileLevel.profile, profileLevel.level)
+        profileLevel: CodecProfileLevel,
+        /**
+         * Video encoder I-frame interval in seconds.
+         * This is a best effort as few camera can not generate a fixed framerate.
+         * For live streaming, I-frame interval should be really low. For recording, I-frame interval should be higher.
+         */
+        gopSize: Float = 1f  // 1s between I frames
+    ) : this(
+        mimeType,
+        startBitrate,
+        resolution,
+        fps,
+        profileLevel.profile,
+        profileLevel.level,
+        gopSize
+    )
 
     /**
      * Get resolution according to device orientation
@@ -126,7 +149,11 @@ class VideoConfig(
         // Extended video format
         format.setInteger(MediaFormat.KEY_BIT_RATE, startBitrate)
         format.setInteger(MediaFormat.KEY_FRAME_RATE, fps)
-        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1) // 1s between I frame
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+            format.setFloat(MediaFormat.KEY_I_FRAME_INTERVAL, gopSize)
+        } else {
+            format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, gopSize.roundToInt())
+        }
 
         if (withProfileLevel) {
             format.setInteger(MediaFormat.KEY_PROFILE, profile)
