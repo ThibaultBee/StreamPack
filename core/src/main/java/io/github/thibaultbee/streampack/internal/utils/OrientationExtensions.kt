@@ -19,6 +19,7 @@ import android.content.Context
 import android.hardware.display.DisplayManager
 import android.view.Display
 import android.view.Surface
+import io.github.thibaultbee.streampack.utils.OrientationUtils
 
 /**
  * Returns the device orientation.
@@ -46,7 +47,7 @@ fun Context.getDeviceOrientation(): Int {
  */
 fun Context.isDevicePortrait(): Boolean {
     val orientation = this.getDeviceOrientation()
-    return orientation == 90 || orientation == 270
+    return OrientationUtils.isPortrait(orientation)
 }
 
 /**
