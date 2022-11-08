@@ -8,7 +8,7 @@ ext {
 
 dependencies {
     implementation project(':core')
-    implementation 'video.api:rtmpdroid:1.0.4'
+    implementation 'video.api:rtmpdroid:1.0.5'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
     implementation "androidx.core:core-ktx:${androidx_core_version}"
