@@ -1,6 +1,30 @@
 Change Log
 ==========
 
+Version 2.5.0
+-------------
+
+## API Changes
+
+- The logger is now a static class `Logger`. You still can set the `ILogger` implementation
+  with `Logger.setLogger()`.
+
+## Features:
+
+- Add a new view that simplify StreamPack integration. It supports zoom on pinch and focus on tap.
+  See `StreamerSurfaceView`.
+- Add a `gopSize` parameter in `VideoConfig` to set the keyframe interval.
+- Add an API for external cameras.
+- In camera settings, add a zoom on pinch and a focus on tap API.
+- Add encoder information in `AudioConfig` and `VideoConfig`.
+- srt: `connect(String)` API supports URI with query parameters: `streamId` and `passphrase`.
+  Example: `srt://server:port?streamId=myStreamId&passphrase=myPassphrase`.
+
+## Bug fixes:
+
+- Fixed a crash when created a MediaCodec on few Samsung devices.
+- Fixed services notification for Android 13.
+
 Version 2.4.2
 -------------
 
