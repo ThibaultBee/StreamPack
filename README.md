@@ -108,6 +108,10 @@ side, you should be able to watch this live stream.
 
 ## Quick start
 
+If you want to create a new application, you should use the
+template [StreamPack boilerplate](https://github.com/ThibaultBee/StreamPack-boilerplate). In 5
+minutes, you will be able to stream live video to your server.
+
 1. Adds [permissions](#permissions) to your `AndroidManifest.xml` and request them in your
    Activity/Fragment.
 
