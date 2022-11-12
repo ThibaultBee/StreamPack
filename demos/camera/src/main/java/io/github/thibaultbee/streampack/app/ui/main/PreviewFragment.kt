@@ -31,7 +31,7 @@ import io.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import io.github.thibaultbee.streampack.app.utils.DialogUtils
 import io.github.thibaultbee.streampack.app.utils.PermissionManager
 import io.github.thibaultbee.streampack.app.utils.StreamerManager
-import io.github.thibaultbee.streampack.views.StreamerSurfaceView
+import io.github.thibaultbee.streampack.views.PreviewView
 
 class PreviewFragment : Fragment() {
     private lateinit var binding: MainFragmentBinding
@@ -178,7 +178,7 @@ class PreviewFragment : Fragment() {
         viewModel.createStreamer()
 
         // Set camera settings button when camera is started
-        binding.preview.listener = object : StreamerSurfaceView.Listener {
+        binding.preview.listener = object : PreviewView.Listener {
             override fun onPreviewStarted() {
                 viewModel.onPreviewStarted()
             }

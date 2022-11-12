@@ -32,7 +32,7 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.streamers.settings.BaseCameraStreamerSettings
 import io.github.thibaultbee.streampack.utils.getCameraList
 import io.github.thibaultbee.streampack.views.AutoFitSurfaceView
-import io.github.thibaultbee.streampack.views.StreamerSurfaceView
+import io.github.thibaultbee.streampack.views.PreviewView
 import kotlinx.coroutines.runBlocking
 
 /**

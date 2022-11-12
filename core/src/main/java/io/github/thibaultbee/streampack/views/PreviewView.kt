@@ -26,25 +26,26 @@ import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
 import android.view.SurfaceHolder
 import android.view.ViewConfiguration
+import android.widget.FrameLayout
 import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.R
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.utils.*
 
-
 /**
- * A [AutoFitSurfaceView] that manages [ICameraStreamer] preview.
+ * A [FrameLayout] containing a [AutoFitSurfaceView] that manages [ICameraStreamer] preview.
  * In the case, you are using it, do not call [ICameraStreamer.startPreview] or
  * [ICameraStreamer.stopPreview] on application side.
  *
  * The [Manifest.permission.CAMERA] permission must be granted before using this class.s
  */
-open class StreamerSurfaceView @JvmOverloads constructor(
+class PreviewView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyle: Int = 0
-) : AutoFitSurfaceView(context, attrs, defStyle) {
+) : FrameLayout(context, attrs, defStyle) {
+    private val surfaceView = AutoFitSurfaceView(context)
     private val cameraFacingDirection: FacingDirection
     private val defaultCameraId: String?
 
@@ -76,12 +77,11 @@ open class StreamerSurfaceView @JvmOverloads constructor(
     )
 
     init {
-        holder.addCallback(StreamerHolderCallback())
-        val a = context.obtainStyledAttributes(attrs, R.styleable.StreamerSurfaceView)
+        val a = context.obtainStyledAttributes(attrs, R.styleable.PreviewView)
 
         try {
             cameraFacingDirection = FacingDirection.fromValue(
-                a.getString(R.styleable.StreamerSurfaceView_cameraFacingDirection)
+                a.getString(R.styleable.PreviewView_cameraFacingDirection)
                     ?: DEFAULT_CAMERA_FACING.value
             )
             defaultCameraId = when (cameraFacingDirection) {
@@ -94,13 +94,17 @@ open class StreamerSurfaceView @JvmOverloads constructor(
             }
 
             enableZoomOnPinch =
-                a.getBoolean(R.styleable.StreamerSurfaceView_enableZoomOnPinch, true)
+                a.getBoolean(R.styleable.PreviewView_enableZoomOnPinch, true)
             enableTapToFocus =
-                a.getBoolean(R.styleable.StreamerSurfaceView_enableTapToFocus, true)
+                a.getBoolean(R.styleable.PreviewView_enableTapToFocus, true)
         } finally {
             a.recycle()
         }
+
+        surfaceView.holder.addCallback(StreamerHolderCallback())
+        addView(surfaceView)
     }
+
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (streamer == null) {
@@ -163,7 +167,7 @@ open class StreamerSurfaceView @JvmOverloads constructor(
                         "View finder size: $width x $height"
                     )
                     Logger.d(TAG, "Selected preview size: $previewSize")
-                    setAspectRatio(previewSize.width, previewSize.height)
+                    surfaceView.setAspectRatio(previewSize.width, previewSize.height)
 
                     // To ensure that size is set, initialize camera in the view's thread
                     post {
@@ -174,7 +178,7 @@ open class StreamerSurfaceView @JvmOverloads constructor(
                         ) {
                             throw SecurityException("Camera permission is needed to run this application")
                         }
-                        it.startPreview(this, camera)
+                        it.startPreview(surfaceView, camera)
                         listener?.onPreviewStarted()
                     }
                 } catch (e: Exception) {

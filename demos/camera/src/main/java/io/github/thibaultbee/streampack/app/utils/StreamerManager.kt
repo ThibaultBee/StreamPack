@@ -27,7 +27,7 @@ import io.github.thibaultbee.streampack.streamers.StreamerLifeCycleObserver
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
 import io.github.thibaultbee.streampack.utils.*
-import io.github.thibaultbee.streampack.views.StreamerSurfaceView
+import io.github.thibaultbee.streampack.views.PreviewView
 import java.io.File
 
 
@@ -79,7 +79,7 @@ class StreamerManager(
         streamer = StreamerFactory(context, configuration).build()
     }
 
-    fun inflateStreamerView(view: StreamerSurfaceView) {
+    fun inflateStreamerView(view: PreviewView) {
         view.streamer = streamer?.getCameraStreamer()
     }
 
