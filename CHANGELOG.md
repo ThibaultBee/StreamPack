@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 2.5.1
+-------------
+
+## API Changes
+
+- `StreamerSurfaceView` has been renamed `PreviewView` and it is not longer a `SurfaceView`
+
 Version 2.5.0
 -------------
 
