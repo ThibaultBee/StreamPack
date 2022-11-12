@@ -61,7 +61,7 @@ data class SequenceParameterSets(
 
             val bitDepthLumaMinus8 = reader.readUE().toByte()
             val bitDepthChromaMinus8 = reader.readUE().toByte()
-            val log2MaxPicOrderCntLsbMinus4 = reader.readUE()
+            reader.readUE() // log2_max_pic_order_cnt_lsb_minus4
 
             val subLayerOrderingInfoPresentFlag = reader.readBoolean()
             for (i in (if (subLayerOrderingInfoPresentFlag) 0 else maxNumSubLayersMinus1)..maxNumSubLayersMinus1) {
