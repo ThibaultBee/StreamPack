@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="StreamerSurfaceView">
+    <declare-styleable name="PreviewView">
         <attr name="cameraFacingDirection" format="string" />
         <attr name="enableZoomOnPinch" format="boolean" />
         <attr name="enableTapToFocus" format="boolean" />
