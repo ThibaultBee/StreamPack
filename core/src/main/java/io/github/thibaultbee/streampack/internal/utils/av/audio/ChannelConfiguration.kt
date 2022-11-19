@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.internal.utils.av.audio
 import android.media.AudioFormat
 import java.io.IOException
 
-enum class ChannelConfiguration(val value: Int) {
+enum class ChannelConfiguration(val value: Short) {
     SPECIFIC(0),
     CHANNEL_1(1),
     CHANNEL_2(2),
@@ -29,6 +29,8 @@ enum class ChannelConfiguration(val value: Int) {
     CHANNEL_8(7);
 
     companion object {
+        fun fromValue(value: Short) = values().first { it.value == value }
+
         fun fromChannelConfig(channelConfig: Int) = when (channelConfig) {
             AudioFormat.CHANNEL_IN_MONO -> CHANNEL_1
             AudioFormat.CHANNEL_IN_STEREO -> CHANNEL_2

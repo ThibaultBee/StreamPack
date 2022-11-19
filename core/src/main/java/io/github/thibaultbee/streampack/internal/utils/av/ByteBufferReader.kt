@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.utils.av.video
+package io.github.thibaultbee.streampack.internal.utils.av
 
 import io.github.thibaultbee.streampack.internal.utils.extensions.shr
 import java.nio.ByteBuffer

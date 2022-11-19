@@ -66,7 +66,7 @@ data class ADTS(
             (1 shl 30) // AAC-LC = 2 - minus 1
                     or (samplingFrequencyIndex shl 26)
                     // 0 - Private bit
-                    or (channelConfiguration shl 22)
+                    or (channelConfiguration.toInt() shl 22)
                     // 0 - originality
                     // 0 - home
                     // 0 - copyright id bit

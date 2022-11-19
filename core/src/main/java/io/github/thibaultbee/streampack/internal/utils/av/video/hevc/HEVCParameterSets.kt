@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.av.video.hevc
 
-import io.github.thibaultbee.streampack.internal.utils.av.video.ByteBufferBitReader
+import io.github.thibaultbee.streampack.internal.utils.av.ByteBufferBitReader
 import io.github.thibaultbee.streampack.internal.utils.av.video.ChromaFormat
 import io.github.thibaultbee.streampack.internal.utils.extensions.extractRbsp
 import java.nio.ByteBuffer

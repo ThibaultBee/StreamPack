@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.internal.utils.av.audio
 
 import android.media.MediaFormat
+import android.text.BoringLayout
 import java.io.IOException
 
 enum class AudioObjectType(val value: Int) {
@@ -61,6 +62,19 @@ enum class AudioObjectType(val value: Int) {
     SAOC(43),
     LD_MPEG_SURROUND(44),
     USAC(45);
+
+    val extensionAudioObjectType: Byte
+        get() = if ((this == SBR) || (this == PS)) {
+            5
+        } else {
+            0
+        }
+
+    val sbrPresentFlag: Boolean
+        get() = (this == SBR) || (this == PS)
+
+    val psPresentFlag: Boolean
+        get() = (this == SBR)
 
     companion object {
         fun fromValue(value: Int): AudioObjectType {
