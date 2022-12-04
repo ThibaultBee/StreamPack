@@ -58,6 +58,23 @@
     <string name="audio_sample_rate">Sample rate</string>
     <string name="audio_byte_format">Byte format</string>
     <string name="audio_byte_format_key">audio_byte_format_key</string>
+
+    <string name="audio_profile">Profile</string>
+    <string name="audio_profile_key">audio_profile_key</string>
+    <string name="audio_profile_main">Main</string>
+    <string name="audio_profile_lc">Low-Complexity</string>
+    <string name="audio_profile_ssr">Scalable Sampling Rate</string>
+    <string name="audio_profile_ltp">Long Term Prediction</string>
+    <string name="audio_profile_he">High Efficiency</string>
+    <string name="audio_profile_scalable">Scalable</string>
+    <string name="audio_profile_er_lc">ER LC</string>
+    <string name="audio_profile_ld">Low Delay</string>
+    <string name="audio_profile_he_ps">High Efficiency v2</string>
+    <string name="audio_profile_eld">Enhanced Low Delay</string>
+    <string name="audio_profile_er_scalable">ER Scalable</string>
+    <string name="audio_profile_xhe">Extended High Efficiency</string>
+    <string name="av_profile_unknown">Unknown</string>
+
     <string name="video_encoder_h264">AVC/H.264</string>
     <string name="video_encoder_h265">HEVC/H.265</string>
     <string name="audio_encoder_aac">AAC</string>
@@ -164,7 +181,7 @@
     <string name="video_level_high_level61">HighLevel61</string>
     <string name="video_level_main_level62">MainLevel62</string>
     <string name="video_level_high_level62">HighLevel62</string>
-    <string name="video_level_unknown">Unknown level</string>
+    <string name="av_level_unknown">Unknown level</string>
 
     <plurals name="camera_frame_rate_not_supported">
         <item quantity="one">Camera %1$s does not support %2$d fps</item>

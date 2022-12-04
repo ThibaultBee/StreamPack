@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.app.ui.settings
 
 import android.media.AudioFormat
+import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.os.Bundle
 import android.text.InputFilter
@@ -37,6 +38,7 @@ import java.io.IOException
 
 class SettingsFragment : PreferenceFragmentCompat() {
     private lateinit var streamerHelper: CameraStreamerConfigurationHelper
+    private val profileLevelDisplay by lazy { ProfileLevelDisplay(requireContext()) }
 
     private val videoEnablePreference: SwitchPreference by lazy {
         this.findPreference(getString(R.string.video_enable_key))!!
@@ -96,6 +98,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private val audioByteFormatListPreference: ListPreference by lazy {
         this.findPreference(getString(R.string.audio_byte_format_key))!!
+    }
+
+    private val audioProfileListPreference: ListPreference by lazy {
+        this.findPreference(getString(R.string.audio_profile_key))!!
     }
 
     private val endpointTypePreference: ListPreference by lazy {
@@ -230,7 +236,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         // Inflates profile
-        val profileLevelDisplay = ProfileLevelDisplay(requireContext())
         val profiles = streamerHelper.video.getSupportedProfiles(encoder)
             .map {
                 profileLevelDisplay.getProfileName(
@@ -360,6 +365,28 @@ class SettingsFragment : PreferenceFragmentCompat() {
         audioByteFormatListPreference.entryValues = byteFormats.map { "$it" }.toTypedArray()
         if (audioByteFormatListPreference.entry == null) {
             audioByteFormatListPreference.value = "${AudioFormat.ENCODING_PCM_16BIT}"
+        }
+
+        // Inflates profile
+        audioProfileListPreference.isVisible = encoder == MediaFormat.MIMETYPE_AUDIO_AAC
+        val profiles = streamerHelper.audio.getSupportedProfiles(encoder)
+        audioProfileListPreference.entries =
+            profiles.map {
+                profileLevelDisplay.getProfileName(
+                    encoder,
+                    it
+                )
+            }.toTypedArray()
+        audioProfileListPreference.entryValues = profiles.map { "$it" }.toTypedArray()
+        if (audioProfileListPreference.entry == null) {
+            audioProfileListPreference.value =
+                if (profiles.contains(MediaCodecInfo.CodecProfileLevel.AACObjectLC)) {
+                        MediaCodecInfo.CodecProfileLevel.AACObjectLC.toString()
+                } else if (profiles.isNotEmpty()) {
+                    profiles.first().toString()
+                } else {
+                    null
+                }
         }
     }
 

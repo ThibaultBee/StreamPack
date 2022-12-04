@@ -109,6 +109,16 @@ class AudioStreamerConfigurationHelper(private val audioMuxerHelper: IAudioMuxer
             }
         } ?: codecByteFormats
     }
+
+    /**
+     * Get supported profiles for a [BaseStreamer].
+     *
+     * @param mimeType video encoder mime type
+     * @return list of profile
+     */
+    fun getSupportedProfiles(mimeType: String): List<Int> {
+        return MediaCodecHelper.getProfiles(mimeType)
+    }
 }
 
 open class VideoStreamerConfigurationHelper(private val videoMuxerHelper: IVideoMuxerHelper) :

@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.ts
 
+import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.Config
@@ -31,7 +32,8 @@ import io.github.thibaultbee.streampack.internal.muxers.ts.packets.Pmt
 import io.github.thibaultbee.streampack.internal.muxers.ts.packets.Sdt
 import io.github.thibaultbee.streampack.internal.muxers.ts.utils.MuxerConst
 import io.github.thibaultbee.streampack.internal.muxers.ts.utils.TSConst
-import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.ADTS
+import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.ADTSFrameWriter
+import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.LATMFrameWriter
 import java.nio.ByteBuffer
 import java.util.*
 import kotlin.random.Random
@@ -128,15 +130,14 @@ class TSMuxer(
                 }
             }
             MediaFormat.MIMETYPE_AUDIO_AAC -> {
-                val buffer =
-                    ByteBuffer.allocate(frame.buffer.remaining() + 7) // 7 = ADTS - protectionAbsent
-                val adts =
-                    ADTS.fromAudioConfig(pes.stream.config as AudioConfig, frame.buffer.remaining())
-                adts.write(buffer)
-                // No need to use extra. It contains decoder-specific information from ESDS.
-                buffer.put(frame.buffer)
-                buffer.rewind()
-                frame.buffer = buffer
+                frame.buffer =
+                    if (pes.stream.config.profile == MediaCodecInfo.CodecProfileLevel.AACObjectLC) {
+                        ADTSFrameWriter.fromAudioConfig(
+                            frame.buffer, pes.stream.config as AudioConfig
+                        ).toByteBuffer()
+                    } else {
+                        LATMFrameWriter.fromEsds(frame.buffer, frame.extra!!.first()).toByteBuffer()
+                    }
             }
             MediaFormat.MIMETYPE_AUDIO_OPUS -> {} // TODO: optional control header
             else -> throw IllegalArgumentException("Unsupported mimeType ${frame.mimeType}")

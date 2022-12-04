@@ -62,7 +62,7 @@ class AudioTag(
 
     override fun writePayload(buffer: ByteBuffer) {
         if (isSequenceHeader) {
-            AudioSpecificConfig.parseAndWrite(buffer, frameBuffer, audioConfig)
+            AudioSpecificConfig.writeFromByteBuffer(buffer, frameBuffer, audioConfig)
         } else {
             buffer.put(frameBuffer)
         }

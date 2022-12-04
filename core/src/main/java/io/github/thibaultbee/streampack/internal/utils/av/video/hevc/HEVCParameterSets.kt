@@ -15,8 +15,9 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.av.video.hevc
 
-import io.github.thibaultbee.streampack.internal.utils.av.ByteBufferBitReader
+import io.github.thibaultbee.streampack.internal.utils.av.BitBuffer
 import io.github.thibaultbee.streampack.internal.utils.av.video.ChromaFormat
+import io.github.thibaultbee.streampack.internal.utils.av.video.H26XBitBuffer
 import io.github.thibaultbee.streampack.internal.utils.extensions.extractRbsp
 import java.nio.ByteBuffer
 
@@ -35,24 +36,24 @@ data class SequenceParameterSets(
     companion object {
         fun parse(buffer: ByteBuffer): SequenceParameterSets {
             val rbsp = buffer.extractRbsp(2)
-            val reader = ByteBufferBitReader(rbsp)
-            reader.readNBit(16) // Dropping nal_unit_header: forbidden_zero_bit / nal_unit_type / nuh_layer_id / nuh_temporal_id_plus1
+            val reader = H26XBitBuffer(rbsp)
+            reader.get(16) // Dropping nal_unit_header: forbidden_zero_bit / nal_unit_type / nuh_layer_id / nuh_temporal_id_plus1
 
-            val videoParameterSetId = reader.readNBit(4).toByte()
-            val maxNumSubLayersMinus1 = reader.readNBit(3).toByte()
-            val temporalIdNestingFlag = reader.readBoolean()
+            val videoParameterSetId = reader.get(4).toByte()
+            val maxNumSubLayersMinus1 = reader.get(3).toByte()
+            val temporalIdNestingFlag = reader.getBoolean()
 
             val profileTierLevel = ProfileTierLevel.parse(reader, maxNumSubLayersMinus1)
             val parameterSetId = reader.readUE()
             val chromaFormat = ChromaFormat.fromChromaIdc(reader.readUE().toByte())
             if (chromaFormat == ChromaFormat.YUV444) {
-                reader.readBoolean()
+                reader.getBoolean()
             }
 
             val picWidthInLumaSamples = reader.readUE()
             val picHeightInLumaSamples = reader.readUE()
 
-            if (reader.readBoolean()) { // conformance_window_flag
+            if (reader.getBoolean()) { // conformance_window_flag
                 reader.readUE() // conf_win_left_offset
                 reader.readUE() // conf_win_right_offset
                 reader.readUE() // conf_win_top_offset
@@ -63,7 +64,7 @@ data class SequenceParameterSets(
             val bitDepthChromaMinus8 = reader.readUE().toByte()
             reader.readUE() // log2_max_pic_order_cnt_lsb_minus4
 
-            val subLayerOrderingInfoPresentFlag = reader.readBoolean()
+            val subLayerOrderingInfoPresentFlag = reader.getBoolean()
             for (i in (if (subLayerOrderingInfoPresentFlag) 0 else maxNumSubLayersMinus1)..maxNumSubLayersMinus1) {
                 reader.readUE() // max_dec_pic_buffering_minus1
                 reader.readUE() // max_num_reorder_pics
@@ -103,42 +104,42 @@ data class ProfileTierLevel(
 ) {
     companion object {
         fun parse(buffer: ByteBuffer, maxNumSubLayersMinus1: Byte) =
-            parse(ByteBufferBitReader(buffer), maxNumSubLayersMinus1)
+            parse(BitBuffer(buffer), maxNumSubLayersMinus1)
 
         fun parse(
-            reader: ByteBufferBitReader,
+            reader: BitBuffer,
             maxNumSubLayersMinus1: Byte
         ): ProfileTierLevel {
-            val generalProfileSpace = reader.readNBit(2).toByte()
-            val generalTierFlag = reader.readBoolean()
-            val generalProfileIdc = HEVCProfile.fromProfileIdc(reader.readNBit(5).toShort())
+            val generalProfileSpace = reader.get(2).toByte()
+            val generalTierFlag = reader.getBoolean()
+            val generalProfileIdc = HEVCProfile.fromProfileIdc(reader.get(5).toShort())
 
-            val generalProfileCompatibilityFlags = reader.readNBit(32).toInt()
-            val generalConstraintIndicatorFlags = reader.readNBit(48)
-            val generalLevelIdc = reader.readNBit(8).toByte()
+            val generalProfileCompatibilityFlags = reader.get(32).toInt()
+            val generalConstraintIndicatorFlags = reader.get(48)
+            val generalLevelIdc = reader.get(8).toByte()
 
             val subLayerProfilePresentFlag = mutableListOf<Boolean>()
             val subLayerLevelPresentFlag = mutableListOf<Boolean>()
             for (i in 0 until maxNumSubLayersMinus1) {
-                subLayerProfilePresentFlag.add(reader.readBoolean())
-                subLayerLevelPresentFlag.add(reader.readBoolean())
+                subLayerProfilePresentFlag.add(reader.getBoolean())
+                subLayerLevelPresentFlag.add(reader.getBoolean())
             }
 
             if (maxNumSubLayersMinus1 > 0) {
                 for (i in maxNumSubLayersMinus1..8) {
-                    reader.readNBit(2) // reserved_zero_2bits
+                    reader.get(2) // reserved_zero_2bits
                 }
             }
 
             for (i in 0 until maxNumSubLayersMinus1) {
                 if (subLayerProfilePresentFlag[i]) {
-                    reader.readNBit(32) // skip
-                    reader.readNBit(32) // skip
-                    reader.readNBit(24) // skip
+                    reader.get(32) // skip
+                    reader.get(32) // skip
+                    reader.get(24) // skip
                 }
 
                 if (subLayerLevelPresentFlag[i]) {
-                    reader.readNBit(8) // skip
+                    reader.get(8) // skip
                 }
             }
 

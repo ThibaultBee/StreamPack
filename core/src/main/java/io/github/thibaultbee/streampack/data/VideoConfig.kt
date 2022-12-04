@@ -62,7 +62,7 @@ class VideoConfig(
      * Video encoder profile. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile.
      * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
      */
-    val profile: Int = getBestProfile(mimeType),
+    profile: Int = getBestProfile(mimeType),
     /**
      * Video encoder level. Encoders may not support requested level. In this case, StreamPack fallbacks to default level.
      * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
@@ -76,7 +76,7 @@ class VideoConfig(
      * On device with API < 25, this value will be rounded to an integer. So don't expect a precise value and any value < 0.5 will be considered as 0.
      */
     val gopDuration: Float = 1f  // 1s between I frames
-) : Config(mimeType, startBitrate) {
+) : Config(mimeType, startBitrate, profile) {
     init {
         require(mimeType.isVideo) { "MimeType must be video" }
     }

@@ -15,8 +15,8 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.av.audio
 
+import android.media.MediaCodecInfo
 import android.media.MediaFormat
-import android.text.BoringLayout
 import java.io.IOException
 
 enum class AudioObjectType(val value: Int) {
@@ -29,7 +29,7 @@ enum class AudioObjectType(val value: Int) {
     AAC_SCALABLE(6),
     TWIN_VQ(7),
     CELP(8),
-    HXVC(9),
+    HVXC(9),
     TTSI(12),
     MAIN_SYNTHESIS(13),
     WAVETABLE_SYNTHESIS(14),
@@ -81,9 +81,24 @@ enum class AudioObjectType(val value: Int) {
             return values().first { it.value == value }
         }
 
-        fun fromMimeType(mimeType: String) = when (mimeType) {
-            MediaFormat.MIMETYPE_AUDIO_AAC -> AAC_LC
-
+        fun fromMimeType(mimeType: String, profile: Int) = when (mimeType) {
+            MediaFormat.MIMETYPE_AUDIO_AAC -> {
+                when (profile) {
+                    MediaCodecInfo.CodecProfileLevel.AACObjectMain -> AAC_MAIN
+                    MediaCodecInfo.CodecProfileLevel.AACObjectLC -> AAC_LC
+                    MediaCodecInfo.CodecProfileLevel.AACObjectSSR -> AAC_SSR
+                    MediaCodecInfo.CodecProfileLevel.AACObjectLTP -> AAC_LTP
+                    MediaCodecInfo.CodecProfileLevel.AACObjectHE -> SBR
+                    MediaCodecInfo.CodecProfileLevel.AACObjectScalable -> AAC_SCALABLE
+                    MediaCodecInfo.CodecProfileLevel.AACObjectERLC -> ER_AAC_LC
+                    MediaCodecInfo.CodecProfileLevel.AACObjectLD -> ER_AAC_LD
+                    MediaCodecInfo.CodecProfileLevel.AACObjectHE_PS -> PS
+                    MediaCodecInfo.CodecProfileLevel.AACObjectELD -> ER_AAC_ELD
+                    MediaCodecInfo.CodecProfileLevel.AACObjectERScalable -> ER_AAC_SCALABLE
+                    MediaCodecInfo.CodecProfileLevel.AACObjectXHE -> USAC_NO_SBR
+                    else -> throw IOException("Unsupported AAC profile: $profile")
+                }
+            }
             else -> throw IOException("MimeType is not supported: $mimeType")
         }
     }

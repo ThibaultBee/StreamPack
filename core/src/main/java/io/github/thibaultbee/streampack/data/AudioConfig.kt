@@ -68,6 +68,16 @@ class AudioConfig(
     val byteFormat: Int = AudioFormat.ENCODING_PCM_16BIT,
 
     /**
+     * Audio profile.
+     * For AAC only.
+     * Default value is [MediaCodecInfo.CodecProfileLevel.AACObjectLC].
+     *
+     * @see [MediaCodecInfo.CodecProfileLevel.AACObjectLC]
+     * @see [MediaCodecInfo.CodecProfileLevel.AACObjectHE]
+     */
+    profile: Int = getDefaultProfile(mimeType),
+
+    /**
      * Enable/disable audio echo canceller.
      * If device does not have an echo canceller, it does nothing.
      */
@@ -78,9 +88,14 @@ class AudioConfig(
      * If device does not have a noise suppressor, it does nothing.
      */
     val enableNoiseSuppressor: Boolean = true
-) : Config(mimeType, startBitrate) {
+) : Config(mimeType, startBitrate, profile) {
     init {
         require(mimeType.isAudio) { "MimeType must be audio" }
+        if (mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
+            if (profile == MediaCodecInfo.CodecProfileLevel.AACObjectHE_PS) {
+                require(channelConfig == AudioFormat.CHANNEL_IN_STEREO) { "AACObjectHE_PS only supports stereo" }
+            }
+        }
     }
 
     /**
@@ -108,7 +123,7 @@ class AudioConfig(
             if (mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
                 format.setInteger(
                     MediaFormat.KEY_AAC_PROFILE,
-                    MediaCodecInfo.CodecProfileLevel.AACObjectLC
+                    profile
                 )
             }
         }
@@ -122,6 +137,15 @@ class AudioConfig(
         private fun getDefaultSampleRate(mimeType: String) = when (mimeType) {
             MediaFormat.MIMETYPE_AUDIO_AAC -> 44100
             MediaFormat.MIMETYPE_AUDIO_OPUS -> 48000
+            else -> throw InvalidParameterException("Mimetype not supported: $mimeType")
+        }
+
+        /**
+         * Get the default audio profile
+         */
+        private fun getDefaultProfile(mimeType: String) = when (mimeType) {
+            MediaFormat.MIMETYPE_AUDIO_AAC -> MediaCodecInfo.CodecProfileLevel.AACObjectLC
+            MediaFormat.MIMETYPE_AUDIO_OPUS -> 0
             else -> throw InvalidParameterException("Mimetype not supported: $mimeType")
         }
 

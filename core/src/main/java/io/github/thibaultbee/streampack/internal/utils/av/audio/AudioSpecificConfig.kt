@@ -17,7 +17,11 @@ package io.github.thibaultbee.streampack.internal.utils.av.audio
 
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.AudioConfig
-import io.github.thibaultbee.streampack.internal.utils.av.ByteBufferBitReader
+import io.github.thibaultbee.streampack.internal.utils.av.BitBuffer
+import io.github.thibaultbee.streampack.internal.utils.av.BitBufferWriter
+import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.config.ELDSpecificConfig
+import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.config.GASpecificConfig
+import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.config.SpecificConfig
 import io.github.thibaultbee.streampack.internal.utils.extensions.put
 import java.nio.ByteBuffer
 
@@ -25,85 +29,32 @@ data class AudioSpecificConfig(
     val audioObjectType: AudioObjectType,
     val sampleRate: Int,
     val channelConfiguration: ChannelConfiguration,
-    val extension: AudioSpecificConfigExtension? = null
-) {
+    val extension: AudioSpecificConfigExtension? = null,
+    val specificConfig: SpecificConfig? = null,
+    val epConfig: Int? = null
+) : BitBufferWriter() {
+    override val bitSize =
+        getAudioObjectTypeSize(audioObjectType) + getSamplingFrequencySize(sampleRate) + 4 /* channelConfiguration */ + (extension?.bitSize
+            ?: 0) + (specificConfig?.bitSize ?: 0) + (epConfig?.let { 2 } ?: 0)
+
     init {
         if ((audioObjectType == AudioObjectType.PS) || (audioObjectType == AudioObjectType.SBR)) {
-            requireNotNull(extension)
+            requireNotNull(extension) { "Extension is required for PS or SBR" }
+        }
+
+        if (hasSpecificConfig(audioObjectType)) {
+            requireNotNull(specificConfig) { "Specific config is required for ${audioObjectType.name}" }
+        }
+
+        if (hasErrorProtectionSpecificConfig(audioObjectType)) {
+            requireNotNull(epConfig) { "Error protection config is required for ${audioObjectType.name}" }
         }
     }
 
-    companion object {
-        private fun getAudioObjectType(reader: ByteBufferBitReader): AudioObjectType {
-            var audioObjectType = reader.readNBit(5).toInt()
-            if (audioObjectType == 0x1F) {
-                audioObjectType += reader.readNBit(6).toInt()
-            }
-            return AudioObjectType.fromValue(audioObjectType)
-        }
-
-        fun parse(buffer: ByteBuffer): AudioSpecificConfig {
-            val reader = ByteBufferBitReader(buffer)
-            val audioObjectType = getAudioObjectType(reader)
-            val samplingFrequencyIndex = reader.readNBit(4).toInt()
-            val samplingFrequency = if (samplingFrequencyIndex == 0xF) {
-                reader.readNBit(24).toInt()
-            } else {
-                SamplingFrequencyIndex.fromValue(samplingFrequencyIndex).toSampleRate()
-            }
-            val channelConfiguration = ChannelConfiguration.fromValue(reader.readNBit(4).toShort())
-
-            val extension =
-                if ((audioObjectType == AudioObjectType.SBR) || (audioObjectType == AudioObjectType.PS)) {
-                    AudioSpecificConfigExtension.parse(reader)
-                } else {
-                    null
-                }
-
-            // TODO: parse all information
-
-            return AudioSpecificConfig(
-                audioObjectType,
-                samplingFrequency,
-                channelConfiguration,
-                extension
-            )
-        }
-
-        fun fromMediaFormat(
-            format: MediaFormat,
-        ): AudioSpecificConfig {
-            return AudioSpecificConfig(
-                AudioObjectType.fromMimeType(format.getString(MediaFormat.KEY_MIME)!!),
-                format.getInteger(MediaFormat.KEY_SAMPLE_RATE),
-                ChannelConfiguration.fromChannelCount(format.getInteger(MediaFormat.KEY_CHANNEL_COUNT))
-            )
-        }
-
-        fun fromAudioConfig(
-            config: AudioConfig,
-        ): AudioSpecificConfig {
-            return AudioSpecificConfig(
-                AudioObjectType.fromMimeType(config.mimeType),
-                config.sampleRate,
-                ChannelConfiguration.fromChannelConfig(config.channelConfig)
-            )
-        }
-
-        fun parseAndWrite(buffer: ByteBuffer, esds: ByteBuffer, audioConfig: AudioConfig) {
-            if (audioConfig.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
-                buffer.put(esds)
-            } else {
-                throw NotImplementedError("No support for ${audioConfig.mimeType}")
-            }
-        }
-    }
-
-    fun toByteBuffer(): ByteBuffer {
-        val decoderSpecificInfo = ByteBuffer.allocate(2)
+    override fun write(output: ByteBuffer) {
         val frequencyIndex = SamplingFrequencyIndex.fromSampleRate(sampleRate)
         if (audioObjectType.value <= 0x1F) {
-            decoderSpecificInfo.put(
+            output.put(
                 (audioObjectType.value shl 3)
                         or (frequencyIndex.value shr 1)
             )
@@ -113,41 +64,286 @@ data class AudioSpecificConfig(
         if (frequencyIndex == SamplingFrequencyIndex.EXPLICIT) {
             throw NotImplementedError("Explicit frequency is not supported")
         }
-        decoderSpecificInfo.put(
-            ((frequencyIndex.value and 0x01) shl 7) or channelConfiguration.value.toInt() shl 3
+        output.put(
+            ((frequencyIndex.value and 0x01) shl 7) or (channelConfiguration.value.toInt() shl 3)
         )
-
-        decoderSpecificInfo.rewind()
-
-        return decoderSpecificInfo
     }
 
+    override fun write(writer: BitBuffer) {
+        TODO("Not yet implemented")
+    }
+
+    companion object {
+        private fun getAudioObjectTypeSize(audioObjectType: AudioObjectType): Int {
+            return if (audioObjectType.value < 32) {
+                5
+            } else {
+                11
+            }
+        }
+
+        private fun getAudioObjectType(reader: BitBuffer): AudioObjectType {
+            var audioObjectType = reader.get(5).toInt()
+            if (audioObjectType == 0x1F) {
+                audioObjectType = 32 + reader.get(6).toInt()
+            }
+            return AudioObjectType.fromValue(audioObjectType)
+        }
+
+        private fun getSamplingFrequencySize(samplingFrequency: Int): Int {
+            val samplingFrequencyIndex = SamplingFrequencyIndex.fromSampleRate(samplingFrequency)
+            return if (samplingFrequencyIndex == SamplingFrequencyIndex.EXPLICIT) {
+                28
+            } else {
+                4
+            }
+        }
+
+        private fun getSamplingFrequency(reader: BitBuffer): Int {
+            val samplingFrequencyIndex = reader.get(4).toInt()
+            return if (samplingFrequencyIndex == 0xF) {
+                reader.get(24).toInt()
+            } else {
+                SamplingFrequencyIndex.fromValue(samplingFrequencyIndex).toSampleRate()
+            }
+        }
+
+        private fun hasGASpecificConfig(audioObjectType: AudioObjectType): Boolean {
+            return when (audioObjectType) {
+                AudioObjectType.AAC_MAIN,
+                AudioObjectType.AAC_LC,
+                AudioObjectType.AAC_SSR,
+                AudioObjectType.AAC_LTP,
+                AudioObjectType.AAC_SCALABLE,
+                AudioObjectType.TWIN_VQ,
+                AudioObjectType.ER_AAC_LC,
+                AudioObjectType.ER_AAC_LTP,
+                AudioObjectType.ER_AAC_SCALABLE,
+                AudioObjectType.ER_TWIN_VQ,
+                AudioObjectType.ER_BSAC,
+                AudioObjectType.ER_AAC_LD -> true
+                else -> false
+            }
+        }
+
+        private fun hasELDSpecificConfig(audioObjectType: AudioObjectType): Boolean {
+            return audioObjectType == AudioObjectType.ER_AAC_ELD
+        }
+
+        private fun hasSpecificConfig(audioObjectType: AudioObjectType): Boolean {
+            when (audioObjectType) {
+                AudioObjectType.CELP,
+                AudioObjectType.HVXC,
+                AudioObjectType.TTSI,
+                AudioObjectType.MAIN_SYNTHESIS,
+                AudioObjectType.WAVETABLE_SYNTHESIS,
+                AudioObjectType.GENERAL_MIDI,
+                AudioObjectType.ALGORITHMIC_SYNTHESIS,
+                AudioObjectType.ER_CELP,
+                AudioObjectType.ER_HVXC,
+                AudioObjectType.ER_HILN,
+                AudioObjectType.ER_PARAMETRIC,
+                AudioObjectType.SSC,
+                AudioObjectType.MPEG_SURROUND,
+                AudioObjectType.LAYER_1,
+                AudioObjectType.LAYER_2,
+                AudioObjectType.LAYER_3,
+                AudioObjectType.DST,
+                AudioObjectType.ALS,
+                AudioObjectType.SLS,
+                AudioObjectType.SLS_NON_CORE,
+                AudioObjectType.ER_AAC_ELD,
+                AudioObjectType.SMR_SIMPLE,
+                AudioObjectType.SMR_MAIN -> return true
+                else -> return hasGASpecificConfig(audioObjectType) || hasELDSpecificConfig(
+                    audioObjectType
+                )
+            }
+        }
+
+        private fun hasErrorProtectionSpecificConfig(audioObjectType: AudioObjectType): Boolean {
+            return when (audioObjectType) {
+                AudioObjectType.ER_AAC_LC,
+                AudioObjectType.ER_AAC_LTP,
+                AudioObjectType.ER_AAC_SCALABLE,
+                AudioObjectType.ER_TWIN_VQ,
+                AudioObjectType.ER_BSAC,
+                AudioObjectType.ER_AAC_LD,
+                AudioObjectType.ER_CELP,
+                AudioObjectType.ER_HVXC,
+                AudioObjectType.ER_HILN,
+                AudioObjectType.ER_PARAMETRIC,
+                AudioObjectType.ER_AAC_ELD -> {
+                    true
+                }
+                else -> false
+            }
+        }
+
+        fun parse(buffer: ByteBuffer): AudioSpecificConfig {
+            val bitBuffer = BitBuffer(buffer)
+            return parse(bitBuffer)
+        }
+
+        fun parse(bitBuffer: BitBuffer): AudioSpecificConfig {
+            var audioObjectType = getAudioObjectType(bitBuffer)
+            val samplingFrequency = getSamplingFrequency(bitBuffer)
+            val channelConfiguration = ChannelConfiguration.fromValue(bitBuffer.get(4).toShort())
+
+            var extension: AudioSpecificConfigExtension? = null
+            if ((audioObjectType == AudioObjectType.SBR) || (audioObjectType == AudioObjectType.PS)) {
+                extension = AudioSpecificConfigExtension.parse(bitBuffer)
+                audioObjectType = extension.audioObjectType
+            }
+
+            val specificConfig = if (hasGASpecificConfig(audioObjectType)) {
+                GASpecificConfig.parse(bitBuffer, channelConfiguration, audioObjectType)
+            } else if (hasELDSpecificConfig(audioObjectType)) {
+                ELDSpecificConfig.parse(bitBuffer, channelConfiguration)
+            } else if (hasSpecificConfig(audioObjectType)) {
+                TODO("Specific config not yet implemented for ${audioObjectType.name}")
+            } else {
+                null
+            }
+
+            val epConfig = if (hasErrorProtectionSpecificConfig(audioObjectType)) {
+                bitBuffer.getInt(2)
+            } else {
+                null
+            }
+            if ((epConfig == 2) || (epConfig == 3)) {
+                TODO("Error protection config not yet implemented for ${audioObjectType.name}")
+            }
+
+            if ((extension != null) && (extension.audioObjectType != AudioObjectType.SBR) && (bitBuffer.bitRemaining >= 16)) {
+                val syncExtensionType = bitBuffer.get(11).toInt()
+                if (syncExtensionType == 0x2B7) {
+                    val extensionAudioObjectType = getAudioObjectType(bitBuffer)
+                    if (extensionAudioObjectType == AudioObjectType.SBR) {
+                        val sbrPresentFlag = bitBuffer.getBoolean()
+                        if (sbrPresentFlag) {
+                            getSamplingFrequency(bitBuffer) // extensionSampleFrequency
+                            if (bitBuffer.bitRemaining >= 12) {
+                                val syncExtensionType2 = bitBuffer.get(11).toInt()
+                                if (syncExtensionType2 == 0x548) {
+                                    bitBuffer.getBoolean() // psPresentFlag
+                                }
+                            }
+                        }
+                    } else if (extensionAudioObjectType == AudioObjectType.ER_BSAC) {
+                        val sbrPresentFlag = bitBuffer.getBoolean()
+                        if (sbrPresentFlag) {
+                            getSamplingFrequency(bitBuffer) // extensionSampleFrequency
+                        }
+                        bitBuffer.get(4) // extensionChannelConfiguration
+                    }
+                }
+            }
+
+            return AudioSpecificConfig(
+                audioObjectType,
+                samplingFrequency,
+                channelConfiguration,
+                extension,
+                specificConfig,
+                epConfig
+            )
+        }
+
+        fun fromMediaFormat(
+            format: MediaFormat,
+        ): AudioSpecificConfig {
+            val audioObjectType = AudioObjectType.fromMimeType(
+                format.getString(MediaFormat.KEY_MIME)!!,
+                format.getInteger(MediaFormat.KEY_AAC_PROFILE)
+            )
+            val channelConfig =
+                ChannelConfiguration.fromChannelCount(format.getInteger(MediaFormat.KEY_CHANNEL_COUNT))
+
+            val specificConfig = GASpecificConfig(
+                audioObjectType,
+                channelConfig,
+                frameLengthFlag = false,
+                dependsOnCodeCoder = false,
+                extensionFlag = false
+            )
+            return AudioSpecificConfig(
+                audioObjectType,
+                format.getInteger(MediaFormat.KEY_SAMPLE_RATE),
+                channelConfig,
+                specificConfig = specificConfig
+            )
+        }
+
+        fun fromAudioConfig(
+            config: AudioConfig,
+        ): AudioSpecificConfig {
+            val audioObjectType = AudioObjectType.fromMimeType(config.mimeType, config.profile)
+            val channelConfig = ChannelConfiguration.fromChannelConfig(config.channelConfig)
+
+            val specificConfig = GASpecificConfig(
+                audioObjectType,
+                channelConfig,
+                frameLengthFlag = false,
+                dependsOnCodeCoder = false,
+                extensionFlag = false
+            )
+            return AudioSpecificConfig(
+                audioObjectType,
+                config.sampleRate,
+                channelConfig,
+                specificConfig = specificConfig
+            )
+        }
+
+        fun writeFromByteBuffer(
+            buffer: ByteBuffer,
+            esds: ByteBuffer,
+            audioConfig: AudioConfig
+        ) {
+            if (audioConfig.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
+                buffer.put(esds)
+            } else {
+                throw NotImplementedError("No support for ${audioConfig.mimeType}")
+            }
+        }
+    }
 
     data class AudioSpecificConfigExtension(
         val audioObjectType: AudioObjectType,
         val sampleRate: Int,
-        val channelConfiguration: ChannelConfiguration?
-    ) {
+        val channelConfiguration: ChannelConfiguration?,
+        val extensionAudioObjectType: AudioObjectType = AudioObjectType.SBR,
+    ) : BitBufferWriter() {
+        override val bitSize =
+            getSamplingFrequencySize(sampleRate) + getAudioObjectTypeSize(audioObjectType) + (channelConfiguration?.let { 4 }
+                ?: 0)
+
+        init {
+            if (audioObjectType == AudioObjectType.ER_BSAC) {
+                requireNotNull(channelConfiguration) { "Channel configuration is required for ER_BSAC" }
+            }
+        }
+
+        override fun write(writer: BitBuffer) {
+            TODO("Not yet implemented")
+        }
+
         companion object {
-            fun parse(reader: ByteBufferBitReader): AudioSpecificConfigExtension {
-                val extensionSamplingFrequencyIndex = reader.readNBit(4).toInt()
-                val extensionSamplingFrequency = if (extensionSamplingFrequencyIndex == 0xF) {
-                    reader.readNBit(24).toInt()
-                } else {
-                    SamplingFrequencyIndex.fromValue(extensionSamplingFrequencyIndex).toSampleRate()
-                }
-                val extensionAudioObjectType = getAudioObjectType(reader)
-                val extensionChannelConfiguration =
-                    if (extensionAudioObjectType == AudioObjectType.ER_BSAC) {
-                        ChannelConfiguration.fromValue(reader.readNBit(4).toShort())
+            fun parse(reader: BitBuffer): AudioSpecificConfigExtension {
+                val samplingFrequency = getSamplingFrequency(reader)
+                val audioObjectType = getAudioObjectType(reader)
+                val channelConfiguration =
+                    if (audioObjectType == AudioObjectType.ER_BSAC) {
+                        ChannelConfiguration.fromValue(reader.get(4).toShort())
                     } else {
                         null
                     }
 
                 return AudioSpecificConfigExtension(
-                    extensionAudioObjectType,
-                    extensionSamplingFrequency,
-                    extensionChannelConfiguration
+                    audioObjectType,
+                    samplingFrequency,
+                    channelConfiguration
                 )
             }
         }

@@ -135,6 +135,12 @@ class Configuration(context: Context) {
                 resources.getString(R.string.audio_enable_noise_suppressor_key),
                 field
             )
+
+        var profile: Int = MediaCodecInfo.CodecProfileLevel.AACObjectLC
+            get() = sharedPref.getString(
+                resources.getString(R.string.audio_profile_key),
+                field.toString()
+            )!!.toInt()
     }
 
     class Muxer(private val sharedPref: SharedPreferences, private val resources: Resources) {
