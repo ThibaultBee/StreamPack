@@ -49,6 +49,10 @@ class AudioCapture : IAudioCapture {
             throw IllegalArgumentException(audioRecordErrorToString(bufferSize))
         }
 
+        /**
+         * Initialized mutedByteArray with bufferSize. The read buffer length may be different
+         * from bufferSize. In this case, mutedByteArray will be resized.
+         */
         mutedByteArray = ByteArray(bufferSize)
 
         audioRecord = AudioRecord(
@@ -132,7 +136,10 @@ class AudioCapture : IAudioCapture {
             val length = it.read(buffer, buffer.remaining())
             if (length >= 0) {
                 return if (isMuted) {
-                    buffer.put(mutedByteArray!!, 0, buffer.remaining())
+                    if (length != mutedByteArray?.size) {
+                        mutedByteArray = ByteArray(length)
+                    }
+                    buffer.put(mutedByteArray!!, 0, length)
                     buffer.clear()
                     Frame(buffer, MediaFormat.MIMETYPE_AUDIO_RAW, getTimestamp(it))
                 } else {
