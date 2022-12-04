@@ -10,7 +10,7 @@ class ADTSTest {
     @Test
     fun `test ADTS with payload size of 378 bytes`() {
         val expectedAdts = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/encoders/adts-378bytes")
+            ResourcesUtils.readResources("test-samples/audio/adts/adts-378bytes")
         )
         val adts = ADTS(
             protectionAbsent = true, // No CRC protection
@@ -28,7 +28,7 @@ class ADTSTest {
     @Test
     fun `test ADTS with payload size of 516 bytes`() {
         val expectedAdts = ByteBuffer.wrap(
-            ResourcesUtils.readResources("test-samples/encoders/adts-516bytes")
+            ResourcesUtils.readResources("test-samples/audio/adts/adts-516bytes")
         )
         val adts = ADTS(
             protectionAbsent = true, // No CRC protection

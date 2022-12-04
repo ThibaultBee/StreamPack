@@ -96,6 +96,12 @@
                 app:key="@string/audio_byte_format_key"
                 app:title="@string/audio_byte_format"
                 app:useSimpleSummaryProvider="true" />
+            
+            <ListPreference
+                app:defaultValue="2"
+                app:key="@string/audio_profile_key"
+                app:title="@string/audio_profile"
+                app:useSimpleSummaryProvider="true" />
 
             <SwitchPreference
                 android:defaultValue="false"

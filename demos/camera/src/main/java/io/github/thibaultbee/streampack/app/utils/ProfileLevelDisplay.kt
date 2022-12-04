@@ -6,7 +6,41 @@ import android.media.MediaFormat
 import android.os.Build
 import io.github.thibaultbee.streampack.app.R
 
-class ProfileLevelDisplay(context: Context) {
+/**
+ * Get a string representation of a profile level.
+ *
+ * @param context The application context.
+ */
+class ProfileLevelDisplay(private val context: Context) {
+    private val aacProfileNameMap =
+        mutableMapOf(
+            AACObjectMain to context.getString(R.string.audio_profile_main),
+            AACObjectLC to context.getString(R.string.audio_profile_lc),
+            AACObjectSSR to context.getString(R.string.audio_profile_ssr),
+            AACObjectLTP to context.getString(R.string.audio_profile_ltp),
+            AACObjectHE to context.getString(R.string.audio_profile_he),
+            AACObjectScalable to context.getString(R.string.audio_profile_scalable),
+            AACObjectERLC to context.getString(R.string.audio_profile_er_lc),
+            AACObjectLD to context.getString(R.string.audio_profile_ld),
+            AACObjectHE_PS to context.getString(R.string.audio_profile_he_ps),
+            AACObjectELD to context.getString(R.string.audio_profile_eld)
+        ).apply {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                putAll(
+                    mapOf(
+                        AACObjectERScalable to context.getString(R.string.audio_profile_er_scalable)
+                    )
+                )
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                putAll(
+                    mapOf(
+                        AACObjectXHE to context.getString(R.string.audio_profile_xhe)
+                    )
+                )
+            }
+        }
+
     private val avcProfileNameMap =
         mutableMapOf(
             AVCProfileBaseline to context.getString(R.string.video_profile_baseline),
@@ -109,6 +143,7 @@ class ProfileLevelDisplay(context: Context) {
 
     fun getProfileName(mimeType: String, profile: Int): String {
         val nameMap = when (mimeType) {
+            MediaFormat.MIMETYPE_AUDIO_AAC -> aacProfileNameMap
             MediaFormat.MIMETYPE_VIDEO_AVC -> avcProfileNameMap
             MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcProfileNameMap
             else -> emptyMap()
@@ -116,12 +151,13 @@ class ProfileLevelDisplay(context: Context) {
         return try {
             nameMap[profile]!!
         } catch (_: Exception) {
-            "Unknown"
+            context.getString(R.string.av_profile_unknown)
         }
     }
 
     fun getProfile(mimeType: String, name: String): Int {
         val nameMap = when (mimeType) {
+            MediaFormat.MIMETYPE_AUDIO_AAC -> aacProfileNameMap
             MediaFormat.MIMETYPE_VIDEO_AVC -> avcProfileNameMap
             MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcProfileNameMap
             else -> emptyMap()
@@ -138,7 +174,7 @@ class ProfileLevelDisplay(context: Context) {
         return try {
             nameMap[level]!!
         } catch (_: Exception) {
-            "Unknown"
+            context.getString(R.string.av_level_unknown)
         }
     }
 

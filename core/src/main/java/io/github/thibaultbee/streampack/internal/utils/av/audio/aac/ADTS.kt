@@ -17,11 +17,12 @@ package io.github.thibaultbee.streampack.internal.utils.av.audio.aac
 
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.AudioConfig
+import io.github.thibaultbee.streampack.internal.utils.av.ByteBufferWriter
+import io.github.thibaultbee.streampack.internal.utils.av.audio.ChannelConfiguration
+import io.github.thibaultbee.streampack.internal.utils.av.audio.SamplingFrequencyIndex
 import io.github.thibaultbee.streampack.internal.utils.extensions.put
 import io.github.thibaultbee.streampack.internal.utils.extensions.putShort
 import io.github.thibaultbee.streampack.internal.utils.extensions.toInt
-import io.github.thibaultbee.streampack.internal.utils.av.audio.ChannelConfiguration
-import io.github.thibaultbee.streampack.internal.utils.av.audio.SamplingFrequencyIndex
 import java.nio.ByteBuffer
 
 data class ADTS(
@@ -29,7 +30,36 @@ data class ADTS(
     val sampleRate: Int,
     val channelCount: Int,
     val payloadLength: Int
-) {
+) : ByteBufferWriter() {
+    override val size = if (protectionAbsent) 7 else 9
+
+    override fun write(output: ByteBuffer) {
+        output.putShort(
+            (0xFFF shl 4)
+                    or (0b000 shl 1) // MPEG-4 + Layer
+                    or (protectionAbsent.toInt())
+        )
+
+        val samplingFrequencyIndex =
+            SamplingFrequencyIndex.fromSampleRate(sampleRate).value
+        val channelConfiguration =
+            ChannelConfiguration.fromChannelCount(channelCount).value
+        val frameLength = payloadLength + if (protectionAbsent) 7 else 9
+        output.putInt(
+            (1 shl 30) // AAC-LC = 2 - minus 1
+                    or (samplingFrequencyIndex shl 26)
+                    // 0 - Private bit
+                    or (channelConfiguration.toInt() shl 22)
+                    // 0 - originality
+                    // 0 - home
+                    // 0 - copyright id bit
+                    // 0 - copyright id start
+                    or (frameLength shl 5)
+                    or (0b11111) // Buffer fullness 0x7FF for variable bitrate
+        )
+        output.put(0b11111100) // Buffer fullness 0x7FF for variable bitrate
+    }
+
     companion object {
         fun fromMediaFormat(format: MediaFormat, payloadLength: Int): ADTS {
             return ADTS(
@@ -48,43 +78,5 @@ data class ADTS(
                 payloadLength
             )
         }
-    }
-
-    fun write(buffer: ByteBuffer) {
-        buffer.putShort(
-            (0xFFF shl 4)
-                    or (0b000 shl 1) // MPEG-4 + Layer
-                    or (protectionAbsent.toInt())
-        )
-
-        val samplingFrequencyIndex =
-            SamplingFrequencyIndex.fromSampleRate(sampleRate).value
-        val channelConfiguration =
-            ChannelConfiguration.fromChannelCount(channelCount).value
-        val frameLength = payloadLength + if (protectionAbsent) 7 else 9
-        buffer.putInt(
-            (1 shl 30) // AAC-LC = 2 - minus 1
-                    or (samplingFrequencyIndex shl 26)
-                    // 0 - Private bit
-                    or (channelConfiguration.toInt() shl 22)
-                    // 0 - originality
-                    // 0 - home
-                    // 0 - copyright id bit
-                    // 0 - copyright id start
-                    or (frameLength shl 5)
-                    or (0b11111) // Buffer fullness 0x7FF for variable bitrate
-        )
-        buffer.put(0b11111100) // Buffer fullness 0x7FF for variable bitrate
-    }
-
-    fun toByteBuffer(): ByteBuffer {
-        val buffer =
-            ByteBuffer.allocate(if (protectionAbsent) 7 else 9) // 56: 7 Bytes - 48: 9 Bytes
-
-        write(buffer)
-
-        buffer.rewind()
-
-        return buffer
     }
 }

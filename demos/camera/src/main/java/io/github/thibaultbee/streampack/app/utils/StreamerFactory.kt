@@ -134,6 +134,7 @@ class StreamerFactory(
             startBitrate = configuration.audio.bitrate,
             sampleRate = configuration.audio.sampleRate,
             channelConfig = AudioConfig.getChannelConfig(configuration.audio.numberOfChannels),
+            profile = configuration.audio.profile,
             byteFormat = configuration.audio.byteFormat,
             enableEchoCanceler = configuration.audio.enableEchoCanceler,
             enableNoiseSuppressor = configuration.audio.enableNoiseSuppressor

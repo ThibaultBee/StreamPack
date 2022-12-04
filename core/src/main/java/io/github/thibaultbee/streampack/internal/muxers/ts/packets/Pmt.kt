@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.ts.packets
 
+import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
@@ -73,7 +74,7 @@ class Pmt(
         buffer.putShort(0b1111 shl 12) // Reserved + First two bits of program_info_length shall be '00' + program_info_length
 
         streams.forEach {
-            buffer.put(StreamType.fromMimeType(it.config.mimeType).value)
+            buffer.put(StreamType.fromMimeType(it.config.mimeType, it.config.profile).value)
             buffer.putShort(
                 (0b111 shl 13) // Reserved
                         or (it.pid.toInt())
@@ -139,10 +140,16 @@ class Pmt(
         AUDIO_EAC3(0x87.toByte());
 
         companion object {
-            fun fromMimeType(mimeType: String) = when (mimeType) {
+            fun fromMimeType(mimeType: String, profile: Int) = when (mimeType) {
                 MediaFormat.MIMETYPE_VIDEO_MPEG2 -> VIDEO_MPEG2
                 MediaFormat.MIMETYPE_AUDIO_MPEG -> AUDIO_MPEG1
-                MediaFormat.MIMETYPE_AUDIO_AAC -> AUDIO_AAC
+                MediaFormat.MIMETYPE_AUDIO_AAC -> {
+                    if (profile == MediaCodecInfo.CodecProfileLevel.AACObjectLC) {
+                        AUDIO_AAC
+                    } else {
+                        AUDIO_AAC_LATM
+                    }
+                }
                 MediaFormat.MIMETYPE_VIDEO_MPEG4 -> VIDEO_MPEG4
                 MediaFormat.MIMETYPE_VIDEO_AVC -> VIDEO_H264
                 MediaFormat.MIMETYPE_VIDEO_HEVC -> VIDEO_HEVC

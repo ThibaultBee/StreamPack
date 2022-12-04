@@ -38,6 +38,12 @@ open class Config(
      * The encoder bitrate in bits/s.
      */
     val startBitrate: Int,
+
+    /**
+     * The encoder profile.
+     * Only applicable to AAC, AVC and HEVC.
+     */
+    val profile: Int = 0
 ) {
     /**
      * Get the media format from the configuration

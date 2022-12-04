@@ -52,7 +52,7 @@ android {
     * Video only mode
     * Device video capabilities
 * Audio:
-    * Codec: AAC-LC or Opus
+    * Codec: AAC:LC, HE, HEv2,... or Opus
     * Configurable bitrate, sample rate, stereo/mono, data format
     * Processing: Noise suppressor or echo cancellation
     * Audio only mode
@@ -125,9 +125,12 @@ To simplify integration, StreamPack provides an `StreamerSurfaceView`.
 ```xml
 
 <layout>
-    <io.github.thibaultbee.streampack.views.StreamerSurfaceView android:id="@+id/preview"
-        android:layout_width="match_parent" android:layout_height="match_parent"
-        app:cameraFacingDirection="back" app:enableZoomOnPinch="true" />
+    <io.github.thibaultbee.streampack.views.StreamerSurfaceView 
+        android:id="@+id/preview"
+        android:layout_width="match_parent" 
+        android:layout_height="match_parent"
+        app:cameraFacingDirection="back"
+        app:enableZoomOnPinch="true" />
 </layout>
 ```
 
