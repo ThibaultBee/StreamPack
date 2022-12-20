@@ -31,6 +31,7 @@ import io.github.thibaultbee.streampack.internal.muxers.ts.packets.Sdt
 import io.github.thibaultbee.streampack.internal.muxers.ts.utils.MuxerConst
 import io.github.thibaultbee.streampack.internal.muxers.ts.utils.TSConst
 import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.ADTS
+import io.github.thibaultbee.streampack.internal.utils.isVideo
 import java.nio.ByteBuffer
 import java.util.*
 import kotlin.random.Random
@@ -86,6 +87,14 @@ class TSMuxer(
         val pes = getPes(streamPid.toShort())
         when (frame.mimeType) {
             MediaFormat.MIMETYPE_VIDEO_AVC -> {
+                frame.buffer = ByteBuffer.allocate(6 + frame.buffer.limit()).apply {
+                    putInt(0x00000001)
+                    put(0x09.toByte())
+                    put(0xf0.toByte())
+                    put(frame.buffer)
+                    flip()
+                }
+
                 // Copy sps & pps before buffer
                 if (frame.isKeyFrame) {
                     if (frame.extra == null) {
