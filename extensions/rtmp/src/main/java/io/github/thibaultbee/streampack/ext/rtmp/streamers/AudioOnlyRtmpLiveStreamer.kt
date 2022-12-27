@@ -36,7 +36,7 @@ class AudioOnlyRtmpLiveStreamer(
 ) : BaseAudioOnlyLiveStreamer(
     context = context,
     muxer = FlvMuxer(context = context, writeToFile = false),
-    endpoint = RtmpProducer(),
+    endpoint = RtmpProducer(hasAudio = true, hasVideo = false),
     initialOnErrorListener = initialOnErrorListener,
     initialOnConnectionListener = initialOnConnectionListener
 )

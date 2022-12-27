@@ -31,4 +31,29 @@ open class Packet(
      * Frame timestamp in µs.
      */
     var ts: Long, // in µs
-)
+
+    /**
+     * Packet data type
+     */
+    var type: PacketType = PacketType.UNKNOWN,
+) {
+    val isVideo = type == PacketType.VIDEO
+    val isAudio = type == PacketType.AUDIO
+}
+
+enum class PacketType {
+    /**
+     * Video packet.
+     */
+    VIDEO,
+
+    /**
+     * Audio packet.
+     */
+    AUDIO,
+
+    /**
+     * Unknown packet.
+     */
+    UNKNOWN
+}

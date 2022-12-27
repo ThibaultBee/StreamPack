@@ -19,6 +19,7 @@ import android.content.Context
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.data.Packet
+import io.github.thibaultbee.streampack.internal.data.PacketType
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.muxers.flv.packet.FlvHeader
@@ -73,7 +74,15 @@ class FlvMuxer(
         frame.pts -= startUpTime!!
         val flvTags = FlvTagFactory(frame, true, streams[streamPid]).build()
         flvTags.forEach {
-            listener?.onOutputFrame(Packet(it.write(), frame.pts))
+            listener?.onOutputFrame(
+                Packet(
+                    it.write(), frame.pts, if (frame.isVideo) {
+                        PacketType.VIDEO
+                    } else {
+                        PacketType.AUDIO
+                    }
+                )
+            )
         }
     }
 
