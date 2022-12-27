@@ -31,8 +31,6 @@ import io.github.thibaultbee.streampack.internal.muxers.ts.packets.Sdt
 import io.github.thibaultbee.streampack.internal.muxers.ts.utils.MuxerConst
 import io.github.thibaultbee.streampack.internal.muxers.ts.utils.TSConst
 import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.ADTS
-import io.github.thibaultbee.streampack.internal.utils.isVideo
-import io.github.thibaultbee.streampack.internal.utils.put
 import java.nio.ByteBuffer
 import java.util.*
 import kotlin.random.Random
@@ -152,7 +150,7 @@ class TSMuxer(
      * @param frame frame to mux
      */
     private fun generateStreams(frame: Frame, pes: Pes) {
-        retransmitPsi(frame.mimeType.isVideo() and frame.isKeyFrame)
+        retransmitPsi(frame.isVideo and frame.isKeyFrame)
         pes.write(frame)
     }
 
@@ -293,7 +291,7 @@ class TSMuxer(
         }
 
         service.pcrPid = try {
-            service.streams.first { it.config.mimeType.isVideo() }.pid
+            service.streams.first { it.isVideo }.pid
         } catch (e: NoSuchElementException) {
             service.streams[0].pid
         }

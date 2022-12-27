@@ -21,11 +21,13 @@ package io.github.thibaultbee.streampack.internal.utils
  *
  * @return true if mime type is video, otherwise false
  */
-fun String.isVideo() = this.startsWith("video")
+val String.isVideo: Boolean
+    get() = this.startsWith("video")
 
 /**
  * Check if mime type is an audio mime type.
  *
  * @return true if mime type is audio, otherwise false
  */
-fun String.isAudio() = this.startsWith("audio")
+val String.isAudio: Boolean
+    get() = this.startsWith("audio")

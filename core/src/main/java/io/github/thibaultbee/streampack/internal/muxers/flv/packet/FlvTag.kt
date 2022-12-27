@@ -73,12 +73,12 @@ abstract class FlvTag(
 
         fun createFlvTag(frame: Frame, isSequenceHeader: Boolean, config: Config): FlvTag {
             return when {
-                frame.mimeType.isAudio() -> if (isSequenceHeader) {
+                frame.isAudio -> if (isSequenceHeader) {
                     AudioTag(frame.pts, frame.extra!![0], true, config as AudioConfig)
                 } else {
                     AudioTag(frame.pts, frame.buffer, false, config as AudioConfig)
                 }
-                frame.mimeType.isVideo() -> if (isSequenceHeader) {
+                frame.isVideo -> if (isSequenceHeader) {
                     VideoTag(
                         frame.pts,
                         frame.extra!!,

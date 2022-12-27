@@ -325,12 +325,12 @@ object MediaCodecHelper {
         /**
          * Get supported video encoders list
          */
-        val supportedEncoders = getEncodersType { type -> type.isVideo() }
+        val supportedEncoders = getEncodersType { type -> type.isVideo }
 
         /**
          * Get the name of all video encoders
          */
-        val encodersName = getEncodersName { type -> type.isVideo() }
+        val encodersName = getEncodersName { type -> type.isVideo }
 
         /**
          * Get video encoder video capabilities for the default video encoder.
@@ -339,7 +339,7 @@ object MediaCodecHelper {
          * @return the encoder video capabilities
          */
         private fun getVideoCapabilities(mimeType: String): MediaCodecInfo.VideoCapabilities {
-            require(mimeType.isVideo()) { "MimeType must be video" }
+            require(mimeType.isVideo) { "MimeType must be video" }
 
             val encoderName = findEncoder(mimeType)
             return getVideoCapabilities(mimeType, encoderName)
@@ -356,7 +356,7 @@ object MediaCodecHelper {
             mimeType: String,
             name: String
         ): MediaCodecInfo.VideoCapabilities {
-            require(mimeType.isVideo()) { "MimeType must be video" }
+            require(mimeType.isVideo) { "MimeType must be video" }
 
             return getCodecCapabilities(mimeType, name).videoCapabilities
         }
@@ -442,13 +442,13 @@ object MediaCodecHelper {
         /**
          * Get supported audio encoders list
          */
-        val supportedEncoders = getEncodersType { type -> type.isAudio() }
+        val supportedEncoders = getEncodersType { type -> type.isAudio }
 
 
         /**
          * Get the name of all audio encoders
          */
-        val encodersName = getEncodersName { type -> type.isAudio() }
+        val encodersName = getEncodersName { type -> type.isAudio }
 
         /**
          * Get encoder audio capabilities for the default audio encoder.
@@ -457,7 +457,7 @@ object MediaCodecHelper {
          * @return the encoder audio capabilities
          */
         private fun getAudioCapabilities(mimeType: String): MediaCodecInfo.AudioCapabilities {
-            require(mimeType.isAudio()) { "MimeType must be audio" }
+            require(mimeType.isAudio) { "MimeType must be audio" }
 
             val encoderName = findEncoder(mimeType)
             return getAudioCapabilities(mimeType, encoderName)
@@ -474,7 +474,7 @@ object MediaCodecHelper {
             mimeType: String,
             name: String
         ): MediaCodecInfo.AudioCapabilities {
-            require(mimeType.isAudio()) { "MimeType must be audio" }
+            require(mimeType.isAudio) { "MimeType must be audio" }
 
             return getCodecCapabilities(mimeType, name).audioCapabilities
         }

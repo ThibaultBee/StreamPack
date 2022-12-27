@@ -80,7 +80,7 @@ class AudioConfig(
     val enableNoiseSuppressor: Boolean = true
 ) : Config(mimeType, startBitrate) {
     init {
-        require(mimeType.isAudio()) { "MimeType must be audio" }
+        require(mimeType.isAudio) { "MimeType must be audio" }
     }
 
     /**

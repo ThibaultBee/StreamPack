@@ -37,9 +37,9 @@ class FlvMuxer(
     override val helper = FlvMuxerHelper()
     private val streams = mutableListOf<Config>()
     private val hasAudio: Boolean
-        get() = streams.any { it.mimeType.isAudio() }
+        get() = streams.any { it.mimeType.isAudio }
     private val hasVideo: Boolean
-        get() = streams.any { it.mimeType.isVideo() }
+        get() = streams.any { it.mimeType.isVideo }
     private var startUpTime: Long? = null
     private var hasFirstFrame = false
 
@@ -54,7 +54,7 @@ class FlvMuxer(
             // Wait for first frame
             if (hasVideo) {
                 // Expected first video key frame
-                if (frame.mimeType.isVideo() && frame.isKeyFrame) {
+                if (frame.isVideo && frame.isKeyFrame) {
                     startUpTime = frame.pts
                     hasFirstFrame = true
                 } else {
@@ -123,8 +123,8 @@ class FlvMuxer(
      * Check that there shall be no more than one audio and one video stream
      */
     private fun requireStreams() {
-        require(streams.count { it.mimeType.isAudio() } <= 1) { "Only one audio stream is supported by FLV" }
-        require(streams.count { it.mimeType.isVideo() } <= 1) { "Only one video stream is supported by FLV" }
+        require(streams.count { it.mimeType.isAudio } <= 1) { "Only one audio stream is supported by FLV" }
+        require(streams.count { it.mimeType.isVideo } <= 1) { "Only one video stream is supported by FLV" }
     }
 
 }

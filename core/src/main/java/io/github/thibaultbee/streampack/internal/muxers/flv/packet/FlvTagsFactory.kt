@@ -26,7 +26,7 @@ class FlvTagFactory(
 ) {
     fun build(): List<FlvTag> {
         val flvTags = mutableListOf<FlvTag>()
-        if (alsoWriteSequenceHeader && (frame.isKeyFrame || frame.mimeType.isAudio())) {
+        if (alsoWriteSequenceHeader && (frame.isKeyFrame || frame.isAudio)) {
             // Create a reference FlvTag
             flvTags.add(FlvTag.createFlvTag(frame, isSequenceHeader = true, config))
         }

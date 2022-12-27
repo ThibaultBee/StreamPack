@@ -75,7 +75,7 @@ class VideoConfig(
     val gopSize: Float = 1f  // 1s between I frames
 ) : Config(mimeType, startBitrate) {
     init {
-        require(mimeType.isVideo()) { "MimeType must be video" }
+        require(mimeType.isVideo) { "MimeType must be video" }
     }
 
     constructor(

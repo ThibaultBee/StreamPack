@@ -15,6 +15,8 @@
  */
 package io.github.thibaultbee.streampack.internal.data
 
+import io.github.thibaultbee.streampack.internal.utils.isAudio
+import io.github.thibaultbee.streampack.internal.utils.isVideo
 import java.nio.ByteBuffer
 
 /**
@@ -52,4 +54,7 @@ data class Frame(
      * For AVC/H.264, it contains SPS (first) and PPS
      */
     val extra: List<ByteBuffer>? = null
-)
+) {
+    val isVideo: Boolean = mimeType.isVideo
+    val isAudio: Boolean = mimeType.isAudio
+}

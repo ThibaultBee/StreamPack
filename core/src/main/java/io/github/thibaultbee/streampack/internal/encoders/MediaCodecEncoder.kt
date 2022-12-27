@@ -82,7 +82,7 @@ abstract class MediaCodecEncoder<T : Config>(
                          * Drops codec data. They are already passed in the extra buffer.
                          */
                         if (info.flags != MediaCodec.BUFFER_FLAG_CODEC_CONFIG) {
-                            val extra = if (isKeyFrame || mimeType.isAudio()) {
+                            val extra = if (isKeyFrame || mimeType.isAudio) {
                                 generateExtra(codec.outputFormat)
                             } else {
                                 null

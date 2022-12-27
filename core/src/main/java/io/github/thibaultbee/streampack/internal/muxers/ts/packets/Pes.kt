@@ -61,10 +61,10 @@ class Pes(
         companion object {
             fun fromMimeType(mimeType: String): StreamId {
                 return when {
-                    mimeType.isVideo() -> {
+                    mimeType.isVideo -> {
                         VIDEO_STREAM_0
                     }
-                    mimeType.isAudio() -> {
+                    mimeType.isAudio -> {
                         AUDIO_STREAM_0
                     }
                     else -> {

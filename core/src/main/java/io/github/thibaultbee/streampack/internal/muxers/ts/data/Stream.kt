@@ -16,9 +16,14 @@
 package io.github.thibaultbee.streampack.internal.muxers.ts.data
 
 import io.github.thibaultbee.streampack.data.Config
+import io.github.thibaultbee.streampack.internal.utils.isAudio
+import io.github.thibaultbee.streampack.internal.utils.isVideo
 
 data class Stream(
     val config: Config,
     val pid: Short,
     val discontinuity: Boolean = false
-)
+) {
+    val isVideo = config.mimeType.isVideo
+    val isAudio = config.mimeType.isAudio
+}
