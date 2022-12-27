@@ -798,7 +798,6 @@ class FocusMetering(
                     cropRegion
                 )
 
-                Logger.e("test", "meteringRectangle: $meteringRectangle")
                 meteringRectangles.add(meteringRectangle)
             }
 
