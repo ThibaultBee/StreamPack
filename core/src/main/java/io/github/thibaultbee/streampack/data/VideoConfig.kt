@@ -72,7 +72,7 @@ class VideoConfig(
      * A value of 0 means that each frame is an I-frame.
      * On device with API < 25, this value will be rounded to an integer. So don't expect a precise value and any value < 0.5 will be considered as 0.
      */
-    val gopSize: Float = 1f  // 1s between I frames
+    val gopDuration: Float = 1f  // 1s between I frames
 ) : Config(mimeType, startBitrate) {
     init {
         require(mimeType.isVideo) { "MimeType must be video" }
@@ -109,7 +109,7 @@ class VideoConfig(
          * This is a best effort as few camera can not generate a fixed framerate.
          * For live streaming, I-frame interval should be really low. For recording, I-frame interval should be higher.
          */
-        gopSize: Float = 1f  // 1s between I frames
+        gopDuration: Float = 1f  // 1s between I frames
     ) : this(
         mimeType,
         startBitrate,
@@ -117,7 +117,7 @@ class VideoConfig(
         fps,
         profileLevel.profile,
         profileLevel.level,
-        gopSize
+        gopDuration
     )
 
     /**
@@ -150,9 +150,9 @@ class VideoConfig(
         format.setInteger(MediaFormat.KEY_BIT_RATE, startBitrate)
         format.setInteger(MediaFormat.KEY_FRAME_RATE, fps)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-            format.setFloat(MediaFormat.KEY_I_FRAME_INTERVAL, gopSize)
+            format.setFloat(MediaFormat.KEY_I_FRAME_INTERVAL, gopDuration)
         } else {
-            format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, gopSize.roundToInt())
+            format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, gopDuration.roundToInt())
         }
 
         if (withProfileLevel) {
