@@ -1,17 +1,32 @@
 Change Log
 ==========
 
+Version 2.5.2
+-------------
+
+## API Changes:
+
+- Rename `gopSize` to `gopDuration` in `VideoConfig` class.
+
+## Features:
+
+- RTMP: force synchronisation of audio and video frames.
+
+## Bug fixes:
+
+- Fixed a crash when the microphone is muted.
+
 Version 2.5.1
 -------------
 
-## API Changes
+## API Changes:
 
 - `StreamerSurfaceView` has been renamed `PreviewView` and it is not longer a `SurfaceView`
 
 Version 2.5.0
 -------------
 
-## API Changes
+## API Changes:
 
 - The logger is now a static class `Logger`. You still can set the `ILogger` implementation
   with `Logger.setLogger()`.
