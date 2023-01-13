@@ -28,6 +28,8 @@ import io.github.thibaultbee.streampack.internal.muxers.flv.packet.OnMetadata
 import io.github.thibaultbee.streampack.internal.utils.TimeUtils
 import io.github.thibaultbee.streampack.internal.utils.isAudio
 import io.github.thibaultbee.streampack.internal.utils.isVideo
+import io.github.thibaultbee.streampack.logger.Logger
+import io.github.thibaultbee.streampack.utils.TAG
 
 class FlvMuxer(
     private val context: Context,
@@ -72,6 +74,7 @@ class FlvMuxer(
         }
 
         frame.pts -= startUpTime!!
+        Logger.i(TAG, "Frame: ${frame.mimeType} isKeyFrame: ${frame.isKeyFrame} pts: ${frame.pts}")
         val flvTags = FlvTagFactory(frame, true, streams[streamPid]).build()
         flvTags.forEach {
             listener?.onOutputFrame(
@@ -113,7 +116,7 @@ class FlvMuxer(
         listener?.onOutputFrame(
             Packet(
                 OnMetadata(context, manageVideoOrientation, streams).write(),
-                TimeUtils.currentTime()
+                0
             )
         )
     }

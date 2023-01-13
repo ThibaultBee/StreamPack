@@ -51,6 +51,7 @@ class RtmpProducer(
             try {
                 isOnError = false
                 audioPacketQueue.clear()
+                ts = 0L
                 socket.connect("$url live=1 flashver=FMLE/3.0\\20(compatible;\\20FMSc/1.0)")
                 _isConnected = true
                 onConnectionListener?.onSuccess()
@@ -73,7 +74,7 @@ class RtmpProducer(
 
     override fun write(packet: Packet) {
         if (isOnError) return
-
+        Logger.i(TAG, "Packet: ${packet.type} pts: ${packet.ts}")
         try {
             synchronized(this) {
                 if (hasAudio && hasVideo) {
@@ -91,14 +92,18 @@ class RtmpProducer(
                             it.ts <= packet.ts
                         }
 
-                        audioPackets.forEach { socket.write(it.buffer) }
+                        audioPackets.forEach {
+                            Logger.i(TAG, "Sending audio packet: ${it.type} pts: ${it.ts}")
+                            writeSocket(it)
+                        }
                         audioPacketQueue.removeAll(audioPackets)
 
                         // Send video packet
-                        socket.write(packet.buffer)
+                        Logger.i(TAG, "Sending video packet: ${packet.type} pts: ${packet.ts}")
+                        writeSocket(packet)
                     }
                 } else {
-                    socket.write(packet.buffer)
+                    writeSocket(packet)
                 }
             }
         } catch (e: SocketException) {
@@ -108,6 +113,20 @@ class RtmpProducer(
             onConnectionListener?.onLost(e.message ?: "Socket error")
             Logger.e(TAG, "Error while writing packet to socket", e)
             throw e
+        }
+    }
+
+    private var ts = 0L
+    private fun writeSocket(packet: Packet) {
+        synchronized(this) {
+            if (ts > packet.ts) {
+                Logger.e(
+                    TAG,
+                    "Packet: ${packet.type} ts: ${packet.ts} is late compared to previous $ts"
+                )
+            }
+            ts = packet.ts
+            socket.write(packet.buffer)
         }
     }
 
