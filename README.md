@@ -1,9 +1,9 @@
 # StreamPack: RTMP and [SRT](https://github.com/Haivision/srt) live streaming SDK for Android
 
-StreamPack is a modular live streaming library for Android focusing on audio/video quality and a
-great developer experience. It is designed to be used in live streaming apps and games.
+StreamPack is a modular live streaming library for Android made for both demanding video
+broadcasters and new video enthusiasts.
 
-Simplify your live streaming experience.
+It is designed to be used in live streaming and gaming apps.
 
 ## Setup
 
@@ -125,12 +125,9 @@ To simplify integration, StreamPack provides an `StreamerSurfaceView`.
 ```xml
 
 <layout>
-    <io.github.thibaultbee.streampack.views.StreamerSurfaceView
-        android:id="@+id/preview"
-        android:layout_width="match_parent" 
-        android:layout_height="match_parent"
-        app:cameraFacingDirection="back"
-        app:enableZoomOnPinch="true" />
+    <io.github.thibaultbee.streampack.views.StreamerSurfaceView android:id="@+id/preview"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        app:cameraFacingDirection="back" app:enableZoomOnPinch="true" />
 </layout>
 ```
 
