@@ -28,7 +28,7 @@ class H26XBitBuffer(
         val leadingZeros = numOfLeadingZeros()
 
         return if (leadingZeros > 0) {
-            (1 shl leadingZeros) - 1 + get(leadingZeros).toInt()
+            (1 shl leadingZeros) - 1 + getInt(leadingZeros)
         } else {
             0
         }

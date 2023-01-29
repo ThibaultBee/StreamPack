@@ -83,9 +83,9 @@ data class AudioSpecificConfig(
         }
 
         private fun getAudioObjectType(reader: BitBuffer): AudioObjectType {
-            var audioObjectType = reader.get(5).toInt()
+            var audioObjectType = reader.getInt(5)
             if (audioObjectType == 0x1F) {
-                audioObjectType = 32 + reader.get(6).toInt()
+                audioObjectType = 32 + reader.getInt(6)
             }
             return AudioObjectType.fromValue(audioObjectType)
         }
@@ -100,9 +100,9 @@ data class AudioSpecificConfig(
         }
 
         private fun getSamplingFrequency(reader: BitBuffer): Int {
-            val samplingFrequencyIndex = reader.get(4).toInt()
+            val samplingFrequencyIndex = reader.getInt(4)
             return if (samplingFrequencyIndex == 0xF) {
-                reader.get(24).toInt()
+                reader.getInt(24)
             } else {
                 SamplingFrequencyIndex.fromValue(samplingFrequencyIndex).toSampleRate()
             }
@@ -188,7 +188,7 @@ data class AudioSpecificConfig(
         fun parse(bitBuffer: BitBuffer): AudioSpecificConfig {
             var audioObjectType = getAudioObjectType(bitBuffer)
             val samplingFrequency = getSamplingFrequency(bitBuffer)
-            val channelConfiguration = ChannelConfiguration.fromValue(bitBuffer.get(4).toShort())
+            val channelConfiguration = ChannelConfiguration.fromValue(bitBuffer.getShort(4))
 
             var extension: AudioSpecificConfigExtension? = null
             if ((audioObjectType == AudioObjectType.SBR) || (audioObjectType == AudioObjectType.PS)) {
@@ -216,7 +216,7 @@ data class AudioSpecificConfig(
             }
 
             if ((extension != null) && (extension.audioObjectType != AudioObjectType.SBR) && (bitBuffer.bitRemaining >= 16)) {
-                val syncExtensionType = bitBuffer.get(11).toInt()
+                val syncExtensionType = bitBuffer.getInt(11)
                 if (syncExtensionType == 0x2B7) {
                     val extensionAudioObjectType = getAudioObjectType(bitBuffer)
                     if (extensionAudioObjectType == AudioObjectType.SBR) {
@@ -224,7 +224,7 @@ data class AudioSpecificConfig(
                         if (sbrPresentFlag) {
                             getSamplingFrequency(bitBuffer) // extensionSampleFrequency
                             if (bitBuffer.bitRemaining >= 12) {
-                                val syncExtensionType2 = bitBuffer.get(11).toInt()
+                                val syncExtensionType2 = bitBuffer.getInt(11)
                                 if (syncExtensionType2 == 0x548) {
                                     bitBuffer.getBoolean() // psPresentFlag
                                 }
@@ -235,7 +235,7 @@ data class AudioSpecificConfig(
                         if (sbrPresentFlag) {
                             getSamplingFrequency(bitBuffer) // extensionSampleFrequency
                         }
-                        bitBuffer.get(4) // extensionChannelConfiguration
+                        bitBuffer.getLong(4) // extensionChannelConfiguration
                     }
                 }
             }
@@ -335,7 +335,7 @@ data class AudioSpecificConfig(
                 val audioObjectType = getAudioObjectType(reader)
                 val channelConfiguration =
                     if (audioObjectType == AudioObjectType.ER_BSAC) {
-                        ChannelConfiguration.fromValue(reader.get(4).toShort())
+                        ChannelConfiguration.fromValue(reader.getShort(4))
                     } else {
                         null
                     }

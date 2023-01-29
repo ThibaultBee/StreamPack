@@ -45,10 +45,16 @@ open class BitBuffer(
     }
 
     private fun get1Bit(): Int {
-        return get(1).toInt()
+        return getInt(1)
     }
 
-    fun get(i: Int): Long {
+    fun get(i: Int) = getLong(i).toByte()
+
+    fun getShort(i: Int) = getLong(i).toShort()
+
+    fun getInt(i: Int) = getLong(i).toInt()
+
+    fun getLong(i: Int): Long {
         if (!hasRemaining) {
             throw IllegalStateException("No more bits to read")
         }
@@ -63,9 +69,9 @@ open class BitBuffer(
             bitPosition += i
         } else {
             val then = i - left
-            rc = get(left)
+            rc = getLong(left)
             rc = rc shl then
-            rc += get(then)
+            rc += getLong(then)
         }
 
         buffer.position(ceil(bitPosition.toDouble() / Byte.SIZE_BITS).toInt())
@@ -114,7 +120,7 @@ open class BitBuffer(
     fun put(buffer: BitBuffer) {
         while (buffer.hasRemaining) {
             // println( "put: ${count++}") // TODO: remove and improve algorithm
-            put(buffer.get(1).toInt(), 1)
+            put(buffer.getInt(1), 1)
         }
     }
 
@@ -123,7 +129,7 @@ open class BitBuffer(
         if (left == 8) {
             left = 0
         }
-        get(left)
+        getLong(left)
         return left
     }
 }

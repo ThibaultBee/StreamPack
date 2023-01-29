@@ -72,20 +72,20 @@ data class ELDSpecificConfig(
                 lbSbrHeader = LdSbrHeader.parse(reader, channelConfiguration)
             }
 
-            var eldExtType = reader.get(4).toInt()
+            var eldExtType = reader.getInt(4)
             while (eldExtType != ELDEXT_TERM) {
-                val eldExtLen = reader.get(4).toInt()
+                val eldExtLen = reader.getInt(4)
                 var len = eldExtLen
 
                 val eldExtLenAdd = if (eldExtLen == 15) {
-                    reader.get(8).toInt()
+                    reader.getInt(8)
                 } else {
                     0
                 }
                 len += eldExtLenAdd
 
                 val eldExtLenAddAdd = if (eldExtLenAdd == 255) {
-                    reader.get(16).toInt()
+                    reader.getInt(16)
                 } else {
                     0
                 }
@@ -96,11 +96,11 @@ data class ELDSpecificConfig(
                     else -> {
                     */
                 for (i in 0 until len) {
-                    reader.get(8) // other_byte
+                    reader.getLong(8) // other_byte
                 }
                 // }
                 // }
-                eldExtType = reader.get(4).toInt()
+                eldExtType = reader.getInt(4)
             }
 
             return ELDSpecificConfig(

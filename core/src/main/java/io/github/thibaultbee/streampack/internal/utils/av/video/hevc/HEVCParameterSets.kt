@@ -37,10 +37,10 @@ data class SequenceParameterSets(
         fun parse(buffer: ByteBuffer): SequenceParameterSets {
             val rbsp = buffer.extractRbsp(2)
             val reader = H26XBitBuffer(rbsp)
-            reader.get(16) // Dropping nal_unit_header: forbidden_zero_bit / nal_unit_type / nuh_layer_id / nuh_temporal_id_plus1
+            reader.getLong(16) // Dropping nal_unit_header: forbidden_zero_bit / nal_unit_type / nuh_layer_id / nuh_temporal_id_plus1
 
-            val videoParameterSetId = reader.get(4).toByte()
-            val maxNumSubLayersMinus1 = reader.get(3).toByte()
+            val videoParameterSetId = reader.get(4)
+            val maxNumSubLayersMinus1 = reader.get(3)
             val temporalIdNestingFlag = reader.getBoolean()
 
             val profileTierLevel = ProfileTierLevel.parse(reader, maxNumSubLayersMinus1)
@@ -110,13 +110,13 @@ data class ProfileTierLevel(
             reader: BitBuffer,
             maxNumSubLayersMinus1: Byte
         ): ProfileTierLevel {
-            val generalProfileSpace = reader.get(2).toByte()
+            val generalProfileSpace = reader.get(2)
             val generalTierFlag = reader.getBoolean()
-            val generalProfileIdc = HEVCProfile.fromProfileIdc(reader.get(5).toShort())
+            val generalProfileIdc = HEVCProfile.fromProfileIdc(reader.getShort(5))
 
-            val generalProfileCompatibilityFlags = reader.get(32).toInt()
-            val generalConstraintIndicatorFlags = reader.get(48)
-            val generalLevelIdc = reader.get(8).toByte()
+            val generalProfileCompatibilityFlags = reader.getInt(32)
+            val generalConstraintIndicatorFlags = reader.getLong(48)
+            val generalLevelIdc = reader.get(8)
 
             val subLayerProfilePresentFlag = mutableListOf<Boolean>()
             val subLayerLevelPresentFlag = mutableListOf<Boolean>()
@@ -127,19 +127,19 @@ data class ProfileTierLevel(
 
             if (maxNumSubLayersMinus1 > 0) {
                 for (i in maxNumSubLayersMinus1..8) {
-                    reader.get(2) // reserved_zero_2bits
+                    reader.getLong(2) // reserved_zero_2bits
                 }
             }
 
             for (i in 0 until maxNumSubLayersMinus1) {
                 if (subLayerProfilePresentFlag[i]) {
-                    reader.get(32) // skip
-                    reader.get(32) // skip
-                    reader.get(24) // skip
+                    reader.getLong(32) // skip
+                    reader.getLong(32) // skip
+                    reader.getLong(24) // skip
                 }
 
                 if (subLayerLevelPresentFlag[i]) {
-                    reader.get(8) // skip
+                    reader.getLong(8) // skip
                 }
             }
 
