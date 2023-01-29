@@ -118,9 +118,12 @@ open class BitBuffer(
     }
 
     fun put(buffer: BitBuffer) {
-        while (buffer.hasRemaining) {
-            // println( "put: ${count++}") // TODO: remove and improve algorithm
-            put(buffer.getInt(1), 1)
+        while (buffer.bitRemaining > Byte.SIZE_BITS) {
+            put(buffer.get(Byte.SIZE_BITS), Byte.SIZE_BITS)
+        }
+        if (buffer.hasRemaining) {
+            val bitRemaining = buffer.bitRemaining
+            put(buffer.get(bitRemaining), bitRemaining)
         }
     }
 
