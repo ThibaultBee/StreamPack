@@ -40,13 +40,13 @@ data class SbrHeader(
     companion object {
         fun parse(reader: BitBuffer): SbrHeader {
             val bsAmpRes = reader.getBoolean()
-            val bsStartFreq = reader.get(4).toByte()
+            val bsStartFreq = reader.get(4)
 
-            val bsStopFreq = reader.get(4).toByte()
+            val bsStopFreq = reader.get(4)
 
-            val bsXoverBand = reader.get(3).toByte()
+            val bsXoverBand = reader.get(3)
 
-            reader.get(2) // bsReserved
+            reader.getLong(2) // bsReserved
             val bsHeaderExtra1 = reader.getBoolean()
             val bsHeaderExtra2 = reader.getBoolean()
 
@@ -54,9 +54,9 @@ data class SbrHeader(
             var bsAlterScale: Boolean? = null
             var bsNoiseBands: Byte? = null
             if (bsHeaderExtra1) {
-                bsFreqScale = reader.get(2).toByte()
+                bsFreqScale = reader.get(2)
                 bsAlterScale = reader.getBoolean()
-                bsNoiseBands = reader.get(2).toByte()
+                bsNoiseBands = reader.get(2)
             }
 
             var bsLimiterBands: Byte? = null
@@ -64,8 +64,8 @@ data class SbrHeader(
             var bsInterpolFreq: Boolean? = null
             var bsSmoothingMode: Boolean? = null
             if (bsHeaderExtra2) {
-                bsLimiterBands = reader.get(2).toByte()
-                bsLimiterGains = reader.get(2).toByte()
+                bsLimiterBands = reader.get(2)
+                bsLimiterGains = reader.get(2)
                 bsInterpolFreq = reader.getBoolean()
                 bsSmoothingMode = reader.getBoolean()
             }

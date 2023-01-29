@@ -185,9 +185,9 @@ class StreamMuxConfig(
         }
 
         fun parse(bitBuffer: BitBuffer): StreamMuxConfig {
-            val audioMuxVersion = bitBuffer.get(1).toInt()
+            val audioMuxVersion = bitBuffer.getInt(1)
             val audioMuxVersionA = if (audioMuxVersion == 1) {
-                bitBuffer.get(1).toInt()
+                bitBuffer.getInt(1)
             } else {
                 0
             }
@@ -202,10 +202,10 @@ class StreamMuxConfig(
                     throw NotImplementedError("audioMuxVersion == 1 is not implemented yet")
                 }
                 allStreamsSameTimeFraming = bitBuffer.getBoolean()
-                numSubFrames = bitBuffer.get(6).toInt()
-                numProgram = bitBuffer.get(4).toInt()
+                numSubFrames = bitBuffer.getInt(6)
+                numProgram = bitBuffer.getInt(4)
                 for (i in 0..numProgram) {
-                    val numLayer = bitBuffer.get(3).toInt()
+                    val numLayer = bitBuffer.getInt(3)
                     for (j in 0..numLayer) {
                         val useSameConfig = if ((i == 0) && (j == 0)) {
                             false
@@ -219,10 +219,10 @@ class StreamMuxConfig(
                                 throw NotImplementedError("audioMuxVersion == 1 is not implemented yet")
                             }
                         }
-                        val frameLengthType = bitBuffer.get(3).toInt()
+                        val frameLengthType = bitBuffer.getInt(3)
                         frameLengthTypes.add(frameLengthType)
                         when (frameLengthType) {
-                            0 -> bitBuffer.get(8) // latmBufferFullness
+                            0 -> bitBuffer.getLong(8) // latmBufferFullness
                             else -> {
                                 throw NotImplementedError("frameLengthType $frameLengthType is not implemented yet")
                             }

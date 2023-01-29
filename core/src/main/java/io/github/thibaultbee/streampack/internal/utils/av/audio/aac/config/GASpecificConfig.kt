@@ -85,7 +85,7 @@ data class GASpecificConfig(
 
             val dependsOnCodeCoder = reader.getBoolean()
             val coreCoderDelay = if (dependsOnCodeCoder) {
-                reader.get(14).toShort()
+                reader.getShort(14)
             } else {
                 null
             }
@@ -101,7 +101,7 @@ data class GASpecificConfig(
 
             val layerNr =
                 if ((audioObjectType == AudioObjectType.AAC_SCALABLE) || (audioObjectType == AudioObjectType.ER_AAC_SCALABLE)) {
-                    reader.get(3).toByte()
+                    reader.get(3)
                 } else {
                     null
                 }
@@ -115,8 +115,8 @@ data class GASpecificConfig(
 
             if (extensionFlag) {
                 if (audioObjectType == AudioObjectType.ER_BSAC) {
-                    numOfSubFrame = reader.get(5).toShort()
-                    layerLength = reader.get(11).toShort()
+                    numOfSubFrame = reader.getShort(5)
+                    layerLength = reader.getShort(11)
                 }
 
                 if ((audioObjectType == AudioObjectType.ER_AAC_LC) ||

@@ -11,7 +11,7 @@ class BitBufferTest {
         val byteBuffer = ByteBuffer.allocate(2)
         val bitBuffer = BitBuffer(byteBuffer)
         try {
-            bitBuffer.get(17)
+            bitBuffer.getLong(17)
             fail("Should throw exception")
         } catch (e: Exception) {
             assertTrue(e is IllegalStateException)
@@ -36,11 +36,11 @@ class BitBufferTest {
         assertEquals(31, bitBuffer.bitRemaining)
         assertEquals(true, bitBuffer.hasRemaining)
 
-        bitBuffer.get(7) // Go to next byte
+        bitBuffer.getLong(7) // Go to next byte
         assertEquals(24, bitBuffer.bitRemaining)
         assertEquals(true, bitBuffer.hasRemaining)
 
-        bitBuffer.get(24) // Go to the end
+        bitBuffer.getLong(24) // Go to the end
         assertEquals(0, bitBuffer.bitRemaining)
         assertEquals(false, bitBuffer.hasRemaining)
     }
@@ -50,10 +50,10 @@ class BitBufferTest {
         val array = byteArrayOf(0x01, 0x02, 0x03, 0x04)
         val byteBuffer = ByteBuffer.wrap(array)
         val bitBuffer = BitBuffer(byteBuffer)
-        assertEquals(0x01, bitBuffer.get(8))
-        assertEquals(0x02, bitBuffer.get(8))
-        assertEquals(0x03, bitBuffer.get(8))
-        assertEquals(0x04, bitBuffer.get(8))
+        assertEquals(0x01, bitBuffer.getLong(8))
+        assertEquals(0x02, bitBuffer.getLong(8))
+        assertEquals(0x03, bitBuffer.getLong(8))
+        assertEquals(0x04, bitBuffer.getLong(8))
     }
 
     @Test
@@ -62,10 +62,10 @@ class BitBufferTest {
         val byteBuffer = ByteBuffer.wrap(array)
         val bitBuffer = BitBuffer(byteBuffer)
         bitBuffer.getBoolean() // Go to next bit to be non align
-        assertEquals(0x02, bitBuffer.get(8))
-        assertEquals(0x04, bitBuffer.get(8))
-        assertEquals(0x06, bitBuffer.get(8))
-        assertEquals(0x04, bitBuffer.get(7))
+        assertEquals(0x02, bitBuffer.getLong(8))
+        assertEquals(0x04, bitBuffer.getLong(8))
+        assertEquals(0x06, bitBuffer.getLong(8))
+        assertEquals(0x04, bitBuffer.getLong(7))
     }
 
     @Test
