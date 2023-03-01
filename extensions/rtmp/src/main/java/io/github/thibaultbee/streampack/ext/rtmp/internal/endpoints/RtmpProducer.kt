@@ -76,6 +76,8 @@ class RtmpProducer(
 
         try {
             synchronized(this) {
+                socket.write(packet.buffer)
+                /*
                 if (hasAudio && hasVideo) {
                     /**
                      * Audio and video packets are received out of timestamp order. We need to reorder them.
@@ -99,7 +101,7 @@ class RtmpProducer(
                     }
                 } else {
                     socket.write(packet.buffer)
-                }
+                }*/
             }
         } catch (e: SocketException) {
             disconnect()
