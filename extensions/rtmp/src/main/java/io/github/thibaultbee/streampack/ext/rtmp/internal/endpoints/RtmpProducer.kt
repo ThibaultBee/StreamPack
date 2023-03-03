@@ -72,10 +72,18 @@ class RtmpProducer(
     }
 
     override fun write(packet: Packet) {
-        if (isOnError) return
+        synchronized(this) {
+            if (isOnError) {
+                return
+            }
 
-        try {
-            synchronized(this) {
+            if (!isConnected) {
+                Logger.w(TAG, "Socket is not connected, dropping packet")
+                return
+            }
+
+            try {
+
                 if (hasAudio && hasVideo) {
                     /**
                      * Audio and video packets are received out of timestamp order. We need to reorder them.
@@ -100,27 +108,31 @@ class RtmpProducer(
                 } else {
                     socket.write(packet.buffer)
                 }
+            } catch (e: Exception) {
+                disconnect()
+                isOnError = true
+                _isConnected = false
+                onConnectionListener?.onLost(e.message ?: "Socket error")
+                Logger.e(TAG, "Error while writing packet to socket", e)
+                throw e
             }
-        } catch (e: SocketException) {
-            disconnect()
-            isOnError = true
-            _isConnected = false
-            onConnectionListener?.onLost(e.message ?: "Socket error")
-            Logger.e(TAG, "Error while writing packet to socket", e)
-            throw e
         }
     }
 
     override fun startStream() {
-        socket.connectStream()
+        synchronized(this) {
+            socket.connectStream()
+        }
     }
 
     override fun stopStream() {
-        if (isConnected) {
-            /**
-             * deleteStream is blocking, if the connection does not exist yet.
-             */
-            socket.deleteStream()
+        synchronized(this) {
+            if (isConnected) {
+                /**
+                 * deleteStream is blocking, if the connection does not exist yet.
+                 */
+                socket.deleteStream()
+            }
         }
     }
 
