@@ -86,22 +86,21 @@ class ScreenCapture(
         require(videoConfig != null) { "Video has not been configured!" }
         require(activityResult != null) { "Activity result must be set!" }
 
-        mediaProjection = activityResult?.let {
-            mediaProjectionManager.getMediaProjection(it.resultCode, it.data!!)
-        }
+        val resultCode = activityResult!!.resultCode
+        val resultData = activityResult!!.data!!
 
-        videoConfig?.let {
-            virtualDisplay = mediaProjection?.createVirtualDisplay(
+        mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, resultData).apply {
+            virtualDisplay = createVirtualDisplay(
                 VIRTUAL_DISPLAY_NAME,
-                it.resolution.width,
-                it.resolution.height,
+                videoConfig!!.resolution.width,
+                videoConfig!!.resolution.height,
                 320,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                 encoderSurface,
                 virtualDisplayCallback,
                 virtualDisplayHandler
             )
-            mediaProjection?.registerCallback(mediaProjectionCallback, virtualDisplayHandler)
+            registerCallback(mediaProjectionCallback, virtualDisplayHandler)
         }
     }
 
