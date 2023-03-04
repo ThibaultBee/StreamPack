@@ -28,6 +28,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.thibaultbee.streampack.app.BR
 import io.github.thibaultbee.streampack.app.utils.ObservableViewModel
 import io.github.thibaultbee.streampack.app.utils.StreamerManager
+import io.github.thibaultbee.streampack.app.utils.isEmpty
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
@@ -72,7 +73,7 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
     }
 
     fun onPreviewStarted() {
-        notifyCameraChange()
+        notifyCameraChanged()
     }
 
     fun onZoomRationOnPinchChanged() {
@@ -128,7 +129,7 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
          */
         try {
             streamerManager.toggleCamera()
-            notifyCameraChange()
+            notifyCameraChanged()
         } catch (e: Exception) {
             Log.e(TAG, "toggleCamera failed", e)
             streamerError.postValue("toggleCamera: ${e.message ?: "Unknown error"}")
@@ -212,7 +213,7 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
             }
         }
 
-    private fun notifyCameraChange() {
+    private fun notifyCameraChanged() {
         streamerManager.cameraSettings?.let {
             // Set optical stabilization first
             // Do not set both video and optical stabilization at the same time
@@ -224,12 +225,10 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
 
             isAutoWhiteBalanceAvailable.postValue(it.whiteBalance.availableAutoModes.size > 1)
             isFlashAvailable.postValue(it.flash.available)
+
             it.exposure.let { exposure ->
                 isExposureCompensationAvailable.postValue(
-                    exposure.availableCompensationRange != Range(
-                        0,
-                        0
-                    )
+                    !exposure.availableCompensationRange.isEmpty
                 )
 
                 exposureCompensationRange.postValue(
@@ -245,10 +244,7 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
 
             it.zoom.let { zoom ->
                 isZoomAvailable.postValue(
-                    zoom.availableRatioRange != Range(
-                        1f,
-                        1f
-                    )
+                    !zoom.availableRatioRange.isEmpty
                 )
 
                 zoomRatioRange.postValue(zoom.availableRatioRange)
