@@ -156,6 +156,16 @@ fun Context.getAutoWhiteBalanceModes(cameraId: String): List<Int> {
         ?.toList() ?: emptyList()
 }
 
+/**
+ *  Get supported iso range
+ *
+ * @param cameraId camera id
+ * @return the iso range
+ */
+fun Context.getSensitivityRange(cameraId: String): Range<Int> {
+    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE)
+        ?: Range(100, 100)
+}
 
 /**
  * Get if camera supports white balance metering regions.

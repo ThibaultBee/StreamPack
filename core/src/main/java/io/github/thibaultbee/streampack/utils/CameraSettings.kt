@@ -51,6 +51,11 @@ class CameraSettings(context: Context, private val cameraController: CameraContr
     val whiteBalance = WhiteBalance(context, cameraController)
 
     /**
+     * Current camera ISO API.
+     */
+    val iso = Iso(context, cameraController)
+
+    /**
      * Current camera exposure API.
      */
     val exposure = Exposure(context, cameraController)
@@ -75,6 +80,44 @@ class CameraSettings(context: Context, private val cameraController: CameraContr
      */
     val focusMetering =
         FocusMetering(context, cameraController, zoom, focus, exposure, whiteBalance)
+}
+
+class Flash(private val context: Context, private val cameraController: CameraController) {
+    /**
+     * Checks if the current camera has a flash device.
+     *
+     * @return [Boolean.true] if camera has a flash device, [Boolean.false] otherwise.
+     */
+    val available: Boolean
+        get() = cameraController.cameraId?.let { context.isFlashAvailable(it) } ?: false
+
+    /**
+     * Enables or disables flash.
+     *
+     * @see [available]
+     */
+    var enable: Boolean
+        /**
+         * @return [Boolean.true] if flash is already on, otherwise [Boolean.false]
+         */
+        get() = getFlash() == CaptureResult.FLASH_MODE_TORCH
+        /**
+         * @param value [Boolean.true] to switch on flash, [Boolean.false] to switch off flash
+         */
+        set(value) {
+            if (value) {
+                setFlash(CaptureResult.FLASH_MODE_TORCH)
+            } else {
+                setFlash(CaptureResult.FLASH_MODE_OFF)
+            }
+        }
+
+    private fun getFlash(): Int =
+        cameraController.getSetting(CaptureRequest.FLASH_MODE) ?: CaptureResult.FLASH_MODE_OFF
+
+    private fun setFlash(mode: Int) {
+        cameraController.setRepeatingSetting(CaptureRequest.FLASH_MODE, mode)
+    }
 }
 
 class WhiteBalance(private val context: Context, private val cameraController: CameraController) {
@@ -131,41 +174,49 @@ class WhiteBalance(private val context: Context, private val cameraController: C
         }
 }
 
-class Flash(private val context: Context, private val cameraController: CameraController) {
+
+class Iso(private val context: Context, private val cameraController: CameraController) {
     /**
-     * Checks if the current camera has a flash device.
+     * Get current camera supported sensitivity range.
      *
-     * @return [Boolean.true] if camera has a flash device, [Boolean.false] otherwise.
+     * @return supported Sensitivity range
+     *
+     * @see [sensorSensitivity]
      */
-    val available: Boolean
-        get() = cameraController.cameraId?.let { context.isFlashAvailable(it) } ?: false
+    val availableSensorSensitivityRange: Range<Int>
+        get() = cameraController.cameraId?.let { context.getSensitivityRange(it) }
+            ?: DEFAULT_SENSITIVITY_RANGE
 
     /**
-     * Enables or disables flash.
+     * Set or get lens focus distance.
      *
-     * @see [available]
+     * @see [availableSensorSensitivityRange]
      */
-    var enable: Boolean
+    var sensorSensitivity: Int
         /**
-         * @return [Boolean.true] if flash is already on, otherwise [Boolean.false]
+         * Get the sensitivity
+         *
+         * @return the sensitivity
          */
-        get() = getFlash() == CaptureResult.FLASH_MODE_TORCH
+        get() = cameraController.getSetting(CaptureRequest.SENSOR_SENSITIVITY)
+            ?: 0
         /**
-         * @param value [Boolean.true] to switch on flash, [Boolean.false] to switch off flash
+         * Set the sensitivity
+         *
+         * Only set lens focus distance if [Exposure.autoMode] == [CaptureResult.CONTROL_AE_MODE_OFF].
+         *
+         * @param value lens focus distance
          */
         set(value) {
-            if (value) {
-                setFlash(CaptureResult.FLASH_MODE_TORCH)
-            } else {
-                setFlash(CaptureResult.FLASH_MODE_OFF)
-            }
+            cameraController.setRepeatingSetting(
+                CaptureRequest.SENSOR_SENSITIVITY,
+                value.clamp(availableSensorSensitivityRange)
+            )
         }
 
-    private fun getFlash(): Int =
-        cameraController.getSetting(CaptureRequest.FLASH_MODE) ?: CaptureResult.FLASH_MODE_OFF
-
-    private fun setFlash(mode: Int) {
-        cameraController.setRepeatingSetting(CaptureRequest.FLASH_MODE, mode)
+    companion object {
+        const val DEFAULT_SENSITIVITY = 100
+        val DEFAULT_SENSITIVITY_RANGE = Range(DEFAULT_SENSITIVITY, DEFAULT_SENSITIVITY)
     }
 }
 
@@ -407,9 +458,9 @@ class Focus(private val context: Context, private val cameraController: CameraCo
         }
 
     /**
-     * Get current camera supported auto focus mode.
+     * Get current camera lens distance range.
      *
-     * @return list of supported auto focus mode
+     * @return camera lens distance range
      *
      * @see [lensDistance]
      */
@@ -463,7 +514,6 @@ class Focus(private val context: Context, private val cameraController: CameraCo
             )
         }
 }
-
 
 class Stabilization(private val context: Context, private val cameraController: CameraController) {
     /**
