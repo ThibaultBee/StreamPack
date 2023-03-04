@@ -199,7 +199,7 @@ class Iso(private val context: Context, private val cameraController: CameraCont
          * @return the sensitivity
          */
         get() = cameraController.getSetting(CaptureRequest.SENSOR_SENSITIVITY)
-            ?: 0
+            ?: DEFAULT_SENSITIVITY
         /**
          * Set the sensitivity
          *
@@ -262,7 +262,8 @@ class Exposure(private val context: Context, private val cameraController: Camer
      * @see [compensation]
      */
     val availableCompensationRange: Range<Int>
-        get() = cameraController.cameraId?.let { context.getExposureRange(it) } ?: Range(0, 0)
+        get() = cameraController.cameraId?.let { context.getExposureRange(it) }
+            ?: DEFAULT_COMPENSATION_RANGE
 
     /**
      * Get current camera exposure compensation step.
@@ -277,7 +278,8 @@ class Exposure(private val context: Context, private val cameraController: Camer
      * @see [compensation]
      */
     val availableCompensationStep: Rational
-        get() = cameraController.cameraId?.let { context.getExposureStep(it) } ?: Rational(1, 1)
+        get() = cameraController.cameraId?.let { context.getExposureStep(it) }
+            ?: DEFAULT_COMPENSATION_STEP_RATIONAL
 
     /**
      * Set or get exposure compensation.
@@ -291,7 +293,8 @@ class Exposure(private val context: Context, private val cameraController: Camer
          *
          * @return exposure compensation
          */
-        get() = cameraController.getSetting(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION) ?: 0
+        get() = cameraController.getSetting(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION)
+            ?: DEFAULT_COMPENSATION
         /**
          * Set the exposure compensation.
          *
@@ -323,6 +326,12 @@ class Exposure(private val context: Context, private val cameraController: Camer
                 value.toTypedArray()
             )
         }
+
+    companion object {
+        const val DEFAULT_COMPENSATION = 0
+        val DEFAULT_COMPENSATION_RANGE = Range(DEFAULT_COMPENSATION, DEFAULT_COMPENSATION)
+        val DEFAULT_COMPENSATION_STEP_RATIONAL = Rational(1, 1)
+    }
 }
 
 
@@ -338,7 +347,8 @@ class Zoom(private val context: Context, private val cameraController: CameraCon
      * @see [zoomRatio]
      */
     val availableRatioRange: Range<Float>
-        get() = cameraController.cameraId?.let { context.getZoomRatioRange(it) } ?: Range(1f, 1f)
+        get() = cameraController.cameraId?.let { context.getZoomRatioRange(it) }
+            ?: DEFAULT_ZOOM_RATIO_RANGE
 
     /**
      * Set or get the current zoom ratio.
@@ -352,7 +362,7 @@ class Zoom(private val context: Context, private val cameraController: CameraCon
          * @return the current zoom ratio
          */
         get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            cameraController.getSetting(CaptureRequest.CONTROL_ZOOM_RATIO) ?: 1f
+            cameraController.getSetting(CaptureRequest.CONTROL_ZOOM_RATIO) ?: DEFAULT_ZOOM_RATIO
         } else {
             synchronized(this) {
                 persistentZoomRatio
@@ -406,6 +416,9 @@ class Zoom(private val context: Context, private val cameraController: CameraCon
     }
 
     companion object {
+        val DEFAULT_ZOOM_RATIO = 1f
+        val DEFAULT_ZOOM_RATIO_RANGE = Range(DEFAULT_ZOOM_RATIO, DEFAULT_ZOOM_RATIO)
+
         /**
          * Calculates sensor crop region for a zoom ratio (zoom >= 1.0).
          *
@@ -465,7 +478,8 @@ class Focus(private val context: Context, private val cameraController: CameraCo
      * @see [lensDistance]
      */
     val availableLensDistanceRange: Range<Float>
-        get() = cameraController.cameraId?.let { context.getLensDistanceRange(it) } ?: Range(0F, 0f)
+        get() = cameraController.cameraId?.let { context.getLensDistanceRange(it) }
+            ?: DEFAULT_LENS_DISTANCE_RANGE
 
     /**
      * Set or get lens focus distance.
@@ -479,7 +493,7 @@ class Focus(private val context: Context, private val cameraController: CameraCo
          * @return lens focus distance
          */
         get() = cameraController.getSetting(CaptureRequest.LENS_FOCUS_DISTANCE)
-            ?: 0.0f
+            ?: DEFAULT_LENS_DISTANCE
         /**
          * Set the lens focus distance
          *
@@ -499,7 +513,7 @@ class Focus(private val context: Context, private val cameraController: CameraCo
      */
     val maxNumOfMeteringRegions: Int
         get() = cameraController.cameraId?.let { context.getFocusMaxMeteringRegionsSupported(it) }
-            ?: 0
+            ?: DEFAULT_MAX_NUM_OF_METERING_REGION
 
     /**
      * Set/get focus metering regions.
@@ -513,6 +527,13 @@ class Focus(private val context: Context, private val cameraController: CameraCo
                 value.toTypedArray()
             )
         }
+
+    companion object {
+        val DEFAULT_LENS_DISTANCE = 0f
+        val DEFAULT_LENS_DISTANCE_RANGE = Range(DEFAULT_LENS_DISTANCE, DEFAULT_LENS_DISTANCE)
+
+        val DEFAULT_MAX_NUM_OF_METERING_REGION = 0
+    }
 }
 
 class Stabilization(private val context: Context, private val cameraController: CameraController) {

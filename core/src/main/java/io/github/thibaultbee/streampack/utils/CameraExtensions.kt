@@ -21,7 +21,6 @@ import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureResult
 import android.os.Build
 import android.util.Range
-import android.util.Rational
 import android.util.Size
 import io.github.thibaultbee.streampack.internal.sources.camera.getCameraFpsList
 
@@ -141,7 +140,7 @@ fun Context.isFrameRateSupported(cameraId: String, fps: Int) =
  * @param cameraId camera id
  * @return [Boolean.true] if camera has a flash device, [Boolean.false] otherwise.
  */
-fun Context.isFlashAvailable(cameraId: String): Boolean =
+fun Context.isFlashAvailable(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.FLASH_INFO_AVAILABLE)
         ?: false
 
@@ -151,10 +150,9 @@ fun Context.isFlashAvailable(cameraId: String): Boolean =
  * @param cameraId camera id
  * @return list of supported white balance modes.
  */
-fun Context.getAutoWhiteBalanceModes(cameraId: String): List<Int> {
-    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES)
+fun Context.getAutoWhiteBalanceModes(cameraId: String) =
+    getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES)
         ?.toList() ?: emptyList()
-}
 
 /**
  *  Get supported iso range
@@ -162,10 +160,8 @@ fun Context.getAutoWhiteBalanceModes(cameraId: String): List<Int> {
  * @param cameraId camera id
  * @return the iso range
  */
-fun Context.getSensitivityRange(cameraId: String): Range<Int> {
-    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE)
-        ?: Range(100, 100)
-}
+fun Context.getSensitivityRange(cameraId: String) =
+    getCameraCharacteristics(cameraId).get(CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE)
 
 /**
  * Get if camera supports white balance metering regions.
@@ -173,10 +169,8 @@ fun Context.getSensitivityRange(cameraId: String): Range<Int> {
  * @param cameraId camera id
  * @return true if camera supports metering regions, false otherwise
  */
-fun Context.getWhiteBalanceMeteringRegionsSupported(cameraId: String): Int {
-    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_MAX_REGIONS_AWB)
-        ?: 0
-}
+fun Context.getWhiteBalanceMeteringRegionsSupported(cameraId: String) =
+    getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_MAX_REGIONS_AWB)
 
 /**
  * Get supported auto exposure modes.
@@ -184,10 +178,9 @@ fun Context.getWhiteBalanceMeteringRegionsSupported(cameraId: String): Int {
  * @param cameraId camera id
  * @return list of supported auto focus modes
  */
-fun Context.getAutoExposureModes(cameraId: String): List<Int> {
-    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_AVAILABLE_MODES)
+fun Context.getAutoExposureModes(cameraId: String) =
+    getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_AVAILABLE_MODES)
         ?.toList() ?: emptyList()
-}
 
 /**
  * Gets exposure range.
@@ -195,10 +188,8 @@ fun Context.getAutoExposureModes(cameraId: String): List<Int> {
  * @param cameraId camera id
  * @return exposure range.
  */
-fun Context.getExposureRange(cameraId: String): Range<Int> {
-    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE)
-        ?: Range(0, 0)
-}
+fun Context.getExposureRange(cameraId: String) =
+    getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE)
 
 /**
  * Get exposure compensation step.
@@ -210,11 +201,8 @@ fun Context.getExposureRange(cameraId: String): Range<Int> {
  * @param cameraId camera id
  * @return exposure range.
  */
-fun Context.getExposureStep(cameraId: String): Rational {
-    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP)
-        ?: Rational(1, 1)
-}
-
+fun Context.getExposureStep(cameraId: String) =
+    getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP)
 
 /**
  * Get if camera supports exposure metering regions.
@@ -222,10 +210,8 @@ fun Context.getExposureStep(cameraId: String): Rational {
  * @param cameraId camera id
  * @return true if camera supports metering regions, false otherwise
  */
-fun Context.getExposureMaxMeteringRegionsSupported(cameraId: String): Int {
-    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_MAX_REGIONS_AE)
-        ?: 0
-}
+fun Context.getExposureMaxMeteringRegionsSupported(cameraId: String) =
+    getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_MAX_REGIONS_AE)
 
 /**
  * Gets zoom ratio range.
@@ -233,13 +219,12 @@ fun Context.getExposureMaxMeteringRegionsSupported(cameraId: String): Int {
  * @param cameraId camera id
  * @return zoom ratio range.
  */
-fun Context.getZoomRatioRange(cameraId: String): Range<Float> {
+fun Context.getZoomRatioRange(cameraId: String): Range<Float>? {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE)
-            ?: Range(1f, 1f)
     } else {
         getCameraCharacteristics(cameraId).get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM)
-            ?.let { maxZoom -> Range(1f, maxZoom) } ?: Range(1f, 1f)
+            ?.let { maxZoom -> Range(1f, maxZoom) }
     }
 }
 
@@ -249,10 +234,9 @@ fun Context.getZoomRatioRange(cameraId: String): Range<Float> {
  * @param cameraId camera id
  * @return list of supported auto focus modes
  */
-fun Context.getAutoFocusModes(cameraId: String): List<Int> {
-    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES)
+fun Context.getAutoFocusModes(cameraId: String) =
+    getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES)
         ?.toList() ?: emptyList()
-}
 
 /**
  * Get supported lens distance range.
@@ -260,13 +244,12 @@ fun Context.getAutoFocusModes(cameraId: String): List<Int> {
  * @param cameraId camera id
  * @return lens distance range
  */
-fun Context.getLensDistanceRange(cameraId: String): Range<Float> {
-    return Range(
+fun Context.getLensDistanceRange(cameraId: String) =
+    Range(
         0f,
         getCameraCharacteristics(cameraId).get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE)
             ?: 0f
     )
-}
 
 /**
  * Get if camera supports focus metering regions.
@@ -274,10 +257,8 @@ fun Context.getLensDistanceRange(cameraId: String): Range<Float> {
  * @param cameraId camera id
  * @return true if camera supports metering regions, false otherwise
  */
-fun Context.getFocusMaxMeteringRegionsSupported(cameraId: String): Int {
-    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF)
-        ?: 0
-}
+fun Context.getFocusMaxMeteringRegionsSupported(cameraId: String) =
+    getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF)
 
 /**
  * Checks if the camera supports optical stabilization.
@@ -285,12 +266,11 @@ fun Context.getFocusMaxMeteringRegionsSupported(cameraId: String): Int {
  * @param cameraId camera id
  * @return [Boolean.true] if camera supports optical stabilization, [Boolean.false] otherwise.
  */
-fun Context.isOpticalStabilizationAvailable(cameraId: String): Boolean =
+fun Context.isOpticalStabilizationAvailable(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.LENS_INFO_AVAILABLE_OPTICAL_STABILIZATION)
         ?.contains(
             CaptureResult.LENS_OPTICAL_STABILIZATION_MODE_ON
-        )
-        ?: false
+        ) ?: false
 
 /**
  * Computes rotation required to transform the camera sensor output orientation to the
