@@ -26,33 +26,36 @@ import io.github.thibaultbee.streampack.utils.OrientationUtils
  *
  * @return an integer equals to the current device orientation
  */
-fun Context.getDeviceOrientation(): Int {
-    val displayManager = this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-    return when (val displayRotation =
-        displayManager.getDisplay(Display.DEFAULT_DISPLAY).rotation) {
-        Surface.ROTATION_0 -> 90
-        Surface.ROTATION_90 -> 0
-        Surface.ROTATION_180 -> 270
-        Surface.ROTATION_270 -> 180
-        else -> throw UnsupportedOperationException(
-            "Unsupported display rotation: $displayRotation"
-        )
+val Context.deviceOrientation: Int
+    get() {
+        val displayManager = this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+        return when (val displayRotation =
+            displayManager.getDisplay(Display.DEFAULT_DISPLAY).rotation) {
+            Surface.ROTATION_0 -> 90
+            Surface.ROTATION_90 -> 0
+            Surface.ROTATION_180 -> 270
+            Surface.ROTATION_270 -> 180
+            else -> throw UnsupportedOperationException(
+                "Unsupported display rotation: $displayRotation"
+            )
+        }
     }
-}
 
 /**
  * Check if the device is in portrait.
  *
  * @return true if the device is in portrait, otherwise false
  */
-fun Context.isDevicePortrait(): Boolean {
-    val orientation = this.getDeviceOrientation()
-    return OrientationUtils.isPortrait(orientation)
-}
+val Context.isDevicePortrait: Boolean
+    get() {
+        val orientation = this.deviceOrientation
+        return OrientationUtils.isPortrait(orientation)
+    }
 
 /**
  * Check if the device is in landscape.
  *
  * @return true if the device is in landscape, otherwise false
  */
-fun Context.isDeviceLandscape() = !isDevicePortrait()
+val Context.isDeviceLandscape: Boolean
+    get() = !isDevicePortrait

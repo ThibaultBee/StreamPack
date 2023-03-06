@@ -29,6 +29,7 @@ import io.github.thibaultbee.streampack.internal.encoders.IEncoderListener
 import io.github.thibaultbee.streampack.internal.encoders.VideoMediaCodecEncoder
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.events.EventHandler
+import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.sources.IAudioCapture
@@ -49,7 +50,7 @@ import java.nio.ByteBuffer
  * @param context application context
  * @param videoCapture Video source
  * @param audioCapture Audio source
- * @param manageVideoOrientation Set to [Boolean.true] to rotate video according to device orientation.
+ * @param orientationProvider The orientation provider
  * @param muxer a [IMuxer] implementation
  * @param endpoint a [IEndpoint] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
@@ -58,7 +59,7 @@ abstract class BaseStreamer(
     private val context: Context,
     protected val audioCapture: IAudioCapture?,
     protected val videoCapture: IVideoCapture?,
-    manageVideoOrientation: Boolean,
+    orientationProvider: IOrientationProvider,
     private val muxer: IMuxer,
     protected val endpoint: IEndpoint,
     initialOnErrorListener: OnErrorListener? = null
@@ -161,9 +162,8 @@ abstract class BaseStreamer(
         VideoMediaCodecEncoder(
             videoEncoderListener,
             onInternalErrorListener,
-            context,
             videoCapture.hasSurface,
-            manageVideoOrientation
+            orientationProvider
         )
     } else {
         null
@@ -176,7 +176,7 @@ abstract class BaseStreamer(
         get() = videoCapture != null
 
     init {
-        muxer.manageVideoOrientation = manageVideoOrientation
+        muxer.orientationProvider = orientationProvider
         muxer.listener = muxListener
     }
 

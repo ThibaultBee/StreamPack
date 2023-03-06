@@ -19,6 +19,7 @@ import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.internal.data.Frame
+import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.Service
@@ -43,7 +44,7 @@ class TSMuxer(
     override val helper = TSMuxerHelper()
     private val tsServices = mutableListOf<Service>()
     private val tsPes = mutableListOf<Pes>()
-    override var manageVideoOrientation: Boolean = false // Useless here
+    override lateinit var orientationProvider: IOrientationProvider
     override var listener: IMuxerListener? = initialListener
         set(value) {
             pat.listener = value

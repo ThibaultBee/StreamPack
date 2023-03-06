@@ -20,6 +20,7 @@ import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.data.PacketType
+import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.muxers.flv.packet.FlvHeader
@@ -48,7 +49,7 @@ class FlvMuxer(
         initialStreams?.let { streams.addAll(it) }
     }
 
-    override var manageVideoOrientation: Boolean = false
+    override lateinit var orientationProvider: IOrientationProvider
 
     override fun encode(frame: Frame, streamPid: Int) {
         if (!hasFirstFrame) {
@@ -112,7 +113,7 @@ class FlvMuxer(
         // Metadata
         listener?.onOutputFrame(
             Packet(
-                OnMetadata(context, manageVideoOrientation, streams).write(),
+                OnMetadata(orientationProvider, streams).write(),
                 TimeUtils.currentTime()
             )
         )

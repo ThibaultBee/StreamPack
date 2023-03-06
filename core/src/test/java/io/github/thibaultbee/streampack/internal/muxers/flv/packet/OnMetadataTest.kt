@@ -17,11 +17,11 @@ package io.github.thibaultbee.streampack.internal.muxers.flv.packet
 
 import android.content.Context
 import io.github.thibaultbee.streampack.data.VideoConfig
+import io.github.thibaultbee.streampack.internal.data.orientation.DummyOrientationProvider
 import io.github.thibaultbee.streampack.internal.utils.extractArray
 import io.github.thibaultbee.streampack.utils.MockUtils
 import io.mockk.mockk
 import org.junit.Assert.assertArrayEquals
-import org.junit.Before
 import org.junit.Test
 
 class OnMetadataTest {
@@ -188,8 +188,7 @@ class OnMetadataTest {
         )
 
         val onMetadata = OnMetadata(
-            context,
-            false,
+            DummyOrientationProvider(),
             listOf(
                 VideoConfig(resolution = MockUtils.mockSize(640, 480), profile = 0, level = 0)
             )

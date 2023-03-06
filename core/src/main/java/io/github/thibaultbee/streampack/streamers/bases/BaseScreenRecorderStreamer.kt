@@ -18,10 +18,12 @@ package io.github.thibaultbee.streampack.streamers.bases
 import android.content.Context
 import android.content.Intent
 import android.media.projection.MediaProjectionManager
+import android.util.Size
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioCapture
 import io.github.thibaultbee.streampack.internal.sources.screen.ScreenCapture
@@ -46,7 +48,7 @@ open class BaseScreenRecorderStreamer(
     context = context,
     videoCapture = ScreenCapture(context),
     audioCapture = if (enableAudio) AudioCapture() else null,
-    manageVideoOrientation = false,
+    orientationProvider = ScreenRecorderOrientationProvider(),
     muxer = muxer,
     endpoint = endpoint,
     initialOnErrorListener = initialOnErrorListener
@@ -96,4 +98,9 @@ open class BaseScreenRecorderStreamer(
         screenCapture.encoderSurface = videoEncoder?.inputSurface
         super.startStream()
     }
+}
+
+class ScreenRecorderOrientationProvider : IOrientationProvider {
+    override val orientation = 90
+    override fun orientedSize(size: Size) = size
 }

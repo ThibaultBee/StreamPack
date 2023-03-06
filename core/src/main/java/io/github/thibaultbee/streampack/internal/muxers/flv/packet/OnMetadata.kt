@@ -15,17 +15,20 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.flv.packet
 
-import android.content.Context
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.data.VideoConfig
+import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.flv.amf.containers.AmfContainer
 import io.github.thibaultbee.streampack.internal.muxers.flv.amf.containers.AmfEcmaArray
 import io.github.thibaultbee.streampack.internal.utils.numOfBits
 import java.io.IOException
 import java.nio.ByteBuffer
 
-class OnMetadata(context: Context, manageVideoOrientation: Boolean, streams: List<Config>) :
+class OnMetadata(
+    orientationProvider: IOrientationProvider,
+    streams: List<Config>
+) :
     FlvTag(0, TagType.SCRIPT) {
     private val amfContainer = AmfContainer()
 
@@ -53,11 +56,7 @@ class OnMetadata(context: Context, manageVideoOrientation: Boolean, streams: Lis
 
                 }
                 is VideoConfig -> {
-                    val resolution = if (manageVideoOrientation) {
-                        it.getOrientedResolution(context)
-                    } else {
-                        it.resolution
-                    }
+                    val resolution = orientationProvider.orientedSize(it.resolution)
                     ecmaArray.add(
                         "videocodecid",
                         CodecID.fromMimeType(it.mimeType).value.toDouble()

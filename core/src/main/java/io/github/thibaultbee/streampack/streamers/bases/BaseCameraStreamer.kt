@@ -22,6 +22,7 @@ import android.view.SurfaceView
 import android.view.TextureView
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.error.StreamPackError
+import io.github.thibaultbee.streampack.internal.data.orientation.DeviceOrientationProvider
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioCapture
@@ -54,7 +55,7 @@ open class BaseCameraStreamer(
     context = context,
     videoCapture = CameraCapture(context),
     audioCapture = if (enableAudio) AudioCapture() else null,
-    manageVideoOrientation = true,
+    orientationProvider = DeviceOrientationProvider(context),
     muxer = muxer,
     endpoint = endpoint,
     initialOnErrorListener = initialOnErrorListener

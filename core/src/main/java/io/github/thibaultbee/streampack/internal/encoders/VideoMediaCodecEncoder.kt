@@ -16,7 +16,6 @@
 package io.github.thibaultbee.streampack.internal.encoders
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.graphics.SurfaceTexture
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
@@ -27,8 +26,7 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.gl.EGlSurface
 import io.github.thibaultbee.streampack.internal.gl.FullFrameRect
 import io.github.thibaultbee.streampack.internal.gl.Texture2DProgram
-import io.github.thibaultbee.streampack.internal.utils.getDeviceOrientation
-import io.github.thibaultbee.streampack.internal.utils.isDevicePortrait
+import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import java.util.concurrent.Executors
 
@@ -40,13 +38,12 @@ import java.util.concurrent.Executors
 class VideoMediaCodecEncoder(
     encoderListener: IEncoderListener,
     override val onInternalErrorListener: OnErrorListener,
-    private val context: Context,
     private val useSurfaceMode: Boolean,
-    private val manageVideoOrientation: Boolean
+    private val orientationProvider: IOrientationProvider
 ) :
     MediaCodecEncoder<VideoConfig>(encoderListener) {
     var codecSurface = if (useSurfaceMode) {
-        CodecSurface(context, manageVideoOrientation)
+        CodecSurface(orientationProvider)
     } else {
         null
     }
@@ -76,11 +73,10 @@ class VideoMediaCodecEncoder(
 
     override fun extendMediaFormat(config: Config, format: MediaFormat) {
         val videoConfig = config as VideoConfig
-        if (manageVideoOrientation) {
+        orientationProvider.orientedSize(videoConfig.resolution).apply {
             // Override previous format
-            val resolution = videoConfig.getOrientedResolution(context)
-            format.setInteger(MediaFormat.KEY_WIDTH, resolution.width)
-            format.setInteger(MediaFormat.KEY_HEIGHT, resolution.height)
+            format.setInteger(MediaFormat.KEY_WIDTH, width)
+            format.setInteger(MediaFormat.KEY_HEIGHT, height)
         }
     }
 
@@ -97,7 +93,9 @@ class VideoMediaCodecEncoder(
     val inputSurface: Surface?
         get() = codecSurface?.inputSurface
 
-    class CodecSurface(private val context: Context, private val manageVideoOrientation: Boolean) :
+    class CodecSurface(
+        private val orientationProvider: IOrientationProvider
+    ) :
         SurfaceTexture.OnFrameAvailableListener {
         private var eglSurface: EGlSurface? = null
         private var fullFrameRect: FullFrameRect? = null
@@ -136,21 +134,13 @@ class VideoMediaCodecEncoder(
                 fullFrameRect = FullFrameRect(Texture2DProgram()).apply {
                     textureId = createTextureObject()
                     setMVPMatrixAndViewPort(
-                        context.getDeviceOrientation().toFloat(),
+                        orientationProvider.orientation.toFloat(),
                         Size(width, height)
                     )
                 }
 
                 surfaceTexture = attachOrBuildSurfaceTexture(surfaceTexture).apply {
-                    if (manageVideoOrientation) {
-                        if (context.isDevicePortrait()) {
-                            setDefaultBufferSize(height, width)
-                        } else {
-                            setDefaultBufferSize(width, height)
-                        }
-                    } else {
-                        setDefaultBufferSize(width, height)
-                    }
+                    setDefaultBufferSize(maxOf(height, width), minOf(height, width))
                     setOnFrameAvailableListener(this@CodecSurface)
                 }
             }

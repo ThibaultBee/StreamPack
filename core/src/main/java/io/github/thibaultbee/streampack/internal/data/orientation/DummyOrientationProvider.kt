@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Thibault B.
+ * Copyright (C) 2023 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.muxers
+package io.github.thibaultbee.streampack.internal.data.orientation
 
-import io.github.thibaultbee.streampack.data.Config
-import io.github.thibaultbee.streampack.internal.data.Frame
+import android.util.Size
 import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
-import io.github.thibaultbee.streampack.internal.interfaces.Streamable
 
-interface IMuxer: Streamable<Unit> {
-    val helper: IMuxerHelper
-
-    var orientationProvider: IOrientationProvider
-    var listener: IMuxerListener?
-
-    fun encode(frame: Frame, streamPid: Int)
-    fun addStreams(streamsConfig: List<Config>): Map<Config, Int>
+class DummyOrientationProvider : IOrientationProvider {
+    override val orientation = 0
+    override fun orientedSize(size: Size) = size
 }

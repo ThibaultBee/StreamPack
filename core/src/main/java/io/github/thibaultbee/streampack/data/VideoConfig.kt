@@ -126,8 +126,8 @@ class VideoConfig(
      * @param context activity context
      * @return oriented resolution
      */
-    fun getOrientedResolution(context: Context): Size {
-        return if (context.isDevicePortrait()) {
+    fun getDeviceOrientedResolution(context: Context): Size {
+        return if (context.isDevicePortrait) {
             Size(resolution.height, resolution.width)
         } else {
             Size(resolution.width, resolution.height)
