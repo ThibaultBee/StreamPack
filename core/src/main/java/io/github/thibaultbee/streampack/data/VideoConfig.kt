@@ -22,8 +22,8 @@ import android.media.MediaFormat
 import android.os.Build
 import android.util.Size
 import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
-import io.github.thibaultbee.streampack.internal.utils.isDevicePortrait
-import io.github.thibaultbee.streampack.internal.utils.isVideo
+import io.github.thibaultbee.streampack.internal.utils.extensions.isDevicePortrait
+import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import java.security.InvalidParameterException
 import kotlin.math.roundToInt

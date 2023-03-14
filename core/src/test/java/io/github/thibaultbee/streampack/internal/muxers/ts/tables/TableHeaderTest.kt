@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.internal.muxers.ts.tables
 
 import io.github.thibaultbee.streampack.internal.muxers.ts.packets.TableHeader
-import io.github.thibaultbee.streampack.internal.utils.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert
 import org.junit.Test

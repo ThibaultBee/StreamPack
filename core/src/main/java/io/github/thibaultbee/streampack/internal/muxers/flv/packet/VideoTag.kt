@@ -21,8 +21,8 @@ import io.github.thibaultbee.streampack.internal.utils.av.video.avc.AVCDecoderCo
 import io.github.thibaultbee.streampack.internal.utils.av.video.hevc.HEVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.internal.utils.av.video.getStartCodeSize
 import io.github.thibaultbee.streampack.internal.utils.av.video.removeStartCode
-import io.github.thibaultbee.streampack.internal.utils.put
-import io.github.thibaultbee.streampack.internal.utils.putInt24
+import io.github.thibaultbee.streampack.internal.utils.extensions.put
+import io.github.thibaultbee.streampack.internal.utils.extensions.putInt24
 import java.io.IOException
 import java.nio.ByteBuffer
 

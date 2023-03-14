@@ -13,18 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.utils
+package io.github.thibaultbee.streampack.internal.utils.extensions
 
 import android.content.Context
 import android.hardware.display.DisplayManager
 import android.view.Display
 import android.view.Surface
+import io.github.thibaultbee.streampack.R
+import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.utils.OrientationUtils
 
 /**
- * Returns the device orientation.
+ * Returns the device orientation in degrees from the natural orientation: portrait.
  *
- * @return an integer equals to the current device orientation
+ * @return the device orientation
  */
 val Context.deviceOrientation: Int
     get() {
@@ -59,3 +61,14 @@ val Context.isDevicePortrait: Boolean
  */
 val Context.isDeviceLandscape: Boolean
     get() = !isDevicePortrait
+
+val Context.naturalOrientation: Int
+    get() = resources.configuration.orientation
+
+val Context.defaultTsServiceInfo
+    get() = TsServiceInfo(
+        TsServiceInfo.ServiceType.DIGITAL_TV,
+        0x4698,
+        getString(R.string.ts_service_default_name),
+        getString(R.string.ts_service_default_provider_name)
+    )

@@ -1,7 +1,7 @@
 package io.github.thibaultbee.streampack.internal.muxers.flv.amf.containers
 
 import io.github.thibaultbee.streampack.internal.muxers.flv.amf.AmfType
-import io.github.thibaultbee.streampack.internal.utils.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 

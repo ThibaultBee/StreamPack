@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.utils
+package io.github.thibaultbee.streampack.internal.utils.extensions
 
-import android.content.Context
 import android.graphics.PointF
 import android.graphics.Rect
 import android.util.Range
 import android.util.Rational
-import io.github.thibaultbee.streampack.R
-import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 
 fun Any.numOfBits(): Int {
     return when (this) {
@@ -37,14 +34,6 @@ fun Any.numOfBits(): Int {
         else -> throw IllegalArgumentException("Unsupported type: ${this.javaClass.name}")
     }
 }
-
-val Context.defaultTsServiceInfo
-    get() = TsServiceInfo(
-        TsServiceInfo.ServiceType.DIGITAL_TV,
-        0x4698,
-        getString(R.string.ts_service_default_name),
-        getString(R.string.ts_service_default_provider_name)
-    )
 
 fun <T : Comparable<T>> T.clamp(min: T, max: T): T {
     return if (max >= min) {
@@ -79,3 +68,9 @@ fun PointF.normalize(rect: Rect): PointF {
 }
 
 fun Rational.flip() = Rational(denominator, numerator)
+
+val Int.isOrientationPortrait: Boolean
+    get() = this == 90 || this == 270
+
+val Int.isOrientationLandscape: Boolean
+    get() = this == 0 || this == 180

@@ -25,10 +25,10 @@ import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.events.EventHandler
-import io.github.thibaultbee.streampack.internal.utils.extractArray
-import io.github.thibaultbee.streampack.internal.utils.isAudio
-import io.github.thibaultbee.streampack.internal.utils.slices
-import io.github.thibaultbee.streampack.internal.utils.startsWith
+import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
+import io.github.thibaultbee.streampack.internal.utils.extensions.slices
+import io.github.thibaultbee.streampack.internal.utils.extensions.startsWith
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.utils.TAG
 import java.nio.ByteBuffer

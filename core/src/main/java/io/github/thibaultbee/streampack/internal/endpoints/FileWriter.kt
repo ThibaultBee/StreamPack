@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.internal.endpoints
 
 import io.github.thibaultbee.streampack.internal.data.Packet
-import io.github.thibaultbee.streampack.internal.utils.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream

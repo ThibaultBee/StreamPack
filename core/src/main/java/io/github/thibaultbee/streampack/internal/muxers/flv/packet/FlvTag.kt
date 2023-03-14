@@ -19,11 +19,11 @@ import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
-import io.github.thibaultbee.streampack.internal.utils.put
-import io.github.thibaultbee.streampack.internal.utils.putInt24
-import io.github.thibaultbee.streampack.internal.utils.shl
-import io.github.thibaultbee.streampack.internal.utils.isAudio
-import io.github.thibaultbee.streampack.internal.utils.isVideo
+import io.github.thibaultbee.streampack.internal.utils.extensions.put
+import io.github.thibaultbee.streampack.internal.utils.extensions.putInt24
+import io.github.thibaultbee.streampack.internal.utils.extensions.shl
+import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
+import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
 import java.io.IOException
 import java.nio.ByteBuffer
 

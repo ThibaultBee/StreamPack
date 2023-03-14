@@ -16,8 +16,8 @@
 package io.github.thibaultbee.streampack.internal.muxers.ts.data
 
 import io.github.thibaultbee.streampack.data.Config
-import io.github.thibaultbee.streampack.internal.utils.isAudio
-import io.github.thibaultbee.streampack.internal.utils.isVideo
+import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
+import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
 
 data class Stream(
     val config: Config,

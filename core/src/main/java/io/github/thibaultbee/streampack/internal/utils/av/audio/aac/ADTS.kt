@@ -17,9 +17,9 @@ package io.github.thibaultbee.streampack.internal.utils.av.audio.aac
 
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.AudioConfig
-import io.github.thibaultbee.streampack.internal.utils.put
-import io.github.thibaultbee.streampack.internal.utils.putShort
-import io.github.thibaultbee.streampack.internal.utils.toInt
+import io.github.thibaultbee.streampack.internal.utils.extensions.put
+import io.github.thibaultbee.streampack.internal.utils.extensions.putShort
+import io.github.thibaultbee.streampack.internal.utils.extensions.toInt
 import io.github.thibaultbee.streampack.internal.utils.av.audio.ChannelConfiguration
 import io.github.thibaultbee.streampack.internal.utils.av.audio.SamplingFrequencyIndex
 import java.nio.ByteBuffer

@@ -20,8 +20,8 @@ import android.media.MediaCodecList
 import android.media.MediaFormat
 import android.os.Build
 import android.util.Range
-import io.github.thibaultbee.streampack.internal.utils.isAudio
-import io.github.thibaultbee.streampack.internal.utils.isVideo
+import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
+import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
 import java.security.InvalidParameterException
 
 object MediaCodecHelper {

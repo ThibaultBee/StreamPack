@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.internal.muxers.ts.packets
 
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.muxers.ts.utils.CRC32
-import io.github.thibaultbee.streampack.internal.utils.put
+import io.github.thibaultbee.streampack.internal.utils.extensions.put
 import java.nio.ByteBuffer
 
 open class Psi(

@@ -1,5 +1,8 @@
 package io.github.thibaultbee.streampack.internal.utils
 
+import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.extractRbsp
+import io.github.thibaultbee.streampack.internal.utils.extensions.slices
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Test

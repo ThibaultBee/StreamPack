@@ -19,7 +19,7 @@ import android.media.AudioFormat
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.os.Build
-import io.github.thibaultbee.streampack.internal.utils.isAudio
+import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import java.security.InvalidParameterException
 

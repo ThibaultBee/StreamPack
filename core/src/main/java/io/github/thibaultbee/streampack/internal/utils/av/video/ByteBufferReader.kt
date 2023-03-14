@@ -16,7 +16,7 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.av.video
 
-import io.github.thibaultbee.streampack.internal.utils.shr
+import io.github.thibaultbee.streampack.internal.utils.extensions.shr
 import java.nio.ByteBuffer
 
 class ByteBufferBitReader(var buffer: ByteBuffer) {

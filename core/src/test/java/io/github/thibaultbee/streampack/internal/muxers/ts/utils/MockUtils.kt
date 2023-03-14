@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.internal.muxers.ts.utils
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.muxers.ts.packets.TS
-import io.github.thibaultbee.streampack.internal.utils.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
 import org.junit.Assert
 import java.nio.ByteBuffer
 

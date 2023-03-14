@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.internal.muxers.flv.packet
 
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.internal.data.Frame
-import io.github.thibaultbee.streampack.internal.utils.isAudio
+import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
 
 class FlvTagFactory(
     private val frame: Frame,

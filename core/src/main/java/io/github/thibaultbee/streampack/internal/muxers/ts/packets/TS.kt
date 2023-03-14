@@ -19,7 +19,7 @@ import io.github.thibaultbee.streampack.internal.data.SrtPacket
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.muxers.ts.utils.MuxerConst
 import io.github.thibaultbee.streampack.internal.muxers.ts.utils.TSOutputCallback
-import io.github.thibaultbee.streampack.internal.utils.toInt
+import io.github.thibaultbee.streampack.internal.utils.extensions.toInt
 import java.nio.ByteBuffer
 import java.security.InvalidParameterException
 

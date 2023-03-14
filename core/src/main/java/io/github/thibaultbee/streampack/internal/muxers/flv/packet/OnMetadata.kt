@@ -21,7 +21,7 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.flv.amf.containers.AmfContainer
 import io.github.thibaultbee.streampack.internal.muxers.flv.amf.containers.AmfEcmaArray
-import io.github.thibaultbee.streampack.internal.utils.numOfBits
+import io.github.thibaultbee.streampack.internal.utils.extensions.numOfBits
 import java.io.IOException
 import java.nio.ByteBuffer
 

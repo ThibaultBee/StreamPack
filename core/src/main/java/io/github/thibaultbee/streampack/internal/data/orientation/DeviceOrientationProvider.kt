@@ -18,8 +18,8 @@ package io.github.thibaultbee.streampack.internal.data.orientation
 import android.content.Context
 import android.util.Size
 import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
-import io.github.thibaultbee.streampack.internal.utils.deviceOrientation
-import io.github.thibaultbee.streampack.internal.utils.isDevicePortrait
+import io.github.thibaultbee.streampack.internal.utils.extensions.deviceOrientation
+import io.github.thibaultbee.streampack.internal.utils.extensions.isDevicePortrait
 
 class DeviceOrientationProvider(private val context: Context) : IOrientationProvider {
     override val orientation: Int

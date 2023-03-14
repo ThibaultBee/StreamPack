@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.internal.utils.av.audio
 
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.AudioConfig
-import io.github.thibaultbee.streampack.internal.utils.put
+import io.github.thibaultbee.streampack.internal.utils.extensions.put
 import java.nio.ByteBuffer
 
 /**

@@ -18,9 +18,9 @@ package io.github.thibaultbee.streampack.internal.utils.av.video.avc
 import io.github.thibaultbee.streampack.internal.utils.av.video.ChromaFormat
 import io.github.thibaultbee.streampack.internal.utils.av.video.getStartCodeSize
 import io.github.thibaultbee.streampack.internal.utils.av.video.removeStartCode
-import io.github.thibaultbee.streampack.internal.utils.put
-import io.github.thibaultbee.streampack.internal.utils.putShort
-import io.github.thibaultbee.streampack.internal.utils.shl
+import io.github.thibaultbee.streampack.internal.utils.extensions.put
+import io.github.thibaultbee.streampack.internal.utils.extensions.putShort
+import io.github.thibaultbee.streampack.internal.utils.extensions.shl
 import java.nio.ByteBuffer
 
 data class AVCDecoderConfigurationRecord(

@@ -25,7 +25,7 @@ import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStr
 import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.internal.utils.Scheduler
-import io.github.thibaultbee.streampack.internal.utils.defaultTsServiceInfo
+import io.github.thibaultbee.streampack.internal.utils.extensions.defaultTsServiceInfo
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.regulator.IBitrateRegulatorFactory

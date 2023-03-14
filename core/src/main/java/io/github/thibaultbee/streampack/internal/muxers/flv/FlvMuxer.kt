@@ -27,8 +27,8 @@ import io.github.thibaultbee.streampack.internal.muxers.flv.packet.FlvHeader
 import io.github.thibaultbee.streampack.internal.muxers.flv.packet.FlvTagFactory
 import io.github.thibaultbee.streampack.internal.muxers.flv.packet.OnMetadata
 import io.github.thibaultbee.streampack.internal.utils.TimeUtils
-import io.github.thibaultbee.streampack.internal.utils.isAudio
-import io.github.thibaultbee.streampack.internal.utils.isVideo
+import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
+import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
 
 class FlvMuxer(
     private val context: Context,

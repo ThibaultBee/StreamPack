@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.utils
+package io.github.thibaultbee.streampack.internal.utils.extensions
 
 import io.github.thibaultbee.streampack.internal.utils.av.video.getStartCodeSize
 import java.nio.ByteBuffer

@@ -28,6 +28,10 @@ import android.util.Range
 import android.util.Rational
 import io.github.thibaultbee.streampack.internal.sources.camera.CameraController
 import io.github.thibaultbee.streampack.internal.utils.*
+import io.github.thibaultbee.streampack.internal.utils.extensions.clamp
+import io.github.thibaultbee.streampack.internal.utils.extensions.isNormalized
+import io.github.thibaultbee.streampack.internal.utils.extensions.normalize
+import io.github.thibaultbee.streampack.internal.utils.extensions.rotate
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import java.util.concurrent.Executors

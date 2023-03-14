@@ -15,8 +15,8 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.flv.packet
 
-import io.github.thibaultbee.streampack.internal.utils.shl
-import io.github.thibaultbee.streampack.internal.utils.toByte
+import io.github.thibaultbee.streampack.internal.utils.extensions.shl
+import io.github.thibaultbee.streampack.internal.utils.extensions.toByte
 import java.nio.ByteBuffer
 import kotlin.experimental.or
 

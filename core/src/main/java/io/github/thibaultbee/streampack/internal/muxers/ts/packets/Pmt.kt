@@ -21,8 +21,8 @@ import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.ITSElement
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.Service
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.Stream
-import io.github.thibaultbee.streampack.internal.utils.put
-import io.github.thibaultbee.streampack.internal.utils.putShort
+import io.github.thibaultbee.streampack.internal.utils.extensions.put
+import io.github.thibaultbee.streampack.internal.utils.extensions.putShort
 import java.nio.ByteBuffer
 
 class Pmt(

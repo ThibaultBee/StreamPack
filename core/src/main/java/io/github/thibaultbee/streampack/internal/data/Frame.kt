@@ -15,8 +15,8 @@
  */
 package io.github.thibaultbee.streampack.internal.data
 
-import io.github.thibaultbee.streampack.internal.utils.isAudio
-import io.github.thibaultbee.streampack.internal.utils.isVideo
+import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
+import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
 import java.nio.ByteBuffer
 
 /**

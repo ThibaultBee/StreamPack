@@ -16,9 +16,9 @@
 package io.github.thibaultbee.streampack.internal.muxers.ts.packets
 
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.ITSElement
-import io.github.thibaultbee.streampack.internal.utils.put
-import io.github.thibaultbee.streampack.internal.utils.shl
-import io.github.thibaultbee.streampack.internal.utils.toInt
+import io.github.thibaultbee.streampack.internal.utils.extensions.put
+import io.github.thibaultbee.streampack.internal.utils.extensions.shl
+import io.github.thibaultbee.streampack.internal.utils.extensions.toInt
 import java.nio.ByteBuffer
 
 class TableHeader(
