@@ -17,7 +17,18 @@ package io.github.thibaultbee.streampack.internal.interfaces
 
 import android.util.Size
 
+/**
+ * Interface to get the orientation of the capture surface.
+ */
 interface IOrientationProvider {
-    val orientation : Int
+    /**
+     * Orientation in degrees of the surface.
+     * Expected values: 0, 90, 180, 270.
+     */
+    val orientation: Int
+
+    /**
+     * Return the size with the correct orientation.
+     */
     fun orientedSize(size: Size): Size
 }

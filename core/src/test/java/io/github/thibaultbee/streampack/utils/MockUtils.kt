@@ -19,9 +19,16 @@ import android.util.Size
 import io.github.thibaultbee.streampack.internal.utils.TimeUtils
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import io.mockk.mockkObject
 
 object MockUtils {
+    fun mockSizeConstructor(width: Int, height: Int) {
+        mockkConstructor(Size::class)
+        every { anyConstructed<Size>().width } returns width
+        every { anyConstructed<Size>().height } returns height
+    }
+
     fun mockSize(width: Int, height: Int): Size {
         val mockk = mockk<Size>()
         every { mockk.width } returns width

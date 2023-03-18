@@ -15,18 +15,15 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.flv.packet
 
-import android.content.Context
+import android.util.Size
 import io.github.thibaultbee.streampack.data.VideoConfig
-import io.github.thibaultbee.streampack.internal.data.orientation.DummyOrientationProvider
+import io.github.thibaultbee.streampack.internal.data.orientation.FixedOrientationProvider
 import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
 import io.github.thibaultbee.streampack.utils.MockUtils
-import io.mockk.mockk
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 
 class OnMetadataTest {
-    private val context = mockk<Context>()
-
     @Test
     fun videoOnlyTest() {
         val expectedArray = byteArrayOf(
@@ -187,10 +184,11 @@ class OnMetadataTest {
             0x97.toByte()
         )
 
+        MockUtils.mockSizeConstructor(640, 480)
         val onMetadata = OnMetadata(
-            DummyOrientationProvider(),
+            FixedOrientationProvider(0),
             listOf(
-                VideoConfig(resolution = MockUtils.mockSize(640, 480), profile = 0, level = 0)
+                VideoConfig(resolution = Size(640, 480), profile = 0, level = 0)
             )
         )
         val buffer = onMetadata.write()

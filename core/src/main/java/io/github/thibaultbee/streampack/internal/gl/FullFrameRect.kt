@@ -107,7 +107,7 @@ class FullFrameRect(var program: Texture2DProgram) {
         Matrix.setIdentityM(mvpMatrix, 0)
         Matrix.rotateM(
             mvpMatrix, 0,
-            if (rotation == 0F) 270F else rotation - 90, 0f, 0f, -1f
+            rotation, 0f, 0f, -1f
         )
         GLES20.glViewport(0, 0, resolution.width, resolution.height)
     }

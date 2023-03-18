@@ -20,16 +20,22 @@ import android.util.Size
 import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
 import io.github.thibaultbee.streampack.internal.utils.extensions.deviceOrientation
 import io.github.thibaultbee.streampack.internal.utils.extensions.isDevicePortrait
+import io.github.thibaultbee.streampack.internal.utils.extensions.landscapize
+import io.github.thibaultbee.streampack.internal.utils.extensions.portraitize
 
 class DeviceOrientationProvider(private val context: Context) : IOrientationProvider {
     override val orientation: Int
-        get() = context.deviceOrientation
+        get() {
+            //TODO: this might not be working on all devices
+            val deviceOrientation = context.deviceOrientation
+            return if (deviceOrientation == 0) 270 else deviceOrientation - 90
+        }
 
     override fun orientedSize(size: Size): Size {
         return if (context.isDevicePortrait) {
-            Size(size.height, size.width)
+            size.portraitize()
         } else {
-            Size(size.width, size.height)
+            size.landscapize()
         }
     }
 }

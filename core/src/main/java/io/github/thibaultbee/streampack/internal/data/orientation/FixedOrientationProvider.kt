@@ -17,8 +17,16 @@ package io.github.thibaultbee.streampack.internal.data.orientation
 
 import android.util.Size
 import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
+import io.github.thibaultbee.streampack.internal.utils.extensions.landscapize
+import io.github.thibaultbee.streampack.internal.utils.extensions.portraitize
+import io.github.thibaultbee.streampack.utils.OrientationUtils
 
-class DummyOrientationProvider : IOrientationProvider {
-    override val orientation = 0
-    override fun orientedSize(size: Size) = size
+class FixedOrientationProvider(override val orientation: Int) : IOrientationProvider {
+    override fun orientedSize(size: Size): Size {
+        return if (OrientationUtils.isPortrait(orientation)) {
+            size.portraitize()
+        } else {
+            size.landscapize()
+        }
+    }
 }
