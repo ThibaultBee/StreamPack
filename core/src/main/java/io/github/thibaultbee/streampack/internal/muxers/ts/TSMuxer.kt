@@ -96,6 +96,7 @@ class TSMuxer(
                         ByteBuffer.allocate(
                             6 + frame.extra.sumOf { it.limit() } + frame.buffer.limit()
                         )
+                    // Add access unit delimiter (AUD) before the AVC access unit
                     buffer.putInt(0x00000001)
                     buffer.put(0x09.toByte())
                     buffer.put(0xf0.toByte())
@@ -115,6 +116,7 @@ class TSMuxer(
                         ByteBuffer.allocate(
                             7 + frame.extra.sumOf { it.limit() } + frame.buffer.limit()
                         )
+                    // Add access unit delimiter (AUD) before the HEVC access unit
                     buffer.putInt(0x00000001)
                     buffer.put(0x46.toByte())
                     buffer.put(0x01.toByte())
