@@ -1,0 +1,57 @@
+---
+name: Feature Request
+description: New feature request
+title: "[Feat]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request!
+
+        Rules for requesting a new feature:
+        -----------------------------------
+        * Make sure the feature hasn't already been requested.
+        * Fill in as much of the template below as you're able.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What version are you using?
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment that reproduces the issue
+      description: What device(s) are you testing with?
+      placeholder: |
+        Example:
+        * Samsung Galaxy S22 - Android 12
+        * Google Pixel 4a - Android 12
+    validations:
+      required: true
+  - type: textarea
+    id: usecase
+    attributes:
+      label: Use case description
+      description: Describe the use case in detail.
+      placeholder: |
+        A clear and concise description of what your use case is.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: The solution that seems to be the best fit for your use case.
+      placeholder: |
+        A clear and concise description of your proposed solution.
+  - type: textarea
+    id: other-solutions
+    attributes:
+      label: Alternative solutions
+      description: Other solutions that you have considered.
+      placeholder: |
+        A clear and concise description of your alternative solutions.

@@ -1,0 +1,126 @@
+---
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+
+        Rules for reporting a bug:
+        -------------------------
+        * Make sure the bug hasn't already been reported.
+        * Fill in as much of the template below as you're able.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What version are you using?
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment that reproduces the issue
+      description: What device(s) are you testing with?
+      placeholder: |
+        Example:
+        * Samsung Galaxy S22 - Android 12
+        * Google Pixel 4a - Android 12
+    validations:
+      required: true
+  - type: input
+    id: server
+    attributes:
+      label: RTMP/SRT/... Server
+      placeholder: |
+        Example:
+          RTMP on api.video
+    validations:
+      required: true
+  - type: textarea
+    id: audio-configuration
+    attributes:
+      label: Audio configuration
+      description: What audio configuration are you testing with?
+      placeholder: |
+        Example:
+        * AAC 
+        * profile: LC 
+        * sampling rate: 48 kHz 
+        * channels: stereo
+        * format: 16 bit
+        * bitrate: 128 kbps
+    validations:
+      required: false
+  - type: textarea
+    id: video-configuration
+    attributes:
+      label: Video configuration
+      description: What video configuration are you testing with?
+      placeholder: |
+        Example:
+        * H.264
+        * profile: High 
+        * level: 5.1
+        * resolution: 1920x1080
+        * bitrate: 5 Mbps
+    validations:
+      required: false
+  - type: dropdown
+    id: reproducible
+    attributes:
+      label: Is it reproducible in the demos application?
+      description: Please try and reproduce the issue in the example application.
+      options:
+        - "Yes"
+        - "No"
+        - Not tested
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Clear and complete steps we can use to reproduce the problem
+      placeholder: |
+        Example:
+        1. Connect to a RTMP server
+        2. Stream for 10s
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      placeholder: |
+        Example:
+        The device shall streams successfully
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      placeholder: |
+        Example:
+        The live stream crashes with the following stack trace:
+        ...
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      placeholder: |
+        Example:
+        Only reproducible with one Samsung Galaxy S22
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs output
+      description: Please paste any relevant adb logcat output here.
+      render: shell
