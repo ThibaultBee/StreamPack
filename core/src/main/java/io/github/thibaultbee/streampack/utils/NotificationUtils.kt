@@ -25,6 +25,11 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 
+/**
+ * Helper class to create and manage notifications.
+ * Only use for screen recording service that is why the permission error is suppressed.
+ */
+@Suppress("NotificationPermission")
 class NotificationUtils(
     private val service: Service,
     private val channelId: String,
