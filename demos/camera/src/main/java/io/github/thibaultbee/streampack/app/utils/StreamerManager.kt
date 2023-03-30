@@ -131,10 +131,14 @@ class StreamerManager(
 
     fun toggleCamera() {
         streamer?.getCameraStreamer()?.let {
-            if (context.isBackCamera(it.camera)) {
-                it.camera = context.getFrontCameraList()[0]
+            // Handle devices with only one camera
+            val cameras = if (context.isBackCamera(it.camera)) {
+                context.getFrontCameraList()
             } else {
-                it.camera = context.getBackCameraList()[0]
+                context.getBackCameraList()
+            }
+            if (cameras.isNotEmpty()) {
+                it.camera = cameras[0]
             }
         }
     }
