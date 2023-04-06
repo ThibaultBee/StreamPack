@@ -102,7 +102,8 @@ class StreamerManager(
         streamer?.getFileStreamer()?.let {
             /**
              * Use OutputStream.
-             * FYI, outputStream is closed by stopStream
+             * FYI, outputStream is closed by stopStream.
+             * To cut the video into multiple parts/chunks, use [MultiFileOutputStream].
              */
             it.outputStream =
                 context.createVideoMediaOutputStream(configuration.endpoint.file.filename)

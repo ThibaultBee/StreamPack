@@ -51,4 +51,13 @@ object Utils {
     fun generateRandomArray(size: Int): ByteArray {
         return Random.nextBytes(size)
     }
+
+    /**
+     * Generates a randomized ByteArray
+     * @param size size of buffer to generates
+     * @return random ByteBuffer
+     */
+    fun generateRandomArray(size: Long): ByteArray {
+        return generateRandomArray(size.toInt())
+    }
 }
