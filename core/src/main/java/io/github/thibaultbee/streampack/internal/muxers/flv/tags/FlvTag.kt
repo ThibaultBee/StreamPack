@@ -13,18 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.muxers.flv.packet
+package io.github.thibaultbee.streampack.internal.muxers.flv.tags
 
-import io.github.thibaultbee.streampack.data.AudioConfig
-import io.github.thibaultbee.streampack.data.Config
-import io.github.thibaultbee.streampack.data.VideoConfig
-import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.utils.extensions.put
 import io.github.thibaultbee.streampack.internal.utils.extensions.putInt24
 import io.github.thibaultbee.streampack.internal.utils.extensions.shl
-import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
-import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
-import java.io.IOException
 import java.nio.ByteBuffer
 
 abstract class FlvTag(
@@ -34,11 +27,11 @@ abstract class FlvTag(
 ) {
     protected abstract fun writeTagHeader(buffer: ByteBuffer)
     protected abstract val tagHeaderSize: Int
-    protected abstract fun writePayload(buffer: ByteBuffer)
-    protected abstract val payloadSize: Int
+    protected abstract fun writeBody(buffer: ByteBuffer)
+    protected abstract val bodySize: Int
 
     fun write(): ByteBuffer {
-        val dataSize = tagHeaderSize + payloadSize
+        val dataSize = tagHeaderSize + bodySize
         val flvTagSize = FLV_HEADER_TAG_SIZE + dataSize
         val buffer =
             ByteBuffer.allocateDirect(flvTagSize + 4) // 4 - PreviousTagSize
@@ -59,7 +52,7 @@ abstract class FlvTag(
             // FilterParams
         }
 
-        writePayload(buffer)
+        writeBody(buffer)
 
         buffer.putInt(flvTagSize)
 
@@ -70,36 +63,6 @@ abstract class FlvTag(
 
     companion object {
         private const val FLV_HEADER_TAG_SIZE = 11
-
-        fun createFlvTag(frame: Frame, isSequenceHeader: Boolean, config: Config): FlvTag {
-            return when {
-                frame.isAudio -> if (isSequenceHeader) {
-                    AudioTag(frame.pts, frame.extra!![0], true, config as AudioConfig)
-                } else {
-                    AudioTag(frame.pts, frame.buffer, false, config as AudioConfig)
-                }
-                frame.isVideo -> if (isSequenceHeader) {
-                    VideoTag(
-                        frame.pts,
-                        frame.extra!!,
-                        frame.isKeyFrame,
-                        true,
-                        config as VideoConfig
-                    )
-                } else {
-                    VideoTag(
-                        frame.pts,
-                        frame.buffer,
-                        frame.isKeyFrame,
-                        false,
-                        config as VideoConfig
-                    )
-                }
-                else -> {
-                    throw IOException("Frame is neither video nor audio: ${frame.mimeType}")
-                }
-            }
-        }
     }
 }
 

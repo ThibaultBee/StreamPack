@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.muxers.flv.packet
+package io.github.thibaultbee.streampack.internal.muxers.flv.tags
 
 import android.util.Size
 import io.github.thibaultbee.streampack.data.VideoConfig

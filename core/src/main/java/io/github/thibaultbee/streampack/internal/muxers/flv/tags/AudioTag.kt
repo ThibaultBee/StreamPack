@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.muxers.flv.packet
+package io.github.thibaultbee.streampack.internal.muxers.flv.tags
 
 import android.media.AudioFormat
 import android.media.MediaFormat
@@ -26,7 +26,7 @@ import java.nio.ByteBuffer
 class AudioTag(
     pts: Long,
     private val frameBuffer: ByteBuffer,
-    private val isSequenceHeader: Boolean = false,
+    private val aacPacketType: AACPacketType?,
     private val audioConfig: AudioConfig
 ) :
     FlvTag(pts, TagType.AUDIO) {
@@ -42,11 +42,7 @@ class AudioTag(
                     (SoundType.fromChannelConfig(audioConfig.channelConfig).value)
         )
         if (audioConfig.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
-            if (isSequenceHeader) {
-                buffer.put(0)
-            } else {
-                buffer.put(1)
-            }
+            buffer.put(aacPacketType!!.value)
         }
     }
 
@@ -60,15 +56,19 @@ class AudioTag(
         return size
     }
 
-    override fun writePayload(buffer: ByteBuffer) {
-        if (isSequenceHeader) {
-            AudioSpecificConfig.writeFromByteBuffer(buffer, frameBuffer, audioConfig)
+    override fun writeBody(buffer: ByteBuffer) {
+        if (audioConfig.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
+            if (aacPacketType == AACPacketType.SEQUENCE_HEADER) {
+                AudioSpecificConfig.writeFromByteBuffer(buffer, frameBuffer, audioConfig)
+            } else {
+                buffer.put(frameBuffer)
+            }
         } else {
             buffer.put(frameBuffer)
         }
     }
 
-    override val payloadSize = frameBuffer.remaining()
+    override val bodySize = frameBuffer.remaining()
 }
 
 enum class SoundFormat(val value: Int) {
@@ -163,4 +163,9 @@ enum class SoundType(val value: Int) {
             else -> throw IOException("Channel config is not supported: $channelConfig")
         }
     }
+}
+
+enum class AACPacketType(val value: Int) {
+    SEQUENCE_HEADER(0),
+    RAW(1)
 }
