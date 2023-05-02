@@ -19,10 +19,10 @@ import android.media.MediaFormat
 import io.github.thibaultbee.streampack.internal.muxers.IAudioMuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.IVideoMuxerHelper
-import io.github.thibaultbee.streampack.internal.muxers.flv.packet.CodecID
-import io.github.thibaultbee.streampack.internal.muxers.flv.packet.SoundFormat
-import io.github.thibaultbee.streampack.internal.muxers.flv.packet.SoundRate
-import io.github.thibaultbee.streampack.internal.muxers.flv.packet.SoundSize
+import io.github.thibaultbee.streampack.internal.muxers.flv.tags.video.CodecID
+import io.github.thibaultbee.streampack.internal.muxers.flv.tags.SoundFormat
+import io.github.thibaultbee.streampack.internal.muxers.flv.tags.SoundRate
+import io.github.thibaultbee.streampack.internal.muxers.flv.tags.SoundSize
 
 class FlvMuxerHelper : IMuxerHelper {
     override val video = VideoFlvMuxerHelper()
@@ -35,7 +35,10 @@ class VideoFlvMuxerHelper : IVideoMuxerHelper {
      */
     override val supportedEncoders: List<String>
         get() {
-            return CodecID.values().mapNotNull {
+            val extendedSupportedCodec = listOf(
+                MediaFormat.MIMETYPE_VIDEO_HEVC
+            )
+            val supportedCodecList = CodecID.values().mapNotNull {
                 try {
                     it.toMimeType()
                 } catch (e: Exception) {
@@ -43,10 +46,10 @@ class VideoFlvMuxerHelper : IVideoMuxerHelper {
                 }
             }.filter {
                 listOf(
-                    MediaFormat.MIMETYPE_VIDEO_AVC,
-                    MediaFormat.MIMETYPE_VIDEO_HEVC
+                    MediaFormat.MIMETYPE_VIDEO_AVC
                 ).contains(it)
             }
+            return supportedCodecList + extendedSupportedCodec
         }
 }
 

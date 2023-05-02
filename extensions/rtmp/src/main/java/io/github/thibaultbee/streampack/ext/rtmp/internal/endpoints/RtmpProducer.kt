@@ -43,12 +43,28 @@ class RtmpProducer(
 
     private val audioPacketQueue = mutableListOf<Packet>()
 
+    /**
+     * Sets/gets supported video codecs.
+     */
+    var supportedVideoCodecs: List<String>
+        get() = socket.supportedVideoCodecs
+        set(value) {
+            socket.supportedVideoCodecs = value
+        }
+
     override fun configure(config: Int) {
     }
 
     override suspend fun connect(url: String) {
-        if (!url.startsWith(RTMP_PREFIX)) {
-            throw InvalidParameterException("URL must start with $RTMP_PREFIX")
+        if (!url.startsWith(RTMP_PREFIX) &&
+            !url.startsWith(RTMPS_PREFIX) &&
+            !url.startsWith(RTMPT_PREFIX) &&
+            !url.startsWith(RTMPE_PREFIX) &&
+            !url.startsWith(RTMFP_PREFIX) &&
+            !url.startsWith(RTMPTE_PREFIX) &&
+            !url.startsWith(RTMPTS_PREFIX)
+        ) {
+            throw InvalidParameterException("URL must start with $RTMP_PREFIX, $RTMPS_PREFIX, $RTMPT_PREFIX, $RTMPE_PREFIX, $RTMFP_PREFIX, $RTMPTE_PREFIX or $RTMPTS_PREFIX")
         }
         withContext(coroutineDispatcher) {
             try {
@@ -145,5 +161,23 @@ class RtmpProducer(
     companion object {
         private const val RTMP_SCHEME = "rtmp"
         private const val RTMP_PREFIX = "$RTMP_SCHEME://"
+
+        private const val RTMPS_SCHEME = "rtmps"
+        private const val RTMPS_PREFIX = "$RTMPS_SCHEME://"
+
+        private const val RTMPT_SCHEME = "rtmpt"
+        private const val RTMPT_PREFIX = "$RTMPT_SCHEME://"
+
+        private const val RTMPE_SCHEME = "rtmpe"
+        private const val RTMPE_PREFIX = "$RTMPE_SCHEME://"
+
+        private const val RTMFP_SCHEME = "rtmfp"
+        private const val RTMFP_PREFIX = "$RTMFP_SCHEME://"
+
+        private const val RTMPTE_SCHEME = "rtmpte"
+        private const val RTMPTE_PREFIX = "$RTMPTE_SCHEME://"
+
+        private const val RTMPTS_SCHEME = "rtmpts"
+        private const val RTMPTS_PREFIX = "$RTMPTS_SCHEME://"
     }
 }

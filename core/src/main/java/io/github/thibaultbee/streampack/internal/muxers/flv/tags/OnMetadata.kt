@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.muxers.flv.packet
+package io.github.thibaultbee.streampack.internal.muxers.flv.tags
 
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.Config
@@ -21,7 +21,12 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.flv.amf.containers.AmfContainer
 import io.github.thibaultbee.streampack.internal.muxers.flv.amf.containers.AmfEcmaArray
+import io.github.thibaultbee.streampack.internal.muxers.flv.tags.video.CodecID
+import io.github.thibaultbee.streampack.internal.muxers.flv.tags.video.ExtendedVideoTag
+import io.github.thibaultbee.streampack.internal.utils.av.FourCCs
 import io.github.thibaultbee.streampack.internal.utils.extensions.numOfBits
+import io.github.thibaultbee.streampack.logger.Logger
+import io.github.thibaultbee.streampack.utils.TAG
 import java.io.IOException
 import java.nio.ByteBuffer
 
@@ -55,17 +60,31 @@ class OnMetadata(
                     )
 
                 }
+
                 is VideoConfig -> {
                     val resolution = orientationProvider.orientedSize(it.resolution)
-                    ecmaArray.add(
-                        "videocodecid",
-                        CodecID.fromMimeType(it.mimeType).value.toDouble()
-                    )
+                    val videoCodecID = if (ExtendedVideoTag.isSupportedCodec(it.mimeType)) {
+                        FourCCs.fromMimeType(it.mimeType).value.code
+                    } else {
+                        try {
+                            CodecID.fromMimeType(it.mimeType).value
+                        } catch (e: Exception) {
+                            Logger.e(TAG, "Failed to get videocodecid for: ${it.mimeType}")
+                            null
+                        }
+                    }
+                    videoCodecID?.let { codecId ->
+                        ecmaArray.add(
+                            "videocodecid",
+                            codecId.toDouble()
+                        )
+                    }
                     ecmaArray.add("videodatarate", it.startBitrate.toDouble() / 1000) // to Kpbs
                     ecmaArray.add("width", resolution.width.toDouble())
                     ecmaArray.add("height", resolution.height.toDouble())
                     ecmaArray.add("framerate", it.fps.toDouble())
                 }
+
                 else -> {
                     throw IOException("Not supported mime type: ${it.mimeType}")
                 }
@@ -81,10 +100,10 @@ class OnMetadata(
     override val tagHeaderSize: Int
         get() = 0
 
-    override fun writePayload(buffer: ByteBuffer) {
+    override fun writeBody(buffer: ByteBuffer) {
         amfContainer.encode(buffer)
     }
 
-    override val payloadSize: Int
+    override val bodySize: Int
         get() = amfContainer.size
 }
