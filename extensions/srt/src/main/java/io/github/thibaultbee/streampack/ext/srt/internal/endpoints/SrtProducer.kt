@@ -78,52 +78,51 @@ class SrtProducer(
     }
 
     override suspend fun connect(url: String) {
-        withContext(coroutineDispatcher) {
-            val uri = Uri.parse(url)
-            if (uri.scheme != "srt") {
-                throw InvalidParameterException("URL $url is not an srt URL")
-            }
-            uri.getQueryParameter("streamid")?.let { streamId = it }
-            uri.getQueryParameter("passphrase")?.let { passPhrase = it }
-            uri.host?.let { connect(it, uri.port) }
-                ?: throw InvalidParameterException("Failed to parse URL $url: unknown host")
+        val uri = Uri.parse(url)
+        if (uri.scheme != "srt") {
+            throw InvalidParameterException("URL $url is not an srt URL")
         }
+        uri.getQueryParameter("streamid")?.let { streamId = it }
+        uri.getQueryParameter("passphrase")?.let { passPhrase = it }
+        uri.host?.let { connect(it, uri.port) }
+            ?: throw InvalidParameterException("Failed to parse URL $url: unknown host")
     }
 
-    suspend fun connect(ip: String, port: Int) = withContext(coroutineDispatcher) {
-        if (ip.isBlank()) {
-            throw InvalidParameterException("Invalid IP $ip")
-        }
-        try {
-            socket.listener = object : SocketListener {
-                override fun onConnectionLost(
-                    ns: Socket,
-                    error: ErrorType,
-                    peerAddress: InetSocketAddress,
-                    token: Int
-                ) {
-                    socket = Socket()
-                    onConnectionListener?.onLost(error.toString())
-                }
-
-                override fun onListen(
-                    ns: Socket,
-                    hsVersion: Int,
-                    peerAddress: InetSocketAddress,
-                    streamId: String
-                ) = 0 // Only for server - not needed here
+    suspend fun connect(ip: String, port: Int) {
+        withContext(coroutineDispatcher) {
+            if (ip.isBlank()) {
+                throw InvalidParameterException("Invalid IP $ip")
             }
-            socket.setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
-            socket.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
-            isOnError = false
-            socket.connect(ip, port)
-            onConnectionListener?.onSuccess()
-        } catch (e: Exception) {
-            socket = Socket()
-            onConnectionListener?.onFailed(e.message ?: "Unknown error")
-            throw e
-        }
+            try {
+                socket.listener = object : SocketListener {
+                    override fun onConnectionLost(
+                        ns: Socket,
+                        error: ErrorType,
+                        peerAddress: InetSocketAddress,
+                        token: Int
+                    ) {
+                        socket = Socket()
+                        onConnectionListener?.onLost(error.toString())
+                    }
 
+                    override fun onListen(
+                        ns: Socket,
+                        hsVersion: Int,
+                        peerAddress: InetSocketAddress,
+                        streamId: String
+                    ) = 0 // Only for server - not needed here
+                }
+                socket.setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
+                socket.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
+                isOnError = false
+                socket.connect(ip, port)
+                onConnectionListener?.onSuccess()
+            } catch (e: Exception) {
+                socket = Socket()
+                onConnectionListener?.onFailed(e.message ?: "Unknown error")
+                throw e
+            }
+        }
     }
 
     override fun disconnect() {
