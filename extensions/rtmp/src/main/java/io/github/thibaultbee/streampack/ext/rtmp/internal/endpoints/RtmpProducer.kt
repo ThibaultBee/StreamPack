@@ -24,7 +24,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import video.api.rtmpdroid.Rtmp
-import java.net.SocketException
+import java.security.InvalidParameterException
 
 class RtmpProducer(
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -47,6 +47,9 @@ class RtmpProducer(
     }
 
     override suspend fun connect(url: String) {
+        if (!url.startsWith(RTMP_PREFIX)) {
+            throw InvalidParameterException("URL must start with $RTMP_PREFIX")
+        }
         withContext(coroutineDispatcher) {
             try {
                 isOnError = false
@@ -137,5 +140,10 @@ class RtmpProducer(
     }
 
     override fun release() {
+    }
+
+    companion object {
+        private const val RTMP_SCHEME = "rtmp"
+        private const val RTMP_PREFIX = "$RTMP_SCHEME://"
     }
 }
