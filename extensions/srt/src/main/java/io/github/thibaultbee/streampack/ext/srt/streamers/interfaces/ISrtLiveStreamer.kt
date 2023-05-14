@@ -29,6 +29,11 @@ interface ISrtLiveStreamer : ILiveStreamer {
     var streamId: String
 
     /**
+     * Get/set bidirectional latency in milliseconds.
+     */
+    var latency: Int
+
+    /**
      * Connect to a remote server.
      *
      * @param ip server ip

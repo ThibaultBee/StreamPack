@@ -84,6 +84,23 @@ class AudioOnlySrtLiveStreamer(
         }
 
     /**
+     * Get/set bidirectional latency in milliseconds.
+     * **See:** [SRT Socket Options](https://github.com/Haivision/srt/blob/master/docs/API/API-socket-options.md#SRTO_LATENCY)
+     */
+    override var latency: Int
+        /**
+         * Get latency in milliseconds
+         * @return latency
+         */
+        get() = srtProducer.latency
+        /**
+         * @param value latency in milliseconds
+         */
+        set(value) {
+            srtProducer.latency = value
+        }
+
+    /**
      * Connect to an SRT server with correct Live streaming parameters.
      * To avoid creating an unresponsive UI, do not call on main thread.
      *

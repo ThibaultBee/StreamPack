@@ -47,6 +47,9 @@ class SrtProducer(
 
     companion object {
         private const val PAYLOAD_SIZE = 1316
+
+        private const val SRT_SCHEME = "srt"
+        private const val SRT_PREFIX = "$SRT_SCHEME://"
     }
 
     /**
@@ -65,6 +68,13 @@ class SrtProducer(
         set(value) = socket.setSockFlag(SockOpt.PASSPHRASE, value)
 
     /**
+     * Get/set bidirectional latency in milliseconds
+     */
+    var latency: Int
+        get() = socket.getSockFlag(SockOpt.LATENCY) as Int
+        set(value) = socket.setSockFlag(SockOpt.LATENCY, value)
+
+    /**
      * Get SRT stats
      */
     val stats: Stats
@@ -79,11 +89,12 @@ class SrtProducer(
 
     override suspend fun connect(url: String) {
         val uri = Uri.parse(url)
-        if (uri.scheme != "srt") {
+        if (uri.scheme != SRT_SCHEME) {
             throw InvalidParameterException("URL $url is not an srt URL")
         }
         uri.getQueryParameter("streamid")?.let { streamId = it }
         uri.getQueryParameter("passphrase")?.let { passPhrase = it }
+        uri.getQueryParameter("latency")?.let { latency = it.toInt() }
         uri.host?.let { connect(it, uri.port) }
             ?: throw InvalidParameterException("Failed to parse URL $url: unknown host")
     }
@@ -115,7 +126,7 @@ class SrtProducer(
                 socket.setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
                 socket.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
                 isOnError = false
-                socket.connect(ip, port)
+                socket.connect(ip.removePrefix(SRT_PREFIX), port)
                 onConnectionListener?.onSuccess()
             } catch (e: Exception) {
                 socket = Socket()
