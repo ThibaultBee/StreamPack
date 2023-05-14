@@ -17,8 +17,10 @@ package io.github.thibaultbee.streampack.internal.encoders
 
 import android.annotation.SuppressLint
 import android.graphics.SurfaceTexture
+import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
+import android.os.Bundle
 import android.util.Size
 import android.view.Surface
 import io.github.thibaultbee.streampack.data.Config
@@ -47,6 +49,17 @@ class VideoMediaCodecEncoder(
     } else {
         null
     }
+
+    private var _bitrate: Int? = null
+    override var bitrate: Int = 0
+        get() = _bitrate ?: super.bitrate
+        set(value) {
+            val bundle = Bundle()
+            bundle.putInt(MediaCodec.PARAMETER_KEY_VIDEO_BITRATE, value)
+            mediaCodec?.setParameters(bundle)
+            field = value
+           _bitrate = value
+        }
 
     override fun onNewMediaCodec() {
         mediaCodec?.let {

@@ -43,8 +43,8 @@ abstract class SrtBitrateRegulator(
      * Call regularly to get new SRT stats
      *
      * @param stats SRT transmission stats
-     * @param currentVideoBitrate current video bitrate target
-     * @param currentAudioBitrate current audio bitrate target
+     * @param currentVideoBitrate current video bitrate target in bits/s.
+     * @param currentAudioBitrate current audio bitrate target in bits/s.
      */
     abstract fun update(stats: Stats, currentVideoBitrate: Int, currentAudioBitrate: Int)
 }

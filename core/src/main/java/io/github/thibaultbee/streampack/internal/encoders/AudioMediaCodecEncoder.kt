@@ -23,4 +23,10 @@ class AudioMediaCodecEncoder(
     encoderListener: IEncoderListener,
     override val onInternalErrorListener: OnErrorListener,
 ) :
-    MediaCodecEncoder<AudioConfig>(encoderListener)
+    MediaCodecEncoder<AudioConfig>(encoderListener) {
+    override var bitrate: Int
+        get() = super.bitrate
+        set(_) {
+            throw UnsupportedOperationException("Can't set audio bitrate")
+        }
+}

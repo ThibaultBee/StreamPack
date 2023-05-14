@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.streamers.interfaces.settings
 
 interface IVideoSettings {
     /**
-     * Set/get video bitrate.
+     * Set/get video bitrate in bits/s.
      */
     var bitrate: Int
 }

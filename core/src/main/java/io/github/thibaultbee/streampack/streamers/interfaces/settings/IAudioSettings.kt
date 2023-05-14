@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.streamers.interfaces.settings
 
 interface IAudioSettings {
     /**
-     * Set/get audio bitrate
+     * Set/get audio bitrate in bits/s.
      */
     var bitrate: Int
 
