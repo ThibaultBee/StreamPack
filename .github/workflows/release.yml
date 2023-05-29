@@ -1,4 +1,4 @@
-name: Publish package to GitHub Packages
+name: Publish package to Maven Central
 
 on:
   release:
@@ -16,6 +16,8 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v1
       - name: Decode the secret key
@@ -23,7 +25,7 @@ jobs:
         env:
           GPG_KEYRING_FILE_CONTENT: "${{ secrets.GPG_KEYRING_FILE_CONTENT }}"
       - name: Publish package
-        run: gradle publish -Psigning.secretKeyRingFile=$(echo ~/secring.gpg) -Psigning.password=$GPG_PASSPHRASE -Psigning.keyId=$GPG_KEY_ID
+        run: ./gradle publish -Psigning.secretKeyRingFile=$(echo ~/secring.gpg) -Psigning.password=$GPG_PASSPHRASE -Psigning.keyId=$GPG_KEY_ID
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
