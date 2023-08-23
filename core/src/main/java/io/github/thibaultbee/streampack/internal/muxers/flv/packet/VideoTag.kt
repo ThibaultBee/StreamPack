@@ -18,8 +18,8 @@ package io.github.thibaultbee.streampack.internal.muxers.flv.packet
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.utils.av.video.avc.AVCDecoderConfigurationRecord
-import io.github.thibaultbee.streampack.internal.utils.av.video.hevc.HEVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.internal.utils.av.video.getStartCodeSize
+import io.github.thibaultbee.streampack.internal.utils.av.video.hevc.HEVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.internal.utils.av.video.removeStartCode
 import io.github.thibaultbee.streampack.internal.utils.extensions.put
 import io.github.thibaultbee.streampack.internal.utils.extensions.putInt24
@@ -104,13 +104,11 @@ class VideoTag(
                     AVCDecoderConfigurationRecord.fromParameterSets(buffers[0], buffers[1])
                         .write(buffer)
                 }
+
                 MediaFormat.MIMETYPE_VIDEO_HEVC -> {
-                    HEVCDecoderConfigurationRecord.fromParameterSets(
-                        buffers[0],
-                        buffers[1],
-                        buffers[2]
-                    ).write(buffer)
+                    HEVCDecoderConfigurationRecord.fromParameterSets(buffers).write(buffer)
                 }
+
                 else -> {
                     throw IOException("Mimetype ${videoConfig.mimeType} is not supported")
                 }
@@ -131,9 +129,11 @@ class VideoTag(
                 MediaFormat.MIMETYPE_VIDEO_AVC -> {
                     AVCDecoderConfigurationRecord.getSize(buffers[0], buffers[1])
                 }
+
                 MediaFormat.MIMETYPE_VIDEO_HEVC -> {
                     HEVCDecoderConfigurationRecord.getSize(buffers[0], buffers[1], buffers[2])
                 }
+
                 else -> {
                     throw IOException("Mimetype ${videoConfig.mimeType} is not supported")
                 }

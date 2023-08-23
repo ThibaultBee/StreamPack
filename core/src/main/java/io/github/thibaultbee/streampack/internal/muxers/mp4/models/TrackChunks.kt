@@ -21,7 +21,31 @@ import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
-import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.*
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.AVCConfigurationBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.AVCSampleEntry
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.ChunkLargeOffsetBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.DataEntryUrlBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.DataInformationBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.DataReferenceBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.ESDSBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.HEVCConfigurationBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.HEVCSampleEntry
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.MP4AudioSampleEntry
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.MediaBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.MediaHeaderBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.MediaInformationBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.SampleDescriptionBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.SampleSizeBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.SampleTableBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.SampleToChunkBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.SyncSampleBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TimeToSampleBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackExtendsBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackFragmentBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackFragmentHeaderBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackHeaderBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackRunBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.utils.createHandlerBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.utils.createTypeMediaHeaderBox
 import io.github.thibaultbee.streampack.internal.utils.TimeUtils
@@ -29,6 +53,7 @@ import io.github.thibaultbee.streampack.internal.utils.av.descriptors.AudioSpeci
 import io.github.thibaultbee.streampack.internal.utils.av.descriptors.ESDescriptor
 import io.github.thibaultbee.streampack.internal.utils.av.descriptors.SLConfigDescriptor
 import io.github.thibaultbee.streampack.internal.utils.av.video.avc.AVCDecoderConfigurationRecord
+import io.github.thibaultbee.streampack.internal.utils.av.video.hevc.HEVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.internal.utils.extensions.clone
 import java.nio.ByteBuffer
 
@@ -49,6 +74,10 @@ class TrackChunks(
         get() = (numOfSamples > 1) && when (track.config.mimeType) {
             MediaFormat.MIMETYPE_VIDEO_AVC -> {
                 this.extra.size == 2
+            }
+
+            MediaFormat.MIMETYPE_VIDEO_HEVC -> {
+                this.extra.size == 3
             }
 
             MediaFormat.MIMETYPE_AUDIO_AAC -> {
@@ -162,7 +191,7 @@ class TrackChunks(
                             it.id,
                             it.numOfSamples,
                             1
-                            )
+                        )
                     )
                 }
             } catch (e: NoSuchElementException) {
@@ -172,7 +201,7 @@ class TrackChunks(
                         it.id,
                         it.numOfSamples,
                         1
-                        )
+                    )
                 )
             }
         }
@@ -238,6 +267,21 @@ class TrackChunks(
                     ),
                 )
             }
+
+            MediaFormat.MIMETYPE_VIDEO_HEVC -> {
+                val extra = this.extra
+                require(extra.size == 3) { "For HEVC, extra must contains 3 parameter sets" }
+                (track.config as VideoConfig)
+                HEVCSampleEntry(
+                    track.config.resolution,
+                    hvcC = HEVCConfigurationBox(
+                        HEVCDecoderConfigurationRecord.fromParameterSets(
+                            extra.flatten()
+                        )
+                    ),
+                )
+            }
+
             MediaFormat.MIMETYPE_AUDIO_AAC -> {
                 (track.config as AudioConfig)
                 MP4AudioSampleEntry(
@@ -260,6 +304,7 @@ class TrackChunks(
                     )
                 )
             }
+
             else -> throw IllegalArgumentException("Unsupported mimeType")
         }
         return SampleDescriptionBox(sampleEntry)

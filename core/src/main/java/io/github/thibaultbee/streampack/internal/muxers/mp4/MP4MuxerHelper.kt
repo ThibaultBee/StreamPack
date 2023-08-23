@@ -27,7 +27,7 @@ class MP4MuxerHelper : IMuxerHelper {
 
 class AudioMP4MuxerHelper : IAudioMuxerHelper {
     /**
-     * Get TS Muxer supported audio encoders list
+     * Get MP4 Muxer supported audio encoders list
      */
     override val supportedEncoders =
         listOf(MediaFormat.MIMETYPE_AUDIO_AAC)
@@ -39,10 +39,11 @@ class AudioMP4MuxerHelper : IAudioMuxerHelper {
 
 class VideoMP4MuxerHelper : IVideoMuxerHelper {
     /**
-     * Get TS Muxer supported video encoders list
+     * Get MP4 Muxer supported video encoders list
      */
     override val supportedEncoders =
         listOf(
-            MediaFormat.MIMETYPE_VIDEO_AVC
+            MediaFormat.MIMETYPE_VIDEO_AVC,
+            MediaFormat.MIMETYPE_VIDEO_HEVC
         )
 }
