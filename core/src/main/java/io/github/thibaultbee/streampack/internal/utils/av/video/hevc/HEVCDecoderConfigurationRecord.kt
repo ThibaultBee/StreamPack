@@ -22,6 +22,7 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.put
 import io.github.thibaultbee.streampack.internal.utils.extensions.putLong48
 import io.github.thibaultbee.streampack.internal.utils.extensions.putShort
 import io.github.thibaultbee.streampack.internal.utils.extensions.shl
+import io.github.thibaultbee.streampack.internal.utils.extensions.shr
 import java.nio.ByteBuffer
 
 data class HEVCDecoderConfigurationRecord(
@@ -42,13 +43,9 @@ data class HEVCDecoderConfigurationRecord(
     private val numTemporalLayers: Byte = 0, // 0 = Unknown
     private val temporalIdNested: Boolean = false,
     private val lengthSizeMinusOne: Byte = 3,
-    private val sps: List<ByteBuffer>,
-    private val pps: List<ByteBuffer>,
-    private val vps: List<ByteBuffer>
+    private val parameterSets: List<NalUnit>,
 ) {
-    private val spsNoStartCode = sps.map { it.removeStartCode() }
-    private val ppsNoStartCode = pps.map { it.removeStartCode() }
-    private val vpsNoStartCode = vps.map { it.removeStartCode() }
+    val size: Int = getSize(parameterSets)
 
     fun write(buffer: ByteBuffer) {
         buffer.put(configurationVersion) // configurationVersion
@@ -77,17 +74,10 @@ data class HEVCDecoderConfigurationRecord(
                     or lengthSizeMinusOne.toInt()
         ) // constantFrameRate 2 bits = 1 for stable / numTemporalLayers 3 bits /  temporalIdNested 1 bit / lengthSizeMinusOne 2 bits
 
-        buffer.put(spsNoStartCode.size + ppsNoStartCode.size + vpsNoStartCode.size) // numOfArrays
-        spsNoStartCode.forEach { writeArray(buffer, it, NalUnitType.SPS) }
-        ppsNoStartCode.forEach { writeArray(buffer, it, NalUnitType.PPS) }
-        vpsNoStartCode.forEach { writeArray(buffer, it, NalUnitType.VPS) }
-    }
-
-    private fun writeArray(buffer: ByteBuffer, nalUnit: ByteBuffer, nalUnitType: NalUnitType) {
-        buffer.put((1 shl 7) or nalUnitType.value.toInt()) // array_completeness + reserved 1bit + naluType 6 bytes
-        buffer.putShort(1) // numNalus
-        buffer.putShort(nalUnit.remaining().toShort()) // nalUnitLength
-        buffer.put(nalUnit)
+        buffer.put(parameterSets.size) // numOfArrays
+        parameterSets.forEach {
+            it.write(buffer)
+        }
     }
 
     companion object {
@@ -108,13 +98,21 @@ data class HEVCDecoderConfigurationRecord(
             sps: List<ByteBuffer>,
             pps: List<ByteBuffer>,
             vps: List<ByteBuffer>
-        ): HEVCDecoderConfigurationRecord {
-            val spsNoStartCode = sps.map { it.removeStartCode() }
-            val ppsNoStartCode = pps.map { it.removeStartCode() }
-            val vpsNoStartCode = vps.map { it.removeStartCode() }
+        ) = fromParameterSets(sps + pps + vps)
 
+        fun fromParameterSets(
+            parameterSets: List<ByteBuffer>
+        ): HEVCDecoderConfigurationRecord {
+            val nalUnitParameterSets = parameterSets.map {
+                val nalType = (it[it.getStartCodeSize()] shr 1 and 0x3F).toByte()
+                val type = NalUnit.Type.fromValue(nalType)
+                NalUnit(type, it)
+            }
             // profile_tier_level
-            val parsedSps = SequenceParameterSets.parse(spsNoStartCode.first())
+            val noStartCodeSps = nalUnitParameterSets.first { it.type == NalUnit.Type.SPS }.noStartCodeData
+            val parsedSps =
+                SequenceParameterSets.parse(noStartCodeSps)
+            noStartCodeSps.rewind()
             return HEVCDecoderConfigurationRecord(
                 generalProfileSpace = parsedSps.profileTierLevel.generalProfileSpace,
                 generalTierFlag = parsedSps.profileTierLevel.generalTierFlag,
@@ -126,9 +124,7 @@ data class HEVCDecoderConfigurationRecord(
                 bitDepthLumaMinus8 = parsedSps.bitDepthLumaMinus8,
                 bitDepthChromaMinus8 = parsedSps.bitDepthChromaMinus8,
                 // TODO get minSpatialSegmentationIdc from VUI
-                sps = spsNoStartCode,
-                pps = ppsNoStartCode,
-                vps = vpsNoStartCode
+                parameterSets = nalUnitParameterSets
             )
         }
 
@@ -161,11 +157,42 @@ data class HEVCDecoderConfigurationRecord(
 
             return size
         }
+
+        fun getSize(parameterSets: List<NalUnit>): Int {
+            var size =
+                HEVC_DECODER_CONFIGURATION_RECORD_SIZE
+            parameterSets.forEach {
+                size += it.noStartCodeData.remaining() + HEVC_PARAMETER_SET_HEADER_SIZE
+            }
+            return size
+        }
     }
 
-    enum class NalUnitType(val value: Byte) {
-        VPS(32),
-        SPS(33),
-        PPS(34)
+    data class NalUnit(val type: Type, val data: ByteBuffer, val completeness: Boolean = true) {
+        val noStartCodeData: ByteBuffer = data.removeStartCode()
+
+        fun write(buffer: ByteBuffer) {
+            buffer.put((completeness shl 7) or type.value.toInt()) // array_completeness + reserved 1bit + naluType 6 bytes
+            buffer.putShort(1) // numNalus
+            buffer.putShort(noStartCodeData.remaining().toShort()) // nalUnitLength
+            buffer.put(noStartCodeData)
+        }
+
+        enum class Type(val value: Byte) {
+            VPS(32),
+            SPS(33),
+            PPS(34),
+            AUD(35),
+            EOS(36),
+            EOB(37),
+            FD(38),
+            PREFIX_SEI(39),
+            SUFFIX_SEI(40);
+
+            companion object {
+                fun fromValue(value: Byte) = values().first { it.value == value }
+
+            }
+        }
     }
 }

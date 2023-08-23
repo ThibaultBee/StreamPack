@@ -104,6 +104,35 @@ class AVCSampleEntry(
     pasp
 )
 
+class HEVCSampleEntry(
+    resolution: Size,
+    horizontalResolution: Int = 72,
+    verticalResolution: Int = 72,
+    frameCount: Short = 1,
+    compressorName: String? = "HEVC Coding",
+    depth: Short = 0x0018,
+    hvcC: HEVCConfigurationBox,
+    btrt: BitRateBox? = null,
+    extensionDescriptorsBox: List<Box> = emptyList(),
+    clap: CleanApertureBox? = null,
+    pasp: PixelAspectRatioBox? = null
+) : VisualSampleEntry(
+    "hvc1",
+    resolution,
+    horizontalResolution,
+    verticalResolution,
+    frameCount,
+    compressorName,
+    depth,
+    mutableListOf<Box>(hvcC).apply {
+        btrt?.let { add(it) }
+        addAll(extensionDescriptorsBox)
+    },
+    clap,
+    pasp
+)
+
+
 class MP4AudioSampleEntry(
     channelCount: Short,
     sampleSize: Short,

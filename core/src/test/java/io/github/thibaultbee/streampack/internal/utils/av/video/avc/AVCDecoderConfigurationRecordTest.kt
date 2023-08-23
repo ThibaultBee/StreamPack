@@ -1,6 +1,5 @@
-package io.github.thibaultbee.streampack.internal.utils.av.video
+package io.github.thibaultbee.streampack.internal.utils.av.video.avc
 
-import io.github.thibaultbee.streampack.internal.utils.av.video.avc.AVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
