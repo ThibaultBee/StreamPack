@@ -53,7 +53,9 @@ import io.github.thibaultbee.streampack.internal.utils.av.descriptors.AudioSpeci
 import io.github.thibaultbee.streampack.internal.utils.av.descriptors.ESDescriptor
 import io.github.thibaultbee.streampack.internal.utils.av.descriptors.SLConfigDescriptor
 import io.github.thibaultbee.streampack.internal.utils.av.video.avc.AVCDecoderConfigurationRecord
+import io.github.thibaultbee.streampack.internal.utils.av.video.getStartCodeSize
 import io.github.thibaultbee.streampack.internal.utils.av.video.hevc.HEVCDecoderConfigurationRecord
+import io.github.thibaultbee.streampack.internal.utils.av.video.removeStartCode
 import io.github.thibaultbee.streampack.internal.utils.extensions.clone
 import java.nio.ByteBuffer
 
@@ -87,6 +89,20 @@ class TrackChunks(
             else -> throw IllegalArgumentException("Unsupported mimeType ${track.config.mimeType}")
         }
 
+    private val bufferSizeCalculator = { buffer: ByteBuffer ->
+        when (track.config.mimeType) {
+            MediaFormat.MIMETYPE_VIDEO_HEVC,
+            MediaFormat.MIMETYPE_VIDEO_AVC -> {
+                // Replace start code with size (from Annex B to AVCC)
+                4 + buffer.remaining() - buffer.getStartCodeSize()
+            }
+
+            else -> {
+                buffer.remaining()
+            } // Nothing
+        }
+    }
+
     val duration: Long
         get() = chunks.sumOf { it.duration } * track.timescale / TimeUtils.TIME_SCALE
 
@@ -94,7 +110,7 @@ class TrackChunks(
         get() = chunks.minOf { it.firstTimestamp } * track.timescale / TimeUtils.TIME_SCALE
 
     val dataSize: Int
-        get() = chunks.sumOf { it.dataSize }
+        get() = chunks.sumOf { it.getDataSize(bufferSizeCalculator) }
 
     val hasData: Boolean
         get() = dataSize > 0
@@ -109,7 +125,7 @@ class TrackChunks(
         get() = chunks.flatMap { it.syncFrameList }
 
     private val sampleSizes: List<Int>
-        get() = chunks.flatMap { it.sampleSizes }
+        get() = chunks.flatMap { it.getSampleSizes(bufferSizeCalculator) }
 
     private val extra: List<List<ByteBuffer>>
         get() = chunks.flatMap { it.extra }
@@ -133,7 +149,25 @@ class TrackChunks(
     }
 
     fun write() {
-        chunks.forEach { chunk -> chunk.writeTo { onNewSample(it.buffer) } }
+        chunks.forEach { chunk ->
+            chunk.writeTo { frame ->
+                when (track.config.mimeType) {
+                    MediaFormat.MIMETYPE_VIDEO_HEVC,
+                    MediaFormat.MIMETYPE_VIDEO_AVC -> {
+                        // Replace start code with size (from Annex B to AVCC)
+                        val noStartCodeBuffer = frame.buffer.removeStartCode()
+                        val sizeBuffer = ByteBuffer.allocate(4)
+                        sizeBuffer.putInt(0, noStartCodeBuffer.remaining())
+                        onNewSample(sizeBuffer)
+                        onNewSample(noStartCodeBuffer)
+                    }
+
+                    else -> {
+                        onNewSample(frame.buffer)
+                    } // Nothing
+                }
+            }
+        }
     }
 
     fun createTrak(firstChunkOffset: Long): TrackBox {
@@ -211,7 +245,7 @@ class TrackChunks(
 
     private fun createChunkOffsetBox(firstChunkOffset: Long): ChunkLargeOffsetBox {
         val chunkOffsets = mutableListOf<Long>()
-        chunks.map { it.dataSize }.forEach {
+        chunks.map { it.getDataSize(bufferSizeCalculator) }.forEach {
             try {
                 chunkOffsets.add(chunkOffsets.last() + it.toLong())
             } catch (e: NoSuchElementException) {
@@ -341,8 +375,8 @@ class TrackChunks(
     }
 
     private fun createTrackRunBox(moofSize: Int): TrackRunBox {
-        val sampleDts = chunks.flatMap { it.sampleDts }
-        val sampleSizes = chunks.flatMap { it.sampleSizes }
+        val sampleDts = sampleDts
+        val sampleSizes = sampleSizes
 
         require(sampleDts.size == sampleSizes.size) { "Samples dts and sizes must have the same size" }
 
