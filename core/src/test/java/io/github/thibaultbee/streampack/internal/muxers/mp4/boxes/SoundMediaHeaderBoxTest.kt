@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
-import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.*
 import org.junit.Test
@@ -26,6 +26,6 @@ class SoundMediaHeaderBoxTest {
         val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("smhd.box")
         val smhd = SoundMediaHeaderBox()
         val buffer = smhd.toByteBuffer()
-        assertArrayEquals(expectedBuffer.extractArray(), buffer.extractArray())
+        assertArrayEquals(expectedBuffer.toByteArray(), buffer.toByteArray())
     }
 }

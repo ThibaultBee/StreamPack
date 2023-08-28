@@ -1,7 +1,7 @@
 package io.github.thibaultbee.streampack.internal.muxers.flv.amf.primitives
 
 import io.github.thibaultbee.streampack.internal.muxers.flv.amf.AmfType
-import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 
@@ -19,6 +19,6 @@ class AmfBooleanTest {
                 0
             }
         )
-        assertArrayEquals(expectedArray, buffer.extractArray()) // Remove direct part
+        assertArrayEquals(expectedArray, buffer.toByteArray()) // Remove direct part
     }
 }

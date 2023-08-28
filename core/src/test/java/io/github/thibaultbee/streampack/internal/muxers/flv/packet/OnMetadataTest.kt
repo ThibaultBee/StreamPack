@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.internal.muxers.flv.packet
 import android.util.Size
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.data.orientation.FixedOrientationProvider
-import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import io.github.thibaultbee.streampack.utils.MockUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
@@ -192,7 +192,7 @@ class OnMetadataTest {
             )
         )
         val buffer = onMetadata.write()
-        val resultArray = buffer.extractArray()
+        val resultArray = buffer.toByteArray()
         assertArrayEquals(expectedArray, resultArray)
     }
 }

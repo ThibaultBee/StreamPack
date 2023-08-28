@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
-import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.fail
@@ -31,7 +31,7 @@ class FileTypeBoxTest {
             compatibleBrands = listOf("isom", "iso2", "avc1", "mp41")
         )
         val buffer = ftyp.toByteBuffer()
-        assertArrayEquals(expectedBuffer.extractArray(), buffer.extractArray())
+        assertArrayEquals(expectedBuffer.toByteArray(), buffer.toByteArray())
     }
 
     @Test

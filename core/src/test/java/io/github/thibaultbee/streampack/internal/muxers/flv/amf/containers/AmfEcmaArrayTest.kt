@@ -1,7 +1,7 @@
 package io.github.thibaultbee.streampack.internal.muxers.flv.amf.containers
 
 import io.github.thibaultbee.streampack.internal.muxers.flv.amf.AmfType
-import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 
@@ -20,7 +20,7 @@ class AmfEcmaArrayTest {
         )
         assertArrayEquals(
             expectedArray,
-            buffer.extractArray()
+            buffer.toByteArray()
         )
     }
 }

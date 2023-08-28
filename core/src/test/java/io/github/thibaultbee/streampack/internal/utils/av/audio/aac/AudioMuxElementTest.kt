@@ -20,7 +20,7 @@ import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.internal.utils.av.audio.AudioSpecificConfig
-import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
@@ -42,7 +42,7 @@ class AudioMuxElementTest {
         val streamMuxConfig = StreamMuxConfig.fromDecoderSpecificInfo(decoderSpecificInfo)
         assertArrayEquals(
             expectedAudioMuxElement,
-            streamMuxConfig.toByteBuffer().extractArray()
+            streamMuxConfig.toByteBuffer().toByteArray()
         )
     }
 
@@ -64,7 +64,7 @@ class AudioMuxElementTest {
         val audioMuxElement = AudioMuxElement.fromDecoderSpecificInfo(payload, decoderSpecificInfo)
         assertArrayEquals(
             expectedAudioMuxElement.array(),
-            audioMuxElement.toByteBuffer().extractArray()
+            audioMuxElement.toByteBuffer().toByteArray()
         )
     }
 }

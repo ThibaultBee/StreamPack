@@ -1,6 +1,6 @@
 package io.github.thibaultbee.streampack.internal.muxers.flv.amf.primitives
 
-import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -12,10 +12,10 @@ class AmfNamedParameterTest {
         val expectedArray = byteArrayOf(
             0x0,
             amfNamedParameter.name.length.toByte()
-        ) + amfNamedParameter.name.toByteArray() + amfNamedParameter.v.encode().extractArray()
+        ) + amfNamedParameter.name.toByteArray() + amfNamedParameter.v.encode().toByteArray()
         assertArrayEquals(
             expectedArray,
-            buffer.extractArray()
+            buffer.toByteArray()
         )
     }
     @Test

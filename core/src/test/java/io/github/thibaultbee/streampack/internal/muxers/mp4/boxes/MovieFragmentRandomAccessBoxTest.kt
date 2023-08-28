@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
-import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert
 import org.junit.Test
@@ -111,6 +111,6 @@ class MovieFragmentRandomAccessBoxTest {
 
         val mfra = MovieFragmentRandomAccessBox(listOf(tfra1, tfra2))
         val buffer = mfra.toByteBuffer()
-        Assert.assertArrayEquals(expectedBuffer.extractArray(), buffer.extractArray())
+        Assert.assertArrayEquals(expectedBuffer.toByteArray(), buffer.toByteArray())
     }
 }

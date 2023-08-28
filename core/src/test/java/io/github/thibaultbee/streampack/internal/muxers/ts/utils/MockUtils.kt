@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.internal.muxers.ts.utils
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.muxers.ts.packets.TS
-import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import org.junit.Assert
 import java.nio.ByteBuffer
 
@@ -42,7 +42,7 @@ class AssertEqualsBuffersMockMuxerListener(private val expectedBuffers: List<Byt
     var expectedBufferIndex = 0
 
     override fun onOutputFrame(packet: Packet) {
-        val actualArray = packet.buffer.extractArray()
+        val actualArray = packet.buffer.toByteArray()
         var i = 0
         while (i < MuxerConst.MAX_OUTPUT_PACKET_NUMBER) {
             // Do not compare adaptation field PCR -> Compare first part and last part separately.
