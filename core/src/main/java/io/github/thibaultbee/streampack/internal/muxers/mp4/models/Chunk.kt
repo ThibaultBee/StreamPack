@@ -28,7 +28,7 @@ class Chunk(val id: Int) {
     val numOfSamples: Int
         get() = samples.size
 
-    val dataSize: Int
+    private val dataSize: Int
         get() = samples.sumOf { it.frame.buffer.remaining() }
 
     val firstTimestamp: Long
@@ -46,7 +46,7 @@ class Chunk(val id: Int) {
     val syncFrameList: List<Int>
         get() = samples.filter { it.frame.isKeyFrame }.map { it.id }
 
-    val sampleSizes: List<Int>
+    private val sampleSizes: List<Int>
         get() = samples.map { it.frame.buffer.remaining() }
 
     val extra: List<List<ByteBuffer>>
@@ -59,6 +59,14 @@ class Chunk(val id: Int) {
 
     fun add(id: Int, frame: Frame) {
         samples.add(IndexedFrame(id, frame))
+    }
+
+    fun getDataSize(process: (ByteBuffer) -> Int): Int {
+        return samples.sumOf { process(it.frame.buffer) }
+    }
+
+    fun getSampleSizes(process: (ByteBuffer) -> Int): List<Int> {
+        return samples.map { process(it.frame.buffer) }
     }
 
     fun writeTo(action: (Frame) -> Unit) {
