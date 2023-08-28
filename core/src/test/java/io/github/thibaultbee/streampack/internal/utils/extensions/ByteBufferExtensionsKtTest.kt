@@ -97,7 +97,7 @@ class ByteBufferExtensionsKtTest {
         val resultBuffer = testBuffer.extractRbsp(0)
 
         assertArrayEquals(
-            expectedArray, resultBuffer.extractArray()
+            expectedArray, resultBuffer.toByteArray()
         )
     }
 
@@ -181,7 +181,7 @@ class ByteBufferExtensionsKtTest {
         val resultBuffer = testBuffer.extractRbsp(2)
 
         assertArrayEquals(
-            expectedArray, resultBuffer.extractArray()
+            expectedArray, resultBuffer.toByteArray()
         )
     }
 
@@ -193,7 +193,7 @@ class ByteBufferExtensionsKtTest {
         testBuffer.rewind()
         assertArrayEquals(
             value.toByteArray(),
-            testBuffer.extractArray()
+            testBuffer.toByteArray()
         )
     }
 }

@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.internal.muxers.ts.tables
 
 import io.github.thibaultbee.streampack.internal.muxers.ts.packets.PesHeader
-import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert
 import org.junit.Test
@@ -44,7 +44,7 @@ class PesHeaderTest {
 
         Assert.assertArrayEquals(
             expectedPesHeader.array(),
-            pesHeader.toByteBuffer().extractArray()
+            pesHeader.toByteBuffer().toByteArray()
         )
     }
 }

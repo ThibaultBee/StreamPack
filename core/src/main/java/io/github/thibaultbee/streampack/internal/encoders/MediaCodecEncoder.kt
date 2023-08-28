@@ -25,7 +25,7 @@ import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.events.EventHandler
-import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.internal.utils.extensions.slices
 import io.github.thibaultbee.streampack.internal.utils.extensions.startsWith
@@ -85,7 +85,7 @@ abstract class MediaCodecEncoder<T : Config>(
                             var frameBuffer = buffer
                             extra?.let { it ->
                                 var prefix = ByteArray(0)
-                                it.forEach { csd -> prefix = prefix.plus(csd.extractArray()) }
+                                it.forEach { csd -> prefix = prefix.plus(csd.toByteArray()) }
                                 if (buffer.startsWith(prefix)) {
                                     buffer.position(prefix.size)
                                     frameBuffer = buffer.slice()

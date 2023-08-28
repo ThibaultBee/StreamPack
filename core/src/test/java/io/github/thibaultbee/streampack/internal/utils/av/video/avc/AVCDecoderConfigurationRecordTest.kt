@@ -1,6 +1,6 @@
 package io.github.thibaultbee.streampack.internal.utils.av.video.avc
 
-import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
@@ -54,7 +54,7 @@ class AVCDecoderConfigurationRecordTest {
         avcDecoderConfigurationRecord.write(buffer)
         buffer.rewind()
 
-        assertArrayEquals(expectedBuffer.extractArray(), buffer.extractArray())
+        assertArrayEquals(expectedBuffer.toByteArray(), buffer.toByteArray())
     }
 
     @Test
@@ -106,7 +106,7 @@ class AVCDecoderConfigurationRecordTest {
         avcDecoderConfigurationRecord.write(buffer)
         buffer.rewind()
 
-        assertArrayEquals(expectedBuffer.extractArray(), buffer.extractArray())
+        assertArrayEquals(expectedBuffer.toByteArray(), buffer.toByteArray())
     }
 
     @Test
@@ -154,6 +154,6 @@ class AVCDecoderConfigurationRecordTest {
         avcDecoderConfigurationRecord.write(buffer)
         buffer.rewind()
 
-        assertArrayEquals(expectedBuffer.extractArray(), buffer.extractArray())
+        assertArrayEquals(expectedBuffer.toByteArray(), buffer.toByteArray())
     }
 }

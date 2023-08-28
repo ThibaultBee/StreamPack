@@ -1,6 +1,6 @@
 package io.github.thibaultbee.streampack.internal.utils.av.audio.aac
 
-import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
@@ -20,7 +20,7 @@ class ADTSTest {
 
         assertArrayEquals(
             expectedAdts.array(),
-            adts.toByteBuffer().extractArray().copyOfRange(0, 7)
+            adts.toByteBuffer().toByteArray().copyOfRange(0, 7)
         )
     }
 
@@ -36,7 +36,7 @@ class ADTSTest {
 
         assertArrayEquals(
             expectedAdts.array(),
-            adts.toByteBuffer().extractArray().copyOfRange(0, 7)
+            adts.toByteBuffer().toByteArray().copyOfRange(0, 7)
         )
     }
 }

@@ -152,12 +152,18 @@ fun ByteBuffer.startsWith(prefix: ByteArray): Boolean {
  *
  * @return [ByteArray] extracted from [ByteBuffer]
  */
-fun ByteBuffer.extractArray(): ByteArray {
+fun ByteBuffer.toByteArray(): ByteArray {
     return if (this.hasArray() && !isDirect) {
-        this.array()
+        val offset = arrayOffset()
+        val array = array()
+        if (offset == 0 && array.size == limit()) {
+            array
+        } else {
+            array.copyOfRange(offset, offset + limit())
+        }
     } else {
         val byteArray = ByteArray(this.remaining())
-        this.get(byteArray)
+        get(byteArray)
         byteArray
     }
 }

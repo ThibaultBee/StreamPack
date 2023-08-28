@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.internal.endpoints
 
 import io.github.thibaultbee.streampack.internal.data.Packet
-import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -42,7 +42,7 @@ class FileWriter : IEndpoint {
     override fun configure(config: Int) {} // Nothing to configure
 
     override fun write(packet: Packet) {
-        outputStream?.write(packet.buffer.extractArray())
+        outputStream?.write(packet.buffer.toByteArray())
             ?: throw UnsupportedOperationException("Set a file before trying to write it")
     }
 

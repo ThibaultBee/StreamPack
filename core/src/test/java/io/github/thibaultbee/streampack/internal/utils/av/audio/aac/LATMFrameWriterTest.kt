@@ -20,7 +20,7 @@ import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.internal.utils.av.audio.AudioSpecificConfig
-import io.github.thibaultbee.streampack.internal.utils.extensions.extractArray
+import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
@@ -45,7 +45,7 @@ class LATMFrameWriterTest {
         val latm = LATMFrameWriter.fromDecoderSpecificInfo(payload, decoderSpecificInfo)
         assertArrayEquals(
             expectedLatm.array(),
-            latm.toByteBuffer().extractArray()
+            latm.toByteBuffer().toByteArray()
         )
     }
 
@@ -63,7 +63,7 @@ class LATMFrameWriterTest {
         val latm = LATMFrameWriter.fromDecoderSpecificInfo(payload, decoderSpecificInfo)
         assertArrayEquals(
             expectedLatm.array(),
-            latm.toByteBuffer().extractArray()
+            latm.toByteBuffer().toByteArray()
         )
     }
 
@@ -81,7 +81,7 @@ class LATMFrameWriterTest {
         val latm = LATMFrameWriter.fromDecoderSpecificInfo(payload, decoderSpecificInfo)
         assertArrayEquals(
             expectedLatm.array(),
-            latm.toByteBuffer().extractArray()
+            latm.toByteBuffer().toByteArray()
         )
     }
 }
