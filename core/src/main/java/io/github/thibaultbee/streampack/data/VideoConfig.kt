@@ -17,7 +17,13 @@ package io.github.thibaultbee.streampack.data
 
 import android.content.Context
 import android.media.MediaCodecInfo.CodecProfileLevel
-import android.media.MediaCodecInfo.CodecProfileLevel.*
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileConstrainedBaseline
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileConstrainedHigh
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileExtended
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileHigh
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileMain
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain
 import android.media.MediaFormat
 import android.os.Build
 import android.util.Size
@@ -90,13 +96,13 @@ class VideoConfig(
          */
         mimeType: String = MediaFormat.MIMETYPE_VIDEO_AVC,
         /**
-         * Video encoder bitrate in bits/s.
-         */
-        startBitrate: Int = 2000000,
-        /**
          * Video output resolution in pixel.
          */
         resolution: Size = Size(1280, 720),
+        /**
+         * Video encoder bitrate in bits/s.
+         */
+        startBitrate: Int = getBestBitrate(resolution),
         /**
          * Video framerate.
          * This is a best effort as few camera can not generate a fixed framerate.
@@ -178,6 +184,23 @@ class VideoConfig(
     }
 
     companion object {
+        /**
+         * Return the best bitrate according to resolution
+         *
+         * @param resolution the resolution
+         * @return the corresponding bitrate
+         */
+        fun getBestBitrate(resolution: Size): Int {
+            val numOfPixels = resolution.width * resolution.height
+            return when {
+                numOfPixels <= 320 * 240 -> 800000
+                numOfPixels <= 640 * 480 -> 1000000
+                numOfPixels <= 1280 * 720 -> 2000000
+                numOfPixels <= 1920 * 1080 -> 3500000
+                else -> 4000000
+            }
+        }
+
         // Higher priority first
         private val avcProfilePriority = listOf(
             AVCProfileHigh,
