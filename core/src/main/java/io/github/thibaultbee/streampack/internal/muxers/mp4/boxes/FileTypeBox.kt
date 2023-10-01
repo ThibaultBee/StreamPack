@@ -21,7 +21,7 @@ import java.nio.ByteBuffer
 class FileTypeBox(
     private val majorBrand: String = "isom",
     private val minorVersion: Int = 512,
-    private val compatibleBrands: List<String> = listOf("isom", "avc1", "mp41")
+    private val compatibleBrands: List<String> = listOf("isom", "iso6", "iso2", "avc1", "mp41")
 ) : Box("ftyp") {
     init {
         require(majorBrand.length == 4) { "majorBrand must be 4 characters long" }
