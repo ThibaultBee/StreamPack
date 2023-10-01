@@ -30,4 +30,18 @@ class TimeToSampleBoxTest {
         val buffer = stts.toByteBuffer()
         assertArrayEquals(expectedBuffer.toByteArray(), buffer.toByteArray())
     }
+
+    @Test
+    fun `write valid stts fromDts`() {
+        val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("stts.box")
+        val sampleDts = mutableListOf<Long>()
+        for (i in 0..1350) {
+            sampleDts.add(i * 512.toLong())
+        }
+        val stts = TimeToSampleBox.fromDts(
+            sampleDts, false
+        )
+        val buffer = stts.toByteBuffer()
+        assertArrayEquals(expectedBuffer.toByteArray(), buffer.toByteArray())
+    }
 }

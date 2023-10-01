@@ -73,7 +73,7 @@ class TrackChunks(
 
     val isValid: Boolean
         // Needs at least 2 samples because of time difference
-        get() = (numOfSamples > 1) && when (track.config.mimeType) {
+        get() = (numOfSamples > 0) && when (track.config.mimeType) {
             MediaFormat.MIMETYPE_VIDEO_AVC -> {
                 this.extra.size == 2
             }
@@ -257,32 +257,7 @@ class TrackChunks(
     }
 
     private fun createTimeToSampleBox(): TimeToSampleBox {
-        require(sampleDts.size > 1) { "sampleDts must have at least 2 entries" }
-
-        val sampleDurations = mutableListOf<Int>()
-        sampleDts.forEachIndexed { index, dts ->
-            if (index != 0) {
-                sampleDurations.add((dts - sampleDts[index - 1]).toInt())
-            }
-        }
-        val filteredTimeToSampleEntries = mutableListOf<TimeToSampleBox.Entry>()
-        var count = 1
-        sampleDurations.forEach { duration ->
-            try {
-                val last = filteredTimeToSampleEntries.last()
-                if (duration != last.delta) {
-                    filteredTimeToSampleEntries.add(TimeToSampleBox.Entry(count, duration))
-                    count = 1
-                } else {
-                    count++
-                }
-            } catch (e: NoSuchElementException) {
-                // First entry
-                filteredTimeToSampleEntries.add(TimeToSampleBox.Entry(count, duration))
-            }
-        }
-
-        return TimeToSampleBox(filteredTimeToSampleEntries)
+        return TimeToSampleBox.fromDts(sampleDts, true)
     }
 
     private fun createSampleDescriptionBox(): SampleDescriptionBox {
