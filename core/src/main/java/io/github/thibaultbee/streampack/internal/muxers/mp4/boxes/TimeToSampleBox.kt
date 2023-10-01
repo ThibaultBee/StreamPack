@@ -37,4 +37,46 @@ class TimeToSampleBox(
             output.putInt(delta)
         }
     }
+
+    companion object {
+        /**
+         * Create a TimeToSampleBox from decoding times.
+         *
+         * @param dtsList list of decoding times
+         * @param hasUnknownLastDelta true if last delta is unknown. It will be set to 0.
+         * @return a TimeToSampleBox
+         */
+        fun fromDts(dtsList: List<Long>, hasUnknownLastDelta: Boolean): TimeToSampleBox {
+            if (dtsList.isEmpty()) {
+                throw IllegalArgumentException("dtsList must not be empty")
+            }
+            if (dtsList.size == 1) {
+                return TimeToSampleBox(listOf(Entry(1, 0)))
+            }
+
+            val compactedEntries = mutableListOf<Entry>()
+            var count = 1
+            var duration = 0
+            for (i in 1 until dtsList.size) {
+                val delta = (dtsList[i] - dtsList[i - 1]).toInt()
+                if (duration == delta) {
+                    count++
+                } else {
+                    if (i != 1) {
+                        compactedEntries.add(Entry(count, duration))
+                    }
+                    count = 1
+                    duration = delta
+                }
+            }
+            compactedEntries.add(Entry(count, duration))
+
+            // Last entry
+            if (hasUnknownLastDelta) {
+                compactedEntries.add(Entry(1, 0))
+            }
+
+            return TimeToSampleBox(compactedEntries)
+        }
+    }
 }
