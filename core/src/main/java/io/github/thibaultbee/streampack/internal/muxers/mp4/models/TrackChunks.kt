@@ -43,6 +43,7 @@ import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.SyncSampleBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TimeToSampleBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackExtendsBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackFragmentBaseMediaDecodeTimeBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackFragmentBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackFragmentHeaderBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackHeaderBox
@@ -335,7 +336,7 @@ class TrackChunks(
 
     fun createTraf(baseDataOffset: Long, moofSize: Int): TrackFragmentBox {
         val tfhd = createTrackFragmentHeaderBox(baseDataOffset)
-        val tfdt = null //TODO TrackFragmentBaseMediaDecodeTimeBox(firstTimestamp)
+        val tfdt = TrackFragmentBaseMediaDecodeTimeBox(firstTimestamp)
         val trun = createTrackRunBox(moofSize)
         return TrackFragmentBox(tfhd, tfdt, trun)
     }

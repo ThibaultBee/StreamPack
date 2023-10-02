@@ -15,11 +15,16 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
-import io.github.thibaultbee.streampack.internal.utils.extensions.putInt
 import java.nio.ByteBuffer
 
-class TrackFragmentBaseMediaDecodeTimeBox(private val baseMediaDecodeTime: Long, version: Byte) :
-    FullBox("tfdt", version, 0) {
+class TrackFragmentBaseMediaDecodeTimeBox(private val baseMediaDecodeTime: Number) :
+    FullBox(
+        "tfdt", when (baseMediaDecodeTime) {
+            is Int -> 0
+            is Long -> 1
+            else -> throw IllegalArgumentException("baseMediaDecodeTime must be Int or Long")
+        }, 0
+    ) {
     override val size: Int = super.size + if (version == 1.toByte()) {
         8
     } else {
@@ -29,8 +34,8 @@ class TrackFragmentBaseMediaDecodeTimeBox(private val baseMediaDecodeTime: Long,
     override fun write(output: ByteBuffer) {
         super.write(output)
         when (version) {
-            1.toByte() -> output.putLong(baseMediaDecodeTime)
-            0.toByte() -> output.putInt(baseMediaDecodeTime)
+            1.toByte() -> output.putLong(baseMediaDecodeTime as Long)
+            0.toByte() -> output.putInt(baseMediaDecodeTime as Int)
             else -> throw IllegalArgumentException("version must be 0 or 1")
         }
     }

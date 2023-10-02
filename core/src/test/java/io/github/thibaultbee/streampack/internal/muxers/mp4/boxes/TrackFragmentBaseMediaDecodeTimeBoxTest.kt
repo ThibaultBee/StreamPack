@@ -25,8 +25,7 @@ class TrackFragmentBaseMediaDecodeTimeBoxTest {
     fun `write valid tfdt test`() {
         val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("tfdt.box")
         val tfdt = TrackFragmentBaseMediaDecodeTimeBox(
-            baseMediaDecodeTime = 15360,
-            version = 1
+            baseMediaDecodeTime = 15360L,
         )
         val buffer = tfdt.toByteBuffer()
         assertArrayEquals(expectedBuffer.toByteArray(), buffer.toByteArray())
