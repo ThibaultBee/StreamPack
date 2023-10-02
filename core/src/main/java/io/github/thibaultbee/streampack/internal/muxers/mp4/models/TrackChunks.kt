@@ -21,6 +21,7 @@ import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
+import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.AVCConfigurationBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.AVCSampleEntry
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.ChunkLargeOffsetBox
@@ -66,7 +67,8 @@ import java.nio.ByteBuffer
  */
 class TrackChunks(
     val track: Track,
-    val onNewSample: (ByteBuffer) -> Unit
+    private val orientationProvider: IOrientationProvider,
+    val onNewSample: (ByteBuffer) -> Unit,
 ) {
     private val chunks = mutableListOf<Chunk>()
     private var frameId = 1
@@ -193,7 +195,7 @@ class TrackChunks(
     private fun createTrackHeaderBox(config: Config): TrackHeaderBox {
         val resolution = when (config) {
             is AudioConfig -> Size(0, 0)
-            is VideoConfig -> config.resolution
+            is VideoConfig -> orientationProvider.orientedSize(config.resolution)
             else -> throw IllegalArgumentException("Unsupported config")
         }
         val volume = when (config) {
@@ -267,7 +269,7 @@ class TrackChunks(
                 require(extra.size == 2) { "For AVC, extra must contains 2 parameter sets" }
                 (track.config as VideoConfig)
                 AVCSampleEntry(
-                    track.config.resolution,
+                    orientationProvider.orientedSize(track.config.resolution),
                     avcC = AVCConfigurationBox(
                         AVCDecoderConfigurationRecord.fromParameterSets(
                             extra[0],
@@ -282,7 +284,7 @@ class TrackChunks(
                 require(extra.size == 3) { "For HEVC, extra must contains 3 parameter sets" }
                 (track.config as VideoConfig)
                 HEVCSampleEntry(
-                    track.config.resolution,
+                    orientationProvider.orientedSize(track.config.resolution),
                     hvcC = HEVCConfigurationBox(
                         HEVCDecoderConfigurationRecord.fromParameterSets(
                             extra.flatten()
