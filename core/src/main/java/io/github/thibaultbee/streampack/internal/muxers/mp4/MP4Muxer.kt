@@ -107,7 +107,8 @@ class MP4Muxer(
     private fun createNewSegment(movieBoxFactory: AbstractMovieBoxFactory): Segment {
         return Segment(
             tracks,
-            movieBoxFactory
+            movieBoxFactory,
+            orientationProvider,
         ) { buffer -> writeBuffer(buffer) }
     }
 

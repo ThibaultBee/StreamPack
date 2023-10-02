@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.internal.muxers.mp4.models
 
 import io.github.thibaultbee.streampack.internal.data.Frame
+import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.MediaDataBox
 import java.nio.ByteBuffer
 
@@ -25,6 +26,7 @@ import java.nio.ByteBuffer
 class Segment(
     tracks: List<Track>,
     private val movieBoxFactory: AbstractMovieBoxFactory,
+    private val orientationProvider: IOrientationProvider,
     private val onNewSample: (ByteBuffer) -> Unit
 ) {
     /**
@@ -32,7 +34,7 @@ class Segment(
      */
     val isFragment = movieBoxFactory is MovieFragmentBoxFactory
 
-    private val trackChunks = tracks.map { TrackChunks(it, onNewSample) }
+    private val trackChunks = tracks.map { TrackChunks(it, orientationProvider, onNewSample) }
     private val validTrackChunks: List<TrackChunks>
         get() = trackChunks.filter { it.isValid }
     private val validDataSize: Int
