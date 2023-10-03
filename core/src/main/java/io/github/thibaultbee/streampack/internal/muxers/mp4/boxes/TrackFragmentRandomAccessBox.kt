@@ -19,8 +19,18 @@ import io.github.thibaultbee.streampack.internal.utils.av.ByteBufferWriter
 import java.nio.ByteBuffer
 
 class TrackFragmentRandomAccessBox(private val id: Int, private val entries: List<Entry>) :
-    FullBox("tfra", 1, 0) {
+    FullBox(
+        "tfra", when (entries.firstOrNull()?.time) {
+            is Int -> 0
+            is Long -> 1
+            else -> throw IllegalArgumentException("time and moofOffset must be both Int or Long")
+        }, 0
+    ) {
     override val size: Int = super.size + 12 + entries.size * 19
+
+    init {
+        entries.forEach { require((it.moofOffset is Int && it.time is Int) || (it.moofOffset is Long && it.time is Long)) { "time and moofOffset must be both Int or Long" } }
+    }
 
     override fun write(output: ByteBuffer) {
         super.write(output)
@@ -37,8 +47,8 @@ class TrackFragmentRandomAccessBox(private val id: Int, private val entries: Lis
     }
 
     data class Entry(
-        private val time: Long,
-        private val moofOffset: Long,
+        val time: Number,
+        val moofOffset: Number,
         private val trafNumber: Byte = 1,
         private val trunNumber: Byte = 1,
         private val sampleNumber: Byte = 1
@@ -46,8 +56,15 @@ class TrackFragmentRandomAccessBox(private val id: Int, private val entries: Lis
         override val size: Int = 19
 
         override fun write(output: ByteBuffer) {
-            output.putLong(time)
-            output.putLong(moofOffset)
+            if (time is Long && moofOffset is Long) {
+                output.putLong(time)
+                output.putLong(moofOffset)
+            } else if (time is Int && moofOffset is Int) {
+                output.putInt(time)
+                output.putInt(moofOffset)
+            } else {
+                throw IllegalArgumentException("time and moofOffset must be both Int or Long")
+            }
             output.put(trafNumber)
             output.put(trunNumber)
             output.put(sampleNumber)

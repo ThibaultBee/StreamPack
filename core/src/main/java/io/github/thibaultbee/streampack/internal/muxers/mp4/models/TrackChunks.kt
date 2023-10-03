@@ -109,7 +109,7 @@ class TrackChunks(
     val duration: Long
         get() = chunks.sumOf { it.duration } * track.timescale / TimeUtils.TIME_SCALE
 
-    private val firstTimestamp: Long
+    val firstTimestamp: Long
         get() = chunks.minOf { it.firstTimestamp } * track.timescale / TimeUtils.TIME_SCALE
 
     val dataSize: Int

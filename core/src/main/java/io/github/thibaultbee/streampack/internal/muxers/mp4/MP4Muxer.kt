@@ -22,7 +22,16 @@ import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.FileTypeBox
-import io.github.thibaultbee.streampack.internal.muxers.mp4.models.*
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.MovieFragmentRandomAccessBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackFragmentRandomAccessBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.models.AbstractMovieBoxFactory
+import io.github.thibaultbee.streampack.internal.muxers.mp4.models.DefaultMP4SegmenterFactory
+import io.github.thibaultbee.streampack.internal.muxers.mp4.models.MP4Segmenter
+import io.github.thibaultbee.streampack.internal.muxers.mp4.models.MP4SegmenterFactory
+import io.github.thibaultbee.streampack.internal.muxers.mp4.models.MovieBoxFactory
+import io.github.thibaultbee.streampack.internal.muxers.mp4.models.MovieFragmentBoxFactory
+import io.github.thibaultbee.streampack.internal.muxers.mp4.models.Segment
+import io.github.thibaultbee.streampack.internal.muxers.mp4.models.Track
 import io.github.thibaultbee.streampack.internal.utils.TimeUtils
 import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
@@ -46,9 +55,11 @@ class MP4Muxer(
     private var currentSegment: Segment? = null
     private var segmenter: MP4Segmenter? = null
 
+    private var startUpTime: Long? = null
     private var dataOffset: Long = 0
     private var sequenceNumber = DEFAULT_SEQUENCE_NUMBER
-    private var hasWriteMoov = false
+    private val hasWriteMoof: Boolean
+        get() = sequenceNumber > DEFAULT_SEQUENCE_NUMBER
 
     override fun encode(frame: Frame, streamPid: Int) {
         synchronized(this) {
@@ -76,6 +87,7 @@ class MP4Muxer(
     }
 
     override fun startStream() {
+        startUpTime = TimeUtils.currentTime()
         writeBuffer(FileTypeBox().toByteBuffer())
         currentSegment = createNewSegment(MovieBoxFactory(timescale))
         segmenter = segmenterFactory.build(hasAudio, hasVideo)
@@ -83,9 +95,9 @@ class MP4Muxer(
 
     override fun stopStream() {
         writeSegment(createNewFragment = false)
-        // TODO write mfra
+        writeMfraIfNeeded()
         sequenceNumber = DEFAULT_SEQUENCE_NUMBER
-        hasWriteMoov = false
+        startUpTime = null
         currentSegment = null
         segmenter = null
     }
@@ -121,11 +133,43 @@ class MP4Muxer(
             }
 
             it.write(dataOffset)
+
+            if (it.isFragment) {
+                tracks.forEach { track ->
+                    track.syncSamples.add(
+                        Track.SyncSample(
+                            time = it.getFirstTimestamp(track.id),
+                            moofOffset = dataOffset
+                        )
+                    )
+                }
+            }
         }
 
         if (createNewFragment) {
             currentSegment = createNewSegment(MovieFragmentBoxFactory(sequenceNumber++))
         }
+    }
+
+    private fun writeMfraIfNeeded() {
+        val tfras = tracks.filter {
+            it.syncSamples.isNotEmpty()
+        }.map {
+            TrackFragmentRandomAccessBox(
+                id = it.id,
+                entries = it.syncSamples.map {
+                    TrackFragmentRandomAccessBox.Entry(
+                        time = it.time,
+                        moofOffset = it.moofOffset
+                    )
+                }
+            )
+        }
+        if (tfras.isEmpty()) {
+            return
+        }
+        val mfra = MovieFragmentRandomAccessBox(tfras)
+        writeBuffer(mfra.toByteBuffer())
     }
 
     private fun writeBuffer(buffer: ByteBuffer) {
