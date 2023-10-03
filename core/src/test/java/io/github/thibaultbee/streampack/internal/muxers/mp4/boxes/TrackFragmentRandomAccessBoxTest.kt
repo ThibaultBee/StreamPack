@@ -28,40 +28,40 @@ class TrackFragmentRandomAccessBoxTest {
             id = 1,
             listOf(
                 TrackFragmentRandomAccessBox.Entry(
-                    time = 15717,
-                    moofOffset = 82533
+                    time = 15717L,
+                    moofOffset = 82533L
                 ),
                 TrackFragmentRandomAccessBox.Entry(
-                    time = 31077,
-                    moofOffset = 162702
+                    time = 31077L,
+                    moofOffset = 162702L
                 ),
                 TrackFragmentRandomAccessBox.Entry(
-                    time = 46437,
-                    moofOffset = 243560
+                    time = 46437L,
+                    moofOffset = 243560L
                 ),
                 TrackFragmentRandomAccessBox.Entry(
-                    time = 61797,
-                    moofOffset = 324780
+                    time = 61797L,
+                    moofOffset = 324780L
                 ),
                 TrackFragmentRandomAccessBox.Entry(
-                    time = 77157,
-                    moofOffset = 405267
+                    time = 77157L,
+                    moofOffset = 405267L
                 ),
                 TrackFragmentRandomAccessBox.Entry(
-                    time = 92517,
-                    moofOffset = 486192
+                    time = 92517L,
+                    moofOffset = 486192L
                 ),
                 TrackFragmentRandomAccessBox.Entry(
-                    time = 107877,
-                    moofOffset = 567498
+                    time = 107877L,
+                    moofOffset = 567498L
                 ),
                 TrackFragmentRandomAccessBox.Entry(
-                    time = 123237,
-                    moofOffset = 648058
+                    time = 123237L,
+                    moofOffset = 648058L
                 ),
                 TrackFragmentRandomAccessBox.Entry(
-                    time = 138597,
-                    moofOffset = 729525
+                    time = 138597L,
+                    moofOffset = 729525L
                 ),
             )
         )

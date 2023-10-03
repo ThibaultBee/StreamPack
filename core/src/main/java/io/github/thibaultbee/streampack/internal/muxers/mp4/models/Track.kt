@@ -23,9 +23,16 @@ class Track(
     val config: Config,
     val timescale: Int = TimeUtils.TIME_SCALE,
 ) {
+    val syncSamples = mutableListOf<SyncSample>()
+
     init {
         require(id != 0) { "id must be greater than 0" }
     }
+
+    class SyncSample(
+        val time: Long,
+        val moofOffset: Long
+    )
 }
 
 

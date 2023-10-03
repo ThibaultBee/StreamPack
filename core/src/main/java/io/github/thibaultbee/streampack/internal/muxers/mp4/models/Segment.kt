@@ -40,13 +40,15 @@ class Segment(
     private val validDataSize: Int
         get() = validTrackChunks.sumOf { it.dataSize }
 
-    val dataSize: Int
+    private val dataSize: Int
         get() = trackChunks.sumOf { it.dataSize }
     val hasData: Boolean
         get() = dataSize > 0
 
-    val hasDataForAllTracks: Boolean
-        get() = trackChunks.all { it.hasData }
+    fun getFirstTimestamp(streamPid: Int): Long {
+        val trackSegment = getTrackSegment(streamPid)
+        return trackSegment.firstTimestamp
+    }
 
     fun add(frame: Frame, streamPid: Int) {
         val trackSegment = getTrackSegment(streamPid)
