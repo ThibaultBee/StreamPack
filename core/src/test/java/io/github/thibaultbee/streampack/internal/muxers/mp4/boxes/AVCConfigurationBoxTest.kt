@@ -15,9 +15,9 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
+import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4ResourcesUtils
 import io.github.thibaultbee.streampack.internal.utils.av.video.avc.AVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
-import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 import java.nio.ByteBuffer
@@ -55,7 +55,7 @@ class AVCConfigurationBoxTest {
             )
         )
         val pps = ByteBuffer.wrap(byteArrayOf(0x68, 0xCE.toByte(), 0x09, 0xC8.toByte()))
-        val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("avcC.box")
+        val expectedBuffer = MP4ResourcesUtils.readByteBuffer("avcC.box")
         val avcC = AVCConfigurationBox(
             AVCDecoderConfigurationRecord(
                 profileIdc = 66,

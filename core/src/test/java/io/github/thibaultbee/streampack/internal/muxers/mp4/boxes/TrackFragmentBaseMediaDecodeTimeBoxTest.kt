@@ -15,15 +15,15 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
+import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4ResourcesUtils
 import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
-import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 
 class TrackFragmentBaseMediaDecodeTimeBoxTest {
     @Test
     fun `write valid tfdt test`() {
-        val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("tfdt.box")
+        val expectedBuffer = MP4ResourcesUtils.readByteBuffer("tfdt.box")
         val tfdt = TrackFragmentBaseMediaDecodeTimeBox(
             baseMediaDecodeTime = 15360L,
         )

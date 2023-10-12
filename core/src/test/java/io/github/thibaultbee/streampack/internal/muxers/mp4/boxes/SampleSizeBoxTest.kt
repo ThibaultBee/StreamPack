@@ -15,15 +15,15 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
+import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4ResourcesUtils
 import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
-import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 
 class SampleSizeBoxTest {
     @Test
     fun `write valid stsz test`() {
-        val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("stsz.box")
+        val expectedBuffer = MP4ResourcesUtils.readByteBuffer("stsz.box")
         val stsz = SampleSizeBox(
             sampleSizeEntries = listOf(
                 23738,

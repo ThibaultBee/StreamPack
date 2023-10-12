@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Thibault B.
+ * Copyright (C) 2023 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.utils
+package io.github.thibaultbee.streampack.internal.muxers.mp4
 
+import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import java.nio.ByteBuffer
 
-object ResourcesUtils {
-    fun readResources(filePath: String) =
-        this.javaClass.classLoader!!.getResource(filePath)!!.readBytes()
+/**
+ * Path to TS muxer test samples
+ */
+object MP4ResourcesUtils {
+    fun readResources(fileName: String) =
+        ResourcesUtils.readResources(MP4_SAMPLES_PATH + fileName)
 
-    fun readByteBuffer(filePath: String): ByteBuffer = ByteBuffer.wrap(readResources(filePath))
+    fun readByteBuffer(fileName: String): ByteBuffer =
+        ByteBuffer.wrap(readResources(fileName))
+
+    private const val MP4_SAMPLES_PATH = "test-samples/muxer/mp4/"
 }

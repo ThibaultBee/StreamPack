@@ -15,15 +15,15 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
+import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4ResourcesUtils
 import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
-import io.github.thibaultbee.streampack.utils.ResourcesUtils
-import org.junit.Assert.*
+import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 
 class HandlerBoxTest {
     @Test
     fun `write valid hdlr test`() {
-        val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("hdlr.box")
+        val expectedBuffer = MP4ResourcesUtils.readByteBuffer("hdlr.box")
         val hdlr = HandlerBox(
             type = HandlerBox.HandlerType.VIDEO,
             name = "VideoHandler"

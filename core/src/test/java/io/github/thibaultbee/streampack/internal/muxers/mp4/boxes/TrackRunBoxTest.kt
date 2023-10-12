@@ -15,17 +15,17 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
+import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4ResourcesUtils
 import io.github.thibaultbee.streampack.internal.muxers.mp4.models.SampleDependsOn
 import io.github.thibaultbee.streampack.internal.muxers.mp4.models.SampleFlags
 import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
-import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 
 class TrackRunBoxTest {
     @Test
     fun `write valid trun test`() {
-        val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("trun.box")
+        val expectedBuffer = MP4ResourcesUtils.readByteBuffer("trun.box")
         val entries = listOf(
             TrackRunBox.Entry(sampleSize = 28381),
             TrackRunBox.Entry(sampleSize = 889),

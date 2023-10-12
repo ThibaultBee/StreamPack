@@ -15,8 +15,8 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.ts.descriptors
 
+import io.github.thibaultbee.streampack.internal.muxers.ts.TSResourcesUtils
 import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
-import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 
@@ -24,7 +24,8 @@ class AdaptationFieldTest {
 
     @Test
     fun `adaptation field with pcr`() {
-        val expectedAdaptationField = ResourcesUtils.readByteBuffer("test-samples/muxer/ts/adaptation-field.ts")
+        val expectedAdaptationField =
+            TSResourcesUtils.readByteBuffer("adaptation-field.ts")
 
         val adaptationField = AdaptationField(
             discontinuityIndicator = false,

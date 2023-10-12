@@ -15,15 +15,15 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
+import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4ResourcesUtils
 import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
-import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 
 class VideoMediaHeaderBoxTest {
     @Test
     fun `write valid vmhd test`() {
-        val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("vmhd.box")
+        val expectedBuffer = MP4ResourcesUtils.readByteBuffer("vmhd.box")
         val vmhd = VideoMediaHeaderBox()
         val buffer = vmhd.toByteBuffer()
         assertArrayEquals(expectedBuffer.toByteArray(), buffer.toByteArray())
