@@ -55,11 +55,8 @@ class MP4Muxer(
     private var currentSegment: Segment? = null
     private var segmenter: MP4Segmenter? = null
 
-    private var startUpTime: Long? = null
     private var dataOffset: Long = 0
     private var sequenceNumber = DEFAULT_SEQUENCE_NUMBER
-    private val hasWriteMoof: Boolean
-        get() = sequenceNumber > DEFAULT_SEQUENCE_NUMBER
 
     override fun encode(frame: Frame, streamPid: Int) {
         synchronized(this) {
@@ -87,7 +84,6 @@ class MP4Muxer(
     }
 
     override fun startStream() {
-        startUpTime = TimeUtils.currentTime()
         writeBuffer(FileTypeBox().toByteBuffer())
         currentSegment = createNewSegment(MovieBoxFactory(timescale))
         segmenter = segmenterFactory.build(hasAudio, hasVideo)
@@ -97,9 +93,10 @@ class MP4Muxer(
         writeSegment(createNewFragment = false)
         writeMfraIfNeeded()
         sequenceNumber = DEFAULT_SEQUENCE_NUMBER
-        startUpTime = null
+        dataOffset = 0
         currentSegment = null
         segmenter = null
+        tracks.clear()
     }
 
     override fun release() {
