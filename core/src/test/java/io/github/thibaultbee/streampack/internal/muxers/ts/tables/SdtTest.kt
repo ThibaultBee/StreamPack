@@ -15,11 +15,11 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.ts.tables
 
+import io.github.thibaultbee.streampack.internal.muxers.ts.TSResourcesUtils
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.Service
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.internal.muxers.ts.packets.Sdt
 import io.github.thibaultbee.streampack.internal.muxers.ts.utils.AssertEqualsSingleBufferMockMuxerListener
-import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Test
 
 class SdtTest {
@@ -28,7 +28,7 @@ class SdtTest {
      */
     @Test
     fun `simple sdt test`() {
-        val expectedBuffer = ResourcesUtils.readByteBuffer("test-samples/muxer/ts/sdt.ts")
+        val expectedBuffer = TSResourcesUtils.readByteBuffer("sdt.ts")
         val listener = AssertEqualsSingleBufferMockMuxerListener(expectedBuffer)
         val services = listOf(
             Service(

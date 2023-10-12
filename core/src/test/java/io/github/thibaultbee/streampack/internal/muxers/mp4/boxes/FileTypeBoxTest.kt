@@ -15,8 +15,8 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
+import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4ResourcesUtils
 import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
-import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.fail
 import org.junit.Test
@@ -24,7 +24,7 @@ import org.junit.Test
 class FileTypeBoxTest {
     @Test
     fun `write valid ftyp test`() {
-        val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("ftyp.box")
+        val expectedBuffer = MP4ResourcesUtils.readByteBuffer("ftyp.box")
         val ftyp = FileTypeBox(
             majorBrand = "isom",
             minorVersion = 512,
@@ -43,7 +43,7 @@ class FileTypeBoxTest {
                 compatibleBrands = listOf("isom", "iso2", "avc1", "mp41")
             )
             fail("Should have thrown an exception")
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
 
         }
     }

@@ -15,16 +15,16 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.ts.tables
 
+import io.github.thibaultbee.streampack.internal.muxers.ts.TSResourcesUtils
 import io.github.thibaultbee.streampack.internal.muxers.ts.packets.PesHeader
 import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
-import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert
 import org.junit.Test
 
 class PesHeaderTest {
     @Test
     fun `pes header with pts and dts test`() {
-        val expectedPesHeader = ResourcesUtils.readByteBuffer("test-samples/muxer/ts/pes-header.ts")
+        val expectedPesHeader = TSResourcesUtils.readByteBuffer("pes-header.ts")
 
         val pesHeader = PesHeader(
             streamId = 224,

@@ -15,14 +15,13 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.ts.tables
 
+import io.github.thibaultbee.streampack.internal.muxers.ts.TSResourcesUtils
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.Service
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.internal.muxers.ts.packets.Pat
 import io.github.thibaultbee.streampack.internal.muxers.ts.packets.Pmt
 import io.github.thibaultbee.streampack.internal.muxers.ts.utils.AssertEqualsSingleBufferMockMuxerListener
-import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Test
-import java.nio.ByteBuffer
 
 class PatTest {
     /**
@@ -30,7 +29,7 @@ class PatTest {
      */
     @Test
     fun `simple pat test`() {
-        val expectedBuffer = ResourcesUtils.readByteBuffer("test-samples/muxer/ts/pat.ts")
+        val expectedBuffer = TSResourcesUtils.readByteBuffer("pat.ts")
         val listener = AssertEqualsSingleBufferMockMuxerListener(expectedBuffer)
         val service = Service(
             TsServiceInfo(
@@ -46,6 +45,5 @@ class PatTest {
         Pat(listener, listOf(service), tsId = 0x437, versionNumber = 3).run {
             write()
         }
-
     }
 }

@@ -1,5 +1,6 @@
 package io.github.thibaultbee.streampack.internal.utils.extensions
 
+import io.github.thibaultbee.streampack.utils.Utils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -195,5 +196,17 @@ class ByteBufferExtensionsKtTest {
             value.toByteArray(),
             testBuffer.toByteArray()
         )
+    }
+
+    @Test
+    fun `getString test`() {
+        val value = "AOPUS"
+        val testBuffer = ByteBuffer.wrap("AOPUS".toByteArray())
+        assertEquals(testBuffer.getString(5), value)
+
+        val testBuffer2 = Utils.generateRandomDirectBuffer(10)
+        testBuffer2.putString(value)
+        testBuffer2.rewind()
+        assertEquals(testBuffer2.getString(5), value)
     }
 }

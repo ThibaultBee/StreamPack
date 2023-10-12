@@ -15,15 +15,15 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
+import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4ResourcesUtils
 import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
-import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 
 class SampleToChunkBoxTest {
     @Test
     fun `write valid stsc test`() {
-        val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("stsc.box")
+        val expectedBuffer = MP4ResourcesUtils.readByteBuffer("stsc.box")
         val stsc = SampleToChunkBox(
             listOf(
                 SampleToChunkBox.Entry(1, 435, 1),

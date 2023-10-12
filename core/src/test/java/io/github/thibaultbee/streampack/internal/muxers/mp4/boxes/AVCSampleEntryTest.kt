@@ -15,10 +15,10 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
+import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4ResourcesUtils
 import io.github.thibaultbee.streampack.internal.utils.av.video.avc.AVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import io.github.thibaultbee.streampack.utils.MockUtils
-import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 import java.nio.ByteBuffer
@@ -58,7 +58,7 @@ class AVCSampleEntryTest {
         )
         val pps =
             ByteBuffer.wrap(byteArrayOf(0x68, 0xE9.toByte(), 0xBB.toByte(), 0x2C, 0x8B.toByte()))
-        val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("avc1.box")
+        val expectedBuffer = MP4ResourcesUtils.readByteBuffer("avc1.box")
         val avcC = AVCConfigurationBox(
             AVCDecoderConfigurationRecord(
                 profileIdc = 100,

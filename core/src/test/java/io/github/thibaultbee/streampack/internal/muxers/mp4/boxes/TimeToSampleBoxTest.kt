@@ -15,15 +15,15 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
+import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4ResourcesUtils
 import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
-import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 
 class TimeToSampleBoxTest {
     @Test
     fun `write valid stts test`() {
-        val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("stts.box")
+        val expectedBuffer = MP4ResourcesUtils.readByteBuffer("stts.box")
         val stts = TimeToSampleBox(
             listOf(TimeToSampleBox.Entry(1350, 512))
         )
@@ -33,7 +33,7 @@ class TimeToSampleBoxTest {
 
     @Test
     fun `write valid stts fromDts`() {
-        val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("stts.box")
+        val expectedBuffer = MP4ResourcesUtils.readByteBuffer("stts.box")
         val sampleDts = mutableListOf<Long>()
         for (i in 0..1350) {
             sampleDts.add(i * 512.toLong())

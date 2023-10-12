@@ -15,15 +15,15 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
+import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4ResourcesUtils
 import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
-import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert
 import org.junit.Test
 
 class MovieFragmentRandomAccessBoxTest {
     @Test
     fun `write valid tfra test`() {
-        val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("mfra.box")
+        val expectedBuffer = MP4ResourcesUtils.readByteBuffer("mfra.box")
 
         val tfra1 = TrackFragmentRandomAccessBox(
             id = 1,

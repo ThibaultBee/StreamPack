@@ -15,9 +15,14 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
-import io.github.thibaultbee.streampack.internal.utils.av.descriptors.*
+import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4ResourcesUtils
+import io.github.thibaultbee.streampack.internal.utils.av.descriptors.DecoderConfigDescriptor
+import io.github.thibaultbee.streampack.internal.utils.av.descriptors.DecoderSpecificInfo
+import io.github.thibaultbee.streampack.internal.utils.av.descriptors.ESDescriptor
+import io.github.thibaultbee.streampack.internal.utils.av.descriptors.ObjectTypeIndication
+import io.github.thibaultbee.streampack.internal.utils.av.descriptors.SLConfigDescriptor
+import io.github.thibaultbee.streampack.internal.utils.av.descriptors.StreamType
 import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
-import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Assert
 import org.junit.Test
 import java.nio.ByteBuffer
@@ -45,7 +50,7 @@ class MP4AudioSampleEntryTest {
             slConfigDescriptor = SLConfigDescriptor(predefined = 2)
         )
 
-        val expectedBuffer = ResourcesUtils.readMP4ByteBuffer("mp4a.box")
+        val expectedBuffer = MP4ResourcesUtils.readByteBuffer("mp4a.box")
         val mp4a = MP4AudioSampleEntry(
             channelCount = 2,
             sampleSize = 16,

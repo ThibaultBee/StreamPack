@@ -17,14 +17,13 @@ package io.github.thibaultbee.streampack.internal.muxers.ts.tables
 
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.Config
+import io.github.thibaultbee.streampack.internal.muxers.ts.TSResourcesUtils
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.Service
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.Stream
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.internal.muxers.ts.packets.Pmt
 import io.github.thibaultbee.streampack.internal.muxers.ts.utils.AssertEqualsSingleBufferMockMuxerListener
-import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Test
-import java.nio.ByteBuffer
 
 class PmtTest {
     /**
@@ -32,7 +31,7 @@ class PmtTest {
      */
     @Test
     fun `simple pmt test`() {
-        val expectedBuffer = ResourcesUtils.readByteBuffer("test-samples/muxer/ts/pmt.ts")
+        val expectedBuffer = TSResourcesUtils.readByteBuffer("pmt.ts")
         val listener = AssertEqualsSingleBufferMockMuxerListener(expectedBuffer)
         val service =
             Service(
