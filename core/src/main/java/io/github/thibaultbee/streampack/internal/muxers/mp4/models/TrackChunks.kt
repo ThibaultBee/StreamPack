@@ -35,6 +35,8 @@ import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.MP4AudioSample
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.MediaBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.MediaHeaderBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.MediaInformationBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.OpusSampleEntry
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.OpusSpecificBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.SampleDescriptionBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.SampleSizeBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.SampleTableBox
@@ -51,6 +53,7 @@ import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackRunBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.utils.createHandlerBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.utils.createTypeMediaHeaderBox
 import io.github.thibaultbee.streampack.internal.utils.TimeUtils
+import io.github.thibaultbee.streampack.internal.utils.av.audio.opus.OpusCsdParser
 import io.github.thibaultbee.streampack.internal.utils.av.descriptors.AudioSpecificConfigDescriptor
 import io.github.thibaultbee.streampack.internal.utils.av.descriptors.ESDescriptor
 import io.github.thibaultbee.streampack.internal.utils.av.descriptors.SLConfigDescriptor
@@ -87,6 +90,14 @@ class TrackChunks(
 
             MediaFormat.MIMETYPE_AUDIO_AAC -> {
                 this.extra.size == 1
+            }
+
+            MediaFormat.MIMETYPE_AUDIO_OPUS -> {
+                /**
+                 * According the MediaCodec, there are 3 parameter sets. But on Pixel 4A, there is
+                 * only 1. So we are trying to be compatible with both.
+                 */
+                (this.extra.size == 3) || (this.extra.size == 1)
             }
 
             else -> throw IllegalArgumentException("Unsupported mimeType ${track.config.mimeType}")
@@ -267,7 +278,7 @@ class TrackChunks(
         val sampleEntry = when (track.config.mimeType) {
             MediaFormat.MIMETYPE_VIDEO_AVC -> {
                 val extra = this.extra
-                require(extra.size == 2) { "For AVC, extra must contains 2 parameter sets" }
+                require(extra.size == 2) { "For AVC, extra must contain 2 parameter sets" }
                 (track.config as VideoConfig)
                 AVCSampleEntry(
                     orientationProvider.orientedSize(track.config.resolution),
@@ -282,7 +293,7 @@ class TrackChunks(
 
             MediaFormat.MIMETYPE_VIDEO_HEVC -> {
                 val extra = this.extra
-                require(extra.size == 3) { "For HEVC, extra must contains 3 parameter sets" }
+                require(extra.size == 3) { "For HEVC, extra must contain 3 parameter sets" }
                 (track.config as VideoConfig)
                 HEVCSampleEntry(
                     orientationProvider.orientedSize(track.config.resolution),
@@ -317,7 +328,26 @@ class TrackChunks(
                 )
             }
 
-            else -> throw IllegalArgumentException("Unsupported mimeType")
+            MediaFormat.MIMETYPE_AUDIO_OPUS -> {
+                val extra = this.extra
+                require((this.extra.size == 3) || (this.extra.size == 1)) { "For Opus, extra must contain 1 or 3 parameter sets" }
+                (track.config as AudioConfig)
+                val triple = OpusCsdParser.parse(extra[0][0])
+                val identificationHeader = triple.first
+                OpusSampleEntry(
+                    AudioConfig.getNumberOfChannels(track.config.channelConfig).toShort(),
+                    dOps = OpusSpecificBox(
+                        outputChannelCount = identificationHeader.channelCount,
+                        preSkip = identificationHeader.preSkip,
+                        inputSampleRate = identificationHeader.inputSampleRate,
+                        outputGain = identificationHeader.outputGain,
+                        channelMappingFamily = identificationHeader.channelMappingFamily,
+                        channelMapping = identificationHeader.channelMapping
+                    )
+                )
+            }
+
+            else -> throw IllegalArgumentException("Unsupported mimeType ${track.config.mimeType}")
         }
         return SampleDescriptionBox(sampleEntry)
     }
