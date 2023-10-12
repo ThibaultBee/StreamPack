@@ -17,6 +17,8 @@ package io.github.thibaultbee.streampack.internal.utils.extensions
 
 import io.github.thibaultbee.streampack.internal.utils.av.video.getStartCodeSize
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.charset.StandardCharsets
 
 fun ByteBuffer.put(i: Int, i1: Int) {
     put(i, i1.toByte())
@@ -136,7 +138,7 @@ fun ByteBuffer.slices(prefix: ByteArray): List<ByteBuffer> {
 }
 
 /**
- * Check if [ByteBuffer] starts with [prefix].
+ * Check if [ByteBuffer] starts with a ByteArray [prefix].
  */
 fun ByteBuffer.startsWith(prefix: ByteArray): Boolean {
     for (i in prefix.indices) {
@@ -146,6 +148,11 @@ fun ByteBuffer.startsWith(prefix: ByteArray): Boolean {
     }
     return true
 }
+
+/**
+ * Check if [ByteBuffer] starts with a String [prefix].
+ */
+fun ByteBuffer.startWith(prefix: String) = startsWith(prefix.toByteArray())
 
 /**
  * Returns ByteBuffer array even if [ByteBuffer.hasArray] returns false.
@@ -191,3 +198,22 @@ fun ByteBuffer.clone(): ByteBuffer {
     val clone = ByteBuffer.allocate(this.remaining())
     return clone.put(this).apply { rewind() }
 }
+
+fun ByteBuffer.getString(size: Int = this.remaining()): String {
+    val bytes = ByteArray(size)
+    this.get(bytes)
+    return String(bytes, StandardCharsets.UTF_8)
+}
+
+
+fun ByteBuffer.getLong(isLittleEndian: Boolean): Long {
+    if (isLittleEndian) {
+        order(ByteOrder.LITTLE_ENDIAN)
+    }
+    val value = long
+    if (isLittleEndian) {
+        order(ByteOrder.BIG_ENDIAN)
+    }
+    return value
+}
+

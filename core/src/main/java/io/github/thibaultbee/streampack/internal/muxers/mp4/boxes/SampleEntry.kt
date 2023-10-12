@@ -132,6 +132,20 @@ class HEVCSampleEntry(
     pasp
 )
 
+class OpusSampleEntry(
+    channelCount: Short,
+    dOps: OpusSpecificBox,
+    btrt: BitRateBox? = null,
+) :
+    AudioSampleEntry(
+        "Opus",
+        0,
+        channelCount,
+        16,
+        48000,
+        mutableListOf<Box>(dOps).apply {
+            btrt?.let { add(it) }
+        })
 
 class MP4AudioSampleEntry(
     channelCount: Short,

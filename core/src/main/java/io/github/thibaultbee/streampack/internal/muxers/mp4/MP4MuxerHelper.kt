@@ -30,7 +30,10 @@ class AudioMP4MuxerHelper : IAudioMuxerHelper {
      * Get MP4 Muxer supported audio encoders list
      */
     override val supportedEncoders =
-        listOf(MediaFormat.MIMETYPE_AUDIO_AAC)
+        listOf(
+            MediaFormat.MIMETYPE_AUDIO_AAC,
+            MediaFormat.MIMETYPE_AUDIO_OPUS
+        )
 
     override fun getSupportedSampleRates(): List<Int>? = null
 
