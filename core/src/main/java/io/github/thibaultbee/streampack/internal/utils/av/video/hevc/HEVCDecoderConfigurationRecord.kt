@@ -75,9 +75,30 @@ data class HEVCDecoderConfigurationRecord(
         ) // constantFrameRate 2 bits = 1 for stable / numTemporalLayers 3 bits /  temporalIdNested 1 bit / lengthSizeMinusOne 2 bits
 
         buffer.put(parameterSets.size) // numOfArrays
+
+        // It is recommended that the arrays be in the order VPS, SPS, PPS, prefix SEI, suffix SEI.
+        val vpsSets = mutableListOf<NalUnit>()
+        val spsSets = mutableListOf<NalUnit>()
+        val ppsSets = mutableListOf<NalUnit>()
+        val prefixSeiSets = mutableListOf<NalUnit>()
+        val suffixSeiSets = mutableListOf<NalUnit>()
+        val otherSets = mutableListOf<NalUnit>()
         parameterSets.forEach {
-            it.write(buffer)
+            when (it.type) {
+                NalUnit.Type.VPS -> vpsSets.add(it)
+                NalUnit.Type.SPS -> spsSets.add(it)
+                NalUnit.Type.PPS -> ppsSets.add(it)
+                NalUnit.Type.PREFIX_SEI -> prefixSeiSets.add(it)
+                NalUnit.Type.SUFFIX_SEI -> suffixSeiSets.add(it)
+                else -> otherSets.add(it)
+            }
         }
+        vpsSets.forEach { it.write(buffer) }
+        spsSets.forEach { it.write(buffer) }
+        ppsSets.forEach { it.write(buffer) }
+        prefixSeiSets.forEach { it.write(buffer) }
+        suffixSeiSets.forEach { it.write(buffer) }
+        otherSets.forEach { it.write(buffer) }
     }
 
     companion object {
@@ -109,7 +130,8 @@ data class HEVCDecoderConfigurationRecord(
                 NalUnit(type, it)
             }
             // profile_tier_level
-            val noStartCodeSps = nalUnitParameterSets.first { it.type == NalUnit.Type.SPS }.noStartCodeData
+            val noStartCodeSps =
+                nalUnitParameterSets.first { it.type == NalUnit.Type.SPS }.noStartCodeData
             val parsedSps =
                 SequenceParameterSets.parse(noStartCodeSps)
             noStartCodeSps.rewind()
