@@ -23,6 +23,7 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.sources.IVideoCapture
 import io.github.thibaultbee.streampack.utils.CameraSettings
+import io.github.thibaultbee.streampack.utils.defaultCameraId
 import io.github.thibaultbee.streampack.utils.isFrameRateSupported
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
@@ -32,7 +33,7 @@ class CameraCapture(
 ) : IVideoCapture {
     var previewSurface: Surface? = null
     override var encoderSurface: Surface? = null
-    var cameraId: String = "0"
+    var cameraId: String = context.defaultCameraId
         get() = cameraController.cameraId ?: field
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {

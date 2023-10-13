@@ -31,7 +31,11 @@ import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.R
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
-import io.github.thibaultbee.streampack.utils.*
+import io.github.thibaultbee.streampack.utils.OrientationUtils
+import io.github.thibaultbee.streampack.utils.TAG
+import io.github.thibaultbee.streampack.utils.backCameraList
+import io.github.thibaultbee.streampack.utils.frontCameraList
+import io.github.thibaultbee.streampack.utils.getCameraCharacteristics
 
 /**
  * A [FrameLayout] containing a [AutoFitSurfaceView] that manages [ICameraStreamer] preview.
@@ -86,10 +90,11 @@ class PreviewView @JvmOverloads constructor(
             )
             defaultCameraId = when (cameraFacingDirection) {
                 FacingDirection.FRONT -> {
-                    context.getFrontCameraList().firstOrNull()
+                    context.frontCameraList.firstOrNull()
                 }
+
                 FacingDirection.BACK -> {
-                    context.getBackCameraList().firstOrNull()
+                    context.backCameraList.firstOrNull()
                 }
             }
 

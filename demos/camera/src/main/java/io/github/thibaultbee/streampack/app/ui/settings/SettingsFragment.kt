@@ -21,7 +21,12 @@ import android.media.MediaFormat
 import android.os.Bundle
 import android.text.InputFilter
 import android.text.InputType
-import androidx.preference.*
+import androidx.preference.EditTextPreference
+import androidx.preference.ListPreference
+import androidx.preference.PreferenceCategory
+import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SeekBarPreference
+import androidx.preference.SwitchPreference
 import io.github.thibaultbee.streampack.app.R
 import io.github.thibaultbee.streampack.app.models.EndpointFactory
 import io.github.thibaultbee.streampack.app.models.EndpointType
@@ -32,7 +37,8 @@ import io.github.thibaultbee.streampack.app.utils.StreamerHelperFactory
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
 import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationHelper
-import io.github.thibaultbee.streampack.utils.getCameraList
+import io.github.thibaultbee.streampack.utils.cameraList
+import io.github.thibaultbee.streampack.utils.defaultCameraId
 import io.github.thibaultbee.streampack.utils.isFrameRateSupported
 import java.io.IOException
 
@@ -201,7 +207,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val supportedFramerates = streamerHelper.video.getSupportedFramerates(
             requireContext(),
             encoder,
-            "0"
+            requireContext().defaultCameraId
         )
         videoFpsListPreference.entryValues.filter { fps ->
             supportedFramerates.any { it.contains(fps.toString().toInt()) }
@@ -211,7 +217,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
         videoFpsListPreference.setOnPreferenceChangeListener { _, newValue ->
             val fps = (newValue as String).toInt()
-            val unsupportedCameras = requireContext().getCameraList().filter {
+            val unsupportedCameras = requireContext().cameraList.filter {
                 !requireContext().isFrameRateSupported(it, fps)
             }
             if (unsupportedCameras.isNotEmpty()) {
@@ -381,7 +387,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         if (audioProfileListPreference.entry == null) {
             audioProfileListPreference.value =
                 if (profiles.contains(MediaCodecInfo.CodecProfileLevel.AACObjectLC)) {
-                        MediaCodecInfo.CodecProfileLevel.AACObjectLC.toString()
+                    MediaCodecInfo.CodecProfileLevel.AACObjectLC.toString()
                 } else if (profiles.isNotEmpty()) {
                     profiles.first().toString()
                 } else {
@@ -472,12 +478,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 endpoint.hasFLVCapabilities -> {
                     FileExtension.FLV.extension
                 }
+
                 endpoint.hasTSCapabilities -> {
                     FileExtension.TS.extension
                 }
+
                 endpoint.hasMP4Capabilities -> {
                     FileExtension.MP4.extension
                 }
+
                 else -> {
                     throw IOException("Unknown file type")
                 }
