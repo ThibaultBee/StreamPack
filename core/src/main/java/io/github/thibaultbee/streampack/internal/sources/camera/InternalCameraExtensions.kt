@@ -20,8 +20,8 @@ import android.graphics.ImageFormat
 import android.hardware.camera2.CameraCharacteristics
 import android.util.Range
 import android.util.Size
+import io.github.thibaultbee.streampack.utils.cameraList
 import io.github.thibaultbee.streampack.utils.getCameraCharacteristics
-import io.github.thibaultbee.streampack.utils.getCameraList
 
 /**
  * Gets all output capture sizes.
@@ -29,7 +29,7 @@ import io.github.thibaultbee.streampack.utils.getCameraList
  * @return List of resolutions supported by all camera
  */
 fun Context.getCameraOutputStreamSizes(): List<Size> {
-    val cameraIdList = this.getCameraList()
+    val cameraIdList = cameraList
     val resolutionSet = mutableSetOf<Size>()
     cameraIdList.forEach { cameraId ->
         resolutionSet.addAll(getCameraOutputStreamSizes(cameraId))

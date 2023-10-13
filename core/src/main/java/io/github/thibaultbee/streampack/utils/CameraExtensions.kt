@@ -36,42 +36,67 @@ fun Context.getCameraCharacteristics(cameraId: String): CameraCharacteristics {
 }
 
 /**
+ * Get default camera id.
+ *
+ * If a back camera is available, returns the first back camera id.
+ * If no back camera is available, returns the first camera id.
+ *
+ * @return default camera id
+ */
+val Context.defaultCameraId: String
+    get() {
+        val cameraList = this.cameraList
+        if (cameraList.isEmpty()) {
+            throw IllegalStateException("No camera available")
+        }
+        val backCameraList = this.backCameraList
+        return if (backCameraList.isEmpty()) {
+            cameraList.first()
+        } else {
+            backCameraList.first()
+        }
+    }
+
+/**
  * Gets camera id list.
  *
  * @return List of camera ids
  */
-fun Context.getCameraList(): List<String> {
-    val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
-    return cameraManager.cameraIdList.toList()
-}
+val Context.cameraList: List<String>
+    get() {
+        val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        return cameraManager.cameraIdList.toList()
+    }
+
 
 /**
  * Gets back camera id list.
  *
  * @return List of back camera ids
  */
-fun Context.getBackCameraList() =
-    getCameraList().filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_BACK }
+val Context.backCameraList: List<String>
+    get() = cameraList.filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_BACK }
 
 /**
- * Gets back camera id list.
+ * Gets front camera id list.
  *
  * @return List of front camera ids
  */
-fun Context.getFrontCameraList() =
-    getCameraList().filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_FRONT }
+val Context.frontCameraList: List<String>
+    get() = cameraList.filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_FRONT }
 
 /**
  * Gets external camera id list.
  *
  * @return List of front camera ids
  */
-fun Context.getExternalCameraList() =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        getCameraList().filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_EXTERNAL }
-    } else {
-        emptyList()
-    }
+val Context.externalCameraList: List<String>
+    get() =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            cameraList.filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_EXTERNAL }
+        } else {
+            emptyList()
+        }
 
 /**
  * Check if string is a back camera id

@@ -35,7 +35,7 @@ class StreamerManager(
     private val context: Context,
     private val configuration: Configuration
 ) {
-    var streamer: IStreamer? = null
+    private var streamer: IStreamer? = null
 
     var onErrorListener: OnErrorListener?
         get() = streamer?.onErrorListener
@@ -134,9 +134,9 @@ class StreamerManager(
         streamer?.getCameraStreamer()?.let {
             // Handle devices with only one camera
             val cameras = if (context.isBackCamera(it.camera)) {
-                context.getFrontCameraList()
+                context.frontCameraList
             } else {
-                context.getBackCameraList()
+                context.backCameraList
             }
             if (cameras.isNotEmpty()) {
                 it.camera = cameras[0]
