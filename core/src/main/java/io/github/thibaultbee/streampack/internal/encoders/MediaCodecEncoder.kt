@@ -27,8 +27,6 @@ import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.events.EventHandler
 import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.internal.utils.extensions.slices
-import io.github.thibaultbee.streampack.internal.utils.extensions.startsWith
-import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.utils.TAG
 import java.nio.ByteBuffer
@@ -81,18 +79,8 @@ abstract class MediaCodecEncoder<T : Config>(
                                 null
                             }
 
-                            // Remove startCode + sps + startCode + pps
-                            var frameBuffer = buffer
-                            extra?.let { it ->
-                                var prefix = ByteArray(0)
-                                it.forEach { csd -> prefix = prefix.plus(csd.toByteArray()) }
-                                if (buffer.startsWith(prefix)) {
-                                    buffer.position(prefix.size)
-                                    frameBuffer = buffer.slice()
-                                }
-                            }
                             Frame(
-                                frameBuffer,
+                                processBuffer(buffer, extra),
                                 mimeType,
                                 info.presentationTimeUs, // pts
                                 null, // dts
@@ -259,9 +247,20 @@ abstract class MediaCodecEncoder<T : Config>(
         mediaCodec = null
     }
 
+    /**
+     * Process buffer before sending it to [IEncoderListener.onOutputFrame].
+     * Use it to remove headers from the frame.
+     *
+     * @param buffer buffer to process
+     * @param extra extra buffers (SPS, PPS, VPS,...)
+     * @return processed buffer
+     */
+    protected open fun processBuffer(buffer: ByteBuffer, extra: List<ByteBuffer>?): ByteBuffer {
+        return buffer
+    }
+
     private fun generateExtra(format: MediaFormat): List<ByteBuffer> {
         val extra = mutableListOf<ByteBuffer>()
-
 
         format.getByteBuffer("csd-0")?.let {
             /**
