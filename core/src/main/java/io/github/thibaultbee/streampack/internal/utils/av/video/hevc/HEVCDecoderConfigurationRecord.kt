@@ -24,6 +24,7 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.shl
 import io.github.thibaultbee.streampack.internal.utils.extensions.shr
 import io.github.thibaultbee.streampack.internal.utils.extensions.startCodeSize
 import java.nio.ByteBuffer
+import kotlin.experimental.and
 
 data class HEVCDecoderConfigurationRecord(
     private val configurationVersion: Int = 0x01,
@@ -69,9 +70,9 @@ data class HEVCDecoderConfigurationRecord(
         buffer.putShort(averageFrameRate) // avgFrameRate
         buffer.put(
             (constantFrameRate shl 6)
-                    or (numTemporalLayers shl 3)
+                    or ((numTemporalLayers and 0x7) shl 3)
                     or (temporalIdNested shl 2)
-                    or lengthSizeMinusOne.toInt()
+                    or (lengthSizeMinusOne.toInt() and 0x3)
         ) // constantFrameRate 2 bits = 1 for stable / numTemporalLayers 3 bits /  temporalIdNested 1 bit / lengthSizeMinusOne 2 bits
 
         buffer.put(parameterSets.size) // numOfArrays

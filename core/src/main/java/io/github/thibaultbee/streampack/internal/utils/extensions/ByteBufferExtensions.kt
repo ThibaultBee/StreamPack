@@ -131,7 +131,6 @@ fun ByteBuffer.indicesOf(prefix: ByteArray): List<Int> {
 
 /**
  * Get all [ByteBuffer] occurrences that start with [prefix].
- *
  */
 fun ByteBuffer.slices(prefix: ByteArray): List<ByteBuffer> {
     val slices = mutableListOf<Pair<Int, Int>>()
@@ -154,11 +153,16 @@ fun ByteBuffer.slices(prefix: ByteArray): List<ByteBuffer> {
 }
 
 /**
- * Check if [ByteBuffer] starts with a ByteArray [prefix].
+ * Whether the [ByteBuffer] starts with a [ByteArray] [prefix] from the current position.
  */
 fun ByteBuffer.startsWith(prefix: ByteArray): Boolean {
+    if (this.remaining() < prefix.size) {
+        return false
+    }
+
+    val position = this.position()
     for (i in prefix.indices) {
-        if (this.get(i) != prefix[i]) {
+        if (this.get(position + i) != prefix[i]) {
             return false
         }
     }
@@ -166,9 +170,31 @@ fun ByteBuffer.startsWith(prefix: ByteArray): Boolean {
 }
 
 /**
- * Check if [ByteBuffer] starts with a String [prefix].
+ * Whether the [ByteBuffer] starts with a [String] [prefix] from the current position.
  */
 fun ByteBuffer.startWith(prefix: String) = startsWith(prefix.toByteArray())
+
+
+/**
+ * Whether the [ByteBuffer] starts with a [ByteBuffer] [prefix] from the current position.
+ */
+fun ByteBuffer.startWith(prefix: ByteBuffer) = startsWith(prefix.toByteArray())
+
+/**
+ * Whether the [ByteBuffer] starts with a list of [ByteBuffer] [prefixes] from the current position.
+ *
+ * @param prefixes [List] of [ByteBuffer]
+ * @return [Pair] of [Boolean] (whether the [ByteBuffer] start with the prefix) and [Int] that is the index of the prefix found (-1 if not found).
+ */
+fun ByteBuffer.startsWith(prefixes: List<ByteBuffer>): Pair<Boolean, Int> {
+    prefixes.forEachIndexed { index, byteBuffer ->
+        if (this.startWith(byteBuffer)) {
+            return Pair(true, index)
+        }
+    }
+    return Pair(false, -1)
+}
+
 
 /**
  * Returns ByteBuffer array even if [ByteBuffer.hasArray] returns false.
@@ -243,3 +269,45 @@ fun ByteBuffer.extractRbsp(headerLength: Int): ByteBuffer {
     rbsp.rewind()
     return rbsp
 }
+
+/**
+ * Remove all [prefixes] from [ByteBuffer] whatever their order.
+ * It slices [ByteBuffer] so it does not copy data.
+ *
+ * Once a prefix is found, it is removed from the [prefixes] list.
+ *
+ * @param prefixes [List] of [ByteBuffer] to remove
+ * @return [ByteBuffer] without prefixes
+ */
+fun ByteBuffer.removePrefixes(prefixes: List<ByteBuffer>): ByteBuffer {
+    val mutablePrefixes = prefixes.toMutableList()
+    var hasPrefix = true
+    while (hasPrefix) {
+        val result = this.startsWith(mutablePrefixes)
+        hasPrefix = result.first
+        if (hasPrefix) {
+            this.position(this.position() + mutablePrefixes[result.second].limit())
+            mutablePrefixes.removeAt(result.second)
+        }
+    }
+
+    return this.slice()
+}
+
+/**
+ * Whether [ByteBuffer] is Annex B or not.
+ * Annex B frames start with a start code (0x00000001 or 0x000001).
+ */
+val ByteBuffer.isAnnexB: Boolean
+    get() = this.startCodeSize != 0
+
+
+/**
+ * Whether [ByteBuffer] is AVCC/HVCC or not.
+ * AVCC/HVCC frames start with a the frame size.
+ */
+val ByteBuffer.isAvcc: Boolean
+    get() {
+        val size = this.getInt(0)
+        return size == (this.remaining() - 4)
+    }
