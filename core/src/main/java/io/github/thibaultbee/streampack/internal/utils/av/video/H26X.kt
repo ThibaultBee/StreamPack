@@ -15,28 +15,6 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.av.video
 
-import java.nio.ByteBuffer
-
-fun ByteBuffer.getStartCodeSize(): Int {
-    return if (this.get(0) == 0x00.toByte() && this.get(1) == 0x00.toByte()
-        && this.get(2) == 0x00.toByte() && this.get(3) == 0x01.toByte()
-    ) {
-        4
-    } else if (this.get(0) == 0x00.toByte() && this.get(1) == 0x00.toByte()
-        && this.get(2) == 0x01.toByte()
-    ) {
-        3
-    } else {
-        0
-    }
-}
-
-fun ByteBuffer.removeStartCode(): ByteBuffer {
-    val startCodeSize = this.getStartCodeSize()
-    this.position(startCodeSize)
-    return this.slice()
-}
-
 enum class ChromaFormat(val value: Byte) {
     YUV400(0),
     YUV420(1),
