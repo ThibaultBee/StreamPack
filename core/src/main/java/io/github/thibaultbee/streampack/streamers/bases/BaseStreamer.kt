@@ -324,7 +324,7 @@ abstract class BaseStreamer(
      *
      * @see [stopStream]
      */
-    protected fun stopStreamImpl() {
+    private fun stopStreamImpl() {
         videoCapture?.stopStream()
         videoEncoder?.stopStream()
         audioEncoder?.stopStream()
