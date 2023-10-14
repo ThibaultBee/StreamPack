@@ -16,13 +16,13 @@
 package io.github.thibaultbee.streampack.internal.utils.av.video.hevc
 
 import io.github.thibaultbee.streampack.internal.utils.av.video.ChromaFormat
-import io.github.thibaultbee.streampack.internal.utils.av.video.getStartCodeSize
-import io.github.thibaultbee.streampack.internal.utils.av.video.removeStartCode
 import io.github.thibaultbee.streampack.internal.utils.extensions.put
 import io.github.thibaultbee.streampack.internal.utils.extensions.putLong48
 import io.github.thibaultbee.streampack.internal.utils.extensions.putShort
+import io.github.thibaultbee.streampack.internal.utils.extensions.removeStartCode
 import io.github.thibaultbee.streampack.internal.utils.extensions.shl
 import io.github.thibaultbee.streampack.internal.utils.extensions.shr
+import io.github.thibaultbee.streampack.internal.utils.extensions.startCodeSize
 import java.nio.ByteBuffer
 
 data class HEVCDecoderConfigurationRecord(
@@ -125,7 +125,7 @@ data class HEVCDecoderConfigurationRecord(
             parameterSets: List<ByteBuffer>
         ): HEVCDecoderConfigurationRecord {
             val nalUnitParameterSets = parameterSets.map {
-                val nalType = (it[it.getStartCodeSize()] shr 1 and 0x3F).toByte()
+                val nalType = (it[it.startCodeSize] shr 1 and 0x3F).toByte()
                 val type = NalUnit.Type.fromValue(nalType)
                 NalUnit(type, it)
             }
@@ -168,13 +168,13 @@ data class HEVCDecoderConfigurationRecord(
             var size =
                 HEVC_DECODER_CONFIGURATION_RECORD_SIZE
             sps.forEach {
-                size += it.remaining() - it.getStartCodeSize() + HEVC_PARAMETER_SET_HEADER_SIZE
+                size += it.remaining() - it.startCodeSize + HEVC_PARAMETER_SET_HEADER_SIZE
             }
             pps.forEach {
-                size += it.remaining() - it.getStartCodeSize() + HEVC_PARAMETER_SET_HEADER_SIZE
+                size += it.remaining() - it.startCodeSize + HEVC_PARAMETER_SET_HEADER_SIZE
             }
             vps.forEach {
-                size += it.remaining() - it.getStartCodeSize() + HEVC_PARAMETER_SET_HEADER_SIZE
+                size += it.remaining() - it.startCodeSize + HEVC_PARAMETER_SET_HEADER_SIZE
             }
 
             return size

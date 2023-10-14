@@ -16,11 +16,11 @@
 package io.github.thibaultbee.streampack.internal.utils.av.video.avc
 
 import io.github.thibaultbee.streampack.internal.utils.av.video.ChromaFormat
-import io.github.thibaultbee.streampack.internal.utils.av.video.getStartCodeSize
-import io.github.thibaultbee.streampack.internal.utils.av.video.removeStartCode
 import io.github.thibaultbee.streampack.internal.utils.extensions.put
 import io.github.thibaultbee.streampack.internal.utils.extensions.putShort
+import io.github.thibaultbee.streampack.internal.utils.extensions.removeStartCode
 import io.github.thibaultbee.streampack.internal.utils.extensions.shl
+import io.github.thibaultbee.streampack.internal.utils.extensions.startCodeSize
 import java.nio.ByteBuffer
 
 data class AVCDecoderConfigurationRecord(
@@ -105,12 +105,12 @@ data class AVCDecoderConfigurationRecord(
             var size =
                 AVC_DECODER_CONFIGURATION_RECORD_SIZE
             sps.forEach {
-                size += it.remaining() - it.getStartCodeSize()
+                size += it.remaining() - it.startCodeSize
             }
             pps.forEach {
-                size += it.remaining() - it.getStartCodeSize()
+                size += it.remaining() - it.startCodeSize
             }
-            val spsStartCodeSize = sps[0].getStartCodeSize()
+            val spsStartCodeSize = sps[0].startCodeSize
             val profileIdc = sps[0].get(spsStartCodeSize + 1).toInt()
             if ((profileIdc == 100) || (profileIdc == 110) || (profileIdc == 122) || (profileIdc == 144)) {
                 size += 4

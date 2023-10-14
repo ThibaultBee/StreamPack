@@ -15,7 +15,6 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.extensions
 
-import io.github.thibaultbee.streampack.internal.utils.av.video.getStartCodeSize
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.charset.StandardCharsets
@@ -93,6 +92,23 @@ fun ByteBuffer.put(buffer: ByteBuffer, offset: Int, length: Int) {
     buffer.limit(offset + length)
     this.put(buffer)
     buffer.limit(limit)
+}
+
+fun ByteBuffer.getString(size: Int = this.remaining()): String {
+    val bytes = ByteArray(size)
+    this.get(bytes)
+    return String(bytes, StandardCharsets.UTF_8)
+}
+
+fun ByteBuffer.getLong(isLittleEndian: Boolean): Long {
+    if (isLittleEndian) {
+        order(ByteOrder.LITTLE_ENDIAN)
+    }
+    val value = long
+    if (isLittleEndian) {
+        order(ByteOrder.BIG_ENDIAN)
+    }
+    return value
 }
 
 fun ByteBuffer.indicesOf(prefix: ByteArray): List<Int> {
@@ -175,12 +191,46 @@ fun ByteBuffer.toByteArray(): ByteArray {
     }
 }
 
+fun ByteBuffer.clone(): ByteBuffer {
+    val clone = ByteBuffer.allocate(this.remaining())
+    return clone.put(this).apply { rewind() }
+}
+
+/**
+ * For AVC and HEVC
+ */
+
+
+/**
+ * Get start code size of [ByteBuffer].
+ */
+val ByteBuffer.startCodeSize: Int
+    get() {
+        return if (this.get(0) == 0x00.toByte() && this.get(1) == 0x00.toByte()
+            && this.get(2) == 0x00.toByte() && this.get(3) == 0x01.toByte()
+        ) {
+            4
+        } else if (this.get(0) == 0x00.toByte() && this.get(1) == 0x00.toByte()
+            && this.get(2) == 0x01.toByte()
+        ) {
+            3
+        } else {
+            0
+        }
+    }
+
+fun ByteBuffer.removeStartCode(): ByteBuffer {
+    val startCodeSize = this.startCodeSize
+    this.position(startCodeSize)
+    return this.slice()
+}
+
 fun ByteBuffer.extractRbsp(headerLength: Int): ByteBuffer {
     val rbsp = ByteBuffer.allocateDirect(this.remaining())
 
     val indices = this.indicesOf(byteArrayOf(0x00, 0x00, 0x03))
 
-    rbsp.put(this, this.getStartCodeSize(), headerLength)
+    rbsp.put(this, this.startCodeSize, headerLength)
 
     var previous = this.position()
     indices.forEach {
@@ -193,27 +243,3 @@ fun ByteBuffer.extractRbsp(headerLength: Int): ByteBuffer {
     rbsp.rewind()
     return rbsp
 }
-
-fun ByteBuffer.clone(): ByteBuffer {
-    val clone = ByteBuffer.allocate(this.remaining())
-    return clone.put(this).apply { rewind() }
-}
-
-fun ByteBuffer.getString(size: Int = this.remaining()): String {
-    val bytes = ByteArray(size)
-    this.get(bytes)
-    return String(bytes, StandardCharsets.UTF_8)
-}
-
-
-fun ByteBuffer.getLong(isLittleEndian: Boolean): Long {
-    if (isLittleEndian) {
-        order(ByteOrder.LITTLE_ENDIAN)
-    }
-    val value = long
-    if (isLittleEndian) {
-        order(ByteOrder.BIG_ENDIAN)
-    }
-    return value
-}
-

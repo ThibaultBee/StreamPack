@@ -18,11 +18,11 @@ package io.github.thibaultbee.streampack.internal.muxers.flv.packet
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.utils.av.video.avc.AVCDecoderConfigurationRecord
-import io.github.thibaultbee.streampack.internal.utils.av.video.getStartCodeSize
 import io.github.thibaultbee.streampack.internal.utils.av.video.hevc.HEVCDecoderConfigurationRecord
-import io.github.thibaultbee.streampack.internal.utils.av.video.removeStartCode
 import io.github.thibaultbee.streampack.internal.utils.extensions.put
 import io.github.thibaultbee.streampack.internal.utils.extensions.putInt24
+import io.github.thibaultbee.streampack.internal.utils.extensions.removeStartCode
+import io.github.thibaultbee.streampack.internal.utils.extensions.startCodeSize
 import java.io.IOException
 import java.nio.ByteBuffer
 
@@ -139,7 +139,7 @@ class VideoTag(
                 }
             }
         } else {
-            return buffers[0].remaining() - buffers[0].getStartCodeSize() + 4 // Replace start code with annex B
+            return buffers[0].remaining() - buffers[0].startCodeSize + 4 // Replace start code with annex B
         }
     }
 }

@@ -58,10 +58,10 @@ import io.github.thibaultbee.streampack.internal.utils.av.descriptors.AudioSpeci
 import io.github.thibaultbee.streampack.internal.utils.av.descriptors.ESDescriptor
 import io.github.thibaultbee.streampack.internal.utils.av.descriptors.SLConfigDescriptor
 import io.github.thibaultbee.streampack.internal.utils.av.video.avc.AVCDecoderConfigurationRecord
-import io.github.thibaultbee.streampack.internal.utils.av.video.getStartCodeSize
 import io.github.thibaultbee.streampack.internal.utils.av.video.hevc.HEVCDecoderConfigurationRecord
-import io.github.thibaultbee.streampack.internal.utils.av.video.removeStartCode
 import io.github.thibaultbee.streampack.internal.utils.extensions.clone
+import io.github.thibaultbee.streampack.internal.utils.extensions.removeStartCode
+import io.github.thibaultbee.streampack.internal.utils.extensions.startCodeSize
 import java.nio.ByteBuffer
 
 /**
@@ -108,7 +108,7 @@ class TrackChunks(
             MediaFormat.MIMETYPE_VIDEO_HEVC,
             MediaFormat.MIMETYPE_VIDEO_AVC -> {
                 // Replace start code with size (from Annex B to AVCC)
-                4 + buffer.remaining() - buffer.getStartCodeSize()
+                4 + buffer.remaining() - buffer.startCodeSize
             }
 
             else -> {
