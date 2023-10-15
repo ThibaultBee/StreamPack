@@ -60,6 +60,8 @@ import io.github.thibaultbee.streampack.internal.utils.av.descriptors.SLConfigDe
 import io.github.thibaultbee.streampack.internal.utils.av.video.avc.AVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.internal.utils.av.video.hevc.HEVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.internal.utils.extensions.clone
+import io.github.thibaultbee.streampack.internal.utils.extensions.isAnnexB
+import io.github.thibaultbee.streampack.internal.utils.extensions.isAvcc
 import io.github.thibaultbee.streampack.internal.utils.extensions.removeStartCode
 import io.github.thibaultbee.streampack.internal.utils.extensions.startCodeSize
 import java.nio.ByteBuffer
@@ -168,12 +170,26 @@ class TrackChunks(
                 when (track.config.mimeType) {
                     MediaFormat.MIMETYPE_VIDEO_HEVC,
                     MediaFormat.MIMETYPE_VIDEO_AVC -> {
-                        // Replace start code with size (from Annex B to AVCC)
-                        val noStartCodeBuffer = frame.buffer.removeStartCode()
-                        val sizeBuffer = ByteBuffer.allocate(4)
-                        sizeBuffer.putInt(0, noStartCodeBuffer.remaining())
-                        onNewSample(sizeBuffer)
-                        onNewSample(noStartCodeBuffer)
+                        if (frame.buffer.isAnnexB) {
+                            // Replace start code with size (from Annex B to AVCC)
+                            val noStartCodeBuffer = frame.buffer.removeStartCode()
+                            val sizeBuffer = ByteBuffer.allocate(4)
+                            sizeBuffer.putInt(0, noStartCodeBuffer.remaining())
+                            onNewSample(sizeBuffer)
+                            onNewSample(noStartCodeBuffer)
+                        } else if (frame.buffer.isAvcc) {
+                            onNewSample(frame.buffer)
+                        } else {
+                            throw IllegalArgumentException(
+                                "Unsupported buffer format: buffer start with 0x${
+                                    frame.buffer.get(
+                                        0
+                                    ).toString(16)
+                                }, 0x${frame.buffer.get(1).toString(16)}, 0x${
+                                    frame.buffer.get(2).toString(16)
+                                }, 0x${frame.buffer.get(3).toString(16)}"
+                            )
+                        }
                     }
 
                     else -> {
