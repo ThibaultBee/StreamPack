@@ -57,7 +57,7 @@ android {
     * Processing: Noise suppressor or echo cancellation
     * Audio only mode
     * Device audio capabilities
-* File: TS or FLV
+* File: TS or FLV or Fragmented MP4
     * Write to a single file or multiple chunk files
 * Streaming: RTMP/RTMPS or SRT
     * Support for enhanced RTMP
