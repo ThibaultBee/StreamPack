@@ -40,17 +40,4 @@ class AudioOnlyRtmpLiveStreamer(
     endpoint = RtmpProducer(hasAudio = true, hasVideo = false),
     initialOnErrorListener = initialOnErrorListener,
     initialOnConnectionListener = initialOnConnectionListener
-) {
-    private val rtmpProducer = endpoint as RtmpProducer
-    override suspend fun connect(url: String) {
-        require(videoConfig != null) {
-            "Video config must be set before connecting to send the video codec in the connect message"
-        }
-        val codecMimeType = videoConfig!!.mimeType
-        if (ExtendedVideoTag.isSupportedCodec(codecMimeType)) {
-            rtmpProducer.supportedVideoCodecs = listOf(codecMimeType)
-        }
-        rtmpProducer.supportedVideoCodecs = listOf(videoConfig!!.mimeType)
-        super.connect(url)
-    }
-}
+)

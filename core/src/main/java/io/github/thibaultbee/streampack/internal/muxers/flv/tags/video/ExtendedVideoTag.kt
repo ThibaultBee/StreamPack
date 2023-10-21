@@ -68,7 +68,7 @@ class ExtendedVideoTag(
 
         // ExVideoTagHeader
         buffer.put(
-            (1 shl 7) or // IsExHeader
+            0x80 or // IsExHeader
                     (frameType.value shl 4) or // Frame Type
                     packetType.value // PacketType
         )
@@ -78,7 +78,6 @@ class ExtendedVideoTag(
     override val tagHeaderSize = VIDEO_TAG_HEADER_SIZE
 
     override fun writeBody(buffer: ByteBuffer) {
-        Logger.e(TAG, "PacketType $packetType")
         when (packetType) {
             PacketType.META_DATA -> {
                 throw NotImplementedError("PacketType $packetType is not supported for $mimeType")
