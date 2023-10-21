@@ -60,6 +60,7 @@ android {
 * File: TS or FLV
     * Write to a single file or multiple chunk files
 * Streaming: RTMP/RTMPS or SRT
+    * Support for enhanced RTMP
     * Ultra low-latency based on [SRT](https://github.com/Haivision/srt)
     * Network adaptive bitrate mechanism for [SRT](https://github.com/Haivision/srt)
 
