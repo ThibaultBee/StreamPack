@@ -47,6 +47,7 @@ class VideoMP4MuxerHelper : IVideoMuxerHelper {
     override val supportedEncoders =
         listOf(
             MediaFormat.MIMETYPE_VIDEO_AVC,
-            MediaFormat.MIMETYPE_VIDEO_HEVC
+            MediaFormat.MIMETYPE_VIDEO_HEVC,
+            MediaFormat.MIMETYPE_VIDEO_VP9
         )
 }

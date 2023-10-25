@@ -24,9 +24,12 @@ import io.github.thibaultbee.streampack.internal.muxers.flv.tags.video.PacketTyp
 import io.github.thibaultbee.streampack.internal.muxers.flv.tags.video.VideoTagFactory
 import io.github.thibaultbee.streampack.internal.utils.av.buffer.AVCCBufferWriter
 import io.github.thibaultbee.streampack.internal.utils.av.buffer.ByteBufferWriter
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.PassthroughBufferWriter
 import io.github.thibaultbee.streampack.internal.utils.av.video.avc.AVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.internal.utils.av.video.hevc.HEVCDecoderConfigurationRecord
+import io.github.thibaultbee.streampack.internal.utils.av.video.vpx.VPCodecConfigurationRecord
 import java.io.IOException
+import java.nio.ByteBuffer
 
 class AVTagsFactory(
     private val frame: Frame,
@@ -75,7 +78,6 @@ class AVTagsFactory(
         config: VideoConfig
     ): List<FlvTag> {
         val videoTags = mutableListOf<FlvTag>()
-
         if (frame.isKeyFrame) {
             videoTags.add(
                 VideoTagFactory(
@@ -91,9 +93,9 @@ class AVTagsFactory(
         videoTags.add(
             VideoTagFactory(
                 frame.pts,
-                AVCCBufferWriter(frame.buffer),
+                createVideoBufferWriter(frame.buffer),
                 frame.isKeyFrame,
-                PacketType.CODED_FRAMES_X, // For extended codec onlu.
+                PacketType.CODED_FRAMES_X, // For extended codec only.
                 config.mimeType
             ).build()
         )
@@ -117,8 +119,27 @@ class AVTagsFactory(
                 HEVCDecoderConfigurationRecord.fromParameterSets(frame.extra!!)
             }
 
+            MediaFormat.MIMETYPE_VIDEO_VP9 -> {
+                VPCodecConfigurationRecord.fromMediaFormat(frame.format)
+            }
+
             else -> {
                 throw IOException("Unsupported video codec: ${config.mimeType}")
+            }
+        }
+    }
+
+    private fun createVideoBufferWriter(
+        buffer: ByteBuffer
+    ): ByteBufferWriter {
+        return when (config.mimeType) {
+            MediaFormat.MIMETYPE_VIDEO_AVC,
+            MediaFormat.MIMETYPE_VIDEO_HEVC -> {
+                AVCCBufferWriter(buffer)
+            }
+
+            else -> {
+                PassthroughBufferWriter(buffer)
             }
         }
     }

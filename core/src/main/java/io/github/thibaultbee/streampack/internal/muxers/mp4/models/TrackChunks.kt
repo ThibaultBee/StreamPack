@@ -50,6 +50,8 @@ import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackFragmentB
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackFragmentHeaderBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackHeaderBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.TrackRunBox
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.VP9SampleEntry
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.VPCodecConfigurationBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.utils.createHandlerBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.utils.createTypeMediaHeaderBox
 import io.github.thibaultbee.streampack.internal.utils.TimeUtils
@@ -59,6 +61,7 @@ import io.github.thibaultbee.streampack.internal.utils.av.descriptors.ESDescript
 import io.github.thibaultbee.streampack.internal.utils.av.descriptors.SLConfigDescriptor
 import io.github.thibaultbee.streampack.internal.utils.av.video.avc.AVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.internal.utils.av.video.hevc.HEVCDecoderConfigurationRecord
+import io.github.thibaultbee.streampack.internal.utils.av.video.vpx.VPCodecConfigurationRecord
 import io.github.thibaultbee.streampack.internal.utils.extensions.clone
 import io.github.thibaultbee.streampack.internal.utils.extensions.isAnnexB
 import io.github.thibaultbee.streampack.internal.utils.extensions.isAvcc
@@ -88,6 +91,10 @@ class TrackChunks(
 
             MediaFormat.MIMETYPE_VIDEO_HEVC -> {
                 this.extra.size == 3
+            }
+
+            MediaFormat.MIMETYPE_VIDEO_VP9 -> {
+                this.format.isNotEmpty()
             }
 
             MediaFormat.MIMETYPE_AUDIO_AAC -> {
@@ -145,6 +152,9 @@ class TrackChunks(
 
     private val extra: List<List<ByteBuffer>>
         get() = chunks.flatMap { it.extra }
+
+    private val format: List<MediaFormat>
+        get() = chunks.flatMap { it.format }
 
     private val sampleDts: List<Long>
         get() = chunks.flatMap { chunk -> chunk.sampleDts.map { it * track.timescale / TimeUtils.TIME_SCALE } }
@@ -318,6 +328,17 @@ class TrackChunks(
                         HEVCDecoderConfigurationRecord.fromParameterSets(
                             extra.flatten()
                         )
+                    ),
+                )
+            }
+
+            MediaFormat.MIMETYPE_VIDEO_VP9 -> {
+                val format = this.format
+                (track.config as VideoConfig)
+                VP9SampleEntry(
+                    orientationProvider.orientedSize(track.config.resolution),
+                    vpcC = VPCodecConfigurationBox(
+                        VPCodecConfigurationRecord.fromMediaFormat(format.first())
                     ),
                 )
             }
