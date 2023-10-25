@@ -78,6 +78,7 @@
 
     <string name="video_encoder_h264">AVC/H.264</string>
     <string name="video_encoder_h265">HEVC/H.265</string>
+    <string name="video_encoder_vp9">VP9</string>
     <string name="audio_encoder_aac">AAC</string>
     <string name="ts_server_stream_id_key">server_stream_id_key</string>
     <string name="ts_server_stream_id">Stream ID</string>
@@ -132,6 +133,10 @@
     <string name="video_profile_high422">High422</string>
     <string name="video_profile_constrained_baseline">Constrained Baseline</string>
     <string name="video_profile_constrained_high">Constrained High</string>
+    <string name="video_profile_vp9_profile0">Profile 0</string>
+    <string name="video_profile_vp9_profile1">Profile 1</string>
+    <string name="video_profile_vp9_profile2">Profile 2</string>
+    <string name="video_profile_vp9_profile3">Profile 3</string>
 
     <string name="video_level">Level</string>
     <string name="video_level_key">video_level_key</string>

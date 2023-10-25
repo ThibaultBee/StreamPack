@@ -132,6 +132,35 @@ class HEVCSampleEntry(
     pasp
 )
 
+
+class VP9SampleEntry(
+    resolution: Size,
+    horizontalResolution: Int = 72,
+    verticalResolution: Int = 72,
+    frameCount: Short = 1,
+    compressorName: String? = "VP9 Coding",
+    depth: Short = 0x0018,
+    vpcC: VPCodecConfigurationBox,
+    btrt: BitRateBox? = null,
+    extensionDescriptorsBox: List<Box> = emptyList(),
+    clap: CleanApertureBox? = null,
+    pasp: PixelAspectRatioBox? = null
+) : VisualSampleEntry(
+    "vp09",
+    resolution,
+    horizontalResolution,
+    verticalResolution,
+    frameCount,
+    compressorName,
+    depth,
+    mutableListOf<Box>(vpcC).apply {
+        btrt?.let { add(it) }
+        addAll(extensionDescriptorsBox)
+    },
+    clap,
+    pasp
+)
+
 class OpusSampleEntry(
     channelCount: Short,
     dOps: OpusSpecificBox,

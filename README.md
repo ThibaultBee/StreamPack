@@ -47,7 +47,7 @@ android {
 * Video:
     * Source: Cameras or Screen recorder
     * Orientation: portrait or landscape
-    * Codec: HEVC/H.265 or AVC/H.264
+    * Codec: HEVC/H.265, AVC/H.264 or VP9
     * Configurable bitrate, resolution, framerate (tested up to 60), encoder level, encoder profile
     * Video only mode
     * Device video capabilities

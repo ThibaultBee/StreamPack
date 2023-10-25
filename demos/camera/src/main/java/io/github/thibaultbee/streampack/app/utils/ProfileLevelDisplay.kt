@@ -1,7 +1,95 @@
 package io.github.thibaultbee.streampack.app.utils
 
 import android.content.Context
-import android.media.MediaCodecInfo.CodecProfileLevel.*
+import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectELD
+import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectERLC
+import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectERScalable
+import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectHE
+import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectHE_PS
+import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectLC
+import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectLD
+import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectLTP
+import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectMain
+import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectSSR
+import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectScalable
+import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectXHE
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel1
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel11
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel12
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel13
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel1b
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel2
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel21
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel22
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel3
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel31
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel32
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel4
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel41
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel42
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel5
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel51
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel52
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel6
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel61
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel62
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileConstrainedBaseline
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileConstrainedHigh
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileExtended
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileHigh
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileHigh10
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileHigh422
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileMain
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel1
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel2
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel21
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel3
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel31
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel4
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel41
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel5
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel51
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel52
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel6
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel61
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel62
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCMainTierLevel1
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCMainTierLevel2
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCMainTierLevel21
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCMainTierLevel3
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCMainTierLevel31
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCMainTierLevel4
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCMainTierLevel41
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCMainTierLevel5
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCMainTierLevel51
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCMainTierLevel52
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCMainTierLevel6
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCMainTierLevel61
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCMainTierLevel62
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10Plus
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMainStill
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level1
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level11
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level2
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level21
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level3
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level31
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level4
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level41
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level5
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level51
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level52
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level6
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level61
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level62
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile0
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile1
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile2
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile3
 import android.media.MediaFormat
 import android.os.Build
 import io.github.thibaultbee.streampack.app.R
@@ -80,6 +168,16 @@ class ProfileLevelDisplay(private val context: Context) {
             }
         }
 
+    private val vp9ProfileNameMap =
+        mutableMapOf<Int, String>().apply {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                put(VP9Profile0, context.getString(R.string.video_profile_vp9_profile0))
+                put(VP9Profile1, context.getString(R.string.video_profile_vp9_profile1))
+                put(VP9Profile2, context.getString(R.string.video_profile_vp9_profile2))
+                put(VP9Profile3, context.getString(R.string.video_profile_vp9_profile3))
+            }
+        }
+
     private val avcLevelNameMap =
         mutableMapOf(
             AVCLevel1 to context.getString(R.string.video_level_1),
@@ -141,11 +239,36 @@ class ProfileLevelDisplay(private val context: Context) {
             HEVCHighTierLevel62 to context.getString(R.string.video_level_high_level62),
         )
 
+    private val vp9LevelNameMap =
+        mutableMapOf<Int, String>().apply {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                putAll(
+                    mapOf(
+                        VP9Level1 to context.getString(R.string.video_level_1),
+                        VP9Level11 to context.getString(R.string.video_level_11),
+                        VP9Level2 to context.getString(R.string.video_level_2),
+                        VP9Level21 to context.getString(R.string.video_level_21),
+                        VP9Level3 to context.getString(R.string.video_level_3),
+                        VP9Level31 to context.getString(R.string.video_level_31),
+                        VP9Level4 to context.getString(R.string.video_level_4),
+                        VP9Level41 to context.getString(R.string.video_level_41),
+                        VP9Level5 to context.getString(R.string.video_level_5),
+                        VP9Level51 to context.getString(R.string.video_level_51),
+                        VP9Level52 to context.getString(R.string.video_level_52),
+                        VP9Level6 to context.getString(R.string.video_level_6),
+                        VP9Level61 to context.getString(R.string.video_level_61),
+                        VP9Level62 to context.getString(R.string.video_level_62),
+                    )
+                )
+            }
+        }
+
     fun getProfileName(mimeType: String, profile: Int): String {
         val nameMap = when (mimeType) {
             MediaFormat.MIMETYPE_AUDIO_AAC -> aacProfileNameMap
             MediaFormat.MIMETYPE_VIDEO_AVC -> avcProfileNameMap
             MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcProfileNameMap
+            MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9ProfileNameMap
             else -> emptyMap()
         }
         return try {
@@ -160,17 +283,21 @@ class ProfileLevelDisplay(private val context: Context) {
             MediaFormat.MIMETYPE_AUDIO_AAC -> aacProfileNameMap
             MediaFormat.MIMETYPE_VIDEO_AVC -> avcProfileNameMap
             MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcProfileNameMap
+            MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9ProfileNameMap
             else -> emptyMap()
         }
         return nameMap.entries.find { it.value == name }!!.key
     }
 
+    private fun getLevelMap(mimeType: String) = when (mimeType) {
+        MediaFormat.MIMETYPE_VIDEO_AVC -> avcLevelNameMap
+        MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcLevelNameMap
+        MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9LevelNameMap
+        else -> emptyMap()
+    }
+
     fun getLevelName(mimeType: String, level: Int): String {
-        val nameMap = when (mimeType) {
-            MediaFormat.MIMETYPE_VIDEO_AVC -> avcLevelNameMap
-            MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcLevelNameMap
-            else -> emptyMap()
-        }
+        val nameMap = getLevelMap(mimeType)
         return try {
             nameMap[level]!!
         } catch (_: Exception) {
@@ -179,19 +306,11 @@ class ProfileLevelDisplay(private val context: Context) {
     }
 
     fun getLevel(mimeType: String, name: String): Int {
-        val nameMap = when (mimeType) {
-            MediaFormat.MIMETYPE_VIDEO_AVC -> avcLevelNameMap
-            MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcLevelNameMap
-            else -> emptyMap()
-        }
+        val nameMap = getLevelMap(mimeType)
         return nameMap.entries.find { it.value == name }!!.key
     }
 
-    fun getAllLevelList(mimeType: String): Set<Int> {
-        return when (mimeType) {
-            MediaFormat.MIMETYPE_VIDEO_AVC -> avcLevelNameMap
-            MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcLevelNameMap
-            else -> emptyMap()
-        }.keys
+    fun getAllLevelSet(mimeType: String): Set<Int> {
+        return getLevelMap(mimeType).keys
     }
 }

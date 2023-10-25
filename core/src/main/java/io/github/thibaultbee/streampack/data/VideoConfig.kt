@@ -24,6 +24,8 @@ import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileExtended
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileHigh
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileMain
 import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile0
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile1
 import android.media.MediaFormat
 import android.os.Build
 import android.util.Size
@@ -46,7 +48,8 @@ import kotlin.math.roundToInt
 class VideoConfig(
     /**
      * Video encoder mime type.
-     * Only [MediaFormat.MIMETYPE_VIDEO_AVC] and [MediaFormat.MIMETYPE_VIDEO_HEVC] are supported yet.
+     * Only [MediaFormat.MIMETYPE_VIDEO_AVC], [MediaFormat.MIMETYPE_VIDEO_HEVC] and
+     * [MediaFormat.MIMETYPE_VIDEO_VP9] are supported yet.
      *
      * **See Also:** [MediaFormat MIMETYPE_VIDEO_*](https://developer.android.com/reference/android/media/MediaFormat)
      */
@@ -90,7 +93,7 @@ class VideoConfig(
     constructor(
         /**
          * Video encoder mime type.
-         * Only [MediaFormat.MIMETYPE_VIDEO_AVC] and [MediaFormat.MIMETYPE_VIDEO_HEVC] are supported yet.
+         * Only [MediaFormat.MIMETYPE_VIDEO_AVC], [MediaFormat.MIMETYPE_VIDEO_HEVC] and [MediaFormat.MIMETYPE_VIDEO_VP9] are supported yet.
          *
          * **See Also:** [MediaFormat MIMETYPE_VIDEO_*](https://developer.android.com/reference/android/media/MediaFormat)
          */
@@ -215,6 +218,11 @@ class VideoConfig(
             HEVCProfileMain
         )
 
+        private val vp9ProfilePriority = listOf(
+            VP9Profile1,
+            VP9Profile0
+        )
+
         /**
          * Return the higher profile with the higher level
          */
@@ -222,6 +230,7 @@ class VideoConfig(
             val profilePriority = when (mimeType) {
                 MediaFormat.MIMETYPE_VIDEO_AVC -> avcProfilePriority
                 MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcProfilePriority
+                MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9ProfilePriority
                 else -> throw InvalidParameterException("Profile for $mimeType is not supported")
             }
 

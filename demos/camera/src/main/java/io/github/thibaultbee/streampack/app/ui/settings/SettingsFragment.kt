@@ -169,7 +169,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
             mapOf(
                 MediaFormat.MIMETYPE_VIDEO_AVC to getString(R.string.video_encoder_h264),
                 MediaFormat.MIMETYPE_VIDEO_HEVC to getString(R.string.video_encoder_h265),
-                MediaFormat.MIMETYPE_VIDEO_H263 to getString(R.string.video_encoder_h263)
+                MediaFormat.MIMETYPE_VIDEO_H263 to getString(R.string.video_encoder_h263),
+                MediaFormat.MIMETYPE_VIDEO_VP9 to getString(R.string.video_encoder_vp9)
             )
 
         val supportedVideoEncoder = streamerHelper.video.supportedEncoders
@@ -267,7 +268,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         // Inflates level
         val profileLevelDisplay = ProfileLevelDisplay(requireContext())
         val profile = profileLevelDisplay.getProfile(encoder, profileName)
-        val levels = profileLevelDisplay.getAllLevelList(encoder)
+        val levels = profileLevelDisplay.getAllLevelSet(encoder)
             .filter { it <= MediaCodecHelper.getMaxLevel(encoder, profile) }.map {
                 profileLevelDisplay.getLevelName(
                     encoder,

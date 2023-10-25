@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.models
 
+import android.media.MediaFormat
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.utils.extensions.unzip
 import java.nio.ByteBuffer
@@ -51,6 +52,9 @@ class Chunk(val id: Int) {
 
     val extra: List<List<ByteBuffer>>
         get() = samples.mapNotNull { it.frame.extra }.unzip()
+
+    val format: List<MediaFormat>
+        get() = samples.map { it.frame.format }
 
     val sampleDts: List<Long>
         get() = samples.map {
