@@ -15,12 +15,14 @@
  */
 package io.github.thibaultbee.streampack.utils
 
+import android.media.MediaFormat
 import android.util.Size
 import io.github.thibaultbee.streampack.internal.utils.TimeUtils
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkConstructor
 import io.mockk.mockkObject
+import java.nio.ByteBuffer
 
 object MockUtils {
     fun mockSizeConstructor(width: Int, height: Int) {
@@ -39,5 +41,11 @@ object MockUtils {
     fun mockTimeUtils(currentTime: Long) {
         mockkObject(TimeUtils)
         every { TimeUtils.currentTime() } returns currentTime
+    }
+
+    fun mockMediaFormatConstructor(mimeType: String, csd: ByteBuffer? = null) {
+        mockkConstructor(MediaFormat::class)
+        every { anyConstructed<MediaFormat>().getString(MediaFormat.KEY_MIME) } returns mimeType
+        every { anyConstructed<MediaFormat>().getByteBuffer("csd-0") } returns csd
     }
 }

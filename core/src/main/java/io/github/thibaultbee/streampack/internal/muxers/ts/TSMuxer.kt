@@ -35,7 +35,7 @@ import io.github.thibaultbee.streampack.internal.muxers.ts.utils.TSConst
 import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.ADTSFrameWriter
 import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.LATMFrameWriter
 import java.nio.ByteBuffer
-import java.util.*
+import java.util.MissingFormatArgumentException
 import kotlin.random.Random
 
 class TSMuxer(
@@ -87,7 +87,7 @@ class TSMuxer(
      */
     override fun encode(frame: Frame, streamPid: Int) {
         val pes = getPes(streamPid.toShort())
-        when (frame.mimeType) {
+        val newFrame = when (frame.mimeType) {
             MediaFormat.MIMETYPE_VIDEO_AVC -> {
                 // Copy sps & pps before buffer
                 if (frame.isKeyFrame) {
@@ -105,9 +105,12 @@ class TSMuxer(
                     frame.extra.forEach { buffer.put(it) }
                     buffer.put(frame.buffer)
                     buffer.rewind()
-                    frame.buffer = buffer
+                    frame.copy(rawBuffer = buffer)
+                } else {
+                    frame
                 }
             }
+
             MediaFormat.MIMETYPE_VIDEO_HEVC -> {
                 // Copy sps & pps & vps before buffer
                 if (frame.isKeyFrame) {
@@ -126,25 +129,34 @@ class TSMuxer(
                     frame.extra.forEach { buffer.put(it) }
                     buffer.put(frame.buffer)
                     buffer.rewind()
-                    frame.buffer = buffer
+                    frame.copy(rawBuffer = buffer)
+                } else {
+                    frame
                 }
             }
+
             MediaFormat.MIMETYPE_AUDIO_AAC -> {
-                frame.buffer =
+                frame.copy(
+                    rawBuffer =
                     if (pes.stream.config.profile == MediaCodecInfo.CodecProfileLevel.AACObjectLC) {
                         ADTSFrameWriter.fromAudioConfig(
                             frame.buffer, pes.stream.config as AudioConfig
                         ).toByteBuffer()
                     } else {
-                        LATMFrameWriter.fromDecoderSpecificInfo(frame.buffer, frame.extra!!.first()).toByteBuffer()
+                        LATMFrameWriter.fromDecoderSpecificInfo(frame.buffer, frame.extra!!.first())
+                            .toByteBuffer()
                     }
+                )
             }
-            MediaFormat.MIMETYPE_AUDIO_OPUS -> {} // TODO: optional control header
+
+            MediaFormat.MIMETYPE_AUDIO_OPUS -> {
+                frame
+            } // TODO: optional control header
             else -> throw IllegalArgumentException("Unsupported mimeType ${frame.mimeType}")
         }
 
         synchronized(this) {
-            generateStreams(frame, pes)
+            generateStreams(newFrame, pes)
         }
     }
 

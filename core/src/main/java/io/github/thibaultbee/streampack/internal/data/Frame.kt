@@ -15,8 +15,11 @@
  */
 package io.github.thibaultbee.streampack.internal.data
 
+import android.media.MediaFormat
+import io.github.thibaultbee.streampack.internal.utils.extensions.extra
 import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
+import io.github.thibaultbee.streampack.internal.utils.extensions.removePrefixes
 import java.nio.ByteBuffer
 
 /**
@@ -26,12 +29,7 @@ data class Frame(
     /**
      * Contains an audio or video frame data.
      */
-    var buffer: ByteBuffer,
-
-    /**
-     * Frame mime type
-     */
-    val mimeType: String,
+    val rawBuffer: ByteBuffer,
 
     /**
      * Presentation timestamp in µs
@@ -49,12 +47,42 @@ data class Frame(
     val isKeyFrame: Boolean = false,
 
     /**
-     * Contains extra frame description.
-     * For AAC, it contains ADTS.
-     * For AVC/H.264, it contains SPS (first) and PPS
+     * Contains frame format..
      */
-    val extra: List<ByteBuffer>? = null
+    val format: MediaFormat
 ) {
+    /**
+     * Frame mime type
+     */
+    val mimeType = format.getString(MediaFormat.KEY_MIME)!!
+
+    /**
+     * [Boolean.true] if frame is a video frame.
+     */
     val isVideo: Boolean = mimeType.isVideo
+
+    /**
+     * [Boolean.true] if frame is an audio frame.
+     */
     val isAudio: Boolean = mimeType.isAudio
+
+    /**
+     * Contains csd buffers.
+     * Could be (SPS, PPS, VPS, etc.) for key video frames, null for non-key video frames.
+     * ESDS for AAC frames,...
+     */
+    val extra = try {
+        format.extra
+    } catch (e: Exception) {
+        null
+    }
+
+    /**
+     * Returns a buffer without prefix csd buffers.
+     */
+    val buffer = if (extra != null) {
+        rawBuffer.removePrefixes(extra)
+    } else {
+        rawBuffer
+    }
 }

@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.av.audio.aac.config
 
-import io.github.thibaultbee.streampack.internal.utils.av.BitBuffer
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBuffer
 import io.github.thibaultbee.streampack.internal.utils.av.audio.AudioObjectType
 import io.github.thibaultbee.streampack.internal.utils.av.audio.ChannelConfiguration
 import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.ProgramConfigElement

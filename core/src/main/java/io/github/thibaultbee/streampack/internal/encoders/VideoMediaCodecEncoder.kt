@@ -29,9 +29,7 @@ import io.github.thibaultbee.streampack.internal.gl.EGlSurface
 import io.github.thibaultbee.streampack.internal.gl.FullFrameRect
 import io.github.thibaultbee.streampack.internal.gl.Texture2DProgram
 import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
-import io.github.thibaultbee.streampack.internal.utils.extensions.removePrefixes
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 
 /**
@@ -60,7 +58,7 @@ class VideoMediaCodecEncoder(
             bundle.putInt(MediaCodec.PARAMETER_KEY_VIDEO_BITRATE, value)
             mediaCodec?.setParameters(bundle)
             field = value
-           _bitrate = value
+            _bitrate = value
         }
 
     override fun onNewMediaCodec() {
@@ -103,15 +101,6 @@ class VideoMediaCodecEncoder(
     override fun stopStream() {
         codecSurface?.stopStream()
         super.stopStream()
-    }
-
-    override fun processBuffer(buffer: ByteBuffer, extra: List<ByteBuffer>?): ByteBuffer {
-        // Remove startCode + sps + startCode + pps
-        return if (extra != null) {
-            buffer.removePrefixes(extra)
-        } else {
-            buffer
-        }
     }
 
     val inputSurface: Surface?

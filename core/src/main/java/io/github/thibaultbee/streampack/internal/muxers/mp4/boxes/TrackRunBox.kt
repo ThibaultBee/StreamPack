@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
 import io.github.thibaultbee.streampack.internal.muxers.mp4.models.SampleFlags
 import io.github.thibaultbee.streampack.internal.muxers.mp4.models.putInt
-import io.github.thibaultbee.streampack.internal.utils.av.ByteBufferWriter
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.ByteBufferWriter
 import java.nio.ByteBuffer
 
 class TrackRunBox(
@@ -29,7 +29,6 @@ class TrackRunBox(
     FullBox("trun", version, createFlags(dataOffset, firstSampleFlags, entries)) {
     init {
         require(entries.all { it.sampleDuration != null } or entries.all { it.sampleDuration == null })
-        require(entries.all { it.size != null } or entries.all { it.size == null })
         require(entries.all { it.sampleFlags != null } or entries.all { it.sampleFlags == null })
         require(entries.all { it.sampleCompositionTimeOffset != null } or entries.all { it.sampleCompositionTimeOffset == null })
     }

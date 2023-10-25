@@ -15,6 +15,6 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.av.audio.aac.config
 
-import io.github.thibaultbee.streampack.internal.utils.av.BitBufferWriter
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBufferWriter
 
 abstract class SpecificConfig : BitBufferWriter()

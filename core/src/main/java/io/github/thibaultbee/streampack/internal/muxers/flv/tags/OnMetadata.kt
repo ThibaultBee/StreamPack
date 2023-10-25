@@ -93,15 +93,15 @@ class OnMetadata(
         amfContainer.add(ecmaArray)
     }
 
-    override fun writeTagHeader(buffer: ByteBuffer) {
+    override fun writeTagHeader(output: ByteBuffer) {
         // Do nothing
     }
 
     override val tagHeaderSize: Int
         get() = 0
 
-    override fun writeBody(buffer: ByteBuffer) {
-        amfContainer.encode(buffer)
+    override fun writeBody(output: ByteBuffer) {
+        amfContainer.encode(output)
     }
 
     override val bodySize: Int

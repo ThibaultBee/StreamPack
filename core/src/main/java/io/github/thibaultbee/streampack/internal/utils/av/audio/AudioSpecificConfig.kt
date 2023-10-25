@@ -17,8 +17,8 @@ package io.github.thibaultbee.streampack.internal.utils.av.audio
 
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.AudioConfig
-import io.github.thibaultbee.streampack.internal.utils.av.BitBuffer
-import io.github.thibaultbee.streampack.internal.utils.av.BitBufferWriter
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBuffer
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBufferWriter
 import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.config.ELDSpecificConfig
 import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.config.GASpecificConfig
 import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.config.SpecificConfig

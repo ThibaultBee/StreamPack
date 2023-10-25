@@ -18,11 +18,9 @@ package io.github.thibaultbee.streampack.internal.muxers.flv.tags.video
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.internal.muxers.flv.tags.FlvTag
 import io.github.thibaultbee.streampack.internal.muxers.flv.tags.TagType
-import io.github.thibaultbee.streampack.internal.utils.av.video.avc.AVCDecoderConfigurationRecord
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.ByteBufferWriter
 import io.github.thibaultbee.streampack.internal.utils.extensions.put
 import io.github.thibaultbee.streampack.internal.utils.extensions.putInt24
-import io.github.thibaultbee.streampack.internal.utils.extensions.removeStartCode
-import io.github.thibaultbee.streampack.internal.utils.extensions.startCodeSize
 import java.io.IOException
 import java.nio.ByteBuffer
 
@@ -31,19 +29,12 @@ import java.nio.ByteBuffer
  */
 class VideoTag(
     pts: Long,
-    private val buffers: List<ByteBuffer>,
+    private val buffer: ByteBufferWriter,
     private val isKeyFrame: Boolean,
     private val packetType: AVCPacketType?,
     private val mimeType: String
 ) :
     FlvTag(pts, TagType.VIDEO) {
-    constructor(
-        pts: Long,
-        buffer: ByteBuffer,
-        isKeyFrame: Boolean,
-        packetType: AVCPacketType?,
-        mimeType: String
-    ) : this(pts, listOf(buffer), isKeyFrame, packetType, mimeType)
 
     private val codecID = CodecID.fromMimeType(mimeType)
 
@@ -53,27 +44,22 @@ class VideoTag(
         }
         if (mimeType == MediaFormat.MIMETYPE_VIDEO_AVC) {
             requireNotNull(packetType) { "AVC packet type is required for H264" }
-            if (packetType == AVCPacketType.SEQUENCE_HEADER) {
-                require(buffers.size == 2) { "Both SPS and PPS are expected in sequence mode" }
-            } else {
-                require(buffers.size == 1) { "Only one buffer is expected for raw frame" }
-            }
         }
     }
 
-    override fun writeTagHeader(buffer: ByteBuffer) {
+    override fun writeTagHeader(output: ByteBuffer) {
         val frameType = if (isKeyFrame) {
             FrameType.KEY
         } else {
             FrameType.INTER
         }
-        buffer.put(
+        output.put(
             (frameType.value shl 4) or // Frame Type
                     (codecID.value) // CodecID
         )
         if (mimeType == MediaFormat.MIMETYPE_VIDEO_AVC) {
-            buffer.put(packetType!!.value) // AVC sequence header or NALU
-            buffer.putInt24(0) // TODO: CompositionTime
+            output.put(packetType!!.value) // AVC sequence header or NALU
+            output.putInt24(0) // TODO: CompositionTime
         }
     }
 
@@ -87,39 +73,16 @@ class VideoTag(
         return size
     }
 
-    override fun writeBody(buffer: ByteBuffer) {
+    override fun writeBody(output: ByteBuffer) {
         when (packetType) {
             AVCPacketType.END_OF_SEQUENCE -> {
                 // signals end of sequence
             }
 
             else -> {
-                when (mimeType) {
-                    MediaFormat.MIMETYPE_VIDEO_AVC -> {
-                        when (packetType) {
-                            AVCPacketType.SEQUENCE_HEADER ->
-                                AVCDecoderConfigurationRecord.fromParameterSets(
-                                    buffers[0],
-                                    buffers[1]
-                                ).write(buffer)
-
-                            AVCPacketType.NALU -> writeNalu(buffer)
-                            else -> throw IOException("PacketType $packetType is not supported for $mimeType")
-                        }
-                    }
-
-                    else -> {
-                        throw IOException("Mimetype $mimeType is not supported")
-                    }
-                }
+                buffer.write(output)
             }
         }
-    }
-
-    private fun writeNalu(buffer: ByteBuffer) {
-        val noStartCodeBuffer = buffers[0].removeStartCode()
-        buffer.putInt(noStartCodeBuffer.remaining())
-        buffer.put(noStartCodeBuffer)
     }
 
     override val bodySize = computeBodySize()
@@ -131,29 +94,9 @@ class VideoTag(
             }
 
             else -> {
-                when (mimeType) {
-                    MediaFormat.MIMETYPE_VIDEO_AVC -> {
-                        when (packetType) {
-                            AVCPacketType.SEQUENCE_HEADER ->
-                                AVCDecoderConfigurationRecord.getSize(
-                                    buffers[0],
-                                    buffers[1]
-                                )
-
-                            else -> getNaluSize()
-                        }
-                    }
-
-                    else -> {
-                        throw IOException("Mimetype $mimeType is not supported")
-                    }
-                }
+                buffer.size
             }
         }
-    }
-
-    private fun getNaluSize(): Int {
-        return buffers[0].remaining() - buffers[0].startCodeSize + 4 // Replace start code with annex B
     }
 
     companion object {

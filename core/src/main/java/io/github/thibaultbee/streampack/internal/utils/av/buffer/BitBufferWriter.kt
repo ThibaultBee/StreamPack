@@ -13,26 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.utils.av
+package io.github.thibaultbee.streampack.internal.utils.av.buffer
 
 import java.nio.ByteBuffer
-import kotlin.math.ceil
 
-abstract class ByteBufferWriter {
-    open val size: Int
-        get() = ceil(bitSize.toFloat() / Byte.SIZE_BITS).toInt()
-    open val bitSize: Int
-        get() = size * Byte.SIZE_BITS
-
-    open fun toByteBuffer(): ByteBuffer {
-        val output = ByteBuffer.allocate(size)
-        write(output)
-        output.rewind()
-        return output
-    }
-
-    abstract fun write(output: ByteBuffer)
-}
 
 /**
  * For sub classes of a [ByteBufferWriter] that need to write a [ByteBuffer] to a [BitBuffer]

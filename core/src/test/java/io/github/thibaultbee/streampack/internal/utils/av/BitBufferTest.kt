@@ -1,5 +1,6 @@
 package io.github.thibaultbee.streampack.internal.utils.av
 
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBuffer
 import org.junit.Assert.*
 import org.junit.Test
 import java.nio.ByteBuffer

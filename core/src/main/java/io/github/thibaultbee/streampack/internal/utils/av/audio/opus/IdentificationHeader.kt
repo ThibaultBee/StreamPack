@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.av.audio.opus
 
-import io.github.thibaultbee.streampack.internal.utils.av.ByteBufferWriter
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.ByteBufferWriter
 import io.github.thibaultbee.streampack.internal.utils.extensions.getString
 import io.github.thibaultbee.streampack.internal.utils.extensions.startWith
 import java.nio.ByteBuffer

@@ -18,18 +18,14 @@ package io.github.thibaultbee.streampack.internal.encoders
 import android.media.MediaCodec
 import android.media.MediaFormat
 import android.os.Build
-import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.events.EventHandler
-import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
-import io.github.thibaultbee.streampack.internal.utils.extensions.slices
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.utils.TAG
-import java.nio.ByteBuffer
 
 
 abstract class MediaCodecEncoder<T : Config>(
@@ -67,25 +63,18 @@ abstract class MediaCodecEncoder<T : Config>(
 
                 try {
                     mediaCodec?.getOutputBuffer(index)?.let { buffer ->
-                        val mimeType = codec.outputFormat.getString(MediaFormat.KEY_MIME)!!
+                        val format = codec.outputFormat
                         val isKeyFrame = info.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME
                         /**
                          * Drops codec data. They are already passed in the extra buffer.
                          */
                         if (info.flags != MediaCodec.BUFFER_FLAG_CODEC_CONFIG) {
-                            val extra = if (isKeyFrame || mimeType.isAudio) {
-                                generateExtra(codec.outputFormat)
-                            } else {
-                                null
-                            }
-
                             Frame(
-                                processBuffer(buffer, extra),
-                                mimeType,
+                                buffer,
                                 info.presentationTimeUs, // pts
                                 null, // dts
                                 isKeyFrame,
-                                extra
+                                format
                             ).let { frame ->
                                 encoderListener.onOutputFrame(
                                     frame
@@ -245,45 +234,5 @@ abstract class MediaCodecEncoder<T : Config>(
     override fun release() {
         mediaCodec?.release()
         mediaCodec = null
-    }
-
-    /**
-     * Process buffer before sending it to [IEncoderListener.onOutputFrame].
-     * Use it to remove headers from the frame.
-     *
-     * @param buffer buffer to process
-     * @param extra extra buffers (SPS, PPS, VPS,...)
-     * @return processed buffer
-     */
-    protected open fun processBuffer(buffer: ByteBuffer, extra: List<ByteBuffer>?): ByteBuffer {
-        return buffer
-    }
-
-    private fun generateExtra(format: MediaFormat): List<ByteBuffer> {
-        val extra = mutableListOf<ByteBuffer>()
-
-        format.getByteBuffer("csd-0")?.let {
-            /**
-             * For HEVC, vps, sps amd pps are all in csd-0.
-             * They all start with a start code 0x00000001.
-             */
-            if (format.getString(MediaFormat.KEY_MIME) == MediaFormat.MIMETYPE_VIDEO_HEVC) {
-                val parameterSets = it.slices(byteArrayOf(0x00, 0x00, 0x00, 0x01))
-                extra.add(parameterSets[1]) // SPS
-                extra.add(parameterSets[0]) // PPS
-                extra.add(parameterSets[2]) // VPS
-            } else {
-                extra.add(it.duplicate())
-            }
-        }
-        format.getByteBuffer("csd-1")?.let {
-            extra.add(it.duplicate())
-        }
-        format.getByteBuffer("csd-2")?.let {
-            extra.add(it.duplicate())
-        }
-
-
-        return extra
     }
 }

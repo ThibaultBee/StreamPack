@@ -15,8 +15,8 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.av.audio.aac
 
-import io.github.thibaultbee.streampack.internal.utils.av.BitBufferWriter
-import io.github.thibaultbee.streampack.internal.utils.av.BitBuffer
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBufferWriter
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBuffer
 
 class ProgramConfigElement : BitBufferWriter() {
     override val bitSize: Int

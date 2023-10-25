@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.av.video.avc
 
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.ByteBufferWriter
 import io.github.thibaultbee.streampack.internal.utils.av.video.ChromaFormat
 import io.github.thibaultbee.streampack.internal.utils.extensions.put
 import io.github.thibaultbee.streampack.internal.utils.extensions.putShort
@@ -31,45 +32,45 @@ data class AVCDecoderConfigurationRecord(
     private val chromaFormat: ChromaFormat = ChromaFormat.YUV420, // Always YUV420 on Android camera
     private val sps: List<ByteBuffer>,
     private val pps: List<ByteBuffer>
-) {
+): ByteBufferWriter() {
     private val spsNoStartCode: List<ByteBuffer> = sps.map { it.removeStartCode() }
     private val ppsNoStartCode: List<ByteBuffer> = pps.map { it.removeStartCode() }
 
-    val size: Int = getSize(spsNoStartCode, ppsNoStartCode)
+    override val size: Int = getSize(spsNoStartCode, ppsNoStartCode)
 
-    fun write(buffer: ByteBuffer) {
-        buffer.put(configurationVersion) // configurationVersion
-        buffer.put(profileIdc) // AVCProfileIndication
-        buffer.put(profileCompatibility) // profile_compatibility
-        buffer.put(levelIdc) // AVCLevelIndication
+    override fun write(output: ByteBuffer) {
+        output.put(configurationVersion) // configurationVersion
+        output.put(profileIdc) // AVCProfileIndication
+        output.put(profileCompatibility) // profile_compatibility
+        output.put(levelIdc) // AVCLevelIndication
 
-        buffer.put(0xff.toByte()) // 6 bits reserved + lengthSizeMinusOne - 4 bytes
-        buffer.put((0b111.toByte() shl 5) or (spsNoStartCode.size)) // 3 bits reserved + numOfSequenceParameterSets - 5 bytes
+        output.put(0xff.toByte()) // 6 bits reserved + lengthSizeMinusOne - 4 bytes
+        output.put((0b111.toByte() shl 5) or (spsNoStartCode.size)) // 3 bits reserved + numOfSequenceParameterSets - 5 bytes
         spsNoStartCode.forEach {
-            buffer.putShort(it.remaining()) // sequenceParameterSetLength
-            buffer.put(it)
+            output.putShort(it.remaining()) // sequenceParameterSetLength
+            output.put(it)
         }
 
-        buffer.put(ppsNoStartCode.size) // numOfPictureParameterSets
+        output.put(ppsNoStartCode.size) // numOfPictureParameterSets
         ppsNoStartCode.forEach {
-            buffer.putShort(it.remaining()) // sequenceParameterSetLength
-            buffer.put(it)
+            output.putShort(it.remaining()) // sequenceParameterSetLength
+            output.put(it)
         }
 
         if ((profileIdc == 100.toByte()) || (profileIdc == 110.toByte()) || (profileIdc == 122.toByte()) || (profileIdc == 144.toByte())) {
-            buffer.put(
+            output.put(
                 (0b111111 shl 2) // reserved
                         or chromaFormat.value.toInt() // chroma_format
             )
-            buffer.put(
+            output.put(
                 (0b11111 shl 3) // reserved
                         or 0 // bit_depth_luma_minus8
             )
-            buffer.put(
+            output.put(
                 (0b11111 shl 3) // reserved
                         or 0 // bit_depth_chroma_minus8
             )
-            buffer.put(0)
+            output.put(0)
         }
     }
 

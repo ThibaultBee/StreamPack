@@ -20,46 +20,27 @@ import android.os.Build
 import io.github.thibaultbee.streampack.internal.muxers.flv.tags.FlvTag
 import io.github.thibaultbee.streampack.internal.muxers.flv.tags.TagType
 import io.github.thibaultbee.streampack.internal.utils.av.FourCCs
-import io.github.thibaultbee.streampack.internal.utils.av.video.hevc.HEVCDecoderConfigurationRecord
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.ByteBufferWriter
 import io.github.thibaultbee.streampack.internal.utils.extensions.put
 import io.github.thibaultbee.streampack.internal.utils.extensions.putInt24
-import io.github.thibaultbee.streampack.internal.utils.extensions.removeStartCode
-import io.github.thibaultbee.streampack.internal.utils.extensions.startCodeSize
-import io.github.thibaultbee.streampack.logger.Logger
-import io.github.thibaultbee.streampack.utils.TAG
-import java.io.IOException
 import java.nio.ByteBuffer
 
 class ExtendedVideoTag(
     pts: Long,
-    private val buffers: List<ByteBuffer>,
+    private val buffer: ByteBufferWriter,
     private val isKeyFrame: Boolean,
     private val packetType: PacketType,
     private val mimeType: String
 ) :
     FlvTag(pts, TagType.VIDEO) {
-    constructor(
-        pts: Long,
-        buffer: ByteBuffer,
-        isKeyFrame: Boolean,
-        packetType: PacketType,
-        mimeType: String
-    ) : this(pts, listOf(buffer), isKeyFrame, packetType, mimeType)
 
     init {
         require(isSupportedCodec(mimeType)) {
             "Only AV1, VP9 and HEVC are supported"
         }
-        if (mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC) {
-            if (packetType == PacketType.SEQUENCE_START) {
-                require(buffers.size == 3) { "Both SPS, PPS and VPS are expected in sequence mode" }
-            } else {
-                require(buffers.size == 1) { "Only one buffer is expected for raw frame" }
-            }
-        }
     }
 
-    override fun writeTagHeader(buffer: ByteBuffer) {
+    override fun writeTagHeader(output: ByteBuffer) {
         val frameType = if (isKeyFrame) {
             FrameType.KEY
         } else {
@@ -67,17 +48,17 @@ class ExtendedVideoTag(
         }
 
         // ExVideoTagHeader
-        buffer.put(
+        output.put(
             0x80 or // IsExHeader
                     (frameType.value shl 4) or // Frame Type
                     packetType.value // PacketType
         )
-        buffer.putInt(FourCCs.fromMimeType(mimeType).value.code) // Video FourCC
+        output.putInt(FourCCs.fromMimeType(mimeType).value.code) // Video FourCC
     }
 
     override val tagHeaderSize = VIDEO_TAG_HEADER_SIZE
 
-    override fun writeBody(buffer: ByteBuffer) {
+    override fun writeBody(output: ByteBuffer) {
         when (packetType) {
             PacketType.META_DATA -> {
                 throw NotImplementedError("PacketType $packetType is not supported for $mimeType")
@@ -88,37 +69,12 @@ class ExtendedVideoTag(
             }
 
             else -> {
-                when (mimeType) {
-                    MediaFormat.MIMETYPE_VIDEO_HEVC -> {
-                        when (packetType) {
-                            PacketType.SEQUENCE_START ->
-                                HEVCDecoderConfigurationRecord.fromParameterSets(buffers)
-                                    .write(buffer)
-
-                            PacketType.CODED_FRAMES_X,
-                            PacketType.CODED_FRAMES -> {
-                                if (packetType == PacketType.CODED_FRAMES) {
-                                    buffer.putInt24(0) // TODO: CompositionTime
-                                }
-                                writeNalu(buffer)
-                            }
-
-                            else -> throw IOException("PacketType $packetType is not supported for $mimeType")
-                        }
-                    }
-
-                    else -> {
-                        throw IOException("Mimetype $mimeType is not supported")
-                    }
+                if ((packetType == PacketType.CODED_FRAMES) && (mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC)) {
+                    output.putInt24(0) // TODO: CompositionTime
                 }
+                buffer.write(output)
             }
         }
-    }
-
-    private fun writeNalu(buffer: ByteBuffer) {
-        val noStartCodeBuffer = buffers[0].removeStartCode()
-        buffer.putInt(noStartCodeBuffer.remaining())
-        buffer.put(noStartCodeBuffer)
     }
 
     override val bodySize = computeBodySize()
@@ -134,35 +90,15 @@ class ExtendedVideoTag(
             }
 
             else -> {
-                when (mimeType) {
-                    MediaFormat.MIMETYPE_VIDEO_HEVC -> {
-                        when (packetType) {
-                            PacketType.SEQUENCE_START ->
-                                HEVCDecoderConfigurationRecord.getSize(
-                                    buffers[0],
-                                    buffers[1],
-                                    buffers[2]
-                                )
-
-                            PacketType.CODED_FRAMES_X,
-                            PacketType.CODED_FRAMES -> {
-                                (if (packetType == PacketType.CODED_FRAMES) 3 else 0) + getNaluSize()
-                            }
-
-                            else -> throw IOException("PacketType $packetType is not supported for $mimeType")
-                        }
+                val size =
+                    if ((packetType == PacketType.CODED_FRAMES) && (mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC)) {
+                        3 // TODO: CompositionTime
+                    } else {
+                        0
                     }
-
-                    else -> {
-                        throw IOException("Mimetype $mimeType is not supported")
-                    }
-                }
+                return buffer.size + size
             }
         }
-    }
-
-    private fun getNaluSize(): Int {
-        return buffers[0].remaining() - buffers[0].startCodeSize + 4 // Replace start code with annex B
     }
 
     companion object {

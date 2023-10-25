@@ -159,8 +159,9 @@ class TrackChunks(
             createNewChunk()
         }
 
-        frame.buffer = frame.buffer.clone() // Do not keep mediacodec buffer
-        chunks.last().add(frameId, frame)
+        val frameCopy =
+            frame.copy(rawBuffer = frame.buffer.clone()) // Do not keep mediacodec buffer
+        chunks.last().add(frameId, frameCopy)
         frameId++
     }
 
