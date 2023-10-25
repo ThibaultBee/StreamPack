@@ -141,9 +141,9 @@ class AudioCapture : IAudioCapture {
                     }
                     buffer.put(mutedByteArray!!, 0, length)
                     buffer.clear()
-                    Frame(buffer, MediaFormat.MIMETYPE_AUDIO_RAW, getTimestamp(it))
+                    Frame(buffer, getTimestamp(it), format = format)
                 } else {
-                    Frame(buffer, MediaFormat.MIMETYPE_AUDIO_RAW, getTimestamp(it))
+                    Frame(buffer, getTimestamp(it), format = format)
                 }
             } else {
                 throw IllegalArgumentException(audioRecordErrorToString(length))
@@ -156,5 +156,14 @@ class AudioCapture : IAudioCapture {
         AudioRecord.ERROR_BAD_VALUE -> "AudioRecord returns a bad value error"
         AudioRecord.ERROR_DEAD_OBJECT -> "AudioRecord returns a dead object error"
         else -> "Unknown audio record error: $audioRecordError"
+    }
+
+    companion object {
+        private val format = MediaFormat().apply {
+            setString(
+                MediaFormat.KEY_MIME,
+                MediaFormat.MIMETYPE_AUDIO_RAW
+            )
+        }
     }
 }

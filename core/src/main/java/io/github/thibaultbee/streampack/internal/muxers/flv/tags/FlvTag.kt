@@ -25,9 +25,9 @@ abstract class FlvTag(
     private val type: TagType,
     private val isEncrypted: Boolean = false /* Not supported yet */
 ) {
-    protected abstract fun writeTagHeader(buffer: ByteBuffer)
+    protected abstract fun writeTagHeader(output: ByteBuffer)
     protected abstract val tagHeaderSize: Int
-    protected abstract fun writeBody(buffer: ByteBuffer)
+    protected abstract fun writeBody(output: ByteBuffer)
     protected abstract val bodySize: Int
 
     fun write(): ByteBuffer {

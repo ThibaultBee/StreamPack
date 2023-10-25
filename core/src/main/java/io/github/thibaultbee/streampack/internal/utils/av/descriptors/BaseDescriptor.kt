@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.av.descriptors
 
-import io.github.thibaultbee.streampack.internal.utils.av.ByteBufferWriter
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.ByteBufferWriter
 
 abstract class BaseDescriptor(private val tag: Tags, private val sizeOfInstance: Int) :
     ByteBufferWriter() {

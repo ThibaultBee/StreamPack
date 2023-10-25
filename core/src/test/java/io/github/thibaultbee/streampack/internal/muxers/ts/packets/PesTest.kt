@@ -18,9 +18,9 @@ package io.github.thibaultbee.streampack.internal.muxers.ts.packets
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.VideoConfig
-import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.Stream
 import io.github.thibaultbee.streampack.internal.muxers.ts.utils.AssertEqualsBuffersMockMuxerListener
+import io.github.thibaultbee.streampack.utils.FakeFrames
 import io.github.thibaultbee.streampack.utils.MockUtils
 import io.github.thibaultbee.streampack.utils.ResourcesUtils
 import org.junit.Test
@@ -52,8 +52,13 @@ class PesTest {
         MockUtils.mockTimeUtils(1433034)
 
         val rawData = ResourcesUtils.readByteBuffer(TEST_SAMPLES_DIR + "pes-video1/raw")
-        val frame =
-            Frame(rawData, MediaFormat.MIMETYPE_VIDEO_AVC, 1433334, 1400000, isKeyFrame = true)
+        val frame = FakeFrames.generate(
+            buffer = rawData,
+            pts = 1433334,
+            dts = 1400000,
+            isKeyFrame = true,
+            mimeType = MediaFormat.MIMETYPE_VIDEO_AVC
+        )
 
         val expectedBuffers = readFrames(TEST_SAMPLES_DIR + "pes-video1")
         Pes(
@@ -70,8 +75,13 @@ class PesTest {
         MockUtils.mockTimeUtils(700000)
 
         val rawData = ResourcesUtils.readByteBuffer(TEST_SAMPLES_DIR + "pes-audio1/raw.aac")
-        val frame =
-            Frame(rawData, MediaFormat.MIMETYPE_AUDIO_AAC, 1400000, null, isKeyFrame = true)
+        val frame = FakeFrames.generate(
+            buffer = rawData,
+            pts = 1400000,
+            dts = null,
+            isKeyFrame = true,
+            mimeType = MediaFormat.MIMETYPE_AUDIO_AAC
+        )
 
         val expectedBuffers = readFrames(TEST_SAMPLES_DIR + "pes-audio1")
         Pes(
@@ -88,8 +98,13 @@ class PesTest {
         MockUtils.mockTimeUtils(700000)
 
         val rawData = ResourcesUtils.readByteBuffer(TEST_SAMPLES_DIR + "pes-audio2/raw.aac")
-        val frame =
-            Frame(rawData, MediaFormat.MIMETYPE_AUDIO_AAC, 1400000, null, isKeyFrame = true)
+        val frame = FakeFrames.generate(
+            buffer = rawData,
+            pts = 1400000,
+            dts = null,
+            isKeyFrame = true,
+            mimeType = MediaFormat.MIMETYPE_AUDIO_AAC
+        )
 
         val expectedBuffers = readFrames(TEST_SAMPLES_DIR + "pes-audio2")
         Pes(

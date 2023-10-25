@@ -15,9 +15,9 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.av.audio.aac
 
-import io.github.thibaultbee.streampack.internal.utils.av.BitBuffer
-import io.github.thibaultbee.streampack.internal.utils.av.BitBufferWriter
-import io.github.thibaultbee.streampack.internal.utils.av.ByteBufferWriter
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBuffer
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBufferWriter
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.ByteBufferWriter
 import io.github.thibaultbee.streampack.internal.utils.av.audio.AudioSpecificConfig
 import java.nio.ByteBuffer
 

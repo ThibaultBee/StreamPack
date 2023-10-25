@@ -16,29 +16,21 @@
 package io.github.thibaultbee.streampack.internal.muxers.flv.tags.video
 
 import io.github.thibaultbee.streampack.internal.muxers.flv.tags.FlvTag
-import java.nio.ByteBuffer
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.ByteBufferWriter
 
 class VideoTagFactory(
     private val pts: Long,
-    private val buffers: List<ByteBuffer>,
+    private val buffer: ByteBufferWriter,
     private val isKeyFrame: Boolean,
     private val packetType: PacketType,
     private val mimeType: String
 ) {
-    constructor(
-        pts: Long,
-        buffer: ByteBuffer,
-        isKeyFrame: Boolean,
-        packetType: PacketType,
-        mimeType: String
-    ) : this(pts, listOf(buffer), isKeyFrame, packetType, mimeType)
-
     fun build(): FlvTag {
         return if (ExtendedVideoTag.isSupportedCodec(mimeType)) {
-            ExtendedVideoTag(pts, buffers, isKeyFrame, packetType, mimeType)
+            ExtendedVideoTag(pts, buffer, isKeyFrame, packetType, mimeType)
         } else {
             // Packet type if only for AVC
-            VideoTag(pts, buffers, isKeyFrame, packetType.avcPacketType, mimeType)
+            VideoTag(pts, buffer, isKeyFrame, packetType.avcPacketType, mimeType)
         }
     }
 }

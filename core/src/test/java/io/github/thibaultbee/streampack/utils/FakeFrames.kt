@@ -15,23 +15,47 @@
  */
 package io.github.thibaultbee.streampack.utils
 
+import android.media.MediaFormat
 import io.github.thibaultbee.streampack.internal.data.Frame
 import java.nio.ByteBuffer
 import kotlin.random.Random
 
 object FakeFrames {
-    fun createFakeKeyFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = true,
-        extra = listOf(ByteBuffer.wrap(Random.nextBytes(10)))
-    )
-
-    fun createFakeFrame(mimeType: String) = Frame(
-        ByteBuffer.wrap(Random.nextBytes(1024)),
-        mimeType,
-        Random.nextLong(),
-        isKeyFrame = false
-    )
+    fun generate(
+        mimeType: String,
+        buffer: ByteBuffer = ByteBuffer.wrap(Random.nextBytes(1024)),
+        pts: Long = Random.nextLong(),
+        dts: Long? = null,
+        isKeyFrame: Boolean = false
+    ): Frame {
+        MockUtils.mockMediaFormatConstructor(
+            mimeType, if (isKeyFrame) {
+                ByteBuffer.wrap(
+                    Random.nextBytes(10)
+                )
+            } else {
+                null
+            }
+        )
+        val format = MediaFormat()
+        format.setString(
+            MediaFormat.KEY_MIME,
+            mimeType
+        )
+        if (isKeyFrame) {
+            format.setByteBuffer(
+                "csd-0",
+                ByteBuffer.wrap(
+                    Random.nextBytes(10)
+                )
+            )
+        }
+        return Frame(
+            buffer,
+            pts,
+            dts,
+            isKeyFrame,
+            format = format
+        )
+    }
 }

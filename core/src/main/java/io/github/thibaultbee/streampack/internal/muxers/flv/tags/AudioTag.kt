@@ -34,15 +34,15 @@ class AudioTag(
         private const val AUDIO_TAG_HEADER_SIZE = 1
     }
 
-    override fun writeTagHeader(buffer: ByteBuffer) {
-        buffer.put(
+    override fun writeTagHeader(output: ByteBuffer) {
+        output.put(
             (SoundFormat.fromMimeType(audioConfig.mimeType).value shl 4) or
                     (SoundRate.fromSampleRate(audioConfig.sampleRate).value shl 2) or
                     (SoundSize.fromByteFormat(audioConfig.byteFormat).value shl 1) or
                     (SoundType.fromChannelConfig(audioConfig.channelConfig).value)
         )
         if (audioConfig.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
-            buffer.put(aacPacketType!!.value)
+            output.put(aacPacketType!!.value)
         }
     }
 
@@ -56,15 +56,15 @@ class AudioTag(
         return size
     }
 
-    override fun writeBody(buffer: ByteBuffer) {
+    override fun writeBody(output: ByteBuffer) {
         if (audioConfig.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
             if (aacPacketType == AACPacketType.SEQUENCE_HEADER) {
-                AudioSpecificConfig.writeFromByteBuffer(buffer, frameBuffer, audioConfig)
+                AudioSpecificConfig.writeFromByteBuffer(output, frameBuffer, audioConfig)
             } else {
-                buffer.put(frameBuffer)
+                output.put(frameBuffer)
             }
         } else {
-            buffer.put(frameBuffer)
+            output.put(frameBuffer)
         }
     }
 

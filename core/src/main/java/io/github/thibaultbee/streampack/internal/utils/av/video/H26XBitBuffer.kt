@@ -16,7 +16,7 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.av.video
 
-import io.github.thibaultbee.streampack.internal.utils.av.BitBuffer
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBuffer
 import java.nio.ByteBuffer
 
 class H26XBitBuffer(

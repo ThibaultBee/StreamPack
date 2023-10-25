@@ -22,6 +22,10 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.muxers.flv.tags.video.PacketType
 import io.github.thibaultbee.streampack.internal.muxers.flv.tags.video.VideoTagFactory
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.AVCCBufferWriter
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.ByteBufferWriter
+import io.github.thibaultbee.streampack.internal.utils.av.video.avc.AVCDecoderConfigurationRecord
+import io.github.thibaultbee.streampack.internal.utils.av.video.hevc.HEVCDecoderConfigurationRecord
 import java.io.IOException
 
 class AVTagsFactory(
@@ -76,7 +80,7 @@ class AVTagsFactory(
             videoTags.add(
                 VideoTagFactory(
                     frame.pts,
-                    frame.extra!!,
+                    createVideoSequenceStartBufferWriter(frame, config),
                     true,
                     PacketType.SEQUENCE_START,
                     config.mimeType
@@ -87,7 +91,7 @@ class AVTagsFactory(
         videoTags.add(
             VideoTagFactory(
                 frame.pts,
-                frame.buffer,
+                AVCCBufferWriter(frame.buffer),
                 frame.isKeyFrame,
                 PacketType.CODED_FRAMES_X, // For extended codec onlu.
                 config.mimeType
@@ -95,5 +99,27 @@ class AVTagsFactory(
         )
 
         return videoTags
+    }
+
+    private fun createVideoSequenceStartBufferWriter(
+        frame: Frame,
+        config: VideoConfig
+    ): ByteBufferWriter {
+        return when (config.mimeType) {
+            MediaFormat.MIMETYPE_VIDEO_AVC -> {
+                AVCDecoderConfigurationRecord.fromParameterSets(
+                    frame.extra!![0],
+                    frame.extra[1]
+                )
+            }
+
+            MediaFormat.MIMETYPE_VIDEO_HEVC -> {
+                HEVCDecoderConfigurationRecord.fromParameterSets(frame.extra!!)
+            }
+
+            else -> {
+                throw IOException("Unsupported video codec: ${config.mimeType}")
+            }
+        }
     }
 }

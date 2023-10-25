@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.mp4.boxes
 
-import io.github.thibaultbee.streampack.internal.utils.av.ByteBufferWriter
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.ByteBufferWriter
 import io.github.thibaultbee.streampack.internal.utils.extensions.putInt24
 import io.github.thibaultbee.streampack.internal.utils.extensions.putString
 import java.nio.ByteBuffer

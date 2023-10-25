@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.av.video.hevc
 
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.ByteBufferWriter
 import io.github.thibaultbee.streampack.internal.utils.av.video.ChromaFormat
 import io.github.thibaultbee.streampack.internal.utils.extensions.put
 import io.github.thibaultbee.streampack.internal.utils.extensions.putLong48
@@ -45,37 +46,37 @@ data class HEVCDecoderConfigurationRecord(
     private val temporalIdNested: Boolean = false,
     private val lengthSizeMinusOne: Byte = 3,
     private val parameterSets: List<NalUnit>,
-) {
-    val size: Int = getSize(parameterSets)
+) : ByteBufferWriter() {
+    override val size: Int = getSize(parameterSets)
 
-    fun write(buffer: ByteBuffer) {
-        buffer.put(configurationVersion) // configurationVersion
+    override fun write(output: ByteBuffer) {
+        output.put(configurationVersion) // configurationVersion
 
         // profile_tier_level
-        buffer.put(
+        output.put(
             (generalProfileSpace shl 6)
                     or (generalTierFlag shl 5)
                     or (generalProfileIdc.value.toInt())
         )
-        buffer.putInt(generalProfileCompatibilityFlags)
-        buffer.putLong48(generalConstraintIndicatorFlags)
-        buffer.put(generalLevelIdc)
+        output.putInt(generalProfileCompatibilityFlags)
+        output.putLong48(generalConstraintIndicatorFlags)
+        output.put(generalLevelIdc)
 
-        buffer.putShort(0xf000 or (minSpatialSegmentationIdc)) // min_spatial_segmentation_idc 12 bits
-        buffer.put(0xfc or (parallelismType.toInt())) // parallelismType 2 bits
-        buffer.put(0xfc or (chromaFormat.value.toInt())) // chromaFormat 2 bits
-        buffer.put(0xf8 or (bitDepthLumaMinus8.toInt())) // bitDepthLumaMinus8 3 bits
-        buffer.put(0xf8 or (bitDepthChromaMinus8.toInt())) // bitDepthChromaMinus8 3 bits
+        output.putShort(0xf000 or (minSpatialSegmentationIdc)) // min_spatial_segmentation_idc 12 bits
+        output.put(0xfc or (parallelismType.toInt())) // parallelismType 2 bits
+        output.put(0xfc or (chromaFormat.value.toInt())) // chromaFormat 2 bits
+        output.put(0xf8 or (bitDepthLumaMinus8.toInt())) // bitDepthLumaMinus8 3 bits
+        output.put(0xf8 or (bitDepthChromaMinus8.toInt())) // bitDepthChromaMinus8 3 bits
 
-        buffer.putShort(averageFrameRate) // avgFrameRate
-        buffer.put(
+        output.putShort(averageFrameRate) // avgFrameRate
+        output.put(
             (constantFrameRate shl 6)
                     or ((numTemporalLayers and 0x7) shl 3)
                     or (temporalIdNested shl 2)
                     or (lengthSizeMinusOne.toInt() and 0x3)
         ) // constantFrameRate 2 bits = 1 for stable / numTemporalLayers 3 bits /  temporalIdNested 1 bit / lengthSizeMinusOne 2 bits
 
-        buffer.put(parameterSets.size) // numOfArrays
+        output.put(parameterSets.size) // numOfArrays
 
         // It is recommended that the arrays be in the order VPS, SPS, PPS, prefix SEI, suffix SEI.
         val vpsSets = mutableListOf<NalUnit>()
@@ -94,12 +95,12 @@ data class HEVCDecoderConfigurationRecord(
                 else -> otherSets.add(it)
             }
         }
-        vpsSets.forEach { it.write(buffer) }
-        spsSets.forEach { it.write(buffer) }
-        ppsSets.forEach { it.write(buffer) }
-        prefixSeiSets.forEach { it.write(buffer) }
-        suffixSeiSets.forEach { it.write(buffer) }
-        otherSets.forEach { it.write(buffer) }
+        vpsSets.forEach { it.write(output) }
+        spsSets.forEach { it.write(output) }
+        ppsSets.forEach { it.write(output) }
+        prefixSeiSets.forEach { it.write(output) }
+        suffixSeiSets.forEach { it.write(output) }
+        otherSets.forEach { it.write(output) }
     }
 
     companion object {
