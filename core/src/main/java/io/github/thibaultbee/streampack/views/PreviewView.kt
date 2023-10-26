@@ -238,7 +238,7 @@ enum class FacingDirection(val value: String) {
 
     companion object {
         fun fromValue(value: String): FacingDirection {
-            return values().first { it.value == value }
+            return entries.first { it.value == value }
         }
     }
 }

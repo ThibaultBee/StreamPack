@@ -35,7 +35,7 @@ open class ScreenRecorderRtmpLiveService(
     channelDescriptionResourceId
 ) {
     override fun createStreamer(bundle: Bundle): BaseScreenRecorderStreamer {
-        val enableAudio = bundle.get(ENABLE_AUDIO_KEY) as Boolean
+        val enableAudio = bundle.getBoolean(ENABLE_AUDIO_KEY)
 
         return ScreenRecorderRtmpLiveStreamer(
             applicationContext,

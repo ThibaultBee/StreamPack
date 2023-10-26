@@ -38,7 +38,7 @@ enum class TransferCharacteristics(val value: Int) {
 
     companion object {
         fun fromValue(value: Int) =
-            values().first { it.value == value }
+            entries.first { it.value == value }
 
         fun fromColorTransfer(colorTransfer: Int): TransferCharacteristics {
             return when (colorTransfer) {

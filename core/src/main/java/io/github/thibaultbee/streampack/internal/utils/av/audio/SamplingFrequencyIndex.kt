@@ -49,7 +49,7 @@ enum class SamplingFrequencyIndex(val value: Int) {
     }
 
     companion object {
-        fun fromValue(value: Int) = values().first { it.value == value }
+        fun fromValue(value: Int) = entries.first { it.value == value }
 
         fun fromSampleRate(sampleRate: Int) = when (sampleRate) {
             96_000 -> F_96000HZ

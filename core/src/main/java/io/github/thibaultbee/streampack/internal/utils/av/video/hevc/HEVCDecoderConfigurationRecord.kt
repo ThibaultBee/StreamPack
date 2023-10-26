@@ -214,7 +214,7 @@ data class HEVCDecoderConfigurationRecord(
             SUFFIX_SEI(40);
 
             companion object {
-                fun fromValue(value: Byte) = values().first { it.value == value }
+                fun fromValue(value: Byte) = entries.first { it.value == value }
 
             }
         }

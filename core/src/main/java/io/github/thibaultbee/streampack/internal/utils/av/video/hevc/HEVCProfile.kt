@@ -30,6 +30,6 @@ enum class HEVCProfile(val value: Short) {
 
     companion object {
         fun fromProfileIdc(profileIdc: Short) =
-            values().first { it.value == profileIdc }
+            entries.first { it.value == profileIdc }
     }
 }

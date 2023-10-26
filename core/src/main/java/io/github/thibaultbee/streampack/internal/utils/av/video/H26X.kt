@@ -23,6 +23,6 @@ enum class ChromaFormat(val value: Byte) {
 
     companion object {
         fun fromChromaIdc(chromaIdc: Byte) =
-            values().first { it.value == chromaIdc }
+            entries.first { it.value == chromaIdc }
     }
 }

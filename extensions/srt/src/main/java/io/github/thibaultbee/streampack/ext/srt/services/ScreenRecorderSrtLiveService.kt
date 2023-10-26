@@ -41,7 +41,7 @@ open class ScreenRecorderSrtLiveService(
 ) {
 
     override fun createStreamer(bundle: Bundle): BaseScreenRecorderStreamer {
-        val enableAudio = bundle.get(ENABLE_AUDIO_KEY) as Boolean
+        val enableAudio = bundle.getBoolean(ENABLE_AUDIO_KEY)
 
         val muxerConfigBundle = bundle.getBundle(MUXER_CONFIG_KEY)
         val tsServiceInfo = TsServiceInfo(

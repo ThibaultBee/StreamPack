@@ -23,6 +23,6 @@ enum class EndpointType(val id: Int) {
     MP4_FILE(4);
 
     companion object {
-        fun fromId(id: Int): EndpointType = values().first { it.id == id }
+        fun fromId(id: Int): EndpointType = entries.first { it.id == id }
     }
 }

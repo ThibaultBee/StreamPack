@@ -95,10 +95,10 @@ abstract class BaseScreenRecorderService(
 
     override fun onBind(intent: Intent): IBinder? {
         try {
-            val constructorBundle = intent.extras?.get(CONSTRUCTOR_BUNDLE_KEY) as Bundle?
+            val constructorBundle = intent.extras?.getBundle(CONSTRUCTOR_BUNDLE_KEY)
                 ?: throw IllegalStateException("Config bundle must be pass to the service")
 
-            val enableAudio = constructorBundle.get(ENABLE_AUDIO_KEY) != false
+            val enableAudio = constructorBundle.getBoolean(ENABLE_AUDIO_KEY)
             if (enableAudio) {
                 if (ActivityCompat.checkSelfPermission(
                         this,

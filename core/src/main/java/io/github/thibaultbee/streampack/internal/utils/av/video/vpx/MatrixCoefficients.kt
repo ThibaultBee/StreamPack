@@ -36,7 +36,7 @@ enum class MatrixCoefficients(val value: Int) {
 
     companion object {
         fun fromValue(value: Int) =
-            values().first { it.value == value }
+            entries.first { it.value == value }
 
         fun fromColorStandard(colorStandard: Int): MatrixCoefficients {
             return when (colorStandard) {

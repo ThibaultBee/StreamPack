@@ -407,7 +407,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 EndpointType.SRT to getString(R.string.to_srt),
                 EndpointType.RTMP to getString(R.string.to_rtmp)
             )
-        val supportedEndpoint = EndpointType.values().map { "${it.id}" }.toTypedArray()
+        val supportedEndpoint = EndpointType.entries.map { "${it.id}" }.toTypedArray()
         endpointTypePreference.setDefaultValue(EndpointType.SRT.id)
         endpointTypePreference.entryValues = supportedEndpoint
         endpointTypePreference.entries =
@@ -471,7 +471,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         // Update file extension
         if (endpoint.hasFileCapabilities) {
             // Remove previous extension
-            FileExtension.values().forEach {
+            FileExtension.entries.forEach {
                 fileNamePreference.text = fileNamePreference.text?.removeSuffix(it.extension)
             }
             // Add correct extension

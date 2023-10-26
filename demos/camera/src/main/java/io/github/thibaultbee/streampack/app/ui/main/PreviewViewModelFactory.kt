@@ -22,11 +22,11 @@ import io.github.thibaultbee.streampack.app.utils.StreamerManager
 class PreviewViewModelFactory(private val streamerManager: StreamerManager) :
     ViewModelProvider.Factory {
 
+    @Suppress("UNCHECKED_CAST")
+
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(PreviewViewModel::class.java)) {
-            return modelClass
-                .getConstructor(StreamerManager::class.java)
-                .newInstance(streamerManager)
+            return PreviewViewModel(streamerManager) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

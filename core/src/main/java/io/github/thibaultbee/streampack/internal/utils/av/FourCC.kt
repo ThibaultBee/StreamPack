@@ -19,7 +19,7 @@ enum class FourCCs(val value: FourCC) {
 
     companion object {
         fun fromMimeType(mimeType: String) =
-            values().first { it.value.mimeType == mimeType }
+            entries.first { it.value.mimeType == mimeType }
     }
 }
 

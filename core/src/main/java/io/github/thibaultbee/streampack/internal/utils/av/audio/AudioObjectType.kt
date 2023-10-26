@@ -78,7 +78,7 @@ enum class AudioObjectType(val value: Int) {
 
     companion object {
         fun fromValue(value: Int): AudioObjectType {
-            return values().first { it.value == value }
+            return entries.first { it.value == value }
         }
 
         fun fromProfile(mimeType: String, profile: Int) = when (mimeType) {

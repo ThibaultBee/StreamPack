@@ -24,6 +24,6 @@ enum class ChromaSubsampling(val value: Byte) {
 
     companion object {
         fun fromValue(value: Byte) =
-            values().first { it.value == value }
+            entries.first { it.value == value }
     }
 }

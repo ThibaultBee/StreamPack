@@ -64,7 +64,7 @@ data class VP9CodecPrivate(
             CHROMA_SUBSAMPLING(3);
 
             companion object {
-                fun fromId(id: Byte) = values().first { it.value == id }
+                fun fromId(id: Byte) = entries.first { it.value == id }
             }
         }
     }
