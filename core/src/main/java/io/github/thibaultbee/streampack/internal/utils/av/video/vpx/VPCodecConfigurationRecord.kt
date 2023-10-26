@@ -41,8 +41,8 @@ import java.nio.ByteBuffer
  * }
  */
 data class VPCodecConfigurationRecord(
-    private val profile: Byte,
-    private val level: Byte,
+    private val profile: Profile,
+    private val level: Level,
     private val bitDepth: Byte,
     private val chromaSubsampling: ChromaSubsampling,
     private val videoFullRangeFlag: Boolean,
@@ -60,8 +60,8 @@ data class VPCodecConfigurationRecord(
     }
 
     override fun write(output: ByteBuffer) {
-        output.put(profile)
-        output.put(level)
+        output.put(profile.value)
+        output.put(level.value)
         output.put((bitDepth shl 3) or (chromaSubsampling.value shl 1) or (videoFullRangeFlag.toInt()))
         output.put(colorPrimaries.value)
         output.put(transferCharacteristics.value)
@@ -82,16 +82,19 @@ data class VPCodecConfigurationRecord(
          *
          * VP9 [MediaFormat] example:
          * ```
-         * {max-bitrate=1138000, crop-right=359, level=128, mime=video/x-vnd.on2.vp9, profile=1, bitrate=1138000, intra-refresh-period=0, color-standard=4, color-transfer=3, crop-bottom=639, video-qp-average=0, crop-left=0, width=360, bitrate-mode=1, color-range=2, crop-top=0, frame-rate=30, height=640}
+         * {max-bitrate=1138000, crop-right=359, level=128, mime=video/x-vnd.on2.vp9,
+         * profile=1, bitrate=1138000, intra-refresh-period=0, color-standard=4, color-transfer=3,
+         * crop-bottom=639, video-qp-average=0, crop-left=0, width=360, bitrate-mode=1,
+         * color-range=2, crop-top=0, frame-rate=30, height=640}
          * ```
          */
         fun fromMediaFormat(format: MediaFormat): VPCodecConfigurationRecord {
-            val profile = format.getInteger(MediaFormat.KEY_PROFILE)
+            val profile = Profile.fromMediaFormat(format.getInteger(MediaFormat.KEY_PROFILE))
 
             val level = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                format.getInteger(MediaFormat.KEY_LEVEL)
+                Level.fromMediaFormat(format.getInteger(MediaFormat.KEY_LEVEL))
             } else {
-                0 // 0 is undefined
+                Level.UNDEFINED // 0 is undefined
             }
 
             val bitDepth = 8 // 8 bits - field is 8 or 10 or 12 bits
@@ -140,8 +143,8 @@ data class VPCodecConfigurationRecord(
                 MatrixCoefficients.UNSPECIFIED
             }
             return VPCodecConfigurationRecord(
-                profile = profile.toByte(),
-                level = level.toByte(),
+                profile = profile,
+                level = level,
                 bitDepth = bitDepth.toByte(),
                 chromaSubsampling = chromaSubsampling,
                 videoFullRangeFlag = videoFullRangeFlag,
