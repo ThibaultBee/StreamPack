@@ -21,7 +21,12 @@ import android.os.Bundle
 import android.text.InputFilter
 import android.text.InputType
 import android.util.Size
-import androidx.preference.*
+import androidx.preference.EditTextPreference
+import androidx.preference.ListPreference
+import androidx.preference.PreferenceCategory
+import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SeekBarPreference
+import androidx.preference.SwitchPreference
 import io.github.thibaultbee.streampack.screenrecorder.R
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointFactory
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
@@ -264,7 +269,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 EndpointType.SRT to getString(R.string.to_srt),
                 EndpointType.RTMP to getString(R.string.to_rtmp),
             )
-        val supportedEndpoint = EndpointType.values().map { "${it.id}" }.toTypedArray()
+        val supportedEndpoint = EndpointType.entries.map { "${it.id}" }.toTypedArray()
         endpointTypePreference.setDefaultValue(EndpointType.SRT.id)
         endpointTypePreference.entryValues = supportedEndpoint
         endpointTypePreference.entries =

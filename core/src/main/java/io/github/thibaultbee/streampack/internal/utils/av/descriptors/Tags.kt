@@ -50,7 +50,7 @@ enum class Tags(val value: Byte) {
 
     companion object {
         fun from(tag: Byte): Tags {
-            return values().find { it.value == tag }
+            return entries.find { it.value == tag }
                 ?: throw IllegalArgumentException("Unknown tag: $tag")
         }
     }

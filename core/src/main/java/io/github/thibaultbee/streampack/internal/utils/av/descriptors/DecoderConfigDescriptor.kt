@@ -47,7 +47,7 @@ enum class ObjectTypeIndication(val value: Byte) {
     AUDIO_ISO_13818_3_MP3(0x69);
 
     companion object {
-        fun fromValue(value: Byte) = values().first { it.value == value }
+        fun fromValue(value: Byte) = entries.first { it.value == value }
     }
 }
 
@@ -63,6 +63,6 @@ enum class StreamType(val value: Byte) {
     MPEGJStream(9);
 
     companion object {
-        fun fromValue(value: Byte) = values().first { it.value == value }
+        fun fromValue(value: Byte) = entries.first { it.value == value }
     }
 }

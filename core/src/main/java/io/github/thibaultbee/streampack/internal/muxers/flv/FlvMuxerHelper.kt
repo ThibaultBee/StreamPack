@@ -39,7 +39,7 @@ class VideoFlvMuxerHelper : IVideoMuxerHelper {
                 MediaFormat.MIMETYPE_VIDEO_HEVC,
                 MediaFormat.MIMETYPE_VIDEO_VP9
             )
-            val supportedCodecList = CodecID.values().mapNotNull {
+            val supportedCodecList = CodecID.entries.mapNotNull {
                 try {
                     it.toMimeType()
                 } catch (e: Exception) {
@@ -60,7 +60,7 @@ class AudioFlvMuxerHelper : IAudioMuxerHelper {
      */
     override val supportedEncoders: List<String>
         get() {
-            return SoundFormat.values().mapNotNull {
+            return SoundFormat.entries.mapNotNull {
                 try {
                     it.toMimeType()
                 } catch (e: Exception) {
@@ -69,7 +69,7 @@ class AudioFlvMuxerHelper : IAudioMuxerHelper {
             }
         }
 
-    override fun getSupportedSampleRates() = SoundRate.values().map { it.toSampleRate() }
+    override fun getSupportedSampleRates() = SoundRate.entries.map { it.toSampleRate() }
 
-    override fun getSupportedByteFormats() = SoundSize.values().map { it.toByteFormat() }
+    override fun getSupportedByteFormats() = SoundSize.entries.map { it.toByteFormat() }
 }
