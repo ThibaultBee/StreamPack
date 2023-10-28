@@ -13,6 +13,34 @@ import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectMain
 import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectSSR
 import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectScalable
 import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectXHE
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level2
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level21
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level22
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level23
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level3
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level31
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level32
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level33
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level4
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level41
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level42
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level43
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level5
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level51
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level52
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level53
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level6
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level61
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level62
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level63
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level7
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level71
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level72
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level73
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10Plus
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain8
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel1
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel11
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCLevel12
@@ -178,6 +206,19 @@ class ProfileLevelDisplay(private val context: Context) {
             }
         }
 
+    private val av1ProfileNameMap =
+        mutableMapOf<Int, String>().apply {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(AV1ProfileMain8, context.getString(R.string.video_profile_main))
+                put(AV1ProfileMain10, context.getString(R.string.video_profile_main10))
+                put(AV1ProfileMain10HDR10, context.getString(R.string.video_profile_main10_hdr10))
+                put(
+                    AV1ProfileMain10HDR10Plus,
+                    context.getString(R.string.video_profile_main10_hdr10_plus)
+                )
+            }
+        }
+
     private val avcLevelNameMap =
         mutableMapOf(
             AVCLevel1 to context.getString(R.string.video_level_1),
@@ -263,14 +304,51 @@ class ProfileLevelDisplay(private val context: Context) {
             }
         }
 
-    fun getProfileName(mimeType: String, profile: Int): String {
-        val nameMap = when (mimeType) {
-            MediaFormat.MIMETYPE_AUDIO_AAC -> aacProfileNameMap
-            MediaFormat.MIMETYPE_VIDEO_AVC -> avcProfileNameMap
-            MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcProfileNameMap
-            MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9ProfileNameMap
-            else -> emptyMap()
+    private val av1LevelNameMap =
+        mutableMapOf<Int, String>().apply {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                putAll(
+                    mapOf(
+                        AV1Level2 to context.getString(R.string.video_level_2),
+                        AV1Level21 to context.getString(R.string.video_level_21),
+                        AV1Level22 to context.getString(R.string.video_level_22),
+                        AV1Level23 to context.getString(R.string.video_level_21),
+                        AV1Level3 to context.getString(R.string.video_level_3),
+                        AV1Level31 to context.getString(R.string.video_level_31),
+                        AV1Level32 to context.getString(R.string.video_level_32),
+                        AV1Level33 to context.getString(R.string.video_level_33),
+                        AV1Level4 to context.getString(R.string.video_level_4),
+                        AV1Level41 to context.getString(R.string.video_level_41),
+                        AV1Level42 to context.getString(R.string.video_level_42),
+                        AV1Level43 to context.getString(R.string.video_level_43),
+                        AV1Level5 to context.getString(R.string.video_level_5),
+                        AV1Level51 to context.getString(R.string.video_level_51),
+                        AV1Level52 to context.getString(R.string.video_level_52),
+                        AV1Level53 to context.getString(R.string.video_level_53),
+                        AV1Level6 to context.getString(R.string.video_level_6),
+                        AV1Level61 to context.getString(R.string.video_level_61),
+                        AV1Level62 to context.getString(R.string.video_level_62),
+                        AV1Level63 to context.getString(R.string.video_level_63),
+                        AV1Level7 to context.getString(R.string.video_level_7),
+                        AV1Level71 to context.getString(R.string.video_level_71),
+                        AV1Level72 to context.getString(R.string.video_level_72),
+                        AV1Level73 to context.getString(R.string.video_level_73),
+                    )
+                )
+            }
         }
+
+    private fun getProfileMap(mimeType: String) = when (mimeType) {
+        MediaFormat.MIMETYPE_AUDIO_AAC -> aacProfileNameMap
+        MediaFormat.MIMETYPE_VIDEO_AVC -> avcProfileNameMap
+        MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcProfileNameMap
+        MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9ProfileNameMap
+        MediaFormat.MIMETYPE_VIDEO_AV1 -> av1ProfileNameMap
+        else -> emptyMap()
+    }
+
+    fun getProfileName(mimeType: String, profile: Int): String {
+        val nameMap = getProfileMap(mimeType)
         return try {
             nameMap[profile]!!
         } catch (_: Exception) {
@@ -279,20 +357,15 @@ class ProfileLevelDisplay(private val context: Context) {
     }
 
     fun getProfile(mimeType: String, name: String): Int {
-        val nameMap = when (mimeType) {
-            MediaFormat.MIMETYPE_AUDIO_AAC -> aacProfileNameMap
-            MediaFormat.MIMETYPE_VIDEO_AVC -> avcProfileNameMap
-            MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcProfileNameMap
-            MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9ProfileNameMap
-            else -> emptyMap()
-        }
-        return nameMap.entries.find { it.value == name }!!.key
+        val nameMap = getProfileMap(mimeType)
+        return nameMap.entries.first { it.value == name }.key
     }
 
     private fun getLevelMap(mimeType: String) = when (mimeType) {
         MediaFormat.MIMETYPE_VIDEO_AVC -> avcLevelNameMap
         MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcLevelNameMap
         MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9LevelNameMap
+        MediaFormat.MIMETYPE_VIDEO_AV1 -> av1LevelNameMap
         else -> emptyMap()
     }
 
@@ -307,7 +380,7 @@ class ProfileLevelDisplay(private val context: Context) {
 
     fun getLevel(mimeType: String, name: String): Int {
         val nameMap = getLevelMap(mimeType)
-        return nameMap.entries.find { it.value == name }!!.key
+        return nameMap.entries.first { it.value == name }.key
     }
 
     fun getAllLevelSet(mimeType: String): Set<Int> {

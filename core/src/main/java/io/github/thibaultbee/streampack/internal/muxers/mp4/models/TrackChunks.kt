@@ -22,6 +22,8 @@ import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.AV1CodecConfigurationBox2
+import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.AV1SampleEntry
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.AVCConfigurationBox
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.AVCSampleEntry
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.ChunkLargeOffsetBox
@@ -95,6 +97,10 @@ class TrackChunks(
 
             MediaFormat.MIMETYPE_VIDEO_VP9 -> {
                 this.format.isNotEmpty()
+            }
+
+            MediaFormat.MIMETYPE_VIDEO_AV1 -> {
+                this.extra.size == 1
             }
 
             MediaFormat.MIMETYPE_AUDIO_AAC -> {
@@ -339,6 +345,18 @@ class TrackChunks(
                     orientationProvider.orientedSize(track.config.resolution),
                     vpcC = VPCodecConfigurationBox(
                         VPCodecConfigurationRecord.fromMediaFormat(format.first())
+                    ),
+                )
+            }
+
+            MediaFormat.MIMETYPE_VIDEO_AV1 -> {
+                val extra = this.extra
+                require(extra.size == 1) { "For AV1, extra must contain 1 extra" }
+                (track.config as VideoConfig)
+                AV1SampleEntry(
+                    orientationProvider.orientedSize(track.config.resolution),
+                    av1C = AV1CodecConfigurationBox2(
+                        extra[0][0]
                     ),
                 )
             }

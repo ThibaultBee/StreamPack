@@ -123,6 +123,15 @@ class AVTagsFactory(
                 VPCodecConfigurationRecord.fromMediaFormat(frame.format)
             }
 
+            MediaFormat.MIMETYPE_VIDEO_AV1 -> {
+                if (frame.extra != null) {
+                    // Extra is AV1CodecConfigurationRecord
+                    PassthroughBufferWriter(frame.extra[0])
+                } else {
+                    throw IOException("AV1 sequence header without CSD buffer is not supported")
+                }
+            }
+
             else -> {
                 throw IOException("Unsupported video codec: ${config.mimeType}")
             }

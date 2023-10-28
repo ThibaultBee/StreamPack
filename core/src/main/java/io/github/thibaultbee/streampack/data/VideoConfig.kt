@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.data
 
 import android.content.Context
 import android.media.MediaCodecInfo.CodecProfileLevel
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain8
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileConstrainedBaseline
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileConstrainedHigh
@@ -48,8 +49,8 @@ import kotlin.math.roundToInt
 class VideoConfig(
     /**
      * Video encoder mime type.
-     * Only [MediaFormat.MIMETYPE_VIDEO_AVC], [MediaFormat.MIMETYPE_VIDEO_HEVC] and
-     * [MediaFormat.MIMETYPE_VIDEO_VP9] are supported yet.
+     * Only [MediaFormat.MIMETYPE_VIDEO_AVC], [MediaFormat.MIMETYPE_VIDEO_HEVC],
+     * [MediaFormat.MIMETYPE_VIDEO_VP9] and [MediaFormat.MIMETYPE_VIDEO_AV1] are supported yet.
      *
      * **See Also:** [MediaFormat MIMETYPE_VIDEO_*](https://developer.android.com/reference/android/media/MediaFormat)
      */
@@ -223,6 +224,10 @@ class VideoConfig(
             VP9Profile0
         )
 
+        private val av1ProfilePriority = listOf(
+            AV1ProfileMain8
+        )
+
         /**
          * Return the higher profile with the higher level
          */
@@ -231,6 +236,7 @@ class VideoConfig(
                 MediaFormat.MIMETYPE_VIDEO_AVC -> avcProfilePriority
                 MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcProfilePriority
                 MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9ProfilePriority
+                MediaFormat.MIMETYPE_VIDEO_AV1 -> av1ProfilePriority
                 else -> throw InvalidParameterException("Profile for $mimeType is not supported")
             }
 

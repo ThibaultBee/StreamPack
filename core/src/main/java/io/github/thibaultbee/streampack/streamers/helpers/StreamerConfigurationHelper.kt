@@ -176,20 +176,12 @@ open class VideoStreamerConfigurationHelper(private val videoMuxerHelper: IVideo
             MediaFormat.MIMETYPE_VIDEO_AVC -> avcProfiles
             MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcProfiles
             MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9Profiles
+            MediaFormat.MIMETYPE_VIDEO_AV1 -> av1Profiles
             else -> throw InvalidParameterException("Unknown mimetype $mimeType")
         }
         val supportedProfiles = MediaCodecHelper.getProfiles(mimeType)
         return supportedProfiles.filter { profiles.contains(it) }
     }
-
-    private val vp9Profiles = listOf(
-        VP9Profile0,
-        VP9Profile1
-    )
-
-    private val hevcProfiles = listOf(
-        HEVCProfileMain
-    )
 
     private val avcProfiles = listOf(
         AVCProfileBaseline,
@@ -199,4 +191,18 @@ open class VideoStreamerConfigurationHelper(private val videoMuxerHelper: IVideo
         AVCProfileHigh,
         AVCProfileMain
     )
+
+    private val hevcProfiles = listOf(
+        HEVCProfileMain
+    )
+
+    private val vp9Profiles = listOf(
+        VP9Profile0,
+        VP9Profile1
+    )
+
+    private val av1Profiles = listOf(
+        AV1ProfileMain8
+    )
 }
+
