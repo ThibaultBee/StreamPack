@@ -132,7 +132,6 @@ class HEVCSampleEntry(
     pasp
 )
 
-
 class VP9SampleEntry(
     resolution: Size,
     horizontalResolution: Int = 72,
@@ -161,6 +160,34 @@ class VP9SampleEntry(
     pasp
 )
 
+class AV1SampleEntry(
+    resolution: Size,
+    horizontalResolution: Int = 72,
+    verticalResolution: Int = 72,
+    frameCount: Short = 1,
+    compressorName: String? = "AV1 Coding",
+    depth: Short = 0x0018,
+    av1C: AV1CodecConfigurationBox,
+    btrt: BitRateBox? = null,
+    extensionDescriptorsBox: List<Box> = emptyList(),
+    clap: CleanApertureBox? = null,
+    pasp: PixelAspectRatioBox? = null
+) : VisualSampleEntry(
+    "av01",
+    resolution,
+    horizontalResolution,
+    verticalResolution,
+    frameCount,
+    compressorName,
+    depth,
+    mutableListOf<Box>(av1C).apply {
+        btrt?.let { add(it) }
+        addAll(extensionDescriptorsBox)
+    },
+    clap,
+    pasp
+)
+
 class OpusSampleEntry(
     channelCount: Short,
     dOps: OpusSpecificBox,
@@ -174,7 +201,8 @@ class OpusSampleEntry(
         48000,
         mutableListOf<Box>(dOps).apply {
             btrt?.let { add(it) }
-        })
+        }
+    )
 
 class MP4AudioSampleEntry(
     channelCount: Short,
@@ -191,7 +219,8 @@ class MP4AudioSampleEntry(
         sampleRate,
         mutableListOf<Box>(esds).apply {
             btrt?.let { add(it) }
-        })
+        }
+    )
 
 open class AudioSampleEntry(
     type: String,

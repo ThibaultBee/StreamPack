@@ -37,7 +37,8 @@ class VideoFlvMuxerHelper : IVideoMuxerHelper {
         get() {
             val extendedSupportedCodec = listOf(
                 MediaFormat.MIMETYPE_VIDEO_HEVC,
-                MediaFormat.MIMETYPE_VIDEO_VP9
+                MediaFormat.MIMETYPE_VIDEO_VP9,
+                MediaFormat.MIMETYPE_VIDEO_AV1
             )
             val supportedCodecList = CodecID.entries.mapNotNull {
                 try {

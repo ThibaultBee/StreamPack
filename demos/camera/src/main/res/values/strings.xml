@@ -79,6 +79,7 @@
     <string name="video_encoder_h264">AVC/H.264</string>
     <string name="video_encoder_h265">HEVC/H.265</string>
     <string name="video_encoder_vp9">VP9</string>
+    <string name="video_encoder_av1">AV1</string>
     <string name="audio_encoder_aac">AAC</string>
     <string name="ts_server_stream_id_key">server_stream_id_key</string>
     <string name="ts_server_stream_id">Stream ID</string>
@@ -148,18 +149,27 @@
     <string name="video_level_2">Level2</string>
     <string name="video_level_21">Level21</string>
     <string name="video_level_22">Level22</string>
+    <string name="video_level_23">Level23</string>
     <string name="video_level_3">Level3</string>
     <string name="video_level_31">Level31</string>
     <string name="video_level_32">Level32</string>
+    <string name="video_level_33">Level33</string>
     <string name="video_level_4">Level4</string>
     <string name="video_level_41">Level41</string>
     <string name="video_level_42">Level42</string>
+    <string name="video_level_43">Level43</string>
     <string name="video_level_5">Level5</string>
     <string name="video_level_51">Level51</string>
     <string name="video_level_52">Level52</string>
+    <string name="video_level_53">Level53</string>
     <string name="video_level_6">Level6</string>
     <string name="video_level_61">Level61</string>
     <string name="video_level_62">Level62</string>
+    <string name="video_level_63">Level63</string>
+    <string name="video_level_7">Level7</string>
+    <string name="video_level_71">Level71</string>
+    <string name="video_level_72">Level72</string>
+    <string name="video_level_73">Level73</string>
 
     <string name="video_level_main_level1">MainLevel1</string>
     <string name="video_level_high_level1">HighLevel1</string>

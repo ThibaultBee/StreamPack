@@ -48,6 +48,7 @@ class VideoMP4MuxerHelper : IVideoMuxerHelper {
         listOf(
             MediaFormat.MIMETYPE_VIDEO_AVC,
             MediaFormat.MIMETYPE_VIDEO_HEVC,
-            MediaFormat.MIMETYPE_VIDEO_VP9
+            MediaFormat.MIMETYPE_VIDEO_VP9,
+            MediaFormat.MIMETYPE_VIDEO_AV1
         )
 }
