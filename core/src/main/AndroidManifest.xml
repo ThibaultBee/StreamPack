@@ -6,4 +6,7 @@
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Application requires POST_NOTIFICATIONS only for screen recorder service notification -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 </manifest>
