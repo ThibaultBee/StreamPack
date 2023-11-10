@@ -16,10 +16,9 @@
 package io.github.thibaultbee.streampack.streamers.bases
 
 import android.content.Context
-import io.github.thibaultbee.streampack.internal.data.orientation.FixedOrientationProvider
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
-import io.github.thibaultbee.streampack.internal.sources.AudioCapture
+import io.github.thibaultbee.streampack.internal.sources.AudioSource
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 
 /**
@@ -37,9 +36,8 @@ open class BaseAudioOnlyStreamer(
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseStreamer(
     context = context,
-    videoCapture = null,
-    audioCapture = AudioCapture(),
-    orientationProvider = FixedOrientationProvider(orientation = 0), // Unused
+    videoSource = null,
+    audioSource = AudioSource(),
     muxer = muxer,
     endpoint = endpoint,
     initialOnErrorListener = initialOnErrorListener

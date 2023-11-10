@@ -22,23 +22,31 @@ import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Handler
 import android.os.HandlerThread
+import android.util.Size
 import android.view.Surface
 import androidx.activity.result.ActivityResult
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.data.Frame
-import io.github.thibaultbee.streampack.internal.sources.IVideoCapture
+import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
+import io.github.thibaultbee.streampack.internal.sources.IVideoSource
+import io.github.thibaultbee.streampack.internal.utils.extensions.isDevicePortrait
+import io.github.thibaultbee.streampack.internal.utils.extensions.landscapize
+import io.github.thibaultbee.streampack.internal.utils.extensions.portraitize
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.utils.TAG
 import java.nio.ByteBuffer
 
-class ScreenCapture(
+class ScreenSource(
     context: Context
-) : IVideoCapture {
+) : IVideoSource {
     override var encoderSurface: Surface? = null
     override val timestampOffset = 0L
     override val hasSurface = true
+    override val hasFrames = false
+    override val orientationProvider = ScreenSourceOrientationProvider(context)
+
     override fun getFrame(buffer: ByteBuffer): Frame {
         throw UnsupportedOperationException("Screen source expects to run in Surface mode")
     }
@@ -56,26 +64,26 @@ class ScreenCapture(
     private val virtualDisplayCallback = object : VirtualDisplay.Callback() {
         override fun onPaused() {
             super.onPaused()
-            Logger.i(this@ScreenCapture.TAG, "onPaused")
+            Logger.i(this@ScreenSource.TAG, "onPaused")
         }
 
         override fun onStopped() {
             super.onStopped()
-            Logger.i(this@ScreenCapture.TAG, "onStopped")
-            onErrorListener?.onError(StreamPackError("Screen capture has been stopped"))
+            Logger.i(this@ScreenSource.TAG, "onStopped")
+            onErrorListener?.onError(StreamPackError("Screen source has been stopped"))
         }
     }
 
     private val mediaProjectionCallback = object : MediaProjection.Callback() {
         override fun onStop() {
             super.onStop()
-            Logger.i(this@ScreenCapture.TAG, "onStop")
-            onErrorListener?.onError(StreamPackError("Screen capture has been stopped"))
+            Logger.i(this@ScreenSource.TAG, "onStop")
+            onErrorListener?.onError(StreamPackError("Screen source has been stopped"))
         }
     }
 
     companion object {
-        private const val VIRTUAL_DISPLAY_NAME = "StreamPackScreenCapture"
+        private const val VIRTUAL_DISPLAY_NAME = "StreamPackScreenSource"
     }
 
     override fun configure(config: VideoConfig) {
@@ -89,11 +97,12 @@ class ScreenCapture(
         val resultCode = activityResult!!.resultCode
         val resultData = activityResult!!.data!!
 
+        val orientedSize = orientationProvider.getOrientedSize(videoConfig!!.resolution)
         mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, resultData).apply {
             virtualDisplay = createVirtualDisplay(
                 VIRTUAL_DISPLAY_NAME,
-                videoConfig!!.resolution.width,
-                videoConfig!!.resolution.height,
+                orientedSize.width,
+                orientedSize.height,
                 320,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                 encoderSurface,
@@ -118,6 +127,19 @@ class ScreenCapture(
             virtualDisplayThread.join()
         } catch (e: InterruptedException) {
             e.printStackTrace()
+        }
+    }
+
+    class ScreenSourceOrientationProvider(private val context: Context) :
+        ISourceOrientationProvider {
+        override val orientation = 0
+
+        override fun getOrientedSize(size: Size): Size {
+            return if (context.isDevicePortrait) {
+                size.portraitize()
+            } else {
+                size.landscapize()
+            }
         }
     }
 }

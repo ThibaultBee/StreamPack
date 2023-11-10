@@ -17,20 +17,20 @@ package io.github.thibaultbee.streampack.streamers.settings
 
 import io.github.thibaultbee.streampack.internal.encoders.AudioMediaCodecEncoder
 import io.github.thibaultbee.streampack.internal.encoders.VideoMediaCodecEncoder
-import io.github.thibaultbee.streampack.internal.sources.IAudioCapture
+import io.github.thibaultbee.streampack.internal.sources.IAudioSource
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IAudioSettings
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseStreamerSettings
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IVideoSettings
 
 open class BaseStreamerSettings(
-    audioCapture: IAudioCapture?,
+    audioSource: IAudioSource?,
     audioEncoder: AudioMediaCodecEncoder?,
     videoEncoder: VideoMediaCodecEncoder?
 ) : IBaseStreamerSettings {
     /**
      * Get audio settings
      */
-    override val audio = BaseStreamerAudioSettings(audioCapture, audioEncoder)
+    override val audio = BaseStreamerAudioSettings(audioSource, audioEncoder)
 
     /**
      * Get video settings
@@ -58,7 +58,7 @@ class BaseStreamerVideoSettings(private val videoEncoder: VideoMediaCodecEncoder
 }
 
 class BaseStreamerAudioSettings(
-    private val audioCapture: IAudioCapture?,
+    private val audioSource: IAudioSource?,
     private val audioEncoder: AudioMediaCodecEncoder?
 ) :
     IAudioSettings {
@@ -85,11 +85,11 @@ class BaseStreamerAudioSettings(
         /**
          * @return [Boolean.true] if audio is muted, [Boolean.false] if audio is running.
          */
-        get() = audioCapture?.isMuted ?: true
+        get() = audioSource?.isMuted ?: true
         /**
          * @param value [Boolean.true] to mute audio, [Boolean.false]to unmute audio.
          */
         set(value) {
-            audioCapture?.isMuted = value
+            audioSource?.isMuted = value
         }
 }

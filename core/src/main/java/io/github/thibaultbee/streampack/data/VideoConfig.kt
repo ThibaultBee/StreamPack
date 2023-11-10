@@ -31,12 +31,11 @@ import android.media.MediaFormat
 import android.os.Build
 import android.util.Size
 import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
-import io.github.thibaultbee.streampack.internal.utils.extensions.deviceOrientation
+import io.github.thibaultbee.streampack.internal.utils.extensions.isDevicePortrait
 import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
 import io.github.thibaultbee.streampack.internal.utils.extensions.landscapize
 import io.github.thibaultbee.streampack.internal.utils.extensions.portraitize
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
-import io.github.thibaultbee.streampack.utils.OrientationUtils
 import java.security.InvalidParameterException
 import kotlin.math.roundToInt
 
@@ -139,17 +138,8 @@ class VideoConfig(
      * @param context activity context
      * @return oriented resolution
      */
-    fun getDeviceOrientedResolution(context: Context) =
-        getOrientedResolution(context.deviceOrientation)
-
-    /**
-     * Get resolution according to orientation provided
-     *
-     * @param orientation the orientation
-     * @return oriented resolution
-     */
-    fun getOrientedResolution(orientation: Int): Size {
-        return if (OrientationUtils.isPortrait(orientation)) {
+    fun getDeviceOrientedResolution(context: Context): Size {
+        return if (context.isDevicePortrait) {
             resolution.portraitize()
         } else {
             resolution.landscapize()

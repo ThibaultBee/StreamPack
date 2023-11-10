@@ -23,9 +23,9 @@ import io.github.thibaultbee.streampack.internal.muxers.IVideoMuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4MuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxerHelper
-import io.github.thibaultbee.streampack.internal.sources.camera.getCameraFpsList
-import io.github.thibaultbee.streampack.internal.sources.camera.getCameraOutputStreamSizes
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
+import io.github.thibaultbee.streampack.utils.getCameraFpsList
+import io.github.thibaultbee.streampack.utils.getCameraOutputStreamSizes
 
 /**
  * Configuration helper for [BaseCameraStreamer].

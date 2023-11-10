@@ -17,7 +17,6 @@ package io.github.thibaultbee.streampack.internal.muxers.flv.tags
 
 import android.util.Size
 import io.github.thibaultbee.streampack.data.VideoConfig
-import io.github.thibaultbee.streampack.internal.data.orientation.FixedOrientationProvider
 import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
 import io.github.thibaultbee.streampack.utils.MockUtils
 import org.junit.Assert.assertArrayEquals
@@ -185,8 +184,7 @@ class OnMetadataTest {
         )
 
         MockUtils.mockSizeConstructor(640, 480)
-        val onMetadata = OnMetadata(
-            FixedOrientationProvider(0),
+        val onMetadata = OnMetadata.fromConfigs(
             listOf(
                 VideoConfig(resolution = Size(640, 480), profile = 0, level = 0)
             )

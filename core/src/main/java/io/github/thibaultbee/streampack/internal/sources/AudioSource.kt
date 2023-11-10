@@ -31,7 +31,7 @@ import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.utils.TAG
 import java.nio.ByteBuffer
 
-class AudioCapture : IAudioCapture {
+class AudioSource : IAudioSource {
     private var audioRecord: AudioRecord? = null
     private var mutedByteArray: ByteArray? = null
 
@@ -85,9 +85,9 @@ class AudioCapture : IAudioCapture {
             it.startRecording()
 
             if (!isRunning()) {
-                throw IllegalStateException("AudioCapture: failed to start recording")
+                throw IllegalStateException("AudioSource: failed to start recording")
             }
-        } ?: throw IllegalStateException("AudioCapture: run: : No audioRecorder")
+        } ?: throw IllegalStateException("AudioSource: run: : No audioRecorder")
     }
 
     private fun isRunning() = audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING
@@ -148,7 +148,7 @@ class AudioCapture : IAudioCapture {
             } else {
                 throw IllegalArgumentException(audioRecordErrorToString(length))
             }
-        } ?: throw IllegalStateException("AudioCapture: getFrame: No audioRecorder")
+        } ?: throw IllegalStateException("AudioSource: getFrame: No audioRecorder")
     }
 
     private fun audioRecordErrorToString(audioRecordError: Int) = when (audioRecordError) {

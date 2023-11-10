@@ -18,26 +18,16 @@ package io.github.thibaultbee.streampack.utils
 import android.view.Surface
 
 object OrientationUtils {
-    fun getSurfaceOrientation(surfaceOrientation: Int): Int {
+    /**
+     * Returns the surface orientation in degrees from [Surface] orientation ([Surface.ROTATION_0], ...).
+     */
+    fun getSurfaceOrientationDegrees(surfaceOrientation: Int): Int {
         return when (surfaceOrientation) {
             Surface.ROTATION_0 -> 0
             Surface.ROTATION_90 -> 90
             Surface.ROTATION_180 -> 180
             Surface.ROTATION_270 -> 270
-            else -> 0
+            else -> throw IllegalArgumentException("Invalid surface orientation: $surfaceOrientation")
         }
-    }
-
-    /**
-     * Returns true if the rotation degrees is 90 or 270.
-     */
-    fun isPortrait(rotationDegrees: Int): Boolean {
-        if (rotationDegrees == 90 || rotationDegrees == 270) {
-            return true
-        }
-        if (rotationDegrees == 0 || rotationDegrees == 180) {
-            return false
-        }
-        throw IllegalArgumentException("Invalid rotation degrees: $rotationDegrees")
     }
 }

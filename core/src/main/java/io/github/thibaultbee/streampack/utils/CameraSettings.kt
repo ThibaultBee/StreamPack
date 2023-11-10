@@ -29,6 +29,7 @@ import android.util.Rational
 import io.github.thibaultbee.streampack.internal.sources.camera.CameraController
 import io.github.thibaultbee.streampack.internal.utils.*
 import io.github.thibaultbee.streampack.internal.utils.extensions.clamp
+import io.github.thibaultbee.streampack.internal.utils.extensions.isDevicePortrait
 import io.github.thibaultbee.streampack.internal.utils.extensions.isNormalized
 import io.github.thibaultbee.streampack.internal.utils.extensions.normalize
 import io.github.thibaultbee.streampack.internal.utils.extensions.rotate
@@ -43,7 +44,7 @@ import java.util.concurrent.TimeUnit
  * Use to change camera settings.
  * This object is returned by [BaseCameraStreamer.settings.camera].
  */
-class CameraSettings(context: Context, private val cameraController: CameraController) {
+class CameraSettings(context: Context, cameraController: CameraController) {
     /**
      * Current camera flash API.
      */
@@ -755,6 +756,53 @@ class FocusMetering(
         autoCancelHandle = null
     }
 
+
+    /**
+     * Computes rotation required to transform the camera sensor output orientation to the
+     * device's current orientation in degrees.
+     *
+     * @param cameraId The camera to query for the sensor orientation.
+     * @param surfaceRotationDegrees The current Surface orientation in degrees.
+     * @return Relative rotation of the camera sensor output.
+     */
+    private fun getSensorRotationDegrees(
+        context: Context,
+        cameraId: String,
+        surfaceRotationDegrees: Int = 0
+    ): Int {
+        val characteristics = context.getCameraCharacteristics(cameraId)
+        val sensorOrientationDegrees =
+            characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
+
+        require(sensorOrientationDegrees != null) {
+            "Camera $cameraId has no defined sensor orientation."
+        }
+
+        // Reverse device orientation for back-facing cameras.
+        val isFacingFront = characteristics.get(CameraCharacteristics.LENS_FACING) ==
+                CameraCharacteristics.LENS_FACING_FRONT
+
+        // Calculate desired orientation relative to camera orientation to make
+        // the image upright relative to the device orientation.
+        return getRelativeRotationDegrees(
+            sensorOrientationDegrees,
+            surfaceRotationDegrees,
+            isFacingFront
+        )
+    }
+
+    private fun getRelativeRotationDegrees(
+        sourceRotationDegrees: Int,
+        destRotationDegrees: Int,
+        isFacingFront: Boolean
+    ): Int {
+        return if (isFacingFront) {
+            (sourceRotationDegrees + destRotationDegrees + 360) % 360
+        } else {
+            (sourceRotationDegrees - destRotationDegrees + 360) % 360
+        }
+    }
+
     /**
      * Sets the focus on tap.
      *
@@ -764,7 +812,7 @@ class FocusMetering(
      */
     fun onTap(point: PointF, fovRect: Rect, fovRotationDegree: Int) {
         val cameraId = cameraController.cameraId ?: throw IllegalStateException("Camera ID is null")
-        val relativeRotation = context.computeRelativeRotation(cameraId, fovRotationDegree)
+        val relativeRotation = getSensorRotationDegrees(context, cameraId, fovRotationDegree)
 
         var normalizedPoint = point.normalize(fovRect)
         normalizedPoint = normalizedPoint.rotate(relativeRotation)
@@ -773,7 +821,7 @@ class FocusMetering(
             listOf(normalizedPoint),
             listOf(normalizedPoint),
             emptyList(),
-            if (OrientationUtils.isPortrait(relativeRotation)) {
+            if (context.isDevicePortrait) {
                 Rational(fovRect.height(), fovRect.width())
             } else {
                 Rational(fovRect.width(), fovRect.height())

@@ -25,10 +25,10 @@ import android.util.Size
 import android.view.Surface
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.data.VideoConfig
-import io.github.thibaultbee.streampack.internal.gl.EGlSurface
+import io.github.thibaultbee.streampack.internal.gl.EglWindowSurface
 import io.github.thibaultbee.streampack.internal.gl.FullFrameRect
 import io.github.thibaultbee.streampack.internal.gl.Texture2DProgram
-import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
+import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import java.util.concurrent.Executors
 
@@ -36,12 +36,13 @@ import java.util.concurrent.Executors
  * Encoder for video using MediaCodec.
  *
  * @param useSurfaceMode to get video frames, if [Boolean.true],the encoder will use Surface mode, else Buffer mode with [IEncoderListener.onInputFrame].
+ * @param orientationProvider to get the orientation of the source. If null, the source will keep its original dimensions.
  */
 class VideoMediaCodecEncoder(
     encoderListener: IEncoderListener,
     override val onInternalErrorListener: OnErrorListener,
     private val useSurfaceMode: Boolean,
-    private val orientationProvider: IOrientationProvider
+    private val orientationProvider: ISourceOrientationProvider?
 ) :
     MediaCodecEncoder<VideoConfig>(encoderListener) {
     var codecSurface = if (useSurfaceMode) {
@@ -63,7 +64,7 @@ class VideoMediaCodecEncoder(
 
     override fun onNewMediaCodec() {
         mediaCodec?.let {
-            codecSurface?.surface = it.createInputSurface()
+            codecSurface?.outputSurface = it.createInputSurface()
         }
     }
 
@@ -86,10 +87,12 @@ class VideoMediaCodecEncoder(
 
     override fun extendMediaFormat(config: Config, format: MediaFormat) {
         val videoConfig = config as VideoConfig
-        orientationProvider.orientedSize(videoConfig.resolution).apply {
-            // Override previous format
-            format.setInteger(MediaFormat.KEY_WIDTH, width)
-            format.setInteger(MediaFormat.KEY_HEIGHT, height)
+        orientationProvider?.let {
+            it.getOrientedSize(videoConfig.resolution).apply {
+                // Override previous format
+                format.setInteger(MediaFormat.KEY_WIDTH, width)
+                format.setInteger(MediaFormat.KEY_HEIGHT, height)
+            }
         }
     }
 
@@ -107,10 +110,10 @@ class VideoMediaCodecEncoder(
         get() = codecSurface?.inputSurface
 
     class CodecSurface(
-        private val orientationProvider: IOrientationProvider
+        private val orientationProvider: ISourceOrientationProvider?
     ) :
         SurfaceTexture.OnFrameAvailableListener {
-        private var eglSurface: EGlSurface? = null
+        private var eglSurface: EglWindowSurface? = null
         private var fullFrameRect: FullFrameRect? = null
         private var textureId = -1
         private val executor = Executors.newSingleThreadExecutor()
@@ -119,9 +122,8 @@ class VideoMediaCodecEncoder(
         val inputSurface: Surface?
             get() = surfaceTexture?.let { Surface(surfaceTexture) }
 
-        var surface: Surface? = null
+        var outputSurface: Surface? = null
             set(value) {
-
                 /**
                  * When surface is called twice without the stopStream(). When configure() is
                  * called twice for example,
@@ -141,19 +143,24 @@ class VideoMediaCodecEncoder(
             }
 
         private fun initOrUpdateSurfaceTexture(surface: Surface) {
-            eglSurface = ensureGlContext(EGlSurface(surface)) {
+            eglSurface = ensureGlContext(EglWindowSurface(surface)) {
                 val width = it.getWidth()
                 val height = it.getHeight()
+                val size =
+                    orientationProvider?.getOrientedSize(Size(width, height)) ?: Size(width, height)
+                val orientation = orientationProvider?.orientation ?: 0
                 fullFrameRect = FullFrameRect(Texture2DProgram()).apply {
                     textureId = createTextureObject()
                     setMVPMatrixAndViewPort(
-                        orientationProvider.orientation.toFloat(),
-                        Size(width, height)
+                        orientation.toFloat(),
+                        size
                     )
                 }
 
+                val defaultBufferSize =
+                    orientationProvider?.getDefaultBufferSize(size) ?: Size(width, height)
                 surfaceTexture = attachOrBuildSurfaceTexture(surfaceTexture).apply {
-                    setDefaultBufferSize(maxOf(height, width), minOf(height, width))
+                    setDefaultBufferSize(defaultBufferSize.width, defaultBufferSize.height)
                     setOnFrameAvailableListener(this@CodecSurface)
                 }
             }
@@ -170,9 +177,9 @@ class VideoMediaCodecEncoder(
         }
 
         private fun ensureGlContext(
-            surface: EGlSurface?,
-            action: (EGlSurface) -> Unit
-        ): EGlSurface? {
+            surface: EglWindowSurface?,
+            action: (EglWindowSurface) -> Unit
+        ): EglWindowSurface? {
             surface?.let {
                 it.makeCurrent()
                 action(it)

@@ -22,15 +22,23 @@ import android.util.Rational
 
 fun Any.numOfBits(): Int {
     return when (this) {
-        is Byte -> 8
-        is Short -> 16
-        is Int -> 32
-        is Long -> 64
-        is Float -> 32
-        is Double -> 64
+        is Byte -> Byte.SIZE_BITS
+        is Short -> Short.SIZE_BITS
+        is Int -> Int.SIZE_BITS
+        is Long -> Long.SIZE_BITS
+        is Float -> Float.SIZE_BITS
+        is Double -> Double.SIZE_BITS
         is Boolean -> 1
-        is Char -> 16
-        is String -> 8 * this.length
+        is Char -> Char.SIZE_BITS
+        is String -> Char.SIZE_BITS * length
+        is ByteArray -> Byte.SIZE_BITS * size
+        is ShortArray -> Short.SIZE_BITS * size
+        is IntArray -> Int.SIZE_BITS * size
+        is LongArray -> Long.SIZE_BITS * size
+        is FloatArray -> Float.SIZE_BITS * size
+        is DoubleArray -> Double.SIZE_BITS * size
+        is BooleanArray -> size
+        is CharArray -> Char.SIZE_BITS * size
         else -> throw IllegalArgumentException("Unsupported type: ${this.javaClass.name}")
     }
 }
@@ -68,9 +76,3 @@ fun PointF.normalize(rect: Rect): PointF {
 }
 
 fun Rational.flip() = Rational(denominator, numerator)
-
-val Int.isOrientationPortrait: Boolean
-    get() = this == 90 || this == 270
-
-val Int.isOrientationLandscape: Boolean
-    get() = this == 0 || this == 180

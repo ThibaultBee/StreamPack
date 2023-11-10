@@ -21,11 +21,10 @@ import android.media.projection.MediaProjectionManager
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.core.app.ActivityCompat
-import io.github.thibaultbee.streampack.internal.data.orientation.FixedOrientationProvider
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
-import io.github.thibaultbee.streampack.internal.sources.AudioCapture
-import io.github.thibaultbee.streampack.internal.sources.screen.ScreenCapture
+import io.github.thibaultbee.streampack.internal.sources.AudioSource
+import io.github.thibaultbee.streampack.internal.sources.screen.ScreenSource
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 
 /**
@@ -45,15 +44,14 @@ open class BaseScreenRecorderStreamer(
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseStreamer(
     context = context,
-    videoCapture = ScreenCapture(context),
-    audioCapture = if (enableAudio) AudioCapture() else null,
-    orientationProvider = FixedOrientationProvider(orientation = 0),
+    videoSource = ScreenSource(context),
+    audioSource = if (enableAudio) AudioSource() else null,
     muxer = muxer,
     endpoint = endpoint,
     initialOnErrorListener = initialOnErrorListener
 ) {
-    private val screenCapture =
-        (videoCapture as ScreenCapture).apply { onErrorListener = onInternalErrorListener }
+    private val screenSource =
+        (videoSource as ScreenSource).apply { onErrorListener = onInternalErrorListener }
 
     companion object {
         /**
@@ -79,22 +77,22 @@ open class BaseScreenRecorderStreamer(
          *
          * @return activity result previously set.
          */
-        get() = screenCapture.activityResult
+        get() = screenSource.activityResult
         /**
          * Set activity result. Must be call before [startStream].
          *
          * @param value activity result returns from [ComponentActivity.registerForActivityResult] callback.
          */
         set(value) {
-            screenCapture.activityResult = value
+            screenSource.activityResult = value
         }
 
     /**
-     * Same as [BaseStreamer] but it prepares [ScreenCapture.encoderSurface].
+     * Same as [BaseStreamer] but it prepares [ScreenSource.encoderSurface].
      * You must have set [activityResult] before.
      */
     override fun startStream() {
-        screenCapture.encoderSurface = videoEncoder?.inputSurface
+        screenSource.encoderSurface = videoEncoder?.inputSurface
         super.startStream()
     }
 }

@@ -17,22 +17,31 @@ package io.github.thibaultbee.streampack.internal.sources.camera
 
 import android.Manifest
 import android.content.Context
+import android.util.Size
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
-import io.github.thibaultbee.streampack.internal.sources.IVideoCapture
+import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
+import io.github.thibaultbee.streampack.internal.sources.IVideoSource
+import io.github.thibaultbee.streampack.internal.utils.extensions.deviceOrientation
+import io.github.thibaultbee.streampack.internal.utils.extensions.isDevicePortrait
+import io.github.thibaultbee.streampack.internal.utils.extensions.landscapize
+import io.github.thibaultbee.streampack.internal.utils.extensions.portraitize
 import io.github.thibaultbee.streampack.utils.CameraSettings
 import io.github.thibaultbee.streampack.utils.defaultCameraId
 import io.github.thibaultbee.streampack.utils.isFrameRateSupported
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
+import kotlin.math.max
+import kotlin.math.min
 
-class CameraCapture(
+class CameraSource(
     private val context: Context,
-) : IVideoCapture {
+) : IVideoSource {
     var previewSurface: Surface? = null
     override var encoderSurface: Surface? = null
+
     var cameraId: String = context.defaultCameraId
         get() = cameraController.cameraId ?: field
         @RequiresPermission(Manifest.permission.CAMERA)
@@ -51,10 +60,13 @@ class CameraCapture(
             }
         }
     private var cameraController = CameraController(context)
-    var settings = CameraSettings(context, cameraController)
+    val settings = CameraSettings(context, cameraController)
 
     override val timestampOffset = CameraHelper.getTimeOffsetToMonoClock(context, cameraId)
     override val hasSurface = true
+    override val hasFrames = false
+    override val orientationProvider = CameraOrientationProvider(context)
+
     override fun getFrame(buffer: ByteBuffer): Frame {
         throw UnsupportedOperationException("Camera expects to run in Surface mode")
     }
@@ -112,5 +124,31 @@ class CameraCapture(
 
     override fun release() {
         cameraController.release()
+    }
+
+
+    class CameraOrientationProvider(private val context: Context) :
+        ISourceOrientationProvider {
+
+        override val orientation: Int
+            get() = when (context.deviceOrientation) {
+                Surface.ROTATION_0 -> 0
+                Surface.ROTATION_90 -> 270
+                Surface.ROTATION_180 -> 180
+                Surface.ROTATION_270 -> 90
+                else -> 0
+            }
+
+        override fun getOrientedSize(size: Size): Size {
+            return if (context.isDevicePortrait) {
+                size.portraitize()
+            } else {
+                size.landscapize()
+            }
+        }
+
+        override fun getDefaultBufferSize(size: Size): Size {
+            return Size(max(size.width, size.height), min(size.width, size.height))
+        }
     }
 }

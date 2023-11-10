@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Thibault B.
+ * Copyright (C) 2021 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,19 @@
  */
 package io.github.thibaultbee.streampack.internal.sources
 
-import io.github.thibaultbee.streampack.data.AudioConfig
+import android.view.Surface
+import io.github.thibaultbee.streampack.data.VideoConfig
+import io.github.thibaultbee.streampack.internal.interfaces.Streamable
 
-interface IAudioCapture : IFrameCapture<AudioConfig> {
+interface ISurfaceSource : Streamable<VideoConfig> {
     /**
-     * [Boolean.true] to mute [IAudioCapture], [Boolean.false] to unmute.
+     * The offset between source capture time and MONOTONIC clock. It is used to synchronize video
+     * with audio. It is only useful for camera source.
      */
-    var isMuted: Boolean
+    val timestampOffset: Long
+
+    /**
+     * Set surface where capture source will render its frame.
+     */
+    var encoderSurface: Surface?
 }

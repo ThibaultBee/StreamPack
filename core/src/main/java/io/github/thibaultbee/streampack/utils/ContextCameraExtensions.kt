@@ -16,13 +16,13 @@
 package io.github.thibaultbee.streampack.utils
 
 import android.content.Context
+import android.graphics.ImageFormat
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureResult
 import android.os.Build
 import android.util.Range
 import android.util.Size
-import io.github.thibaultbee.streampack.internal.sources.camera.getCameraFpsList
 
 /**
  * Get camera characteristics.
@@ -297,36 +297,44 @@ fun Context.isOpticalStabilizationAvailable(cameraId: String) =
             CaptureResult.LENS_OPTICAL_STABILIZATION_MODE_ON
         ) ?: false
 
+
 /**
- * Computes rotation required to transform the camera sensor output orientation to the
- * device's current orientation in degrees.
+ * Gets all output capture sizes.
  *
- * @param cameraId The camera to query for the sensor orientation.
- * @param surfaceRotationDegrees The current device orientation as a Surface constant.
- * @return Relative rotation of the camera sensor output.
+ * @return List of resolutions supported by all camera
  */
-fun Context.computeRelativeRotation(
-    cameraId: String,
-    surfaceRotationDegrees: Int
-): Int {
-    val characteristics = getCameraCharacteristics(cameraId)
-    val sensorOrientationDegrees =
-        characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
-
-    // Reverse device orientation for back-facing cameras.
-    val sign = if (characteristics.get(CameraCharacteristics.LENS_FACING) ==
-        CameraCharacteristics.LENS_FACING_FRONT
-    ) {
-        1
-    } else if (characteristics.get(CameraCharacteristics.LENS_FACING) ==
-        CameraCharacteristics.LENS_FACING_BACK
-    ) {
-        -1
-    } else {
-        throw IllegalStateException("Unknown lens facing")
+fun Context.getCameraOutputStreamSizes(): List<Size> {
+    val cameraIdList = cameraList
+    val resolutionSet = mutableSetOf<Size>()
+    cameraIdList.forEach { cameraId ->
+        resolutionSet.addAll(getCameraOutputStreamSizes(cameraId))
     }
+    return resolutionSet.toList()
+}
 
-    // Calculate desired orientation relative to camera orientation to make
-    // the image upright relative to the device orientation.
-    return (sensorOrientationDegrees!! - surfaceRotationDegrees * sign + 360) % 360
+/**
+ * Gets list of output stream sizes of a camera.
+ *
+ * @param cameraId camera id
+ * @return List of resolutions supported by a camera
+ * @see [Context.getCameraOutputStreamSizes]
+ */
+fun Context.getCameraOutputStreamSizes(
+    cameraId: String,
+    imageFormat: Int = ImageFormat.YUV_420_888
+): List<Size> {
+    return this.getCameraCharacteristics(cameraId)[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]?.getOutputSizes(
+        imageFormat
+    )?.toList() ?: emptyList()
+}
+
+/**
+ * Get list of framerate for a camera.
+ *
+ * @param cameraId camera id
+ * @return List of fps supported by a camera
+ */
+fun Context.getCameraFpsList(cameraId: String): List<Range<Int>> {
+    return this.getCameraCharacteristics(cameraId)[CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES]?.toList()
+        ?: emptyList()
 }

@@ -30,14 +30,11 @@ import java.util.*
  * (Contains mostly code borrowed from CameraX)
  */
 
-class EGlSurface(private val surface: Surface) {
+class EglWindowSurface(private val surface: Surface) {
     private var eglDisplay: EGLDisplay = EGL14.EGL_NO_DISPLAY
     private var eglContext: EGLContext = EGL14.EGL_NO_CONTEXT
     private var eglSurface: EGLSurface = EGL14.EGL_NO_SURFACE
     private val configs = arrayOfNulls<EGLConfig>(1)
-
-    private var width = 0
-    private var height = 0
 
     companion object {
         private const val EGL_RECORDABLE_ANDROID = 0x3142
@@ -92,8 +89,6 @@ class EGlSurface(private val surface: Surface) {
 
         // Create a window surface, and attach it to the Surface we received.
         createEGLSurface()
-        width = getWidth()
-        height = getHeight()
     }
 
     private fun createEGLSurface() {

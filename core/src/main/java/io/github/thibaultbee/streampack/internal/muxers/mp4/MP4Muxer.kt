@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.internal.muxers.mp4
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.data.Packet
-import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
+import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.FileTypeBox
@@ -43,7 +43,7 @@ class MP4Muxer(
     private val segmenterFactory: MP4SegmenterFactory = DefaultMP4SegmenterFactory()
 ) : IMuxer {
     override val helper = MP4MuxerHelper()
-    override lateinit var orientationProvider: IOrientationProvider
+    override var sourceOrientationProvider: ISourceOrientationProvider? = null
 
     override var listener: IMuxerListener? = initialListener
     private val tracks = mutableListOf<Track>()
@@ -116,8 +116,7 @@ class MP4Muxer(
     private fun createNewSegment(movieBoxFactory: AbstractMovieBoxFactory): Segment {
         return Segment(
             tracks,
-            movieBoxFactory,
-            orientationProvider,
+            movieBoxFactory
         ) { buffer -> writeBuffer(buffer) }
     }
 

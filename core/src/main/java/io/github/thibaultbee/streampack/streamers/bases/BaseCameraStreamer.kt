@@ -22,16 +22,16 @@ import android.view.SurfaceView
 import android.view.TextureView
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.error.StreamPackError
-import io.github.thibaultbee.streampack.internal.data.orientation.DeviceOrientationProvider
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
-import io.github.thibaultbee.streampack.internal.sources.AudioCapture
-import io.github.thibaultbee.streampack.internal.sources.camera.CameraCapture
+import io.github.thibaultbee.streampack.internal.sources.AudioSource
+import io.github.thibaultbee.streampack.internal.sources.camera.CameraSource
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.streamers.settings.BaseCameraStreamerSettings
 import io.github.thibaultbee.streampack.views.AutoFitSurfaceView
+import io.github.thibaultbee.streampack.views.PreviewView
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -51,14 +51,13 @@ open class BaseCameraStreamer(
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseStreamer(
     context = context,
-    videoCapture = CameraCapture(context),
-    audioCapture = if (enableAudio) AudioCapture() else null,
-    orientationProvider = DeviceOrientationProvider(context),
+    videoSource = CameraSource(context),
+    audioSource = if (enableAudio) AudioSource() else null,
     muxer = muxer,
     endpoint = endpoint,
     initialOnErrorListener = initialOnErrorListener
 ), ICameraStreamer {
-    private val cameraCapture = videoCapture as CameraCapture
+    private val cameraSource = videoSource as CameraSource
     override val helper = CameraStreamerConfigurationHelper(muxer.helper)
 
     /**
@@ -70,7 +69,7 @@ open class BaseCameraStreamer(
          *
          * @return a string that described current camera
          */
-        get() = cameraCapture.cameraId
+        get() = cameraSource.cameraId
         /**
          * Set current camera id.
          *
@@ -78,11 +77,11 @@ open class BaseCameraStreamer(
          */
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
-            cameraCapture.cameraId = value
+            cameraSource.cameraId = value
         }
 
     override var settings =
-        BaseCameraStreamerSettings(audioCapture, cameraCapture, audioEncoder, videoEncoder)
+        BaseCameraStreamerSettings(audioSource, cameraSource, audioEncoder, videoEncoder)
 
     /**
      * Starts audio and video capture.
@@ -90,7 +89,7 @@ open class BaseCameraStreamer(
      *
      * Inside, it launches both camera and microphone capture.
      *
-     * @param previewSurface Where to display camera capture. Could be a [Surface] from a [StreamerSurfaceView], an [AutoFitSurfaceView], a [SurfaceView] or a [TextureView].
+     * @param previewSurface Where to display camera capture. Could be a [Surface] from a [PreviewView], an [AutoFitSurfaceView], a [SurfaceView] or a [TextureView].
      * @param cameraId camera id (get camera id list from [Context.cameraList])
      *
      * @throws [StreamPackError] if audio or video capture couldn't be launch
@@ -101,9 +100,9 @@ open class BaseCameraStreamer(
         require(videoConfig != null) { "Video has not been configured!" }
         runBlocking {
             try {
-                cameraCapture.previewSurface = previewSurface
-                cameraCapture.encoderSurface = videoEncoder?.inputSurface
-                cameraCapture.startPreview(cameraId)
+                cameraSource.previewSurface = previewSurface
+                cameraSource.encoderSurface = videoEncoder?.inputSurface
+                cameraSource.startPreview(cameraId)
             } catch (e: Exception) {
                 stopPreview()
                 throw StreamPackError(e)
@@ -119,7 +118,7 @@ open class BaseCameraStreamer(
      */
     override fun stopPreview() {
         stopStream()
-        cameraCapture.stopPreview()
+        cameraSource.stopPreview()
     }
 
     /**

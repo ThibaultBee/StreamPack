@@ -16,6 +16,8 @@
 package io.github.thibaultbee.streampack.internal.utils.extensions
 
 import android.content.Context
+import android.content.res.Configuration.ORIENTATION_LANDSCAPE
+import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.hardware.display.DisplayManager
 import android.view.Display
 import android.view.Surface
@@ -26,21 +28,23 @@ import io.github.thibaultbee.streampack.utils.OrientationUtils
 /**
  * Returns the device orientation in degrees from the natural orientation: portrait.
  *
- * @return the device orientation
+ * @return the device orientation in degrees
+ */
+val Context.deviceOrientationDegrees: Int
+    get() {
+        val displayManager = this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+        return OrientationUtils.getSurfaceOrientationDegrees(displayManager.getDisplay(Display.DEFAULT_DISPLAY).rotation)
+    }
+
+/**
+ * Returns the device orientation in degrees from the natural orientation: portrait.
+ *
+ * @return the device orientation as [Surface.ROTATION_0], [Surface.ROTATION_90], [Surface.ROTATION_180] or [Surface.ROTATION_270]
  */
 val Context.deviceOrientation: Int
     get() {
         val displayManager = this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-        return when (val displayRotation =
-            displayManager.getDisplay(Display.DEFAULT_DISPLAY).rotation) {
-            Surface.ROTATION_0 -> 90
-            Surface.ROTATION_90 -> 0
-            Surface.ROTATION_180 -> 270
-            Surface.ROTATION_270 -> 180
-            else -> throw UnsupportedOperationException(
-                "Unsupported display rotation: $displayRotation"
-            )
-        }
+        return displayManager.getDisplay(Display.DEFAULT_DISPLAY).rotation
     }
 
 /**
@@ -49,10 +53,8 @@ val Context.deviceOrientation: Int
  * @return true if the device is in portrait, otherwise false
  */
 val Context.isDevicePortrait: Boolean
-    get() {
-        val orientation = this.deviceOrientation
-        return OrientationUtils.isPortrait(orientation)
-    }
+    get() = resources.configuration.orientation == ORIENTATION_PORTRAIT
+
 
 /**
  * Check if the device is in landscape.
@@ -60,10 +62,7 @@ val Context.isDevicePortrait: Boolean
  * @return true if the device is in landscape, otherwise false
  */
 val Context.isDeviceLandscape: Boolean
-    get() = !isDevicePortrait
-
-val Context.naturalOrientation: Int
-    get() = resources.configuration.orientation
+    get() = resources.configuration.orientation == ORIENTATION_LANDSCAPE
 
 val Context.defaultTsServiceInfo
     get() = TsServiceInfo(

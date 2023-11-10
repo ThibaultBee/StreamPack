@@ -29,11 +29,11 @@ import io.github.thibaultbee.streampack.internal.encoders.IEncoderListener
 import io.github.thibaultbee.streampack.internal.encoders.VideoMediaCodecEncoder
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.events.EventHandler
-import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
+import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
-import io.github.thibaultbee.streampack.internal.sources.IAudioCapture
-import io.github.thibaultbee.streampack.internal.sources.IVideoCapture
+import io.github.thibaultbee.streampack.internal.sources.IAudioSource
+import io.github.thibaultbee.streampack.internal.sources.IVideoSource
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationHelper
@@ -48,18 +48,16 @@ import java.nio.ByteBuffer
  * Base class of all streamers.
  *
  * @param context application context
- * @param videoCapture Video source
- * @param audioCapture Audio source
- * @param orientationProvider The orientation provider
+ * @param videoSource Video source
+ * @param audioSource Audio source
  * @param muxer a [IMuxer] implementation
  * @param endpoint a [IEndpoint] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
  */
 abstract class BaseStreamer(
     private val context: Context,
-    protected val audioCapture: IAudioCapture?,
-    protected val videoCapture: IVideoCapture?,
-    orientationProvider: IOrientationProvider,
+    protected val audioSource: IAudioSource?,
+    protected val videoSource: IVideoSource?,
     private val muxer: IMuxer,
     protected val endpoint: IEndpoint,
     initialOnErrorListener: OnErrorListener? = null
@@ -78,6 +76,9 @@ abstract class BaseStreamer(
     protected var videoConfig: VideoConfig? = null
     private var audioConfig: AudioConfig? = null
 
+    private val sourceOrientationProvider: ISourceOrientationProvider?
+        get() = videoSource?.orientationProvider
+
     // Only handle stream error (error on muxer, endpoint,...)
     /**
      * Internal usage only
@@ -90,7 +91,7 @@ abstract class BaseStreamer(
 
     private val audioEncoderListener = object : IEncoderListener {
         override fun onInputFrame(buffer: ByteBuffer): Frame {
-            return audioCapture!!.getFrame(buffer)
+            return audioSource!!.getFrame(buffer)
         }
 
         override fun onOutputFrame(frame: Frame) {
@@ -106,15 +107,15 @@ abstract class BaseStreamer(
 
     private val videoEncoderListener = object : IEncoderListener {
         override fun onInputFrame(buffer: ByteBuffer): Frame {
-            return videoCapture!!.getFrame(buffer)
+            return videoSource!!.getFrame(buffer)
         }
 
         override fun onOutputFrame(frame: Frame) {
             videoStreamId?.let {
                 try {
-                    frame.pts += videoCapture!!.timestampOffset
+                    frame.pts += videoSource!!.timestampOffset
                     frame.dts = if (frame.dts != null) {
-                        frame.dts!! + videoCapture.timestampOffset
+                        frame.dts!! + videoSource.timestampOffset
                     } else {
                         null
                     }
@@ -154,30 +155,30 @@ abstract class BaseStreamer(
         }
     }
 
-    protected var audioEncoder = if (audioCapture != null) {
+    protected var audioEncoder = if (audioSource != null) {
         AudioMediaCodecEncoder(audioEncoderListener, onInternalErrorListener)
     } else {
         null
     }
-    protected var videoEncoder = if (videoCapture != null) {
+    protected var videoEncoder = if (videoSource != null) {
         VideoMediaCodecEncoder(
             videoEncoderListener,
             onInternalErrorListener,
-            videoCapture.hasSurface,
-            orientationProvider
+            videoSource.hasSurface,
+            sourceOrientationProvider
         )
     } else {
         null
     }
-    override val settings = BaseStreamerSettings(audioCapture, audioEncoder, videoEncoder)
+    override val settings = BaseStreamerSettings(audioSource, audioEncoder, videoEncoder)
 
     private val hasAudio: Boolean
-        get() = audioCapture != null
+        get() = audioSource != null
     private val hasVideo: Boolean
-        get() = videoCapture != null
+        get() = videoSource != null
 
     init {
-        muxer.orientationProvider = orientationProvider
+        muxer.sourceOrientationProvider = sourceOrientationProvider
         muxer.listener = muxListener
     }
 
@@ -200,7 +201,7 @@ abstract class BaseStreamer(
         this.audioConfig = audioConfig
 
         try {
-            audioCapture?.configure(audioConfig)
+            audioSource?.configure(audioConfig)
             audioEncoder?.release()
             audioEncoder?.configure(audioConfig)
 
@@ -232,7 +233,7 @@ abstract class BaseStreamer(
         this.videoConfig = videoConfig
 
         try {
-            videoCapture?.configure(videoConfig)
+            videoSource?.configure(videoConfig)
             videoEncoder?.release()
             videoEncoder?.configure(videoConfig)
 
@@ -292,10 +293,10 @@ abstract class BaseStreamer(
 
             muxer.startStream()
 
-            audioCapture?.startStream()
+            audioSource?.startStream()
             audioEncoder?.startStream()
 
-            videoCapture?.startStream()
+            videoSource?.startStream()
             videoEncoder?.startStream()
         } catch (e: Exception) {
             stopStream()
@@ -325,10 +326,10 @@ abstract class BaseStreamer(
      * @see [stopStream]
      */
     private fun stopStreamImpl() {
-        videoCapture?.stopStream()
+        videoSource?.stopStream()
         videoEncoder?.stopStream()
         audioEncoder?.stopStream()
-        audioCapture?.stopStream()
+        audioSource?.stopStream()
 
         muxer.stopStream()
 
@@ -361,7 +362,7 @@ abstract class BaseStreamer(
         videoConfig?.let {
             videoEncoder?.configure(it)
         }
-        videoCapture?.encoderSurface = videoEncoder?.inputSurface
+        videoSource?.encoderSurface = videoEncoder?.inputSurface
     }
 
     /**
@@ -374,8 +375,8 @@ abstract class BaseStreamer(
         audioEncoder?.release()
         videoEncoder?.codecSurface?.dispose()
         videoEncoder?.release()
-        audioCapture?.release()
-        videoCapture?.release()
+        audioSource?.release()
+        videoSource?.release()
 
         muxer.release()
 

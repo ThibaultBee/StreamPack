@@ -18,7 +18,6 @@ package io.github.thibaultbee.streampack.ext.rtmp.streamers
 import android.content.Context
 import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.RtmpProducer
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxer
-import io.github.thibaultbee.streampack.internal.muxers.flv.tags.video.ExtendedVideoTag
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
@@ -36,7 +35,7 @@ class AudioOnlyRtmpLiveStreamer(
     initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseAudioOnlyLiveStreamer(
     context = context,
-    muxer = FlvMuxer(context = context, writeToFile = false),
+    muxer = FlvMuxer(writeToFile = false),
     endpoint = RtmpProducer(hasAudio = true, hasVideo = false),
     initialOnErrorListener = initialOnErrorListener,
     initialOnConnectionListener = initialOnConnectionListener

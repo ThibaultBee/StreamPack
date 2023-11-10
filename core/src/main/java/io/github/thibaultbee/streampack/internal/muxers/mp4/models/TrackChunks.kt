@@ -21,7 +21,6 @@ import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
-import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.AV1CodecConfigurationBox2
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.AV1SampleEntry
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.AVCConfigurationBox
@@ -68,6 +67,7 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.clone
 import io.github.thibaultbee.streampack.internal.utils.extensions.isAnnexB
 import io.github.thibaultbee.streampack.internal.utils.extensions.isAvcc
 import io.github.thibaultbee.streampack.internal.utils.extensions.removeStartCode
+import io.github.thibaultbee.streampack.internal.utils.extensions.resolution
 import io.github.thibaultbee.streampack.internal.utils.extensions.startCodeSize
 import java.nio.ByteBuffer
 
@@ -78,7 +78,6 @@ import java.nio.ByteBuffer
  */
 class TrackChunks(
     val track: Track,
-    private val orientationProvider: IOrientationProvider,
     val onNewSample: (ByteBuffer) -> Unit,
 ) {
     private val chunks = mutableListOf<Chunk>()
@@ -218,7 +217,7 @@ class TrackChunks(
     }
 
     fun createTrak(firstChunkOffset: Long): TrackBox {
-        val tkhd = createTrackHeaderBox(track.config)
+        val tkhd = createTrackHeaderBox(track.config, format.first())
         val mdhd =
             MediaHeaderBox(version = 0, timescale = track.timescale, duration = duration)
         val hdlr = track.config.createHandlerBox()
@@ -237,10 +236,10 @@ class TrackChunks(
         return TrackBox(tkhd, mdia)
     }
 
-    private fun createTrackHeaderBox(config: Config): TrackHeaderBox {
+    private fun createTrackHeaderBox(config: Config, format: MediaFormat): TrackHeaderBox {
         val resolution = when (config) {
             is AudioConfig -> Size(0, 0)
-            is VideoConfig -> orientationProvider.orientedSize(config.resolution)
+            is VideoConfig -> format.resolution
             else -> throw IllegalArgumentException("Unsupported config")
         }
         val volume = when (config) {
@@ -310,11 +309,12 @@ class TrackChunks(
     private fun createSampleDescriptionBox(): SampleDescriptionBox {
         val sampleEntry = when (track.config.mimeType) {
             MediaFormat.MIMETYPE_VIDEO_AVC -> {
+                val format = this.format.first()
                 val extra = this.extra
                 require(extra.size == 2) { "For AVC, extra must contain 2 parameter sets" }
                 (track.config as VideoConfig)
                 AVCSampleEntry(
-                    orientationProvider.orientedSize(track.config.resolution),
+                    format.resolution,
                     avcC = AVCConfigurationBox(
                         AVCDecoderConfigurationRecord.fromParameterSets(
                             extra[0],
@@ -325,11 +325,12 @@ class TrackChunks(
             }
 
             MediaFormat.MIMETYPE_VIDEO_HEVC -> {
+                val format = this.format.first()
                 val extra = this.extra
                 require(extra.size == 3) { "For HEVC, extra must contain 3 parameter sets" }
                 (track.config as VideoConfig)
                 HEVCSampleEntry(
-                    orientationProvider.orientedSize(track.config.resolution),
+                    format.resolution,
                     hvcC = HEVCConfigurationBox(
                         HEVCDecoderConfigurationRecord.fromParameterSets(
                             extra.flatten()
@@ -339,22 +340,23 @@ class TrackChunks(
             }
 
             MediaFormat.MIMETYPE_VIDEO_VP9 -> {
-                val format = this.format
+                val format = this.format.first()
                 (track.config as VideoConfig)
                 VP9SampleEntry(
-                    orientationProvider.orientedSize(track.config.resolution),
+                    format.resolution,
                     vpcC = VPCodecConfigurationBox(
-                        VPCodecConfigurationRecord.fromMediaFormat(format.first())
+                        VPCodecConfigurationRecord.fromMediaFormat(format)
                     ),
                 )
             }
 
             MediaFormat.MIMETYPE_VIDEO_AV1 -> {
+                val format = this.format.first()
                 val extra = this.extra
                 require(extra.size == 1) { "For AV1, extra must contain 1 extra" }
                 (track.config as VideoConfig)
                 AV1SampleEntry(
-                    orientationProvider.orientedSize(track.config.resolution),
+                    format.resolution,
                     av1C = AV1CodecConfigurationBox2(
                         extra[0][0]
                     ),

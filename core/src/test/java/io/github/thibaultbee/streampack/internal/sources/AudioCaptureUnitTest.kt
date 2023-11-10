@@ -21,21 +21,21 @@ import org.junit.Assert
 import org.junit.Test
 import java.nio.ByteBuffer
 
-class AudioCaptureUnitTest {
+class AudioSourceUnitTest {
     init {
         Logger.logger = FakeLogger()
     }
 
     @Test
     fun `assert exception on bad state`() {
-        val audioCapture = AudioCapture()
+        val audioSource = AudioSource()
         try {
-            audioCapture.startStream()
+            audioSource.startStream()
             Assert.fail()
         } catch (_: Exception) {
         }
         try {
-            audioCapture.getFrame(ByteBuffer.allocate(10))
+            audioSource.getFrame(ByteBuffer.allocate(10))
             Assert.fail()
         } catch (_: Exception) {
         }
@@ -43,14 +43,14 @@ class AudioCaptureUnitTest {
 
     @Test
     fun `assert no exception on bad state`() {
-        val audioCapture = AudioCapture()
+        val audioSource = AudioSource()
         try {
-            audioCapture.stopStream()
+            audioSource.stopStream()
         } catch (e: Exception) {
             Assert.fail()
         }
         try {
-            audioCapture.release()
+            audioSource.release()
         } catch (e: Exception) {
             Assert.fail()
         }

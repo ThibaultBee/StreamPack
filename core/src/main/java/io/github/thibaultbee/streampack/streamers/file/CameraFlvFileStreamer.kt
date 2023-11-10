@@ -33,7 +33,7 @@ class CameraFlvFileStreamer(
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseCameraFileStreamer(
     context = context,
-    muxer = FlvMuxer(context = context, writeToFile = true),
+    muxer = FlvMuxer(writeToFile = true),
     enableAudio = enableAudio,
     initialOnErrorListener = initialOnErrorListener
 )

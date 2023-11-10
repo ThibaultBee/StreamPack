@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.internal.utils.extensions
 
 import android.media.MediaFormat
+import android.util.Size
 import java.nio.ByteBuffer
 
 /**
@@ -48,4 +49,16 @@ val MediaFormat.extra: List<ByteBuffer>
         }
 
         return extra
+    }
+
+/**
+ * Extracts resolution from a [MediaFormat].
+ * Only for [MediaFormat] of video.
+ */
+val MediaFormat.resolution: Size
+    get() {
+        return Size(
+            getInteger(MediaFormat.KEY_WIDTH),
+            getInteger(MediaFormat.KEY_HEIGHT)
+        )
     }

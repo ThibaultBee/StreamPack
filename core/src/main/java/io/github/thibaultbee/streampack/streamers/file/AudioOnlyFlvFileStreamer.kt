@@ -31,6 +31,6 @@ class AudioOnlyFlvFileStreamer(
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseAudioOnlyFileStreamer(
     context = context,
-    muxer = FlvMuxer(context = context, writeToFile = true),
+    muxer = FlvMuxer(writeToFile = true),
     initialOnErrorListener = initialOnErrorListener
 )

@@ -5,8 +5,8 @@
 ### Definitions
 
 `Source`:
-A class that represents an audio or video source. For example, a camera (`CameraCapture`), or a
-microphone (`AudioCapture`).
+A class that represents an audio or video source. For example, a camera (`CameraSource`), or a
+microphone (`AudioSource`).
 
 `Encoder`:
 A class that represents an audio or video encoders. Only Android MediaCodec API is used (
@@ -76,15 +76,15 @@ Then these base streamers are specialized for a File or for a Live:
 There are 2 types of sources:
 
 - frames are captured in a `ByteBuffer`: such as a microphone. `ByteBuffer` sources
-  implement `IFrameCapture`.
+  implement `IFrameSource`.
 - frames are passed to the encoder surface (video only): when the video source can write to
   a `Surface`. Its purpose is to improve encoder performance. For example, it suits camera and
-  screen recorder. `Surface` sources implement `ISurfaceCapture`.
+  screen recorder. `Surface` sources implement `ISurfaceSource`.
 
-To create a new audio source, implements a `IAudioCapture`. It inherits from `IFrameCapture`.
+To create a new audio source, implements a `IAudioSource`. It inherits from `IFrameSource`.
 
-To create a new video source, implements a `IVideoCapture`. It inherits from both `IFrameCapture`
-and `ISurfaceCapture`. Always prefer to use a video source as a `Surface` source if it is possible.
+To create a new video source, implements a `IVideSource`. It inherits from both `IFrameCapture`
+and `ISurfaceSource`. Always prefer to use a video source as a `Surface` source if it is possible.
 
 If your video source is a `Surface` source, set:
 

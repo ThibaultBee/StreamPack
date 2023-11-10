@@ -145,7 +145,7 @@ class PreviewView @JvmOverloads constructor(
                 it.settings.camera.focusMetering.onTap(
                     PointF(x, y),
                     Rect(this.x.toInt(), this.y.toInt(), width, height),
-                    OrientationUtils.getSurfaceOrientation(display.rotation)
+                    OrientationUtils.getSurfaceOrientationDegrees(display.rotation)
                 )
             }
 

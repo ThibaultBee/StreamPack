@@ -19,7 +19,7 @@ import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.interfaces.Streamable
 import java.nio.ByteBuffer
 
-interface IFrameCapture<T> : Streamable<T> {
+interface IFrameSource<T> : Streamable<T> {
 
     /**
      * Generate a frame from capture device

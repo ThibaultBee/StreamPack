@@ -33,7 +33,7 @@ class TsAudioOnlyStreamerTest : AudioOnlyStreamerTestCase() {
 class FlvAudioOnlyStreamerTest : AudioOnlyStreamerTestCase() {
     override val streamer = BaseAudioOnlyStreamer(
         context,
-        FlvMuxer(context, writeToFile = false),
+        FlvMuxer(writeToFile = false),
         FakeEndpoint(),
     )
 }

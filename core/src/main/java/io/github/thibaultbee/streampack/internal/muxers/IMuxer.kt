@@ -17,13 +17,13 @@ package io.github.thibaultbee.streampack.internal.muxers
 
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.internal.data.Frame
-import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
+import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.interfaces.Streamable
 
-interface IMuxer: Streamable<Unit> {
+interface IMuxer : Streamable<Unit> {
     val helper: IMuxerHelper
 
-    var orientationProvider: IOrientationProvider
+    var sourceOrientationProvider: ISourceOrientationProvider?
     var listener: IMuxerListener?
 
     fun encode(frame: Frame, streamPid: Int)

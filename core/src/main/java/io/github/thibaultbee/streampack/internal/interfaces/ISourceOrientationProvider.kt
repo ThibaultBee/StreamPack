@@ -15,12 +15,15 @@
  */
 package io.github.thibaultbee.streampack.internal.interfaces
 
+import android.graphics.SurfaceTexture
 import android.util.Size
 
 /**
  * Interface to get the orientation of the capture surface.
+ * These information are used to rotate the frames in the codec surface if the source needs to be rotated.
+ * It might not be the case for certain sources.
  */
-interface IOrientationProvider {
+interface ISourceOrientationProvider {
     /**
      * Orientation in degrees of the surface.
      * Expected values: 0, 90, 180, 270.
@@ -29,6 +32,15 @@ interface IOrientationProvider {
 
     /**
      * Return the size with the correct orientation.
+     * If orientation is portrait, it returns a portrait size.
+     * Example:
+     *  - Size = 1920x1080, if orientation is portrait, it returns 1080x1920.
      */
-    fun orientedSize(size: Size): Size
+    fun getOrientedSize(size: Size): Size
+
+    /**
+     * Return the size for [SurfaceTexture.setDefaultBufferSize].
+     * Override this method if the image is stretched.
+     */
+    fun getDefaultBufferSize(size: Size) = size
 }

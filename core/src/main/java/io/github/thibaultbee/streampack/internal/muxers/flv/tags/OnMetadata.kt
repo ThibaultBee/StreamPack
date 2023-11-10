@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.internal.muxers.flv.tags
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.data.VideoConfig
-import io.github.thibaultbee.streampack.internal.interfaces.IOrientationProvider
+import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.flv.amf.containers.AmfContainer
 import io.github.thibaultbee.streampack.internal.muxers.flv.amf.containers.AmfEcmaArray
 import io.github.thibaultbee.streampack.internal.muxers.flv.tags.video.CodecID
@@ -31,8 +31,8 @@ import java.io.IOException
 import java.nio.ByteBuffer
 
 class OnMetadata(
-    orientationProvider: IOrientationProvider,
-    streams: List<Config>
+    streams: List<Metadata>,
+    duration: Double = 0.0
 ) :
     FlvTag(0, TagType.SCRIPT) {
     private val amfContainer = AmfContainer()
@@ -40,53 +40,38 @@ class OnMetadata(
     init {
         amfContainer.add("onMetaData")
         val ecmaArray = AmfEcmaArray()
-        ecmaArray.add("duration", 0.0)
+        ecmaArray.add("duration", duration)
         streams.forEach {
             when (it) {
-                is AudioConfig -> {
+                is AudioMetadata -> {
                     ecmaArray.add(
                         "audiocodecid",
-                        SoundFormat.fromMimeType(it.mimeType).value.toDouble()
+                        it.codecID.value.toDouble()
                     )
-                    ecmaArray.add("audiodatarate", it.startBitrate.toDouble() / 1000) // to Kpbs
+                    ecmaArray.add("audiodatarate", it.dataRate.toDouble() / 1000) // to Kbps
                     ecmaArray.add("audiosamplerate", it.sampleRate.toDouble())
                     ecmaArray.add(
                         "audiosamplesize",
-                        it.byteFormat.numOfBits().toDouble()
+                        it.sampleSize.toDouble()
                     )
                     ecmaArray.add(
                         "stereo",
-                        AudioConfig.getNumberOfChannels(it.channelConfig) == 2
+                        it.isStereo
                     )
 
                 }
 
-                is VideoConfig -> {
-                    val resolution = orientationProvider.orientedSize(it.resolution)
-                    val videoCodecID = if (ExtendedVideoTag.isSupportedCodec(it.mimeType)) {
-                        FourCCs.fromMimeType(it.mimeType).value.code
-                    } else {
-                        try {
-                            CodecID.fromMimeType(it.mimeType).value
-                        } catch (e: Exception) {
-                            Logger.e(TAG, "Failed to get videocodecid for: ${it.mimeType}")
-                            null
-                        }
-                    }
-                    videoCodecID?.let { codecId ->
+                is VideoMetadata -> {
+                    it.codecID?.let { codecId ->
                         ecmaArray.add(
                             "videocodecid",
                             codecId.toDouble()
                         )
                     }
-                    ecmaArray.add("videodatarate", it.startBitrate.toDouble() / 1000) // to Kpbs
-                    ecmaArray.add("width", resolution.width.toDouble())
-                    ecmaArray.add("height", resolution.height.toDouble())
-                    ecmaArray.add("framerate", it.fps.toDouble())
-                }
-
-                else -> {
-                    throw IOException("Not supported mime type: ${it.mimeType}")
+                    ecmaArray.add("videodatarate", it.dataRate.toDouble() / 1000) // to Kbps
+                    ecmaArray.add("width", it.width.toDouble())
+                    ecmaArray.add("height", it.height.toDouble())
+                    ecmaArray.add("framerate", it.frameRate.toDouble())
                 }
             }
         }
@@ -106,4 +91,83 @@ class OnMetadata(
 
     override val bodySize: Int
         get() = amfContainer.size
+
+    companion object {
+        fun fromConfigs(
+            configs: List<Config>,
+            sourceOrientationProvider: ISourceOrientationProvider? = null
+        ): OnMetadata {
+            return OnMetadata(configs.map { Metadata.fromConfig(it, sourceOrientationProvider) })
+        }
+    }
+}
+
+abstract class Metadata(val dataRate: Int) {
+    companion object {
+        fun fromConfig(
+            config: Config,
+            sourceOrientationProvider: ISourceOrientationProvider? = null
+        ): Metadata {
+            return when (config) {
+                is AudioConfig -> AudioMetadata.fromAudioConfig(config)
+                is VideoConfig -> VideoMetadata.fromVideoConfig(config, sourceOrientationProvider)
+                else -> throw IOException("Not supported mime type: ${config.mimeType}")
+            }
+        }
+    }
+}
+
+class AudioMetadata(
+    val codecID: SoundFormat,
+    dataRate: Int,
+    val sampleRate: Int,
+    val sampleSize: Int,
+    val isStereo: Boolean
+) : Metadata(dataRate) {
+    companion object {
+        fun fromAudioConfig(config: AudioConfig): AudioMetadata {
+            return AudioMetadata(
+                SoundFormat.fromMimeType(config.mimeType),
+                config.startBitrate,
+                config.sampleRate,
+                config.byteFormat.numOfBits(),
+                AudioConfig.getNumberOfChannels(config.channelConfig) == 2
+            )
+        }
+    }
+}
+
+class VideoMetadata(
+    val codecID: Int?,
+    dataRate: Int,
+    val width: Int,
+    val height: Int,
+    val frameRate: Int
+) : Metadata(dataRate) {
+    companion object {
+        fun fromVideoConfig(
+            config: VideoConfig,
+            sourceOrientationProvider: ISourceOrientationProvider? = null
+        ): VideoMetadata {
+            val videoCodecID = if (ExtendedVideoTag.isSupportedCodec(config.mimeType)) {
+                FourCCs.fromMimeType(config.mimeType).value.code
+            } else {
+                try {
+                    CodecID.fromMimeType(config.mimeType).value
+                } catch (e: Exception) {
+                    Logger.e(TAG, "Failed to get videocodecid for: ${config.mimeType}")
+                    null
+                }
+            }
+            val resolution =
+                sourceOrientationProvider?.getOrientedSize(config.resolution) ?: config.resolution
+            return VideoMetadata(
+                videoCodecID,
+                config.startBitrate,
+                resolution.width,
+                resolution.height,
+                config.fps
+            )
+        }
+    }
 }
