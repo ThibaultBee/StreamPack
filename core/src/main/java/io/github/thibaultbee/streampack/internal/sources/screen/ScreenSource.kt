@@ -55,6 +55,11 @@ class ScreenSource(
     var activityResult: ActivityResult? = null
     var onErrorListener: OnErrorListener? = null
 
+    /**
+     *  Avoid to trigger `onError` when screen source `stopStream` has been called.
+     */
+    private var isExplicitelyStopped = false
+
     private val mediaProjectionManager =
         context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
     private var virtualDisplay: VirtualDisplay? = null
@@ -70,7 +75,10 @@ class ScreenSource(
         override fun onStopped() {
             super.onStopped()
             Logger.i(this@ScreenSource.TAG, "onStopped")
-            onErrorListener?.onError(StreamPackError("Screen source has been stopped"))
+
+            if (!isExplicitelyStopped) {
+                onErrorListener?.onError(StreamPackError("Screen source virtual display has been stopped"))
+            }
         }
     }
 
@@ -78,7 +86,10 @@ class ScreenSource(
         override fun onStop() {
             super.onStop()
             Logger.i(this@ScreenSource.TAG, "onStop")
-            onErrorListener?.onError(StreamPackError("Screen source has been stopped"))
+
+            if (!isExplicitelyStopped) {
+                onErrorListener?.onError(StreamPackError("Screen source media projection has been stopped"))
+            }
         }
     }
 
@@ -96,6 +107,8 @@ class ScreenSource(
 
         val resultCode = activityResult!!.resultCode
         val resultData = activityResult!!.data!!
+
+        isExplicitelyStopped = false
 
         val orientedSize = orientationProvider.getOrientedSize(videoConfig!!.resolution)
         mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, resultData).apply {
@@ -115,6 +128,8 @@ class ScreenSource(
 
 
     override fun stopStream() {
+        isExplicitelyStopped = true
+
         virtualDisplay?.release()
         virtualDisplay = null
         mediaProjection?.stop()
