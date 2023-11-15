@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.internal.sources
 
 import io.github.thibaultbee.streampack.data.VideoConfig
-import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
+import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 
 interface IVideoSource : IFrameSource<VideoConfig>, ISurfaceSource {
     /**

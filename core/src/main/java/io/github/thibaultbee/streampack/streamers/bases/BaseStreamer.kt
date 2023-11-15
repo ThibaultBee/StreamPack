@@ -29,7 +29,7 @@ import io.github.thibaultbee.streampack.internal.encoders.IEncoderListener
 import io.github.thibaultbee.streampack.internal.encoders.VideoMediaCodecEncoder
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.events.EventHandler
-import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
+import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.sources.IAudioSource
@@ -375,7 +375,7 @@ abstract class BaseStreamer(
      */
     override fun release() {
         audioEncoder?.release()
-        videoEncoder?.codecSurface?.dispose()
+        videoEncoder?.codecSurface?.release()
         videoEncoder?.release()
         audioSource?.release()
         videoSource?.release()

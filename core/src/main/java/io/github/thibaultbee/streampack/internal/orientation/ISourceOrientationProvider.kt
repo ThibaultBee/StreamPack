@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.interfaces
+package io.github.thibaultbee.streampack.internal.orientation
 
 import android.graphics.SurfaceTexture
 import android.util.Size
@@ -31,7 +31,13 @@ interface ISourceOrientationProvider {
     val orientation: Int
 
     /**
-     * Return the size with the correct orientation.
+     * If true, the source is mirrored vertically.
+     * Example: should be true for a front camera.
+     */
+    val mirroredVertically: Boolean
+
+    /**
+     * Returns the size with the correct orientation.
      * If orientation is portrait, it returns a portrait size.
      * Example:
      *  - Size = 1920x1080, if orientation is portrait, it returns 1080x1920.
@@ -39,8 +45,38 @@ interface ISourceOrientationProvider {
     fun getOrientedSize(size: Size): Size
 
     /**
-     * Return the size for [SurfaceTexture.setDefaultBufferSize].
+     * Returns the size for [SurfaceTexture.setDefaultBufferSize].
      * Override this method if the image is stretched.
      */
     fun getDefaultBufferSize(size: Size) = size
+
+    /**
+     * Adds a listener to be notified when the orientation changes.
+     *
+     * @param listener to add.
+     */
+    fun addListener(listener: ISourceOrientationListener)
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener to remove.
+     */
+    fun removeListener(listener: ISourceOrientationListener)
+
+    /**
+     * Removes all registered listeners.
+     */
+    fun removeAllListeners()
+}
+
+/**
+ * Interface to be notified when the orientation changes.
+ */
+interface ISourceOrientationListener {
+    /**
+     * Called when the orientation changes.
+     * Only called if [ISourceOrientationProvider.mirroredVertically] changes for now.
+     */
+    fun onOrientationChanged()
 }

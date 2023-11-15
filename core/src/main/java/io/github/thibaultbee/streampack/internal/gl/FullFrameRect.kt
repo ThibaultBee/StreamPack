@@ -103,8 +103,9 @@ class FullFrameRect(var program: Texture2DProgram) {
         return program.createTextureObject()
     }
 
-    fun setMVPMatrixAndViewPort(rotation: Float, resolution: Size) {
+    fun setMVPMatrixAndViewPort(rotation: Float, resolution: Size, mirroredVertically: Boolean) {
         Matrix.setIdentityM(mvpMatrix, 0)
+        Matrix.scaleM(mvpMatrix, 0, if (mirroredVertically) -1f else 1f, 1f, 0f)
         Matrix.rotateM(
             mvpMatrix, 0,
             rotation, 0f, 0f, -1f
