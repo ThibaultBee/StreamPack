@@ -230,8 +230,12 @@ abstract class MediaCodecEncoder<T : Config>(
     }
 
     override fun release() {
-        mediaCodec?.release()
-        mediaCodec = null
+        try {
+            mediaCodec?.release()
+        } catch (_: Exception) {
+        } finally {
+            mediaCodec = null
+        }
     }
 
     companion object {

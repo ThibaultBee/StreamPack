@@ -25,8 +25,11 @@ import java.io.OutputStream
 class FileWriter : IEndpoint {
     var file: File? = null
         set(value) {
-            value?.let {
-                outputStream = FileOutputStream(value, false)
+            outputStream = if (value != null) {
+                FileOutputStream(value, false)
+            } else {
+                outputStream?.close()
+                null
             }
             field = value
         }

@@ -25,6 +25,9 @@ class Scheduler(
     private var job: Job? = null
 
     fun start() {
+        if (job != null) {
+            return
+        }
         job = coroutineScope.launch {
             while (true) {
                 delay(delayTimeMillis)
@@ -35,5 +38,6 @@ class Scheduler(
 
     fun cancel() {
         job?.cancel()
+        job = null
     }
 }

@@ -45,7 +45,7 @@ class VideoMediaCodecEncoder(
     private val orientationProvider: ISourceOrientationProvider?
 ) :
     MediaCodecEncoder<VideoConfig>(encoderListener) {
-    var codecSurface = if (useSurfaceMode) {
+    val codecSurface = if (useSurfaceMode) {
         CodecSurface(orientationProvider)
     } else {
         null
