@@ -20,7 +20,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.SurfaceView
 import io.github.thibaultbee.streampack.logger.Logger
-import io.github.thibaultbee.streampack.utils.TAG
 import kotlin.math.roundToInt
 
 /**
@@ -72,5 +71,9 @@ open class AutoFitSurfaceView @JvmOverloads constructor(
             Logger.d(TAG, "Measured dimensions set: $newWidth x $newHeight")
             setMeasuredDimension(newWidth, newHeight)
         }
+    }
+
+    companion object {
+        private const val TAG = "AutoFitSurfaceView"
     }
 }

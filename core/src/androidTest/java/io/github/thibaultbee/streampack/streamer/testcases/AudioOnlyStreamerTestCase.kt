@@ -20,7 +20,6 @@ import android.util.Log
 import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.streamers.bases.BaseAudioOnlyStreamer
 import io.github.thibaultbee.streampack.utils.AndroidUtils
-import io.github.thibaultbee.streampack.utils.TAG
 import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
@@ -83,7 +82,7 @@ abstract class AudioOnlyStreamerTestCase :
                 AndroidUtils.fakeValidVideoConfig()
             )
             fail("Must not be possible to configure video")
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
     }
 
@@ -95,7 +94,7 @@ abstract class AudioOnlyStreamerTestCase :
                 AndroidUtils.fakeValidVideoConfig()
             )
             fail("Must not be possible to configure video")
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
     }
 
@@ -106,7 +105,7 @@ abstract class AudioOnlyStreamerTestCase :
                 AndroidUtils.fakeInvalidAudioConfig()
             )
             fail("Invalid configuration must throw an exception")
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
     }
 
@@ -206,5 +205,9 @@ abstract class AudioOnlyStreamerTestCase :
             Log.e(TAG, "multipleConfigureTest: exception: ", e)
             fail("Must be possible to call configure multiple times but catches exception: $e")
         }
+    }
+
+    companion object {
+        private const val TAG = "AudioOnlyStreamerTestCase"
     }
 }

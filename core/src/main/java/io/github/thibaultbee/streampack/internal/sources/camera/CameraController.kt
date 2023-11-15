@@ -26,7 +26,6 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.error.CameraError
 import io.github.thibaultbee.streampack.logger.Logger
-import io.github.thibaultbee.streampack.utils.TAG
 import io.github.thibaultbee.streampack.utils.getCameraFpsList
 import kotlinx.coroutines.*
 import java.security.InvalidParameterException
@@ -294,5 +293,9 @@ class CameraController(
             }
             updateBurstSession()
         }
+    }
+
+    companion object {
+        private const val TAG = "CameraController"
     }
 }

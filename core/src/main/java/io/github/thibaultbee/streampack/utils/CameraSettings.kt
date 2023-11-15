@@ -840,6 +840,8 @@ class FocusMetering(
     }
 
     companion object {
+        private const val TAG = "CameraSettings"
+
         private const val DEFAULT_AF_SIZE = 1.0f / 6.0f
         private const val DEFAULT_AE_SIZE = DEFAULT_AF_SIZE * 1.5f
         private const val DEFAULT_METERING_WEIGHT_MAX = MeteringRectangle.METERING_WEIGHT_MAX

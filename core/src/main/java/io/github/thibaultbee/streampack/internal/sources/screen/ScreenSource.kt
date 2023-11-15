@@ -35,7 +35,6 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.landscapize
 import io.github.thibaultbee.streampack.internal.utils.extensions.portraitize
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.Logger
-import io.github.thibaultbee.streampack.utils.TAG
 import java.nio.ByteBuffer
 
 class ScreenSource(
@@ -69,12 +68,12 @@ class ScreenSource(
     private val virtualDisplayCallback = object : VirtualDisplay.Callback() {
         override fun onPaused() {
             super.onPaused()
-            Logger.i(this@ScreenSource.TAG, "onPaused")
+            Logger.i(TAG, "onPaused")
         }
 
         override fun onStopped() {
             super.onStopped()
-            Logger.i(this@ScreenSource.TAG, "onStopped")
+            Logger.i(TAG, "onStopped")
 
             if (!isExplicitelyStopped) {
                 onErrorListener?.onError(StreamPackError("Screen source virtual display has been stopped"))
@@ -85,7 +84,7 @@ class ScreenSource(
     private val mediaProjectionCallback = object : MediaProjection.Callback() {
         override fun onStop() {
             super.onStop()
-            Logger.i(this@ScreenSource.TAG, "onStop")
+            Logger.i(TAG, "onStop")
 
             if (!isExplicitelyStopped) {
                 onErrorListener?.onError(StreamPackError("Screen source media projection has been stopped"))
@@ -94,6 +93,8 @@ class ScreenSource(
     }
 
     companion object {
+        private const val TAG = "ScreenSource"
+
         private const val VIRTUAL_DISPLAY_NAME = "StreamPackScreenSource"
     }
 

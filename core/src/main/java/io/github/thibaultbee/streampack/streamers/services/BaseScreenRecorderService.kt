@@ -38,9 +38,7 @@ import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 import io.github.thibaultbee.streampack.utils.NotificationUtils
-import io.github.thibaultbee.streampack.utils.TAG
 import io.github.thibaultbee.streampack.utils.getStreamer
-
 
 /**
  * Foreground service that manages screen recorder streamers.
@@ -244,6 +242,8 @@ abstract class BaseScreenRecorderService(
     }
 
     companion object {
+        private const val TAG = "BaseScreenRecorderService"
+
         const val DEFAULT_NOTIFICATION_CHANNEL_ID =
             "io.github.thibaultbee.streampack.streamers.services"
         const val DEFAULT_NOTIFICATION_ID = 3782

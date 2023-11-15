@@ -23,7 +23,6 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.putShort
 import io.github.thibaultbee.streampack.internal.utils.extensions.shl
 import io.github.thibaultbee.streampack.internal.utils.extensions.toInt
 import io.github.thibaultbee.streampack.logger.Logger
-import io.github.thibaultbee.streampack.utils.TAG
 import java.nio.ByteBuffer
 
 /**
@@ -75,6 +74,8 @@ data class VPCodecConfigurationRecord(
     }
 
     companion object {
+        private const val TAG = "VPCodecConfigurationRecord"
+
         private const val VP_DECODER_CONFIGURATION_RECORD_SIZE = 8
 
         /**

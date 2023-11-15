@@ -28,7 +28,6 @@ import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.utils.TimeUtils
 import io.github.thibaultbee.streampack.logger.Logger
-import io.github.thibaultbee.streampack.utils.TAG
 import java.nio.ByteBuffer
 
 class AudioSource : IAudioSource {
@@ -159,6 +158,8 @@ class AudioSource : IAudioSource {
     }
 
     companion object {
+        private const val TAG = "AudioSource"
+
         private val format = MediaFormat().apply {
             setString(
                 MediaFormat.KEY_MIME,

@@ -24,12 +24,7 @@ import android.util.Rational
 import androidx.annotation.RequiresPermission
 import androidx.databinding.Bindable
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.CreationExtras
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.thibaultbee.streampack.app.BR
 import io.github.thibaultbee.streampack.app.utils.ObservableViewModel
 import io.github.thibaultbee.streampack.app.utils.StreamerManager
@@ -38,7 +33,6 @@ import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.StreamerLifeCycleObserver
-import io.github.thibaultbee.streampack.utils.TAG
 import io.github.thibaultbee.streampack.utils.isFrameRateSupported
 import io.github.thibaultbee.streampack.views.PreviewView
 import kotlinx.coroutines.launch
@@ -273,5 +267,9 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
         } catch (e: Exception) {
             Log.e(TAG, "streamer.release failed", e)
         }
+    }
+
+    companion object {
+        private const val TAG = "PreviewViewModel"
     }
 }

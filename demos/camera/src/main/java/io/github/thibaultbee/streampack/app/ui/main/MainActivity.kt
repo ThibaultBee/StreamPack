@@ -25,8 +25,6 @@ import androidx.appcompat.app.AppCompatActivity
 import io.github.thibaultbee.streampack.app.R
 import io.github.thibaultbee.streampack.app.databinding.MainActivityBinding
 import io.github.thibaultbee.streampack.app.ui.settings.SettingsActivity
-import io.github.thibaultbee.streampack.utils.TAG
-
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: MainActivityBinding
@@ -75,5 +73,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.actions, menu)
         return true
+    }
+
+    companion object {
+        private const val TAG = "MainActivity"
     }
 }

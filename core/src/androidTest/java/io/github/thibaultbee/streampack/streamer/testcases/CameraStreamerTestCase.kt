@@ -22,7 +22,6 @@ import android.view.Surface
 import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.utils.AndroidUtils
-import io.github.thibaultbee.streampack.utils.TAG
 import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Before
@@ -91,7 +90,7 @@ abstract class CameraStreamerTestCase :
         try {
             streamer.startPreview(surface)
             fail("startPreviewTest without configuration must throw an exception")
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
     }
 
@@ -247,5 +246,9 @@ abstract class CameraStreamerTestCase :
             Log.e(TAG, "multipleStartStreamStopStreamTest: exception: ", e)
             fail("Must be possible to startStream/stopStream multiple times but catches exception: $e")
         }
+    }
+
+    companion object {
+        private const val TAG = "CameraStreamerTestCase"
     }
 }

@@ -25,8 +25,6 @@ import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.events.EventHandler
 import io.github.thibaultbee.streampack.logger.Logger
-import io.github.thibaultbee.streampack.utils.TAG
-
 
 abstract class MediaCodecEncoder<T : Config>(
     override val encoderListener: IEncoderListener,
@@ -234,5 +232,9 @@ abstract class MediaCodecEncoder<T : Config>(
     override fun release() {
         mediaCodec?.release()
         mediaCodec = null
+    }
+
+    companion object {
+        private const val TAG = "MediaCodecEncoder"
     }
 }

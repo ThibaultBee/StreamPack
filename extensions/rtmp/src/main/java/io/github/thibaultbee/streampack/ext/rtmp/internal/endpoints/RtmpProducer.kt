@@ -19,7 +19,6 @@ import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.logger.Logger
-import io.github.thibaultbee.streampack.utils.TAG
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -159,6 +158,8 @@ class RtmpProducer(
     }
 
     companion object {
+        private const val TAG = "RtmpProducer"
+
         private const val RTMP_SCHEME = "rtmp"
         private const val RTMP_PREFIX = "$RTMP_SCHEME://"
 

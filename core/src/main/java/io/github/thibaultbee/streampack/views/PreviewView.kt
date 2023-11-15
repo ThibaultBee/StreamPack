@@ -32,7 +32,6 @@ import io.github.thibaultbee.streampack.R
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.utils.OrientationUtils
-import io.github.thibaultbee.streampack.utils.TAG
 import io.github.thibaultbee.streampack.utils.backCameraList
 import io.github.thibaultbee.streampack.utils.frontCameraList
 import io.github.thibaultbee.streampack.utils.getCameraCharacteristics
@@ -198,6 +197,8 @@ class PreviewView @JvmOverloads constructor(
     }
 
     companion object {
+        private const val TAG = "PreviewView"
+        
         private val DEFAULT_CAMERA_FACING = FacingDirection.BACK
     }
 

@@ -17,12 +17,11 @@ package io.github.thibaultbee.streampack.internal.endpoints
 
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.logger.Logger
-import io.github.thibaultbee.streampack.utils.TAG
 
 /**
  * A fake endpoint for test purpose.
  */
-class FakeEndpoint() : IEndpoint {
+class FakeEndpoint : IEndpoint {
     override fun startStream() {
         Logger.d(TAG, "startStream called")
     }
@@ -41,5 +40,9 @@ class FakeEndpoint() : IEndpoint {
 
     override fun release() {
         Logger.d(TAG, "release called")
+    }
+
+    companion object {
+        private const val TAG = "FakeEndpoint"
     }
 }

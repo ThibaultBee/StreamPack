@@ -20,7 +20,6 @@ import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import io.github.thibaultbee.streampack.utils.AndroidUtils
-import io.github.thibaultbee.streampack.utils.TAG
 import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Test
@@ -251,5 +250,9 @@ abstract class StreamerTestCase {
             Log.e(TAG, "multipleStartStreamStopStreamTest: exception: ", e)
             fail("Must be possible to startStream/stopStream multiple times but catches exception: $e")
         }
+    }
+
+    companion object {
+        private const val TAG = "StreamerTestCase"
     }
 }

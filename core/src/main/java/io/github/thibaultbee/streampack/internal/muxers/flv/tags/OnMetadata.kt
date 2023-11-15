@@ -26,7 +26,6 @@ import io.github.thibaultbee.streampack.internal.muxers.flv.tags.video.ExtendedV
 import io.github.thibaultbee.streampack.internal.utils.av.FourCCs
 import io.github.thibaultbee.streampack.internal.utils.extensions.numOfBits
 import io.github.thibaultbee.streampack.logger.Logger
-import io.github.thibaultbee.streampack.utils.TAG
 import java.io.IOException
 import java.nio.ByteBuffer
 
@@ -145,6 +144,8 @@ class VideoMetadata(
     val frameRate: Int
 ) : Metadata(dataRate) {
     companion object {
+        private const val TAG = "VideoMetadata"
+
         fun fromVideoConfig(
             config: VideoConfig,
             sourceOrientationProvider: ISourceOrientationProvider? = null

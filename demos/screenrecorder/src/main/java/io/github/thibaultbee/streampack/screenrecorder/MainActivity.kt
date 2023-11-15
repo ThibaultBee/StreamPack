@@ -49,7 +49,6 @@ import io.github.thibaultbee.streampack.screenrecorder.settings.SettingsActivity
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStreamer
-import io.github.thibaultbee.streampack.utils.TAG
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : AppCompatActivity() {
@@ -314,4 +313,8 @@ class MainActivity : AppCompatActivity() {
             R.string.permission_not_granted,
             afterPositiveButton
         )
+
+    companion object {
+        private const val TAG = "MainActivity"
+    }
 }
