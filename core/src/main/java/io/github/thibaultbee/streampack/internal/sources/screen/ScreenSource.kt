@@ -28,7 +28,7 @@ import androidx.activity.result.ActivityResult
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.data.Frame
-import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
+import io.github.thibaultbee.streampack.internal.orientation.AbstractSourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.sources.IVideoSource
 import io.github.thibaultbee.streampack.internal.utils.extensions.isDevicePortrait
 import io.github.thibaultbee.streampack.internal.utils.extensions.landscapize
@@ -147,7 +147,7 @@ class ScreenSource(
     }
 
     class ScreenSourceOrientationProvider(private val context: Context) :
-        ISourceOrientationProvider {
+        AbstractSourceOrientationProvider() {
         override val orientation = 0
 
         override fun getOrientedSize(size: Size): Size {

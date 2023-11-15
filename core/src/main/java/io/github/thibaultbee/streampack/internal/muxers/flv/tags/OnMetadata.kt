@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.internal.muxers.flv.tags
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.data.VideoConfig
-import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
+import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.flv.amf.containers.AmfContainer
 import io.github.thibaultbee.streampack.internal.muxers.flv.amf.containers.AmfEcmaArray
 import io.github.thibaultbee.streampack.internal.muxers.flv.tags.video.CodecID

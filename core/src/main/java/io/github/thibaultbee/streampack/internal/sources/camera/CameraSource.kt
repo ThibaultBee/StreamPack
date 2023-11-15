@@ -17,12 +17,13 @@ package io.github.thibaultbee.streampack.internal.sources.camera
 
 import android.Manifest
 import android.content.Context
+import android.hardware.camera2.CameraCharacteristics
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
-import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
+import io.github.thibaultbee.streampack.internal.orientation.AbstractSourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.sources.IVideoSource
 import io.github.thibaultbee.streampack.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.internal.utils.extensions.deviceOrientation
@@ -30,7 +31,9 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.isDevicePortra
 import io.github.thibaultbee.streampack.internal.utils.extensions.landscapize
 import io.github.thibaultbee.streampack.internal.utils.extensions.portraitize
 import io.github.thibaultbee.streampack.utils.CameraSettings
+import io.github.thibaultbee.streampack.utils.cameraList
 import io.github.thibaultbee.streampack.utils.defaultCameraId
+import io.github.thibaultbee.streampack.utils.getFacingDirection
 import io.github.thibaultbee.streampack.utils.isFrameRateSupported
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
@@ -66,7 +69,7 @@ class CameraSource(
     override val timestampOffset = CameraHelper.getTimeOffsetToMonoClock(context, cameraId)
     override val hasSurface = true
     override val hasFrames = false
-    override val orientationProvider = CameraOrientationProvider(context)
+    override val orientationProvider = CameraOrientationProvider(context, cameraId)
 
     override fun getFrame(buffer: ByteBuffer): Frame {
         throw UnsupportedOperationException("Camera expects to run in Surface mode")
@@ -96,6 +99,7 @@ class CameraSource(
         }
         cameraController.startRequestSession(fps, targets)
         isPreviewing = true
+        orientationProvider.cameraId = cameraId
     }
 
     fun stopPreview() {
@@ -130,8 +134,22 @@ class CameraSource(
     }
 
 
-    class CameraOrientationProvider(private val context: Context) :
-        ISourceOrientationProvider {
+    class CameraOrientationProvider(private val context: Context, initialCameraId: String) :
+        AbstractSourceOrientationProvider() {
+        private val isFrontFacingMap =
+            context.cameraList.associateWith { (context.getFacingDirection(it) == CameraCharacteristics.LENS_FACING_FRONT) }
+
+        var cameraId: String = initialCameraId
+            set(value) {
+                if (field == value) {
+                    return
+                }
+                val orientationChanged = mirroredVertically != isFrontFacing(value)
+                field = value
+                if (orientationChanged) {
+                    listeners.forEach { it.onOrientationChanged() }
+                }
+            }
 
         override val orientation: Int
             get() = when (context.deviceOrientation) {
@@ -141,6 +159,13 @@ class CameraSource(
                 Surface.ROTATION_270 -> 90
                 else -> 0
             }
+
+        private fun isFrontFacing(cameraId: String): Boolean {
+            return isFrontFacingMap[cameraId] ?: false
+        }
+
+        override val mirroredVertically: Boolean
+            get() = isFrontFacing(cameraId)
 
         override fun getOrientedSize(size: Size): Size {
             return if (context.isDevicePortrait) {

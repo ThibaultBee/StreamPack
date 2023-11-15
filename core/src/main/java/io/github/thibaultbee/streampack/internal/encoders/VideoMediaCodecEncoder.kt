@@ -28,7 +28,8 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.gl.EglWindowSurface
 import io.github.thibaultbee.streampack.internal.gl.FullFrameRect
 import io.github.thibaultbee.streampack.internal.gl.Texture2DProgram
-import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
+import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationListener
+import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import java.util.concurrent.Executors
@@ -125,7 +126,7 @@ class VideoMediaCodecEncoder(
     class CodecSurface(
         private val orientationProvider: ISourceOrientationProvider?
     ) :
-        SurfaceTexture.OnFrameAvailableListener {
+        SurfaceTexture.OnFrameAvailableListener, ISourceOrientationListener {
         private var eglSurface: EglWindowSurface? = null
         private var fullFrameRect: FullFrameRect? = null
         private var textureId = -1
@@ -134,8 +135,9 @@ class VideoMediaCodecEncoder(
         private var surfaceTexture: SurfaceTexture? = null
         private val stMatrix = FloatArray(16)
 
+        private var _inputSurface: Surface? = null
         val inputSurface: Surface?
-            get() = surfaceTexture?.let { Surface(surfaceTexture) }
+            get() = _inputSurface
 
         /**
          * If true, the encoder will use high bit depth (10 bits) for encoding.
@@ -162,6 +164,10 @@ class VideoMediaCodecEncoder(
                 field = value
             }
 
+        init {
+            orientationProvider?.addListener(this)
+        }
+
         private fun initOrUpdateSurfaceTexture(surface: Surface) {
             eglSurface = ensureGlContext(EglWindowSurface(surface, useHighBitDepth)) {
                 val width = it.getWidth()
@@ -173,7 +179,8 @@ class VideoMediaCodecEncoder(
                     textureId = createTextureObject()
                     setMVPMatrixAndViewPort(
                         orientation.toFloat(),
-                        size
+                        size,
+                        orientationProvider?.mirroredVertically ?: false
                     )
                 }
 
@@ -189,7 +196,9 @@ class VideoMediaCodecEncoder(
         @SuppressLint("Recycle")
         private fun attachOrBuildSurfaceTexture(surfaceTexture: SurfaceTexture?): SurfaceTexture {
             return if (surfaceTexture == null) {
-                SurfaceTexture(textureId)
+                SurfaceTexture(textureId).apply {
+                    _inputSurface = Surface(this)
+                }
             } else {
                 surfaceTexture.attachToGLContext(textureId)
                 surfaceTexture
@@ -208,12 +217,40 @@ class VideoMediaCodecEncoder(
             return surface
         }
 
-        override fun onFrameAvailable(surfaceTexture: SurfaceTexture) {
-            synchronized(this) {
-                if (!isRunning) {
-                    return
+        override fun onOrientationChanged() {
+            executor.execute {
+                synchronized(this) {
+                    ensureGlContext(eglSurface) {
+                        val width = it.getWidth()
+                        val height = it.getHeight()
+
+                        fullFrameRect?.setMVPMatrixAndViewPort(
+                            (orientationProvider?.orientation ?: 0).toFloat(),
+                            orientationProvider?.getOrientedSize(Size(width, height)) ?: Size(
+                                width,
+                                height
+                            ),
+                            orientationProvider?.mirroredVertically ?: false
+                        )
+
+                        /**
+                         * Flushing spurious latest camera frames that block SurfaceTexture buffer
+                         * to avoid having a misoriented frame.
+                         */
+                        surfaceTexture?.updateTexImage()
+                        surfaceTexture?.releaseTexImage()
+                    }
                 }
-                executor.execute {
+            }
+        }
+
+        override fun onFrameAvailable(surfaceTexture: SurfaceTexture) {
+            if (!isRunning) {
+                return
+            }
+
+            executor.execute {
+                synchronized(this) {
                     eglSurface?.let {
                         it.makeCurrent()
                         surfaceTexture.updateTexImage()
@@ -256,8 +293,10 @@ class VideoMediaCodecEncoder(
             }.get()
         }
 
-        fun dispose() {
+        fun release() {
+            orientationProvider?.removeListener(this)
             stopStream()
+            surfaceTexture?.setOnFrameAvailableListener(null)
             surfaceTexture?.release()
             surfaceTexture = null
         }

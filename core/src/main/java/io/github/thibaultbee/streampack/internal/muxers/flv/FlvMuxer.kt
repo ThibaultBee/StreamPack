@@ -19,7 +19,7 @@ import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.data.PacketType
-import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
+import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.muxers.flv.tags.AVTagsFactory
