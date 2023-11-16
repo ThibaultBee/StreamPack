@@ -119,6 +119,8 @@ class VideoMediaCodecEncoder(
         private val executor = Executors.newSingleThreadExecutor()
         private var isRunning = false
         private var surfaceTexture: SurfaceTexture? = null
+        private val stMatrix = FloatArray(16)
+
         val inputSurface: Surface?
             get() = surfaceTexture?.let { Surface(surfaceTexture) }
 
@@ -193,12 +195,10 @@ class VideoMediaCodecEncoder(
                 if (!isRunning) {
                     return
                 }
-
                 executor.execute {
                     eglSurface?.let {
                         it.makeCurrent()
                         surfaceTexture.updateTexImage()
-                        val stMatrix = FloatArray(16)
                         surfaceTexture.getTransformMatrix(stMatrix)
 
                         // Use the identity matrix for MVP so our 2x2 FULL_RECTANGLE covers the viewport.
