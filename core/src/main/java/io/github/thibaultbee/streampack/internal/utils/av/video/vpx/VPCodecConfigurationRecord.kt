@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.internal.utils.av.video.vpx
 import android.media.MediaFormat
 import android.os.Build
 import io.github.thibaultbee.streampack.internal.utils.av.buffer.ByteBufferWriter
+import io.github.thibaultbee.streampack.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.internal.utils.extensions.put
 import io.github.thibaultbee.streampack.internal.utils.extensions.putShort
 import io.github.thibaultbee.streampack.internal.utils.extensions.shl
@@ -90,7 +91,8 @@ data class VPCodecConfigurationRecord(
          * ```
          */
         fun fromMediaFormat(format: MediaFormat): VPCodecConfigurationRecord {
-            val profile = Profile.fromMediaFormat(format.getInteger(MediaFormat.KEY_PROFILE))
+            val rawProfile = format.getInteger(MediaFormat.KEY_PROFILE)
+            val profile = Profile.fromMediaFormat(rawProfile)
 
             val level = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 Level.fromMediaFormat(format.getInteger(MediaFormat.KEY_LEVEL))
@@ -98,7 +100,17 @@ data class VPCodecConfigurationRecord(
                 Level.UNDEFINED // 0 is undefined
             }
 
-            val bitDepth = 8 // 8 bits - field is 8 or 10 or 12 bits
+            val mimeType = format.getString(MediaFormat.KEY_MIME)!!
+            // field is 8 or 10 (12 bits not supported on Android)
+            val bitDepth = if (DynamicRangeProfile.fromProfile(
+                    mimeType,
+                    rawProfile
+                ).isHdr
+            ) {
+                10
+            } else {
+                8
+            }
 
             val chromaSubsampling = try {
                 ChromaSubsampling.fromValue(

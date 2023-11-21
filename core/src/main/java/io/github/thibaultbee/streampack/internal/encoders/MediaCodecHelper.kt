@@ -241,7 +241,7 @@ object MediaCodecHelper {
     fun getProfiles(
         mimeType: String,
     ): List<Int> =
-        getProfileLevel(mimeType).map { it.profile }
+        getProfileLevel(mimeType).map { it.profile }.toSet().toList()
 
     /**
      * Get encoder supported profiles list for the specified encoder.
@@ -254,7 +254,7 @@ object MediaCodecHelper {
         mimeType: String,
         name: String
     ): List<Int> =
-        getProfileLevel(mimeType, name).map { it.profile }
+        getProfileLevel(mimeType, name).map { it.profile }.toSet().toList()
 
     /**
      * Get encoder maximum supported levels for the default encoder.
@@ -320,6 +320,34 @@ object MediaCodecHelper {
             )
         } as Boolean
     }
+
+    /**
+     * Whether the encoder supports the specified feature.
+     *
+     * @param mimeType the encoder mime type
+     * @param feature the feature to check
+     * @return true if the feature is supported, otherwise false
+     * @see MediaCodecInfo.CodecCapabilities.isFeatureSupported
+     */
+    fun isFeatureSupported(
+        mimeType: String,
+        feature: String
+    ) = getCodecCapabilities(mimeType).isFeatureSupported(feature)
+
+    /**
+     * Whether the encoder supports the specified feature.
+     *
+     * @param mimeType the encoder mime type
+     * @param name the encoder name
+     * @param feature the feature to check
+     * @return true if the feature is supported, otherwise false
+     * @see MediaCodecInfo.CodecCapabilities.isFeatureSupported
+     */
+    fun isFeatureSupported(
+        mimeType: String,
+        name: String,
+        feature: String
+    ) = getCodecCapabilities(mimeType, name).isFeatureSupported(feature)
 
     object Video {
         /**

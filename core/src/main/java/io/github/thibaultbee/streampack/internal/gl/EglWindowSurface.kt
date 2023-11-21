@@ -16,9 +16,14 @@
  */
 package io.github.thibaultbee.streampack.internal.gl
 
-import android.opengl.*
+import android.opengl.EGL14
+import android.opengl.EGLConfig
+import android.opengl.EGLContext
+import android.opengl.EGLDisplay
+import android.opengl.EGLExt
+import android.opengl.EGLSurface
 import android.view.Surface
-import java.util.*
+import java.util.Objects
 
 /**
  * Holds state associated with a Surface used for MediaCodec encoder input.
@@ -30,7 +35,7 @@ import java.util.*
  * (Contains mostly code borrowed from CameraX)
  */
 
-class EglWindowSurface(private val surface: Surface) {
+class EglWindowSurface(private val surface: Surface, useHighBitDepth: Boolean = false) {
     private var eglDisplay: EGLDisplay = EGL14.EGL_NO_DISPLAY
     private var eglContext: EGLContext = EGL14.EGL_NO_CONTEXT
     private var eglSurface: EGLSurface = EGL14.EGL_NO_SURFACE
@@ -41,13 +46,13 @@ class EglWindowSurface(private val surface: Surface) {
     }
 
     init {
-        eglSetup()
+        eglSetup(useHighBitDepth)
     }
 
     /**
      * Prepares EGL. We want a GLES 2.0 context and a surface that supports recording.
      */
-    private fun eglSetup() {
+    private fun eglSetup(useHighBitDepth: Boolean) {
         eglDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)
         if (Objects.equals(eglDisplay, EGL14.EGL_NO_DISPLAY)) {
             throw RuntimeException("unable to get EGL14 display")
@@ -59,12 +64,16 @@ class EglWindowSurface(private val surface: Surface) {
 
         // Configure EGL for recordable and OpenGL ES 2.0.  We want enough RGB bits
         // to minimize artifacts from possible YUV conversion.
+        val eglColorSize = if (useHighBitDepth) 10 else 8
+        val eglAlphaSize = if (useHighBitDepth) 2 else 0
+        val recordable = if (useHighBitDepth) 0 else 1
         var attribList = intArrayOf(
-            EGL14.EGL_RED_SIZE, 8,
-            EGL14.EGL_GREEN_SIZE, 8,
-            EGL14.EGL_BLUE_SIZE, 8,
+            EGL14.EGL_RED_SIZE, eglColorSize,
+            EGL14.EGL_GREEN_SIZE, eglColorSize,
+            EGL14.EGL_BLUE_SIZE, eglColorSize,
+            EGL14.EGL_ALPHA_SIZE, eglAlphaSize,
             EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
-            EGL_RECORDABLE_ANDROID, 1,
+            EGL_RECORDABLE_ANDROID, recordable,
             EGL14.EGL_NONE
         )
         val numConfigs = IntArray(1)

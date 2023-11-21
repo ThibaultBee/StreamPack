@@ -29,6 +29,7 @@ import io.github.thibaultbee.streampack.internal.gl.EglWindowSurface
 import io.github.thibaultbee.streampack.internal.gl.FullFrameRect
 import io.github.thibaultbee.streampack.internal.gl.Texture2DProgram
 import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
+import io.github.thibaultbee.streampack.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import java.util.concurrent.Executors
 
@@ -62,10 +63,17 @@ class VideoMediaCodecEncoder(
             _bitrate = value
         }
 
-    override fun onNewMediaCodec() {
-        mediaCodec?.let {
-            codecSurface?.outputSurface = it.createInputSurface()
+    override fun onNewMediaCodec(mediaCodec: MediaCodec) {
+        try {
+            val mimeType = mediaCodec.outputFormat.getString(MediaFormat.KEY_MIME)!!
+            val profile = mediaCodec.outputFormat.getInteger(MediaFormat.KEY_PROFILE)
+            codecSurface?.useHighBitDepth =
+                DynamicRangeProfile.fromProfile(mimeType, profile).isHdr
+        } catch (_: Exception) {
+            codecSurface?.useHighBitDepth = false
         }
+
+        codecSurface?.outputSurface = mediaCodec.createInputSurface()
     }
 
     override fun createMediaFormat(config: Config, withProfileLevel: Boolean): MediaFormat {
@@ -77,9 +85,14 @@ class VideoMediaCodecEncoder(
                 MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
             )
         } else {
+            val colorFormat = if ((config as VideoConfig).dynamicRangeProfile.isHdr) {
+                MediaCodecInfo.CodecCapabilities.COLOR_FormatYUVP010
+            } else {
+                MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible
+            }
             videoFormat.setInteger(
                 MediaFormat.KEY_COLOR_FORMAT,
-                MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible
+                colorFormat
             )
         }
         return videoFormat
@@ -124,6 +137,11 @@ class VideoMediaCodecEncoder(
         val inputSurface: Surface?
             get() = surfaceTexture?.let { Surface(surfaceTexture) }
 
+        /**
+         * If true, the encoder will use high bit depth (10 bits) for encoding.
+         */
+        var useHighBitDepth = false
+
         var outputSurface: Surface? = null
             set(value) {
                 /**
@@ -145,7 +163,7 @@ class VideoMediaCodecEncoder(
             }
 
         private fun initOrUpdateSurfaceTexture(surface: Surface) {
-            eglSurface = ensureGlContext(EglWindowSurface(surface)) {
+            eglSurface = ensureGlContext(EglWindowSurface(surface, useHighBitDepth)) {
                 val width = it.getWidth()
                 val height = it.getHeight()
                 val size =

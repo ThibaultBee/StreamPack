@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.data
 
 import android.content.Context
+import android.media.MediaCodecInfo
 import android.media.MediaCodecInfo.CodecProfileLevel
 import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain8
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline
@@ -26,12 +27,12 @@ import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileHigh
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileMain
 import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain
 import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile0
-import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile1
 import android.media.MediaFormat
 import android.media.MediaFormat.KEY_PRIORITY
 import android.os.Build
 import android.util.Size
 import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
+import io.github.thibaultbee.streampack.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.internal.utils.extensions.isDevicePortrait
 import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
 import io.github.thibaultbee.streampack.internal.utils.extensions.landscapize
@@ -70,6 +71,9 @@ class VideoConfig(
     val fps: Int = 30,
     /**
      * Video encoder profile. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile.
+     * If not set, profile is always a 8 bit profile. StreamPack try to apply the highest profile available.
+     * If the decoder does not support the profile, you should explicitly set the profile to a lower
+     * value such as [AVCProfileBaseline] for AVC, [HEVCProfileMain] for HEVC, [VP9Profile0] for VP9.
      * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
      */
     profile: Int = getBestProfile(mimeType),
@@ -94,7 +98,7 @@ class VideoConfig(
     constructor(
         /**
          * Video encoder mime type.
-         * Only [MediaFormat.MIMETYPE_VIDEO_AVC], [MediaFormat.MIMETYPE_VIDEO_HEVC] and [MediaFormat.MIMETYPE_VIDEO_VP9] are supported yet.
+         * Only [MediaFormat.MIMETYPE_VIDEO_AVC], [MediaFormat.MIMETYPE_VIDEO_HEVC], [MediaFormat.MIMETYPE_VIDEO_VP9] and [MediaFormat.MIMETYPE_VIDEO_AV1] are supported yet.
          *
          * **See Also:** [MediaFormat MIMETYPE_VIDEO_*](https://developer.android.com/reference/android/media/MediaFormat)
          */
@@ -132,6 +136,13 @@ class VideoConfig(
         profileLevel.level,
         gopDuration
     )
+
+    /**
+     * The dynamic range profile.
+     * It is deduced from the [profile].
+     * **See Also:** [DynamicRangeProfiles](https://developer.android.com/reference/android/hardware/camera2/params/DynamicRangeProfiles)
+     */
+    val dynamicRangeProfile = DynamicRangeProfile.fromProfile(mimeType, profile)
 
     /**
      * Get resolution according to device orientation
@@ -179,6 +190,23 @@ class VideoConfig(
             format.setInteger(KEY_PRIORITY, 0) // Realtime hint
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (dynamicRangeProfile != DynamicRangeProfile.sdr) {
+                format.setInteger(
+                    MediaFormat.KEY_COLOR_STANDARD,
+                    MediaFormat.COLOR_STANDARD_BT2020
+                )
+                format.setInteger(MediaFormat.KEY_COLOR_RANGE, MediaFormat.COLOR_RANGE_FULL)
+                format.setInteger(
+                    MediaFormat.KEY_COLOR_TRANSFER,
+                    dynamicRangeProfile.transferFunction
+                )
+                format.setFeatureEnabled(
+                    MediaCodecInfo.CodecCapabilities.FEATURE_HdrEditing, true
+                )
+            }
+        }
+
         return format
     }
 
@@ -215,7 +243,6 @@ class VideoConfig(
         )
 
         private val vp9ProfilePriority = listOf(
-            VP9Profile1,
             VP9Profile0
         )
 

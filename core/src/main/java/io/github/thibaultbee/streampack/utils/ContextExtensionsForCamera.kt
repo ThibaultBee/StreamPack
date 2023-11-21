@@ -19,7 +19,9 @@ import android.content.Context
 import android.graphics.ImageFormat
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureResult
+import android.hardware.camera2.params.DynamicRangeProfiles.STANDARD
 import android.os.Build
 import android.util.Range
 import android.util.Size
@@ -337,4 +339,49 @@ fun Context.getCameraOutputStreamSizes(
 fun Context.getCameraFpsList(cameraId: String): List<Range<Int>> {
     return this.getCameraCharacteristics(cameraId)[CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES]?.toList()
         ?: emptyList()
+}
+
+/**
+ * Whether the camera supports the capability.
+ *
+ * @param cameraId camera id
+ * @return true if the camera supports the capability, false otherwise
+ */
+private fun Context.isCapabilitiesSupported(cameraId: String, capability: Int): Boolean {
+    val availableCapabilities = this.getCameraCharacteristics(cameraId)
+        .get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)
+    return availableCapabilities?.contains(capability) ?: false
+}
+
+/**
+ * Whether the camera supports 10-bit dynamic range output.
+ *
+ * @param cameraId camera id
+ * @return true if the camera supports 10-bit dynamic range output, false otherwise
+ */
+fun Context.is10BitProfileSupported(cameraId: String): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        isCapabilitiesSupported(
+            cameraId,
+            CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_DYNAMIC_RANGE_TEN_BIT
+        )
+    } else {
+        false
+    }
+}
+
+/**
+ * Get list of 10-bit dynamic range output profiles.
+ *
+ * @param cameraId camera id
+ * @return List of 10-bit dynamic range output profiles
+ */
+fun Context.get10BitSupportedProfiles(cameraId: String): Set<Long> {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        this.getCameraCharacteristics(cameraId)
+            .get(CameraCharacteristics.REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES)?.supportedProfiles
+            ?: setOf(STANDARD)
+    } else {
+        setOf(STANDARD)
+    }
 }

@@ -24,6 +24,7 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.sources.IVideoSource
+import io.github.thibaultbee.streampack.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.internal.utils.extensions.deviceOrientation
 import io.github.thibaultbee.streampack.internal.utils.extensions.isDevicePortrait
 import io.github.thibaultbee.streampack.internal.utils.extensions.landscapize
@@ -72,11 +73,13 @@ class CameraSource(
     }
 
     private var fps: Int = 30
+    private var dynamicRangeProfile: DynamicRangeProfile = DynamicRangeProfile.sdr
     private var isStreaming = false
     private var isPreviewing = false
 
     override fun configure(config: VideoConfig) {
         this.fps = config.fps
+        this.dynamicRangeProfile = config.dynamicRangeProfile
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
@@ -84,7 +87,7 @@ class CameraSource(
         var targets = mutableListOf<Surface>()
         previewSurface?.let { targets.add(it) }
         encoderSurface?.let { targets.add(it) }
-        cameraController.startCamera(cameraId, targets)
+        cameraController.startCamera(cameraId, targets, dynamicRangeProfile.dynamicRange)
 
         targets = mutableListOf()
         previewSurface?.let { targets.add(it) }
