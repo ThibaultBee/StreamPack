@@ -20,6 +20,7 @@ import android.content.Context
 import android.hardware.camera2.*
 import android.hardware.camera2.CameraDevice.AUDIO_RESTRICTION_NONE
 import android.hardware.camera2.CameraDevice.AUDIO_RESTRICTION_VIBRATION_SOUND
+import android.hardware.camera2.params.OutputConfiguration
 import android.os.Build
 import android.util.Range
 import android.view.Surface
@@ -110,9 +111,7 @@ class CameraController(
 
     private val captureCallback = object : CameraCaptureSession.CaptureCallback() {
         override fun onCaptureFailed(
-            session: CameraCaptureSession,
-            request: CaptureRequest,
-            failure: CaptureFailure
+            session: CameraCaptureSession, request: CaptureRequest, failure: CaptureFailure
         ) {
             super.onCaptureFailed(session, request, failure)
             Logger.e(TAG, "Capture failed  with code ${failure.reason}")
@@ -121,25 +120,35 @@ class CameraController(
 
     @RequiresPermission(Manifest.permission.CAMERA)
     private suspend fun openCamera(
-        manager: CameraManager,
-        cameraId: String
+        manager: CameraManager, cameraId: String
     ): CameraDevice = suspendCancellableCoroutine { cont ->
         threadManager.openCamera(
-            manager,
-            cameraId,
-            CameraDeviceCallback(cont)
+            manager, cameraId, CameraDeviceCallback(cont)
         )
     }
 
     private suspend fun createCaptureSession(
         camera: CameraDevice,
-        targets: List<Surface>
+        targets: List<Surface>,
+        dynamicRange: Long,
     ): CameraCaptureSession = suspendCancellableCoroutine { cont ->
-        threadManager.createCaptureSession(
-            camera,
-            targets,
-            CameraCaptureSessionCallback(cont)
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val outputConfigurations = targets.map {
+                OutputConfiguration(it).apply {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        dynamicRangeProfile = dynamicRange
+                    }
+                }
+            }
+
+            threadManager.createCaptureSessionByOutputConfiguration(
+                camera, outputConfigurations, CameraCaptureSessionCallback(cont)
+            )
+        } else {
+            threadManager.createCaptureSession(
+                camera, targets, CameraCaptureSessionCallback(cont)
+            )
+        }
     }
 
     private fun createRequestSession(
@@ -162,18 +171,17 @@ class CameraController(
     @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun startCamera(
         cameraId: String,
-        targets: List<Surface>
+        targets: List<Surface>,
+        dynamicRange: Long,
     ) {
         require(targets.isNotEmpty()) { " At least one target is required" }
 
         withContext(coroutineDispatcher) {
             val manager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
             camera = openCamera(manager, cameraId).also { cameraDevice ->
-                captureSession =
-                    createCaptureSession(
-                        cameraDevice,
-                        targets
-                    )
+                captureSession = createCaptureSession(
+                    cameraDevice, targets, dynamicRange
+                )
             }
         }
     }
@@ -183,13 +191,9 @@ class CameraController(
         require(captureSession != null) { "Capture session must not be null" }
         require(targets.isNotEmpty()) { " At least one target is required" }
 
-        captureRequest =
-            createRequestSession(
-                camera!!,
-                captureSession!!,
-                getClosestFpsRange(camera!!.id, fps),
-                targets
-            )
+        captureRequest = createRequestSession(
+            camera!!, captureSession!!, getClosestFpsRange(camera!!.id, fps), targets
+        )
     }
 
     fun stopCamera() {
@@ -249,9 +253,7 @@ class CameraController(
         require(captureRequest != null) { "capture request must not be null" }
 
         threadManager.setRepeatingSingleRequest(
-            captureSession!!,
-            captureRequest!!.build(),
-            captureCallback
+            captureSession!!, captureRequest!!.build(), captureCallback
         )
     }
 
@@ -260,9 +262,7 @@ class CameraController(
         require(captureRequest != null) { "capture request must not be null" }
 
         threadManager.captureBurstRequests(
-            captureSession!!,
-            listOf(captureRequest!!.build()),
-            captureCallback
+            captureSession!!, listOf(captureRequest!!.build()), captureCallback
         )
     }
 

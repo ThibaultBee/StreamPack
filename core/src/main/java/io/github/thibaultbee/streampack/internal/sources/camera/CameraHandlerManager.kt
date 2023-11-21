@@ -20,9 +20,12 @@ import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
+import android.hardware.camera2.params.OutputConfiguration
+import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.view.Surface
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 
 /**
@@ -49,6 +52,20 @@ class CameraHandlerManager : ICameraThreadManager {
     ) {
         @Suppress("deprecation")
         camera.createCaptureSession(targets, callback, cameraHandler)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    override fun createCaptureSessionByOutputConfiguration(
+        camera: CameraDevice,
+        outputConfigurations: List<OutputConfiguration>,
+        callback: CameraCaptureSession.StateCallback
+    ) {
+        @Suppress("deprecation")
+        camera.createCaptureSessionByOutputConfigurations(
+            outputConfigurations,
+            callback,
+            cameraHandler
+        )
     }
 
     override fun setRepeatingSingleRequest(

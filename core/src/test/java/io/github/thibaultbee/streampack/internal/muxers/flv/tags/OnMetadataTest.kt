@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.flv.tags
 
+import android.media.MediaCodecInfo
 import android.util.Size
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
@@ -186,7 +187,11 @@ class OnMetadataTest {
         MockUtils.mockSizeConstructor(640, 480)
         val onMetadata = OnMetadata.fromConfigs(
             listOf(
-                VideoConfig(resolution = Size(640, 480), profile = 0, level = 0)
+                VideoConfig(
+                    resolution = Size(640, 480),
+                    profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
+                    level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
+                )
             )
         )
         val buffer = onMetadata.write()

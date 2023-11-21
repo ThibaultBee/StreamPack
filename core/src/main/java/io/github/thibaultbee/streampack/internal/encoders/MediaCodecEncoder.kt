@@ -32,8 +32,10 @@ abstract class MediaCodecEncoder<T : Config>(
     EventHandler(), IEncoder<Config> {
     protected var mediaCodec: MediaCodec? = null
         set(value) {
+            if (value != null) {
+                onNewMediaCodec(value)
+            }
             field = value
-            onNewMediaCodec()
         }
     private var callbackThread: HandlerThread? = null
     private var handler: Handler? = null
@@ -149,7 +151,7 @@ abstract class MediaCodecEncoder<T : Config>(
         }
     }
 
-    open fun onNewMediaCodec() {}
+    open fun onNewMediaCodec(mediaCodec: MediaCodec) {}
 
     open fun createMediaFormat(config: Config, withProfileLevel: Boolean) =
         config.getFormat(withProfileLevel)

@@ -244,7 +244,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         // Inflates profile
-        val profiles = streamerHelper.video.getSupportedProfiles(encoder)
+        val profiles = streamerHelper.video.getSupportedAllProfiles(
+            requireContext(),
+            encoder,
+            requireContext().defaultCameraId
+        )
             .map {
                 profileLevelDisplay.getProfileName(
                     encoder,

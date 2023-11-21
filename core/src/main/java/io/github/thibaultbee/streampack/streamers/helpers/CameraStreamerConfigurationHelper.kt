@@ -23,7 +23,9 @@ import io.github.thibaultbee.streampack.internal.muxers.IVideoMuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4MuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxerHelper
+import io.github.thibaultbee.streampack.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
+import io.github.thibaultbee.streampack.utils.get10BitSupportedProfiles
 import io.github.thibaultbee.streampack.utils.getCameraFpsList
 import io.github.thibaultbee.streampack.utils.getCameraOutputStreamSizes
 
@@ -76,5 +78,31 @@ class VideoCameraStreamerConfigurationHelper(muxerHelper: IVideoMuxerHelper) :
     ): List<Range<Int>> {
         val encoderFpsRange = super.getSupportedFramerate(mimeType)
         return context.getCameraFpsList(cameraId).filter { encoderFpsRange.contains(it) }
+    }
+
+    /**
+     * Get supported 8-bit and 10-bit profiles for a [BaseCameraStreamer].
+     *
+     * @param context application context
+     * @param mimeType video encoder mime type
+     * @param cameraId camera id
+     * @return list of profiles
+     */
+    fun getSupportedAllProfiles(
+        context: Context,
+        mimeType: String,
+        cameraId: String
+    ): List<Int> {
+        val supportedDynamicRangeProfiles = context.get10BitSupportedProfiles(cameraId)
+
+        // If device doesn't support 10-bit, return all supported 8-bit profiles
+        return super.getSupportedAllProfiles(mimeType).filter {
+            supportedDynamicRangeProfiles.contains(
+                DynamicRangeProfile.fromProfile(
+                    mimeType,
+                    it
+                ).dynamicRange
+            )
+        }
     }
 }

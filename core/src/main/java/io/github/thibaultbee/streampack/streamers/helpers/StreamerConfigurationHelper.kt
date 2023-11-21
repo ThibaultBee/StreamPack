@@ -16,8 +16,28 @@
 package io.github.thibaultbee.streampack.streamers.helpers
 
 import android.media.AudioFormat
-import android.media.MediaCodecInfo.CodecProfileLevel.*
+import android.media.MediaCodecInfo.CodecCapabilities.FEATURE_HdrEditing
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10Plus
+import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain8
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileConstrainedBaseline
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileConstrainedHigh
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileExtended
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileHigh
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileHigh10
+import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileMain
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10
+import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10Plus
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile0
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile2
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile2HDR
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile2HDR10Plus
 import android.media.MediaFormat
+import android.os.Build
 import android.util.Range
 import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
 import io.github.thibaultbee.streampack.internal.muxers.IAudioMuxerHelper
@@ -26,6 +46,7 @@ import io.github.thibaultbee.streampack.internal.muxers.IVideoMuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4MuxerHelper
 import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxerHelper
+import io.github.thibaultbee.streampack.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import java.security.InvalidParameterException
 
@@ -165,13 +186,13 @@ open class VideoStreamerConfigurationHelper(private val videoMuxerHelper: IVideo
     ) = MediaCodecHelper.Video.getFramerateRange(mimeType)
 
     /**
-     * Get supported profiles for a [BaseStreamer].
+     * Get supported 8-bit and 10-bit profiles for a [BaseStreamer].
      * Removes profiles for 10 bits and still images.
      *
      * @param mimeType video encoder mime type
      * @return list of profile
      */
-    fun getSupportedProfiles(mimeType: String): List<Int> {
+    fun getSupportedAllProfiles(mimeType: String): List<Int> {
         val profiles = when (mimeType) {
             MediaFormat.MIMETYPE_VIDEO_AVC -> avcProfiles
             MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcProfiles
@@ -180,29 +201,103 @@ open class VideoStreamerConfigurationHelper(private val videoMuxerHelper: IVideo
             else -> throw InvalidParameterException("Unknown mimetype $mimeType")
         }
         val supportedProfiles = MediaCodecHelper.getProfiles(mimeType)
-        return profiles.filter { supportedProfiles.contains(it) }
+        return profiles.filter {
+            supportedProfiles.contains(it) &&
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        if (DynamicRangeProfile.fromProfile(
+                                mimeType,
+                                it
+                            ).isHdr
+                        ) {
+                            MediaCodecHelper.isFeatureSupported(mimeType, FEATURE_HdrEditing)
+                        } else {
+                            true
+                        }
+                    } else {
+                        true
+                    }
+        }
     }
 
+    /**
+     * Get supported HDR (10-bit only) profiles for a [BaseStreamer].
+     * Removes profiles for 8 bits and still images.
+     *
+     * @param mimeType video encoder mime type
+     * @return list of profile
+     */
+    fun getSupportedHdrProfiles(mimeType: String): List<Int> {
+        val supportedProfiles = getSupportedAllProfiles(mimeType)
+        return supportedProfiles.filter {
+            DynamicRangeProfile.fromProfile(
+                mimeType,
+                it
+            ).isHdr
+        }
+    }
+
+    /**
+     * Get supported SDR (8-bit only) profiles for a [BaseStreamer].
+     * Removes profiles for 10 bits and still images.
+     *
+     * @param mimeType video encoder mime type
+     * @return list of profile
+     */
+    @Deprecated(
+        "Use [getSdrProfilesSupported] instead",
+        ReplaceWith("getSdrProfilesSupported(mimeType)")
+    )
+    fun getSupportedProfiles(mimeType: String) = getSupportedSdrProfiles(mimeType)
+
+    /**
+     * Get supported SDR (8-bit only) profiles for a [BaseStreamer].
+     * Removes profiles for 10 bits and still images.
+     *
+     * @param mimeType video encoder mime type
+     * @return list of profile
+     */
+    fun getSupportedSdrProfiles(mimeType: String): List<Int> {
+        val supportedProfiles = getSupportedAllProfiles(mimeType)
+        return supportedProfiles.filter {
+            !DynamicRangeProfile.fromProfile(
+                mimeType,
+                it
+            ).isHdr
+        }
+    }
+
+    /**
+     * Only 420 profiles (8 and 10 bits) are supported.
+     */
     private val avcProfiles = listOf(
         AVCProfileBaseline,
         AVCProfileConstrainedBaseline,
         AVCProfileConstrainedHigh,
         AVCProfileExtended,
         AVCProfileHigh,
-        AVCProfileMain
+        AVCProfileHigh10,
+        AVCProfileMain,
     )
 
     private val hevcProfiles = listOf(
-        HEVCProfileMain
+        HEVCProfileMain,
+        HEVCProfileMain10,
+        HEVCProfileMain10HDR10,
+        HEVCProfileMain10HDR10Plus
     )
 
     private val vp9Profiles = listOf(
         VP9Profile0,
-        VP9Profile1
+        VP9Profile2,
+        VP9Profile2HDR,
+        VP9Profile2HDR10Plus
     )
 
     private val av1Profiles = listOf(
-        AV1ProfileMain8
+        AV1ProfileMain8,
+        AV1ProfileMain10,
+        AV1ProfileMain10HDR10,
+        AV1ProfileMain10HDR10Plus
     )
 }
 

@@ -50,11 +50,19 @@ class CameraExecutorManager : ICameraThreadManager {
         targets: List<Surface>,
         callback: CameraCaptureSession.StateCallback
     ) {
-        val outputs = mutableListOf<OutputConfiguration>()
-        targets.forEach { outputs.add(OutputConfiguration(it)) }
+        val outputConfigurations = targets.map { OutputConfiguration(it) }
+        createCaptureSessionByOutputConfiguration(camera, outputConfigurations, callback)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    override fun createCaptureSessionByOutputConfiguration(
+        camera: CameraDevice,
+        outputConfigurations: List<OutputConfiguration>,
+        callback: CameraCaptureSession.StateCallback
+    ) {
         SessionConfiguration(
             SessionConfiguration.SESSION_REGULAR,
-            outputs,
+            outputConfigurations,
             cameraExecutor,
             callback
         ).also { sessionConfig ->

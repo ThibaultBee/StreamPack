@@ -117,7 +117,11 @@ import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level62
 import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile0
 import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile1
 import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile2
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile2HDR
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile2HDR10Plus
 import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile3
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile3HDR
+import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile3HDR10Plus
 import android.media.MediaFormat
 import android.os.Build
 import io.github.thibaultbee.streampack.app.R
@@ -202,7 +206,17 @@ class ProfileLevelDisplay(private val context: Context) {
                 put(VP9Profile0, context.getString(R.string.video_profile_vp9_profile0))
                 put(VP9Profile1, context.getString(R.string.video_profile_vp9_profile1))
                 put(VP9Profile2, context.getString(R.string.video_profile_vp9_profile2))
+                put(VP9Profile2HDR, context.getString(R.string.video_profile_vp9_profile2_hdr10))
+                put(
+                    VP9Profile2HDR10Plus,
+                    context.getString(R.string.video_profile_vp9_profile2_hrd10plus)
+                )
                 put(VP9Profile3, context.getString(R.string.video_profile_vp9_profile3))
+                put(VP9Profile3HDR, context.getString(R.string.video_profile_vp9_profile3_hdr10))
+                put(
+                    VP9Profile3HDR10Plus,
+                    context.getString(R.string.video_profile_vp9_profile3_hdr10plus)
+                )
             }
         }
 

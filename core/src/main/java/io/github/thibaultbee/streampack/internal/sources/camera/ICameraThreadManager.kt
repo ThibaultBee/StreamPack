@@ -19,6 +19,7 @@ import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
+import android.hardware.camera2.params.OutputConfiguration
 import android.view.Surface
 
 /**
@@ -40,15 +41,28 @@ interface ICameraThreadManager {
     )
 
     /**
-     * Create a camera capture session.
+     * Create a camera capture session for surfaces.
      *
      * @param camera the [CameraDevice]
-     * @param targets list of surfaces
+     * @param targets list of [Surface]
      * @param callback an implementation of [CameraCaptureSession.StateCallback]
      */
     fun createCaptureSession(
         camera: CameraDevice,
         targets: List<Surface>,
+        callback: CameraCaptureSession.StateCallback
+    )
+
+    /**
+     * Create a camera capture session for output configurations.
+     *
+     * @param camera the [CameraDevice]
+     * @param outputConfigurations list of [OutputConfiguration]
+     * @param callback an implementation of [CameraCaptureSession.StateCallback]
+     */
+    fun createCaptureSessionByOutputConfiguration(
+        camera: CameraDevice,
+        outputConfigurations: List<OutputConfiguration>,
         callback: CameraCaptureSession.StateCallback
     )
 

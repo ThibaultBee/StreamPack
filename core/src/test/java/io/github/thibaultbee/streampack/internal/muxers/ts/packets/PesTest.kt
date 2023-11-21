@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.muxers.ts.packets
 
+import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.VideoConfig
@@ -63,7 +64,12 @@ class PesTest {
         val expectedBuffers = readFrames(TEST_SAMPLES_DIR + "pes-video1")
         Pes(
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
-            Stream(VideoConfig(profile = 0, level = 0), 256),
+            Stream(
+                VideoConfig(
+                    profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
+                    level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
+                ), 256
+            ),
             true
         ).run {
             write(frame)

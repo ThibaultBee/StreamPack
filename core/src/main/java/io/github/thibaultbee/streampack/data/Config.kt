@@ -41,7 +41,7 @@ open class Config(
 
     /**
      * The encoder profile.
-     * Only applicable to AAC, AVC and HEVC.
+     * Only applicable to AAC, AVC, HEVC, VP9, AV1.
      */
     val profile: Int = 0
 ) {
@@ -75,6 +75,7 @@ open class Config(
      * Check if this configuration is supported by the specified encoder.
      * If format is not supported, it won't be possible to start a stream.
      *
+     * @param name the encoder name
      * @return true if format is supported, otherwise false
      */
     fun isFormatSupportedForEncoder(name: String): Boolean {
@@ -91,7 +92,7 @@ open class Config(
      *
      * @return the default encoder name
      */
-    val defaultEncodeName: String? by lazy {
+    val defaultEncoderName: String? by lazy {
         try {
             MediaCodecHelper.findEncoder(getFormat(true))
         } catch (_: Exception) {

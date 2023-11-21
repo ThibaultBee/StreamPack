@@ -137,7 +137,11 @@
     <string name="video_profile_vp9_profile0">Profile 0</string>
     <string name="video_profile_vp9_profile1">Profile 1</string>
     <string name="video_profile_vp9_profile2">Profile 2</string>
+    <string name="video_profile_vp9_profile2_hdr10">Profile 2 HDR10</string>
+    <string name="video_profile_vp9_profile2_hrd10plus">Profile 2 HDR10Plus</string>
     <string name="video_profile_vp9_profile3">Profile 3</string>
+    <string name="video_profile_vp9_profile3_hdr10">Profile 3 HDR10</string>
+    <string name="video_profile_vp9_profile3_hdr10plus">Profile 3 HDR10Plus</string>
 
     <string name="video_level">Level</string>
     <string name="video_level_key">video_level_key</string>
