@@ -180,7 +180,7 @@ open class VideoStreamerConfigurationHelper(private val videoMuxerHelper: IVideo
             else -> throw InvalidParameterException("Unknown mimetype $mimeType")
         }
         val supportedProfiles = MediaCodecHelper.getProfiles(mimeType)
-        return supportedProfiles.filter { profiles.contains(it) }
+        return profiles.filter { supportedProfiles.contains(it) }
     }
 
     private val avcProfiles = listOf(

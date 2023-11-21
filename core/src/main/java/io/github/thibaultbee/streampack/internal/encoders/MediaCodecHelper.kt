@@ -217,7 +217,7 @@ object MediaCodecHelper {
     fun getProfileLevel(
         mimeType: String,
     ): List<MediaCodecInfo.CodecProfileLevel> =
-        getCodecCapabilities(mimeType).profileLevels.toList()
+        getCodecCapabilities(mimeType).profileLevels.toList().toSet().toList()
 
     /**
      * Get encoder supported profile level list for the specified encoder.
@@ -230,7 +230,7 @@ object MediaCodecHelper {
         mimeType: String,
         name: String
     ): List<MediaCodecInfo.CodecProfileLevel> =
-        getCodecCapabilities(mimeType, name).profileLevels.toList()
+        getCodecCapabilities(mimeType, name).profileLevels.toList().toSet().toList()
 
     /**
      * Get encoder supported profiles list for the default encoder.
