@@ -44,7 +44,7 @@ class ScreenRecorderRtmpLiveStreamer(
     context = context,
     enableAudio = enableAudio,
     muxer = FlvMuxer(writeToFile = false),
-    endpoint = RtmpProducer(hasAudio = enableAudio, hasVideo = true),
+    endpoint = RtmpProducer(),
     initialOnErrorListener = initialOnErrorListener,
     initialOnConnectionListener = initialOnConnectionListener
 ) {
