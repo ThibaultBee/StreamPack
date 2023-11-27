@@ -20,6 +20,7 @@ import android.util.Log
 import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.streamers.bases.BaseAudioOnlyStreamer
 import io.github.thibaultbee.streampack.utils.AndroidUtils
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
@@ -38,7 +39,9 @@ abstract class AudioOnlyStreamerTestCase :
             streamer.configure(
                 AndroidUtils.fakeValidAudioConfig()
             )
-            streamer.startStream()
+            runBlocking {
+                streamer.startStream()
+            }
             streamer.stopStream()
             streamer.release()
         } catch (e: Exception) {
@@ -53,7 +56,9 @@ abstract class AudioOnlyStreamerTestCase :
             streamer.configure(
                 AndroidUtils.fakeValidAudioConfig()
             )
-            streamer.startStream()
+            runBlocking {
+                streamer.startStream()
+            }
             streamer.stopStream()
             streamer.release()
         } catch (e: Exception) {
@@ -116,7 +121,9 @@ abstract class AudioOnlyStreamerTestCase :
             streamer.configure(
                 AndroidUtils.fakeValidAudioConfig()
             )
-            streamer.startStream()
+            runBlocking {
+                streamer.startStream()
+            }
         } catch (e: Exception) {
             Log.e(TAG, "configureStartStreamTest: exception: ", e)
             fail("Must be possible to configure/startStream but catches exception: $e")
@@ -155,7 +162,9 @@ abstract class AudioOnlyStreamerTestCase :
             streamer.configure(
                 AndroidUtils.fakeValidAudioConfig()
             )
-            streamer.startStream()
+            runBlocking {
+                streamer.startStream()
+            }
             streamer.release()
         } catch (e: Exception) {
             Log.e(TAG, "startStreamReleaseTest: exception: ", e)
@@ -169,7 +178,9 @@ abstract class AudioOnlyStreamerTestCase :
             streamer.configure(
                 AndroidUtils.fakeValidAudioConfig()
             )
-            streamer.startStream()
+            runBlocking {
+                streamer.startStream()
+            }
             streamer.stopStream()
         } catch (e: Exception) {
             Log.e(TAG, "startStreamStopStreamTest: exception: ", e)
@@ -184,7 +195,9 @@ abstract class AudioOnlyStreamerTestCase :
                 AndroidUtils.fakeValidAudioConfig()
             )
             (0..10).forEach { _ ->
-                streamer.startStream()
+                runBlocking {
+                    streamer.startStream()
+                }
                 streamer.stopStream()
             }
         } catch (e: Exception) {

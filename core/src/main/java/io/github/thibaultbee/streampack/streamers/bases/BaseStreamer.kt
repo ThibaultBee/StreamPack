@@ -272,7 +272,7 @@ abstract class BaseStreamer(
      *
      * @see [stopStream]
      */
-    override fun startStream() {
+    override suspend fun startStream() {
         try {
             endpoint.startStream()
 

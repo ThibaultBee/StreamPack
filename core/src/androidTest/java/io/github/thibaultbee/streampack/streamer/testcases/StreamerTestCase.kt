@@ -20,6 +20,7 @@ import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import io.github.thibaultbee.streampack.utils.AndroidUtils
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Test
@@ -41,7 +42,9 @@ abstract class StreamerTestCase {
                 AndroidUtils.fakeValidAudioConfig(),
                 AndroidUtils.fakeValidVideoConfig()
             )
-            streamer.startStream()
+            runBlocking {
+                streamer.startStream()
+            }
             streamer.stopStream()
             streamer.release()
         } catch (e: Exception) {
@@ -59,7 +62,9 @@ abstract class StreamerTestCase {
             streamer.configure(
                 AndroidUtils.fakeValidVideoConfig()
             )
-            streamer.startStream()
+            runBlocking {
+                streamer.startStream()
+            }
             streamer.stopStream()
             streamer.release()
         } catch (e: Exception) {
@@ -121,7 +126,9 @@ abstract class StreamerTestCase {
     @Test
     fun startStreamTest() {
         try {
-            streamer.startStream()
+            runBlocking {
+                streamer.startStream()
+            }
             fail("startStream without configuration must throw an exception")
         } catch (_: Exception) {
         }
@@ -155,7 +162,9 @@ abstract class StreamerTestCase {
                 AndroidUtils.fakeValidAudioConfig(),
                 AndroidUtils.fakeValidVideoConfig()
             )
-            streamer.startStream()
+            runBlocking {
+                streamer.startStream()
+            }
             fail("startStream without startPreview must failed")
         } catch (_: Exception) {
         }
@@ -196,7 +205,9 @@ abstract class StreamerTestCase {
                 AndroidUtils.fakeValidAudioConfig(),
                 AndroidUtils.fakeValidVideoConfig()
             )
-            streamer.startStream()
+            runBlocking {
+                streamer.startStream()
+            }
             streamer.release()
         } catch (e: Exception) {
             Log.e(TAG, "startStreamReleaseTest: exception: ", e)
@@ -211,7 +222,9 @@ abstract class StreamerTestCase {
                 AndroidUtils.fakeValidAudioConfig(),
                 AndroidUtils.fakeValidVideoConfig()
             )
-            streamer.startStream()
+            runBlocking {
+                streamer.startStream()
+            }
             streamer.stopStream()
         } catch (e: Exception) {
             Log.e(TAG, "startStreamStopStreamTest: exception: ", e)
@@ -243,7 +256,9 @@ abstract class StreamerTestCase {
                 AndroidUtils.fakeValidVideoConfig()
             )
             (0..10).forEach { _ ->
-                streamer.startStream()
+                runBlocking {
+                    streamer.startStream()
+                }
                 streamer.stopStream()
             }
         } catch (e: Exception) {

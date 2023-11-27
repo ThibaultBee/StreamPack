@@ -96,5 +96,5 @@ open class BaseAudioOnlyFileStreamer(
      * Manifest.permission.WRITE_EXTERNAL_STORAGE.
      */
     @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO])
-    override fun startStream() = super.startStream()
+    override suspend fun startStream() = super.startStream()
 }

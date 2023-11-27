@@ -22,6 +22,7 @@ import android.view.Surface
 import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.utils.AndroidUtils
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Before
@@ -55,7 +56,9 @@ abstract class CameraStreamerTestCase :
                 AndroidUtils.fakeValidVideoConfig()
             )
             streamer.startPreview(surface)
-            streamer.startStream()
+            runBlocking {
+                streamer.startStream()
+            }
             streamer.stopStream()
             streamer.stopPreview()
             streamer.release()
@@ -75,7 +78,9 @@ abstract class CameraStreamerTestCase :
                 AndroidUtils.fakeValidVideoConfig()
             )
             streamer.startPreview(surface)
-            streamer.startStream()
+            runBlocking {
+                streamer.startStream()
+            }
             streamer.stopStream()
             streamer.release()
         } catch (e: Exception) {
@@ -172,7 +177,9 @@ abstract class CameraStreamerTestCase :
                 AndroidUtils.fakeValidVideoConfig()
             )
             streamer.startPreview(surface)
-            streamer.startStream()
+            runBlocking {
+                streamer.startStream()
+            }
             streamer.release()
         } catch (e: Exception) {
             Log.e(TAG, "startStreamReleaseTest: exception: ", e)
@@ -189,7 +196,9 @@ abstract class CameraStreamerTestCase :
                 AndroidUtils.fakeValidVideoConfig()
             )
             streamer.startPreview(surface)
-            streamer.startStream()
+            runBlocking {
+                streamer.startStream()
+            }
             streamer.stopPreview()
         } catch (e: Exception) {
             Log.e(TAG, "startStreamStopPreviewTest: exception: ", e)
@@ -205,7 +214,9 @@ abstract class CameraStreamerTestCase :
                 AndroidUtils.fakeValidVideoConfig()
             )
             streamer.startPreview(surface)
-            streamer.startStream()
+            runBlocking {
+                streamer.startStream()
+            }
             streamer.stopStream()
         } catch (e: Exception) {
             Log.e(TAG, "startStreamStopStreamTest: exception: ", e)
@@ -239,7 +250,9 @@ abstract class CameraStreamerTestCase :
             )
             streamer.startPreview(surface)
             (0..10).forEach { _ ->
-                streamer.startStream()
+                runBlocking {
+                    streamer.startStream()
+                }
                 streamer.stopStream()
             }
         } catch (e: Exception) {

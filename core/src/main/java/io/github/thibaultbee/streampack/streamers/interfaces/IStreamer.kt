@@ -81,7 +81,7 @@ interface IStreamer {
      *
      * @see [stopStream]
      */
-    fun startStream()
+    suspend fun startStream()
 
     /**
      * Stops audio/video stream.
