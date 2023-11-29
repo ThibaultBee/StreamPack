@@ -75,7 +75,7 @@ data class AVCDecoderConfigurationRecord(
     }
 
     companion object {
-        private const val AVC_DECODER_CONFIGURATION_RECORD_SIZE = 11
+        private const val AVC_DECODER_CONFIGURATION_RECORD_SIZE = 7
 
         fun fromParameterSets(
             sps: ByteBuffer,
@@ -106,10 +106,10 @@ data class AVCDecoderConfigurationRecord(
             var size =
                 AVC_DECODER_CONFIGURATION_RECORD_SIZE
             sps.forEach {
-                size += it.remaining() - it.startCodeSize
+                size += 2 + it.remaining() - it.startCodeSize
             }
             pps.forEach {
-                size += it.remaining() - it.startCodeSize
+                size += 2 + it.remaining() - it.startCodeSize
             }
             val spsStartCodeSize = sps[0].startCodeSize
             val profileIdc = sps[0].get(spsStartCodeSize + 1).toInt()
