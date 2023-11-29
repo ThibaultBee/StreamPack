@@ -203,12 +203,12 @@ fun ByteBuffer.startsWith(prefixes: List<ByteBuffer>): Pair<Boolean, Int> {
  */
 fun ByteBuffer.toByteArray(): ByteArray {
     return if (this.hasArray() && !isDirect) {
-        val offset = arrayOffset()
+        val offset = position() + arrayOffset()
         val array = array()
-        if (offset == 0 && array.size == limit()) {
+        if (offset == 0 && array.size == remaining()) {
             array
         } else {
-            array.copyOfRange(offset, offset + limit())
+            array.copyOfRange(offset, offset + remaining())
         }
     } else {
         val byteArray = ByteArray(this.remaining())
@@ -217,9 +217,22 @@ fun ByteBuffer.toByteArray(): ByteArray {
     }
 }
 
+/**
+ * Clone [ByteBuffer].
+ * The position of the original [ByteBuffer] will be 0 after the clone.
+ */
 fun ByteBuffer.clone(): ByteBuffer {
-    val clone = ByteBuffer.allocate(this.remaining())
-    return clone.put(this).apply { rewind() }
+    val originalPosition = this.position()
+    try {
+        val clone = if (isDirect) {
+            ByteBuffer.allocateDirect(this.remaining())
+        } else {
+            ByteBuffer.allocate(this.remaining())
+        }
+        return clone.put(this).apply { rewind() }
+    } finally {
+        this.position(originalPosition)
+    }
 }
 
 /**

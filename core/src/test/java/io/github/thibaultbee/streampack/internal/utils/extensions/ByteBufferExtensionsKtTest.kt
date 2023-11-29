@@ -8,6 +8,121 @@ import java.nio.ByteBuffer
 
 class ByteBufferExtensionsKtTest {
     @Test
+    fun `byteArray raw`() {
+        val byteArray = byteArrayOf(
+            1, 2, 3, 4, 5
+        )
+        val testBuffer = ByteBuffer.wrap(
+            byteArray
+        )
+
+        assertArrayEquals(
+            byteArray, testBuffer.toByteArray()
+        )
+    }
+
+    @Test
+    fun `byteArray direct raw`() {
+        val byteArray = byteArrayOf(
+            1, 2, 3, 4, 5
+        )
+        val testBuffer = ByteBuffer.allocateDirect(
+            byteArray.size
+        )
+        testBuffer.put(
+            byteArray
+        )
+        testBuffer.rewind()
+
+        assertArrayEquals(
+            byteArray, testBuffer.toByteArray()
+        )
+    }
+
+    @Test
+    fun `byteArray with position != 0`() {
+        val byteArray = byteArrayOf(
+            1, 2, 3, 4, 5
+        )
+        val testBuffer = ByteBuffer.wrap(
+            byteArray
+        )
+        testBuffer.position(2)
+
+        assertArrayEquals(
+            byteArray.copyOfRange(2, 5), testBuffer.toByteArray()
+        )
+    }
+
+    @Test
+    fun `byteArray direct with position != 0`() {
+        val byteArray = byteArrayOf(
+            1, 2, 3, 4, 5
+        )
+        val testBuffer = ByteBuffer.allocateDirect(
+            byteArray.size
+        )
+        testBuffer.put(
+            byteArray
+        )
+        testBuffer.position(2)
+
+        assertArrayEquals(
+            byteArray.copyOfRange(2, 5), testBuffer.toByteArray()
+        )
+    }
+
+    @Test
+    fun `byteArray with arrayOffset`() {
+        val byteArray = byteArrayOf(
+            1, 2, 3, 4, 5
+        )
+        val testBuffer = ByteBuffer.wrap(
+            byteArray
+        )
+        testBuffer.position(2)
+        val slice = testBuffer.slice()
+
+        assertArrayEquals(
+            byteArray.copyOfRange(2, 5), slice.toByteArray()
+        )
+    }
+
+    @Test
+    fun `byteArray direct with arrayOffset`() {
+        val byteArray = byteArrayOf(
+            1, 2, 3, 4, 5
+        )
+        val testBuffer = ByteBuffer.allocateDirect(
+            byteArray.size
+        )
+        testBuffer.put(
+            byteArray
+        )
+        testBuffer.position(2)
+        val slice = testBuffer.slice()
+
+        assertArrayEquals(
+            byteArray.copyOfRange(2, 5), slice.toByteArray()
+        )
+    }
+
+    @Test
+    fun `clone with position`() {
+        val testBuffer = ByteBuffer.wrap(
+            byteArrayOf(
+                1, 2, 3, 4, 5
+            )
+        )
+        testBuffer.position(2)
+
+        val clonedBuffer = testBuffer.clone()
+        assertArrayEquals(
+            testBuffer.toByteArray(), clonedBuffer.toByteArray()
+        )
+    }
+
+    @Test
     fun `slices with multiple prefix`() {
         val testBuffer = ByteBuffer.wrap(
             byteArrayOf(
