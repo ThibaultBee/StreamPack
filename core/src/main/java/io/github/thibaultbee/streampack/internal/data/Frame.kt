@@ -67,12 +67,16 @@ data class Frame(
     val isAudio: Boolean = mimeType.isAudio
 
     /**
-     * Contains csd buffers.
+     * Contains csd buffers for key frames and audio frames only.
      * Could be (SPS, PPS, VPS, etc.) for key video frames, null for non-key video frames.
      * ESDS for AAC frames,...
      */
     val extra = try {
-        format.extra
+        if (isKeyFrame || mimeType.isAudio) {
+            format.extra
+        } else {
+            null
+        }
     } catch (e: Exception) {
         null
     }
