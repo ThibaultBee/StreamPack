@@ -15,8 +15,8 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.av.audio.aac.config
 
-import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBufferWriter
 import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBuffer
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBufferWriter
 
 data class SbrHeader(
     val bsAmpRes: Boolean,
@@ -33,7 +33,9 @@ data class SbrHeader(
     val bsInterpolFreq: Boolean? = null,
     val bsSmoothingMode: Boolean? = null
 ) : BitBufferWriter() {
-    override fun write(writer: BitBuffer) {
+    override val bitSize = 0
+
+    override fun write(output: BitBuffer) {
         TODO("Not yet implemented")
     }
 

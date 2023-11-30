@@ -15,9 +15,9 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.av.audio.aac.config
 
-import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBufferWriter
-import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBuffer
 import io.github.thibaultbee.streampack.internal.utils.av.audio.ChannelConfiguration
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBuffer
+import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBufferWriter
 
 data class ELDSpecificConfig(
     val channelConfiguration: ChannelConfiguration,
@@ -46,7 +46,7 @@ data class ELDSpecificConfig(
         }
     }
 
-    override fun write(writer: BitBuffer) {
+    override fun write(output: BitBuffer) {
         TODO("Not yet implemented")
     }
 
@@ -120,10 +120,10 @@ data class ELDSpecificConfig(
     class LdSbrHeader(
         private val sbrHeaders: List<SbrHeader>
     ) : BitBufferWriter() {
-        override val size = 5 + sbrHeaders.size * 8
+        override val bitSize = (5 + sbrHeaders.size * 8) * Byte.SIZE_BITS
 
-        override fun write(writer: BitBuffer) {
-            sbrHeaders.forEach { it.write(writer) }
+        override fun write(output: BitBuffer) {
+            sbrHeaders.forEach { it.write(output) }
         }
 
         companion object {
@@ -134,17 +134,21 @@ data class ELDSpecificConfig(
                     ChannelConfiguration.CHANNEL_2 -> {
                         1
                     }
+
                     ChannelConfiguration.CHANNEL_3 -> {
                         2
                     }
+
                     ChannelConfiguration.CHANNEL_4,
                     ChannelConfiguration.CHANNEL_5,
                     ChannelConfiguration.CHANNEL_6 -> {
                         3
                     }
+
                     ChannelConfiguration.CHANNEL_8 -> {
                         4
                     }
+
                     else -> {
                         0
                     }

@@ -69,7 +69,7 @@ data class AudioSpecificConfig(
         )
     }
 
-    override fun write(writer: BitBuffer) {
+    override fun write(output: BitBuffer) {
         TODO("Not yet implemented")
     }
 
@@ -325,7 +325,7 @@ data class AudioSpecificConfig(
             }
         }
 
-        override fun write(writer: BitBuffer) {
+        override fun write(output: BitBuffer) {
             TODO("Not yet implemented")
         }
 

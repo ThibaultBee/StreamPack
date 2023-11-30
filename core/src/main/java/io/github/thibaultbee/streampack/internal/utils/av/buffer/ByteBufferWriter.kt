@@ -20,13 +20,9 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.isAvcc
 import io.github.thibaultbee.streampack.internal.utils.extensions.removeStartCode
 import io.github.thibaultbee.streampack.internal.utils.extensions.startCodeSize
 import java.nio.ByteBuffer
-import kotlin.math.ceil
 
 abstract class ByteBufferWriter {
-    open val size: Int
-        get() = ceil(bitSize.toFloat() / Byte.SIZE_BITS).toInt()
-    open val bitSize: Int
-        get() = size * Byte.SIZE_BITS
+    abstract val size: Int
 
     open fun toByteBuffer(): ByteBuffer {
         val output = ByteBuffer.allocate(size)

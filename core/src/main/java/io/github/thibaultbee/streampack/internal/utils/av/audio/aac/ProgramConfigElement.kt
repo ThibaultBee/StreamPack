@@ -22,7 +22,7 @@ class ProgramConfigElement : BitBufferWriter() {
     override val bitSize: Int
         get() = TODO("Not yet implemented")
 
-    override fun write(writer: BitBuffer) {
+    override fun write(output: BitBuffer) {
         TODO("Not yet implemented")
     }
 

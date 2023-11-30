@@ -22,12 +22,15 @@ import java.nio.ByteBuffer
  * For sub classes of a [ByteBufferWriter] that need to write a [ByteBuffer] to a [BitBuffer]
  */
 abstract class BitBufferWriter : ByteBufferWriter() {
+    abstract val bitSize: Int
+    override val size by lazy { (bitSize + Byte.SIZE_BITS - 1) / Byte.SIZE_BITS }
+
     override fun write(output: ByteBuffer) {
         val writer = BitBuffer(output)
         write(writer)
     }
 
-    abstract fun write(writer: BitBuffer)
+    abstract fun write(output: BitBuffer)
 
     fun toBitBuffer(): BitBuffer {
         val buffer = ByteBuffer.allocate(size)

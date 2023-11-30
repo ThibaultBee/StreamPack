@@ -15,10 +15,10 @@
  */
 package io.github.thibaultbee.streampack.internal.utils.av.audio.aac
 
+import io.github.thibaultbee.streampack.internal.utils.av.audio.AudioSpecificConfig
 import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBuffer
 import io.github.thibaultbee.streampack.internal.utils.av.buffer.BitBufferWriter
 import io.github.thibaultbee.streampack.internal.utils.av.buffer.ByteBufferWriter
-import io.github.thibaultbee.streampack.internal.utils.av.audio.AudioSpecificConfig
 import java.nio.ByteBuffer
 
 class AudioMuxElement(
@@ -30,7 +30,8 @@ class AudioMuxElement(
     private val payloadLengthInfo = PayloadLengthInfo()
     private val payloadMux = PayloadMux()
 
-    override val bitSize: Int
+    override val size = (bitSize + Byte.SIZE_BITS - 1) / Byte.SIZE_BITS
+    private val bitSize: Int
         get() = 1 + if (!useSameStreamMuxConfig) {
             streamMuxConfig!!.bitSize
         } else {
@@ -69,16 +70,16 @@ class AudioMuxElement(
 
     private inner class PayloadLengthInfo : BitBufferWriter() {
         private val payloadSize = payload!!.remaining()
-        override val size = (payloadSize / 255) + 1
+        override val bitSize = ((payloadSize / 255) + 1) * Byte.SIZE_BITS
 
-        override fun write(writer: BitBuffer) {
+        override fun write(output: BitBuffer) {
             if (streamMuxConfig!!.allStreamsSameTimeFraming == true) {
                 var remainingPayloadLength = payloadSize
                 for (i in 0..(payloadSize - 255) step 255) {
-                    writer.put(0xFF, 8)
+                    output.put(0xFF, 8)
                     remainingPayloadLength -= 255
                 }
-                writer.put(remainingPayloadLength, 8)
+                output.put(remainingPayloadLength, 8)
             } else {
                 throw NotImplementedError("Not implemented yet")
             }
@@ -86,10 +87,10 @@ class AudioMuxElement(
     }
 
     private inner class PayloadMux : BitBufferWriter() {
-        override val size = payload!!.remaining()
+        override val bitSize = payload!!.remaining() * Byte.SIZE_BITS
 
-        override fun write(writer: BitBuffer) {
-            writer.put(payload!!)
+        override fun write(output: BitBuffer) {
+            output.put(payload!!)
         }
     }
 
@@ -115,7 +116,10 @@ class AudioMuxElement(
             )
         }
 
-        fun fromDecoderSpecificInfo(payload: ByteBuffer, decoderSpecificInfo: ByteBuffer): AudioMuxElement {
+        fun fromDecoderSpecificInfo(
+            payload: ByteBuffer,
+            decoderSpecificInfo: ByteBuffer
+        ): AudioMuxElement {
             return AudioMuxElement(
                 muxConfigPresent = true,
                 useSameStreamMuxConfig = false,
@@ -158,23 +162,23 @@ class StreamMuxConfig(
         }
     }
 
-    override fun write(writer: BitBuffer) {
-        writer.put(audioMuxVersion, 1)
+    override fun write(output: BitBuffer) {
+        output.put(audioMuxVersion, 1)
         if (audioMuxVersion == 1) {
-            writer.put(audioMuxVersionA, 1)
+            output.put(audioMuxVersionA, 1)
         }
         if (audioMuxVersionA == 0) {
-            writer.put(allStreamsSameTimeFraming!!)
-            writer.put(numSubFrames!!, 6)
-            writer.put(numProgram!!, 4) // numProgram
-            writer.put(numLayer!!, 3) // numLayer
+            output.put(allStreamsSameTimeFraming!!)
+            output.put(numSubFrames!!, 6)
+            output.put(numProgram!!, 4) // numProgram
+            output.put(numLayer!!, 3) // numLayer
 
-            writer.put(audioSpecificConfig!!)
+            output.put(audioSpecificConfig!!)
 
-            writer.put(frameLengthType!!, 3)
-            writer.put(0xFF, 8) // latmBufferFullness
-            writer.put(0, 1) // otherDataPresent
-            writer.put(0, 1) // crcCheckPresent
+            output.put(frameLengthType!!, 3)
+            output.put(0xFF, 8) // latmBufferFullness
+            output.put(0, 1) // otherDataPresent
+            output.put(0, 1) // crcCheckPresent
         }
     }
 
