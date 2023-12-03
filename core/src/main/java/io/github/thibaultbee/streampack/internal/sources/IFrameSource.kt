@@ -16,10 +16,12 @@
 package io.github.thibaultbee.streampack.internal.sources
 
 import io.github.thibaultbee.streampack.internal.data.Frame
+import io.github.thibaultbee.streampack.internal.interfaces.Configurable
+import io.github.thibaultbee.streampack.internal.interfaces.Releaseable
 import io.github.thibaultbee.streampack.internal.interfaces.Streamable
 import java.nio.ByteBuffer
 
-interface IFrameSource<T> : Streamable<T> {
+interface IFrameSource<T> : Streamable, Configurable<T>, Releaseable {
 
     /**
      * Generate a frame from capture device

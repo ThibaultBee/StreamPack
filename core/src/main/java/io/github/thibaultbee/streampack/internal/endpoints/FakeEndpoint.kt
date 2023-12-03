@@ -22,10 +22,6 @@ import io.github.thibaultbee.streampack.logger.Logger
  * A fake endpoint for test purpose.
  */
 class FakeEndpoint : IEndpoint {
-    override fun startStream() {
-        Logger.d(TAG, "startStream called")
-    }
-
     override fun configure(config: Int) {
         Logger.d(TAG, "configure called with bitrate = $config")
     }
@@ -34,7 +30,11 @@ class FakeEndpoint : IEndpoint {
         Logger.d(TAG, "write called (packet size = ${packet.buffer.remaining()})")
     }
 
-    override fun stopStream() {
+    override suspend fun startStream() {
+        Logger.d(TAG, "startStream called")
+    }
+    
+    override suspend fun stopStream() {
         Logger.d(TAG, "stopStream called")
     }
 

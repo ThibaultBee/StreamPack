@@ -18,9 +18,10 @@ package io.github.thibaultbee.streampack.internal.muxers
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
+import io.github.thibaultbee.streampack.internal.interfaces.Releaseable
 import io.github.thibaultbee.streampack.internal.interfaces.Streamable
 
-interface IMuxer : Streamable<Unit> {
+interface IMuxer : Streamable, Releaseable {
     val helper: IMuxerHelper
 
     var sourceOrientationProvider: ISourceOrientationProvider?

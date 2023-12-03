@@ -22,6 +22,7 @@ import androidx.core.app.NotificationCompat
 import io.github.thibaultbee.streampack.ext.rtmp.services.ScreenRecorderRtmpLiveService
 import io.github.thibaultbee.streampack.screenrecorder.R
 import io.github.thibaultbee.streampack.screenrecorder.models.Actions
+import kotlinx.coroutines.runBlocking
 
 
 class DemoScreenRecorderRtmpLiveService : ScreenRecorderRtmpLiveService(
@@ -32,7 +33,9 @@ class DemoScreenRecorderRtmpLiveService : ScreenRecorderRtmpLiveService(
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         streamer?.let {
             if (intent.action == Actions.STOP.value) {
-                streamer?.stopStream()
+                runBlocking {
+                    streamer?.stopStream()
+                }
             }
         }
         return super.onStartCommand(intent, flags, startId)

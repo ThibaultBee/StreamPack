@@ -15,14 +15,7 @@
  */
 package io.github.thibaultbee.streampack.internal.interfaces
 
-interface Streamable<T> {
-    /**
-     * Configure the [Streamable] implementation.
-     *
-     * @param config [Streamable] implementation configuration
-     */
-    fun configure(config: T)
-
+interface Streamable {
     /**
      * Starts frames or data stream generation
      * Throws an exception if not ready for live stream
@@ -33,7 +26,34 @@ interface Streamable<T> {
      * Stops frames or data stream generation
      */
     fun stopStream()
+}
 
+/**
+ * Same as [Streamable] but with suspend functions.
+ */
+interface SuspendStreamable {
+    /**
+     * Starts frames or data stream generation
+     * Throws an exception if not ready for live stream
+     */
+    suspend fun startStream()
+
+    /**
+     * Stops frames or data stream generation
+     */
+    suspend fun stopStream()
+}
+
+interface Configurable<T> {
+    /**
+     * Configure the [Configurable] implementation.
+     *
+     * @param config [Configurable] implementation configuration
+     */
+    fun configure(config: T)
+}
+
+interface Releaseable {
     /**
      * Closes and releases resources
      */

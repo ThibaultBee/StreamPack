@@ -93,10 +93,6 @@ class FlvMuxer(
         return streamMap
     }
 
-    override fun configure(config: Unit) {
-        // Nothing to configure
-    }
-
     override fun startStream() {
         // Header
         if (writeToFile) {

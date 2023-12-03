@@ -16,15 +16,11 @@
 package io.github.thibaultbee.streampack.internal.endpoints
 
 import io.github.thibaultbee.streampack.internal.data.Packet
-import io.github.thibaultbee.streampack.internal.interfaces.Streamable
+import io.github.thibaultbee.streampack.internal.interfaces.Configurable
+import io.github.thibaultbee.streampack.internal.interfaces.Releaseable
+import io.github.thibaultbee.streampack.internal.interfaces.SuspendStreamable
 
-interface IEndpoint : Streamable<Int> {
-
-    /**
-     * Configure endpoint bitrate, mainly for network endpoint.
-     * @param config bitrate at the beginning of the communication
-     */
-    override fun configure(config: Int)
+interface IEndpoint : SuspendStreamable, Configurable<Int>, Releaseable {
 
     /**
      * Writes a buffer to endpoint.

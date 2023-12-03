@@ -19,6 +19,7 @@ import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.utils.FakeLogger
 import io.github.thibaultbee.streampack.utils.Utils
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Test
@@ -46,7 +47,9 @@ class FileWriterTest {
     @Test
     fun `startStream with non existing file test`() {
         try {
-            filePublisher.startStream()
+            runBlocking{
+                filePublisher.startStream()
+            }
             fail("Null file must not be streamable")
         } catch (_: Exception) {
         }
@@ -56,7 +59,9 @@ class FileWriterTest {
     fun `write to non existing file test`() {
         try {
             val randomArray = Utils.generateRandomArray(1024)
-            filePublisher.startStream()
+            runBlocking{
+                filePublisher.startStream()
+            }
             filePublisher.write(
                 Packet(
                     ByteBuffer.wrap(randomArray),
@@ -75,7 +80,9 @@ class FileWriterTest {
         filePublisher.file = tmpFile
         val randomArray = Utils.generateRandomArray(1024)
         try {
-            filePublisher.startStream()
+            runBlocking{
+                filePublisher.startStream()
+            }
             filePublisher.write(
                 Packet(
                     ByteBuffer.wrap(randomArray),
@@ -83,7 +90,9 @@ class FileWriterTest {
                 )
             )
             assertArrayEquals(randomArray, tmpFile.readBytes())
-            filePublisher.stopStream()
+            runBlocking {
+                filePublisher.stopStream()
+            }
         } catch (e: Exception) {
             fail()
         }
@@ -97,7 +106,9 @@ class FileWriterTest {
         filePublisher.outputStream = tmpFile.outputStream()
         val randomArray = Utils.generateRandomArray(1024)
         try {
-            filePublisher.startStream()
+            runBlocking{
+                filePublisher.startStream()
+            }
             filePublisher.write(
                 Packet(
                     ByteBuffer.wrap(randomArray),
@@ -105,7 +116,9 @@ class FileWriterTest {
                 )
             )
             assertArrayEquals(randomArray, tmpFile.readBytes())
-            filePublisher.stopStream()
+            runBlocking {
+                filePublisher.stopStream()
+            }
         } catch (e: Exception) {
             fail()
         }
@@ -122,7 +135,9 @@ class FileWriterTest {
         directBuffer.put(randomArray)
         directBuffer.rewind()
         try {
-            filePublisher.startStream()
+            runBlocking {
+                filePublisher.startStream()
+            }
             filePublisher.write(
                 Packet(
                     directBuffer,
@@ -130,7 +145,9 @@ class FileWriterTest {
                 )
             )
             assertArrayEquals(randomArray, tmpFile.readBytes())
-            filePublisher.stopStream()
+            runBlocking {
+                filePublisher.stopStream()
+            }
         } catch (e: Exception) {
             fail()
         }

@@ -40,7 +40,6 @@ import io.github.thibaultbee.streampack.ext.srt.services.ScreenRecorderSrtLiveSe
 import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
 import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
-import io.github.thibaultbee.streampack.utils.getStreamer
 import io.github.thibaultbee.streampack.screenrecorder.databinding.ActivityMainBinding
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
 import io.github.thibaultbee.streampack.screenrecorder.services.DemoScreenRecorderRtmpLiveService
@@ -49,6 +48,7 @@ import io.github.thibaultbee.streampack.screenrecorder.settings.SettingsActivity
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStreamer
+import io.github.thibaultbee.streampack.utils.getStreamer
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : AppCompatActivity() {
@@ -132,6 +132,7 @@ class MainActivity : AppCompatActivity() {
                             Log.i(TAG, "Service disconnected")
                         })
                 }
+
                 EndpointType.RTMP -> {
                     ScreenRecorderRtmpLiveService.launch(
                         this,
@@ -230,7 +231,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stopService() {
-        streamer.stopStream()
+        runBlocking {
+            streamer.stopStream()
+        }
         streamer.disconnect()
 
         when (configuration.endpoint.type) {
@@ -240,6 +243,7 @@ class MainActivity : AppCompatActivity() {
                     DemoScreenRecorderSrtLiveService::class.java
                 )
             )
+
             EndpointType.RTMP -> stopService(
                 Intent(
                     this,

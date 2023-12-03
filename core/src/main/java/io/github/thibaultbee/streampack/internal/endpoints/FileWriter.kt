@@ -36,7 +36,7 @@ class FileWriter : IEndpoint {
 
     var outputStream: OutputStream? = null
 
-    override fun startStream() {
+    override suspend fun startStream() {
         if (outputStream == null) {
             throw UnsupportedOperationException("Set a file before trying to write it")
         }
@@ -49,7 +49,7 @@ class FileWriter : IEndpoint {
             ?: throw UnsupportedOperationException("Set a file before trying to write it")
     }
 
-    override fun stopStream() {
+    override suspend fun stopStream() {
         outputStream?.close()
     }
 

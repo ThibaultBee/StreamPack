@@ -28,6 +28,7 @@ import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
 import io.github.thibaultbee.streampack.utils.*
 import io.github.thibaultbee.streampack.views.PreviewView
+import kotlinx.coroutines.runBlocking
 import java.io.File
 
 
@@ -122,7 +123,9 @@ class StreamerManager(
     }
 
     fun stopStream() {
-        streamer?.stopStream()
+        runBlocking {
+            streamer?.stopStream()
+        }
         streamer?.getLiveStreamer()?.disconnect()
     }
 

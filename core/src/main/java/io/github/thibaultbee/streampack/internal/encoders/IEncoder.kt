@@ -15,9 +15,11 @@
  */
 package io.github.thibaultbee.streampack.internal.encoders
 
+import io.github.thibaultbee.streampack.internal.interfaces.Configurable
+import io.github.thibaultbee.streampack.internal.interfaces.Releaseable
 import io.github.thibaultbee.streampack.internal.interfaces.Streamable
 
-interface IEncoder<T> : Streamable<T> {
+interface IEncoder<T> : Streamable, Configurable<T>, Releaseable {
     /**
      * Input and output of an async encoder
      */

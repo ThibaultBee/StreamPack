@@ -80,9 +80,6 @@ class MP4Muxer(
         return streamMap
     }
 
-    override fun configure(config: Unit) {
-    }
-
     override fun startStream() {
         writeBuffer(FileTypeBox().toByteBuffer())
         currentSegment = createNewSegment(MovieBoxFactory(timescale))

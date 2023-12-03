@@ -20,6 +20,7 @@ import androidx.lifecycle.LifecycleOwner
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import io.github.thibaultbee.streampack.utils.getCameraStreamer
 import io.github.thibaultbee.streampack.utils.getLiveStreamer
+import kotlinx.coroutines.runBlocking
 
 /**
  * Add [DefaultLifecycleObserver] to a streamer.
@@ -35,7 +36,9 @@ import io.github.thibaultbee.streampack.utils.getLiveStreamer
 open class StreamerLifeCycleObserver(var streamer: IStreamer) : DefaultLifecycleObserver {
     override fun onPause(owner: LifecycleOwner) {
         streamer.getCameraStreamer()?.stopPreview()
-        streamer.stopStream()
+        runBlocking {
+            streamer.stopStream()
+        }
         streamer.getLiveStreamer()?.let {
             if (it.isConnected) {
                 it.disconnect()

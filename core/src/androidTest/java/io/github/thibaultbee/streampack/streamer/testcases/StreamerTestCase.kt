@@ -44,8 +44,8 @@ abstract class StreamerTestCase {
             )
             runBlocking {
                 streamer.startStream()
+                streamer.stopStream()
             }
-            streamer.stopStream()
             streamer.release()
         } catch (e: Exception) {
             Log.e(TAG, "defaultUsageTest: exception: ", e)
@@ -64,8 +64,8 @@ abstract class StreamerTestCase {
             )
             runBlocking {
                 streamer.startStream()
+                streamer.stopStream()
             }
-            streamer.stopStream()
             streamer.release()
         } catch (e: Exception) {
             Log.e(TAG, "defaultUsageTest2: exception: ", e)
@@ -137,7 +137,9 @@ abstract class StreamerTestCase {
     @Test
     fun stopStreamTest() {
         try {
-            streamer.stopStream()
+            runBlocking {
+                streamer.stopStream()
+            }
         } catch (e: Exception) {
             Log.e(TAG, "stopStreamTest: exception: ", e)
             fail("Must be possible to only stopStream without exception: $e")
@@ -191,7 +193,9 @@ abstract class StreamerTestCase {
                 AndroidUtils.fakeValidAudioConfig(),
                 AndroidUtils.fakeValidVideoConfig()
             )
-            streamer.stopStream()
+            runBlocking {
+                streamer.stopStream()
+            }
         } catch (e: Exception) {
             Log.e(TAG, "configureStopStreamTest: exception: ", e)
             fail("Must be possible to configure/stopStream but catches exception: $e")
@@ -224,8 +228,8 @@ abstract class StreamerTestCase {
             )
             runBlocking {
                 streamer.startStream()
+                streamer.stopStream()
             }
-            streamer.stopStream()
         } catch (e: Exception) {
             Log.e(TAG, "startStreamStopStreamTest: exception: ", e)
             fail("Must be possible to startStream/stopStream but catches exception: $e")
@@ -258,8 +262,8 @@ abstract class StreamerTestCase {
             (0..10).forEach { _ ->
                 runBlocking {
                     streamer.startStream()
+                    streamer.stopStream()
                 }
-                streamer.stopStream()
             }
         } catch (e: Exception) {
             Log.e(TAG, "multipleStartStreamStopStreamTest: exception: ", e)

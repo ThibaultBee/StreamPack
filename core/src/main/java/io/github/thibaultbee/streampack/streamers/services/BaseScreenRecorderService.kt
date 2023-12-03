@@ -39,6 +39,7 @@ import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStream
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 import io.github.thibaultbee.streampack.utils.NotificationUtils
 import io.github.thibaultbee.streampack.utils.getStreamer
+import kotlinx.coroutines.runBlocking
 
 /**
  * Foreground service that manages screen recorder streamers.
@@ -155,7 +156,9 @@ abstract class BaseScreenRecorderService(
 
     override fun onDestroy() {
         super.onDestroy()
-        streamer?.stopStream()
+        runBlocking {
+            streamer?.stopStream()
+        }
         (streamer as ILiveStreamer?)?.disconnect()
         streamer?.release()
         streamer = null

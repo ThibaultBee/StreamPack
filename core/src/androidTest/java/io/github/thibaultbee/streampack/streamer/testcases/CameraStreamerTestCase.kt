@@ -58,8 +58,8 @@ abstract class CameraStreamerTestCase :
             streamer.startPreview(surface)
             runBlocking {
                 streamer.startStream()
+                streamer.stopStream()
             }
-            streamer.stopStream()
             streamer.stopPreview()
             streamer.release()
         } catch (e: Exception) {
@@ -80,8 +80,8 @@ abstract class CameraStreamerTestCase :
             streamer.startPreview(surface)
             runBlocking {
                 streamer.startStream()
+                streamer.stopStream()
             }
-            streamer.stopStream()
             streamer.release()
         } catch (e: Exception) {
             Log.e(TAG, "defaultUsageTest2: exception: ", e)
@@ -161,7 +161,9 @@ abstract class CameraStreamerTestCase :
                 AndroidUtils.fakeValidVideoConfig()
             )
             streamer.startPreview(surface)
-            streamer.stopStream()
+            runBlocking {
+                streamer.stopStream()
+            }
         } catch (e: Exception) {
             Log.e(TAG, "startPreviewStopStreamTest: exception: ", e)
             fail("Must be possible to startPreview/stopStream but catches exception: $e")
@@ -216,8 +218,8 @@ abstract class CameraStreamerTestCase :
             streamer.startPreview(surface)
             runBlocking {
                 streamer.startStream()
+                streamer.stopStream()
             }
-            streamer.stopStream()
         } catch (e: Exception) {
             Log.e(TAG, "startStreamStopStreamTest: exception: ", e)
             fail("Must be possible to startStream/stopStream but catches exception: $e")
@@ -252,8 +254,8 @@ abstract class CameraStreamerTestCase :
             (0..10).forEach { _ ->
                 runBlocking {
                     streamer.startStream()
+                    streamer.stopStream()
                 }
-                streamer.stopStream()
             }
         } catch (e: Exception) {
             Log.e(TAG, "multipleStartStreamStopStreamTest: exception: ", e)

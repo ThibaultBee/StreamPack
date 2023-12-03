@@ -17,9 +17,11 @@ package io.github.thibaultbee.streampack.internal.sources
 
 import android.view.Surface
 import io.github.thibaultbee.streampack.data.VideoConfig
+import io.github.thibaultbee.streampack.internal.interfaces.Configurable
+import io.github.thibaultbee.streampack.internal.interfaces.Releaseable
 import io.github.thibaultbee.streampack.internal.interfaces.Streamable
 
-interface ISurfaceSource : Streamable<VideoConfig> {
+interface ISurfaceSource : Streamable, Configurable<VideoConfig>, Releaseable {
     /**
      * The offset between source capture time and MONOTONIC clock. It is used to synchronize video
      * with audio. It is only useful for camera source.

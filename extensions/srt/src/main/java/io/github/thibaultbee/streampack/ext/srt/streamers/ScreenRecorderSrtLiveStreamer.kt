@@ -187,7 +187,7 @@ class ScreenRecorderSrtLiveStreamer(
     /**
      * Same as [BaseScreenRecorderLiveStreamer.stopStream] but also stops bitrate regulator.
      */
-    override fun stopStream() {
+    override suspend fun stopStream() {
         scheduler.cancel()
         super.stopStream()
     }

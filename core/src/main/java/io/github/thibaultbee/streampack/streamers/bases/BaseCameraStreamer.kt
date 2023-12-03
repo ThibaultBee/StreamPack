@@ -117,7 +117,9 @@ open class BaseCameraStreamer(
      * @see [startPreview]
      */
     override fun stopPreview() {
-        stopStream()
+        runBlocking {
+            stopStream()
+        }
         cameraSource.stopPreview()
     }
 

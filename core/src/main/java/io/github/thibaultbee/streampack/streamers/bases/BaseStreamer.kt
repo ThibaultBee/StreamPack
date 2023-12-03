@@ -40,6 +40,7 @@ import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.helpers.StreamerConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import io.github.thibaultbee.streampack.streamers.settings.BaseStreamerSettings
+import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
 
 
@@ -146,7 +147,9 @@ abstract class BaseStreamer(
      */
     private fun onStreamError(error: StreamPackError) {
         try {
-            stopStream()
+            runBlocking {
+                stopStream()
+            }
         } catch (e: Exception) {
             Logger.e(TAG, "onStreamError: Can't stop stream")
         } finally {
@@ -311,7 +314,7 @@ abstract class BaseStreamer(
      *
      * @see [startStream]
      */
-    override fun stopStream() {
+    override suspend fun stopStream() {
         stopStreamImpl()
 
         // Encoder does not return to CONFIGURED state... so we have to reset everything...
@@ -324,7 +327,7 @@ abstract class BaseStreamer(
      *
      * @see [stopStream]
      */
-    private fun stopStreamImpl() {
+    private suspend fun stopStreamImpl() {
         videoSource?.stopStream()
         videoEncoder?.stopStream()
         audioEncoder?.stopStream()

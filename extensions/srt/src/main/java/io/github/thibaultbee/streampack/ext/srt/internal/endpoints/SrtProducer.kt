@@ -170,7 +170,7 @@ class SrtProducer(
         }
     }
 
-    override fun startStream() {
+    override suspend fun startStream() {
         if (!socket.isConnected) {
             throw ConnectException("SrtEndpoint should be connected at this point")
         }
@@ -179,7 +179,7 @@ class SrtProducer(
         socket.setSockFlag(SockOpt.INPUTBW, bitrate)
     }
 
-    override fun stopStream() {
+    override suspend fun stopStream() {
 
     }
 

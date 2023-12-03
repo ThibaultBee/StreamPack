@@ -41,8 +41,8 @@ abstract class AudioOnlyStreamerTestCase :
             )
             runBlocking {
                 streamer.startStream()
+                streamer.stopStream()
             }
-            streamer.stopStream()
             streamer.release()
         } catch (e: Exception) {
             Log.e(TAG, "defaultUsageTest: exception: ", e)
@@ -58,8 +58,8 @@ abstract class AudioOnlyStreamerTestCase :
             )
             runBlocking {
                 streamer.startStream()
+                streamer.stopStream()
             }
-            streamer.stopStream()
             streamer.release()
         } catch (e: Exception) {
             Log.e(TAG, "defaultUsageTest2: exception: ", e)
@@ -149,7 +149,9 @@ abstract class AudioOnlyStreamerTestCase :
             streamer.configure(
                 AndroidUtils.fakeValidAudioConfig()
             )
-            streamer.stopStream()
+            runBlocking {
+                streamer.stopStream()
+            }
         } catch (e: Exception) {
             Log.e(TAG, "configureStopStreamTest: exception: ", e)
             fail("Must be possible to configure/stopStream but catches exception: $e")
@@ -180,8 +182,8 @@ abstract class AudioOnlyStreamerTestCase :
             )
             runBlocking {
                 streamer.startStream()
+                streamer.stopStream()
             }
-            streamer.stopStream()
         } catch (e: Exception) {
             Log.e(TAG, "startStreamStopStreamTest: exception: ", e)
             fail("Must be possible to startStream/stopStream but catches exception: $e")
@@ -197,8 +199,8 @@ abstract class AudioOnlyStreamerTestCase :
             (0..10).forEach { _ ->
                 runBlocking {
                     streamer.startStream()
+                    streamer.stopStream()
                 }
-                streamer.stopStream()
             }
         } catch (e: Exception) {
             Log.e(TAG, "multipleStartStreamStopStreamTest: exception: ", e)

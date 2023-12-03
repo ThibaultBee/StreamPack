@@ -88,7 +88,7 @@ interface IStreamer {
      *
      * @see [startStream]
      */
-    fun stopStream()
+    suspend fun stopStream()
 
     /**
      * Clean and reset the streamer.

@@ -22,6 +22,7 @@ import androidx.core.app.NotificationCompat
 import io.github.thibaultbee.streampack.ext.srt.services.ScreenRecorderSrtLiveService
 import io.github.thibaultbee.streampack.screenrecorder.R
 import io.github.thibaultbee.streampack.screenrecorder.models.Actions
+import kotlinx.coroutines.runBlocking
 
 class DemoScreenRecorderSrtLiveService : ScreenRecorderSrtLiveService(
     notificationId = 0x4569,
@@ -31,7 +32,9 @@ class DemoScreenRecorderSrtLiveService : ScreenRecorderSrtLiveService(
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         streamer?.let {
             if (intent.action == Actions.STOP.value) {
-                streamer?.stopStream()
+                runBlocking {
+                    streamer?.stopStream()
+                }
             }
         }
         return super.onStartCommand(intent, flags, startId)

@@ -380,10 +380,6 @@ class TSMuxer(
         service.streams.clear()
     }
 
-    override fun configure(config: Unit) {
-        // Nothing to configure
-    }
-
     override fun startStream() {
         // Nothing to start
     }
