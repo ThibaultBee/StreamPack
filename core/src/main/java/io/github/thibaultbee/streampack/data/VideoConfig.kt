@@ -28,6 +28,7 @@ import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain
 import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile0
 import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile1
 import android.media.MediaFormat
+import android.media.MediaFormat.KEY_PRIORITY
 import android.os.Build
 import android.util.Size
 import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
@@ -172,6 +173,10 @@ class VideoConfig(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 format.setInteger(MediaFormat.KEY_LEVEL, level)
             }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            format.setInteger(KEY_PRIORITY, 0) // Realtime hint
         }
 
         return format
