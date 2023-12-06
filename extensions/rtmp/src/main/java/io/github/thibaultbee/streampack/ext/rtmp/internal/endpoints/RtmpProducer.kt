@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints
 
+import io.github.thibaultbee.streampack.ext.rtmp.data.RtmpConnection
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
@@ -23,12 +24,10 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import video.api.rtmpdroid.Rtmp
-import java.security.InvalidParameterException
 
 class RtmpProducer(
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO
-) :
-    ILiveEndpoint {
+) : ILiveEndpoint {
     override var onConnectionListener: OnConnectionListener? = null
 
     private var socket = Rtmp()
@@ -51,16 +50,8 @@ class RtmpProducer(
     }
 
     override suspend fun connect(url: String) {
-        if (!url.startsWith(RTMP_PREFIX) &&
-            !url.startsWith(RTMPS_PREFIX) &&
-            !url.startsWith(RTMPT_PREFIX) &&
-            !url.startsWith(RTMPE_PREFIX) &&
-            !url.startsWith(RTMFP_PREFIX) &&
-            !url.startsWith(RTMPTE_PREFIX) &&
-            !url.startsWith(RTMPTS_PREFIX)
-        ) {
-            throw InvalidParameterException("URL must start with $RTMP_PREFIX, $RTMPS_PREFIX, $RTMPT_PREFIX, $RTMPE_PREFIX, $RTMFP_PREFIX, $RTMPTE_PREFIX or $RTMPTS_PREFIX")
-        }
+        RtmpConnection.fromUrl(url) // URL validation
+
         withContext(coroutineDispatcher) {
             try {
                 isOnError = false
@@ -134,26 +125,5 @@ class RtmpProducer(
 
     companion object {
         private const val TAG = "RtmpProducer"
-
-        private const val RTMP_SCHEME = "rtmp"
-        private const val RTMP_PREFIX = "$RTMP_SCHEME://"
-
-        private const val RTMPS_SCHEME = "rtmps"
-        private const val RTMPS_PREFIX = "$RTMPS_SCHEME://"
-
-        private const val RTMPT_SCHEME = "rtmpt"
-        private const val RTMPT_PREFIX = "$RTMPT_SCHEME://"
-
-        private const val RTMPE_SCHEME = "rtmpe"
-        private const val RTMPE_PREFIX = "$RTMPE_SCHEME://"
-
-        private const val RTMFP_SCHEME = "rtmfp"
-        private const val RTMFP_PREFIX = "$RTMFP_SCHEME://"
-
-        private const val RTMPTE_SCHEME = "rtmpte"
-        private const val RTMPTE_PREFIX = "$RTMPTE_SCHEME://"
-
-        private const val RTMPTS_SCHEME = "rtmpts"
-        private const val RTMPTS_PREFIX = "$RTMPTS_SCHEME://"
     }
 }

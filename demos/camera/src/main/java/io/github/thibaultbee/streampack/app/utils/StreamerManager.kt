@@ -20,13 +20,22 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.app.configuration.Configuration
+import io.github.thibaultbee.streampack.ext.srt.data.SrtConnection
 import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.StreamerLifeCycleObserver
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
-import io.github.thibaultbee.streampack.utils.*
+import io.github.thibaultbee.streampack.utils.CameraSettings
+import io.github.thibaultbee.streampack.utils.ChunkedFileOutputStream
+import io.github.thibaultbee.streampack.utils.backCameraList
+import io.github.thibaultbee.streampack.utils.frontCameraList
+import io.github.thibaultbee.streampack.utils.getCameraStreamer
+import io.github.thibaultbee.streampack.utils.getFileStreamer
+import io.github.thibaultbee.streampack.utils.getLiveStreamer
+import io.github.thibaultbee.streampack.utils.getStreamer
+import io.github.thibaultbee.streampack.utils.isBackCamera
 import io.github.thibaultbee.streampack.views.PreviewView
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -87,13 +96,14 @@ class StreamerManager(
     suspend fun startStream() {
         if (streamer?.getLiveStreamer() != null) {
             getSrtLiveStreamer()?.let {
-                it.streamId =
-                    configuration.endpoint.srt.streamID
-                it.passPhrase =
-                    configuration.endpoint.srt.passPhrase
-                it.connect(
+                val connection = SrtConnection(
                     configuration.endpoint.srt.ip,
-                    configuration.endpoint.srt.port
+                    configuration.endpoint.srt.port,
+                    configuration.endpoint.srt.streamID,
+                    configuration.endpoint.srt.passPhrase
+                )
+                it.connect(
+                    connection
                 )
             } ?: streamer?.getLiveStreamer()?.connect(
                 configuration.endpoint.rtmp.url

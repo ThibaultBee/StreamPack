@@ -29,7 +29,7 @@ interface ILiveStreamer {
     val isConnected: Boolean
 
     /**
-     * Connect to an remove server.
+     * Connect to a remote server.
      * To avoid creating an unresponsive UI, do not call on main thread.
      *
      * @param url server url

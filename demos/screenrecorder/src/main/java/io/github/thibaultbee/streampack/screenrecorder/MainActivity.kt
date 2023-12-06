@@ -36,6 +36,7 @@ import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.ext.rtmp.services.ScreenRecorderRtmpLiveService
+import io.github.thibaultbee.streampack.ext.srt.data.SrtConnection
 import io.github.thibaultbee.streampack.ext.srt.services.ScreenRecorderSrtLiveService
 import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
 import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
@@ -214,14 +215,13 @@ class MainActivity : AppCompatActivity() {
 
         runBlocking {
             streamer.getStreamer<ISrtLiveStreamer>()?.let {
-                it.streamId =
-                    configuration.endpoint.srt.streamID
-                it.passPhrase =
-                    configuration.endpoint.srt.passPhrase
-                it.connect(
+                val connection = SrtConnection(
                     configuration.endpoint.srt.ip,
-                    configuration.endpoint.srt.port
+                    configuration.endpoint.srt.port,
+                    configuration.endpoint.srt.streamID,
+                    configuration.endpoint.srt.passPhrase
                 )
+                it.connect(connection)
             } ?: streamer.getStreamer<ILiveStreamer>()?.connect(
                 configuration.endpoint.rtmp.url
             )

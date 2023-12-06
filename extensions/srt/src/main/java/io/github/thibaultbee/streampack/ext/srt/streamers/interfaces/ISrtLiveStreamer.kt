@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.ext.srt.streamers.interfaces
 
+import io.github.thibaultbee.streampack.ext.srt.data.SrtConnection
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 
 interface ISrtLiveStreamer : ILiveStreamer {
@@ -40,7 +41,19 @@ interface ISrtLiveStreamer : ILiveStreamer {
      * @param port server port
      * @throws Exception if connection has failed or configuration has failed
      */
+    @Deprecated(
+        "Use connect(SrtConnection) instead",
+        replaceWith = ReplaceWith("connect(SrtConnection)")
+    )
     suspend fun connect(ip: String, port: Int)
+
+    /**
+     * Connect to a remote server.
+     *
+     * @param connection the SRT connection
+     * @throws Exception if connection has failed or configuration has failed
+     */
+    suspend fun connect(connection: SrtConnection)
 
     /**
      * Same as [connect] then [startStream].
@@ -49,5 +62,17 @@ interface ISrtLiveStreamer : ILiveStreamer {
      * @param port server port
      * @throws Exception if connection has failed or configuration has failed or startStream failed.
      */
+    @Deprecated(
+        "Use startStream(SrtConnection) instead",
+        replaceWith = ReplaceWith("startStream(SrtConnection)")
+    )
     suspend fun startStream(ip: String, port: Int)
+
+    /**
+     * Same as [connect] then [startStream].
+     *
+     * @param connection the SRT connection
+     * @throws Exception if connection has failed or configuration has failed or startStream failed.
+     */
+    suspend fun startStream(connection: SrtConnection)
 }

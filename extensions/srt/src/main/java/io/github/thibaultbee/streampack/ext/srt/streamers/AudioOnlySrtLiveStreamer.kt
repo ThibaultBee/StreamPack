@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.ext.srt.streamers
 
 import android.content.Context
+import io.github.thibaultbee.streampack.ext.srt.data.SrtConnection
 import io.github.thibaultbee.streampack.ext.srt.internal.endpoints.SrtProducer
 import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
 import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
@@ -108,8 +109,24 @@ class AudioOnlySrtLiveStreamer(
      * @param port server port
      * @throws Exception if connection has failed or configuration has failed
      */
+    @Deprecated(
+        "Use the new connect(SrtConnection) method",
+        replaceWith = ReplaceWith("connect(SrtConnection)")
+    )
     override suspend fun connect(ip: String, port: Int) {
-        srtProducer.connect(ip, port)
+        val connection = SrtConnection(ip, port)
+        srtProducer.connect(connection)
+    }
+
+    /**
+     * Connect to an SRT server with correct Live streaming parameters.
+     * To avoid creating an unresponsive UI, do not call on main thread.
+     *
+     * @param connection the SRT connection
+     * @throws Exception if connection has failed or configuration has failed
+     */
+    override suspend fun connect(connection: SrtConnection) {
+        srtProducer.connect(connection)
     }
 
     /**
@@ -121,8 +138,25 @@ class AudioOnlySrtLiveStreamer(
      * @param port server port
      * @throws Exception if connection has failed or configuration has failed or [startStream] has failed too.
      */
+    @Deprecated(
+        "Use the new startStream(SrtConnection) method",
+        replaceWith = ReplaceWith("startStream(SrtConnection)")
+    )
     override suspend fun startStream(ip: String, port: Int) {
-        connect(ip, port)
+        val connection = SrtConnection(ip, port)
+        startStream(connection)
+    }
+
+    /**
+     * Connect to an SRT server and start stream.
+     * Same as calling [connect], then [startStream].
+     * To avoid creating an unresponsive UI, do not call on main thread.
+     *
+     * @param connection the SRT connection
+     * @throws Exception if connection has failed or configuration has failed or [startStream] has failed too.
+     */
+    override suspend fun startStream(connection: SrtConnection) {
+        connect(connection)
         startStream()
     }
 }

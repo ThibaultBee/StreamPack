@@ -15,7 +15,6 @@
  */
 package io.github.thibaultbee.streampack.ext.srt.internal.endpoints
 
-import android.net.Uri
 import io.github.thibaultbee.srtdroid.Srt
 import io.github.thibaultbee.srtdroid.enums.Boundary
 import io.github.thibaultbee.srtdroid.enums.ErrorType
@@ -25,6 +24,7 @@ import io.github.thibaultbee.srtdroid.listeners.SocketListener
 import io.github.thibaultbee.srtdroid.models.MsgCtrl
 import io.github.thibaultbee.srtdroid.models.Socket
 import io.github.thibaultbee.srtdroid.models.Stats
+import io.github.thibaultbee.streampack.ext.srt.data.SrtConnection
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.data.SrtPacket
 import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
@@ -34,7 +34,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.ConnectException
 import java.net.InetSocketAddress
-import java.security.InvalidParameterException
 
 class SrtProducer(
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -44,13 +43,6 @@ class SrtProducer(
     private var socket = Socket()
     private var bitrate = 0L
     private var isOnError = false
-
-    companion object {
-        private const val PAYLOAD_SIZE = 1316
-
-        private const val SRT_SCHEME = "srt"
-        private const val SRT_PREFIX = "$SRT_SCHEME://"
-    }
 
     /**
      * Get/set SRT stream ID
@@ -87,23 +79,10 @@ class SrtProducer(
         this.bitrate = config.toLong()
     }
 
-    override suspend fun connect(url: String) {
-        val uri = Uri.parse(url)
-        if (uri.scheme != SRT_SCHEME) {
-            throw InvalidParameterException("URL $url is not an srt URL")
-        }
-        uri.getQueryParameter("streamid")?.let { streamId = it }
-        uri.getQueryParameter("passphrase")?.let { passPhrase = it }
-        uri.getQueryParameter("latency")?.let { latency = it.toInt() }
-        uri.host?.let { connect(it, uri.port) }
-            ?: throw InvalidParameterException("Failed to parse URL $url: unknown host")
-    }
+    override suspend fun connect(url: String) = connect(SrtConnection.fromUrl(url))
 
-    suspend fun connect(ip: String, port: Int) {
+    suspend fun connect(connection: SrtConnection) {
         withContext(coroutineDispatcher) {
-            if (ip.isBlank()) {
-                throw InvalidParameterException("Invalid IP $ip")
-            }
             try {
                 socket.listener = object : SocketListener {
                     override fun onConnectionLost(
@@ -125,8 +104,12 @@ class SrtProducer(
                 }
                 socket.setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
                 socket.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
+
+                connection.streamId?.let { streamId = it }
+                connection.passPhrase?.let { passPhrase = it }
+
                 isOnError = false
-                socket.connect(ip.removePrefix(SRT_PREFIX), port)
+                socket.connect(connection.host, connection.port)
                 onConnectionListener?.onSuccess()
             } catch (e: Exception) {
                 socket = Socket()
@@ -185,5 +168,9 @@ class SrtProducer(
 
     override fun release() {
         Srt.cleanUp()
+    }
+
+    companion object {
+        private const val PAYLOAD_SIZE = 1316
     }
 }
