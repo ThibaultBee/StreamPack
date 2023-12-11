@@ -87,7 +87,7 @@ FFmpeg has been used as an SRT server+demuxer+decoder for the tests.
 Tells FFplay to listen on IP `0.0.0.0` and port `1935`.
 
 ```
-ffplay -listen 1 -i rtmp://0.0.0.0:1935/s/streamKey
+ffplay -listen 1 -i 'rtmp://0.0.0.0:1935/s/streamKey'
 ```
 
 On StreamPack sample app settings, set `Endpoint` -> `Type` to `Stream to a remove RTMP device`,
@@ -102,7 +102,7 @@ in [SRT CookBook](https://srtlab.github.io/srt-cookbook/apps/ffmpeg/). Tells FFp
 IP `0.0.0.0` and port `9998`:
 
 ```
-ffplay -fflags nobuffer srt://0.0.0.0:9998?mode=listener
+ffplay -fflags nobuffer 'srt://0.0.0.0:9998?mode=listener'
 ```
 
 On StreamPack sample app settings, set the server `IP` to your server IP and server `Port` to `9998`
