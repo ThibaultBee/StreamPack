@@ -47,7 +47,8 @@ android {
 * Video:
     * Source: Cameras or Screen recorder
     * Orientation: portrait or landscape
-    * Codec: HEVC/H.265, AVC/H.264 or VP9
+    * Codec: HEVC/H.265, AVC/H.264, VP9 or AV1 (experimental, see https://github.com/ThibaultBee/StreamPack/discussions/90)
+    * HDR (experimental, see https://github.com/ThibaultBee/StreamPack/discussions/91)
     * Configurable bitrate, resolution, framerate (tested up to 60), encoder level, encoder profile
     * Video only mode
     * Device video capabilities
