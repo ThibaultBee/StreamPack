@@ -47,6 +47,7 @@ class SrtProducer(
     /**
      * Get/set SRT stream ID
      */
+    @Deprecated("Use SrtConnection.streamId instead")
     var streamId: String
         get() = socket.getSockFlag(SockOpt.STREAMID) as String
         set(value) = socket.setSockFlag(SockOpt.STREAMID, value)
@@ -55,6 +56,7 @@ class SrtProducer(
      * Get/set SRT stream passPhrase
      * It is a set only parameter, so getting the value throws an exception.
      */
+    @Deprecated("Use SrtConnection.passPhrase instead")
     var passPhrase: String
         get() = socket.getSockFlag(SockOpt.PASSPHRASE) as String
         set(value) = socket.setSockFlag(SockOpt.PASSPHRASE, value)
@@ -64,7 +66,14 @@ class SrtProducer(
      */
     var latency: Int
         get() = socket.getSockFlag(SockOpt.LATENCY) as Int
-        set(value) = socket.setSockFlag(SockOpt.LATENCY, value)
+        internal set(value) = socket.setSockFlag(SockOpt.LATENCY, value)
+
+    /**
+     * Get/set connection timeout in milliseconds
+     */
+    var connectionTimeout: Int
+        get() = socket.getSockFlag(SockOpt.CONNTIMEO) as Int
+        internal set(value) = socket.setSockFlag(SockOpt.CONNTIMEO, value)
 
     /**
      * Get SRT stats
@@ -107,6 +116,8 @@ class SrtProducer(
 
                 connection.streamId?.let { streamId = it }
                 connection.passPhrase?.let { passPhrase = it }
+                connection.latency?.let { latency = it }
+                connection.connectionTimeout?.let { connectionTimeout = it }
 
                 isOnError = false
                 socket.connect(connection.host, connection.port)
