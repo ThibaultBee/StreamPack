@@ -19,11 +19,11 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
 
-class SrtConnectionTest {
+class SrtConnectionDescriptorTest {
     @Test
     fun fromUrl() {
         val url = "srt://broadcast.host.com:1234"
-        val connection = SrtConnection.fromUrl(url)
+        val connection = SrtConnectionDescriptor.fromUrl(url)
         assertEquals("broadcast.host.com", connection.host)
         assertEquals(1234, connection.port)
     }
@@ -31,7 +31,7 @@ class SrtConnectionTest {
     @Test
     fun fromIp() {
         val url = "srt://192.168.1.12:1234"
-        val connection = SrtConnection.fromUrl(url)
+        val connection = SrtConnectionDescriptor.fromUrl(url)
         assertEquals("192.168.1.12", connection.host)
         assertEquals(1234, connection.port)
     }
@@ -39,7 +39,7 @@ class SrtConnectionTest {
     @Test
     fun fromUrlWithParameters() {
         val url = "srt://host.com:1234?streamid=streamId&passphrase=passPhrase"
-        val connection = SrtConnection.fromUrl(url)
+        val connection = SrtConnectionDescriptor.fromUrl(url)
         assertEquals("host.com", connection.host)
         assertEquals(1234, connection.port)
         assertEquals("streamId", connection.streamId)
@@ -50,7 +50,7 @@ class SrtConnectionTest {
     fun fromUrlWithBadScheme() {
         val url = "srtp://broadcast.host.com:1234"
         try {
-            SrtConnection.fromUrl(url)
+            SrtConnectionDescriptor.fromUrl(url)
             fail("Should throw an exception")
         } catch (_: Exception) {
         }
@@ -60,7 +60,7 @@ class SrtConnectionTest {
     fun fromUrlWithUnknownParam() {
         val url = "srt://host.com:1234?streamid=streamId&passphrase=passPhrase&unknown=unknown"
         try {
-            SrtConnection.fromUrl(url)
+            SrtConnectionDescriptor.fromUrl(url)
         } catch (e: Exception) {
             assertEquals("Failed to parse URL $url: unknown parameter(s): unknown", e.message)
         }

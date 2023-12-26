@@ -32,7 +32,7 @@ import java.security.InvalidParameterException
  * @param latency SRT latency in ms
  * @param connectionTimeout SRT connection timeout in ms
  */
-data class SrtConnection(
+data class SrtConnectionDescriptor(
     val host: String,
     val port: Int,
     val streamId: String? = null,
@@ -71,7 +71,7 @@ data class SrtConnection(
          * @param url server url (syntax: srt://host:port?streamid=streamId&passphrase=passPhrase)
          * @return SRT connection
          */
-        fun fromUrl(url: String): SrtConnection {
+        fun fromUrl(url: String): SrtConnectionDescriptor {
             val uri = Uri.parse(url)
             if (uri.scheme != SRT_SCHEME) {
                 throw InvalidParameterException("URL $url is not an srt URL")
@@ -92,7 +92,7 @@ data class SrtConnection(
                 throw InvalidParameterException("Failed to parse URL $url: unknown parameter(s): $unknownParameters")
             }
 
-            return SrtConnection(
+            return SrtConnectionDescriptor(
                 host,
                 port,
                 streamId,
@@ -115,7 +115,7 @@ data class SrtConnection(
             url: String,
             streamId: String? = null,
             passPhrase: String? = null
-        ): SrtConnection {
+        ): SrtConnectionDescriptor {
             val uri = Uri.parse(url)
             if (uri.scheme != SRT_SCHEME) {
                 throw InvalidParameterException("URL $url is not an srt URL")
@@ -124,7 +124,7 @@ data class SrtConnection(
                 ?: throw InvalidParameterException("Failed to parse URL $url: unknown host")
             val port = uri.port
 
-            return SrtConnection(host, port, streamId, passPhrase)
+            return SrtConnectionDescriptor(host, port, streamId, passPhrase)
         }
     }
 }

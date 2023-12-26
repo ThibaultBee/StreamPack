@@ -19,11 +19,11 @@ import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class RtmpConnectionTest {
+class RtmpConnectionDescriptorTest {
     @Test
     fun fromUrl() {
         val url = "rtmp://broadcast.host.com:1234/app/streamKey"
-        val connection = RtmpConnection.fromUrl(url)
+        val connection = RtmpConnectionDescriptor.fromUrl(url)
         assertEquals("rtmp", connection.scheme)
         assertEquals("broadcast.host.com", connection.host)
         assertEquals(1234, connection.port)
@@ -34,7 +34,7 @@ class RtmpConnectionTest {
     @Test
     fun fromRtmpsUrl() {
         val url = "rtmps://broadcast.host.com:1234/app/streamKey"
-        val connection = RtmpConnection.fromUrl(url)
+        val connection = RtmpConnectionDescriptor.fromUrl(url)
         assertEquals("rtmps", connection.scheme)
         assertEquals("broadcast.host.com", connection.host)
         assertEquals(1234, connection.port)
@@ -45,7 +45,7 @@ class RtmpConnectionTest {
     @Test
     fun fromUrlWithDefaultPort() {
         val url = "rtmp://broadcast.host.com/app/streamKey"
-        val connection = RtmpConnection.fromUrl(url)
+        val connection = RtmpConnectionDescriptor.fromUrl(url)
         assertEquals("rtmp", connection.scheme)
         assertEquals("broadcast.host.com", connection.host)
         assertEquals(1935, connection.port)
@@ -56,7 +56,7 @@ class RtmpConnectionTest {
     @Test
     fun fromRtmpsUrlWithDefaultPort() {
         val url = "rtmps://broadcast.host.com/app/streamKey"
-        val connection = RtmpConnection.fromUrl(url)
+        val connection = RtmpConnectionDescriptor.fromUrl(url)
         assertEquals("rtmps", connection.scheme)
         assertEquals("broadcast.host.com", connection.host)
         assertEquals(443, connection.port)
@@ -68,7 +68,7 @@ class RtmpConnectionTest {
     fun fromUrlWithBadScheme() {
         val url = "rtp://broadcast.host.com:1234/app/streamKey"
         try {
-            RtmpConnection.fromUrl(url)
+            RtmpConnectionDescriptor.fromUrl(url)
             Assert.fail("Should throw an exception")
         } catch (_: Exception) {
         }

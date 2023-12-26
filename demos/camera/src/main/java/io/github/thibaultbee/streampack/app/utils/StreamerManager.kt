@@ -20,7 +20,7 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.app.configuration.Configuration
-import io.github.thibaultbee.streampack.ext.srt.data.SrtConnection
+import io.github.thibaultbee.streampack.ext.srt.data.SrtConnectionDescriptor
 import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
@@ -96,7 +96,7 @@ class StreamerManager(
     suspend fun startStream() {
         if (streamer?.getLiveStreamer() != null) {
             getSrtLiveStreamer()?.let {
-                val connection = SrtConnection(
+                val connection = SrtConnectionDescriptor(
                     configuration.endpoint.srt.ip,
                     configuration.endpoint.srt.port,
                     configuration.endpoint.srt.streamID,

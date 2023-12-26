@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints
 
-import io.github.thibaultbee.streampack.ext.rtmp.data.RtmpConnection
+import io.github.thibaultbee.streampack.ext.rtmp.data.RtmpConnectionDescriptor
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
@@ -50,7 +50,7 @@ class RtmpProducer(
     }
 
     override suspend fun connect(url: String) {
-        RtmpConnection.fromUrl(url) // URL validation
+        RtmpConnectionDescriptor.fromUrl(url) // URL validation
 
         withContext(coroutineDispatcher) {
             try {

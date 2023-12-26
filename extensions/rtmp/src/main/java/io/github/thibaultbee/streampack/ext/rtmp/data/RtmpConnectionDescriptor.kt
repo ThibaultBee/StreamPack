@@ -27,7 +27,7 @@ import java.security.InvalidParameterException
  * @param app the application name
  * @param streamKey the stream key
  */
-data class RtmpConnection(
+data class RtmpConnectionDescriptor(
     val scheme: String, val host: String, val port: Int, val app: String, val streamKey: String
 ) {
     val uri = Uri.Builder()
@@ -67,7 +67,7 @@ data class RtmpConnection(
          * @param url the server url (syntax: rtmp://host:port/app/streamKey)
          * @return RTMP connection
          */
-        fun fromUrl(url: String): RtmpConnection {
+        fun fromUrl(url: String): RtmpConnectionDescriptor {
             val uri = Uri.parse(url)
 
             val scheme =
@@ -90,7 +90,7 @@ data class RtmpConnection(
             val app = uri.pathSegments.minus(uri.lastPathSegment).joinToString("/")
             val streamKey = uri.lastPathSegment
                 ?: throw InvalidParameterException("Invalid streamKey ${uri.lastPathSegment}")
-            return RtmpConnection(scheme, host, port, app, streamKey)
+            return RtmpConnectionDescriptor(scheme, host, port, app, streamKey)
         }
     }
 }

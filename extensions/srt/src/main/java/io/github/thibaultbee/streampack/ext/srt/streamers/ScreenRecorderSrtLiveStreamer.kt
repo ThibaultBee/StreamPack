@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.ext.srt.streamers
 import android.app.Service
 import android.content.Context
 import io.github.thibaultbee.streampack.data.BitrateRegulatorConfig
-import io.github.thibaultbee.streampack.ext.srt.data.SrtConnection
+import io.github.thibaultbee.streampack.ext.srt.data.SrtConnectionDescriptor
 import io.github.thibaultbee.streampack.ext.srt.internal.endpoints.SrtProducer
 import io.github.thibaultbee.streampack.ext.srt.regulator.srt.SrtBitrateRegulator
 import io.github.thibaultbee.streampack.ext.srt.services.ScreenRecorderSrtLiveService
@@ -148,11 +148,11 @@ class ScreenRecorderSrtLiveStreamer(
      * @throws Exception if connection has failed or configuration has failed
      */
     @Deprecated(
-        "Use the new connect(SrtConnection) method",
-        replaceWith = ReplaceWith("connect(SrtConnection)")
+        "Use the new connect(SrtConnectionDescriptor) method",
+        replaceWith = ReplaceWith("connect(SrtConnectionDescriptor)")
     )
     override suspend fun connect(ip: String, port: Int) {
-        val connection = SrtConnection(ip, port)
+        val connection = SrtConnectionDescriptor(ip, port)
         srtProducer.connect(connection)
     }
 
@@ -163,7 +163,7 @@ class ScreenRecorderSrtLiveStreamer(
      * @param connection the SRT connection
      * @throws Exception if connection has failed or configuration has failed
      */
-    override suspend fun connect(connection: SrtConnection) {
+    override suspend fun connect(connection: SrtConnectionDescriptor) {
         srtProducer.connect(connection)
     }
 
@@ -197,11 +197,11 @@ class ScreenRecorderSrtLiveStreamer(
      * @throws Exception if connection has failed or configuration has failed or [startStream] has failed too.
      */
     @Deprecated(
-        "Use the new startStream(SrtConnection) method",
-        replaceWith = ReplaceWith("startStream(SrtConnection)")
+        "Use the new startStream(SrtConnectionDescriptor) method",
+        replaceWith = ReplaceWith("startStream(SrtConnectionDescriptor)")
     )
     override suspend fun startStream(ip: String, port: Int) {
-        val connection = SrtConnection(ip, port)
+        val connection = SrtConnectionDescriptor(ip, port)
         startStream(connection)
     }
 
@@ -213,7 +213,7 @@ class ScreenRecorderSrtLiveStreamer(
      * @param connection the SRT connection
      * @throws Exception if connection has failed or configuration has failed or [startStream] has failed too.
      */
-    override suspend fun startStream(connection: SrtConnection) {
+    override suspend fun startStream(connection: SrtConnectionDescriptor) {
         connect(connection)
         startStream()
     }

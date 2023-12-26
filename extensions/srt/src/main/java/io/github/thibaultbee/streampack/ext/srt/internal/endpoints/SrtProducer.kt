@@ -24,7 +24,7 @@ import io.github.thibaultbee.srtdroid.listeners.SocketListener
 import io.github.thibaultbee.srtdroid.models.MsgCtrl
 import io.github.thibaultbee.srtdroid.models.Socket
 import io.github.thibaultbee.srtdroid.models.Stats
-import io.github.thibaultbee.streampack.ext.srt.data.SrtConnection
+import io.github.thibaultbee.streampack.ext.srt.data.SrtConnectionDescriptor
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.data.SrtPacket
 import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
@@ -47,7 +47,7 @@ class SrtProducer(
     /**
      * Get/set SRT stream ID
      */
-    @Deprecated("Use SrtConnection.streamId instead")
+    @Deprecated("Use SrtConnectionDescriptor.streamId instead")
     var streamId: String
         get() = socket.getSockFlag(SockOpt.STREAMID) as String
         set(value) = socket.setSockFlag(SockOpt.STREAMID, value)
@@ -56,7 +56,7 @@ class SrtProducer(
      * Get/set SRT stream passPhrase
      * It is a set only parameter, so getting the value throws an exception.
      */
-    @Deprecated("Use SrtConnection.passPhrase instead")
+    @Deprecated("Use SrtConnectionDescriptor.passPhrase instead")
     var passPhrase: String
         get() = socket.getSockFlag(SockOpt.PASSPHRASE) as String
         set(value) = socket.setSockFlag(SockOpt.PASSPHRASE, value)
@@ -88,9 +88,9 @@ class SrtProducer(
         this.bitrate = config.toLong()
     }
 
-    override suspend fun connect(url: String) = connect(SrtConnection.fromUrl(url))
+    override suspend fun connect(url: String) = connect(SrtConnectionDescriptor.fromUrl(url))
 
-    suspend fun connect(connection: SrtConnection) {
+    suspend fun connect(connection: SrtConnectionDescriptor) {
         withContext(coroutineDispatcher) {
             try {
                 socket.listener = object : SocketListener {
