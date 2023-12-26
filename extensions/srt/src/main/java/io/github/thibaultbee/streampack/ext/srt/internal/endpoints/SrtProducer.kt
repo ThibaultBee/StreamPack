@@ -47,18 +47,18 @@ class SrtProducer(
     /**
      * Get/set SRT stream ID
      */
-    @Deprecated("Use SrtConnectionDescriptor.streamId instead")
     var streamId: String
         get() = socket.getSockFlag(SockOpt.STREAMID) as String
+        @Deprecated("Use SrtConnectionDescriptor.streamId instead")
         set(value) = socket.setSockFlag(SockOpt.STREAMID, value)
 
     /**
      * Get/set SRT stream passPhrase
      * It is a set only parameter, so getting the value throws an exception.
      */
-    @Deprecated("Use SrtConnectionDescriptor.passPhrase instead")
     var passPhrase: String
         get() = socket.getSockFlag(SockOpt.PASSPHRASE) as String
+        @Deprecated("Use SrtConnectionDescriptor.passPhrase instead")
         set(value) = socket.setSockFlag(SockOpt.PASSPHRASE, value)
 
     /**
@@ -66,14 +66,14 @@ class SrtProducer(
      */
     var latency: Int
         get() = socket.getSockFlag(SockOpt.LATENCY) as Int
-        internal set(value) = socket.setSockFlag(SockOpt.LATENCY, value)
+        private set(value) = socket.setSockFlag(SockOpt.LATENCY, value)
 
     /**
      * Get/set connection timeout in milliseconds
      */
     var connectionTimeout: Int
         get() = socket.getSockFlag(SockOpt.CONNTIMEO) as Int
-        internal set(value) = socket.setSockFlag(SockOpt.CONNTIMEO, value)
+        private set(value) = socket.setSockFlag(SockOpt.CONNTIMEO, value)
 
     /**
      * Get SRT stats

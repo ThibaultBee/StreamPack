@@ -32,7 +32,7 @@ interface ISrtLiveStreamer : ILiveStreamer {
     /**
      * Get/set bidirectional latency in milliseconds.
      */
-    var latency: Int
+    val latency: Int
 
     /**
      * Connect to a remote server.

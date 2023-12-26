@@ -63,6 +63,10 @@ class AudioOnlySrtLiveStreamer(
         /**
          * @param value stream ID
          */
+        @Deprecated(
+            "Use the new connect(SrtConnectionDescriptor) method",
+            replaceWith = ReplaceWith("connect(SrtConnectionDescriptor)")
+        )
         set(value) {
             srtProducer.streamId = value
         }
@@ -80,6 +84,10 @@ class AudioOnlySrtLiveStreamer(
         /**
          * @param value passphrase
          */
+        @Deprecated(
+            "Use the new connect(SrtConnectionDescriptor) method",
+            replaceWith = ReplaceWith("connect(SrtConnectionDescriptor)")
+        )
         set(value) {
             srtProducer.passPhrase = value
         }
@@ -88,18 +96,12 @@ class AudioOnlySrtLiveStreamer(
      * Get/set bidirectional latency in milliseconds.
      * **See:** [SRT Socket Options](https://github.com/Haivision/srt/blob/master/docs/API/API-socket-options.md#SRTO_LATENCY)
      */
-    override var latency: Int
+    override val latency: Int
         /**
          * Get latency in milliseconds
          * @return latency
          */
         get() = srtProducer.latency
-        /**
-         * @param value latency in milliseconds
-         */
-        set(value) {
-            srtProducer.latency = value
-        }
 
     /**
      * Connect to an SRT server with correct Live streaming parameters.
