@@ -20,7 +20,7 @@ import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.data.PacketType
 import io.github.thibaultbee.streampack.internal.interfaces.ISourceOrientationProvider
-import io.github.thibaultbee.streampack.internal.muxers.AbstractSortingMuxer
+import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.muxers.flv.tags.AVTagsFactory
 import io.github.thibaultbee.streampack.internal.muxers.flv.tags.FlvHeader
@@ -33,12 +33,12 @@ class FlvMuxer(
     override var listener: IMuxerListener? = null,
     initialStreams: List<Config>? = null,
     private val writeToFile: Boolean,
-) : AbstractSortingMuxer() {
+) : IMuxer {
     override val helper = FlvMuxerHelper()
     private val streams = mutableListOf<Config>()
-    override val hasAudio: Boolean
+    private val hasAudio: Boolean
         get() = streams.any { it.mimeType.isAudio }
-    override val hasVideo: Boolean
+    private val hasVideo: Boolean
         get() = streams.any { it.mimeType.isVideo }
     private var startUpTime: Long? = null
     private var hasFirstFrame = false
@@ -73,16 +73,17 @@ class FlvMuxer(
 
         frame.pts -= startUpTime!!
         val flvTags = AVTagsFactory(frame, streams[streamPid]).build()
-        val flvPacket = flvTags.map {
-            Packet(
-                it.write(), frame.pts, if (frame.isVideo) {
-                    PacketType.VIDEO
-                } else {
-                    PacketType.AUDIO
-                }
+        flvTags.forEach {
+            listener?.onOutputFrame(
+                Packet(
+                    it.write(), frame.pts, if (frame.isVideo) {
+                        PacketType.VIDEO
+                    } else {
+                        PacketType.AUDIO
+                    }
+                )
             )
         }
-        queue(flvPacket)
     }
 
     override fun addStreams(streamsConfig: List<Config>): Map<Config, Int> {
@@ -117,7 +118,6 @@ class FlvMuxer(
         startUpTime = null
         hasFirstFrame = false
         streams.clear()
-        super.stopStream()
     }
 
     override fun release() {
@@ -131,5 +131,4 @@ class FlvMuxer(
         require(streams.count { it.mimeType.isAudio } <= 1) { "Only one audio stream is supported by FLV" }
         require(streams.count { it.mimeType.isVideo } <= 1) { "Only one video stream is supported by FLV" }
     }
-
 }
