@@ -658,7 +658,7 @@ class FocusMetering(
         // Add new regions
         val settingsMap: MutableMap<CaptureRequest.Key<*>, Any> = mutableMapOf(
             CaptureRequest.CONTROL_AF_MODE to afMode,
-            CaptureRequest.CONTROL_AF_TRIGGER to CameraMetadata.CONTROL_AF_TRIGGER_CANCEL
+            CaptureRequest.CONTROL_AF_TRIGGER to CameraMetadata.CONTROL_AF_TRIGGER_START
         )
 
         if (afRects.isNotEmpty()) {
@@ -688,7 +688,7 @@ class FocusMetering(
         cameraController.setBurstSettings(settingsMap as Map<CaptureRequest.Key<Any>, Any>)
     }
 
-    private fun startFocusAndMetering(
+    fun startFocusAndMetering(
         afPoints: List<PointF>,
         aePoints: List<PointF>,
         awbPoints: List<PointF>,
@@ -811,11 +811,7 @@ class FocusMetering(
      * @param fovRotationDegree the orientation of the field of view
      */
     fun onTap(point: PointF, fovRect: Rect, fovRotationDegree: Int) {
-        val cameraId = cameraController.cameraId ?: throw IllegalStateException("Camera ID is null")
-        val relativeRotation = getSensorRotationDegrees(context, cameraId, fovRotationDegree)
-
-        var normalizedPoint = point.normalize(fovRect)
-        normalizedPoint = normalizedPoint.rotate(relativeRotation)
+        val normalizedPoint = getNormalizedPoint(point,fovRect,fovRotationDegree)
 
         startFocusAndMetering(
             listOf(normalizedPoint),
@@ -827,6 +823,16 @@ class FocusMetering(
                 Rational(fovRect.width(), fovRect.height())
             }
         )
+    }
+
+
+    fun getNormalizedPoint(point: PointF, fovRect: Rect, fovRotationDegree: Int): PointF {
+        val cameraId = cameraController.cameraId ?: throw IllegalStateException("Camera ID is null")
+        val relativeRotation = getSensorRotationDegrees(context, cameraId, fovRotationDegree)
+
+        var normalizedPoint = point.normalize(fovRect)
+        normalizedPoint = normalizedPoint.rotate(relativeRotation)
+        return normalizedPoint
     }
 
     /**
