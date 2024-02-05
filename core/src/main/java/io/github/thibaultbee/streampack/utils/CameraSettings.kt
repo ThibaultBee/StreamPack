@@ -803,6 +803,11 @@ class FocusMetering(
         }
     }
 
+    private fun normalizePoint(point: PointF, fovRect: Rect, relativeRotation: Int): PointF {
+        val normalizedPoint = point.normalize(fovRect)
+        return normalizedPoint.rotate(relativeRotation)
+    }
+
     /**
      * Sets the focus on tap.
      *
@@ -811,16 +816,35 @@ class FocusMetering(
      * @param fovRotationDegree the orientation of the field of view
      */
     fun onTap(point: PointF, fovRect: Rect, fovRotationDegree: Int) {
+        val points = listOf(point)
+        return onTap(points, points, emptyList(), fovRect, fovRotationDegree)
+    }
+
+    /**
+     * Sets the focus on tap.
+     *
+     * At least one of lost of points must not be empty.
+     *
+     * @param afPoints the points where the focus is done in [fovRect] coordinate system
+     * @param aePoints the points where the exposure is done in [fovRect] coordinate system
+     * @param awbPoints the points where the white balance is done in [fovRect] coordinate system
+     * @param fovRect the field of view rectangle
+     * @param fovRotationDegree the orientation of the field of view
+     */
+    fun onTap(
+        afPoints: List<PointF> = emptyList(),
+        aePoints: List<PointF> = emptyList(),
+        awbPoints: List<PointF> = emptyList(),
+        fovRect: Rect,
+        fovRotationDegree: Int
+    ) {
         val cameraId = cameraController.cameraId ?: throw IllegalStateException("Camera ID is null")
         val relativeRotation = getSensorRotationDegrees(context, cameraId, fovRotationDegree)
 
-        var normalizedPoint = point.normalize(fovRect)
-        normalizedPoint = normalizedPoint.rotate(relativeRotation)
-
         startFocusAndMetering(
-            listOf(normalizedPoint),
-            listOf(normalizedPoint),
-            emptyList(),
+            afPoints.map { normalizePoint(it, fovRect, relativeRotation) },
+            aePoints.map { normalizePoint(it, fovRect, relativeRotation) },
+            awbPoints.map { normalizePoint(it, fovRect, relativeRotation) },
             if (context.isDevicePortrait) {
                 Rational(fovRect.height(), fovRect.width())
             } else {
