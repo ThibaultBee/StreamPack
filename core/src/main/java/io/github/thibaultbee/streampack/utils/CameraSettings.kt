@@ -658,7 +658,7 @@ class FocusMetering(
         // Add new regions
         val settingsMap: MutableMap<CaptureRequest.Key<*>, Any> = mutableMapOf(
             CaptureRequest.CONTROL_AF_MODE to afMode,
-            CaptureRequest.CONTROL_AF_TRIGGER to CameraMetadata.CONTROL_AF_TRIGGER_CANCEL
+            CaptureRequest.CONTROL_AF_TRIGGER to CameraMetadata.CONTROL_AF_TRIGGER_START
         )
 
         if (afRects.isNotEmpty()) {
