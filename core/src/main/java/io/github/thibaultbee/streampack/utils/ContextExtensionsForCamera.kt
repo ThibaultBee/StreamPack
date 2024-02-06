@@ -25,6 +25,7 @@ import android.hardware.camera2.params.DynamicRangeProfiles.STANDARD
 import android.os.Build
 import android.util.Range
 import android.util.Size
+import androidx.annotation.RequiresApi
 
 /**
  * Get camera characteristics.
@@ -246,13 +247,20 @@ fun Context.getExposureMaxMeteringRegionsSupported(cameraId: String) =
  * @param cameraId camera id
  * @return zoom ratio range.
  */
+@RequiresApi(Build.VERSION_CODES.R)
 fun Context.getZoomRatioRange(cameraId: String): Range<Float>? {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE)
-    } else {
-        getCameraCharacteristics(cameraId).get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM)
-            ?.let { maxZoom -> Range(1f, maxZoom) }
-    }
+    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE)
+}
+
+/**
+ * Gets max scaler zoom.
+ *
+ * @param cameraId camera id
+ * @return max scaler zoom.
+ */
+fun Context.getScalerMaxZoom(cameraId: String): Float {
+    return getCameraCharacteristics(cameraId).get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM)
+        ?: 1.0f
 }
 
 /**

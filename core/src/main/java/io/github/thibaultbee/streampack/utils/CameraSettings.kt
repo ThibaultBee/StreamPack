@@ -26,6 +26,7 @@ import android.hardware.camera2.params.MeteringRectangle
 import android.os.Build
 import android.util.Range
 import android.util.Rational
+import androidx.annotation.RequiresApi
 import io.github.thibaultbee.streampack.internal.sources.camera.CameraController
 import io.github.thibaultbee.streampack.internal.utils.*
 import io.github.thibaultbee.streampack.internal.utils.extensions.clamp
@@ -68,7 +69,7 @@ class CameraSettings(context: Context, cameraController: CameraController) {
     /**
      * Current camera zoom API.
      */
-    val zoom = Zoom(context, cameraController)
+    val zoom = Zoom.build(context, cameraController)
 
     /**
      * Current focus API.
@@ -339,67 +340,14 @@ class Exposure(private val context: Context, private val cameraController: Camer
     }
 }
 
+sealed class Zoom(
+    protected val context: Context,
+    protected val cameraController: CameraController
+) {
+    abstract val availableRatioRange: Range<Float>
+    internal abstract val cropSensorRegion: Rect
 
-class Zoom(private val context: Context, private val cameraController: CameraController) {
-    // Keep the zoomRation for Android version < R
-    private var persistentZoomRatio = 1f
-
-    /**
-     * Get current camera zoom ratio range.
-     *
-     * @return zoom ratio range.
-     *
-     * @see [zoomRatio]
-     */
-    val availableRatioRange: Range<Float>
-        get() = cameraController.cameraId?.let { context.getZoomRatioRange(it) }
-            ?: DEFAULT_ZOOM_RATIO_RANGE
-
-    /**
-     * Set or get the current zoom ratio.
-     *
-     * @see [availableRatioRange]
-     */
-    var zoomRatio: Float
-        /**
-         * Get the zoom ratio.
-         *
-         * @return the current zoom ratio
-         */
-        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            cameraController.getSetting(CaptureRequest.CONTROL_ZOOM_RATIO) ?: DEFAULT_ZOOM_RATIO
-        } else {
-            synchronized(this) {
-                persistentZoomRatio
-            }
-        }
-        /**
-         * Set the zoom ratio.
-         *
-         * @param value zoom ratio
-         */
-        set(value) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                cameraController.setRepeatingSetting(
-                    CaptureRequest.CONTROL_ZOOM_RATIO,
-                    value.clamp(availableRatioRange)
-                )
-            } else {
-                synchronized(this) {
-                    val clampedValue = value.clamp(availableRatioRange)
-                    cameraController.cameraId?.let { cameraId ->
-                        cameraController.setRepeatingSetting(
-                            CaptureRequest.SCALER_CROP_REGION,
-                            getCropRegion(
-                                context.getCameraCharacteristics(cameraId),
-                                clampedValue
-                            )
-                        )
-                    }
-                    persistentZoomRatio = clampedValue
-                }
-            }
-        }
+    abstract var zoomRatio: Float
 
     /**
      * Sets the zoom on pinch scale gesture.
@@ -420,23 +368,123 @@ class Zoom(private val context: Context, private val cameraController: CameraCon
         }
     }
 
+    class CropScalerRegionZoom(context: Context, cameraController: CameraController) :
+        Zoom(context, cameraController) {
+        // Keep the zoomRatio
+        private var persistentZoomRatio = 1f
+        private var currentCropRect: Rect? = null
+
+        override val availableRatioRange: Range<Float>
+            get() = cameraController.cameraId?.let {
+                Range(
+                    DEFAULT_ZOOM_RATIO,
+                    context.getScalerMaxZoom(it)
+                )
+            }
+                ?: DEFAULT_ZOOM_RATIO_RANGE
+
+        override var zoomRatio: Float
+            get() = synchronized(this) {
+                persistentZoomRatio
+            }
+            set(value) {
+                synchronized(this) {
+                    val clampedValue = value.clamp(availableRatioRange)
+                    cameraController.cameraId?.let { cameraId ->
+                        currentCropRect = getCropRegion(
+                            context.getCameraCharacteristics(cameraId),
+                            clampedValue
+                        )
+                        cameraController.setRepeatingSetting(
+                            CaptureRequest.SCALER_CROP_REGION,
+                            currentCropRect
+                        )
+                    }
+                    persistentZoomRatio = clampedValue
+                }
+            }
+
+        override val cropSensorRegion: Rect
+            get() {
+                synchronized(this) {
+                    return if (currentCropRect != null) {
+                        currentCropRect!!
+                    } else {
+                        val cameraId = cameraController.cameraId
+                            ?: throw IllegalStateException("Camera ID is null")
+                        return context.getCameraCharacteristics(cameraId)
+                            .get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)!!
+                    }
+                }
+            }
+
+        companion object {
+            /**
+             * Calculates sensor crop region for a zoom ratio (zoom >= 1.0).
+             *
+             * @return the crop region.
+             */
+            private fun getCropRegion(sensorRect: Rect, zoomRatio: Float): Rect {
+                val xCenter: Int = sensorRect.width() / 2
+                val yCenter: Int = sensorRect.height() / 2
+                val xDelta = (0.5f * sensorRect.width() / zoomRatio).toInt()
+                val yDelta = (0.5f * sensorRect.height() / zoomRatio).toInt()
+                return Rect(xCenter - xDelta, yCenter - yDelta, xCenter + xDelta, yCenter + yDelta)
+            }
+
+            /**
+             * Calculates sensor crop region for a zoom ratio (zoom >= 1.0).
+             *
+             * @return the crop region.
+             */
+            private fun getCropRegion(
+                characteristics: CameraCharacteristics,
+                zoomRatio: Float
+            ): Rect {
+                val sensorRect =
+                    characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)
+                        ?: throw IllegalStateException("Sensor rect is null")
+                return getCropRegion(sensorRect, zoomRatio)
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    class RZoom(context: Context, cameraController: CameraController) :
+        Zoom(context, cameraController) {
+        override val availableRatioRange: Range<Float>
+            get() = cameraController.cameraId?.let { context.getZoomRatioRange(it) }
+                ?: DEFAULT_ZOOM_RATIO_RANGE
+
+        override var zoomRatio: Float
+            get() = cameraController.getSetting(CaptureRequest.CONTROL_ZOOM_RATIO)
+                ?: DEFAULT_ZOOM_RATIO
+            set(value) {
+                cameraController.setRepeatingSetting(
+                    CaptureRequest.CONTROL_ZOOM_RATIO,
+                    value.clamp(availableRatioRange)
+                )
+            }
+
+        override val cropSensorRegion: Rect
+            get() {
+                val cameraId = cameraController.cameraId
+                    ?: throw IllegalStateException("Camera ID is null")
+                return context.getCameraCharacteristics(cameraId)
+                    .get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)!!
+            }
+    }
+
     companion object {
-        val DEFAULT_ZOOM_RATIO = 1f
+        const val DEFAULT_ZOOM_RATIO = 1f
         val DEFAULT_ZOOM_RATIO_RANGE = Range(DEFAULT_ZOOM_RATIO, DEFAULT_ZOOM_RATIO)
 
-        /**
-         * Calculates sensor crop region for a zoom ratio (zoom >= 1.0).
-         *
-         * @return the crop region.
-         */
-        internal fun getCropRegion(characteristics: CameraCharacteristics, zoomRatio: Float): Rect {
-            val sensorRect =
-                characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)!!
-            val xCenter: Int = sensorRect.width() / 2
-            val yCenter: Int = sensorRect.height() / 2
-            val xDelta = (0.5f * sensorRect.width() / zoomRatio).toInt()
-            val yDelta = (0.5f * sensorRect.height() / zoomRatio).toInt()
-            return Rect(xCenter - xDelta, yCenter - yDelta, xCenter + xDelta, yCenter + yDelta)
+        fun build(context: Context, cameraController: CameraController): Zoom {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                RZoom(context, cameraController)
+            } else {
+                CropScalerRegionZoom(context, cameraController)
+            }
         }
     }
 }
@@ -534,10 +582,10 @@ class Focus(private val context: Context, private val cameraController: CameraCo
         }
 
     companion object {
-        val DEFAULT_LENS_DISTANCE = 0f
+        const val DEFAULT_LENS_DISTANCE = 0f
         val DEFAULT_LENS_DISTANCE_RANGE = Range(DEFAULT_LENS_DISTANCE, DEFAULT_LENS_DISTANCE)
 
-        val DEFAULT_MAX_NUM_OF_METERING_REGION = 0
+        const val DEFAULT_MAX_NUM_OF_METERING_REGION = 0
     }
 }
 
@@ -699,7 +747,7 @@ class FocusMetering(
             return
         }
 
-        val cameraId = cameraController.cameraId ?: throw IllegalStateException("Camera ID is null")
+        val cropRegion = zoom.cropSensorRegion
 
         disableAutoCancel()
 
@@ -711,9 +759,6 @@ class FocusMetering(
             Logger.w(TAG, "No metering regions available")
             return
         }
-
-        val cropRegion =
-            Zoom.getCropRegion(context.getCameraCharacteristics(cameraId), zoom.zoomRatio)
 
         val afRectangles =
             getMeteringRectangles(
