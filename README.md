@@ -47,7 +47,8 @@ android {
 * Video:
     * Source: Cameras or Screen recorder
     * Orientation: portrait or landscape
-    * Codec: HEVC/H.265, AVC/H.264, VP9 or AV1 (experimental, see https://github.com/ThibaultBee/StreamPack/discussions/90)
+    * Codec: HEVC/H.265, AVC/H.264, VP9 or AV1 (experimental,
+      see https://github.com/ThibaultBee/StreamPack/discussions/90)
     * HDR (experimental, see https://github.com/ThibaultBee/StreamPack/discussions/91)
     * Configurable bitrate, resolution, framerate (tested up to 60), encoder level, encoder profile
     * Video only mode
@@ -129,12 +130,9 @@ To simplify integration, StreamPack provides an `StreamerSurfaceView`.
 ```xml
 
 <layout>
-    <io.github.thibaultbee.streampack.views.StreamerSurfaceView 
-        android:id="@+id/preview"
-        android:layout_width="match_parent" 
-        android:layout_height="match_parent"
-        app:cameraFacingDirection="back"
-        app:enableZoomOnPinch="true" />
+    <io.github.thibaultbee.streampack.views.StreamerSurfaceView android:id="@+id/preview"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        app:cameraFacingDirection="back" app:enableZoomOnPinch="true" />
 </layout>
 ```
 
@@ -200,17 +198,28 @@ You need to add the following permissions in your `AndroidManifest.xml`:
 ```xml
 
 <manifest>
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.CAMERA" />\
+    <!-- Only for a live -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Application requires android.permission.WRITE_EXTERNAL_STORAGE only for IFileStreamer implementation` -->
+    <!-- Only for a record -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 </manifest>
 ```
 
+For a record, you also need to request the following dangerous
+permission: `android.permission.WRITE_EXTERNAL_STORAGE`.
+
+To use the camera, you need to request the following permission:
+
+```xml
+
+<manifest>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CAMERA" />
+</manifest>
+```
+
 Your application also has to request the following dangerous
-permission: `android.permission.RECORD_AUDIO`, `android.permission.CAMERA` and
-`android.permission.WRITE_EXTERNAL_STORAGE` (only for only for `IFileStreamer` implementation).
+permission: `android.permission.RECORD_AUDIO`, `android.permission.CAMERA`.
 
 For the PlayStore, your application might declare this in its `AndroidManifest.xml`
 
@@ -220,6 +229,30 @@ For the PlayStore, your application might declare this in its `AndroidManifest.x
     <uses-feature android:name="android.hardware.camera" android:required="true" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 </manifest>
+```
+
+To use the screen recorder, you need to request the following permission:
+
+```xml
+
+<manifest>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Only if you have to record audio -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+</manifest>
+```
+
+You will also have to declare the `Service`,
+
+```xml
+
+<application>
+    <!-- YourScreenRecorderService extends ScreenRecorderRtmpLiveService or ScreenRecorderSrtLiveService -->
+    <service android:name=".services.YourScreenRecorderService" android:exported="false"
+        android:foregroundServiceType="mediaProjection" />
+</application>
 ```
 
 ## Tips
