@@ -19,9 +19,11 @@ io.github.thibaultbee.streampack.streamers.settings
 io.github.thibaultbee.streampack.utils
 io.github.thibaultbee.streampack.views
 module:extension-rtmp
+io.github.thibaultbee.streampack.ext.rtmp.data
 io.github.thibaultbee.streampack.ext.rtmp.services
 io.github.thibaultbee.streampack.ext.rtmp.streamers
 module:extension-srt
+io.github.thibaultbee.streampack.ext.srt.data
 io.github.thibaultbee.streampack.ext.srt.regulator.srt
 io.github.thibaultbee.streampack.ext.srt.services
 io.github.thibaultbee.streampack.ext.srt.streamers
