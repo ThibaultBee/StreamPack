@@ -1,6 +1,45 @@
 Change Log
 ==========
 
+Version 2.6.0
+-------------
+
+## API Changes:
+
+- `startStream` and `stopStream` are now a suspend methods because they triggers a network
+  operation. Therefore they must be called from a coroutine.
+
+## Features:
+
+- Camera streamer: mirror the video on the stream when the front camera is used. Preview is not
+  mirrored.
+- RTMP: Add support for enhanced RTMP video codecs (HEVC, VP9 and AV1 (experimental,
+  see https://github.com/ThibaultBee/StreamPack/discussions/90))
+- RTMP: Improve synchronization on audio and video frames: force to send Header 0 when timestamp are
+  not in order.
+- HDR: Add experimental support for HDR camera streamers,
+  see https://github.com/ThibaultBee/StreamPack/discussions/91
+- VideoConfig: infer the bitrate from the resolution when it is not explicitly set.
+- SRT: add a latency setting.
+- SRT and RTMP: add specific class to describe the connection (see `SrtConnectionDescriptor`
+  and `RtmpConnectionDescriptor`).
+- AAC: add support for multiple AAC profiles (HE-AAC, HE-AACv2, ...).
+- ISO Sensitivity: Add an API to set ISO sensitivity for camera streamers.
+- MP4: Introduce MP4 muxer and new MP4 streamers. (Fragmented MP4)
+- Screen recorder: display root cause on notification instead of the exception message.
+- Codec helper: get only once instance of each profiles.
+- Camera: add an API to set `onTap` for auto exposure, auto focus and auto white balance
+  independently.
+- Improve orientation management.
+- Upgrade to Android 14, gradle 8 and Kotlin 1.9
+- Internal: rename `Capture` to `Source`
+
+## Bug fixes:
+
+- Camera: fix default camera when device does not have a "0" camera
+- Camera: fix an `onTap` crash when the device zoom ratio is < 1
+- Camera: fix auto focus trigger on tap
+
 Version 2.5.2
 -------------
 
