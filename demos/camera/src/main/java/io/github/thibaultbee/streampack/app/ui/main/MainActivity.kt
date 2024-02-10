@@ -77,5 +77,10 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "MainActivity"
+
+        init {
+            System.loadLibrary("crypto")
+            System.loadLibrary("ssl")
+        }
     }
 }
