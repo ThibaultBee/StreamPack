@@ -98,7 +98,7 @@ class PreviewFragment : Fragment() {
         /**
          * Lock orientation while stream is running to avoid stream interruption if
          * user turns the device.
-         * For landscape only mode, set [Activity.requestedOrientation] to
+         * For landscape only mode, set [requireActivity().requestedOrientation] to
          * [ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE] in [onCreate] or [onResume].
          */
         requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
@@ -201,7 +201,7 @@ class PreviewFragment : Fragment() {
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
             if (permissions.toList().all {
-                    it.second == true
+                    it.second
                 }) {
                 createStreamer()
             } else {
@@ -214,7 +214,7 @@ class PreviewFragment : Fragment() {
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
             if (permissions.toList().all {
-                    it.second == true
+                    it.second
                 }) {
                 startStopLive()
             } else {
