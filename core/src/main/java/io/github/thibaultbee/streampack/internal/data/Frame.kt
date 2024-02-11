@@ -89,4 +89,10 @@ data class Frame(
     } else {
         rawBuffer
     }
+
+    fun clone(): Frame {
+        val newRawBuffer = rawBuffer.duplicate() // Creates a new buffer that shares the content of 'rawBuffer'.
+        // Assuming the MediaFormat object can be shared. If not, you need to deep copy it as well.
+        return Frame(newRawBuffer, pts, dts, isKeyFrame, format)
+    }
 }

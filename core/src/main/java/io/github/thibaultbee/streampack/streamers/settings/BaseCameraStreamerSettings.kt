@@ -20,7 +20,9 @@ import io.github.thibaultbee.streampack.internal.encoders.VideoMediaCodecEncoder
 import io.github.thibaultbee.streampack.internal.sources.IAudioSource
 import io.github.thibaultbee.streampack.internal.sources.camera.CameraSource
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
+import io.github.thibaultbee.streampack.streamers.interfaces.settings.IAudioSettings
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
+import io.github.thibaultbee.streampack.streamers.interfaces.settings.IVideoSettings
 import io.github.thibaultbee.streampack.utils.CameraSettings
 
 
@@ -28,11 +30,21 @@ import io.github.thibaultbee.streampack.utils.CameraSettings
  * Get the base camera settings ie all settings available for [BaseCameraStreamer].
  */
 class BaseCameraStreamerSettings(
-    audioSource: IAudioSource?,
     private val cameraSource: CameraSource,
-    audioEncoder: AudioMediaCodecEncoder?,
-    videoEncoder: VideoMediaCodecEncoder?
-) : BaseStreamerSettings(audioSource, audioEncoder, videoEncoder), IBaseCameraStreamerSettings {
+    audioSettings: IAudioSettings,
+    videoSettings: IVideoSettings
+) : BaseStreamerSettings(audioSettings, videoSettings), IBaseCameraStreamerSettings {
+
+    constructor(
+        audioSource: IAudioSource?,
+        cameraSource: CameraSource,
+        audioEncoder: AudioMediaCodecEncoder?,
+        videoEncoder: VideoMediaCodecEncoder?
+    ) : this(
+        cameraSource, BaseStreamerAudioSettings(audioSource, audioEncoder),
+        BaseStreamerVideoSettings(videoEncoder)
+    )
+
     /**
      * Get the camera settings (focus, zoom,...).
      */
