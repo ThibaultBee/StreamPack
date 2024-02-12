@@ -42,6 +42,7 @@ abstract class MediaCodecEncoder<T : Config>(
     private val lock = Object()
     private var isStopped = true
     private var isOnError = false
+    protected var hasInputSurface = false
 
     private var _bitrate: Int = 0
     open val bitrate: Int
@@ -150,6 +151,11 @@ abstract class MediaCodecEncoder<T : Config>(
             Handler(handlerThread.looper)
         }
     }
+    private fun releaseHandler() {
+        handler = null
+        callbackThread?.quitSafely()
+        callbackThread = null
+    }
 
     open fun onNewMediaCodec(mediaCodec: MediaCodec) {}
 
@@ -220,11 +226,17 @@ abstract class MediaCodecEncoder<T : Config>(
     override fun stopStream() {
         try {
             synchronized(lock) {
+                if(isStopped) {
+                    return
+                }
                 isStopped = true
-                mediaCodec?.setCallback(null)
-                mediaCodec?.signalEndOfInputStream()
+                if(hasInputSurface) {
+                    mediaCodec?.signalEndOfInputStream()
+                }
                 mediaCodec?.flush()
                 mediaCodec?.stop()
+                mediaCodec?.setCallback(null)
+                releaseHandler() // prevent thread leak
             }
         } catch (e: IllegalStateException) {
             Logger.d(TAG, "Not running")

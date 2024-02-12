@@ -17,9 +17,6 @@
 package io.github.thibaultbee.streampack.internal.gl
 
 import android.opengl.EGL14
-import android.opengl.EGLConfig
-import android.opengl.EGLContext
-import android.opengl.EGLDisplay
 import android.opengl.EGLExt
 import android.opengl.EGLSurface
 import android.view.Surface
@@ -35,77 +32,24 @@ import java.util.Objects
  * (Contains mostly code borrowed from CameraX)
  */
 
-class EglWindowSurface(private val surface: Surface, useHighBitDepth: Boolean = false) {
-    private var eglDisplay: EGLDisplay = EGL14.EGL_NO_DISPLAY
-    private var eglContext: EGLContext = EGL14.EGL_NO_CONTEXT
+class EglWindowSurface(
+    private val surface: Surface,
+    private val useHighBitDepth: Boolean,
+    private val displayContext:EglDisplayContext = EglDisplayContext(useHighBitDepth)
+) {
+
     private var eglSurface: EGLSurface = EGL14.EGL_NO_SURFACE
-    private val configs = arrayOfNulls<EGLConfig>(1)
 
     companion object {
         private const val EGL_RECORDABLE_ANDROID = 0x3142
     }
 
     init {
-        eglSetup(useHighBitDepth)
-    }
-
-    /**
-     * Prepares EGL. We want a GLES 2.0 context and a surface that supports recording.
-     */
-    private fun eglSetup(useHighBitDepth: Boolean) {
-        eglDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)
-        if (Objects.equals(eglDisplay, EGL14.EGL_NO_DISPLAY)) {
-            throw RuntimeException("unable to get EGL14 display")
-        }
-        val version = IntArray(2)
-        if (!EGL14.eglInitialize(eglDisplay, version, 0, version, 1)) {
-            throw RuntimeException("unable to initialize EGL14")
-        }
-
-        // Configure EGL for recordable and OpenGL ES 2.0.  We want enough RGB bits
-        // to minimize artifacts from possible YUV conversion.
-        val eglColorSize = if (useHighBitDepth) 10 else 8
-        val eglAlphaSize = if (useHighBitDepth) 2 else 0
-        val recordable = if (useHighBitDepth) 0 else 1
-        var attribList = intArrayOf(
-            EGL14.EGL_RED_SIZE, eglColorSize,
-            EGL14.EGL_GREEN_SIZE, eglColorSize,
-            EGL14.EGL_BLUE_SIZE, eglColorSize,
-            EGL14.EGL_ALPHA_SIZE, eglAlphaSize,
-            EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
-            EGL_RECORDABLE_ANDROID, recordable,
-            EGL14.EGL_NONE
-        )
-        val numConfigs = IntArray(1)
-        if (!EGL14.eglChooseConfig(
-                eglDisplay, attribList, 0, configs, 0, configs.size,
-                numConfigs, 0
-            )
-        ) {
-            throw RuntimeException("unable to find RGB888+recordable ES2 EGL config")
-        }
-
-        // Configure context for OpenGL ES 2.0.
-        attribList = intArrayOf(
-            EGL14.EGL_CONTEXT_CLIENT_VERSION, 2,
-            EGL14.EGL_NONE
-        )
-        eglContext = EGL14.eglCreateContext(
-            eglDisplay, configs[0], EGL14.EGL_NO_CONTEXT,
-            attribList, 0
-        )
-        GlUtils.checkEglError("eglCreateContext")
-
-        // Create a window surface, and attach it to the Surface we received.
-        createEGLSurface()
-    }
-
-    private fun createEGLSurface() {
         val surfaceAttribs = intArrayOf(
             EGL14.EGL_NONE
         )
         eglSurface = EGL14.eglCreateWindowSurface(
-            eglDisplay, configs[0], surface,
+            displayContext.display, displayContext.config, surface,
             surfaceAttribs, 0
         )
         GlUtils.checkEglError("eglCreateWindowSurface")
@@ -116,15 +60,11 @@ class EglWindowSurface(private val surface: Surface, useHighBitDepth: Boolean = 
      * Surface that was passed to our constructor.
      */
     fun release() {
-        if (!Objects.equals(eglDisplay, EGL14.EGL_NO_DISPLAY)) {
-            EGL14.eglDestroySurface(eglDisplay, eglSurface)
-            EGL14.eglDestroyContext(eglDisplay, eglContext)
-            EGL14.eglReleaseThread()
-            EGL14.eglTerminate(eglDisplay)
+        if (Objects.equals(displayContext.display, EGL14.EGL_NO_DISPLAY)) {
+            throw UnsupportedOperationException("must release surface before releasing context")
         }
+        EGL14.eglDestroySurface(displayContext.display, eglSurface)
         surface.release()
-        eglDisplay = EGL14.EGL_NO_DISPLAY
-        eglContext = EGL14.EGL_NO_CONTEXT
         eglSurface = EGL14.EGL_NO_SURFACE
     }
 
@@ -132,7 +72,7 @@ class EglWindowSurface(private val surface: Surface, useHighBitDepth: Boolean = 
      * Makes our EGL context and surface current.
      */
     fun makeCurrent() {
-        if (!EGL14.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)) {
+        if (!EGL14.eglMakeCurrent(displayContext.display, eglSurface, eglSurface, displayContext.context)) {
             throw RuntimeException("eglMakeCurrent failed")
         }
     }
@@ -142,7 +82,7 @@ class EglWindowSurface(private val surface: Surface, useHighBitDepth: Boolean = 
      */
     fun makeUnCurrent() {
         if (!EGL14.eglMakeCurrent(
-                eglDisplay, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE,
+                displayContext.display, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE,
                 EGL14.EGL_NO_CONTEXT
             )
         ) {
@@ -154,7 +94,7 @@ class EglWindowSurface(private val surface: Surface, useHighBitDepth: Boolean = 
      * Calls eglSwapBuffers. Use this to "publish" the current frame.
      */
     fun swapBuffers(): Boolean {
-        return EGL14.eglSwapBuffers(eglDisplay, eglSurface)
+        return EGL14.eglSwapBuffers(displayContext.display, eglSurface)
     }
 
     /**
@@ -162,7 +102,7 @@ class EglWindowSurface(private val surface: Surface, useHighBitDepth: Boolean = 
      */
     fun getWidth(): Int {
         val value = IntArray(1)
-        EGL14.eglQuerySurface(eglDisplay, eglSurface, EGL14.EGL_WIDTH, value, 0)
+        EGL14.eglQuerySurface(displayContext.display, eglSurface, EGL14.EGL_WIDTH, value, 0)
         return value[0]
     }
 
@@ -171,7 +111,7 @@ class EglWindowSurface(private val surface: Surface, useHighBitDepth: Boolean = 
      */
     fun getHeight(): Int {
         val value = IntArray(1)
-        EGL14.eglQuerySurface(eglDisplay, eglSurface, EGL14.EGL_HEIGHT, value, 0)
+        EGL14.eglQuerySurface(displayContext.display, eglSurface, EGL14.EGL_HEIGHT, value, 0)
         return value[0]
     }
 
@@ -179,6 +119,6 @@ class EglWindowSurface(private val surface: Surface, useHighBitDepth: Boolean = 
      * Sends the presentation time stamp to EGL. Time is expressed in nanoseconds.
      */
     fun setPresentationTime(nSecs: Long) {
-        EGLExt.eglPresentationTimeANDROID(eglDisplay, eglSurface, nSecs)
+        EGLExt.eglPresentationTimeANDROID(displayContext.display, eglSurface, nSecs)
     }
 }

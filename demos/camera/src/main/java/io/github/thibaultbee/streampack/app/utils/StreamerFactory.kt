@@ -25,6 +25,8 @@ import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.ext.rtmp.streamers.AudioOnlyRtmpLiveStreamer
+//import io.github.thibaultbee.streampack.ext.rtmp.streamers.CameraRtmpLiveStreamer
+import io.github.thibaultbee.streampack.ext.rtmp.streamers.CameraDualLiveStreamer
 import io.github.thibaultbee.streampack.ext.rtmp.streamers.CameraRtmpLiveStreamer
 import io.github.thibaultbee.streampack.ext.srt.regulator.srt.DefaultSrtBitrateRegulatorFactory
 import io.github.thibaultbee.streampack.ext.srt.streamers.AudioOnlySrtLiveStreamer

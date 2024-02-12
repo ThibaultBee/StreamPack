@@ -2,7 +2,9 @@
 .gradle
 /local.properties
 .idea
+.vscode
 .DS_Store
+.vscode
 build
 /captures
 .externalNativeBuild
