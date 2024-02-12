@@ -30,7 +30,7 @@ import java.nio.FloatBuffer
  *
  * (Contains mostly code borrowed from graphika)
  */
-class FullFrameRect(var program: Texture2DProgram) {
+class FullFrameRect(private var program: Texture2DProgram) {
     private val mvpMatrix = FloatArray(16)
 
     companion object {
@@ -91,8 +91,10 @@ class FullFrameRect(var program: Texture2DProgram) {
      *
      * The appropriate EGL context must be current.
      */
-    fun changeProgram(program: Texture2DProgram) {
-        this.program.release()
+    fun changeProgram(program: Texture2DProgram, releasePrevious: Boolean = true) {
+        if(releasePrevious) {
+            this.program.release()
+        }
         this.program = program
     }
 

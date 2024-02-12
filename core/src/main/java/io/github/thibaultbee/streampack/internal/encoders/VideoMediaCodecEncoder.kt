@@ -25,6 +25,7 @@ import android.util.Size
 import android.view.Surface
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.data.VideoConfig
+import io.github.thibaultbee.streampack.internal.gl.EglDisplayContext
 import io.github.thibaultbee.streampack.internal.gl.EglWindowSurface
 import io.github.thibaultbee.streampack.internal.gl.FullFrameRect
 import io.github.thibaultbee.streampack.internal.gl.Texture2DProgram
@@ -75,6 +76,7 @@ class VideoMediaCodecEncoder(
         }
 
         codecSurface?.outputSurface = mediaCodec.createInputSurface()
+        hasInputSurface = true
     }
 
     override fun createMediaFormat(config: Config, withProfileLevel: Boolean): MediaFormat {
