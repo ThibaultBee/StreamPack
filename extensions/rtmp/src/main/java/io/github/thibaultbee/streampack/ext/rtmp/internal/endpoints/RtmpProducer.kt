@@ -62,13 +62,6 @@ class RtmpProducer(
                 socket.connect("$url live=1 flashver=FMLE/3.0\\20(compatible;\\20FMSc/1.0)")
                 _isConnected = true
                 onConnectionListener?.onSuccess()
-
-               MainScope().launch {
-                    while (_isConnected) {
-                        delay(1000)
-                        _bytesSent = 0
-                    }
-                }
             } catch (e: Exception) {
                 socket = Rtmp()
                 _isConnected = false
