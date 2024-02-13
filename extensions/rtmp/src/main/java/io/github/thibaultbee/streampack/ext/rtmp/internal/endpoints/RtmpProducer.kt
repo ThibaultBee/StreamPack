@@ -22,6 +22,9 @@ import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import video.api.rtmpdroid.Rtmp
 
@@ -51,6 +54,7 @@ class RtmpProducer(
 
     override suspend fun connect(url: String) {
         RtmpConnectionDescriptor.fromUrl(url) // URL validation
+        _bytesSent = 0
 
         withContext(coroutineDispatcher) {
             try {
@@ -58,6 +62,13 @@ class RtmpProducer(
                 socket.connect("$url live=1 flashver=FMLE/3.0\\20(compatible;\\20FMSc/1.0)")
                 _isConnected = true
                 onConnectionListener?.onSuccess()
+
+               MainScope().launch {
+                    while (_isConnected) {
+                        delay(1000)
+                        _bytesSent = 0
+                    }
+                }
             } catch (e: Exception) {
                 socket = Rtmp()
                 _isConnected = false
@@ -75,6 +86,10 @@ class RtmpProducer(
         }
     }
 
+    private var _bytesSent: Int = 0
+    val bytesSent: Int
+        get() = _bytesSent
+
     override fun write(packet: Packet) {
         synchronized(this) {
             if (isOnError) {
@@ -87,7 +102,7 @@ class RtmpProducer(
             }
 
             try {
-                socket.write(packet.buffer)
+                _bytesSent += socket.write(packet.buffer)
             } catch (e: Exception) {
                 disconnect()
                 isOnError = true

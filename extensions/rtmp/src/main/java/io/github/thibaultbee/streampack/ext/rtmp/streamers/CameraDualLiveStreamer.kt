@@ -17,6 +17,9 @@ package io.github.thibaultbee.streampack.ext.rtmp.streamers
 
 import android.Manifest
 import android.content.Context
+import android.net.TrafficStats
+import android.os.Handler
+import android.os.Looper
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.data.AudioConfig
@@ -49,11 +52,17 @@ import java.io.File
 import java.nio.ByteBuffer
 import java.util.UUID
 
+interface RtmpStatsListener {
+    fun onInsufficientBandwidth(currentBytesOutPerSecond: Long, currentQueueBytesOut: Long)
+    fun onSufficientBandwidth(currentBytesOutPerSecond: Long, currentQueueBytesOut: Long)
+    fun updateStats(currentBytesOutPerSecond: Long, currentQueueBytesOut: Long)
+}
 
 class CameraDualLiveStreamer(
     private val context: Context,
     initialOnErrorListener: OnErrorListener? = null,
-    initialOnConnectionListener: OnConnectionListener? = null
+    initialOnConnectionListener: OnConnectionListener? = null,
+    private val rtmpStatsListener: RtmpStatsListener
 ) : EventHandler() {
 
     private enum class EncoderIndex(val index: Int) {
@@ -79,6 +88,7 @@ class CameraDualLiveStreamer(
     // Keep video configuration separate for rtmp and file
     private var rtmpVideoConfig: VideoConfig? = null
     private var fileVideoConfig: VideoConfig? = null
+
     // share the same audio config (and the same encoder)
     private var audioConfig: AudioConfig? = null
 
@@ -106,9 +116,9 @@ class CameraDualLiveStreamer(
                 }
             }
             fileAudioStreamId?.let {
-                try{
-                    this@CameraDualLiveStreamer.fileMuxer.encode(fileFrame,it)
-                } catch(e:Exception){
+                try {
+                    this@CameraDualLiveStreamer.fileMuxer.encode(fileFrame, it)
+                } catch (e: Exception) {
                     throw StreamPackError(e)
                 }
             }
@@ -298,6 +308,7 @@ class CameraDualLiveStreamer(
             }
         } catch (e: Exception) {
             Logger.e(TAG, "stopStream-exception:${e.message}")
+            throw e
         }
     }
 
@@ -311,6 +322,7 @@ class CameraDualLiveStreamer(
         }
         rtmpProducer.supportedVideoCodecs = listOf(rtmpVideoConfig!!.mimeType)
         rtmpProducer.connect(url)
+        startMonitoring()
 
         val filename = "${UUID.randomUUID()}.mp4"
         val file = File(context.filesDir, filename)
@@ -398,6 +410,85 @@ class CameraDualLiveStreamer(
 
         rtmpProducer.release()
         fileWriter.release()
+    }
+
+    private val uid = context.applicationContext.applicationInfo.uid
+    private var previousTxBytes = TrafficStats.getUidTxBytes(uid)
+    private var previousGenBytes: Long = 0
+    private val txBytesOverheadSlope = 0.62
+    private val txBytesOverheadIntercept = 0
+
+    private val measureInterval = 3
+    private val previousQueueBytesOut: MutableList<Long> = mutableListOf()
+    private val txBytesMovingAvg: MutableList<Long> = mutableListOf()
+
+    private fun startMonitoring() {
+        txBytesMovingAvg.clear()
+        previousQueueBytesOut.clear()
+        previousTxBytes = TrafficStats.getUidTxBytes(uid)
+        previousGenBytes = rtmpProducer.bytesSent.toLong()
+
+        val handler = Handler(Looper.getMainLooper())
+        val dataUsageChecker = object : Runnable {
+            override fun run() {
+                val currentTxBytes = TrafficStats.getUidTxBytes(uid)
+                val currentGenBytes = rtmpProducer.bytesSent.toLong()
+
+                val deltaTxBytes = currentTxBytes - previousTxBytes
+                val deltaGenBytes = currentGenBytes - previousGenBytes
+                val estimatedRealDeltaTxBytes =
+                    (deltaTxBytes * txBytesOverheadSlope + txBytesOverheadIntercept).toLong()
+
+                val newQueueBytesOut = deltaGenBytes - estimatedRealDeltaTxBytes
+                val currentQueueBytesOut =
+                    maxOf(newQueueBytesOut + (previousQueueBytesOut.lastOrNull() ?: 0),0)
+                previousQueueBytesOut.add(currentQueueBytesOut)
+                txBytesMovingAvg.add(estimatedRealDeltaTxBytes)
+
+                // Prepare for the next check
+                previousTxBytes = currentTxBytes
+                previousGenBytes = currentGenBytes
+
+                val currentBytesOutPerSecond = txBytesMovingAvg.average().toLong()
+
+                Logger.i(TAG,"dtx=$deltaTxBytes,dgen=$deltaGenBytes,etx=$estimatedRealDeltaTxBytes")
+
+                if (measureInterval <= previousQueueBytesOut.size) {
+                    var countQueuedBytesGrowing = 0
+                    for (i in 0 until previousQueueBytesOut.size - 1) {
+                        if (previousQueueBytesOut[i] < previousQueueBytesOut[i + 1]) {
+                            countQueuedBytesGrowing++
+                        }
+                    }
+                    if (countQueuedBytesGrowing == measureInterval - 1) {
+                        // insufficientBandwidth
+                        rtmpStatsListener.onInsufficientBandwidth(
+                            currentBytesOutPerSecond,
+                            currentQueueBytesOut
+                        )
+                    } else if (countQueuedBytesGrowing == 0) {
+                        rtmpStatsListener.onSufficientBandwidth(
+                            currentBytesOutPerSecond,
+                            currentQueueBytesOut
+                        )
+                    }
+                    previousQueueBytesOut.removeFirst()
+                    if (txBytesMovingAvg.isNotEmpty()) {
+                        txBytesMovingAvg.removeFirst()
+                    }
+                }
+                rtmpStatsListener.updateStats(
+                    currentBytesOutPerSecond,
+                    currentQueueBytesOut
+                )
+
+                // Schedule the next check
+                if (isConnected) {
+                    handler.postDelayed(this, 1000) // Adjust the delay as needed}
+                }
+            }
+        }
+        handler.post(dataUsageChecker)
     }
 
     companion object {
