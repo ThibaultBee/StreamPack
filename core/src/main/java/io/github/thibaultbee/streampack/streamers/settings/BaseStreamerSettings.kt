@@ -23,19 +23,17 @@ import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseStrea
 import io.github.thibaultbee.streampack.streamers.interfaces.settings.IVideoSettings
 
 open class BaseStreamerSettings(
-    audioSource: IAudioSource?,
-    audioEncoder: AudioMediaCodecEncoder?,
-    videoEncoder: VideoMediaCodecEncoder?
+    override val audio: BaseStreamerAudioSettings,
+    override val video: BaseStreamerVideoSettings
 ) : IBaseStreamerSettings {
-    /**
-     * Get audio settings
-     */
-    override val audio = BaseStreamerAudioSettings(audioSource, audioEncoder)
-
-    /**
-     * Get video settings
-     */
-    override val video = BaseStreamerVideoSettings(videoEncoder)
+    constructor(
+        audioSource: IAudioSource?,
+        audioEncoder: AudioMediaCodecEncoder?,
+        videoEncoder: VideoMediaCodecEncoder?
+    ) : this(
+        BaseStreamerAudioSettings(audioSource, audioEncoder),
+        BaseStreamerVideoSettings(videoEncoder)
+    )
 }
 
 class BaseStreamerVideoSettings(private val videoEncoder: VideoMediaCodecEncoder?) :
