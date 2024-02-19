@@ -15,14 +15,16 @@
  */
 package io.github.thibaultbee.streampack.internal.endpoints
 
+import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.utils.extensions.toByteArray
+import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.io.OutputStream
 
-
-class FileWriter : IEndpoint {
+class FileWriter(private val onErrorListener: OnErrorListener? = null) : IEndpoint {
     var file: File? = null
         set(value) {
             outputStream = if (value != null) {
@@ -38,19 +40,29 @@ class FileWriter : IEndpoint {
 
     override suspend fun startStream() {
         if (outputStream == null) {
-            throw UnsupportedOperationException("Set a file before trying to write it")
+            onErrorListener?.onError(StreamPackError("Set a file before trying to write it"))
         }
     }
 
     override fun configure(config: Int) {} // Nothing to configure
 
     override fun write(packet: Packet) {
-        outputStream?.write(packet.buffer.toByteArray())
-            ?: throw UnsupportedOperationException("Set a file before trying to write it")
+        if (outputStream == null) {
+            onErrorListener?.onError(StreamPackError("Set a file before trying to write it"))
+        }
+        try {
+            outputStream!!.write(packet.buffer.toByteArray())
+        } catch (e: IOException) {
+            onErrorListener?.onError(StreamPackError(e)) ?: throw e
+        }
     }
 
     override suspend fun stopStream() {
-        outputStream?.close()
+        try {
+            outputStream!!.close()
+        } catch (e: IOException) {
+            onErrorListener?.onError(StreamPackError(e)) ?: throw e
+        }
     }
 
     override fun release() {
