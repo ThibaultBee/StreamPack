@@ -33,6 +33,7 @@ import io.github.thibaultbee.streampack.internal.encoders.AudioMediaCodecEncoder
 import io.github.thibaultbee.streampack.internal.encoders.IEncoderListener
 import io.github.thibaultbee.streampack.internal.encoders.MultiVideoMediaCodecEncoder
 import io.github.thibaultbee.streampack.internal.endpoints.FileWriter
+import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.events.EventHandler
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
@@ -58,11 +59,18 @@ interface RtmpStatsListener {
     fun updateStats(currentBytesOutPerSecond: Long, currentQueueBytesOut: Long)
 }
 
+interface RecordingListener {
+    fun onRecordingStarted()
+    fun onRecordingError(errorMessage: String)
+    fun onRecordingFinished(url: String)
+}
+
 class CameraDualLiveStreamer(
     private val context: Context,
     initialOnErrorListener: OnErrorListener? = null,
     initialOnConnectionListener: OnConnectionListener? = null,
-    private val rtmpStatsListener: RtmpStatsListener
+    private val rtmpStatsListener: RtmpStatsListener,
+    private val recordingListener: RecordingListener,
 ) : EventHandler() {
 
     private enum class EncoderIndex(val index: Int) {
@@ -70,60 +78,41 @@ class CameraDualLiveStreamer(
         FILE(1)
     }
 
+    private val fileErrorListener = object : OnErrorListener {
+        override fun onError(error: StreamPackError) {
+            recordingListener.onRecordingError(error.message ?: "$error")
+        }
+    }
+
     private val rtmpProducer =
         RtmpProducer().apply { onConnectionListener = initialOnConnectionListener }
-    private val fileWriter = FileWriter()
+    private val fileWriter = FileWriter(fileErrorListener)
     private var onErrorListener: OnErrorListener? = initialOnErrorListener
 
     private val audioSource = AudioSource()
     private val cameraSource = CameraSource(context)
-    private val rtmpMuxer: IMuxer = FlvMuxer(writeToFile = false)
-    private val fileMuxer: IMuxer = MP4Muxer()
 
-    private var rtmpAudioStreamId: Int? = null
-    private var rtmpVideoStreamId: Int? = null
-    private var fileAudioStreamId: Int? = null
-    private var fileVideoStreamId: Int? = null
-
-    // Keep video configuration separate for rtmp and file
-    private var rtmpVideoConfig: VideoConfig? = null
-    private var fileVideoConfig: VideoConfig? = null
-
-    // share the same audio config (and the same encoder)
-    private var audioConfig: AudioConfig? = null
-
-    private val sourceOrientationProvider: ISourceOrientationProvider
-        get() = cameraSource.orientationProvider
-
-    override val onInternalErrorListener = object : OnErrorListener {
-        override fun onError(error: StreamPackError) {
-            onStreamError(error)
-        }
-    }
-
-    private val audioEncoderListener = object : IEncoderListener {
-        override fun onInputFrame(buffer: ByteBuffer): Frame {
-            return audioSource.getFrame(buffer)
-        }
-
-        override fun onOutputFrame(frame: Frame) {
-            val fileFrame = frame.clone()
-            rtmpAudioStreamId?.let {
-                try {
-                    this@CameraDualLiveStreamer.rtmpMuxer.encode(frame, it)
-                } catch (e: Exception) {
-                    throw StreamPackError(e)
-                }
-            }
-            fileAudioStreamId?.let {
-                try {
-                    this@CameraDualLiveStreamer.fileMuxer.encode(fileFrame, it)
-                } catch (e: Exception) {
-                    throw StreamPackError(e)
-                }
+    private val rtmpMuxListener = object : IMuxerListener {
+        override fun onOutputFrame(packet: Packet) {
+            try {
+                rtmpProducer.write(packet)
+            } catch (e: Exception) {
+                // Send exception to encoder
+                throw StreamPackError(e)
             }
         }
     }
+    private val fileMuxListener = object : IMuxerListener {
+        override fun onOutputFrame(packet: Packet) {
+            try {
+                fileWriter.write(packet)
+            } catch (e: Exception) {
+                // Send exception to encoder
+                throw StreamPackError(e)
+            }
+        }
+    }
+
 
     private class VideoEncoderListener(
         private val muxer: IMuxer,
@@ -157,25 +146,104 @@ class CameraDualLiveStreamer(
         }
     }
 
-    private val rtmpVideoEncoderListener = VideoEncoderListener(rtmpMuxer, cameraSource)
-    private val fileVideoEncoderListener = VideoEncoderListener(fileMuxer, cameraSource)
+    private class MuxerStreams(
+        cameraSource: CameraSource,
+        val muxer: IMuxer,
+        sourceOrientationProvider: ISourceOrientationProvider,
+        muxListener: IMuxerListener,
+        var audioStreamId: Int? = null,
+        var videoStreamId: Int? = null,
+        val videoEncoderListener: VideoEncoderListener = VideoEncoderListener(muxer, cameraSource)
+    ) {
+        init {
+            muxer.sourceOrientationProvider = sourceOrientationProvider
+            muxer.listener = muxListener
+        }
 
-    private val rtmpMuxListener = object : IMuxerListener {
-        override fun onOutputFrame(packet: Packet) {
-            try {
-                rtmpProducer.write(packet)
-            } catch (e: Exception) {
-                // Send exception to encoder
-                throw StreamPackError(e)
-            }
+        var started: Boolean = false
+            private set
+
+        fun setupStreams(audioConfig: Config, videoConfig: Config) {
+            val streams = mutableListOf<Config>()
+            require(videoConfig != null) { "Requires video config" }
+            streams.add(videoConfig!!)
+            require(audioConfig != null) { "Requires audio config" }
+            streams.add(audioConfig!!)
+
+            val streamsIdMap = muxer.addStreams(streams)
+            videoStreamId = streamsIdMap[videoConfig]
+            audioStreamId = streamsIdMap[audioConfig]
+        }
+
+        fun start() {
+            videoEncoderListener.start(videoStreamId)
+            muxer.startStream()
+            started = true
+        }
+
+        fun stop() {
+            muxer.stopStream()
+            started = false
+        }
+
+        fun release() {
+            muxer.release()
         }
     }
-    private val fileMuxListener = object : IMuxerListener {
-        override fun onOutputFrame(packet: Packet) {
+
+    private val rtmpMuxerStreams = MuxerStreams(
+        cameraSource,
+        FlvMuxer(writeToFile = false),
+        sourceOrientationProvider,
+        rtmpMuxListener
+    )
+    private val fileMuxerStreams = MuxerStreams(
+        cameraSource,
+        MP4Muxer(),
+        sourceOrientationProvider,
+        fileMuxListener
+    )
+
+    // Keep video configuration separate for rtmp and file
+    private var rtmpVideoConfig: VideoConfig? = null
+    private var fileVideoConfig: VideoConfig? = null
+
+    // share the same audio config (and the same encoder)
+    private var audioConfig: AudioConfig? = null
+
+    private val sourceOrientationProvider: ISourceOrientationProvider
+        get() = cameraSource.orientationProvider
+
+    override val onInternalErrorListener = object : OnErrorListener {
+        override fun onError(error: StreamPackError) {
+            onStreamError(error)
+        }
+    }
+
+    private val audioEncoderListener = object : IEncoderListener {
+        override fun onInputFrame(buffer: ByteBuffer): Frame {
+            return audioSource.getFrame(buffer)
+        }
+
+        override fun onOutputFrame(frame: Frame) {
             try {
-                fileWriter.write(packet)
+                val frames = mutableListOf(frame)
+                if (rtmpMuxerStreams.started && fileMuxerStreams.started) {
+                    frames.add(frame.clone())
+                }
+                if (rtmpMuxerStreams.started) {
+                    val f = frames.removeAt(0)
+                    rtmpMuxerStreams.audioStreamId?.let {
+                        this@CameraDualLiveStreamer.rtmpMuxerStreams.muxer.encode(f, it)
+                    }
+                }
+                if (fileMuxerStreams.started) {
+                    val f = frames.removeAt(0)
+                    fileMuxerStreams.audioStreamId?.let {
+                        this@CameraDualLiveStreamer.fileMuxerStreams.muxer.encode(f, it)
+                    }
+                }
             } catch (e: Exception) {
-                // Send exception to encoder
                 throw StreamPackError(e)
             }
         }
@@ -183,17 +251,11 @@ class CameraDualLiveStreamer(
 
     private var audioEncoder =
         AudioMediaCodecEncoder(audioEncoderListener, onInternalErrorListener)
-    private var videoEncoder = MultiVideoMediaCodecEncoder(
-        listOf(rtmpVideoEncoderListener, fileVideoEncoderListener),
+    private var multiEncoder = MultiVideoMediaCodecEncoder(
+        listOf(rtmpMuxerStreams.videoEncoderListener, fileMuxerStreams.videoEncoderListener),
         onInternalErrorListener,
         sourceOrientationProvider
     )
-
-    var onConnectionListener: OnConnectionListener? = initialOnConnectionListener
-        set(value) {
-            rtmpProducer.onConnectionListener = value
-            field = value
-        }
 
     var camera: String
         get() = cameraSource.cameraId
@@ -205,20 +267,14 @@ class CameraDualLiveStreamer(
     var settings =
         BaseCameraStreamerSettings(
             cameraSource, BaseStreamerAudioSettings(audioSource, audioEncoder),
-            videoEncoder.getTarget(EncoderIndex.RTMP.index)
+            multiEncoder.getTarget(EncoderIndex.RTMP.index)
         )
-
-    init {
-        rtmpMuxer.sourceOrientationProvider = sourceOrientationProvider
-        rtmpMuxer.listener = rtmpMuxListener
-        fileMuxer.sourceOrientationProvider = sourceOrientationProvider
-        fileMuxer.listener = fileMuxListener
-    }
 
     private fun onStreamError(error: StreamPackError) {
         try {
             runBlocking {
-                stopStream()
+                stopRtmp()
+                stopRecording()
             }
         } catch (e: Exception) {
             Logger.e(TAG, "onStreamError: Can't stop stream")
@@ -227,90 +283,160 @@ class CameraDualLiveStreamer(
         }
     }
 
-    suspend fun startStream() {
+    private fun startSources() {
+        // does this need to go before we start all the streams?
+        audioConfig?.let {
+            audioEncoder.configure(it)
+        }
+        audioSource.startStream()
+        audioEncoder.startStream()
+
+        cameraSource.encoderSurface = multiEncoder.inputSurface
+        cameraSource.startStream()
+    }
+
+    private fun stopSources() {
+        cameraSource.stopStream()
+        audioSource.stopStream()
+        audioEncoder.stopStream()
+        audioEncoder.release()
+    }
+
+    private suspend fun start(
+        muxerStreams: MuxerStreams,
+        videoConfig: VideoConfig?,
+        encoderIndex: Int,
+        endpoint: IEndpoint
+    ) {
+        if (muxerStreams.started) {
+            return
+        }
+        val shouldStartSources = !fileMuxerStreams.started && !rtmpMuxerStreams.started
         try {
-            rtmpProducer.startStream()
+            require(!multiEncoder.getTarget(encoderIndex).isActive) { "muxer streams and encoder target should be in sync" }
+            require(videoConfig != null) { "rtmp video config required" }
+            endpoint.startStream()
+            multiEncoder.configure(encoderIndex, videoConfig!!)
+            muxerStreams.setupStreams(audioConfig!!, videoConfig!!)
+            muxerStreams.start()
 
-            val rtmpStreams = mutableListOf<Config>()
-            require(rtmpVideoConfig != null) { "Requires video config" }
-            rtmpStreams.add(rtmpVideoConfig!!)
-            require(audioConfig != null) { "Requires audio config" }
-            rtmpStreams.add(audioConfig!!)
-
-            val fileStreams = mutableListOf<Config>()
-            require(fileVideoConfig != null) { "Requires video config" }
-            fileStreams.add(fileVideoConfig!!)
-            require(audioConfig != null) { "Requires audio config" }
-            fileStreams.add(audioConfig!!)
-
-
-            val rtmpStreamsIdMap = rtmpMuxer.addStreams(rtmpStreams)
-            rtmpVideoConfig?.let { rtmpVideoStreamId = rtmpStreamsIdMap[rtmpVideoConfig as Config] }
-            audioConfig?.let { rtmpAudioStreamId = rtmpStreamsIdMap[audioConfig as Config] }
-
-            val fileStreamsIdMap = fileMuxer.addStreams(fileStreams)
-            fileVideoConfig?.let { fileVideoStreamId = fileStreamsIdMap[fileVideoConfig as Config] }
-            audioConfig?.let { fileAudioStreamId = fileStreamsIdMap[audioConfig as Config] }
-
-            rtmpVideoEncoderListener.start(rtmpVideoStreamId)
-            fileVideoEncoderListener.start(fileVideoStreamId)
-
-            rtmpMuxer.startStream()
-            fileMuxer.startStream()
-
-            audioSource.startStream()
-            audioEncoder.startStream()
-
-            cameraSource.encoderSurface = videoEncoder.inputSurface
-            cameraSource.startStream()
-            videoEncoder.startStream(EncoderIndex.RTMP.index)
-            videoEncoder.startStream(EncoderIndex.FILE.index)
+            if (shouldStartSources) {
+                startSources()
+            }
+            multiEncoder.startStream(encoderIndex)
         } catch (e: Exception) {
-            stopStream()
+            Logger.e(TAG, "startStream($encoderIndex)-exception:${e.message}")
             throw StreamPackError(e)
         }
     }
 
-    suspend fun stopStream() {
+    suspend fun startRtmp() {
+        start(rtmpMuxerStreams, rtmpVideoConfig, EncoderIndex.RTMP.index, rtmpProducer)
+    }
+
+    suspend fun startRecording() {
+        if (fileMuxerStreams.started) {
+            return
+        }
+        val filename = "${UUID.randomUUID()}.mp4"
+        val file = File(context.filesDir, filename)
+        if (!file.exists()) {
+            file.createNewFile()
+        }
+        fileWriter.file = file
+
+        start(fileMuxerStreams, fileVideoConfig, EncoderIndex.FILE.index, fileWriter)
+        recordingListener.onRecordingStarted()
+    }
+
+    private suspend fun stop(
+        muxerStreams: MuxerStreams,
+        encoderIndex: Int,
+        endpoint: IEndpoint
+    ):Boolean {
+        if (!muxerStreams.started) {
+            return false
+        }
         try {
-            cameraSource.stopStream()
-            videoEncoder.stopStream(EncoderIndex.RTMP.index)
-            videoEncoder.stopStream(EncoderIndex.FILE.index)
-            audioEncoder.stopStream()
-            audioSource.stopStream()
-
-            rtmpMuxer.stopStream()
-            fileMuxer.stopStream()
-
-            rtmpProducer.stopStream()
-            fileWriter.stopStream()
-
-            // RECORDIMPL : do we really need to totally recreate all these
-            // things? I wonder since we have fixed the stopStream bug on
-            // mediacodec. We should try
-            //
-
-            // Encoder does not return to CONFIGURED state... so we have to reset everything...
-            audioEncoder.release()
-
-            // Reconfigure
-            audioConfig?.let {
-                audioEncoder.configure(it)
+            multiEncoder.stopStream(encoderIndex)
+            muxerStreams.stop()
+            endpoint.stopStream()
+            multiEncoder.releaseTarget(encoderIndex)
+            val shouldStopSources = !fileMuxerStreams.started && !rtmpMuxerStreams.started
+            if (shouldStopSources) {
+                stopSources()
             }
-            videoEncoder.releaseTargets()
-
-            // And restart...
-            rtmpVideoConfig?.let {
-                videoEncoder.configure(EncoderIndex.RTMP.index, it)
-            }
-            fileVideoConfig?.let {
-                videoEncoder.configure(EncoderIndex.FILE.index, it)
-            }
+            return true
         } catch (e: Exception) {
-            Logger.e(TAG, "stopStream-exception:${e.message}")
-            throw e
+            Logger.e(TAG, "stopStream($encoderIndex)-exception:${e.message}")
+            throw StreamPackError(e)
         }
     }
+
+    suspend fun stopRtmp() {
+        stop(rtmpMuxerStreams, EncoderIndex.RTMP.index, rtmpProducer)
+    }
+
+    suspend fun stopRecording() {
+        if(stop(fileMuxerStreams, EncoderIndex.FILE.index, fileWriter)) {
+            recordingListener.onRecordingFinished("file://${fileWriter.file?.absolutePath}")
+        }
+    }
+
+//    suspend fun stopStream(rtmp: Boolean, file: Boolean) {
+//        try {
+//            // only shut down the camera and and mic if we are going to stop
+//            // streaming to both sources
+//            if (stopRecording || !multiEncoder.getTarget(EncoderIndex.FILE.index).isActive) {
+//                cameraSource.stopStream()
+//                audioSource.stopStream()
+//                sourcesShutdown = true
+//            }
+//
+//            multiEncoder.stopStream(EncoderIndex.RTMP.index)
+//
+//            if (stopRecording && multiEncoder.getTarget(EncoderIndex.FILE.index).isActive) {
+//                multiEncoder.stopStream(EncoderIndex.FILE.index)
+//            }
+//            if (sourcesShutdown) {
+//                audioEncoder.stopStream()
+//            }
+//
+//            rtmpMuxer.stopStream()
+//            rtmpProducer.stopStream()
+//
+//            if (stopRecording) {
+//                fileMuxer.stopStream()
+//                fileWriter.stopStream()
+//                recordingListener.onRecordingFinished("file://${fileWriter.file?.absolutePath}")
+//            }
+//
+//            // RECORDIMPL : do we really need to totally recreate all these
+//            // things? I wonder since we have fixed the stopStream bug on
+//            // mediacodec. We should try
+//            //
+//
+//            // Encoder does not return to CONFIGURED state... so we have to reset everything...
+//            audioEncoder.release()
+//
+//            // Reconfigure
+//            audioConfig?.let {
+//                audioEncoder.configure(it)
+//            }
+//            multiEncoder.releaseTargets()
+//
+//            // And restart...
+////            rtmpVideoConfig?.let {
+////                multiEncoder.configure(EncoderIndex.RTMP.index, it)
+////            }
+////            fileVideoConfig?.let {
+////                multiEncoder.configure(EncoderIndex.FILE.index, it)
+////            }
+//        } catch (e: Exception) {
+//            Logger.e(TAG, "stopStream-exception:${e.message}")
+//            throw e
+//        }
+//    }
 
     suspend fun connect(url: String) {
         require(rtmpVideoConfig != null) {
@@ -323,13 +449,6 @@ class CameraDualLiveStreamer(
         rtmpProducer.supportedVideoCodecs = listOf(rtmpVideoConfig!!.mimeType)
         rtmpProducer.connect(url)
         startMonitoring()
-
-        val filename = "${UUID.randomUUID()}.mp4"
-        val file = File(context.filesDir, filename)
-        if (!file.exists()) {
-            file.createNewFile()
-        }
-        fileWriter.file = file
     }
 
     fun disconnect() {
@@ -356,18 +475,35 @@ class CameraDualLiveStreamer(
         }
     }
 
-    fun configureVideo(videoConfig: VideoConfig) {
+    fun configureStreamingVideo(videoConfig: VideoConfig) {
+        // don't allow configuring while active
+        if (this.multiEncoder.getTarget(EncoderIndex.RTMP.index).isActive) {
+            throw StreamPackError("Cannot configure stream while active.")
+        }
         // Keep settings when we need to reconfigure
         this.rtmpVideoConfig = videoConfig
+
+        try {
+            // in general, streaming and recording are analogous. But
+            // cameraSource configures fps and dynamicrange profile
+            cameraSource.configure(videoConfig)
+            multiEncoder.configure(EncoderIndex.RTMP.index, videoConfig)
+            rtmpProducer.configure(videoConfig.startBitrate + (audioConfig?.startBitrate ?: 0))
+        } catch (e: Exception) {
+            release()
+            throw StreamPackError(e)
+        }
+    }
+
+    fun configureRecordingVideo(videoConfig: VideoConfig) {
+        // don't allow configuring while active
+        if (this.multiEncoder.getTarget(EncoderIndex.FILE.index).isActive) {
+            throw StreamPackError("Cannot configure stream while active.")
+        }
         this.fileVideoConfig = videoConfig
 
         try {
-            cameraSource.configure(videoConfig)
-            videoEncoder.releaseTargets()
-            videoEncoder.configure(EncoderIndex.RTMP.index, videoConfig)
-            videoEncoder.configure(EncoderIndex.FILE.index, videoConfig)
-
-            rtmpProducer.configure(videoConfig.startBitrate + (audioConfig?.startBitrate ?: 0))
+            multiEncoder.configure(EncoderIndex.FILE.index, videoConfig)
             fileWriter.configure(0)
         } catch (e: Exception) {
             release()
@@ -381,7 +517,7 @@ class CameraDualLiveStreamer(
         runBlocking {
             try {
                 cameraSource.previewSurface = previewSurface
-                cameraSource.encoderSurface = videoEncoder.inputSurface
+                cameraSource.encoderSurface = multiEncoder.inputSurface
                 cameraSource.startPreview(cameraId)
             } catch (e: Exception) {
                 stopPreview()
@@ -392,7 +528,8 @@ class CameraDualLiveStreamer(
 
     fun stopPreview() {
         runBlocking {
-            stopStream()
+            stopRecording()
+            stopRtmp()
         }
         cameraSource.stopPreview()
     }
@@ -400,13 +537,14 @@ class CameraDualLiveStreamer(
     fun release() {
         stopPreview()
         audioEncoder.release()
-        videoEncoder.releaseTargets()
-        videoEncoder.releaseInput()
+        multiEncoder.releaseTarget(EncoderIndex.RTMP.index)
+        multiEncoder.releaseTarget(EncoderIndex.FILE.index)
+        multiEncoder.releaseInput()
         audioSource.release()
         cameraSource.release()
 
-        rtmpMuxer.release()
-        fileMuxer.release()
+        rtmpMuxerStreams.release()
+        fileMuxerStreams.release()
 
         rtmpProducer.release()
         fileWriter.release()
@@ -416,7 +554,7 @@ class CameraDualLiveStreamer(
     private var previousTxBytes = TrafficStats.getUidTxBytes(uid)
     private var previousGenBytes: Long = 0
     private val txBytesOverheadSlope = 0.62
-    private val txBytesOverheadIntercept = 0
+    private val txBytesOverheadIntercept = 1000
 
     private val measureInterval = 3
     private val previousQueueBytesOut: MutableList<Long> = mutableListOf()
@@ -441,7 +579,7 @@ class CameraDualLiveStreamer(
 
                 val newQueueBytesOut = deltaGenBytes - estimatedRealDeltaTxBytes
                 val currentQueueBytesOut =
-                    maxOf(newQueueBytesOut + (previousQueueBytesOut.lastOrNull() ?: 0),0)
+                    maxOf(newQueueBytesOut + (previousQueueBytesOut.lastOrNull() ?: 0), 0)
                 previousQueueBytesOut.add(currentQueueBytesOut)
                 txBytesMovingAvg.add(estimatedRealDeltaTxBytes)
 
@@ -451,7 +589,10 @@ class CameraDualLiveStreamer(
 
                 val currentBytesOutPerSecond = txBytesMovingAvg.average().toLong()
 
-                Logger.i(TAG,"dtx=$deltaTxBytes,dgen=$deltaGenBytes,etx=$estimatedRealDeltaTxBytes")
+                Logger.i(
+                    TAG,
+                    "dtx=$deltaTxBytes,dgen=$deltaGenBytes,etx=$estimatedRealDeltaTxBytes"
+                )
 
                 if (measureInterval <= previousQueueBytesOut.size) {
                     var countQueuedBytesGrowing = 0
@@ -492,6 +633,6 @@ class CameraDualLiveStreamer(
     }
 
     companion object {
-        private const val TAG = "BaseStreamer"
+        private const val TAG = "CameraDualLiveStreamer"
     }
 }

@@ -23,7 +23,6 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.events.EventHandler
 import io.github.thibaultbee.streampack.internal.gl.EglDisplayContext
 import io.github.thibaultbee.streampack.internal.gl.EglWindowSurface
-import io.github.thibaultbee.streampack.internal.gl.GlUtils
 import io.github.thibaultbee.streampack.internal.gl.Texture2DProgram
 import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationListener
 import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
@@ -155,8 +154,12 @@ class MultiVideoMediaCodecEncoder(
                                     surfaceTexture.updateTexImage()
                                     surfaceTexture.getTransformMatrix(stMatrix)
                                 }
+                                val width = it.getWidth()
+                                val height = it.getHeight()
+                                GLES20.glViewport(0,0,width,height)
+
                                 target.fullFrameRect?.drawFrame(input!!.textureId, stMatrix)
-                               it.setPresentationTime(surfaceTexture.timestamp)
+                                it.setPresentationTime(surfaceTexture.timestamp)
                                 it.swapBuffers()
                                 if (target == last) {
                                     surfaceTexture.releaseTexImage()
@@ -172,13 +175,12 @@ class MultiVideoMediaCodecEncoder(
         }
     }
 
-    fun releaseTargets() {
-        targets.forEach {
+    fun releaseTarget(encoderIndex: Int) {
+        val it = targets[encoderIndex]
             if (it.isActive) {
                 it.stop()
             }
             it.release()
-        }
     }
 
     fun releaseInput() {
