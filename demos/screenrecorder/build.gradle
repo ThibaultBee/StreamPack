@@ -65,5 +65,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     implementation 'com.jakewharton.rxbinding4:rxbinding:4.0.0'
     implementation 'com.jakewharton.rxbinding4:rxbinding-core:4.0.0'
-    implementation 'com.github.tbruyelle:rxpermissions:0.12'
+    implementation 'com.github.tbruyelle:rxpermissions:2.x.v0.9.3'
 }
