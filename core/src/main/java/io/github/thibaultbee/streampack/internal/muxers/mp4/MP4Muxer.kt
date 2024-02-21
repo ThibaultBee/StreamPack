@@ -18,7 +18,6 @@ package io.github.thibaultbee.streampack.internal.muxers.mp4
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.data.Packet
-import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.muxers.mp4.boxes.FileTypeBox
@@ -32,6 +31,7 @@ import io.github.thibaultbee.streampack.internal.muxers.mp4.models.MovieBoxFacto
 import io.github.thibaultbee.streampack.internal.muxers.mp4.models.MovieFragmentBoxFactory
 import io.github.thibaultbee.streampack.internal.muxers.mp4.models.Segment
 import io.github.thibaultbee.streampack.internal.muxers.mp4.models.Track
+import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.utils.TimeUtils
 import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
@@ -120,22 +120,21 @@ class MP4Muxer(
     private fun writeSegment(
         createNewFragment: Boolean = true,
     ) {
-        currentSegment?.let {
-            if (!it.hasData) {
+        currentSegment?.let { segment ->
+            if (!segment.hasData) {
                 return
             }
 
-            it.write(dataOffset)
+            segment.write(dataOffset)
 
-            if (it.isFragment) {
-                tracks.forEach { track ->
-                    track.syncSamples.add(
-                        Track.SyncSample(
-                            time = it.getFirstTimestamp(track.id),
-                            moofOffset = dataOffset
-                        )
+            tracks.forEach { track ->
+                track.syncSamples.add(
+                    Track.SyncSample(
+                        time = segment.getFirstTimestamp(track.id),
+                        isFragment = segment.isFragment,
+                        moofOffset = dataOffset
                     )
-                }
+                )
             }
         }
 
@@ -147,13 +146,15 @@ class MP4Muxer(
     private fun writeMfraIfNeeded() {
         val tfras = tracks.filter {
             it.syncSamples.isNotEmpty()
-        }.map {
+        }.map { track ->
+            // first sync is `moov` offset
+            val firstTimestamp = track.firstTimestamp
             TrackFragmentRandomAccessBox(
-                id = it.id,
-                entries = it.syncSamples.map {
+                id = track.id,
+                entries = track.syncSamples.filter { it.isFragment }.map { syncSample ->
                     TrackFragmentRandomAccessBox.Entry(
-                        time = it.time,
-                        moofOffset = it.moofOffset
+                        time = (syncSample.time - firstTimestamp) * track.timescale / TimeUtils.TIME_SCALE,
+                        moofOffset = syncSample.moofOffset
                     )
                 }
             )

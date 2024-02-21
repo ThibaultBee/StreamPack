@@ -24,6 +24,8 @@ class Track(
     val timescale: Int = TimeUtils.TIME_SCALE,
 ) {
     val syncSamples = mutableListOf<SyncSample>()
+    val firstTimestamp: Long
+        get() = syncSamples.first { !it.isFragment }.time
 
     init {
         require(id != 0) { "id must be greater than 0" }
@@ -31,6 +33,7 @@ class Track(
 
     class SyncSample(
         val time: Long,
+        val isFragment: Boolean,
         val moofOffset: Long
     )
 }

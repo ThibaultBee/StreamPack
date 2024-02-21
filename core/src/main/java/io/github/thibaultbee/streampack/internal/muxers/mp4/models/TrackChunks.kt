@@ -424,7 +424,8 @@ class TrackChunks(
 
     fun createTraf(baseDataOffset: Long, moofSize: Int): TrackFragmentBox {
         val tfhd = createTrackFragmentHeaderBox(baseDataOffset)
-        val tfdt = TrackFragmentBaseMediaDecodeTimeBox(firstTimestamp)
+        val tfdt =
+            TrackFragmentBaseMediaDecodeTimeBox((firstTimestamp - track.firstTimestamp) * TimeUtils.TIME_SCALE / track.timescale)
         val trun = createTrackRunBox(moofSize)
         return TrackFragmentBox(tfhd, tfdt, trun)
     }
