@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.views
+package io.github.thibaultbee.streampack.ui.views
 
 import android.util.Size
 import android.view.View
