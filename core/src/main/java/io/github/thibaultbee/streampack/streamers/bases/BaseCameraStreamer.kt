@@ -30,7 +30,6 @@ import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.streamers.settings.BaseCameraStreamerSettings
-import io.github.thibaultbee.streampack.views.AutoFitSurfaceView
 import io.github.thibaultbee.streampack.views.PreviewView
 import kotlinx.coroutines.runBlocking
 
@@ -89,7 +88,7 @@ open class BaseCameraStreamer(
      *
      * Inside, it launches both camera and microphone capture.
      *
-     * @param previewSurface Where to display camera capture. Could be a [Surface] from a [PreviewView], an [AutoFitSurfaceView], a [SurfaceView] or a [TextureView].
+     * @param previewSurface Where to display camera capture. Could be a [Surface] from a [SurfaceView] or a [TextureView].
      * @param cameraId camera id (get camera id list from [Context.cameraList])
      *
      * @throws [StreamPackError] if audio or video capture couldn't be launch

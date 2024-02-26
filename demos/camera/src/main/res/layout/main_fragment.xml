@@ -21,6 +21,8 @@
             android:layout_height="match_parent"
             app:cameraFacingDirection="back"
             app:enableZoomOnPinch="true"
+            app:scaleMode="fill"
+            app:position="center"
             app:layout_constraintBottom_toTopOf="@+id/liveButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
