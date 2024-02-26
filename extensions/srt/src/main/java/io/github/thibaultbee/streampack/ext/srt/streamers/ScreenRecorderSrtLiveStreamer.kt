@@ -77,7 +77,7 @@ class ScreenRecorderSrtLiveStreamer(
         bitrateRegulatorFactory?.newBitrateRegulator(
             config,
             { settings.video.bitrate = it },
-            { settings.audio.bitrate = it }
+            { /* Do nothing for audio */ }
         ) as SrtBitrateRegulator
     }
 

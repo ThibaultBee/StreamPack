@@ -27,10 +27,15 @@ import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile3
 import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile3HDR
 import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile3HDR10Plus
 import android.media.MediaFormat
+import android.os.Build
 
 data class DynamicRangeProfile(val dynamicRange: Long, val transferFunction: Int) {
     val isHdr: Boolean
-        get() = dynamicRange != DynamicRangeProfiles.STANDARD
+        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            dynamicRange != DynamicRangeProfiles.STANDARD
+        } else {
+           false
+        }
 
     companion object {
         val sdr =
