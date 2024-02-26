@@ -31,7 +31,7 @@ import io.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import io.github.thibaultbee.streampack.app.utils.DialogUtils
 import io.github.thibaultbee.streampack.app.utils.PermissionManager
 import io.github.thibaultbee.streampack.app.utils.StreamerManager
-import io.github.thibaultbee.streampack.views.PreviewView
+import io.github.thibaultbee.streampack.ui.views.PreviewView
 
 class PreviewFragment : Fragment() {
     private lateinit var binding: MainFragmentBinding

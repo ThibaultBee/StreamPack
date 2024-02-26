@@ -15,7 +15,7 @@
         android:layout_height="match_parent"
         android:keepScreenOn="true">
 
-        <io.github.thibaultbee.streampack.views.PreviewView
+        <io.github.thibaultbee.streampack.ui.views.PreviewView
             android:id="@+id/preview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
