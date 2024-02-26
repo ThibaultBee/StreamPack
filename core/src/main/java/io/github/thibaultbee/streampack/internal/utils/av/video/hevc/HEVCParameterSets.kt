@@ -24,9 +24,9 @@ import java.nio.ByteBuffer
 data class SequenceParameterSets(
     val videoParameterSetId: Byte, // 4 bits
     val maxSubLayersMinus1: Byte, // 3 bits
-    val temporalIdNestingFlag: Boolean, // 1 bit
+    val temporalIdNesting: Boolean, // 1 bit
     val profileTierLevel: ProfileTierLevel,
-    val parameterSetId: Int,
+    val seqParameterSetId: Int,
     val chromaFormat: ChromaFormat,
     val picWidthInLumaSamples: Int,
     val picHeightInLumaSamples: Int,
@@ -41,10 +41,10 @@ data class SequenceParameterSets(
 
             val videoParameterSetId = reader.get(4)
             val maxNumSubLayersMinus1 = reader.get(3)
-            val temporalIdNestingFlag = reader.getBoolean()
+            val temporalIdNesting = reader.getBoolean()
 
             val profileTierLevel = ProfileTierLevel.parse(reader, maxNumSubLayersMinus1)
-            val parameterSetId = reader.readUE()
+            val seqParameterSetId = reader.readUE()
             val chromaFormat = ChromaFormat.fromChromaIdc(reader.readUE().toByte())
             if (chromaFormat == ChromaFormat.YUV444) {
                 reader.getBoolean()
@@ -81,9 +81,9 @@ data class SequenceParameterSets(
             return SequenceParameterSets(
                 videoParameterSetId,
                 maxNumSubLayersMinus1,
-                temporalIdNestingFlag,
+                temporalIdNesting,
                 profileTierLevel,
-                parameterSetId,
+                seqParameterSetId,
                 chromaFormat,
                 picWidthInLumaSamples,
                 picHeightInLumaSamples,
@@ -112,7 +112,7 @@ data class ProfileTierLevel(
         ): ProfileTierLevel {
             val generalProfileSpace = reader.get(2)
             val generalTierFlag = reader.getBoolean()
-            val generalProfileIdc = HEVCProfile.fromProfileIdc(reader.getShort(5))
+            val generalProfileIdc = HEVCProfile.entryOf(reader.getShort(5))
 
             val generalProfileCompatibilityFlags = reader.getInt(32)
             val generalConstraintIndicatorFlags = reader.getLong(48)

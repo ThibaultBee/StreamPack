@@ -29,7 +29,7 @@ enum class HEVCProfile(val value: Short) {
     HIGH_THROUGHPUT_SCREEN_EXTENDED(11);
 
     companion object {
-        fun fromProfileIdc(profileIdc: Short) =
+        fun entryOf(profileIdc: Short) =
             entries.first { it.value == profileIdc }
     }
 }

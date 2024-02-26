@@ -147,6 +147,8 @@ data class HEVCDecoderConfigurationRecord(
                 chromaFormat = parsedSps.chromaFormat,
                 bitDepthLumaMinus8 = parsedSps.bitDepthLumaMinus8,
                 bitDepthChromaMinus8 = parsedSps.bitDepthChromaMinus8,
+                numTemporalLayers = (parsedSps.maxSubLayersMinus1 + 1).toByte(),
+                temporalIdNested = parsedSps.temporalIdNesting,
                 // TODO get minSpatialSegmentationIdc from VUI
                 parameterSets = nalUnitParameterSets
             )
