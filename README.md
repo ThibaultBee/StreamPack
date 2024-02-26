@@ -12,6 +12,8 @@ Get StreamPack core latest artifacts on mavenCentral:
 ```groovy
 dependencies {
     implementation 'io.github.thibaultbee:streampack:2.6.0'
+    // For UI (incl. PreviewView)
+    implementation 'io.github.thibaultbee:streampack-ui:2.6.0'
     // For RTMP
     implementation 'io.github.thibaultbee:streampack-extension-rtmp:2.6.0'
     // For SRT
