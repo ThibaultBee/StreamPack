@@ -39,7 +39,7 @@ import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile2HDR10Plus
 import android.media.MediaFormat
 import android.os.Build
 import android.util.Range
-import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
+import io.github.thibaultbee.streampack.internal.encoders.mediacodec.MediaCodecHelper
 import io.github.thibaultbee.streampack.internal.endpoints.CompositeEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.FlvMuxerHelper

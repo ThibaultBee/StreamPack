@@ -15,8 +15,6 @@
  */
 package io.github.thibaultbee.streampack.listeners
 
-import io.github.thibaultbee.streampack.error.StreamPackError
-
 /**
  * Interface of Streamer listener
  */
@@ -24,7 +22,7 @@ interface OnErrorListener {
     /**
      * Called when an error occurs in a Streamer.
      *
-     * @param error a [StreamPackError] describing what happened
+     * @param e a [Exception] describing what happened
      */
-    fun onError(error: StreamPackError)
+    fun onError(e: Exception)
 }
