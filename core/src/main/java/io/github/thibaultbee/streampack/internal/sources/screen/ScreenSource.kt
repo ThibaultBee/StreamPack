@@ -152,9 +152,9 @@ class ScreenSource(
 
         override fun getOrientedSize(size: Size): Size {
             return if (context.isDevicePortrait) {
-                size.portraitize()
+                size.portraitize
             } else {
-                size.landscapize()
+                size.landscapize
             }
         }
     }

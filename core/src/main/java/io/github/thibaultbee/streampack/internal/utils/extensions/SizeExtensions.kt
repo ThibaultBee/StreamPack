@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.internal.utils.extensions
 
 import android.util.Size
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -24,14 +25,16 @@ import kotlin.math.min
  *
  * @return the size in landscape orientation.
  */
-fun Size.landscapize() = Size(max(width, height), min(width, height))
+val Size.landscapize: Size
+    get() = Size(max(width, height), min(width, height))
 
 /**
  * Get the size in portrait orientation: the smallest dimension as width and the largest as height.
  *
  * @return the size in portrait orientation.
  */
-fun Size.portraitize() = Size(min(width, height), max(width, height))
+val Size.portraitize: Size
+    get() = Size(min(width, height), max(width, height))
 
 /**
  * Check if the size is in portrait orientation.

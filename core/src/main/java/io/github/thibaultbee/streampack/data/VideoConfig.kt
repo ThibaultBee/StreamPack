@@ -152,9 +152,9 @@ class VideoConfig(
      */
     fun getDeviceOrientedResolution(context: Context): Size {
         return if (context.isDevicePortrait) {
-            resolution.portraitize()
+            resolution.portraitize
         } else {
-            resolution.landscapize()
+            resolution.landscapize
         }
     }
 
