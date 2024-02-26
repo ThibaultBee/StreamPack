@@ -47,3 +47,9 @@ val Size.isPortrait: Boolean
  */
 val Size.isLandscape: Boolean
     get() = !isPortrait
+
+/**
+ * Find the closest size to the given size in a list of sizes.
+ */
+fun List<Size>.closestTo(size: Size): Size =
+    this.minBy { abs((it.width * it.height) - (size.width * size.height)) }
