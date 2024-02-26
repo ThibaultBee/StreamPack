@@ -1,0 +1,20 @@
+apply from: "${project.rootDir}/common_library.gradle"
+apply from: "${project.rootDir}/publish.gradle"
+
+android {
+    namespace 'io.github.thibaultbee.streampack.ui'
+}
+ext {
+    artifactName = 'streampack-ui'
+    artifactDescription = 'UI components for StreamPack.'
+}
+
+dependencies {
+    implementation project(':core')
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+
+    implementation 'androidx.lifecycle:lifecycle-runtime:2.7.0'
+    implementation 'androidx.camera:camera-viewfinder:1.4.0-alpha06'
+}

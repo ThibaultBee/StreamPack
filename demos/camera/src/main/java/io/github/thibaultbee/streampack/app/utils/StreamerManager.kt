@@ -36,7 +36,7 @@ import io.github.thibaultbee.streampack.utils.getFileStreamer
 import io.github.thibaultbee.streampack.utils.getLiveStreamer
 import io.github.thibaultbee.streampack.utils.getStreamer
 import io.github.thibaultbee.streampack.utils.isBackCamera
-import io.github.thibaultbee.streampack.views.PreviewView
+import io.github.thibaultbee.streampack.ui.views.PreviewView
 import kotlinx.coroutines.runBlocking
 import java.io.File
 

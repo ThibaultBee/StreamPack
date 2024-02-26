@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.views
+package io.github.thibaultbee.streampack.ui.views
 
 import android.hardware.camera2.CameraCharacteristics
 import android.util.Size
@@ -25,7 +25,7 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.closestTo
  * https://d.android.com/reference/android/hardware/camera2/CameraDevice and
  * https://developer.android.com/reference/android/hardware/camera2/params/StreamConfigurationMap
  */
-fun <T> getPreviewOutputSize(
+internal fun <T> getPreviewOutputSize(
     characteristics: CameraCharacteristics,
     targetSize: Size,
     targetClass: Class<T>,
