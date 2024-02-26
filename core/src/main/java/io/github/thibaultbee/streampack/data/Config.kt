@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.data
 
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
+import io.github.thibaultbee.streampack.internal.encoders.mediacodec.MediaCodecHelper
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 
 /**
