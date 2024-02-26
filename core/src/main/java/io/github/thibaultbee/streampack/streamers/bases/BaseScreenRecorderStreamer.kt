@@ -88,7 +88,7 @@ open class BaseScreenRecorderStreamer(
      * You must have set [activityResult] before.
      */
     override suspend fun startStream() {
-        screenSource.encoderSurface = videoEncoder?.inputSurface
+        screenSource.encoderSurface = codecSurface?.input
         super.startStream()
     }
 }
