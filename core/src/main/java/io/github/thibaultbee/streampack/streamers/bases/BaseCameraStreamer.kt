@@ -29,8 +29,8 @@ import io.github.thibaultbee.streampack.internal.sources.camera.CameraSource
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
-import io.github.thibaultbee.streampack.streamers.settings.BaseCameraStreamerSettings
-import io.github.thibaultbee.streampack.views.PreviewView
+import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
+import io.github.thibaultbee.streampack.utils.CameraSettings
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -80,7 +80,7 @@ open class BaseCameraStreamer(
         }
 
     override var settings =
-        BaseCameraStreamerSettings(audioSource, cameraSource, audioEncoder, videoEncoder)
+        BaseCameraStreamerSettings()
 
     /**
      * Starts audio and video capture.
@@ -100,7 +100,7 @@ open class BaseCameraStreamer(
         runBlocking {
             try {
                 cameraSource.previewSurface = previewSurface
-                cameraSource.encoderSurface = videoEncoder?.inputSurface
+                cameraSource.encoderSurface = codecSurface?.input
                 cameraSource.startPreview(cameraId)
             } catch (e: Exception) {
                 stopPreview()
@@ -128,5 +128,16 @@ open class BaseCameraStreamer(
     override fun release() {
         stopPreview()
         super.release()
+    }
+
+    /**
+     * The settings for [BaseCameraStreamer].
+     */
+    open inner class BaseCameraStreamerSettings: BaseStreamerSettings(), IBaseCameraStreamerSettings {
+        /**
+         * Gets the camera settings (focus, zoom,...).
+         */
+        override val camera: CameraSettings
+            get() = cameraSource.settings
     }
 }
