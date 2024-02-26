@@ -30,7 +30,6 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.R
-import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.utils.extensions.rootCause
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
@@ -112,9 +111,9 @@ abstract class BaseScreenRecorderService(
             streamer = createStreamer(constructorBundle)
 
             streamer?.onErrorListener = object : OnErrorListener {
-                override fun onError(error: StreamPackError) {
-                    Logger.e(TAG, "An error occurred", error)
-                    onErrorNotification(error)?.let { notify(it) }
+                override fun onError(e: Exception) {
+                    Logger.e(TAG, "An error occurred", e)
+                    onErrorNotification(e)?.let { notify(it) }
                     stopSelf()
                 }
             }

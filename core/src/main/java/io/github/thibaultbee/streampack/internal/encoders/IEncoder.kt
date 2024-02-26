@@ -15,20 +15,118 @@
  */
 package io.github.thibaultbee.streampack.internal.encoders
 
-import io.github.thibaultbee.streampack.internal.interfaces.Configurable
+import android.view.Surface
+import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.interfaces.Releaseable
-import io.github.thibaultbee.streampack.internal.interfaces.Streamable
+import io.github.thibaultbee.streampack.internal.interfaces.SuspendStreamable
+import java.nio.ByteBuffer
+import java.util.concurrent.Executor
 
-interface IEncoder<T> : Streamable, Configurable<T>, Releaseable {
-    /**
-     * Input and output of an async encoder
-     */
-    val encoderListener: IEncoderListener
+interface IEncoder : SuspendStreamable, Releaseable {
+    interface IListener {
+        /**
+         * Calls when an encoder has an error.
+         */
+        fun onError(e: Exception) {}
+
+        /**
+         * Calls when an encoder has generated an output frame.
+         * @param frame Output frame with correct parameters and buffers
+         */
+        fun onOutputFrame(frame: Frame) {}
+    }
 
     /**
-     * Get encoder mime type
-     * @return a string corresponding to a media mime type
+     * The encoder mime type
      * @see List of audio/video mime type on <a href="https://developer.android.com/reference/android/media/MediaFormat">Android developer guide</a>
      */
-    val mimeType: String?
+    val mimeType: String
+
+    /**
+     * The bitrate at which the encoder will start (ie the one in the configuration)
+     */
+    val startBitrate: Int
+
+    /**
+     * Gets/sets encoder bitrate.
+     *
+     * The setter is only applicable for video encoders. On audio encoders, it will throw an exception.
+     */
+    var bitrate: Int
+
+    /**
+     * The encoder info like the supported resolutions, bitrates, etc.
+     */
+    val info: IEncoderInfo
+
+    interface IEncoderInfo {
+        /**
+         * The encoder name
+         */
+        val name: String
+    }
+
+    /**
+     * The encoder input.
+     * @see IEncoderInput
+     */
+    val input: IEncoderInput
+
+    interface IEncoderInput
+
+    /**
+     * The [Surface] input
+     */
+    interface ISurfaceInput : IEncoderInput {
+        /**
+         * The surface update listener
+         */
+        var listener: OnSurfaceUpdateListener
+
+        interface OnSurfaceUpdateListener {
+            fun onSurfaceUpdated(surface: Surface) {}
+        }
+    }
+
+    /**
+     * The [ByteBuffer] input
+     */
+    interface IByteBufferInput : IEncoderInput {
+        /**
+         * The buffer available listener
+         */
+        var listener: OnFrameRequestedListener
+
+        interface OnFrameRequestedListener {
+            /**
+             * Calls when a buffer is available for encoding.
+             *
+             * @param buffer the buffer where to write the frame
+             */
+            fun onFrameRequested(buffer: ByteBuffer): Frame
+        }
+    }
+
+    /**
+     * Force the encoder to generate a key frame.
+     */
+    fun requestKeyFrame()
+
+    /**
+     * Set the encoder listener
+     *
+     * @param listener the listener
+     * @param listenerExecutor the executor where the listener will be called
+     */
+    fun setListener(listener: IListener, listenerExecutor: Executor)
+
+    /**
+     * Reset the encoder
+     */
+    fun reset()
+
+    /**
+     * Configure the encoder
+     */
+    fun configure()
 }

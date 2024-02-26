@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.encoders
+package io.github.thibaultbee.streampack.internal.encoders.mediacodec
 
 import android.media.MediaCodecInfo
 import android.media.MediaCodecList

@@ -29,7 +29,6 @@ import io.github.thibaultbee.streampack.app.BR
 import io.github.thibaultbee.streampack.app.utils.ObservableViewModel
 import io.github.thibaultbee.streampack.app.utils.StreamerManager
 import io.github.thibaultbee.streampack.app.utils.isEmpty
-import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.StreamerLifeCycleObserver
@@ -47,9 +46,9 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
         get() = streamerManager.requiredPermissions
 
     private val onErrorListener = object : OnErrorListener {
-        override fun onError(error: StreamPackError) {
-            Log.e(TAG, "onError", error)
-            streamerError.postValue("${error.javaClass.simpleName}: ${error.message}")
+        override fun onError(e: Exception) {
+            Log.e(TAG, "onError", e)
+            streamerError.postValue("${e.javaClass.simpleName}: ${e.message}")
         }
     }
 
