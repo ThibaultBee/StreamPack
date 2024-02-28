@@ -383,62 +383,8 @@ class CameraDualLiveStreamer(
         }
     }
 
-//    suspend fun stopStream(rtmp: Boolean, file: Boolean) {
-//        try {
-//            // only shut down the camera and and mic if we are going to stop
-//            // streaming to both sources
-//            if (stopRecording || !multiEncoder.getTarget(EncoderIndex.FILE.index).isActive) {
-//                cameraSource.stopStream()
-//                audioSource.stopStream()
-//                sourcesShutdown = true
-//            }
-//
-//            multiEncoder.stopStream(EncoderIndex.RTMP.index)
-//
-//            if (stopRecording && multiEncoder.getTarget(EncoderIndex.FILE.index).isActive) {
-//                multiEncoder.stopStream(EncoderIndex.FILE.index)
-//            }
-//            if (sourcesShutdown) {
-//                audioEncoder.stopStream()
-//            }
-//
-//            rtmpMuxer.stopStream()
-//            rtmpProducer.stopStream()
-//
-//            if (stopRecording) {
-//                fileMuxer.stopStream()
-//                fileWriter.stopStream()
-//                recordingListener.onRecordingFinished("file://${fileWriter.file?.absolutePath}")
-//            }
-//
-//            // RECORDIMPL : do we really need to totally recreate all these
-//            // things? I wonder since we have fixed the stopStream bug on
-//            // mediacodec. We should try
-//            //
-//
-//            // Encoder does not return to CONFIGURED state... so we have to reset everything...
-//            audioEncoder.release()
-//
-//            // Reconfigure
-//            audioConfig?.let {
-//                audioEncoder.configure(it)
-//            }
-//            multiEncoder.releaseTargets()
-//
-//            // And restart...
-////            rtmpVideoConfig?.let {
-////                multiEncoder.configure(EncoderIndex.RTMP.index, it)
-////            }
-////            fileVideoConfig?.let {
-////                multiEncoder.configure(EncoderIndex.FILE.index, it)
-////            }
-//        } catch (e: Exception) {
-//            Logger.e(TAG, "stopStream-exception:${e.message}")
-//            throw e
-//        }
-//    }
-
     suspend fun connect(url: String) {
+        connectionId++
         require(rtmpVideoConfig != null) {
             "Video config must be set before connecting to send the video codec in the connect message"
         }
@@ -560,7 +506,9 @@ class CameraDualLiveStreamer(
     private val previousQueueBytesOut: MutableList<Long> = mutableListOf()
     private val txBytesMovingAvg: MutableList<Long> = mutableListOf()
 
+    private var connectionId = 0; // monotonically increasing
     private fun startMonitoring() {
+        var monitorConnectionId = connectionId
         txBytesMovingAvg.clear()
         previousQueueBytesOut.clear()
         previousTxBytes = TrafficStats.getUidTxBytes(uid)
@@ -624,7 +572,7 @@ class CameraDualLiveStreamer(
                 )
 
                 // Schedule the next check
-                if (isConnected) {
+                if (isConnected && monitorConnectionId == connectionId) {
                     handler.postDelayed(this, 1000) // Adjust the delay as needed}
                 }
             }
