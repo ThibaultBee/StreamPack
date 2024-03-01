@@ -12,26 +12,15 @@ Get StreamPack core latest artifacts on mavenCentral:
 ```groovy
 dependencies {
     implementation 'io.github.thibaultbee:streampack:2.6.0'
-}
-```
-
-If you want to use RTMP, you need to add the following dependency:
-
-```groovy
-dependencies {
+    // For RTMP
     implementation 'io.github.thibaultbee:streampack-extension-rtmp:2.6.0'
-}
-```
-
-If you want to use SRT, you need to add the following dependency:
-
-```groovy
-dependencies {
+    // For SRT
     implementation 'io.github.thibaultbee:streampack-extension-srt:2.6.0'
 }
 ```
 
-If you use both RTMP and SRT, you might have a conflict with libssl.so and libcrypto.so because they
+If you use both RTMP and SRT, you might have a conflict with `libssl.so` and `libcrypto.so` because
+they
 are both includes in native dependencies. To solve this, you can add in your `build.gradle`:
 
 ```groovy
@@ -117,20 +106,20 @@ If you want to create a new application, you should use the
 template [StreamPack boilerplate](https://github.com/ThibaultBee/StreamPack-boilerplate). In 5
 minutes, you will be able to stream live video to your server.
 
-1. Adds [permissions](#permissions) to your `AndroidManifest.xml` and request them in your
+1. Add [permissions](#permissions) to your `AndroidManifest.xml` and request them in your
    Activity/Fragment.
 
-2. Creates a `SurfaceView` to display camera preview in your layout
+2. Create a `SurfaceView` to display camera preview in your layout
 
 As a camera preview, you can use a `SurfaceView`, a `TextureView` or any
 `View` where that can provide a `Surface`.
 
-To simplify integration, StreamPack provides an `StreamerSurfaceView`.
+To simplify integration, StreamPack provides an `PreviewView`.
 
 ```xml
 
 <layout>
-    <io.github.thibaultbee.streampack.views.StreamerSurfaceView android:id="@+id/preview"
+    <io.github.thibaultbee.streampack.views.PreviewView android:id="@+id/preview"
         android:layout_width="match_parent" android:layout_height="match_parent"
         app:cameraFacingDirection="back" app:enableZoomOnPinch="true" />
 </layout>
@@ -140,13 +129,13 @@ To simplify integration, StreamPack provides an `StreamerSurfaceView`.
 start preview on the first front camera.
 `app:enableZoomOnPinch` is a boolean to enable zoom on pinch gesture.
 
-3. Instantiates the streamer (main live streaming class)
+3. Instantiate the streamer (main live streaming class)
 
 ```kotlin
 val streamer = CameraSrtLiveStreamer(context = requireContext())
 ```
 
-4. Configures
+4. Configure audio and video settings
 
 ```kotlin
 val audioConfig = AudioConfig(
@@ -168,18 +157,22 @@ streamer.configure(audioConfig, videoConfig)
 
 ```kotlin
 /**
- * preview: where to display preview. Its could be a SurfaceView, a TextureView,...
+ * If the preview is in a PreviewView
  */
 preview.streamer = streamer
+/**
+ * If the preview is in a SurfaceView, a TextureView, or any View that can provide a Surface
+ */
+streamer.startPreview(preview)
 ```
 
-6. Starts the live streaming
+6. Start the live streaming
 
 ```kotlin
 streamer.startStream(ip, port)
 ```
 
-7. Stops and releases
+7. Stop and release the streamer
 
 ```kotlin
 streamer.stopStream()
