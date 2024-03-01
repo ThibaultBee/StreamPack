@@ -60,16 +60,26 @@ class AudioSource : IAudioSource {
         ).also {
             if (config.enableEchoCanceler) {
                 if (AcousticEchoCanceler.isAvailable()) {
-                    AcousticEchoCanceler.create(it.audioSessionId).enabled = true
+                    val echoCanceler = AcousticEchoCanceler.create(it.audioSessionId)
+                    if (echoCanceler != null) {
+                        echoCanceler.enabled = true
+                    } else {
+                        Logger.w(TAG, "Failed to create acoustic echo canceler")
+                    }
                 } else {
-                    Logger.e(TAG, "Acoustic echo canceler is not available")
+                    Logger.w(TAG, "Acoustic echo canceler is not available")
                 }
             }
             if (config.enableNoiseSuppressor) {
                 if (NoiseSuppressor.isAvailable()) {
-                    NoiseSuppressor.create(it.audioSessionId).enabled = true
+                    val noiseSuppressor = NoiseSuppressor.create(it.audioSessionId)
+                    if (noiseSuppressor != null) {
+                        noiseSuppressor.enabled = true
+                    } else {
+                        Logger.w(TAG, "Failed to create noise suppressor")
+                    }
                 } else {
-                    Logger.e(TAG, "Noise suppressor is not available")
+                    Logger.w(TAG, "Noise suppressor is not available")
                 }
             }
         }
