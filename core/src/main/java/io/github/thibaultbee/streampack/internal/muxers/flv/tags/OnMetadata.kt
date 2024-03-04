@@ -129,7 +129,7 @@ class AudioMetadata(
                 SoundFormat.fromMimeType(config.mimeType),
                 config.startBitrate,
                 config.sampleRate,
-                config.byteFormat.numOfBits(),
+                AudioConfig.getNumOfBytesPerSample(config.byteFormat) * Byte.SIZE_BITS,
                 AudioConfig.getNumberOfChannels(config.channelConfig) == 2
             )
         }
