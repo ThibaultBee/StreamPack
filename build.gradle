@@ -10,7 +10,7 @@ buildscript {
         appTargetSdk = 34
 
         kotlinVersion = '1.9.22'
-        dokkaVersion = '1.9.10'
+        dokkaVersion = '1.9.20'
 
         androidxCoreVersion = '1.12.0'
     }
