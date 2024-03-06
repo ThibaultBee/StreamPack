@@ -146,7 +146,8 @@ abstract class BaseStreamer(
 
     protected var audioEncoder: MediaCodecEncoder? = null
     protected var videoEncoder: MediaCodecEncoder? = null
-    protected var codecSurface: CodecSurface? = null
+    protected val codecSurface =
+        if (videoSource?.hasSurface == true) CodecSurface(sourceOrientationProvider) else null
 
     override val settings = BaseStreamerSettings()
 
@@ -176,22 +177,68 @@ abstract class BaseStreamer(
         try {
             audioSource.configure(audioConfig)
 
-            this.audioEncoder?.release()
-            val audioEncoder =
-                MediaCodecEncoder(AudioEncoderConfig(audioConfig), listener = audioEncoderListener)
-            audioEncoder.configure()
-            (audioEncoder.input as MediaCodecEncoder.ByteBufferInput).listener =
-                object : IEncoder.IByteBufferInput.OnFrameRequestedListener {
-                    override fun onFrameRequested(buffer: ByteBuffer): Frame {
-                        return audioSource.getFrame(buffer)
+            audioEncoder?.release()
+            audioEncoder =
+                MediaCodecEncoder(
+                    AudioEncoderConfig(audioConfig),
+                    listener = audioEncoderListener
+                ).apply {
+                    if (input is MediaCodecEncoder.ByteBufferInput) {
+                        input.listener =
+                            object : IEncoder.IByteBufferInput.OnFrameRequestedListener {
+                                override fun onFrameRequested(buffer: ByteBuffer): Frame {
+                                    return audioSource.getFrame(buffer)
+                                }
+                            }
+                    } else {
+                        throw UnsupportedOperationException("Audio encoder only support ByteBuffer mode")
                     }
+                    configure()
                 }
-
-            this.audioEncoder = audioEncoder
         } catch (e: Exception) {
             release()
             throw StreamPackError(e)
         }
+    }
+
+    private fun buildVideoEncoder(
+        videoConfig: VideoConfig,
+        videoSource: IVideoSource
+    ): MediaCodecEncoder {
+        val videoEncoder = MediaCodecEncoder(
+            VideoEncoderConfig(
+                videoConfig,
+                videoSource.hasSurface,
+                videoSource.orientationProvider
+            ), listener = videoEncoderListener
+        )
+
+        when (videoEncoder.input) {
+            is MediaCodecEncoder.SurfaceInput -> {
+                codecSurface!!.useHighBitDepth = videoConfig.isHdr
+                videoEncoder.input.listener =
+                    object : IEncoder.ISurfaceInput.OnSurfaceUpdateListener {
+                        override fun onSurfaceUpdated(surface: Surface) {
+                            Logger.d(TAG, "Updating with new encoder surface input")
+                            codecSurface.outputSurface = surface
+                        }
+                    }
+            }
+
+            is MediaCodecEncoder.ByteBufferInput -> {
+                videoEncoder.input.listener =
+                    object : IEncoder.IByteBufferInput.OnFrameRequestedListener {
+                        override fun onFrameRequested(buffer: ByteBuffer): Frame {
+                            return videoSource.getFrame(buffer)
+                        }
+                    }
+            }
+
+            else -> {
+                throw UnsupportedOperationException("Unknown input type")
+            }
+        }
+        return videoEncoder
     }
 
     /**
@@ -217,43 +264,10 @@ abstract class BaseStreamer(
         try {
             videoSource.configure(videoConfig)
 
-            this.videoEncoder?.release()
-            val videoEncoder = MediaCodecEncoder(
-                VideoEncoderConfig(
-                    videoConfig,
-                    videoSource.hasSurface,
-                    videoSource.orientationProvider
-                ), listener = videoEncoderListener
-            )
-
-            when (videoEncoder.input) {
-                is MediaCodecEncoder.SurfaceInput -> {
-                    codecSurface = CodecSurface(videoSource.orientationProvider)
-                    videoEncoder.input.listener =
-                        object : IEncoder.ISurfaceInput.OnSurfaceUpdateListener {
-                            override fun onSurfaceUpdated(surface: Surface) {
-                                Logger.d(TAG, "Updating with new encoder surface input")
-                                codecSurface?.outputSurface = surface
-                            }
-                        }
-                }
-
-                is MediaCodecEncoder.ByteBufferInput -> {
-                    videoEncoder.input.listener =
-                        object : IEncoder.IByteBufferInput.OnFrameRequestedListener {
-                            override fun onFrameRequested(buffer: ByteBuffer): Frame {
-                                return videoSource.getFrame(buffer)
-                            }
-                        }
-                }
-
-                else -> {
-                    throw UnsupportedOperationException("Unknown input type")
-                }
+            videoEncoder?.release()
+            videoEncoder = buildVideoEncoder(videoConfig, videoSource).apply {
+                configure()
             }
-
-            videoEncoder.configure()
-            this.videoEncoder = videoEncoder
         } catch (e: Exception) {
             release()
             throw StreamPackError(e)
@@ -376,7 +390,6 @@ abstract class BaseStreamer(
         audioEncoder?.release()
         audioEncoder = null
         codecSurface?.release()
-        codecSurface = null
         videoEncoder?.release()
         videoEncoder = null
 
