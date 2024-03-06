@@ -19,7 +19,7 @@ interface IAudioSettings {
     /**
      * Set/get audio bitrate in bits/s.
      */
-    var bitrate: Int
+    val bitrate: Int
 
     /**
      * Set/get mute state
