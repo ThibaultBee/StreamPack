@@ -16,8 +16,9 @@
 package io.github.thibaultbee.streampack.streamers.live
 
 import android.content.Context
-import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
-import io.github.thibaultbee.streampack.internal.muxers.IMuxer
+import io.github.thibaultbee.streampack.internal.endpoints.IConnectableEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.sinks.ILiveSink
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.IMuxer
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
@@ -28,22 +29,19 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  *
  * @param context application context
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
- * @param muxer a [IMuxer] implementation
- * @param endpoint a [ILiveEndpoint] implementation
+ * @param endpoint the [IConnectableEndpoint] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
  * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 open class BaseCameraLiveStreamer(
     context: Context,
     enableAudio: Boolean = true,
-    muxer: IMuxer,
-    endpoint: ILiveEndpoint,
+    endpoint: IConnectableEndpoint,
     initialOnErrorListener: OnErrorListener? = null,
     initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseCameraStreamer(
     context = context,
     enableAudio = enableAudio,
-    muxer = muxer,
     endpoint = endpoint,
     initialOnErrorListener = initialOnErrorListener
 ),

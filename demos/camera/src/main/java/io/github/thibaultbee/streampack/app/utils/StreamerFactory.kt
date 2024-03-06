@@ -29,7 +29,7 @@ import io.github.thibaultbee.streampack.ext.rtmp.streamers.CameraRtmpLiveStreame
 import io.github.thibaultbee.streampack.ext.srt.regulator.srt.DefaultSrtBitrateRegulatorFactory
 import io.github.thibaultbee.streampack.ext.srt.streamers.AudioOnlySrtLiveStreamer
 import io.github.thibaultbee.streampack.ext.srt.streamers.CameraSrtLiveStreamer
-import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.regulator.IBitrateRegulatorFactory
 import io.github.thibaultbee.streampack.streamers.file.*
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer

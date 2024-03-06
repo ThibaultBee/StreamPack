@@ -12,12 +12,16 @@ microphone (`AudioSource`).
 A class that represents an audio or video encoders. Only Android MediaCodec API is used (
 `MediaCodecEncoder`).
 
+`Endpoint`:
+The last element of a live streaming pipeline. It is responsible for handling the frames after the
+encoder.
+It could be composed of a `Muxer` and a `Sink`.
+
 `Muxer`:
 A class that packs audio and video frames to a container (FLV, MPEG-TS, MP4,...).
 
-`Endpoint`:
-The last element of a live streaming pipeline. It is responsible for sending the audio and video
-streams somewhere For example, a file (`FileWriter`), or a remote RTMP server (`RtmpProducer`).
+`Sink`:
+A class that sends the container to a remote server (RTMP, SRT,...) or to a file.
 
 `Streamer`:
 A class that represent a audio and/or video live streaming pipeline. It manages sources, encoders,

@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.streamers.file
 
 import android.content.Context
-import io.github.thibaultbee.streampack.internal.muxers.mp4.MP4Muxer
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.mp4.MP4Muxer
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.ILogger
 import io.github.thibaultbee.streampack.logger.StreamPackLogger
