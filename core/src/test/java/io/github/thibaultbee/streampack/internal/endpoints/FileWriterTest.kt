@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.internal.endpoints
 
 import io.github.thibaultbee.streampack.internal.data.Packet
+import io.github.thibaultbee.streampack.internal.endpoints.sinks.FileWriter
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.utils.FakeLogger
 import io.github.thibaultbee.streampack.utils.Utils

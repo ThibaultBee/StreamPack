@@ -16,8 +16,8 @@
 package io.github.thibaultbee.streampack.streamers.file
 
 import android.content.Context
-import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
-import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.TSMuxer
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.internal.utils.extensions.defaultTsServiceInfo
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import java.io.File
