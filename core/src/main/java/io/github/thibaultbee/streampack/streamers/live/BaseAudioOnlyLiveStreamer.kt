@@ -16,8 +16,7 @@
 package io.github.thibaultbee.streampack.streamers.live
 
 import android.content.Context
-import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
-import io.github.thibaultbee.streampack.internal.muxers.IMuxer
+import io.github.thibaultbee.streampack.internal.endpoints.IConnectableEndpoint
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.bases.BaseAudioOnlyStreamer
@@ -28,20 +27,17 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  * A [BaseStreamer] that sends only microphone frames to a remote device.
  *
  * @param context application context
- * @param muxer a [IMuxer] implementation
- * @param endpoint a [ILiveEndpoint] implementation
+ * @param endpoint the [IConnectableEndpoint] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
  * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 open class BaseAudioOnlyLiveStreamer(
     context: Context,
-    muxer: IMuxer,
-    endpoint: ILiveEndpoint,
+    endpoint: IConnectableEndpoint,
     initialOnErrorListener: OnErrorListener? = null,
     initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseAudioOnlyStreamer(
     context = context,
-    muxer = muxer,
     endpoint = endpoint,
     initialOnErrorListener = initialOnErrorListener,
 ), ILiveStreamer {

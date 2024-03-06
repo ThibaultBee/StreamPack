@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.streamers.file
 
 import android.content.Context
-import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxer
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.FlvMuxer
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import java.io.File
 

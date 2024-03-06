@@ -17,7 +17,6 @@ package io.github.thibaultbee.streampack.streamers.bases
 
 import android.content.Context
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.sources.AudioSource
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 
@@ -25,20 +24,17 @@ import io.github.thibaultbee.streampack.listeners.OnErrorListener
  * A [BaseStreamer] that sends only microphone frames.
  *
  * @param context application context
- * @param muxer a [IMuxer] implementation
- * @param endpoint a [IEndpoint] implementation
+ * @param endpoint the [IEndpoint] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
  */
 open class BaseAudioOnlyStreamer(
     context: Context,
-    muxer: IMuxer,
     endpoint: IEndpoint,
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseStreamer(
     context = context,
     videoSource = null,
     audioSource = AudioSource(),
-    muxer = muxer,
     endpoint = endpoint,
     initialOnErrorListener = initialOnErrorListener
 )
