@@ -164,7 +164,7 @@ abstract class BaseStreamer(
 
     protected var audioEncoder: MediaCodecEncoder? = null
     protected var videoEncoder: MediaCodecEncoder? = null
-    protected var codecSurface: CodecSurface? = null
+    protected val codecSurface = if (videoSource?.hasSurface == true) CodecSurface(sourceOrientationProvider) else null
 
     override val settings = BaseStreamerSettings()
 
@@ -203,12 +203,16 @@ abstract class BaseStreamer(
             val audioEncoder =
                 MediaCodecEncoder(AudioEncoderConfig(audioConfig), listener = audioEncoderListener)
             audioEncoder.configure()
-            (audioEncoder.input as MediaCodecEncoder.ByteBufferInput).listener =
-                object : IEncoder.IByteBufferInput.OnFrameRequestedListener {
-                    override fun onFrameRequested(buffer: ByteBuffer): Frame {
-                        return audioSource.getFrame(buffer)
+            if (audioEncoder.input is MediaCodecEncoder.ByteBufferInput) {
+                audioEncoder.input.listener =
+                    object : IEncoder.IByteBufferInput.OnFrameRequestedListener {
+                        override fun onFrameRequested(buffer: ByteBuffer): Frame {
+                            return audioSource.getFrame(buffer)
+                        }
                     }
-                }
+            } else {
+                throw UnsupportedOperationException("Audio encoder only support ByteBuffer mode")
+            }
 
             this.audioEncoder = audioEncoder
 
@@ -253,12 +257,11 @@ abstract class BaseStreamer(
 
             when (videoEncoder.input) {
                 is MediaCodecEncoder.SurfaceInput -> {
-                    codecSurface = CodecSurface(videoSource.orientationProvider)
                     videoEncoder.input.listener =
                         object : IEncoder.ISurfaceInput.OnSurfaceUpdateListener {
                             override fun onSurfaceUpdated(surface: Surface) {
                                 Logger.d(TAG, "Updating with new encoder surface input")
-                                codecSurface?.outputSurface = surface
+                                codecSurface!!.outputSurface = surface
                             }
                         }
                 }
@@ -391,7 +394,6 @@ abstract class BaseStreamer(
         audioEncoder?.release()
         audioEncoder = null
         codecSurface?.release()
-        codecSurface = null
         videoEncoder?.release()
         videoEncoder = null
 
@@ -422,14 +424,16 @@ abstract class BaseStreamer(
                  * @return video bitrate in bps
                  * @throws [UnsupportedOperationException] if audio encoder is not set
                  */
-                get() = videoEncoder?.bitrate ?: throw UnsupportedOperationException("Video encoder is not set")
-
+                get() = videoEncoder?.bitrate
+                    ?: throw UnsupportedOperationException("Video encoder is not set")
                 /**
                  * @param value video bitrate in bps
                  * @throws [UnsupportedOperationException] if audio encoder is not set
                  */
                 set(value) {
-                    videoEncoder?.let { it.bitrate = value } ?: throw UnsupportedOperationException("Video encoder is not set")
+                    videoEncoder?.let { it.bitrate = value } ?: throw UnsupportedOperationException(
+                        "Video encoder is not set"
+                    )
                 }
         }
 
@@ -443,7 +447,8 @@ abstract class BaseStreamer(
                  * @return audio bitrate in bps
                  * @throws [UnsupportedOperationException] if audio encoder is not set
                  */
-                get() = audioEncoder?.bitrate ?: throw UnsupportedOperationException("Audio encoder is not set")
+                get() = audioEncoder?.bitrate
+                    ?: throw UnsupportedOperationException("Audio encoder is not set")
 
             /**
              * Gets/sets audio mute.
