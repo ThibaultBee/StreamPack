@@ -145,6 +145,13 @@ class VideoConfig(
     val dynamicRangeProfile = DynamicRangeProfile.fromProfile(mimeType, profile)
 
     /**
+     * Whether the configuration is HDR or not.
+     *
+     * @return true if the configuration is HDR
+     */
+    val isHdr = dynamicRangeProfile != DynamicRangeProfile.sdr
+
+    /**
      * Get resolution according to device orientation
      *
      * @param context activity context
@@ -186,7 +193,7 @@ class VideoConfig(
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                if (dynamicRangeProfile != DynamicRangeProfile.sdr) {
+                if (isHdr) {
                     format.setInteger(
                         MediaFormat.KEY_COLOR_STANDARD,
                         MediaFormat.COLOR_STANDARD_BT2020
