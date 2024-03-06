@@ -15,9 +15,10 @@
  */
 package io.github.thibaultbee.streampack.streamer
 
-import io.github.thibaultbee.streampack.internal.endpoints.FakeEndpoint
-import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxer
-import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
+import io.github.thibaultbee.streampack.internal.endpoints.CompositeEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.FlvMuxer
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.TSMuxer
+import io.github.thibaultbee.streampack.internal.endpoints.sinks.FakeSink
 import io.github.thibaultbee.streampack.streamer.testcases.AudioOnlyStreamerTestCase
 import io.github.thibaultbee.streampack.streamers.bases.BaseAudioOnlyStreamer
 import io.github.thibaultbee.streampack.utils.AndroidUtils
@@ -25,15 +26,19 @@ import io.github.thibaultbee.streampack.utils.AndroidUtils
 class TsAudioOnlyStreamerTest : AudioOnlyStreamerTestCase() {
     override val streamer = BaseAudioOnlyStreamer(
         context,
-        TSMuxer().apply { addService(AndroidUtils.fakeServiceInfo()) },
-        FakeEndpoint(),
+        CompositeEndpoint(
+            TSMuxer().apply { addService(AndroidUtils.fakeServiceInfo()) },
+            FakeSink()
+        )
     )
 }
 
 class FlvAudioOnlyStreamerTest : AudioOnlyStreamerTestCase() {
     override val streamer = BaseAudioOnlyStreamer(
         context,
-        FlvMuxer(writeToFile = false),
-        FakeEndpoint(),
+        CompositeEndpoint(
+            FlvMuxer(writeToFile = false),
+            FakeSink()
+        ),
     )
 }

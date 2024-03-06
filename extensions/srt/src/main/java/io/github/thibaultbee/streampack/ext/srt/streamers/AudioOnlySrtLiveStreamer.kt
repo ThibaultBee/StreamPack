@@ -17,10 +17,11 @@ package io.github.thibaultbee.streampack.ext.srt.streamers
 
 import android.content.Context
 import io.github.thibaultbee.streampack.ext.srt.data.SrtConnectionDescriptor
-import io.github.thibaultbee.streampack.ext.srt.internal.endpoints.SrtProducer
+import io.github.thibaultbee.streampack.ext.srt.internal.endpoints.sinks.SrtSink
 import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
-import io.github.thibaultbee.streampack.internal.muxers.ts.TSMuxer
-import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
+import io.github.thibaultbee.streampack.internal.endpoints.ConnectableCompositeEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.TSMuxer
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.internal.utils.extensions.defaultTsServiceInfo
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
@@ -42,13 +43,15 @@ class AudioOnlySrtLiveStreamer(
     initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseAudioOnlyLiveStreamer(
     context = context,
-    muxer = TSMuxer().apply { addService(tsServiceInfo) },
-    endpoint = SrtProducer(),
+    endpoint = ConnectableCompositeEndpoint(
+        TSMuxer().apply { addService(tsServiceInfo) },
+        SrtSink()
+    ),
     initialOnErrorListener = initialOnErrorListener,
     initialOnConnectionListener = initialOnConnectionListener
 ),
     ISrtLiveStreamer {
-    private val srtProducer = endpoint as SrtProducer
+    private val srtProducer = (endpoint as ConnectableCompositeEndpoint).sink as SrtSink
 
     /**
      * Get/set SRT stream ID.

@@ -23,7 +23,7 @@ import android.view.TextureView
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.internal.muxers.IMuxer
+import io.github.thibaultbee.streampack.internal.endpoints.sinks.ISink
 import io.github.thibaultbee.streampack.internal.sources.AudioSource
 import io.github.thibaultbee.streampack.internal.sources.camera.CameraSource
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
@@ -37,26 +37,23 @@ import kotlinx.coroutines.runBlocking
  *
  * @param context application context
  * @param enableAudio [Boolean.true] to capture audio
- * @param muxer a [IMuxer] implementation
- * @param endpoint a [IEndpoint] implementation
+ * @param endpoint the [ISink] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
  */
 open class BaseCameraStreamer(
     private val context: Context,
     enableAudio: Boolean = true,
-    muxer: IMuxer,
     endpoint: IEndpoint,
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseStreamer(
     context = context,
     videoSource = CameraSource(context),
     audioSource = if (enableAudio) AudioSource() else null,
-    muxer = muxer,
     endpoint = endpoint,
     initialOnErrorListener = initialOnErrorListener
 ), ICameraStreamer {
     private val cameraSource = videoSource as CameraSource
-    override val helper = CameraStreamerConfigurationHelper(muxer.helper)
+    override val helper = CameraStreamerConfigurationHelper(endpoint.helper)
 
     /**
      * Get/Set current camera id.

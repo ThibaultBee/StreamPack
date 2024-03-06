@@ -18,19 +18,22 @@ package io.github.thibaultbee.streampack.streamers.file
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.internal.endpoints.FileWriter
-import io.github.thibaultbee.streampack.internal.muxers.IMuxer
+import io.github.thibaultbee.streampack.internal.endpoints.FileCompositeEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.IFileEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.IMuxer
+import io.github.thibaultbee.streampack.internal.endpoints.sinks.FileWriter
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
 import java.io.File
+import java.io.FileDescriptor
 import java.io.OutputStream
 
 /**
  * A [BaseCameraStreamer] that sends microphone and camera frames to a [File].
  *
  * @param context application context
- * @param muxer a [IMuxer] implementation
+ * @param muxer the [IMuxer] implementation
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
  * @param initialOnErrorListener initialize [OnErrorListener]
  */
@@ -42,12 +45,11 @@ open class BaseCameraFileStreamer(
 ) : BaseCameraStreamer(
     context = context,
     enableAudio = enableAudio,
-    muxer = muxer,
-    endpoint = FileWriter(),
+    endpoint = FileCompositeEndpoint(muxer, FileWriter()),
     initialOnErrorListener = initialOnErrorListener
 ),
     IFileStreamer {
-    private val fileWriter = endpoint as FileWriter
+    private val fileEndpoint = endpoint as IFileEndpoint
 
     /**
      * Get/Set file.
@@ -61,14 +63,14 @@ open class BaseCameraFileStreamer(
          *
          * @return file where to write the stream
          */
-        get() = fileWriter.file
+        get() = fileEndpoint.file
         /**
          * Set [File].
          *
          * @param value [File] where to write the stream
          */
         set(value) {
-            fileWriter.file = value
+            fileEndpoint.file = value
         }
 
     /**
@@ -83,14 +85,29 @@ open class BaseCameraFileStreamer(
          *
          * @return file where to write the stream
          */
-        get() = fileWriter.outputStream
+        get() = fileEndpoint.outputStream
         /**
          * Set [OutputStream].
          *
          * @param value [OutputStream] to write the stream
          */
         set(value) {
-            fileWriter.outputStream = value
+            fileEndpoint.outputStream = value
+        }
+
+    /**
+     * Get/Set fileDescriptor.
+     */
+    override var fileDescriptor: FileDescriptor?
+        /**
+         * Get registered [FileDescriptor].
+         */
+        get() = fileEndpoint.fileDescriptor
+        /**
+         * Set [FileDescriptor].
+         */
+        set(value) {
+            fileEndpoint.fileDescriptor = value
         }
 
     /**

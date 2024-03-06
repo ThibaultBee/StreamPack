@@ -276,6 +276,19 @@ class VideoConfig(
             MediaCodecHelper.getMaxLevel(mimeType, profile)
     }
 
+    /**
+     * Copy video configuration with new values
+     */
+    fun copy(
+        mimeType: String = this.mimeType,
+        startBitrate: Int = this.startBitrate,
+        resolution: Size = this.resolution,
+        fps: Int = this.fps,
+        profile: Int = this.profile,
+        level: Int = this.level,
+        gopDuration: Float = this.gopDuration
+    ) = VideoConfig(mimeType, startBitrate, resolution, fps, profile, level, gopDuration)
+
     override fun toString() =
         "VideoConfig(mimeType='$mimeType', startBitrate=$startBitrate, resolution=$resolution, fps=$fps, profile=$profile, level=$level)"
 }
