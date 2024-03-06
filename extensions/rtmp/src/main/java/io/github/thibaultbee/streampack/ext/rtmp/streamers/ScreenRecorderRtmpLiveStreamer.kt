@@ -17,9 +17,10 @@ package io.github.thibaultbee.streampack.ext.rtmp.streamers
 
 import android.app.Service
 import android.content.Context
-import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.RtmpProducer
-import io.github.thibaultbee.streampack.internal.muxers.flv.FlvMuxer
-import io.github.thibaultbee.streampack.internal.muxers.flv.tags.video.ExtendedVideoTag
+import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.sinks.RtmpSink
+import io.github.thibaultbee.streampack.internal.endpoints.ConnectableCompositeEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.FlvMuxer
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.tags.video.ExtendedVideoTag
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
@@ -43,12 +44,12 @@ class ScreenRecorderRtmpLiveStreamer(
 ) : BaseScreenRecorderLiveStreamer(
     context = context,
     enableAudio = enableAudio,
-    muxer = FlvMuxer(writeToFile = false),
-    endpoint = RtmpProducer(),
+    endpoint = ConnectableCompositeEndpoint(FlvMuxer(writeToFile = false), RtmpSink()),
     initialOnErrorListener = initialOnErrorListener,
     initialOnConnectionListener = initialOnConnectionListener
 ) {
-    private val rtmpProducer = endpoint as RtmpProducer
+    private val rtmpProducer = (endpoint as ConnectableCompositeEndpoint).sink as RtmpSink
+
     override suspend fun connect(url: String) {
         require(videoConfig != null) {
             "Video config must be set before connecting to send the video codec in the connect message"

@@ -23,15 +23,11 @@ import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.data.Frame
-import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.encoders.AudioMediaCodecEncoder
 import io.github.thibaultbee.streampack.internal.encoders.IEncoderListener
 import io.github.thibaultbee.streampack.internal.encoders.VideoMediaCodecEncoder
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.events.EventHandler
-import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
-import io.github.thibaultbee.streampack.internal.muxers.IMuxer
-import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.sources.IAudioSource
 import io.github.thibaultbee.streampack.internal.sources.IVideoSource
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
@@ -47,18 +43,16 @@ import java.nio.ByteBuffer
 /**
  * Base class of all streamers.
  *
- * @param context application context
- * @param videoSource Video source
- * @param audioSource Audio source
- * @param muxer a [IMuxer] implementation
- * @param endpoint a [IEndpoint] implementation
- * @param initialOnErrorListener initialize [OnErrorListener]
+ * @param context the application context
+ * @param videoSource the video source
+ * @param audioSource the audio source
+ * @param endpoint the [IEndpoint] implementation
+ * @param initialOnErrorListener initial [OnErrorListener]
  */
 abstract class BaseStreamer(
     private val context: Context,
     protected val audioSource: IAudioSource?,
     protected val videoSource: IVideoSource?,
-    private val muxer: IMuxer,
     protected val endpoint: IEndpoint,
     initialOnErrorListener: OnErrorListener? = null
 ) : EventHandler(), IStreamer {
@@ -67,7 +61,7 @@ abstract class BaseStreamer(
      * Supports only one listener.
      */
     override var onErrorListener: OnErrorListener? = initialOnErrorListener
-    override val helper = StreamerConfigurationHelper(muxer.helper)
+    override val helper = StreamerConfigurationHelper(endpoint.helper)
 
     private var audioStreamId: Int? = null
     private var videoStreamId: Int? = null
@@ -76,8 +70,7 @@ abstract class BaseStreamer(
     protected var videoConfig: VideoConfig? = null
     private var audioConfig: AudioConfig? = null
 
-    private val sourceOrientationProvider: ISourceOrientationProvider?
-        get() = videoSource?.orientationProvider
+    private val sourceOrientationProvider = videoSource?.orientationProvider
 
     // Only handle stream error (error on muxer, endpoint,...)
     /**
@@ -97,7 +90,7 @@ abstract class BaseStreamer(
         override fun onOutputFrame(frame: Frame) {
             audioStreamId?.let {
                 try {
-                    this@BaseStreamer.muxer.encode(frame, it)
+                    this@BaseStreamer.endpoint.write(frame, it)
                 } catch (e: Exception) {
                     throw StreamPackError(e)
                 }
@@ -119,22 +112,11 @@ abstract class BaseStreamer(
                     } else {
                         null
                     }
-                    this@BaseStreamer.muxer.encode(frame, it)
+                    this@BaseStreamer.endpoint.write(frame, it)
                 } catch (e: Exception) {
                     // Send exception to encoder
                     throw StreamPackError(e)
                 }
-            }
-        }
-    }
-
-    private val muxListener = object : IMuxerListener {
-        override fun onOutputFrame(packet: Packet) {
-            try {
-                endpoint.write(packet)
-            } catch (e: Exception) {
-                // Send exception to encoder
-                throw StreamPackError(e)
             }
         }
     }
@@ -179,11 +161,6 @@ abstract class BaseStreamer(
     private val hasVideo: Boolean
         get() = videoSource != null
 
-    init {
-        muxer.sourceOrientationProvider = sourceOrientationProvider
-        muxer.listener = muxListener
-    }
-
     /**
      * Configures audio settings.
      * It is the first method to call after a [BaseStreamer] instantiation.
@@ -206,8 +183,6 @@ abstract class BaseStreamer(
             audioSource?.configure(audioConfig)
             audioEncoder?.release()
             audioEncoder?.configure(audioConfig)
-
-            endpoint.configure((videoConfig?.startBitrate ?: 0) + audioConfig.startBitrate)
         } catch (e: Exception) {
             release()
             throw StreamPackError(e)
@@ -238,8 +213,6 @@ abstract class BaseStreamer(
             videoSource?.configure(videoConfig)
             videoEncoder?.release()
             videoEncoder?.configure(videoConfig)
-
-            endpoint.configure(videoConfig.startBitrate + (audioConfig?.startBitrate ?: 0))
         } catch (e: Exception) {
             release()
             throw StreamPackError(e)
@@ -277,23 +250,37 @@ abstract class BaseStreamer(
      */
     override suspend fun startStream() {
         try {
-            endpoint.startStream()
-
             val streams = mutableListOf<Config>()
-            if (hasVideo) {
+            val orientedVideoConfig = if (hasVideo) {
                 require(videoConfig != null) { "Requires video config" }
-                streams.add(videoConfig!!)
+                /**
+                 * If sourceOrientationProvider is not null, we need to get oriented size.
+                 * For example, the [FlvMuxer] `onMetaData` event needs to know the oriented size.
+                 */
+                if (sourceOrientationProvider != null) {
+                    val orientedSize =
+                        sourceOrientationProvider.getOrientedSize(videoConfig!!.resolution)
+                    videoConfig!!.copy(resolution = orientedSize)
+                } else {
+                    videoConfig!!
+                }
+            } else {
+                null
             }
+            if (orientedVideoConfig != null) {
+                streams.add(orientedVideoConfig)
+            }
+
             if (hasAudio) {
                 require(audioConfig != null) { "Requires audio config" }
                 streams.add(audioConfig!!)
             }
 
-            val streamsIdMap = this.muxer.addStreams(streams)
-            videoConfig?.let { videoStreamId = streamsIdMap[videoConfig as Config] }
+            val streamsIdMap = endpoint.addStreams(streams)
+            orientedVideoConfig?.let { videoStreamId = streamsIdMap[orientedVideoConfig] }
             audioConfig?.let { audioStreamId = streamsIdMap[audioConfig as Config] }
 
-            muxer.startStream()
+            endpoint.startStream()
 
             audioSource?.startStream()
             audioEncoder?.startStream()
@@ -332,8 +319,6 @@ abstract class BaseStreamer(
         videoEncoder?.stopStream()
         audioEncoder?.stopStream()
         audioSource?.stopStream()
-
-        muxer.stopStream()
 
         endpoint.stopStream()
     }
@@ -379,8 +364,6 @@ abstract class BaseStreamer(
         videoEncoder?.release()
         audioSource?.release()
         videoSource?.release()
-
-        muxer.release()
 
         endpoint.release()
     }

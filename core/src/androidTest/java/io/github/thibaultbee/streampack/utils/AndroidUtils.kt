@@ -19,7 +19,7 @@ import android.media.MediaFormat
 import android.util.Size
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.VideoConfig
-import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.data.TsServiceInfo
 import kotlin.random.Random
 
 object AndroidUtils {

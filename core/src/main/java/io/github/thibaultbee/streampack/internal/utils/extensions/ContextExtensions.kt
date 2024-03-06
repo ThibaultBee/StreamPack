@@ -22,7 +22,7 @@ import android.hardware.display.DisplayManager
 import android.view.Display
 import android.view.Surface
 import io.github.thibaultbee.streampack.R
-import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.utils.OrientationUtils
 
 /**

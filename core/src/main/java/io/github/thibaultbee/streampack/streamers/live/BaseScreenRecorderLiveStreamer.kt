@@ -16,8 +16,7 @@
 package io.github.thibaultbee.streampack.streamers.live
 
 import android.content.Context
-import io.github.thibaultbee.streampack.internal.endpoints.ILiveEndpoint
-import io.github.thibaultbee.streampack.internal.muxers.IMuxer
+import io.github.thibaultbee.streampack.internal.endpoints.IConnectableEndpoint
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
@@ -28,22 +27,19 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  *
  * @param context application context
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
- * @param muxer a [IMuxer] implementation
- * @param endpoint a [ILiveEndpoint] implementation
+ * @param endpoint the [IConnectableEndpoint] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
  * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 open class BaseScreenRecorderLiveStreamer(
     context: Context,
     enableAudio: Boolean = true,
-    muxer: IMuxer,
-    endpoint: ILiveEndpoint,
+    endpoint: IConnectableEndpoint,
     initialOnErrorListener: OnErrorListener? = null,
     initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseScreenRecorderStreamer(
     context = context,
     enableAudio = enableAudio,
-    muxer = muxer,
     endpoint = endpoint,
     initialOnErrorListener = initialOnErrorListener
 ),
