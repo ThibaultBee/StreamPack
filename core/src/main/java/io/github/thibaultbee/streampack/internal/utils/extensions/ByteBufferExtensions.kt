@@ -293,6 +293,9 @@ fun ByteBuffer.extractRbsp(headerLength: Int): ByteBuffer {
  * @return [ByteBuffer] without prefixes
  */
 fun ByteBuffer.removePrefixes(prefixes: List<ByteBuffer>): ByteBuffer {
+    if (prefixes.isEmpty()) {
+        return this
+    }
     val mutablePrefixes = prefixes.toMutableList()
     var hasPrefix = true
     while (hasPrefix) {

@@ -23,8 +23,12 @@ import java.nio.ByteBuffer
  * Extracts csd buffers from MediaFormat.
  * It can contains SPS, PPS for AVC.
  */
-val MediaFormat.extra: List<ByteBuffer>
+val MediaFormat.extra: List<ByteBuffer>?
     get() {
+        if (!containsKey("csd-0") && !containsKey("csd-1") && !containsKey("csd-2")) {
+            return null
+        }
+
         val extra = mutableListOf<ByteBuffer>()
 
         getByteBuffer("csd-0")?.let {
