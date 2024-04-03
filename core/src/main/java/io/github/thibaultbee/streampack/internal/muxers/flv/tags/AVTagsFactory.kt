@@ -33,13 +33,14 @@ import java.nio.ByteBuffer
 
 class AVTagsFactory(
     private val frame: Frame,
-    private val config: Config
+    private val config: Config,
+    private val sendHeader: Boolean
 ) {
     fun build(): List<FlvTag> {
         return if (frame.isVideo) {
-            createVideoTags(frame, config as VideoConfig)
+            createVideoTags(frame, config as VideoConfig, sendHeader)
         } else if (frame.isAudio) {
-            createAudioTags(frame, config as AudioConfig)
+            createAudioTags(frame, config as AudioConfig, sendHeader)
         } else {
             throw IOException("Frame is neither video nor audio: ${frame.mimeType}")
         }
@@ -47,19 +48,25 @@ class AVTagsFactory(
 
     private fun createAudioTags(
         frame: Frame,
-        config: AudioConfig
+        config: AudioConfig,
+        sendHeader: Boolean
     ): List<FlvTag> {
-        return listOf(
-            AudioTag(
-                frame.pts,
-                frame.extra!![0],
-                if (config.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
-                    AACPacketType.SEQUENCE_HEADER
-                } else {
-                    null
-                },
-                config
-            ),
+        val audioTag = mutableListOf<FlvTag>()
+        if (sendHeader) {
+            audioTag.add(
+                AudioTag(
+                    frame.pts,
+                    frame.extra!![0],
+                    if (config.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
+                        AACPacketType.SEQUENCE_HEADER
+                    } else {
+                        null
+                    },
+                    config
+                )
+            )
+        }
+        audioTag.add(
             AudioTag(
                 frame.pts,
                 frame.buffer,
@@ -71,14 +78,16 @@ class AVTagsFactory(
                 config
             )
         )
+        return audioTag
     }
 
     private fun createVideoTags(
         frame: Frame,
-        config: VideoConfig
+        config: VideoConfig,
+        sendHeader: Boolean
     ): List<FlvTag> {
         val videoTags = mutableListOf<FlvTag>()
-        if (frame.isKeyFrame) {
+        if (frame.isKeyFrame && sendHeader) {
             videoTags.add(
                 VideoTagFactory(
                     frame.pts,

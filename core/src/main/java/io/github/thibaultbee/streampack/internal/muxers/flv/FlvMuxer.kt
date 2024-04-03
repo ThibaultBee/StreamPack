@@ -19,12 +19,12 @@ import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.data.PacketType
-import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.muxers.flv.tags.AVTagsFactory
 import io.github.thibaultbee.streampack.internal.muxers.flv.tags.FlvHeader
 import io.github.thibaultbee.streampack.internal.muxers.flv.tags.OnMetadata
+import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.utils.TimeUtils
 import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
@@ -35,16 +35,16 @@ class FlvMuxer(
     private val writeToFile: Boolean,
 ) : IMuxer {
     override val helper = FlvMuxerHelper()
-    private val streams = mutableListOf<Config>()
+    private val streams = mutableListOf<Stream>()
     private val hasAudio: Boolean
-        get() = streams.any { it.mimeType.isAudio }
+        get() = streams.any { it.config.mimeType.isAudio }
     private val hasVideo: Boolean
-        get() = streams.any { it.mimeType.isVideo }
+        get() = streams.any { it.config.mimeType.isVideo }
     private var startUpTime: Long? = null
     private var hasFirstFrame = false
 
     init {
-        initialStreams?.let { streams.addAll(it) }
+        initialStreams?.let { config -> streams.addAll(config.map { Stream(it) }) }
     }
 
     override var sourceOrientationProvider: ISourceOrientationProvider? = null
@@ -72,7 +72,10 @@ class FlvMuxer(
         }
 
         frame.pts -= startUpTime!!
-        val flvTags = AVTagsFactory(frame, streams[streamPid]).build()
+        val stream = streams[streamPid]
+        val sendHeader = stream.sendHeader
+        stream.sendHeader = false
+        val flvTags = AVTagsFactory(frame, stream.config, sendHeader).build()
         flvTags.forEach {
             listener?.onOutputFrame(
                 Packet(
@@ -88,9 +91,9 @@ class FlvMuxer(
 
     override fun addStreams(streamsConfig: List<Config>): Map<Config, Int> {
         val streamMap = mutableMapOf<Config, Int>()
-        streams.addAll(streamsConfig)
+        streams.addAll(streamsConfig.map { Stream(it) })
         requireStreams()
-        streams.forEachIndexed { index, config -> streamMap[config] = index }
+        streams.forEachIndexed { index, stream -> streamMap[stream.config] = index }
         return streamMap
     }
 
@@ -108,7 +111,8 @@ class FlvMuxer(
         // Metadata
         listener?.onOutputFrame(
             Packet(
-                OnMetadata.fromConfigs(streams, sourceOrientationProvider).write(),
+                OnMetadata.fromConfigs(streams.map { it.config }, sourceOrientationProvider)
+                    .write(),
                 TimeUtils.currentTime()
             )
         )
@@ -128,7 +132,11 @@ class FlvMuxer(
      * Check that there shall be no more than one audio and one video stream
      */
     private fun requireStreams() {
-        require(streams.count { it.mimeType.isAudio } <= 1) { "Only one audio stream is supported by FLV" }
-        require(streams.count { it.mimeType.isVideo } <= 1) { "Only one video stream is supported by FLV" }
+        require(streams.count { it.config.mimeType.isAudio } <= 1) { "Only one audio stream is supported by FLV" }
+        require(streams.count { it.config.mimeType.isVideo } <= 1) { "Only one video stream is supported by FLV" }
+    }
+
+    private data class Stream(val config: Config) {
+        var sendHeader = true
     }
 }
