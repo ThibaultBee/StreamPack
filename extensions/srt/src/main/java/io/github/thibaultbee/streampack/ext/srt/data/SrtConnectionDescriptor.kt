@@ -57,12 +57,16 @@ data class SrtConnectionDescriptor(
         private const val PASS_PHRASE_QUERY_PARAMETER = "passphrase"
         private const val LATENCY_QUERY_PARAMETER = "latency"
         private const val CONNECTION_TIMEOUT_QUERY_PARAMETER = "connect_timeout"
+        private const val MODE_QUERY_PARAMETER = "mode"
+        private const val TRANSTYPE_QUERY_PARAMETER = "transtype"
 
         private val queryParameterList = listOf(
             STREAM_ID_QUERY_PARAMETER,
             PASS_PHRASE_QUERY_PARAMETER,
             LATENCY_QUERY_PARAMETER,
-            CONNECTION_TIMEOUT_QUERY_PARAMETER
+            CONNECTION_TIMEOUT_QUERY_PARAMETER,
+            MODE_QUERY_PARAMETER,
+            TRANSTYPE_QUERY_PARAMETER
         )
 
         /**
@@ -85,6 +89,16 @@ data class SrtConnectionDescriptor(
             val latency = uri.getQueryParameter(LATENCY_QUERY_PARAMETER)?.toInt()
             val connectionTimeout =
                 uri.getQueryParameter(CONNECTION_TIMEOUT_QUERY_PARAMETER)?.toInt()
+
+
+            val mode = uri.getQueryParameter(MODE_QUERY_PARAMETER)
+            if (mode != null) {
+                require(mode == "caller") { "Failed to parse URL $url: invalid mode: $mode" }
+            }
+            val transtype = uri.getQueryParameter(TRANSTYPE_QUERY_PARAMETER)
+            if (transtype != null) {
+                require(transtype == "live") { "Failed to parse URL $url: invalid transtype: $transtype" }
+            }
 
             val unknownParameters =
                 uri.queryParameterNames.find { queryParameterList.contains(it).not() }
