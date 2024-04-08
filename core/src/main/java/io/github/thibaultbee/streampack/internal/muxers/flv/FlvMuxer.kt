@@ -132,8 +132,10 @@ class FlvMuxer(
      * Check that there shall be no more than one audio and one video stream
      */
     private fun requireStreams() {
-        require(streams.count { it.config.mimeType.isAudio } <= 1) { "Only one audio stream is supported by FLV" }
-        require(streams.count { it.config.mimeType.isVideo } <= 1) { "Only one video stream is supported by FLV" }
+        val audioStreams = streams.filter { it.config.mimeType.isAudio }
+        require(audioStreams.size <= 1) { "Only one audio stream is supported by FLV but got $audioStreams" }
+        val videoStreams = streams.filter { it.config.mimeType.isVideo }
+        require(videoStreams.size <= 1) { "Only one video stream is supported by FLV but got $videoStreams" }
     }
 
     private data class Stream(val config: Config) {
