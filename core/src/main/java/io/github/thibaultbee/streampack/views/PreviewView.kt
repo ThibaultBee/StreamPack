@@ -133,9 +133,10 @@ class PreviewView @JvmOverloads constructor(
         val a = context.obtainStyledAttributes(attrs, R.styleable.PreviewView)
 
         try {
-            cameraFacingDirection = CameraFacingDirection.entryOf(
-                a.getString(R.styleable.PreviewView_cameraFacingDirection) ?: DEFAULT_CAMERA_FACING.value
-            )
+            cameraFacingDirection =
+                CameraFacingDirection.entryOf(
+                    a.getInt(R.styleable.PreviewView_cameraFacingDirection, DEFAULT_CAMERA_FACING.value)
+                )
 
             defaultCameraId = when (cameraFacingDirection) {
                 CameraFacingDirection.FRONT -> {
@@ -465,22 +466,27 @@ class PreviewView @JvmOverloads constructor(
     /**
      * Options for the camera facing direction.
      */
-    enum class CameraFacingDirection(val value: String) {
+    enum class CameraFacingDirection(val value: Int, val id: String) {
         /**
          * The facing of the camera is the same as that of the screen.
          */
-        FRONT("front"),
+        FRONT(0, "front"),
 
         /**
          * The facing of the camera is opposite to that of the screen.
          */
-        BACK("back");
+        BACK(1, "back");
 
         companion object {
             /**
              * Returns the [CameraFacingDirection] from the given id.
              */
-            internal fun entryOf(value: String) = entries.first { it.value == value }
+            internal fun entryOf(value: Int) = entries.first { it.value == value }
+
+            /**
+             * Returns the [CameraFacingDirection] from the given id.
+             */
+            internal fun entryOf(value: String) = entries.first { it.id == value }
         }
     }
 
