@@ -184,27 +184,27 @@ class VideoConfig(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 format.setInteger(MediaFormat.KEY_LEVEL, level)
             }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (dynamicRangeProfile != DynamicRangeProfile.sdr) {
+                    format.setInteger(
+                        MediaFormat.KEY_COLOR_STANDARD,
+                        MediaFormat.COLOR_STANDARD_BT2020
+                    )
+                    format.setInteger(MediaFormat.KEY_COLOR_RANGE, MediaFormat.COLOR_RANGE_FULL)
+                    format.setInteger(
+                        MediaFormat.KEY_COLOR_TRANSFER,
+                        dynamicRangeProfile.transferFunction
+                    )
+                    format.setFeatureEnabled(
+                        MediaCodecInfo.CodecCapabilities.FEATURE_HdrEditing, true
+                    )
+                }
+            }
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             format.setInteger(KEY_PRIORITY, 0) // Realtime hint
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (dynamicRangeProfile != DynamicRangeProfile.sdr) {
-                format.setInteger(
-                    MediaFormat.KEY_COLOR_STANDARD,
-                    MediaFormat.COLOR_STANDARD_BT2020
-                )
-                format.setInteger(MediaFormat.KEY_COLOR_RANGE, MediaFormat.COLOR_RANGE_FULL)
-                format.setInteger(
-                    MediaFormat.KEY_COLOR_TRANSFER,
-                    dynamicRangeProfile.transferFunction
-                )
-                format.setFeatureEnabled(
-                    MediaCodecInfo.CodecCapabilities.FEATURE_HdrEditing, true
-                )
-            }
         }
 
         return format
