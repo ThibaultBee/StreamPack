@@ -10,14 +10,14 @@ buildscript {
         appTargetSdk = 34
 
         kotlinVersion = '1.9.22'
-        dokkaVersion = '1.9.10'
+        dokkaVersion = '1.9.20'
 
         androidxCoreVersion = '1.12.0'
     }
 }
 plugins {
-    id 'com.android.application' version '8.2.2' apply false
-    id 'com.android.library' version '8.2.2' apply false
+    id 'com.android.application' version '8.3.2' apply false
+    id 'com.android.library' version '8.3.2' apply false
     id 'org.jetbrains.kotlin.android' version "$kotlinVersion" apply false
     id 'org.jetbrains.dokka' version "$dokkaVersion"
 }
