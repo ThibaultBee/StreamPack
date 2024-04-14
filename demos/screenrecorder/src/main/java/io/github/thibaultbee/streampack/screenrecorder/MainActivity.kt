@@ -31,7 +31,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.tbruyelle.rxpermissions3.RxPermissions
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.data.VideoConfig
@@ -57,7 +56,6 @@ class MainActivity : AppCompatActivity() {
     private val configuration by lazy {
         Configuration(this)
     }
-    private val rxPermissions: RxPermissions by lazy { RxPermissions(this) }
     private lateinit var streamer: BaseScreenRecorderLiveStreamer
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,24 +74,27 @@ class MainActivity : AppCompatActivity() {
 
         binding.liveButton.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                rxPermissions
-                    .request(Manifest.permission.RECORD_AUDIO)
-                    .subscribe { granted ->
-                        if (!granted) {
-                            showPermissionAlertDialog(this) { this.finish() }
-                        } else {
-                            getContent.launch(
-                                BaseScreenRecorderStreamer.createScreenRecorderIntent(
-                                    this
-                                )
-                            )
-                        }
-                    }
+                requestAudioPermissionsLauncher.launch(Manifest.permission.RECORD_AUDIO)
             } else {
                 stopService()
             }
         }
     }
+
+    private val requestAudioPermissionsLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+            if (!isGranted) {
+                showPermissionAlertDialog(this) { this.finish() }
+            } else {
+                getContent.launch(
+                    BaseScreenRecorderStreamer.createScreenRecorderIntent(
+                        this
+                    )
+                )
+            }
+        }
 
     private var getContent =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
