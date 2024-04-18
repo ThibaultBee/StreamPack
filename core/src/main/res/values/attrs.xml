@@ -7,12 +7,6 @@
     </attr>
 
     <!-- Must be kept in sync with PreviewView -->
-    <attr name="cameraFacingDirection" format="enum">
-        <enum name="front" value="0"/>
-        <enum name="back" value="1"/>
-    </attr>
-
-    <!-- Must be kept in sync with PreviewView -->
     <attr name="position" format="enum">
         <enum name="start" value="0"/>
         <enum name="center" value="1"/>
@@ -22,7 +16,6 @@
     <declare-styleable name="PreviewView">
         <attr name="enableZoomOnPinch" format="boolean" />
         <attr name="enableTapToFocus" format="boolean" />
-        <attr name="cameraFacingDirection" />
         <attr name="scaleMode"  />
         <attr name="position" />
     </declare-styleable>

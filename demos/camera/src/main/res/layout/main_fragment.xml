@@ -19,7 +19,6 @@
             android:id="@+id/preview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:cameraFacingDirection="back"
             app:enableZoomOnPinch="true"
             app:scaleMode="fill"
             app:position="center"

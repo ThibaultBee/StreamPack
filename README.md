@@ -121,12 +121,10 @@ To simplify integration, StreamPack provides an `PreviewView`.
 <layout>
     <io.github.thibaultbee.streampack.views.PreviewView android:id="@+id/preview"
         android:layout_width="match_parent" android:layout_height="match_parent"
-        app:cameraFacingDirection="back" app:enableZoomOnPinch="true" />
+        app:enableZoomOnPinch="true" />
 </layout>
 ```
 
-`app:cameraFacingDirection` can be `back` to start preview on the first back camera or `front` to
-start preview on the first front camera.
 `app:enableZoomOnPinch` is a boolean to enable zoom on pinch gesture.
 
 3. Instantiate the streamer (main live streaming class)

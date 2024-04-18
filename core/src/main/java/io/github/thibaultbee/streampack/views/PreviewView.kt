@@ -32,19 +32,19 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.camera.viewfinder.CameraViewfinder
 import androidx.camera.viewfinder.CameraViewfinder.ScaleType
+import androidx.camera.viewfinder.CameraViewfinderExt.requestSurface
 import androidx.camera.viewfinder.ViewfinderSurfaceRequest
 import androidx.camera.viewfinder.populateFromCharacteristics
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import com.google.common.util.concurrent.FutureCallback
-import com.google.common.util.concurrent.Futures
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.R
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.utils.OrientationUtils
-import io.github.thibaultbee.streampack.utils.backCameraList
-import io.github.thibaultbee.streampack.utils.frontCameraList
 import io.github.thibaultbee.streampack.utils.getCameraCharacteristics
+import kotlinx.coroutines.launch
+import java.util.concurrent.CancellationException
 
 /**
  * A [FrameLayout] containing a preview for the [ICameraStreamer].
@@ -64,10 +64,9 @@ class PreviewView @JvmOverloads constructor(
     private val cameraViewFinder = CameraViewfinder(context, attrs, defStyle)
     private var viewFinderSurfaceRequest: ViewfinderSurfaceRequest? = null
 
-    private val cameraFacingDirection: CameraFacingDirection
-    private val defaultCameraId: String?
-
     private var previewState = PreviewState.STOPPED
+
+    private val lifecycleOwner by lazy { findViewTreeLifecycleOwner()!! }
 
     /**
      * Enables zoom on pinch gesture.
@@ -94,8 +93,12 @@ class PreviewView @JvmOverloads constructor(
         set(value) {
             post {
                 stopPreviewInternal()
+                value?.let {
+                    lifecycleOwner.lifecycleScope.launch {
+                        startPreviewInternal(it, it.camera, size)
+                    }
+                }
                 field = value
-                startPreviewInternal(size)
             }
         }
 
@@ -133,21 +136,6 @@ class PreviewView @JvmOverloads constructor(
         val a = context.obtainStyledAttributes(attrs, R.styleable.PreviewView)
 
         try {
-            cameraFacingDirection =
-                CameraFacingDirection.entryOf(
-                    a.getInt(R.styleable.PreviewView_cameraFacingDirection, DEFAULT_CAMERA_FACING.value)
-                )
-
-            defaultCameraId = when (cameraFacingDirection) {
-                CameraFacingDirection.FRONT -> {
-                    context.frontCameraList.firstOrNull()
-                }
-
-                CameraFacingDirection.BACK -> {
-                    context.backCameraList.firstOrNull()
-                }
-            }
-
             enableZoomOnPinch =
                 a.getBoolean(R.styleable.PreviewView_enableZoomOnPinch, true)
             enableTapToFocus =
@@ -180,7 +168,10 @@ class PreviewView @JvmOverloads constructor(
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        startPreviewIfReady(size, true)
+        if (w != oldw || h != oldh) {
+            stopPreviewInternal()
+            streamer?.let { startPreviewIfReady(it, size, true) }
+        }
     }
 
     override fun onDetachedFromWindow() {
@@ -219,11 +210,15 @@ class PreviewView @JvmOverloads constructor(
                 // mTouchUpEvent == null means it's an accessibility click. Focus at the center instead.
                 val x = touchUpEvent?.x ?: (width / 2f)
                 val y = touchUpEvent?.y ?: (height / 2f)
-                it.settings.camera.focusMetering.onTap(
-                    PointF(x, y),
-                    Rect(this.x.toInt(), this.y.toInt(), width, height),
-                    OrientationUtils.getSurfaceOrientationDegrees(display.rotation)
-                )
+                try {
+                    it.settings.camera.focusMetering.onTap(
+                        PointF(x, y),
+                        Rect(this.x.toInt(), this.y.toInt(), width, height),
+                        OrientationUtils.getSurfaceOrientationDegrees(display.rotation)
+                    )
+                } catch (e: Exception) {
+                    Logger.e(TAG, "Failed to focus at $x, $y", e)
+                }
             }
 
         }
@@ -235,7 +230,7 @@ class PreviewView @JvmOverloads constructor(
      * Stops the preview.
      */
     private fun stopPreview() {
-        post {
+        lifecycleOwner.lifecycleScope.launch {
             stopPreviewInternal()
         }
     }
@@ -250,10 +245,15 @@ class PreviewView @JvmOverloads constructor(
     /**
      * Starts the preview if the view size is ready.
      *
+     * @param streamer the camera streamer
      * @param targetViewSize the view size
      * @param shouldFailSilently true to fail silently
      */
-    private fun startPreviewIfReady(targetViewSize: Size, shouldFailSilently: Boolean) {
+    private fun startPreviewIfReady(
+        streamer: ICameraStreamer,
+        targetViewSize: Size,
+        shouldFailSilently: Boolean
+    ) {
         try {
             if (ActivityCompat.checkSelfPermission(
                     context,
@@ -263,8 +263,8 @@ class PreviewView @JvmOverloads constructor(
                 throw SecurityException("Camera permission is needed to run this application")
             }
 
-            post {
-                startPreviewInternal(targetViewSize)
+            lifecycleOwner.lifecycleScope.launch {
+                startPreviewInternal(streamer, streamer.camera, targetViewSize)
             }
         } catch (e: Exception) {
             if (shouldFailSilently) {
@@ -275,61 +275,50 @@ class PreviewView @JvmOverloads constructor(
         }
     }
 
-    private fun startPreviewInternal(
+    private suspend fun startPreviewInternal(
+        streamer: ICameraStreamer,
+        camera: String,
         targetViewSize: Size
     ) {
-        val streamer = streamer ?: run {
-            Logger.w(TAG, "Streamer has not been set")
-            return
-        }
-        if (width == 0 || height == 0) {
-            Logger.w(TAG, "View size is not ready")
-            return
-        }
-        if (previewState != PreviewState.STOPPED) {
-            Logger.w(TAG, "Preview is already running or starting")
-            return
-        }
         previewState = PreviewState.STARTING
 
         Logger.d(TAG, "Target view size: $targetViewSize")
-
-        val camera = defaultCameraId ?: streamer.camera
         Logger.i(TAG, "Starting on camera: $camera")
 
         val request = createRequest(targetViewSize, camera)
         viewFinderSurfaceRequest = request
 
-        sendRequest(request, { surface ->
-            post {
-                if (ActivityCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.CAMERA
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    viewFinderSurfaceRequest?.markSurfaceSafeToRelease()
-                    viewFinderSurfaceRequest = null
-                    previewState = PreviewState.STOPPED
-                    Logger.e(
-                        TAG,
-                        "Camera permission is needed to run this application"
-                    )
-                    listener?.onPreviewFailed(SecurityException("Camera permission is needed to run this application"))
-                } else {
+        try {
+            val surface = sendRequest(request)
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CAMERA
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                viewFinderSurfaceRequest?.markSurfaceSafeToRelease()
+                viewFinderSurfaceRequest = null
+                previewState = PreviewState.STOPPED
+                Logger.e(
+                    TAG,
+                    "Camera permission is needed to run this application"
+                )
+                listener?.onPreviewFailed(SecurityException("Camera permission is needed to run this application"))
+            } else {
+                if (surface.isValid) {
                     streamer.startPreview(surface, camera)
                     previewState = PreviewState.RUNNING
                     listener?.onPreviewStarted()
                 }
             }
-        }, { t ->
-            post {
-                viewFinderSurfaceRequest?.markSurfaceSafeToRelease()
-                viewFinderSurfaceRequest = null
-                previewState = PreviewState.STOPPED
-                Logger.w(TAG, "Failed to get a Surface: $t", t)
-                listener?.onPreviewFailed(t)
-            }
-        })
+        } catch (e: CancellationException) {
+            Logger.w(TAG, "Preview request cancelled")
+        } catch (t: Throwable) {
+            viewFinderSurfaceRequest?.markSurfaceSafeToRelease()
+            viewFinderSurfaceRequest = null
+            previewState = PreviewState.STOPPED
+            Logger.w(TAG, "Failed to get a Surface: $t", t)
+            listener?.onPreviewFailed(t)
+        }
     }
 
     private fun createRequest(
@@ -353,33 +342,12 @@ class PreviewView @JvmOverloads constructor(
         return builder.build()
     }
 
-    private fun sendRequest(
-        request: ViewfinderSurfaceRequest,
-        onSuccess: (Surface) -> Unit,
-        onFailure: (Throwable) -> Unit
-    ) {
-        val surfaceListenableFuture =
-            cameraViewFinder.requestSurfaceAsync(request)
-
-        Futures.addCallback(
-            surfaceListenableFuture,
-            object : FutureCallback<Surface> {
-                override fun onSuccess(surface: Surface) {
-                    onSuccess(surface)
-                }
-
-                override fun onFailure(t: Throwable) {
-                    onFailure(t)
-                }
-            },
-            ContextCompat.getMainExecutor(context)
-        )
+    private suspend fun sendRequest(request: ViewfinderSurfaceRequest): Surface {
+        return cameraViewFinder.requestSurface(request)
     }
 
     companion object {
         private const val TAG = "PreviewView"
-
-        private val DEFAULT_CAMERA_FACING = CameraFacingDirection.BACK
 
 
         private fun getPosition(scaleType: ScaleType): Position {
@@ -461,33 +429,6 @@ class PreviewView @JvmOverloads constructor(
          * @param zoomRatio the new zoom ratio
          */
         fun onZoomRationOnPinchChanged(zoomRatio: Float) {}
-    }
-
-    /**
-     * Options for the camera facing direction.
-     */
-    enum class CameraFacingDirection(val value: Int, val id: String) {
-        /**
-         * The facing of the camera is the same as that of the screen.
-         */
-        FRONT(0, "front"),
-
-        /**
-         * The facing of the camera is opposite to that of the screen.
-         */
-        BACK(1, "back");
-
-        companion object {
-            /**
-             * Returns the [CameraFacingDirection] from the given id.
-             */
-            internal fun entryOf(value: Int) = entries.first { it.value == value }
-
-            /**
-             * Returns the [CameraFacingDirection] from the given id.
-             */
-            internal fun entryOf(value: String) = entries.first { it.id == value }
-        }
     }
 
     /**

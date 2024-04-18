@@ -15,8 +15,8 @@ dependencies {
     implementation "androidx.core:core-ktx:${androidxCoreVersion}"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
 
+    implementation 'androidx.lifecycle:lifecycle-runtime:2.7.0'
     implementation 'androidx.camera:camera-viewfinder:1.4.0-alpha04'
-    implementation 'com.google.guava:guava:31.0.1-jre'
 
     testImplementation 'androidx.test:rules:1.5.0'
     testImplementation 'junit:junit:4.13.2'
