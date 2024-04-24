@@ -30,7 +30,6 @@ import io.github.thibaultbee.streampack.internal.endpoints.muxers.mp4.models.Mov
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.mp4.models.MovieFragmentBoxFactory
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.mp4.models.Segment
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.mp4.models.Track
-import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.utils.TimeUtils
 import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
@@ -41,7 +40,7 @@ class MP4Muxer(
     private val timescale: Int = DEFAULT_TIMESCALE,
     private val segmenterFactory: MP4SegmenterFactory = DefaultMP4SegmenterFactory()
 ) : IMuxer {
-    override val helper = MP4MuxerHelper
+    override val info = MP4MuxerInfo
 
     override var listener: IMuxer.IMuxerListener? =
         initialListener
