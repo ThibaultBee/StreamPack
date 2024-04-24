@@ -40,7 +40,7 @@ open class BaseScreenRecorderLiveStreamer(
 ) : BaseScreenRecorderStreamer(
     context = context,
     enableAudio = enableAudio,
-    endpoint = endpoint,
+    internalEndpoint = endpoint,
     initialOnErrorListener = initialOnErrorListener
 ),
     ILiveStreamer {
