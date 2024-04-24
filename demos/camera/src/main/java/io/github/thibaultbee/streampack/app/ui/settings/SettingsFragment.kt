@@ -33,17 +33,17 @@ import io.github.thibaultbee.streampack.app.models.EndpointType
 import io.github.thibaultbee.streampack.app.models.FileExtension
 import io.github.thibaultbee.streampack.app.utils.DialogUtils
 import io.github.thibaultbee.streampack.app.utils.ProfileLevelDisplay
-import io.github.thibaultbee.streampack.app.utils.StreamerHelperFactory
+import io.github.thibaultbee.streampack.app.utils.StreamerInfoFactory
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.encoders.mediacodec.MediaCodecHelper
-import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationHelper
+import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.utils.cameraList
 import io.github.thibaultbee.streampack.utils.defaultCameraId
 import io.github.thibaultbee.streampack.utils.isFrameRateSupported
 import java.io.IOException
 
 class SettingsFragment : PreferenceFragmentCompat() {
-    private lateinit var streamerHelper: CameraStreamerConfigurationHelper
+    private lateinit var streamerInfo: CameraStreamerConfigurationInfo
     private val profileLevelDisplay by lazy { ProfileLevelDisplay(requireContext()) }
 
     private val videoEnablePreference: SwitchPreference by lazy {
@@ -174,7 +174,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 MediaFormat.MIMETYPE_VIDEO_AV1 to getString(R.string.video_encoder_av1)
             )
 
-        val supportedVideoEncoder = streamerHelper.video.supportedEncoders
+        val supportedVideoEncoder = streamerInfo.video.supportedEncoders
         videoEncoderListPreference.setDefaultValue(MediaFormat.MIMETYPE_VIDEO_AVC)
         videoEncoderListPreference.entryValues = supportedVideoEncoder.toTypedArray()
         videoEncoderListPreference.entries =
@@ -197,7 +197,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         // Inflates video resolutions
-        streamerHelper.video.getSupportedResolutions(
+        streamerInfo.video.getSupportedResolutions(
             requireContext(),
             encoder
         ).map { it.toString() }.toTypedArray().run {
@@ -206,7 +206,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         // Inflates video fps
-        val supportedFramerates = streamerHelper.video.getSupportedFramerates(
+        val supportedFramerates = streamerInfo.video.getSupportedFramerates(
             requireContext(),
             encoder,
             requireContext().defaultCameraId
@@ -238,13 +238,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         // Inflates video bitrate
-        streamerHelper.video.getSupportedBitrates(encoder).run {
+        streamerInfo.video.getSupportedBitrates(encoder).run {
             videoBitrateSeekBar.min = maxOf(videoBitrateSeekBar.min, lower / 1000) // to kb/s
             videoBitrateSeekBar.max = minOf(videoBitrateSeekBar.max, upper / 1000) // to kb/s
         }
 
         // Inflates profile
-        val profiles = streamerHelper.video.getSupportedAllProfiles(
+        val profiles = streamerInfo.video.getSupportedAllProfiles(
             requireContext(),
             encoder,
             requireContext().defaultCameraId
@@ -302,7 +302,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 MediaFormat.MIMETYPE_AUDIO_OPUS to getString(R.string.audio_encoder_opus)
             )
 
-        val supportedAudioEncoder = streamerHelper.audio.supportedEncoders
+        val supportedAudioEncoder = streamerInfo.audio.supportedEncoders
         audioEncoderListPreference.setDefaultValue(MediaFormat.MIMETYPE_AUDIO_AAC)
         audioEncoderListPreference.entryValues = supportedAudioEncoder.toTypedArray()
         audioEncoderListPreference.entries =
@@ -327,7 +327,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         // Inflates audio number of channel
         val inputChannelRange =
-            streamerHelper.audio.getSupportedInputChannelRange(encoder)
+            streamerInfo.audio.getSupportedInputChannelRange(encoder)
         audioNumberOfChannelListPreference.entryValues.filter {
             inputChannelRange.contains(it.toString().toInt())
         }.toTypedArray().run {
@@ -336,7 +336,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         // Inflates audio bitrate
-        val bitrateRange = streamerHelper.audio.getSupportedBitrates(encoder)
+        val bitrateRange = streamerInfo.audio.getSupportedBitrates(encoder)
         audioBitrateListPreference.entryValues.filter {
             bitrateRange.contains(
                 it.toString().toInt()
@@ -351,7 +351,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         // Inflates audio sample rate
-        val sampleRates = streamerHelper.audio.getSupportedSampleRates(encoder)
+        val sampleRates = streamerInfo.audio.getSupportedSampleRates(encoder)
         audioSampleRateListPreference.entries =
             sampleRates.map { "${"%.1f".format(it.toString().toFloat() / 1000)} kHz" }
                 .toTypedArray()
@@ -371,7 +371,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 AudioFormat.ENCODING_PCM_16BIT to getString(R.string.audio_byte_format_16bit),
                 AudioFormat.ENCODING_PCM_FLOAT to getString(R.string.audio_byte_format_float)
             )
-        val byteFormats = streamerHelper.audio.getSupportedByteFormats()
+        val byteFormats = streamerInfo.audio.getSupportedByteFormats()
         audioByteFormatListPreference.entries =
             byteFormats.map { supportedByteFormatName[it] }.toTypedArray()
         audioByteFormatListPreference.entryValues = byteFormats.map { "$it" }.toTypedArray()
@@ -381,7 +381,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         // Inflates profile
         audioProfileListPreference.isVisible = encoder == MediaFormat.MIMETYPE_AUDIO_AAC
-        val profiles = streamerHelper.audio.getSupportedProfiles(encoder)
+        val profiles = streamerInfo.audio.getSupportedProfiles(encoder)
         audioProfileListPreference.entries =
             profiles.map {
                 profileLevelDisplay.getProfileName(
@@ -468,8 +468,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         fileEndpointPreference.isVisible = endpoint.hasFileCapabilities
         tsMuxerPreference.isVisible = endpoint.hasTSCapabilities
 
-        // Update supported values with a new helper
-        streamerHelper = StreamerHelperFactory(endpointType).build()
+        // Update supported values with a new info
+        streamerInfo = StreamerInfoFactory(endpointType).build()
         loadVideoSettings()
         loadAudioSettings()
 

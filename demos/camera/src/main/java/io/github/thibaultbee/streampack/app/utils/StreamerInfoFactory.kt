@@ -16,18 +16,18 @@
 package io.github.thibaultbee.streampack.app.utils
 
 import io.github.thibaultbee.streampack.app.models.EndpointType
-import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationHelper
+import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationInfo
 
-class StreamerHelperFactory(
+class StreamerInfoFactory(
     private val endpointType: EndpointType,
 ) {
-    fun build(): CameraStreamerConfigurationHelper {
+    fun build(): CameraStreamerConfigurationInfo {
         return when (endpointType) {
-            EndpointType.TS_FILE -> CameraStreamerConfigurationHelper.tsHelper
-            EndpointType.FLV_FILE -> CameraStreamerConfigurationHelper.flvHelper
-            EndpointType.SRT -> CameraStreamerConfigurationHelper.tsHelper
-            EndpointType.RTMP -> CameraStreamerConfigurationHelper.flvHelper
-            EndpointType.MP4_FILE -> CameraStreamerConfigurationHelper.mp4Helper
+            EndpointType.TS_FILE -> CameraStreamerConfigurationInfo.tsInfo
+            EndpointType.FLV_FILE -> CameraStreamerConfigurationInfo.flvInfo
+            EndpointType.SRT -> CameraStreamerConfigurationInfo.tsInfo
+            EndpointType.RTMP -> CameraStreamerConfigurationInfo.flvInfo
+            EndpointType.MP4_FILE -> CameraStreamerConfigurationInfo.mp4Info
         }
     }
 }

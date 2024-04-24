@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Thibault B.
+ * Copyright (C) 2021 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,41 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.endpoints.muxers.mp4
+package io.github.thibaultbee.streampack.internal.endpoints.muxers.ts
 
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.internal.endpoints.muxers.IMuxerHelper
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.IMuxerInfo
 
-object MP4MuxerHelper : IMuxerHelper {
-    override val audio = AudioMP4MuxerHelper
-    override val video = VideoMP4MuxerHelper
+object TSMuxerInfo : IMuxerInfo {
+    override val audio = AudioTSMuxerInfo
+    override val video = VideoTSMuxerInfo
 }
 
-object AudioMP4MuxerHelper : IMuxerHelper.IAudioMuxerHelper {
+object AudioTSMuxerInfo : IMuxerInfo.IAudioMuxerInfo {
     /**
-     * Get MP4 Muxer supported audio encoders list
+     * Get TS Muxer supported audio encoders list
      */
     override val supportedEncoders =
-        listOf(
-            MediaFormat.MIMETYPE_AUDIO_AAC,
-            MediaFormat.MIMETYPE_AUDIO_OPUS
-        )
+        listOf(MediaFormat.MIMETYPE_AUDIO_AAC, MediaFormat.MIMETYPE_AUDIO_OPUS)
 
     override val supportedSampleRates: List<Int>? = null
 
     override val supportedByteFormats: List<Int>? = null
 }
 
-object VideoMP4MuxerHelper :
-    IMuxerHelper.IVideoMuxerHelper {
+object VideoTSMuxerInfo : IMuxerInfo.IVideoMuxerInfo {
     /**
-     * Get MP4 Muxer supported video encoders list
+     * Get TS Muxer supported video encoders list
      */
     override val supportedEncoders =
         listOf(
             MediaFormat.MIMETYPE_VIDEO_AVC,
-            MediaFormat.MIMETYPE_VIDEO_HEVC,
-            MediaFormat.MIMETYPE_VIDEO_VP9,
-            MediaFormat.MIMETYPE_VIDEO_AV1
+            MediaFormat.MIMETYPE_VIDEO_HEVC
         )
 }

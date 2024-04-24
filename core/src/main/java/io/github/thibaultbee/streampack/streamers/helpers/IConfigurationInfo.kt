@@ -17,21 +17,21 @@ package io.github.thibaultbee.streampack.streamers.helpers
 
 import android.util.Range
 
-interface IConfigurationHelper {
-    val video: IVideoConfigurationHelper
-    val audio: IAudioConfigurationHelper
+interface IConfigurationInfo {
+    val video: IVideoConfigurationInfo
+    val audio: IAudioConfigurationInfo
 }
 
-interface IVideoConfigurationHelper : IAVConfigurationHelper
+interface IVideoConfigurationInfo : IAVConfigurationInfo
 
-interface IAudioConfigurationHelper : IAVConfigurationHelper {
+interface IAudioConfigurationInfo : IAVConfigurationInfo {
     fun getSupportedInputChannelRange(mimeType: String): Range<Int>
     fun getSupportedSampleRates(mimeType: String): List<Int>
     fun getSupportedByteFormats(): List<Int>
 }
 
 
-interface IAVConfigurationHelper {
+interface IAVConfigurationInfo {
     val supportedEncoders: List<String>
     fun getSupportedBitrates(mimeType: String): Range<Int>
 }

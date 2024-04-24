@@ -30,6 +30,7 @@ import io.github.thibaultbee.streampack.internal.encoders.mediacodec.AudioEncode
 import io.github.thibaultbee.streampack.internal.encoders.mediacodec.MediaCodecEncoder
 import io.github.thibaultbee.streampack.internal.encoders.mediacodec.VideoEncoderConfig
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.IEndpointSettings
 import io.github.thibaultbee.streampack.internal.events.EventHandler
 import io.github.thibaultbee.streampack.internal.gl.CodecSurface
 import io.github.thibaultbee.streampack.internal.sources.IAudioSource
@@ -38,8 +39,8 @@ import io.github.thibaultbee.streampack.internal.sources.IVideoSource
 import io.github.thibaultbee.streampack.internal.sources.IVideoSourceSettings
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.Logger
-import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationHelper
-import io.github.thibaultbee.streampack.streamers.helpers.StreamerConfigurationHelper
+import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationInfo
+import io.github.thibaultbee.streampack.streamers.helpers.StreamerConfigurationInfo
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
@@ -66,7 +67,7 @@ abstract class BaseStreamer(
      * Supports only one listener.
      */
     override var onErrorListener: OnErrorListener? = initialOnErrorListener
-    override val helper = StreamerConfigurationHelper(internalEndpoint.helper)
+    override val info = StreamerConfigurationInfo(internalEndpoint.info)
 
     private var isStreaming = false
 
@@ -186,6 +187,11 @@ abstract class BaseStreamer(
     protected val codecSurface =
         if (internalVideoSource?.hasSurface == true) CodecSurface(sourceOrientationProvider) else null
 
+    // ENDPOINT
+
+    override val endpoint: IEndpointSettings
+        get() = internalEndpoint
+
     /**
      * Whether the streamer has audio.
      */
@@ -201,7 +207,7 @@ abstract class BaseStreamer(
      * It is the first method to call after a [BaseStreamer] instantiation.
      * It must be call when both stream and audio capture are not running.
      *
-     * Use [IConfigurationHelper] to get value limits.
+     * Use [IConfigurationInfo] to get value limits.
      *
      * @param audioConfig Audio configuration to set
      *
@@ -286,7 +292,7 @@ abstract class BaseStreamer(
      * It is the first method to call after a [BaseStreamer] instantiation.
      * It must be call when both stream and video capture are not running.
      *
-     * Use [IConfigurationHelper] to get value limits.
+     * Use [IConfigurationInfo] to get value limits.
      *
      * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
      * to video encoder default level and default profile.
@@ -319,7 +325,7 @@ abstract class BaseStreamer(
      * It is the first method to call after a [BaseStreamer] instantiation.
      * It must be call when both stream and audio and video capture are not running.
      *
-     * Use [IConfigurationHelper] to get value limits.
+     * Use [IConfigurationInfo] to get value limits.
      *
      * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
      * to video encoder default level and default profile.

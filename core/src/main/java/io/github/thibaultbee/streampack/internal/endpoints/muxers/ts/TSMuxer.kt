@@ -30,7 +30,6 @@ import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.packets.Pmt
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.packets.Sdt
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.utils.MuxerConst
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.utils.TSConst
-import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.ADTSFrameWriter
 import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.LATMFrameWriter
 import java.nio.ByteBuffer
@@ -42,7 +41,7 @@ class TSMuxer(
     initialTsServiceInfo: TsServiceInfo? = null,
     initialStreams: List<Config>? = null,
 ) : IMuxer {
-    override val helper = TSMuxerHelper
+    override val info = TSMuxerInfo
     private val tsServices = mutableListOf<Service>()
     private val tsPes = mutableListOf<Pes>()
 

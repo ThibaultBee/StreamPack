@@ -21,10 +21,11 @@ import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.encoders.IEncoderSettings
+import io.github.thibaultbee.streampack.internal.endpoints.IEndpointSettings
 import io.github.thibaultbee.streampack.internal.sources.IAudioSourceSettings
 import io.github.thibaultbee.streampack.internal.sources.IVideoSourceSettings
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationHelper
+import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationInfo
 
 interface IStreamer {
     /**
@@ -34,9 +35,9 @@ interface IStreamer {
     var onErrorListener: OnErrorListener?
 
     /**
-     * Access configuration helper.
+     * Access configuration info.
      */
-    val helper: IConfigurationHelper
+    val info: IConfigurationInfo
 
     /**
      * Advanced settings for the audio source.
@@ -57,6 +58,11 @@ interface IStreamer {
      * Advanced settings for the video encoder.
      */
     val videoEncoder: IEncoderSettings?
+
+    /**
+     * Advanced settings for the endpoint.
+     */
+    val endpoint: IEndpointSettings
 
     /**
      * Configures only audio settings.

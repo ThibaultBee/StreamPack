@@ -20,10 +20,9 @@ import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.interfaces.Releaseable
 import io.github.thibaultbee.streampack.internal.interfaces.Streamable
-import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 
 interface IMuxer : Streamable, Releaseable {
-    val helper: IMuxerHelper
+    val info: IMuxerInfo
 
     var listener: IMuxerListener?
 
