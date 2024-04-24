@@ -15,10 +15,10 @@
  */
 package io.github.thibaultbee.streampack.internal.endpoints.muxers
 
-interface IMuxerHelper {
-    val audio: IAudioMuxerHelper
+interface IMuxerInfo {
+    val audio: IAudioMuxerInfo
 
-    interface IAudioMuxerHelper {
+    interface IAudioMuxerInfo {
         val supportedEncoders: List<String>
 
         /**
@@ -36,9 +36,9 @@ interface IMuxerHelper {
         val supportedByteFormats: List<Int>?
     }
 
-    val video: IVideoMuxerHelper
+    val video: IVideoMuxerInfo
 
-    interface IVideoMuxerHelper {
+    interface IVideoMuxerInfo {
         val supportedEncoders: List<String>
     }
 }

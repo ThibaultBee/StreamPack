@@ -23,52 +23,7 @@ import io.github.thibaultbee.streampack.internal.interfaces.Releaseable
 import io.github.thibaultbee.streampack.internal.interfaces.SuspendStreamable
 
 
-interface IEndpoint : SuspendStreamable, Releaseable {
-    /**
-     * A helper to verify supported formats.
-     */
-    val helper: IEndpointHelper
-
-    interface IEndpointHelper {
-        /**
-         * A helper to verify supported audio formats.
-         */
-        val audio: IAudioEndpointHelper
-
-        interface IAudioEndpointHelper {
-            /**
-             * Supported audio encoders.
-             */
-            val supportedEncoders: List<String>
-
-            /**
-             * Supported audio sample rates.
-             *
-             * Returns null if not applicable (no limitation)
-             */
-            val supportedSampleRates: List<Int>?
-
-            /**
-             * Supported audio byte formats.
-             *
-             * Returns null if not applicable (no limitation)
-             */
-            val supportedByteFormats: List<Int>?
-        }
-
-        /**
-         * A helper to verify supported video formats.
-         */
-        val video: IVideoEndpointHelper
-
-        interface IVideoEndpointHelper {
-            /**
-             * Supported video encoders.
-             */
-            val supportedEncoders: List<String>
-        }
-    }
-
+interface IEndpoint : IEndpointSettings, SuspendStreamable, Releaseable {
     /**
      * Writes a [Frame] to the [IEndpoint].
      *
@@ -92,6 +47,53 @@ interface IEndpoint : SuspendStreamable, Releaseable {
      * @return the stream id
      */
     fun addStream(streamConfig: Config): Int
+}
+
+interface IEndpointSettings {
+    /**
+     * A info to verify supported formats.
+     */
+    val info: IEndpointInfo
+
+    interface IEndpointInfo {
+        /**
+         * A info to verify supported audio formats.
+         */
+        val audio: IAudioEndpointInfo
+
+        interface IAudioEndpointInfo {
+            /**
+             * Supported audio encoders.
+             */
+            val supportedEncoders: List<String>
+
+            /**
+             * Supported audio sample rates.
+             *
+             * Returns null if not applicable (no limitation)
+             */
+            val supportedSampleRates: List<Int>?
+
+            /**
+             * Supported audio byte formats.
+             *
+             * Returns null if not applicable (no limitation)
+             */
+            val supportedByteFormats: List<Int>?
+        }
+
+        /**
+         * A info to verify supported video formats.
+         */
+        val video: IVideoEndpointInfo
+
+        interface IVideoEndpointInfo {
+            /**
+             * Supported video encoders.
+             */
+            val supportedEncoders: List<String>
+        }
+    }
 }
 
 interface IConnectableEndpoint : IEndpoint, IConnectable

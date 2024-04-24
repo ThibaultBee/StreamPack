@@ -39,7 +39,7 @@ class MediaMuxerEndpoint : IEndpoint, IFileEndpoint {
     private val streamIdToTrackId = mutableMapOf<Int, Int>()
     private var numOfStreams = 0
 
-    override val helper = MediaMuxerEndpointHelper
+    override val info = MediaMuxerEndpointInfo
 
     override var file: File? = null
         set(value) {
@@ -149,8 +149,8 @@ class MediaMuxerEndpoint : IEndpoint, IFileEndpoint {
         mediaMuxer?.release()
     }
 
-    object MediaMuxerEndpointHelper : IEndpoint.IEndpointHelper {
-        override val audio = object : IEndpoint.IEndpointHelper.IAudioEndpointHelper {
+    object MediaMuxerEndpointInfo : IEndpointSettings.IEndpointInfo {
+        override val audio = object : IEndpointSettings.IEndpointInfo.IAudioEndpointInfo {
             override val supportedEncoders = listOf(
                 MediaFormat.MIMETYPE_AUDIO_AAC,
                 MediaFormat.MIMETYPE_AUDIO_AMR_NB,
@@ -160,7 +160,7 @@ class MediaMuxerEndpoint : IEndpoint, IFileEndpoint {
             override val supportedByteFormats = null
         }
 
-        override val video = object : IEndpoint.IEndpointHelper.IVideoEndpointHelper {
+        override val video = object : IEndpointSettings.IEndpointInfo.IVideoEndpointInfo {
             override val supportedEncoders = run {
                 mutableListOf(
                     MediaFormat.MIMETYPE_VIDEO_H263,

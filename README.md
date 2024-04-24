@@ -289,11 +289,11 @@ in a [pull request](https://github.com/ThibaultBee/StreamPack/pulls).
 ### Get device capabilities
 
 Have you ever wonder: "What are the supported resolution of my cameras?" or "What is the supported
-sample rate of my audio codecs?"? `Helpers` classes are made for this. All `Streamer` comes with a
-specific `Helper` object (I am starting to have the feeling I repeat myself):
+sample rate of my audio codecs?"? `Info` classes are made for this. All `Streamer` comes with a
+specific `Info` object (I am starting to have the feeling I repeat myself):
 
 ```kotlin
-val helper = streamer.helper
+val info = streamer.info
 ```
 
 ### Get extended settings
