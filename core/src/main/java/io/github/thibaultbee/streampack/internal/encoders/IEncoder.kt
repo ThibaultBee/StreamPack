@@ -22,19 +22,7 @@ import io.github.thibaultbee.streampack.internal.interfaces.SuspendStreamable
 import java.nio.ByteBuffer
 import java.util.concurrent.Executor
 
-interface IEncoder : SuspendStreamable, Releaseable {
-    interface IListener {
-        /**
-         * Calls when an encoder has an error.
-         */
-        fun onError(e: Exception) {}
-
-        /**
-         * Calls when an encoder has generated an output frame.
-         * @param frame Output frame with correct parameters and buffers
-         */
-        fun onOutputFrame(frame: Frame) {}
-    }
+interface IEncoderSettings {
 
     /**
      * The encoder mime type
@@ -65,6 +53,34 @@ interface IEncoder : SuspendStreamable, Releaseable {
          */
         val name: String
     }
+
+    /**
+     * Force the encoder to generate a key frame.
+     */
+    fun requestKeyFrame()
+}
+
+interface IEncoder : SuspendStreamable, Releaseable {
+    interface IListener {
+        /**
+         * Calls when an encoder has an error.
+         */
+        fun onError(e: Exception) {}
+
+        /**
+         * Calls when an encoder has generated an output frame.
+         * @param frame Output frame with correct parameters and buffers
+         */
+        fun onOutputFrame(frame: Frame) {}
+    }
+
+    /**
+     * Set the encoder listener
+     *
+     * @param listener the listener
+     * @param listenerExecutor the executor where the listener will be called
+     */
+    fun setListener(listener: IListener, listenerExecutor: Executor)
 
     /**
      * The encoder input.
@@ -106,19 +122,6 @@ interface IEncoder : SuspendStreamable, Releaseable {
             fun onFrameRequested(buffer: ByteBuffer): Frame
         }
     }
-
-    /**
-     * Force the encoder to generate a key frame.
-     */
-    fun requestKeyFrame()
-
-    /**
-     * Set the encoder listener
-     *
-     * @param listener the listener
-     * @param listenerExecutor the executor where the listener will be called
-     */
-    fun setListener(listener: IListener, listenerExecutor: Executor)
 
     /**
      * Reset the encoder

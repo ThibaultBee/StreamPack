@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Thibault B.
+ * Copyright (C) 2024 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.sources
+package io.github.thibaultbee.streampack.internal.sources.camera
 
-import io.github.thibaultbee.streampack.data.AudioConfig
+import io.github.thibaultbee.streampack.internal.sources.IVideoSourceSettings
+import io.github.thibaultbee.streampack.utils.CameraSettings
 
-interface IAudioSource : IAudioSourceSettings, IFrameSource<AudioConfig>
-
-interface IAudioSourceSettings {
+interface ICameraSourceSettings : IVideoSourceSettings {
     /**
-     * [Boolean.true] to mute [IAudioSource], [Boolean.false] to unmute.
+     * Get/Set current camera id.
      */
-    var isMuted: Boolean
+    var cameraId: String
+
+    /**
+     * The camera settings (auto-exposure, auto-focus, etc.).
+     */
+    val settings: CameraSettings
 }
