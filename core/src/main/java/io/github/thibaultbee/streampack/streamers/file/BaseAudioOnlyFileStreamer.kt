@@ -44,10 +44,10 @@ open class BaseAudioOnlyFileStreamer(
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseAudioOnlyStreamer(
     context = context,
-    endpoint = FileCompositeEndpoint(muxer, FileWriter()),
+    internalEndpoint = FileCompositeEndpoint(muxer, FileWriter()),
     initialOnErrorListener = initialOnErrorListener
 ), IFileStreamer {
-    private val fileEndpoint = endpoint as IFileEndpoint
+    private val fileEndpoint = internalEndpoint as IFileEndpoint
 
     /**
      * Get/Set file.

@@ -20,7 +20,7 @@ import android.graphics.Rect
 import android.util.Range
 import android.util.Rational
 
-fun Any.numOfBits(): Int {
+internal fun Any.numOfBits(): Int {
     return when (this) {
         is Byte -> Byte.SIZE_BITS
         is Short -> Short.SIZE_BITS
@@ -43,7 +43,7 @@ fun Any.numOfBits(): Int {
     }
 }
 
-fun <T : Comparable<T>> T.clamp(min: T, max: T): T {
+internal fun <T : Comparable<T>> T.clamp(min: T, max: T): T {
     return if (max >= min) {
         if (this < min) min else if (this > max) max else this
     } else {
@@ -51,13 +51,13 @@ fun <T : Comparable<T>> T.clamp(min: T, max: T): T {
     }
 }
 
-fun <T : Comparable<T>> T.clamp(range: Range<T>) =
+internal fun <T : Comparable<T>> T.clamp(range: Range<T>) =
     this.clamp(range.lower, range.upper)
 
-val PointF.isNormalized: Boolean
+internal val PointF.isNormalized: Boolean
     get() = x in 0f..1f && y in 0f..1f
 
-fun PointF.rotate(rotation: Int): PointF {
+internal fun PointF.rotate(rotation: Int): PointF {
     return when (rotation) {
         0 -> this
         90 -> PointF(y, 1 - x)
@@ -67,12 +67,12 @@ fun PointF.rotate(rotation: Int): PointF {
     }
 }
 
-fun PointF.normalize(width: Int, height: Int): PointF {
+internal fun PointF.normalize(width: Int, height: Int): PointF {
     return PointF(x / width, y / height)
 }
 
-fun PointF.normalize(rect: Rect): PointF {
+internal fun PointF.normalize(rect: Rect): PointF {
     return PointF(x / rect.width(), y / rect.height())
 }
 
-fun Rational.flip() = Rational(denominator, numerator)
+internal fun Rational.flip() = Rational(denominator, numerator)

@@ -24,17 +24,17 @@ import io.github.thibaultbee.streampack.listeners.OnErrorListener
  * A [BaseStreamer] that sends only microphone frames.
  *
  * @param context application context
- * @param endpoint the [IEndpoint] implementation
+ * @param internalEndpoint the [IEndpoint] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
  */
 open class BaseAudioOnlyStreamer(
     context: Context,
-    endpoint: IEndpoint,
+    internalEndpoint: IEndpoint,
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseStreamer(
     context = context,
-    videoSource = null,
-    audioSource = AudioSource(),
-    endpoint = endpoint,
+    internalVideoSource = null,
+    internalAudioSource = AudioSource(),
+    internalEndpoint = internalEndpoint,
     initialOnErrorListener = initialOnErrorListener
 )
