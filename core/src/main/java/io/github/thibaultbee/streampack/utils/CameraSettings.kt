@@ -677,6 +677,7 @@ class FocusMetering(
     private val scheduler = Executors.newSingleThreadScheduledExecutor()
     private var autoCancelHandle: ScheduledFuture<*>? = null
 
+    @Suppress("UNCHECKED_CAST")
     private fun cancelAfAeTrigger() {
         // Cancel previous AF trigger
         val cancelTriggerMap =
@@ -691,6 +692,7 @@ class FocusMetering(
         cameraController.setBurstSettings(cancelTriggerMap as Map<CaptureRequest.Key<Any>, Any>)
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun addFocusMetering(
         afRects: List<MeteringRectangle>,
         aeRects: List<MeteringRectangle>,
@@ -722,6 +724,7 @@ class FocusMetering(
         cameraController.setRepeatingSettings(settingsMap as Map<CaptureRequest.Key<Any>, Any>)
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun triggerAf() {
         val aeMode = cameraController.cameraId?.let {
             getPreferredAEMode(
