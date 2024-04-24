@@ -41,44 +41,44 @@ import android.os.Build
 import android.util.Range
 import io.github.thibaultbee.streampack.internal.encoders.mediacodec.MediaCodecHelper
 import io.github.thibaultbee.streampack.internal.endpoints.CompositeEndpoint
-import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.FlvMuxerHelper
-import io.github.thibaultbee.streampack.internal.endpoints.muxers.mp4.MP4MuxerHelper
-import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.TSMuxerHelper
+import io.github.thibaultbee.streampack.internal.endpoints.IEndpointSettings
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.FlvMuxerInfo
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.mp4.MP4MuxerInfo
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.TSMuxerInfo
 import io.github.thibaultbee.streampack.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import java.security.InvalidParameterException
 
 /**
- * Configuration helper for [BaseStreamer].
+ * Configuration info for [BaseStreamer].
  * It wraps supported values from MediaCodec and TS Muxer.
  *
- * @param endpointHelper the corresponding muxer helper
+ * @param endpointInfo the corresponding muxer info
  */
-open class StreamerConfigurationHelper(endpointHelper: IEndpoint.IEndpointHelper) :
-    IConfigurationHelper {
+open class StreamerConfigurationInfo(endpointInfo: IEndpointSettings.IEndpointInfo) :
+    IConfigurationInfo {
     companion object {
-        val flvHelper =
-            StreamerConfigurationHelper(CompositeEndpoint.CompositeEndpointHelper(FlvMuxerHelper))
-        val tsHelper =
-            StreamerConfigurationHelper(CompositeEndpoint.CompositeEndpointHelper(TSMuxerHelper))
-        val mp4Helper =
-            StreamerConfigurationHelper(CompositeEndpoint.CompositeEndpointHelper(MP4MuxerHelper))
+        val flvInfo =
+            StreamerConfigurationInfo(CompositeEndpoint.CompositeEndpointInfo(FlvMuxerInfo))
+        val tsInfo =
+            StreamerConfigurationInfo(CompositeEndpoint.CompositeEndpointInfo(TSMuxerInfo))
+        val mp4Info =
+            StreamerConfigurationInfo(CompositeEndpoint.CompositeEndpointInfo(MP4MuxerInfo))
     }
 
     override val audio =
-        AudioStreamerConfigurationHelper(endpointHelper.audio)
+        AudioStreamerConfigurationInfo(endpointInfo.audio)
     override val video =
-        VideoStreamerConfigurationHelper(endpointHelper.video)
+        VideoStreamerConfigurationInfo(endpointInfo.video)
 }
 
-class AudioStreamerConfigurationHelper(private val audioEndpointHelper: IEndpoint.IEndpointHelper.IAudioEndpointHelper) :
-    IAudioConfigurationHelper {
+class AudioStreamerConfigurationInfo(private val audioEndpointInfo: IEndpointSettings.IEndpointInfo.IAudioEndpointInfo) :
+    IAudioConfigurationInfo {
     /**
      * Get supported audio encoders list
      */
     override val supportedEncoders = MediaCodecHelper.Audio.supportedEncoders.filter {
-        audioEndpointHelper.supportedEncoders.contains(it)
+        audioEndpointInfo.supportedEncoders.contains(it)
     }
 
     /**
@@ -107,7 +107,7 @@ class AudioStreamerConfigurationHelper(private val audioEndpointHelper: IEndpoin
      */
     override fun getSupportedSampleRates(mimeType: String): List<Int> {
         val codecSampleRates = MediaCodecHelper.Audio.getSupportedSampleRates(mimeType).toList()
-        return audioEndpointHelper.supportedSampleRates?.let { muxerSampleRates ->
+        return audioEndpointInfo.supportedSampleRates?.let { muxerSampleRates ->
             codecSampleRates.filter {
                 muxerSampleRates.contains(it)
             }
@@ -128,7 +128,7 @@ class AudioStreamerConfigurationHelper(private val audioEndpointHelper: IEndpoin
             AudioFormat.ENCODING_PCM_16BIT,
             AudioFormat.ENCODING_PCM_FLOAT
         )
-        return audioEndpointHelper.supportedByteFormats?.let { muxerByteFormats ->
+        return audioEndpointInfo.supportedByteFormats?.let { muxerByteFormats ->
             codecByteFormats.filter {
                 muxerByteFormats.contains(it)
             }
@@ -146,13 +146,13 @@ class AudioStreamerConfigurationHelper(private val audioEndpointHelper: IEndpoin
     }
 }
 
-open class VideoStreamerConfigurationHelper(private val videoEndpointHelper: IEndpoint.IEndpointHelper.IVideoEndpointHelper) :
-    IVideoConfigurationHelper {
+open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IEndpointSettings.IEndpointInfo.IVideoEndpointInfo) :
+    IVideoConfigurationInfo {
     /**
      * Supported encoders for a [BaseStreamer]
      */
     override val supportedEncoders = MediaCodecHelper.Video.supportedEncoders.filter {
-        videoEndpointHelper.supportedEncoders.contains(it)
+        videoEndpointInfo.supportedEncoders.contains(it)
     }
 
     /**

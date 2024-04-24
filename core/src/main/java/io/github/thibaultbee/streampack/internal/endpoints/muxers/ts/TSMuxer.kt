@@ -42,7 +42,7 @@ class TSMuxer(
     initialTsServiceInfo: TsServiceInfo? = null,
     initialStreams: List<Config>? = null,
 ) : IMuxer {
-    override val helper = TSMuxerHelper
+    override val info = TSMuxerInfo
     private val tsServices = mutableListOf<Service>()
     private val tsPes = mutableListOf<Pes>()
 

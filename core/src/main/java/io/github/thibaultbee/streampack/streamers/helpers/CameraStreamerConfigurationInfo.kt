@@ -19,10 +19,10 @@ import android.content.Context
 import android.util.Range
 import android.util.Size
 import io.github.thibaultbee.streampack.internal.endpoints.CompositeEndpoint
-import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.FlvMuxerHelper
-import io.github.thibaultbee.streampack.internal.endpoints.muxers.mp4.MP4MuxerHelper
-import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.TSMuxerHelper
+import io.github.thibaultbee.streampack.internal.endpoints.IEndpointSettings
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.FlvMuxerInfo
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.mp4.MP4MuxerInfo
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.TSMuxerInfo
 import io.github.thibaultbee.streampack.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.utils.get10BitSupportedProfiles
@@ -30,28 +30,28 @@ import io.github.thibaultbee.streampack.utils.getCameraFpsList
 import io.github.thibaultbee.streampack.utils.getCameraOutputStreamSizes
 
 /**
- * Configuration helper for [BaseCameraStreamer].
+ * Configuration infos\ for [BaseCameraStreamer].
  * It wraps supported values from MediaCodec, Camera and TS Muxer.
  */
-class CameraStreamerConfigurationHelper(endpointHelper: IEndpoint.IEndpointHelper) :
-    StreamerConfigurationHelper(endpointHelper) {
+class CameraStreamerConfigurationInfo(endpointInfo: IEndpointSettings.IEndpointInfo) :
+    StreamerConfigurationInfo(endpointInfo) {
     companion object {
-        val flvHelper = CameraStreamerConfigurationHelper(
-            CompositeEndpoint.CompositeEndpointHelper(FlvMuxerHelper)
+        val flvInfo = CameraStreamerConfigurationInfo(
+            CompositeEndpoint.CompositeEndpointInfo(FlvMuxerInfo)
         )
-        val tsHelper = CameraStreamerConfigurationHelper(
-            CompositeEndpoint.CompositeEndpointHelper(TSMuxerHelper)
+        val tsInfo = CameraStreamerConfigurationInfo(
+            CompositeEndpoint.CompositeEndpointInfo(TSMuxerInfo)
         )
-        val mp4Helper = CameraStreamerConfigurationHelper(
-            CompositeEndpoint.CompositeEndpointHelper(MP4MuxerHelper)
+        val mp4Info = CameraStreamerConfigurationInfo(
+            CompositeEndpoint.CompositeEndpointInfo(MP4MuxerInfo)
         )
     }
 
-    override val video = VideoCameraStreamerConfigurationHelper(endpointHelper.video)
+    override val video = VideoCameraStreamerConfigurationInfo(endpointInfo.video)
 }
 
-class VideoCameraStreamerConfigurationHelper(videoEndpointHelper: IEndpoint.IEndpointHelper.IVideoEndpointHelper) :
-    VideoStreamerConfigurationHelper(videoEndpointHelper) {
+class VideoCameraStreamerConfigurationInfo(videoEndpointInfo: IEndpointSettings.IEndpointInfo.IVideoEndpointInfo) :
+    VideoStreamerConfigurationInfo(videoEndpointInfo) {
     /**
      * Get camera resolutions that are supported by the encoder.
      *

@@ -32,12 +32,12 @@ muxers, endpoints,... and have lot of tools. They are the most important class f
 `Streamer element`:
 Could be a `Source`, `Encoder`, `Muxer`, or `Endpoint`. They implement the `Streamable<T>`.
 
-`Helper`:
+`Info`:
 A class that provides a set of methods to help to `streamer` configuration such as supported
 resolutions,... It comes with an instantiated `Streamer` object:
 
 ```kotlin
-val helper = streamer.helper
+val info = streamer.info
 ```
 
 They might be different for each `Streamer` object. For example, a `FlvStreamer` object will not
