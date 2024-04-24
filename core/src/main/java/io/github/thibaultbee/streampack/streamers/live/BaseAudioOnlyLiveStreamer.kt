@@ -38,7 +38,7 @@ open class BaseAudioOnlyLiveStreamer(
     initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseAudioOnlyStreamer(
     context = context,
-    endpoint = endpoint,
+    internalEndpoint = endpoint,
     initialOnErrorListener = initialOnErrorListener,
 ), ILiveStreamer {
     private val liveProducer = endpoint.apply { onConnectionListener = initialOnConnectionListener }

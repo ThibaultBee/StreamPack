@@ -76,7 +76,11 @@ class ScreenRecorderSrtLiveStreamer(
     private val bitrateRegulator = bitrateRegulatorConfig?.let { config ->
         bitrateRegulatorFactory?.newBitrateRegulator(
             config,
-            { settings.video.bitrate = it },
+            {
+                val videoEncoder = videoEncoder
+                    ?: throw UnsupportedOperationException("Bitrate regulator set without a video encoder")
+                videoEncoder.bitrate = it
+            },
             { /* Do nothing for audio */ }
         ) as SrtBitrateRegulator
     }
@@ -85,11 +89,17 @@ class ScreenRecorderSrtLiveStreamer(
      * Scheduler for bitrate regulation
      */
     private val scheduler = Scheduler(500) {
-        bitrateRegulator?.update(srtProducer.stats, settings.video.bitrate, settings.audio.bitrate)
+        val videoEncoder = videoEncoder
+            ?: throw UnsupportedOperationException("Scheduler runs but no video encoder set")
+        bitrateRegulator?.update(
+            srtProducer.stats,
+            videoEncoder.bitrate,
+            audioEncoder?.bitrate ?: 0
+        )
             ?: throw UnsupportedOperationException("Scheduler runs but no bitrate regulator set")
     }
 
-    private val srtProducer = (endpoint as ConnectableCompositeEndpoint).sink as SrtSink
+    private val srtProducer = (internalEndpoint as ConnectableCompositeEndpoint).sink as SrtSink
 
     /**
      * Get/set SRT stream ID.

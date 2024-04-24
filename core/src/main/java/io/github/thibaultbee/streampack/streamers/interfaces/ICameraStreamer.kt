@@ -21,19 +21,20 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.TextureView
 import androidx.annotation.RequiresPermission
+import io.github.thibaultbee.streampack.internal.sources.camera.ICameraSourceSettings
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
 
 interface ICameraStreamer {
     /**
-     * Get/Set current camera id.
+     * The camera source settings.
      */
-    var camera: String
+    val videoSource: ICameraSourceSettings
 
     /**
-     *  Access extended camera settings.
+     * Gets/Sets current camera id.
+     * It is a shortcut for [videoSource.cameraId].
      */
-    val settings: IBaseCameraStreamerSettings
+    var camera: String
 
     /**
      * Starts audio and video capture.
@@ -45,7 +46,7 @@ interface ICameraStreamer {
      * @see [stopPreview]
      */
     @RequiresPermission(allOf = [Manifest.permission.CAMERA])
-    fun startPreview(previewSurface: Surface, cameraId: String = camera)
+    fun startPreview(previewSurface: Surface, cameraId: String = videoSource.cameraId)
 
     /**
      * Starts audio and video capture.
@@ -57,7 +58,7 @@ interface ICameraStreamer {
      * @see [stopPreview]
      */
     @RequiresPermission(allOf = [Manifest.permission.CAMERA])
-    fun startPreview(surfaceView: SurfaceView, cameraId: String = camera) =
+    fun startPreview(surfaceView: SurfaceView, cameraId: String = videoSource.cameraId) =
         startPreview(surfaceView.holder.surface, cameraId)
 
     /**
@@ -70,7 +71,7 @@ interface ICameraStreamer {
      * @see [stopPreview]
      */
     @RequiresPermission(allOf = [Manifest.permission.CAMERA])
-    fun startPreview(surfaceHolder: SurfaceHolder, cameraId: String = camera) =
+    fun startPreview(surfaceHolder: SurfaceHolder, cameraId: String = videoSource.cameraId) =
         startPreview(surfaceHolder.surface, cameraId)
 
     /**
@@ -83,7 +84,7 @@ interface ICameraStreamer {
      * @see [stopPreview]
      */
     @RequiresPermission(allOf = [Manifest.permission.CAMERA])
-    fun startPreview(textureView: TextureView, cameraId: String = camera) =
+    fun startPreview(textureView: TextureView, cameraId: String = videoSource.cameraId) =
         startPreview(Surface(textureView.surfaceTexture), cameraId)
 
     /**

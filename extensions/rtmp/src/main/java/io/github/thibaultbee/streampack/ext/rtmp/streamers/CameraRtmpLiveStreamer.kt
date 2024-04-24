@@ -44,7 +44,7 @@ class CameraRtmpLiveStreamer(
     initialOnErrorListener = initialOnErrorListener,
     initialOnConnectionListener = initialOnConnectionListener
 ) {
-    private val rtmpProducer = (endpoint as ConnectableCompositeEndpoint).sink as RtmpSink
+    private val rtmpProducer = (internalEndpoint as ConnectableCompositeEndpoint).sink as RtmpSink
 
     override suspend fun connect(url: String) {
         require(videoConfig != null) {

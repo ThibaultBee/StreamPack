@@ -31,23 +31,23 @@ import io.github.thibaultbee.streampack.listeners.OnErrorListener
  *
  * @param context application context
  * @param enableAudio [Boolean.true] to capture audio
- * @param endpoint the [IEndpoint] implementation
+ * @param internalEndpoint the [IEndpoint] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
  */
 open class BaseScreenRecorderStreamer(
     context: Context,
     enableAudio: Boolean = true,
-    endpoint: IEndpoint,
+    internalEndpoint: IEndpoint,
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseStreamer(
     context = context,
-    videoSource = ScreenSource(context),
-    audioSource = if (enableAudio) AudioSource() else null,
-    endpoint = endpoint,
+    internalVideoSource = ScreenSource(context),
+    internalAudioSource = if (enableAudio) AudioSource() else null,
+    internalEndpoint = internalEndpoint,
     initialOnErrorListener = initialOnErrorListener
 ) {
     private val screenSource =
-        (videoSource as ScreenSource).apply { onErrorListener = onInternalErrorListener }
+        (internalVideoSource as ScreenSource).apply { onErrorListener = onInternalErrorListener }
 
     companion object {
         /**

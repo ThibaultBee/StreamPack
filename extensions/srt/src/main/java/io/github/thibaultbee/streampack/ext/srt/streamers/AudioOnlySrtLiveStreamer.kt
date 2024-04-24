@@ -51,7 +51,7 @@ class AudioOnlySrtLiveStreamer(
     initialOnConnectionListener = initialOnConnectionListener
 ),
     ISrtLiveStreamer {
-    private val srtProducer = (endpoint as ConnectableCompositeEndpoint).sink as SrtSink
+    private val srtProducer = (internalEndpoint as ConnectableCompositeEndpoint).sink as SrtSink
 
     /**
      * Get/set SRT stream ID.

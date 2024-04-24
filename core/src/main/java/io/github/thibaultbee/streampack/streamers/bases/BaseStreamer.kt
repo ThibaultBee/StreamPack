@@ -25,6 +25,7 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.encoders.IEncoder
+import io.github.thibaultbee.streampack.internal.encoders.IEncoderSettings
 import io.github.thibaultbee.streampack.internal.encoders.mediacodec.AudioEncoderConfig
 import io.github.thibaultbee.streampack.internal.encoders.mediacodec.MediaCodecEncoder
 import io.github.thibaultbee.streampack.internal.encoders.mediacodec.VideoEncoderConfig
@@ -32,15 +33,14 @@ import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.events.EventHandler
 import io.github.thibaultbee.streampack.internal.gl.CodecSurface
 import io.github.thibaultbee.streampack.internal.sources.IAudioSource
+import io.github.thibaultbee.streampack.internal.sources.IAudioSourceSettings
 import io.github.thibaultbee.streampack.internal.sources.IVideoSource
+import io.github.thibaultbee.streampack.internal.sources.IVideoSourceSettings
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.helpers.StreamerConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.settings.IAudioSettings
-import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseStreamerSettings
-import io.github.thibaultbee.streampack.streamers.interfaces.settings.IVideoSettings
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
 
@@ -49,16 +49,16 @@ import java.nio.ByteBuffer
  * Base class of all streamers.
  *
  * @param context the application context
- * @param videoSource the video source
- * @param audioSource the audio source
- * @param endpoint the [IEndpoint] implementation
+ * @param internalVideoSource the video source
+ * @param internalAudioSource the audio source
+ * @param internalEndpoint the [IEndpoint] implementation
  * @param initialOnErrorListener initial [OnErrorListener]
  */
 abstract class BaseStreamer(
     private val context: Context,
-    protected val audioSource: IAudioSource?,
-    protected val videoSource: IVideoSource?,
-    protected val endpoint: IEndpoint,
+    protected val internalAudioSource: IAudioSource?,
+    protected val internalVideoSource: IVideoSource?,
+    protected val internalEndpoint: IEndpoint,
     initialOnErrorListener: OnErrorListener? = null
 ) : EventHandler(), IStreamer {
     /**
@@ -66,7 +66,7 @@ abstract class BaseStreamer(
      * Supports only one listener.
      */
     override var onErrorListener: OnErrorListener? = initialOnErrorListener
-    override val helper = StreamerConfigurationHelper(endpoint.helper)
+    override val helper = StreamerConfigurationHelper(internalEndpoint.helper)
 
     private var isStreaming = false
 
@@ -77,7 +77,7 @@ abstract class BaseStreamer(
     protected var videoConfig: VideoConfig? = null
     private var audioConfig: AudioConfig? = null
 
-    private val sourceOrientationProvider = videoSource?.orientationProvider
+    private val sourceOrientationProvider = internalVideoSource?.orientationProvider
 
     // Only handle stream error (error on muxer, endpoint,...)
     /**
@@ -97,7 +97,7 @@ abstract class BaseStreamer(
         override fun onOutputFrame(frame: Frame) {
             audioStreamId?.let {
                 try {
-                    this@BaseStreamer.endpoint.write(frame, it)
+                    this@BaseStreamer.internalEndpoint.write(frame, it)
                 } catch (e: Exception) {
                     throw StreamPackError(e)
                 }
@@ -113,13 +113,13 @@ abstract class BaseStreamer(
         override fun onOutputFrame(frame: Frame) {
             videoStreamId?.let {
                 try {
-                    frame.pts += videoSource!!.timestampOffset
+                    frame.pts += internalVideoSource!!.timestampOffset
                     frame.dts = if (frame.dts != null) {
-                        frame.dts!! + videoSource.timestampOffset
+                        frame.dts!! + internalVideoSource.timestampOffset
                     } else {
                         null
                     }
-                    this@BaseStreamer.endpoint.write(frame, it)
+                    this@BaseStreamer.internalEndpoint.write(frame, it)
                 } catch (e: Exception) {
                     // Send exception to encoder
                     throw StreamPackError(e)
@@ -146,17 +146,55 @@ abstract class BaseStreamer(
         }
     }
 
-    private var audioEncoder: MediaCodecEncoder? = null
-    private var videoEncoder: MediaCodecEncoder? = null
+    // SOURCES
+
+    /**
+     * The audio source.
+     * It allows advanced audio settings.
+     */
+    override val audioSource: IAudioSourceSettings?
+        get() = internalAudioSource
+
+    /**
+     * The video source.
+     * It allows advanced video settings.
+     */
+    override val videoSource: IVideoSourceSettings?
+        get() = internalVideoSource
+
+    // ENCODERS
+
+    private var internalAudioEncoder: MediaCodecEncoder? = null
+
+    /**
+     * The audio encoder.
+     * Only valid when audio has been [configure]. It is null after [release].
+     */
+    override val audioEncoder: IEncoderSettings?
+        get() = internalAudioEncoder
+
+    private var internalVideoEncoder: MediaCodecEncoder? = null
+
+    /**
+     * The video encoder.
+     * Only valid when audio has been [configure]. It is null after [release].
+     */
+    override val videoEncoder: IEncoderSettings?
+        get() = internalVideoEncoder
+
+
     protected val codecSurface =
-        if (videoSource?.hasSurface == true) CodecSurface(sourceOrientationProvider) else null
+        if (internalVideoSource?.hasSurface == true) CodecSurface(sourceOrientationProvider) else null
 
-    override val settings = BaseStreamerSettings()
+    /**
+     * Whether the streamer has audio.
+     */
+    val hasAudio = internalAudioSource != null
 
-    private val hasAudio: Boolean
-        get() = audioSource != null
-    private val hasVideo: Boolean
-        get() = videoSource != null
+    /**
+     * Whether the streamer has video.
+     */
+    val hasVideo = internalVideoSource != null
 
     /**
      * Configures audio settings.
@@ -172,15 +210,15 @@ abstract class BaseStreamer(
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun configure(audioConfig: AudioConfig) {
         require(hasAudio) { "Do not need to set audio as it is a video only streamer" }
-        require(audioSource != null) { "Audio source must not be null" }
+        require(internalAudioSource != null) { "Audio source must not be null" }
 
         this.audioConfig = audioConfig
 
         try {
-            audioSource.configure(audioConfig)
+            internalAudioSource.configure(audioConfig)
 
-            audioEncoder?.release()
-            audioEncoder =
+            internalAudioEncoder?.release()
+            internalAudioEncoder =
                 MediaCodecEncoder(
                     AudioEncoderConfig(audioConfig),
                     listener = audioEncoderListener
@@ -189,7 +227,7 @@ abstract class BaseStreamer(
                         input.listener =
                             object : IEncoder.IByteBufferInput.OnFrameRequestedListener {
                                 override fun onFrameRequested(buffer: ByteBuffer): Frame {
-                                    return audioSource.getFrame(buffer)
+                                    return internalAudioSource.getFrame(buffer)
                                 }
                             }
                     } else {
@@ -259,15 +297,15 @@ abstract class BaseStreamer(
      */
     override fun configure(videoConfig: VideoConfig) {
         require(hasVideo) { "Do not need to set video as it is a audio only streamer" }
-        require(videoSource != null) { "Video source must not be null" }
+        require(internalVideoSource != null) { "Video source must not be null" }
 
         this.videoConfig = videoConfig
 
         try {
-            videoSource.configure(videoConfig)
+            internalVideoSource.configure(videoConfig)
 
-            videoEncoder?.release()
-            videoEncoder = buildVideoEncoder(videoConfig, videoSource).apply {
+            internalVideoEncoder?.release()
+            internalVideoEncoder = buildVideoEncoder(videoConfig, internalVideoSource).apply {
                 configure()
             }
         } catch (e: Exception) {
@@ -334,18 +372,18 @@ abstract class BaseStreamer(
                 streams.add(audioConfig!!)
             }
 
-            val streamsIdMap = endpoint.addStreams(streams)
+            val streamsIdMap = internalEndpoint.addStreams(streams)
             orientedVideoConfig?.let { videoStreamId = streamsIdMap[orientedVideoConfig] }
             audioConfig?.let { audioStreamId = streamsIdMap[audioConfig as Config] }
 
-            endpoint.startStream()
+            internalEndpoint.startStream()
 
-            audioSource?.startStream()
-            audioEncoder?.startStream()
+            internalAudioSource?.startStream()
+            internalAudioEncoder?.startStream()
 
-            videoSource?.startStream()
+            internalVideoSource?.startStream()
             codecSurface?.startStream()
-            videoEncoder?.startStream()
+            internalVideoEncoder?.startStream()
         } catch (e: Exception) {
             stopStream()
             throw StreamPackError(e)
@@ -368,8 +406,8 @@ abstract class BaseStreamer(
 
         stopStreamImpl()
 
-        audioEncoder?.reset()
-        videoEncoder?.reset()
+        internalAudioEncoder?.reset()
+        internalVideoEncoder?.reset()
     }
 
     /**
@@ -378,13 +416,13 @@ abstract class BaseStreamer(
      * @see [stopStream]
      */
     private suspend fun stopStreamImpl() {
-        videoSource?.stopStream()
+        internalVideoSource?.stopStream()
         codecSurface?.stopStream()
-        videoEncoder?.stopStream()
-        audioEncoder?.stopStream()
-        audioSource?.stopStream()
+        internalVideoEncoder?.stopStream()
+        internalAudioEncoder?.stopStream()
+        internalAudioSource?.stopStream()
 
-        endpoint.stopStream()
+        internalEndpoint.stopStream()
     }
 
     /**
@@ -394,82 +432,19 @@ abstract class BaseStreamer(
      * @see [configure]
      */
     override fun release() {
-        audioEncoder?.release()
-        audioEncoder = null
+        internalAudioEncoder?.release()
+        internalAudioEncoder = null
         codecSurface?.release()
-        videoEncoder?.release()
-        videoEncoder = null
+        internalVideoEncoder?.release()
+        internalVideoEncoder = null
 
-        audioSource?.release()
-        videoSource?.release()
+        internalAudioSource?.release()
+        internalVideoSource?.release()
 
-        endpoint.release()
+        internalEndpoint.release()
     }
 
     companion object {
         private const val TAG = "BaseStreamer"
-    }
-
-    open inner class BaseStreamerSettings : IBaseStreamerSettings {
-        override val audio = BaseStreamerAudioSettings()
-        override val video = BaseStreamerVideoSettings()
-
-        open inner class BaseStreamerVideoSettings :
-            IVideoSettings {
-            /**
-             * Gets/sets video bitrate.
-             * Do not set this value if you are using a bitrate regulator.
-             */
-            override var bitrate: Int
-                /**
-                 * @return video bitrate in bps
-                 * @throws [UnsupportedOperationException] if audio encoder is not set
-                 */
-                get() = videoEncoder?.bitrate
-                    ?: throw UnsupportedOperationException("Video encoder is not set")
-                /**
-                 * @param value video bitrate in bps
-                 * @throws [UnsupportedOperationException] if audio encoder is not set
-                 */
-                set(value) {
-                    videoEncoder?.let { it.bitrate = value } ?: throw UnsupportedOperationException(
-                        "Video encoder is not set"
-                    )
-                }
-        }
-
-        open inner class BaseStreamerAudioSettings :
-            IAudioSettings {
-            /**
-             * Gets audio bitrate.
-             */
-            override val bitrate: Int
-                /**
-                 * @return audio bitrate in bps
-                 * @throws [UnsupportedOperationException] if audio encoder is not set
-                 */
-                get() = audioEncoder?.bitrate
-                    ?: throw UnsupportedOperationException("Audio encoder is not set")
-
-            /**
-             * Gets/sets audio mute.
-             */
-            override var isMuted: Boolean
-                /**
-                 *
-                 * If it is a video only streamer, it will always return [Boolean.true].
-                 *
-                 * @return [Boolean.true] if audio is muted, [Boolean.false] if audio is running.
-                 */
-                get() = audioSource?.isMuted ?: true
-                /**
-                 * If it is a video only streamer, it does nothing.
-                 *
-                 * @param value [Boolean.true] to mute audio, [Boolean.false] to unmute audio.
-                 */
-                set(value) {
-                    audioSource?.isMuted = value
-                }
-        }
     }
 }

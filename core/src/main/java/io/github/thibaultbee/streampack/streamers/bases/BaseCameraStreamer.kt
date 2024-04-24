@@ -26,11 +26,10 @@ import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.sinks.ISink
 import io.github.thibaultbee.streampack.internal.sources.AudioSource
 import io.github.thibaultbee.streampack.internal.sources.camera.CameraSource
+import io.github.thibaultbee.streampack.internal.sources.camera.ICameraSourceSettings
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationHelper
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
-import io.github.thibaultbee.streampack.utils.CameraSettings
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -38,26 +37,35 @@ import kotlinx.coroutines.runBlocking
  *
  * @param context application context
  * @param enableAudio [Boolean.true] to capture audio
- * @param endpoint the [ISink] implementation
+ * @param internalEndpoint the [IEndpoint] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
  */
 open class BaseCameraStreamer(
     private val context: Context,
     enableAudio: Boolean = true,
-    endpoint: IEndpoint,
+    internalEndpoint: IEndpoint,
     initialOnErrorListener: OnErrorListener? = null
 ) : BaseStreamer(
     context = context,
-    videoSource = CameraSource(context),
-    audioSource = if (enableAudio) AudioSource() else null,
-    endpoint = endpoint,
+    internalVideoSource = CameraSource(context),
+    internalAudioSource = if (enableAudio) AudioSource() else null,
+    internalEndpoint = internalEndpoint,
     initialOnErrorListener = initialOnErrorListener
 ), ICameraStreamer {
-    private val cameraSource = videoSource as CameraSource
-    override val helper = CameraStreamerConfigurationHelper(endpoint.helper)
+    private val internalCameraSource = internalVideoSource as CameraSource
+
+    override val helper = CameraStreamerConfigurationHelper(internalEndpoint.helper)
+
+    /**
+     * Gets the camera source.
+     * It allows to configure camera settings and to set the camera id.
+     */
+    override val videoSource: ICameraSourceSettings
+        get() = internalCameraSource
 
     /**
      * Get/Set current camera id.
+     * It is a shortcut for [videoSource.cameraId]
      */
     override var camera: String
         /**
@@ -65,7 +73,7 @@ open class BaseCameraStreamer(
          *
          * @return a string that described current camera
          */
-        get() = cameraSource.cameraId
+        get() = videoSource.cameraId
         /**
          * Set current camera id.
          *
@@ -73,11 +81,8 @@ open class BaseCameraStreamer(
          */
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
-            cameraSource.cameraId = value
+            videoSource.cameraId = value
         }
-
-    override var settings =
-        BaseCameraStreamerSettings()
 
     /**
      * Starts audio and video capture.
@@ -96,9 +101,9 @@ open class BaseCameraStreamer(
         require(videoConfig != null) { "Video has not been configured!" }
         runBlocking {
             try {
-                cameraSource.previewSurface = previewSurface
-                cameraSource.encoderSurface = codecSurface?.input
-                cameraSource.startPreview(cameraId)
+                internalCameraSource.previewSurface = previewSurface
+                internalCameraSource.encoderSurface = codecSurface?.input
+                internalCameraSource.startPreview(cameraId)
             } catch (e: Exception) {
                 stopPreview()
                 throw StreamPackError(e)
@@ -116,7 +121,7 @@ open class BaseCameraStreamer(
         runBlocking {
             stopStream()
         }
-        cameraSource.stopPreview()
+        internalCameraSource.stopPreview()
     }
 
     /**
@@ -125,17 +130,5 @@ open class BaseCameraStreamer(
     override fun release() {
         stopPreview()
         super.release()
-    }
-
-    /**
-     * The settings for [BaseCameraStreamer].
-     */
-    open inner class BaseCameraStreamerSettings : BaseStreamerSettings(),
-        IBaseCameraStreamerSettings {
-        /**
-         * Gets the camera settings (focus, zoom,...).
-         */
-        override val camera: CameraSettings
-            get() = cameraSource.settings
     }
 }

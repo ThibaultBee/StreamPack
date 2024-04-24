@@ -20,9 +20,11 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.error.StreamPackError
+import io.github.thibaultbee.streampack.internal.encoders.IEncoderSettings
+import io.github.thibaultbee.streampack.internal.sources.IAudioSourceSettings
+import io.github.thibaultbee.streampack.internal.sources.IVideoSourceSettings
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationHelper
-import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseStreamerSettings
 
 interface IStreamer {
     /**
@@ -37,9 +39,24 @@ interface IStreamer {
     val helper: IConfigurationHelper
 
     /**
-     * Access extended streamer settings.
+     * Advanced settings for the audio source.
      */
-    val settings: IBaseStreamerSettings
+    val audioSource: IAudioSourceSettings?
+
+    /**
+     * Advanced settings for the audio encoder.
+     */
+    val audioEncoder: IEncoderSettings?
+
+    /**
+     * Advanced settings for the video source.
+     */
+    val videoSource: IVideoSourceSettings?
+
+    /**
+     * Advanced settings for the video encoder.
+     */
+    val videoEncoder: IEncoderSettings?
 
     /**
      * Configures only audio settings.

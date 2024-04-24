@@ -45,15 +45,17 @@ have the same `Helper` object as a `TsStreamer` object because FLV does not supp
 codecs, audio sample rate,...
 
 `Settings`:
-A class that adds settings to the `Streamer` object. For example, you can access camera settings,
-encoders bitrate,... It comes with an instantiated `Streamer` object:
+Each streamer elements have a public interface `Settings` that allows go have access to specific 
+information or configurations:
+
+Example:
 
 ```kotlin
-val settings = streamer.settings
+// Get video bitrate
+val bitrate = streamer.videoEncoder!!.bitrate
+// Set video bitrate on the fly
+streamer.videoEncoder!!.bitrate = 2000000
 ```
-
-They might be different for each `Streamer` object. For example, only `CameraStreamer` have a camera
-settings.
 
 `Extensions`:
 A library that adds new features from native libraries. It often comes with a `Streamer elements`

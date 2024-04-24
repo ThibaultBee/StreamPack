@@ -25,8 +25,9 @@ import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStr
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.StreamerLifeCycleObserver
+import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
+import io.github.thibaultbee.streampack.ui.views.PreviewView
 import io.github.thibaultbee.streampack.utils.CameraSettings
 import io.github.thibaultbee.streampack.utils.ChunkedFileOutputStream
 import io.github.thibaultbee.streampack.utils.backCameraList
@@ -36,7 +37,6 @@ import io.github.thibaultbee.streampack.utils.getFileStreamer
 import io.github.thibaultbee.streampack.utils.getLiveStreamer
 import io.github.thibaultbee.streampack.utils.getStreamer
 import io.github.thibaultbee.streampack.utils.isBackCamera
-import io.github.thibaultbee.streampack.ui.views.PreviewView
 import kotlinx.coroutines.runBlocking
 import java.io.File
 
@@ -60,7 +60,7 @@ class StreamerManager(
         }
 
     val cameraId: String?
-        get() = streamer?.getCameraStreamer()?.camera
+        get() = streamer?.getCameraStreamer()?.videoSource?.cameraId
 
     val streamerLifeCycleObserver: StreamerLifeCycleObserver by lazy {
         StreamerLifeCycleObserver(streamer!!)
@@ -158,18 +158,12 @@ class StreamerManager(
     }
 
     val cameraSettings: CameraSettings?
-        get() {
-            val settings = streamer?.settings
-            return if (settings is IBaseCameraStreamerSettings) {
-                settings.camera
-            } else {
-                null
-            }
-        }
+        get() = streamer?.getCameraStreamer()?.videoSource?.settings
+
 
     var isMuted: Boolean
-        get() = streamer?.settings?.audio?.isMuted ?: true
+        get() = streamer?.audioSource?.isMuted ?: true
         set(value) {
-            streamer?.settings?.audio?.isMuted = value
+            streamer?.audioSource?.isMuted = value
         }
 }
