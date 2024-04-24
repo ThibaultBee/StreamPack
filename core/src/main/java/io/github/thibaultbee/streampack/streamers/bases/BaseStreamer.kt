@@ -146,8 +146,8 @@ abstract class BaseStreamer(
         }
     }
 
-    protected var audioEncoder: MediaCodecEncoder? = null
-    protected var videoEncoder: MediaCodecEncoder? = null
+    private var audioEncoder: MediaCodecEncoder? = null
+    private var videoEncoder: MediaCodecEncoder? = null
     protected val codecSurface =
         if (videoSource?.hasSurface == true) CodecSurface(sourceOrientationProvider) else null
 

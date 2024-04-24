@@ -34,7 +34,7 @@ import java.util.concurrent.Executors
 /**
  * Creates a [MediaCodec] encoder with a given configuration and a listener.
  */
-internal fun MediaCodecEncoder(
+fun MediaCodecEncoder(
     encoderConfig: EncoderConfig<*>,
     listener: IEncoder.IListener,
     encoderExecutor: Executor = Executors.newSingleThreadExecutor(),
