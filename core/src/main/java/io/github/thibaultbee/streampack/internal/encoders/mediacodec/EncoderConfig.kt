@@ -8,7 +8,7 @@ import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 
-internal sealed class EncoderConfig<T : Config>(val config: T) {
+sealed class EncoderConfig<T : Config>(val config: T) {
     /**
      * True if the encoder is a video encoder, false if it's an audio encoder
      */
@@ -22,7 +22,7 @@ internal sealed class EncoderConfig<T : Config>(val config: T) {
     abstract fun buildFormat(withProfileLevel: Boolean): MediaFormat
 }
 
-internal class VideoEncoderConfig(
+class VideoEncoderConfig(
     videoConfig: VideoConfig,
     val useSurfaceMode: Boolean = true,
     private val orientationProvider: ISourceOrientationProvider? = null
@@ -61,7 +61,7 @@ internal class VideoEncoderConfig(
     }
 }
 
-internal class AudioEncoderConfig(audioConfig: AudioConfig) :
+class AudioEncoderConfig(audioConfig: AudioConfig) :
     EncoderConfig<AudioConfig>(audioConfig) {
     override val isVideo = false
 
