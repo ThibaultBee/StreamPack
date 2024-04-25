@@ -23,7 +23,7 @@ import io.github.thibaultbee.streampack.internal.interfaces.Releaseable
 import io.github.thibaultbee.streampack.internal.interfaces.SuspendStreamable
 
 
-interface IEndpoint : IEndpointSettings, SuspendStreamable, Releaseable {
+interface IEndpoint : IPublicEndpoint, SuspendStreamable, Releaseable {
     /**
      * Writes a [Frame] to the [IEndpoint].
      *
@@ -49,7 +49,7 @@ interface IEndpoint : IEndpointSettings, SuspendStreamable, Releaseable {
     fun addStream(streamConfig: Config): Int
 }
 
-interface IEndpointSettings {
+interface IPublicEndpoint {
     /**
      * A info to verify supported formats.
      */

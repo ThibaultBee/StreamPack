@@ -27,24 +27,24 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  *
  * @param context application context
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
- * @param endpoint the [IConnectableEndpoint] implementation
+ * @param internalEndpoint the [IConnectableEndpoint] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
  * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 open class BaseScreenRecorderLiveStreamer(
     context: Context,
     enableAudio: Boolean = true,
-    endpoint: IConnectableEndpoint,
+    internalEndpoint: IConnectableEndpoint,
     initialOnErrorListener: OnErrorListener? = null,
     initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseScreenRecorderStreamer(
     context = context,
     enableAudio = enableAudio,
-    internalEndpoint = endpoint,
+    internalEndpoint = internalEndpoint,
     initialOnErrorListener = initialOnErrorListener
 ),
     ILiveStreamer {
-    private val liveProducer = endpoint.apply { onConnectionListener = initialOnConnectionListener }
+    private val liveProducer = internalEndpoint.apply { onConnectionListener = initialOnConnectionListener }
 
     /**
      * Listener to manage connection.
