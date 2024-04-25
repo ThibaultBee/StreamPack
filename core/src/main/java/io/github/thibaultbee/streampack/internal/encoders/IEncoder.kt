@@ -22,7 +22,7 @@ import io.github.thibaultbee.streampack.internal.interfaces.SuspendStreamable
 import java.nio.ByteBuffer
 import java.util.concurrent.Executor
 
-interface IEncoderSettings {
+interface IPublicEncoder {
 
     /**
      * The encoder mime type
@@ -60,7 +60,7 @@ interface IEncoderSettings {
     fun requestKeyFrame()
 }
 
-interface IEncoder : SuspendStreamable, Releaseable {
+interface IEncoder : SuspendStreamable, Releaseable, IPublicEncoder {
     interface IListener {
         /**
          * Calls when an encoder has an error.

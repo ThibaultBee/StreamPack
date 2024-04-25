@@ -25,18 +25,18 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.encoders.IEncoder
-import io.github.thibaultbee.streampack.internal.encoders.IEncoderSettings
+import io.github.thibaultbee.streampack.internal.encoders.IPublicEncoder
 import io.github.thibaultbee.streampack.internal.encoders.mediacodec.AudioEncoderConfig
 import io.github.thibaultbee.streampack.internal.encoders.mediacodec.MediaCodecEncoder
 import io.github.thibaultbee.streampack.internal.encoders.mediacodec.VideoEncoderConfig
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.internal.endpoints.IEndpointSettings
+import io.github.thibaultbee.streampack.internal.endpoints.IPublicEndpoint
 import io.github.thibaultbee.streampack.internal.events.EventHandler
 import io.github.thibaultbee.streampack.internal.gl.CodecSurface
 import io.github.thibaultbee.streampack.internal.sources.IAudioSource
-import io.github.thibaultbee.streampack.internal.sources.IAudioSourceSettings
+import io.github.thibaultbee.streampack.internal.sources.IPublicAudioSource
 import io.github.thibaultbee.streampack.internal.sources.IVideoSource
-import io.github.thibaultbee.streampack.internal.sources.IVideoSourceSettings
+import io.github.thibaultbee.streampack.internal.sources.IPublicVideoSource
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationInfo
@@ -153,14 +153,14 @@ abstract class BaseStreamer(
      * The audio source.
      * It allows advanced audio settings.
      */
-    override val audioSource: IAudioSourceSettings?
+    override val audioSource: IPublicAudioSource?
         get() = internalAudioSource
 
     /**
      * The video source.
      * It allows advanced video settings.
      */
-    override val videoSource: IVideoSourceSettings?
+    override val videoSource: IPublicVideoSource?
         get() = internalVideoSource
 
     // ENCODERS
@@ -171,7 +171,7 @@ abstract class BaseStreamer(
      * The audio encoder.
      * Only valid when audio has been [configure]. It is null after [release].
      */
-    override val audioEncoder: IEncoderSettings?
+    override val audioEncoder: IPublicEncoder?
         get() = internalAudioEncoder
 
     private var internalVideoEncoder: MediaCodecEncoder? = null
@@ -180,7 +180,7 @@ abstract class BaseStreamer(
      * The video encoder.
      * Only valid when audio has been [configure]. It is null after [release].
      */
-    override val videoEncoder: IEncoderSettings?
+    override val videoEncoder: IPublicEncoder?
         get() = internalVideoEncoder
 
 
@@ -189,7 +189,7 @@ abstract class BaseStreamer(
 
     // ENDPOINT
 
-    override val endpoint: IEndpointSettings
+    override val endpoint: IPublicEndpoint
         get() = internalEndpoint
 
     /**

@@ -21,9 +21,7 @@ import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.interfaces.Releaseable
 import io.github.thibaultbee.streampack.internal.interfaces.Streamable
 
-interface IMuxer : Streamable, Releaseable {
-    val info: IMuxerInfo
-
+interface IMuxer : IPublicMuxer, Streamable, Releaseable {
     var listener: IMuxerListener?
 
     interface IMuxerListener {
@@ -35,4 +33,36 @@ interface IMuxer : Streamable, Releaseable {
     fun addStreams(streamsConfig: List<Config>): Map<Config, Int>
 
     fun addStream(streamConfig: Config): Int
+}
+
+interface IPublicMuxer {
+    val info: IMuxerInfo
+
+    interface IMuxerInfo {
+        val audio: IAudioMuxerInfo
+
+        interface IAudioMuxerInfo {
+            val supportedEncoders: List<String>
+
+            /**
+             * Supported sample rates in Hz
+             *
+             * Returns null if not applicable (no limitation)
+             */
+            val supportedSampleRates: List<Int>?
+
+            /**
+             * Supported byte formats
+             *
+             * Returns null if not applicable (no limitation)
+             */
+            val supportedByteFormats: List<Int>?
+        }
+
+        val video: IVideoMuxerInfo
+
+        interface IVideoMuxerInfo {
+            val supportedEncoders: List<String>
+        }
+    }
 }
