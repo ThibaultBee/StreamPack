@@ -21,7 +21,7 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.TextureView
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.internal.sources.camera.IPublicCameraSource
+import io.github.thibaultbee.streampack.internal.sources.video.camera.IPublicCameraSource
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 
 interface ICameraStreamer {
