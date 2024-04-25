@@ -22,8 +22,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.internal.sources.AudioSource
-import io.github.thibaultbee.streampack.internal.sources.screen.ScreenSource
+import io.github.thibaultbee.streampack.internal.sources.audio.MicrophoneSource
+import io.github.thibaultbee.streampack.internal.sources.video.screen.ScreenSource
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 
 /**
@@ -42,7 +42,7 @@ open class BaseScreenRecorderStreamer(
 ) : BaseStreamer(
     context = context,
     internalVideoSource = ScreenSource(context),
-    internalAudioSource = if (enableAudio) AudioSource() else null,
+    internalAudioSource = if (enableAudio) MicrophoneSource() else null,
     internalEndpoint = internalEndpoint,
     initialOnErrorListener = initialOnErrorListener
 ) {

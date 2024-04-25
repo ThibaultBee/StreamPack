@@ -15,27 +15,28 @@
  */
 package io.github.thibaultbee.streampack.internal.sources
 
+import io.github.thibaultbee.streampack.internal.sources.audio.MicrophoneSource
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.utils.FakeLogger
 import org.junit.Assert
 import org.junit.Test
 import java.nio.ByteBuffer
 
-class AudioSourceUnitTest {
+class MicrophoneSourceUnitTest {
     init {
         Logger.logger = FakeLogger()
     }
 
     @Test
     fun `assert exception on bad state`() {
-        val audioSource = AudioSource()
+        val microphoneSource = MicrophoneSource()
         try {
-            audioSource.startStream()
+            microphoneSource.startStream()
             Assert.fail()
         } catch (_: Exception) {
         }
         try {
-            audioSource.getFrame(ByteBuffer.allocate(10))
+            microphoneSource.getFrame(ByteBuffer.allocate(10))
             Assert.fail()
         } catch (_: Exception) {
         }
@@ -43,14 +44,14 @@ class AudioSourceUnitTest {
 
     @Test
     fun `assert no exception on bad state`() {
-        val audioSource = AudioSource()
+        val microphoneSource = MicrophoneSource()
         try {
-            audioSource.stopStream()
+            microphoneSource.stopStream()
         } catch (e: Exception) {
             Assert.fail()
         }
         try {
-            audioSource.release()
+            microphoneSource.release()
         } catch (e: Exception) {
             Assert.fail()
         }
