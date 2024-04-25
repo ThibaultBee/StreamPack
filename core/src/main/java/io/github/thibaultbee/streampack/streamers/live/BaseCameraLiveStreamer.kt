@@ -27,31 +27,31 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  *
  * @param context application context
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
- * @param endpoint the [IConnectableEndpoint] implementation
+ * @param internalEndpoint the [IConnectableEndpoint] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
  * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 open class BaseCameraLiveStreamer(
     context: Context,
     enableAudio: Boolean = true,
-    endpoint: IConnectableEndpoint,
+    internalEndpoint: IConnectableEndpoint,
     initialOnErrorListener: OnErrorListener? = null,
     initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseCameraStreamer(
     context = context,
     enableAudio = enableAudio,
-    internalEndpoint = endpoint,
+    internalEndpoint = internalEndpoint,
     initialOnErrorListener = initialOnErrorListener
 ),
     ILiveStreamer {
-    private val liveProducer = endpoint.apply { onConnectionListener = initialOnConnectionListener }
+    private val liveEndpoint = internalEndpoint.apply { onConnectionListener = initialOnConnectionListener }
 
     /**
      * Listener to manage connection.
      */
     override var onConnectionListener: OnConnectionListener? = initialOnConnectionListener
         set(value) {
-            liveProducer.onConnectionListener = value
+            liveEndpoint.onConnectionListener = value
             field = value
         }
 
@@ -59,7 +59,7 @@ open class BaseCameraLiveStreamer(
      * Check if the streamer is connected to the server.
      */
     override val isConnected: Boolean
-        get() = liveProducer.isConnected
+        get() = liveEndpoint.isConnected
 
     /**
      * Connect to an remove server.
@@ -69,7 +69,7 @@ open class BaseCameraLiveStreamer(
      * @throws Exception if connection has failed or configuration has failed
      */
     override suspend fun connect(url: String) {
-        liveProducer.connect(url)
+        liveEndpoint.connect(url)
     }
 
     /**
@@ -78,7 +78,7 @@ open class BaseCameraLiveStreamer(
      * @throws Exception is not connected
      */
     override fun disconnect() {
-        liveProducer.disconnect()
+        liveEndpoint.disconnect()
     }
 
     /**

@@ -15,10 +15,9 @@
  */
 package io.github.thibaultbee.streampack.internal.sources.camera
 
-import io.github.thibaultbee.streampack.internal.sources.IVideoSourceSettings
-import io.github.thibaultbee.streampack.utils.CameraSettings
+import io.github.thibaultbee.streampack.internal.sources.IPublicVideoSource
 
-interface ICameraSourceSettings : IVideoSourceSettings {
+interface IPublicCameraSource : IPublicVideoSource {
     /**
      * Get/Set current camera id.
      */

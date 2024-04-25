@@ -27,21 +27,21 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  * A [BaseStreamer] that sends only microphone frames to a remote device.
  *
  * @param context application context
- * @param endpoint the [IConnectableEndpoint] implementation
+ * @param internalEndpoint the [IConnectableEndpoint] implementation
  * @param initialOnErrorListener initialize [OnErrorListener]
  * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 open class BaseAudioOnlyLiveStreamer(
     context: Context,
-    endpoint: IConnectableEndpoint,
+    internalEndpoint: IConnectableEndpoint,
     initialOnErrorListener: OnErrorListener? = null,
     initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseAudioOnlyStreamer(
     context = context,
-    internalEndpoint = endpoint,
+    internalEndpoint = internalEndpoint,
     initialOnErrorListener = initialOnErrorListener,
 ), ILiveStreamer {
-    private val liveProducer = endpoint.apply { onConnectionListener = initialOnConnectionListener }
+    private val liveProducer = internalEndpoint.apply { onConnectionListener = initialOnConnectionListener }
 
     /**
      * Listener to manage connection.

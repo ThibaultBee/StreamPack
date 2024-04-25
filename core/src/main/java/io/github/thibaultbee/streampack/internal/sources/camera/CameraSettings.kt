@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.utils
+package io.github.thibaultbee.streampack.internal.sources.camera
 
 import android.content.Context
 import android.graphics.PointF
@@ -27,7 +27,6 @@ import android.os.Build
 import android.util.Range
 import android.util.Rational
 import androidx.annotation.RequiresApi
-import io.github.thibaultbee.streampack.internal.sources.camera.CameraController
 import io.github.thibaultbee.streampack.internal.utils.*
 import io.github.thibaultbee.streampack.internal.utils.extensions.clamp
 import io.github.thibaultbee.streampack.internal.utils.extensions.isDevicePortrait
@@ -36,6 +35,21 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.normalize
 import io.github.thibaultbee.streampack.internal.utils.extensions.rotate
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
+import io.github.thibaultbee.streampack.utils.getAutoExposureModes
+import io.github.thibaultbee.streampack.utils.getAutoFocusModes
+import io.github.thibaultbee.streampack.utils.getAutoWhiteBalanceModes
+import io.github.thibaultbee.streampack.utils.getCameraCharacteristics
+import io.github.thibaultbee.streampack.utils.getExposureMaxMeteringRegionsSupported
+import io.github.thibaultbee.streampack.utils.getExposureRange
+import io.github.thibaultbee.streampack.utils.getExposureStep
+import io.github.thibaultbee.streampack.utils.getFocusMaxMeteringRegionsSupported
+import io.github.thibaultbee.streampack.utils.getLensDistanceRange
+import io.github.thibaultbee.streampack.utils.getScalerMaxZoom
+import io.github.thibaultbee.streampack.utils.getSensitivityRange
+import io.github.thibaultbee.streampack.utils.getWhiteBalanceMeteringRegionsSupported
+import io.github.thibaultbee.streampack.utils.getZoomRatioRange
+import io.github.thibaultbee.streampack.utils.isFlashAvailable
+import io.github.thibaultbee.streampack.utils.isOpticalStabilizationAvailable
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -43,7 +57,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Use to change camera settings.
- * This object is returned by [BaseCameraStreamer.settings.camera].
+ * This object is returned by [BaseCameraStreamer.videoSource.settings].
  */
 class CameraSettings(context: Context, cameraController: CameraController) {
     /**

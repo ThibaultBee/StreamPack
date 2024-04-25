@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.ext.rtmp.streamers
 
 import android.content.Context
 import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.sinks.RtmpSink
-import io.github.thibaultbee.streampack.internal.endpoints.ConnectableCompositeEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.composites.ConnectableCompositeEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.FlvMuxer
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.tags.video.ExtendedVideoTag
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
@@ -40,7 +40,7 @@ class CameraRtmpLiveStreamer(
 ) : BaseCameraLiveStreamer(
     context = context,
     enableAudio = enableAudio,
-    endpoint = ConnectableCompositeEndpoint(FlvMuxer(writeToFile = false), RtmpSink()),
+    internalEndpoint = ConnectableCompositeEndpoint(FlvMuxer(writeToFile = false), RtmpSink()),
     initialOnErrorListener = initialOnErrorListener,
     initialOnConnectionListener = initialOnConnectionListener
 ) {
