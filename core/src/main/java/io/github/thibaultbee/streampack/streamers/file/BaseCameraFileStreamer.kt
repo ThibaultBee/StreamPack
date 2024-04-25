@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.streamers.file
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.internal.endpoints.FileCompositeEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.composites.FileCompositeEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.IFileEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.endpoints.sinks.FileWriter

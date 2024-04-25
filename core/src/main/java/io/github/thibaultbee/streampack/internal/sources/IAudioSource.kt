@@ -17,9 +17,9 @@ package io.github.thibaultbee.streampack.internal.sources
 
 import io.github.thibaultbee.streampack.data.AudioConfig
 
-interface IAudioSource : IAudioSourceSettings, IFrameSource<AudioConfig>
+interface IAudioSource : IPublicAudioSource, IFrameSource<AudioConfig>
 
-interface IAudioSourceSettings {
+interface IPublicAudioSource {
     /**
      * [Boolean.true] to mute [IAudioSource], [Boolean.false] to unmute.
      */

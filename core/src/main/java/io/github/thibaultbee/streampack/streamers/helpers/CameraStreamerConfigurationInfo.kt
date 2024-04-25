@@ -18,8 +18,8 @@ package io.github.thibaultbee.streampack.streamers.helpers
 import android.content.Context
 import android.util.Range
 import android.util.Size
-import io.github.thibaultbee.streampack.internal.endpoints.CompositeEndpoint
-import io.github.thibaultbee.streampack.internal.endpoints.IEndpointSettings
+import io.github.thibaultbee.streampack.internal.endpoints.composites.CompositeEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.IPublicEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.FlvMuxerInfo
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.mp4.MP4MuxerInfo
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.TSMuxerInfo
@@ -33,7 +33,7 @@ import io.github.thibaultbee.streampack.utils.getCameraOutputStreamSizes
  * Configuration infos\ for [BaseCameraStreamer].
  * It wraps supported values from MediaCodec, Camera and TS Muxer.
  */
-class CameraStreamerConfigurationInfo(endpointInfo: IEndpointSettings.IEndpointInfo) :
+class CameraStreamerConfigurationInfo(endpointInfo: IPublicEndpoint.IEndpointInfo) :
     StreamerConfigurationInfo(endpointInfo) {
     companion object {
         val flvInfo = CameraStreamerConfigurationInfo(
@@ -50,7 +50,7 @@ class CameraStreamerConfigurationInfo(endpointInfo: IEndpointSettings.IEndpointI
     override val video = VideoCameraStreamerConfigurationInfo(endpointInfo.video)
 }
 
-class VideoCameraStreamerConfigurationInfo(videoEndpointInfo: IEndpointSettings.IEndpointInfo.IVideoEndpointInfo) :
+class VideoCameraStreamerConfigurationInfo(videoEndpointInfo: IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo) :
     VideoStreamerConfigurationInfo(videoEndpointInfo) {
     /**
      * Get camera resolutions that are supported by the encoder.

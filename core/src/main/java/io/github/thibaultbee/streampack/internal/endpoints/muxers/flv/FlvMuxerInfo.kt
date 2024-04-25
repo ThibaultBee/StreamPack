@@ -16,18 +16,18 @@
 package io.github.thibaultbee.streampack.internal.endpoints.muxers.flv
 
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.internal.endpoints.muxers.IMuxerInfo
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.IPublicMuxer
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.tags.SoundFormat
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.tags.SoundRate
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.tags.SoundSize
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.tags.video.CodecID
 
-object FlvMuxerInfo : IMuxerInfo {
+object FlvMuxerInfo : IPublicMuxer.IMuxerInfo {
     override val video = VideoFlvMuxerInfo
     override val audio = AudioFlvMuxerInfo
 }
 
-object AudioFlvMuxerInfo : IMuxerInfo.IAudioMuxerInfo {
+object AudioFlvMuxerInfo : IPublicMuxer.IMuxerInfo.IAudioMuxerInfo {
     /**
      * Get FLV Muxer supported audio encoders list
      */
@@ -45,7 +45,7 @@ object AudioFlvMuxerInfo : IMuxerInfo.IAudioMuxerInfo {
     override val supportedByteFormats = SoundSize.entries.map { it.toByteFormat() }
 }
 
-object VideoFlvMuxerInfo : IMuxerInfo.IVideoMuxerInfo {
+object VideoFlvMuxerInfo : IPublicMuxer.IMuxerInfo.IVideoMuxerInfo {
     /**
      * Get FLV Muxer supported video encoders list
      */

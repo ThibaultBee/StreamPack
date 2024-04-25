@@ -23,7 +23,6 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.sources.IVideoSource
 import io.github.thibaultbee.streampack.internal.utils.av.video.DynamicRangeProfile
-import io.github.thibaultbee.streampack.utils.CameraSettings
 import io.github.thibaultbee.streampack.utils.defaultCameraId
 import io.github.thibaultbee.streampack.utils.isFrameRateSupported
 import kotlinx.coroutines.runBlocking
@@ -31,7 +30,7 @@ import java.nio.ByteBuffer
 
 class CameraSource(
     private val context: Context,
-) : IVideoSource, ICameraSourceSettings {
+) : IVideoSource, IPublicCameraSource {
     var previewSurface: Surface? = null
     override var encoderSurface: Surface? = null
 

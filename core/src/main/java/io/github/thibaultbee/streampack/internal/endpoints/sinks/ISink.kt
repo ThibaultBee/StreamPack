@@ -20,7 +20,7 @@ import io.github.thibaultbee.streampack.internal.interfaces.Configurable
 import io.github.thibaultbee.streampack.internal.interfaces.Releaseable
 import io.github.thibaultbee.streampack.internal.interfaces.SuspendStreamable
 
-interface ISink : SuspendStreamable, Configurable<Int>, Releaseable {
+interface ISink : IPublicSink, SuspendStreamable, Configurable<Int>, Releaseable {
 
     /**
      * Writes a buffer to the [ISink].
@@ -28,3 +28,5 @@ interface ISink : SuspendStreamable, Configurable<Int>, Releaseable {
      */
     fun write(packet: Packet)
 }
+
+interface IPublicSink

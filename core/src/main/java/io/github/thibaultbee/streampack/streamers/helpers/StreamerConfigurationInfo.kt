@@ -40,8 +40,8 @@ import android.media.MediaFormat
 import android.os.Build
 import android.util.Range
 import io.github.thibaultbee.streampack.internal.encoders.mediacodec.MediaCodecHelper
-import io.github.thibaultbee.streampack.internal.endpoints.CompositeEndpoint
-import io.github.thibaultbee.streampack.internal.endpoints.IEndpointSettings
+import io.github.thibaultbee.streampack.internal.endpoints.composites.CompositeEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.IPublicEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.FlvMuxerInfo
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.mp4.MP4MuxerInfo
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.TSMuxerInfo
@@ -55,7 +55,7 @@ import java.security.InvalidParameterException
  *
  * @param endpointInfo the corresponding muxer info
  */
-open class StreamerConfigurationInfo(endpointInfo: IEndpointSettings.IEndpointInfo) :
+open class StreamerConfigurationInfo(endpointInfo: IPublicEndpoint.IEndpointInfo) :
     IConfigurationInfo {
     companion object {
         val flvInfo =
@@ -72,7 +72,7 @@ open class StreamerConfigurationInfo(endpointInfo: IEndpointSettings.IEndpointIn
         VideoStreamerConfigurationInfo(endpointInfo.video)
 }
 
-class AudioStreamerConfigurationInfo(private val audioEndpointInfo: IEndpointSettings.IEndpointInfo.IAudioEndpointInfo) :
+class AudioStreamerConfigurationInfo(private val audioEndpointInfo: IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo) :
     IAudioConfigurationInfo {
     /**
      * Get supported audio encoders list
@@ -146,7 +146,7 @@ class AudioStreamerConfigurationInfo(private val audioEndpointInfo: IEndpointSet
     }
 }
 
-open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IEndpointSettings.IEndpointInfo.IVideoEndpointInfo) :
+open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo) :
     IVideoConfigurationInfo {
     /**
      * Supported encoders for a [BaseStreamer]

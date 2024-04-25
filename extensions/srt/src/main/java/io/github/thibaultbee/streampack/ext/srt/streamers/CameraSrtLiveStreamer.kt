@@ -21,7 +21,7 @@ import io.github.thibaultbee.streampack.ext.srt.data.SrtConnectionDescriptor
 import io.github.thibaultbee.streampack.ext.srt.internal.endpoints.sinks.SrtSink
 import io.github.thibaultbee.streampack.ext.srt.regulator.srt.SrtBitrateRegulator
 import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
-import io.github.thibaultbee.streampack.internal.endpoints.ConnectableCompositeEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.composites.ConnectableCompositeEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.TSMuxer
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.internal.utils.Scheduler
@@ -55,7 +55,7 @@ class CameraSrtLiveStreamer(
 ) : BaseCameraLiveStreamer(
     context = context,
     enableAudio = enableAudio,
-    endpoint = ConnectableCompositeEndpoint(
+    internalEndpoint = ConnectableCompositeEndpoint(
         TSMuxer().apply { addService(tsServiceInfo) },
         SrtSink()
     ),

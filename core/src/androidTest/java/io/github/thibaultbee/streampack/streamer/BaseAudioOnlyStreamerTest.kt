@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.streamer
 
-import io.github.thibaultbee.streampack.internal.endpoints.CompositeEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.composites.CompositeEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.FlvMuxer
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.TSMuxer
 import io.github.thibaultbee.streampack.internal.endpoints.sinks.FakeSink

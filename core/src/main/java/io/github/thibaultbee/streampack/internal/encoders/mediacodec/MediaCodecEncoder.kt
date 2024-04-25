@@ -23,7 +23,7 @@ import android.os.Bundle
 import android.view.Surface
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.data.Frame
-import io.github.thibaultbee.streampack.internal.encoders.IEncoderSettings
+import io.github.thibaultbee.streampack.internal.encoders.IPublicEncoder
 import io.github.thibaultbee.streampack.internal.encoders.IEncoder
 import io.github.thibaultbee.streampack.logger.Logger
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -58,7 +58,7 @@ internal constructor(
     private val encoderConfig: EncoderConfig<*>,
     private val encoderExecutor: Executor = Executors.newSingleThreadExecutor()
 ) :
-    IEncoderSettings, IEncoder {
+    IEncoder {
     private val mediaCodec: MediaCodec
     private val format: MediaFormat
     private val isVideo = encoderConfig.isVideo

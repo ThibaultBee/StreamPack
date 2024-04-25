@@ -13,19 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.endpoints
+package io.github.thibaultbee.streampack.internal.endpoints.composites
 
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.data.Packet
+import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.IPublicEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.IMuxer
-import io.github.thibaultbee.streampack.internal.endpoints.muxers.IMuxerInfo
+import io.github.thibaultbee.streampack.internal.endpoints.muxers.IPublicMuxer
 import io.github.thibaultbee.streampack.internal.endpoints.sinks.ISink
 
 /**
  * An [IEndpoint] implementation that combines a [IMuxer] and a [ISink].
  */
-open class CompositeEndpoint(val muxer: IMuxer, open val sink: ISink) : IEndpoint {
+open class CompositeEndpoint(final override val muxer: IMuxer, override val sink: ISink) :
+    ICompositeEndpoint {
     /**
      * The total start bitrate of all streams.
      * It is used to configure the sink.
@@ -78,15 +81,15 @@ open class CompositeEndpoint(val muxer: IMuxer, open val sink: ISink) : IEndpoin
     }
 
     class CompositeEndpointInfo(
-        val muxerInfo: IMuxerInfo
-    ) : IEndpointSettings.IEndpointInfo {
-        override val audio = object : IEndpointSettings.IEndpointInfo.IAudioEndpointInfo {
+        val muxerInfo: IPublicMuxer.IMuxerInfo
+    ) : IPublicEndpoint.IEndpointInfo {
+        override val audio = object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
             override val supportedEncoders = muxerInfo.audio.supportedEncoders
             override val supportedSampleRates = muxerInfo.audio.supportedSampleRates
             override val supportedByteFormats = muxerInfo.audio.supportedByteFormats
         }
 
-        override val video = object : IEndpointSettings.IEndpointInfo.IVideoEndpointInfo {
+        override val video = object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
             override val supportedEncoders = muxerInfo.video.supportedEncoders
         }
     }

@@ -149,8 +149,8 @@ class MediaMuxerEndpoint : IEndpoint, IFileEndpoint {
         mediaMuxer?.release()
     }
 
-    object MediaMuxerEndpointInfo : IEndpointSettings.IEndpointInfo {
-        override val audio = object : IEndpointSettings.IEndpointInfo.IAudioEndpointInfo {
+    object MediaMuxerEndpointInfo : IPublicEndpoint.IEndpointInfo {
+        override val audio = object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
             override val supportedEncoders = listOf(
                 MediaFormat.MIMETYPE_AUDIO_AAC,
                 MediaFormat.MIMETYPE_AUDIO_AMR_NB,
@@ -160,7 +160,7 @@ class MediaMuxerEndpoint : IEndpoint, IFileEndpoint {
             override val supportedByteFormats = null
         }
 
-        override val video = object : IEndpointSettings.IEndpointInfo.IVideoEndpointInfo {
+        override val video = object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
             override val supportedEncoders = run {
                 mutableListOf(
                     MediaFormat.MIMETYPE_VIDEO_H263,

@@ -21,14 +21,14 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.TextureView
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.internal.sources.camera.ICameraSourceSettings
+import io.github.thibaultbee.streampack.internal.sources.camera.IPublicCameraSource
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 
 interface ICameraStreamer {
     /**
      * The camera source settings.
      */
-    val videoSource: ICameraSourceSettings
+    val videoSource: IPublicCameraSource
 
     /**
      * Gets/Sets current camera id.

@@ -22,13 +22,13 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.app.configuration.Configuration
 import io.github.thibaultbee.streampack.ext.srt.data.SrtConnectionDescriptor
 import io.github.thibaultbee.streampack.ext.srt.streamers.interfaces.ISrtLiveStreamer
+import io.github.thibaultbee.streampack.internal.endpoints.composites.IPublicCompositeEndpoint
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.StreamerLifeCycleObserver
-import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import io.github.thibaultbee.streampack.ui.views.PreviewView
-import io.github.thibaultbee.streampack.utils.CameraSettings
+import io.github.thibaultbee.streampack.internal.sources.camera.CameraSettings
 import io.github.thibaultbee.streampack.utils.ChunkedFileOutputStream
 import io.github.thibaultbee.streampack.utils.backCameraList
 import io.github.thibaultbee.streampack.utils.frontCameraList
@@ -67,6 +67,7 @@ class StreamerManager(
     }
 
     private fun getSrtLiveStreamer(): ISrtLiveStreamer? {
+        (streamer?.endpoint as IPublicCompositeEndpoint).muxer.info
         return streamer?.getStreamer<ISrtLiveStreamer>()
     }
 

@@ -13,34 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.endpoints
+package io.github.thibaultbee.streampack.internal.endpoints.composites
 
+import io.github.thibaultbee.streampack.internal.endpoints.IConnectableEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.endpoints.sinks.IConnectable
-import io.github.thibaultbee.streampack.internal.endpoints.sinks.IFileSink
-import java.io.File
-import java.io.FileDescriptor
-import java.io.OutputStream
+import io.github.thibaultbee.streampack.internal.endpoints.sinks.ILiveSink
+import io.github.thibaultbee.streampack.listeners.OnConnectionListener
 
 /**
  * A [CompositeEndpoint] with [IConnectable] capabilities.
  */
-class FileCompositeEndpoint(muxer: IMuxer, override val sink: IFileSink) :
-    CompositeEndpoint(muxer, sink), IFileEndpoint {
-    override var file: File?
-        get() = sink.file
+class ConnectableCompositeEndpoint(muxer: IMuxer, override val sink: ILiveSink) :
+    CompositeEndpoint(muxer, sink), IConnectableEndpoint {
+
+    override var onConnectionListener: OnConnectionListener?
+        get() = sink.onConnectionListener
         set(value) {
-            sink.file = value
-        }
-    override var outputStream: OutputStream?
-        get() = sink.outputStream
-        set(value) {
-            sink.outputStream = value
+            sink.onConnectionListener = value
         }
 
-    override var fileDescriptor: FileDescriptor?
-        get() = sink.fileDescriptor
-        set(value) {
-            sink.fileDescriptor = value
-        }
+    override val isConnected: Boolean
+        get() = sink.isConnected
+
+    override suspend fun connect(url: String) = sink.connect(url)
+
+    override fun disconnect() = sink.disconnect()
 }

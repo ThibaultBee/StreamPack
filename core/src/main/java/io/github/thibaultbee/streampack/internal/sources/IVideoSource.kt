@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.internal.sources
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 
-interface IVideoSource : IFrameSource<VideoConfig>, ISurfaceSource, IVideoSourceSettings {
+interface IVideoSource : IFrameSource<VideoConfig>, ISurfaceSource, IPublicVideoSource {
     /**
      * Set to [Boolean.true] to use video source as a Surface renderer (see [ISurfaceSource]). For example, this is useful
      * for camera and screen recording. If set to [Boolean.false], the encoder will use source as a
@@ -38,4 +38,4 @@ interface IVideoSource : IFrameSource<VideoConfig>, ISurfaceSource, IVideoSource
     val orientationProvider: ISourceOrientationProvider
 }
 
-interface IVideoSourceSettings
+interface IPublicVideoSource
