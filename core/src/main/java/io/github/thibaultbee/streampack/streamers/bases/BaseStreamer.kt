@@ -33,10 +33,10 @@ import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.IPublicEndpoint
 import io.github.thibaultbee.streampack.internal.events.EventHandler
 import io.github.thibaultbee.streampack.internal.gl.CodecSurface
-import io.github.thibaultbee.streampack.internal.sources.IAudioSource
-import io.github.thibaultbee.streampack.internal.sources.IPublicAudioSource
-import io.github.thibaultbee.streampack.internal.sources.IVideoSource
-import io.github.thibaultbee.streampack.internal.sources.IPublicVideoSource
+import io.github.thibaultbee.streampack.internal.sources.audio.IAudioSource
+import io.github.thibaultbee.streampack.internal.sources.audio.IPublicAudioSource
+import io.github.thibaultbee.streampack.internal.sources.video.IVideoSource
+import io.github.thibaultbee.streampack.internal.sources.video.IPublicVideoSource
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationInfo

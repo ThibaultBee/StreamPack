@@ -23,9 +23,9 @@ import android.view.TextureView
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.internal.sources.AudioSource
-import io.github.thibaultbee.streampack.internal.sources.camera.CameraSource
-import io.github.thibaultbee.streampack.internal.sources.camera.IPublicCameraSource
+import io.github.thibaultbee.streampack.internal.sources.audio.MicrophoneSource
+import io.github.thibaultbee.streampack.internal.sources.video.camera.CameraSource
+import io.github.thibaultbee.streampack.internal.sources.video.camera.IPublicCameraSource
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
@@ -47,7 +47,7 @@ open class BaseCameraStreamer(
 ) : BaseStreamer(
     context = context,
     internalVideoSource = CameraSource(context),
-    internalAudioSource = if (enableAudio) AudioSource() else null,
+    internalAudioSource = if (enableAudio) MicrophoneSource() else null,
     internalEndpoint = internalEndpoint,
     initialOnErrorListener = initialOnErrorListener
 ), ICameraStreamer {

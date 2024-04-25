@@ -22,8 +22,8 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.encoders.IPublicEncoder
 import io.github.thibaultbee.streampack.internal.endpoints.IPublicEndpoint
-import io.github.thibaultbee.streampack.internal.sources.IPublicAudioSource
-import io.github.thibaultbee.streampack.internal.sources.IPublicVideoSource
+import io.github.thibaultbee.streampack.internal.sources.audio.IPublicAudioSource
+import io.github.thibaultbee.streampack.internal.sources.video.IPublicVideoSource
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationInfo
 

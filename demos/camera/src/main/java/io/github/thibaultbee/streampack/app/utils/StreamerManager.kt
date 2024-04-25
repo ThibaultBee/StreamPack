@@ -28,7 +28,7 @@ import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.StreamerLifeCycleObserver
 import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
 import io.github.thibaultbee.streampack.ui.views.PreviewView
-import io.github.thibaultbee.streampack.internal.sources.camera.CameraSettings
+import io.github.thibaultbee.streampack.internal.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.utils.ChunkedFileOutputStream
 import io.github.thibaultbee.streampack.utils.backCameraList
 import io.github.thibaultbee.streampack.utils.frontCameraList

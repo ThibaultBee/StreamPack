@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.streamers.bases
 
 import android.content.Context
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.internal.sources.AudioSource
+import io.github.thibaultbee.streampack.internal.sources.audio.MicrophoneSource
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 
 /**
@@ -34,7 +34,7 @@ open class BaseAudioOnlyStreamer(
 ) : BaseStreamer(
     context = context,
     internalVideoSource = null,
-    internalAudioSource = AudioSource(),
+    internalAudioSource = MicrophoneSource(),
     internalEndpoint = internalEndpoint,
     initialOnErrorListener = initialOnErrorListener
 )

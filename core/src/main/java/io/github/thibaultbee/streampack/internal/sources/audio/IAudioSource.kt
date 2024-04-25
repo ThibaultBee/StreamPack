@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.sources
+package io.github.thibaultbee.streampack.internal.sources.audio
 
 import io.github.thibaultbee.streampack.data.AudioConfig
+import io.github.thibaultbee.streampack.internal.sources.IFrameSource
 
 interface IAudioSource : IPublicAudioSource, IFrameSource<AudioConfig>
 

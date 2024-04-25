@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.sources.camera
+package io.github.thibaultbee.streampack.internal.sources.video.camera
 
 import android.Manifest
 import android.content.Context
@@ -21,7 +21,7 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
-import io.github.thibaultbee.streampack.internal.sources.IVideoSource
+import io.github.thibaultbee.streampack.internal.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.utils.defaultCameraId
 import io.github.thibaultbee.streampack.utils.isFrameRateSupported

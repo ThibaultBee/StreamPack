@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.sources
+package io.github.thibaultbee.streampack.internal.sources.audio
 
 import android.Manifest
 import android.media.AudioRecord
@@ -26,11 +26,12 @@ import android.os.Build
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.internal.data.Frame
+import io.github.thibaultbee.streampack.internal.sources.IFrameSource
 import io.github.thibaultbee.streampack.internal.utils.TimeUtils
 import io.github.thibaultbee.streampack.logger.Logger
 import java.nio.ByteBuffer
 
-class AudioSource : IAudioSource, IFrameSource<AudioConfig> {
+class MicrophoneSource : IAudioSource, IFrameSource<AudioConfig> {
     private var audioRecord: AudioRecord? = null
 
     private var processor: EffectProcessor? = null

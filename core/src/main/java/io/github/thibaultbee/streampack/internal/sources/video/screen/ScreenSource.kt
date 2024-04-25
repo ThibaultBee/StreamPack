@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.internal.sources.screen
+package io.github.thibaultbee.streampack.internal.sources.video.screen
 
 import android.content.Context
 import android.hardware.display.DisplayManager
@@ -29,7 +29,7 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.orientation.AbstractSourceOrientationProvider
-import io.github.thibaultbee.streampack.internal.sources.IVideoSource
+import io.github.thibaultbee.streampack.internal.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.internal.utils.extensions.isDevicePortrait
 import io.github.thibaultbee.streampack.internal.utils.extensions.landscapize
 import io.github.thibaultbee.streampack.internal.utils.extensions.portraitize
