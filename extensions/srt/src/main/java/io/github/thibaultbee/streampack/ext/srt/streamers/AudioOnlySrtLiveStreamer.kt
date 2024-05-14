@@ -23,8 +23,6 @@ import io.github.thibaultbee.streampack.internal.endpoints.composites.Connectabl
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.TSMuxer
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.internal.utils.extensions.defaultTsServiceInfo
-import io.github.thibaultbee.streampack.listeners.OnConnectionListener
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
 
 /**
@@ -33,22 +31,16 @@ import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
  *
  * @param context application context
  * @param tsServiceInfo MPEG-TS service description
- * @param initialOnErrorListener initialize [OnErrorListener]
- * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 class AudioOnlySrtLiveStreamer(
     context: Context,
-    tsServiceInfo: TsServiceInfo = context.defaultTsServiceInfo,
-    initialOnErrorListener: OnErrorListener? = null,
-    initialOnConnectionListener: OnConnectionListener? = null
+    tsServiceInfo: TsServiceInfo = context.defaultTsServiceInfo
 ) : BaseAudioOnlyLiveStreamer(
     context = context,
     internalEndpoint = ConnectableCompositeEndpoint(
         TSMuxer().apply { addService(tsServiceInfo) },
         SrtSink()
     ),
-    initialOnErrorListener = initialOnErrorListener,
-    initialOnConnectionListener = initialOnConnectionListener
 ),
     ISrtLiveStreamer {
     private val srtProducer = (internalEndpoint as ConnectableCompositeEndpoint).sink as SrtSink

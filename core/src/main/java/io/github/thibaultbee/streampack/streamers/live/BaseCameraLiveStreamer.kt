@@ -18,7 +18,6 @@ package io.github.thibaultbee.streampack.streamers.live
 import android.content.Context
 import io.github.thibaultbee.streampack.internal.endpoints.IConnectableEndpoint
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 
@@ -28,28 +27,23 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  * @param context application context
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
  * @param internalEndpoint the [IConnectableEndpoint] implementation
- * @param initialOnErrorListener initialize [OnErrorListener]
- * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 open class BaseCameraLiveStreamer(
     context: Context,
     enableAudio: Boolean = true,
-    internalEndpoint: IConnectableEndpoint,
-    initialOnErrorListener: OnErrorListener? = null,
-    initialOnConnectionListener: OnConnectionListener? = null
+    internalEndpoint: IConnectableEndpoint
 ) : BaseCameraStreamer(
     context = context,
     enableAudio = enableAudio,
     internalEndpoint = internalEndpoint,
-    initialOnErrorListener = initialOnErrorListener
 ),
     ILiveStreamer {
-    private val liveEndpoint = internalEndpoint.apply { onConnectionListener = initialOnConnectionListener }
+    private val liveEndpoint = internalEndpoint
 
     /**
      * Listener to manage connection.
      */
-    override var onConnectionListener: OnConnectionListener? = initialOnConnectionListener
+    override var onConnectionListener: OnConnectionListener? = null
         set(value) {
             liveEndpoint.onConnectionListener = value
             field = value

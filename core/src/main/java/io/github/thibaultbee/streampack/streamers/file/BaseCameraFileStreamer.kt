@@ -18,11 +18,10 @@ package io.github.thibaultbee.streampack.streamers.file
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.internal.endpoints.composites.FileCompositeEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.IFileEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.composites.FileCompositeEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.IMuxer
-import io.github.thibaultbee.streampack.internal.endpoints.sinks.FileWriter
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
+import io.github.thibaultbee.streampack.internal.endpoints.sinks.FileSink
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
 import java.io.File
@@ -35,18 +34,15 @@ import java.io.OutputStream
  * @param context application context
  * @param muxer the [IMuxer] implementation
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
- * @param initialOnErrorListener initialize [OnErrorListener]
  */
 open class BaseCameraFileStreamer(
     context: Context,
     enableAudio: Boolean = true,
     muxer: IMuxer,
-    initialOnErrorListener: OnErrorListener? = null
 ) : BaseCameraStreamer(
     context = context,
     enableAudio = enableAudio,
-    internalEndpoint = FileCompositeEndpoint(muxer, FileWriter()),
-    initialOnErrorListener = initialOnErrorListener
+    internalEndpoint = FileCompositeEndpoint(muxer, FileSink())
 ),
     IFileStreamer {
     private val fileEndpoint = internalEndpoint as IFileEndpoint

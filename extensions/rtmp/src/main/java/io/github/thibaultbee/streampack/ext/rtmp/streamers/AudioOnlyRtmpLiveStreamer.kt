@@ -19,24 +19,16 @@ import android.content.Context
 import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.sinks.RtmpSink
 import io.github.thibaultbee.streampack.internal.endpoints.composites.ConnectableCompositeEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.FlvMuxer
-import io.github.thibaultbee.streampack.listeners.OnConnectionListener
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.live.BaseAudioOnlyLiveStreamer
 
 /**
  * A [BaseAudioOnlyLiveStreamer] that sends only microphone frames to a remote RTMP device.
  *
  * @param context application context
- * @param initialOnErrorListener initialize [OnErrorListener]
- * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 class AudioOnlyRtmpLiveStreamer(
-    context: Context,
-    initialOnErrorListener: OnErrorListener? = null,
-    initialOnConnectionListener: OnConnectionListener? = null
+    context: Context
 ) : BaseAudioOnlyLiveStreamer(
     context = context,
-    internalEndpoint = ConnectableCompositeEndpoint(FlvMuxer(writeToFile = false), RtmpSink()),
-    initialOnErrorListener = initialOnErrorListener,
-    initialOnConnectionListener = initialOnConnectionListener
+    internalEndpoint = ConnectableCompositeEndpoint(FlvMuxer(writeToFile = false), RtmpSink())
 )

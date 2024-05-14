@@ -17,20 +17,16 @@ package io.github.thibaultbee.streampack.streamers.file
 
 import android.content.Context
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.FlvMuxer
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import java.io.File
 
 /**
  * A [BaseAudioOnlyFileStreamer] that sends only microphone frames to a FLV [File].
  *
  * @param context application context
- * @param initialOnErrorListener initialize [OnErrorListener]
  */
 class AudioOnlyFlvFileStreamer(
     context: Context,
-    initialOnErrorListener: OnErrorListener? = null
 ) : BaseAudioOnlyFileStreamer(
     context = context,
-    muxer = FlvMuxer(writeToFile = true),
-    initialOnErrorListener = initialOnErrorListener
+    muxer = FlvMuxer(writeToFile = true)
 )

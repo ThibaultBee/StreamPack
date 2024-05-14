@@ -26,7 +26,6 @@ import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.sources.audio.MicrophoneSource
 import io.github.thibaultbee.streampack.internal.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.internal.sources.video.camera.IPublicCameraSource
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
 import kotlinx.coroutines.runBlocking
@@ -37,19 +36,16 @@ import kotlinx.coroutines.runBlocking
  * @param context application context
  * @param enableAudio [Boolean.true] to capture audio
  * @param internalEndpoint the [IEndpoint] implementation
- * @param initialOnErrorListener initialize [OnErrorListener]
  */
 open class BaseCameraStreamer(
     private val context: Context,
     enableAudio: Boolean = true,
-    internalEndpoint: IEndpoint,
-    initialOnErrorListener: OnErrorListener? = null
+    internalEndpoint: IEndpoint
 ) : BaseStreamer(
     context = context,
     internalVideoSource = CameraSource(context),
     internalAudioSource = if (enableAudio) MicrophoneSource() else null,
-    internalEndpoint = internalEndpoint,
-    initialOnErrorListener = initialOnErrorListener
+    internalEndpoint = internalEndpoint
 ), ICameraStreamer {
     private val internalCameraSource = internalVideoSource as CameraSource
 
