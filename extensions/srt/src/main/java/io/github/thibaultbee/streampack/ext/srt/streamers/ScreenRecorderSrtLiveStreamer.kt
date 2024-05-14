@@ -28,8 +28,6 @@ import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.TSMuxer
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.internal.utils.Scheduler
 import io.github.thibaultbee.streampack.internal.utils.extensions.defaultTsServiceInfo
-import io.github.thibaultbee.streampack.listeners.OnConnectionListener
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.regulator.IBitrateRegulatorFactory
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
 import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStreamer
@@ -47,26 +45,20 @@ import io.github.thibaultbee.streampack.streamers.live.BaseScreenRecorderLiveStr
  * @param tsServiceInfo MPEG-TS service description
  * @param bitrateRegulatorFactory a [IBitrateRegulatorFactory] implementation. Use it to customized bitrate regulator.  If bitrateRegulatorConfig is not null, bitrateRegulatorFactory must not be null.
  * @param bitrateRegulatorConfig bitrate regulator configuration. If bitrateRegulatorFactory is not null, bitrateRegulatorConfig must not be null.
- * @param initialOnErrorListener initialize [OnErrorListener]
- * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 class ScreenRecorderSrtLiveStreamer(
     context: Context,
     enableAudio: Boolean = true,
     tsServiceInfo: TsServiceInfo = context.defaultTsServiceInfo,
     bitrateRegulatorFactory: IBitrateRegulatorFactory? = null,
-    bitrateRegulatorConfig: BitrateRegulatorConfig? = null,
-    initialOnErrorListener: OnErrorListener? = null,
-    initialOnConnectionListener: OnConnectionListener? = null
+    bitrateRegulatorConfig: BitrateRegulatorConfig? = null
 ) : BaseScreenRecorderLiveStreamer(
     context = context,
     enableAudio = enableAudio,
     internalEndpoint = ConnectableCompositeEndpoint(
         TSMuxer().apply { addService(tsServiceInfo) },
         SrtSink()
-    ),
-    initialOnErrorListener = initialOnErrorListener,
-    initialOnConnectionListener = initialOnConnectionListener
+    )
 ),
     ISrtLiveStreamer {
 

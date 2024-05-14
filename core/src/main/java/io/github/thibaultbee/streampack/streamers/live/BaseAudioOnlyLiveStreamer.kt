@@ -18,7 +18,6 @@ package io.github.thibaultbee.streampack.streamers.live
 import android.content.Context
 import io.github.thibaultbee.streampack.internal.endpoints.IConnectableEndpoint
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.bases.BaseAudioOnlyStreamer
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
@@ -28,25 +27,20 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  *
  * @param context application context
  * @param internalEndpoint the [IConnectableEndpoint] implementation
- * @param initialOnErrorListener initialize [OnErrorListener]
- * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 open class BaseAudioOnlyLiveStreamer(
     context: Context,
     internalEndpoint: IConnectableEndpoint,
-    initialOnErrorListener: OnErrorListener? = null,
-    initialOnConnectionListener: OnConnectionListener? = null
 ) : BaseAudioOnlyStreamer(
     context = context,
     internalEndpoint = internalEndpoint,
-    initialOnErrorListener = initialOnErrorListener,
 ), ILiveStreamer {
-    private val liveProducer = internalEndpoint.apply { onConnectionListener = initialOnConnectionListener }
+    private val liveProducer = internalEndpoint
 
     /**
      * Listener to manage connection.
      */
-    override var onConnectionListener: OnConnectionListener? = initialOnConnectionListener
+    override var onConnectionListener: OnConnectionListener? = null
         set(value) {
             liveProducer.onConnectionListener = value
             field = value

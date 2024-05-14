@@ -24,7 +24,6 @@ import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.sources.audio.MicrophoneSource
 import io.github.thibaultbee.streampack.internal.sources.video.screen.ScreenSource
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
 
 /**
  * A [BaseStreamer] that sends microphone and screen frames.
@@ -32,19 +31,16 @@ import io.github.thibaultbee.streampack.listeners.OnErrorListener
  * @param context application context
  * @param enableAudio [Boolean.true] to capture audio
  * @param internalEndpoint the [IEndpoint] implementation
- * @param initialOnErrorListener initialize [OnErrorListener]
  */
 open class BaseScreenRecorderStreamer(
     context: Context,
     enableAudio: Boolean = true,
-    internalEndpoint: IEndpoint,
-    initialOnErrorListener: OnErrorListener? = null
+    internalEndpoint: IEndpoint
 ) : BaseStreamer(
     context = context,
     internalVideoSource = ScreenSource(context),
     internalAudioSource = if (enableAudio) MicrophoneSource() else null,
-    internalEndpoint = internalEndpoint,
-    initialOnErrorListener = initialOnErrorListener
+    internalEndpoint = internalEndpoint
 ) {
     private val screenSource =
         (internalVideoSource as ScreenSource).apply { onErrorListener = onInternalErrorListener }

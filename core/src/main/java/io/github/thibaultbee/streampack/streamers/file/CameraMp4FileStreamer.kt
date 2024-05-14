@@ -17,9 +17,6 @@ package io.github.thibaultbee.streampack.streamers.file
 
 import android.content.Context
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.mp4.MP4Muxer
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.logger.ILogger
-import io.github.thibaultbee.streampack.logger.StreamPackLogger
 import java.io.File
 
 /**
@@ -27,15 +24,12 @@ import java.io.File
  *
  * @param context application context
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
- * @param initialOnErrorListener initialize [OnErrorListener]
  */
 class CameraMp4FileStreamer(
     context: Context,
-    enableAudio: Boolean = true,
-    initialOnErrorListener: OnErrorListener? = null
+    enableAudio: Boolean = true
 ) : BaseCameraFileStreamer(
     context = context,
     muxer = MP4Muxer(),
-    enableAudio = enableAudio,
-    initialOnErrorListener = initialOnErrorListener
+    enableAudio = enableAudio
 )

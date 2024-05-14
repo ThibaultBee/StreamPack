@@ -17,20 +17,16 @@ package io.github.thibaultbee.streampack.streamers.file
 
 import android.content.Context
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.mp4.MP4Muxer
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import java.io.File
 
 /**
  * A [BaseAudioOnlyFileStreamer] that sends only microphone frames to a MP4 [File].
  *
  * @param context application context
- * @param initialOnErrorListener initialize [OnErrorListener]
  */
 class AudioOnlyMp4FileStreamer(
-    context: Context,
-    initialOnErrorListener: OnErrorListener? = null
+    context: Context
 ) : BaseAudioOnlyFileStreamer(
     context = context,
-    muxer = MP4Muxer(),
-    initialOnErrorListener = initialOnErrorListener
+    muxer = MP4Muxer()
 )

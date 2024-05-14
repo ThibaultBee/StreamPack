@@ -18,23 +18,19 @@ package io.github.thibaultbee.streampack.streamers.bases
 import android.content.Context
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.sources.audio.MicrophoneSource
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
 
 /**
  * A [BaseStreamer] that sends only microphone frames.
  *
  * @param context application context
  * @param internalEndpoint the [IEndpoint] implementation
- * @param initialOnErrorListener initialize [OnErrorListener]
  */
 open class BaseAudioOnlyStreamer(
     context: Context,
     internalEndpoint: IEndpoint,
-    initialOnErrorListener: OnErrorListener? = null
 ) : BaseStreamer(
     context = context,
     internalVideoSource = null,
     internalAudioSource = MicrophoneSource(),
     internalEndpoint = internalEndpoint,
-    initialOnErrorListener = initialOnErrorListener
 )

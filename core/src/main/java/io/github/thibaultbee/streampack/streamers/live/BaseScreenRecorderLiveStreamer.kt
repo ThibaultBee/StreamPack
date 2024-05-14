@@ -18,7 +18,6 @@ package io.github.thibaultbee.streampack.streamers.live
 import android.content.Context
 import io.github.thibaultbee.streampack.internal.endpoints.IConnectableEndpoint
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.bases.BaseScreenRecorderStreamer
 import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
 
@@ -28,28 +27,23 @@ import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
  * @param context application context
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
  * @param internalEndpoint the [IConnectableEndpoint] implementation
- * @param initialOnErrorListener initialize [OnErrorListener]
- * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 open class BaseScreenRecorderLiveStreamer(
     context: Context,
     enableAudio: Boolean = true,
-    internalEndpoint: IConnectableEndpoint,
-    initialOnErrorListener: OnErrorListener? = null,
-    initialOnConnectionListener: OnConnectionListener? = null
+    internalEndpoint: IConnectableEndpoint
 ) : BaseScreenRecorderStreamer(
     context = context,
     enableAudio = enableAudio,
-    internalEndpoint = internalEndpoint,
-    initialOnErrorListener = initialOnErrorListener
+    internalEndpoint = internalEndpoint
 ),
     ILiveStreamer {
-    private val liveProducer = internalEndpoint.apply { onConnectionListener = initialOnConnectionListener }
+    private val liveProducer = internalEndpoint
 
     /**
      * Listener to manage connection.
      */
-    override var onConnectionListener: OnConnectionListener? = initialOnConnectionListener
+    override var onConnectionListener: OnConnectionListener? = null
         set(value) {
             liveProducer.onConnectionListener = value
             field = value
