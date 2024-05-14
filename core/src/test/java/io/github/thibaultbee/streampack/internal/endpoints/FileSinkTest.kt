@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.internal.endpoints
 
 import io.github.thibaultbee.streampack.internal.data.Packet
-import io.github.thibaultbee.streampack.internal.endpoints.sinks.FileWriter
+import io.github.thibaultbee.streampack.internal.endpoints.sinks.FileSink
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.utils.FakeLogger
 import io.github.thibaultbee.streampack.utils.Utils
@@ -27,8 +27,8 @@ import org.junit.Test
 import java.io.File
 import java.nio.ByteBuffer
 
-class FileWriterTest {
-    private val filePublisher = FileWriter()
+class FileSinkTest {
+    private val filePublisher = FileSink()
 
     init {
         Logger.logger = FakeLogger()
