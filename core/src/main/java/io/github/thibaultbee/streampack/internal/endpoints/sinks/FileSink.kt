@@ -23,7 +23,7 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 
 
-class FileWriter : IFileSink {
+class FileSink : IFileSink {
     override var file: File? = null
         set(value) {
             outputStream = if (value != null) {
