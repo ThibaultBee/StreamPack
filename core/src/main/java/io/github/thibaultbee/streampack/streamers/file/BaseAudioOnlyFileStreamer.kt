@@ -18,11 +18,10 @@ package io.github.thibaultbee.streampack.streamers.file
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.internal.endpoints.composites.FileCompositeEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.IFileEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.composites.FileCompositeEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.IMuxer
-import io.github.thibaultbee.streampack.internal.endpoints.sinks.FileWriter
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
+import io.github.thibaultbee.streampack.internal.endpoints.sinks.FileSink
 import io.github.thibaultbee.streampack.streamers.bases.BaseAudioOnlyStreamer
 import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
 import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
@@ -36,16 +35,13 @@ import java.io.OutputStream
  *
  * @param context application context
  * @param muxer the [IMuxer] implementation
- * @param initialOnErrorListener initialize [OnErrorListener]
  */
 open class BaseAudioOnlyFileStreamer(
     context: Context,
-    muxer: IMuxer,
-    initialOnErrorListener: OnErrorListener? = null
+    muxer: IMuxer
 ) : BaseAudioOnlyStreamer(
     context = context,
-    internalEndpoint = FileCompositeEndpoint(muxer, FileWriter()),
-    initialOnErrorListener = initialOnErrorListener
+    internalEndpoint = FileCompositeEndpoint(muxer, FileSink())
 ), IFileStreamer {
     private val fileEndpoint = internalEndpoint as IFileEndpoint
 

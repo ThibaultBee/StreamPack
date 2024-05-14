@@ -19,7 +19,6 @@ import android.content.Context
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.TSMuxer
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.internal.utils.extensions.defaultTsServiceInfo
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import java.io.File
 
 /**
@@ -28,16 +27,13 @@ import java.io.File
  * @param context application context
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
  * @param tsServiceInfo MPEG-TS service description
- * @param initialOnErrorListener initialize [OnErrorListener]
  */
 class CameraTsFileStreamer(
     context: Context,
     enableAudio: Boolean = true,
-    tsServiceInfo: TsServiceInfo = context.defaultTsServiceInfo,
-    initialOnErrorListener: OnErrorListener? = null
+    tsServiceInfo: TsServiceInfo = context.defaultTsServiceInfo
 ) : BaseCameraFileStreamer(
     context = context,
     muxer = TSMuxer().apply { addService(tsServiceInfo) },
-    enableAudio = enableAudio,
-    initialOnErrorListener = initialOnErrorListener
+    enableAudio = enableAudio
 )

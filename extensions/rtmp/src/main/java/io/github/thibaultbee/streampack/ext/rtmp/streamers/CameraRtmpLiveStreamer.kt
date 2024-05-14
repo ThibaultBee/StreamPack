@@ -20,8 +20,6 @@ import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.sinks.RtmpSi
 import io.github.thibaultbee.streampack.internal.endpoints.composites.ConnectableCompositeEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.FlvMuxer
 import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.tags.video.ExtendedVideoTag
-import io.github.thibaultbee.streampack.listeners.OnConnectionListener
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.live.BaseCameraLiveStreamer
 
 /**
@@ -29,20 +27,14 @@ import io.github.thibaultbee.streampack.streamers.live.BaseCameraLiveStreamer
  *
  * @param context application context
  * @param enableAudio [Boolean.true] to capture audio. False to disable audio capture.
- * @param initialOnErrorListener initialize [OnErrorListener]
- * @param initialOnConnectionListener initialize [OnConnectionListener]
  */
 class CameraRtmpLiveStreamer(
     context: Context,
-    enableAudio: Boolean = true,
-    initialOnErrorListener: OnErrorListener? = null,
-    initialOnConnectionListener: OnConnectionListener? = null
+    enableAudio: Boolean = true
 ) : BaseCameraLiveStreamer(
     context = context,
     enableAudio = enableAudio,
-    internalEndpoint = ConnectableCompositeEndpoint(FlvMuxer(writeToFile = false), RtmpSink()),
-    initialOnErrorListener = initialOnErrorListener,
-    initialOnConnectionListener = initialOnConnectionListener
+    internalEndpoint = ConnectableCompositeEndpoint(FlvMuxer(writeToFile = false), RtmpSink())
 ) {
     private val rtmpProducer = (internalEndpoint as ConnectableCompositeEndpoint).sink as RtmpSink
 
