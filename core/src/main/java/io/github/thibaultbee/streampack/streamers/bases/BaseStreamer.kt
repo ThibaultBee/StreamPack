@@ -35,8 +35,8 @@ import io.github.thibaultbee.streampack.internal.events.EventHandler
 import io.github.thibaultbee.streampack.internal.gl.CodecSurface
 import io.github.thibaultbee.streampack.internal.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.internal.sources.audio.IPublicAudioSource
-import io.github.thibaultbee.streampack.internal.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.internal.sources.video.IPublicVideoSource
+import io.github.thibaultbee.streampack.internal.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationInfo
@@ -53,20 +53,18 @@ import java.nio.ByteBuffer
  * @param internalVideoSource the video source
  * @param internalAudioSource the audio source
  * @param internalEndpoint the [IEndpoint] implementation
- * @param initialOnErrorListener initial [OnErrorListener]
  */
 abstract class BaseStreamer(
     private val context: Context,
     protected val internalAudioSource: IAudioSource?,
     protected val internalVideoSource: IVideoSource?,
     protected val internalEndpoint: IEndpoint,
-    initialOnErrorListener: OnErrorListener? = null
 ) : EventHandler(), IStreamer {
     /**
      * Listener that reports streamer error.
      * Supports only one listener.
      */
-    override var onErrorListener: OnErrorListener? = initialOnErrorListener
+    override var onErrorListener: OnErrorListener? = null
     override val info = StreamerConfigurationInfo(internalEndpoint.info)
 
     private var isStreaming = false
