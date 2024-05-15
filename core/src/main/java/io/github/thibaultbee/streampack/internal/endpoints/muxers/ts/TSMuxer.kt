@@ -36,17 +36,12 @@ import java.nio.ByteBuffer
 import java.util.MissingFormatArgumentException
 import kotlin.random.Random
 
-class TSMuxer(
-    initialListener: IMuxer.IMuxerListener? = null,
-    initialTsServiceInfo: TsServiceInfo? = null,
-    initialStreams: List<Config>? = null,
-) : IMuxer {
+class TSMuxer: IMuxer {
     override val info = TSMuxerInfo
     private val tsServices = mutableListOf<Service>()
     private val tsPes = mutableListOf<Pes>()
 
-    override var listener: IMuxer.IMuxerListener? =
-        initialListener
+    override var listener: IMuxer.IMuxerListener? = null
         set(value) {
             pat.listener = value
             sdt.listener = value
@@ -69,14 +64,6 @@ class TSMuxer(
         tsId,
         packetCount = 0
     )
-
-    init {
-        if (initialStreams != null) {
-            require(initialTsServiceInfo != null) { "If streams are specified, a service info must be specified too" }
-        }
-        initialTsServiceInfo?.let { addService(it) }
-        initialStreams?.let { addStreams(tsServices[0], it) }
-    }
 
     /**
      * Encodes a frame to MPEG-TS format.

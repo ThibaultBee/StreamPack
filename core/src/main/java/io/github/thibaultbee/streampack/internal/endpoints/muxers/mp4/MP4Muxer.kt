@@ -36,14 +36,12 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
 import java.nio.ByteBuffer
 
 class MP4Muxer(
-    initialListener: IMuxer.IMuxerListener? = null,
+    override var listener: IMuxer.IMuxerListener? = null,
     private val timescale: Int = DEFAULT_TIMESCALE,
     private val segmenterFactory: MP4SegmenterFactory = DefaultMP4SegmenterFactory()
 ) : IMuxer {
     override val info = MP4MuxerInfo
 
-    override var listener: IMuxer.IMuxerListener? =
-        initialListener
     private val tracks = mutableListOf<Track>()
     private val hasAudio: Boolean
         get() = tracks.any { it.config.mimeType.isAudio }
