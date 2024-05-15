@@ -28,7 +28,6 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
 
 class FlvMuxer(
     override var listener: IMuxer.IMuxerListener? = null,
-    initialStreams: List<Config>? = null,
     private val writeToFile: Boolean,
 ) : IMuxer {
     override val info = FlvMuxerInfo
@@ -39,10 +38,6 @@ class FlvMuxer(
         get() = streams.any { it.config.mimeType.isVideo }
     private var startUpTime: Long? = null
     private var hasFirstFrame = false
-
-    init {
-        initialStreams?.let { config -> streams.addAll(config.map { Stream(it) }) }
-    }
 
     override fun write(frame: Frame, streamPid: Int) {
         synchronized(this) {
