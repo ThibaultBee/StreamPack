@@ -108,16 +108,7 @@ class RtmpProducer(
     }
 
     override suspend fun stopStream() {
-        withContext(coroutineDispatcher) {
-            synchronized(this) {
-                if (isConnected) {
-                    /**
-                     * deleteStream is blocking, if the connection does not exist yet.
-                     */
-                    socket.deleteStream()
-                }
-            }
-        }
+        // No need to stop stream
     }
 
     override fun release() {
