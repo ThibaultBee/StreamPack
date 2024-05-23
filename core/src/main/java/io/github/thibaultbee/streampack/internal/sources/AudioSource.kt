@@ -32,8 +32,10 @@ import java.nio.ByteBuffer
 
 class AudioSource : IAudioSource {
     private var audioRecord: AudioRecord? = null
-    private var mutedByteArray: ByteArray? = null
 
+    private var processor: EffectProcessor? = null
+
+    private var mutedByteArray: ByteArray? = null
     override var isMuted: Boolean = false
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
@@ -58,30 +60,11 @@ class AudioSource : IAudioSource {
             MediaRecorder.AudioSource.DEFAULT, config.sampleRate,
             config.channelConfig, config.byteFormat, bufferSize
         ).also {
-            if (config.enableEchoCanceler) {
-                if (AcousticEchoCanceler.isAvailable()) {
-                    val echoCanceler = AcousticEchoCanceler.create(it.audioSessionId)
-                    if (echoCanceler != null) {
-                        echoCanceler.enabled = true
-                    } else {
-                        Logger.w(TAG, "Failed to create acoustic echo canceler")
-                    }
-                } else {
-                    Logger.w(TAG, "Acoustic echo canceler is not available")
-                }
-            }
-            if (config.enableNoiseSuppressor) {
-                if (NoiseSuppressor.isAvailable()) {
-                    val noiseSuppressor = NoiseSuppressor.create(it.audioSessionId)
-                    if (noiseSuppressor != null) {
-                        noiseSuppressor.enabled = true
-                    } else {
-                        Logger.w(TAG, "Failed to create noise suppressor")
-                    }
-                } else {
-                    Logger.w(TAG, "Noise suppressor is not available")
-                }
-            }
+            processor = EffectProcessor(
+                config.enableEchoCanceler,
+                config.enableNoiseSuppressor,
+                it.audioSessionId
+            )
         }
 
         if (audioRecord?.state != AudioRecord.STATE_INITIALIZED) {
@@ -116,6 +99,9 @@ class AudioSource : IAudioSource {
         // Release audio record
         audioRecord?.release()
         audioRecord = null
+
+        processor?.release()
+        processor = null
     }
 
     private fun getTimestamp(audioRecord: AudioRecord): Long {
@@ -175,6 +161,82 @@ class AudioSource : IAudioSource {
                 MediaFormat.KEY_MIME,
                 MediaFormat.MIMETYPE_AUDIO_RAW
             )
+        }
+    }
+
+    private class EffectProcessor(
+        enableAcousticEchoCanceler: Boolean,
+        enableNoiseSuppressor: Boolean,
+        audioSessionId: Int
+    ) {
+        private val acousticEchoCanceler =
+            if (enableAcousticEchoCanceler) initAcousticEchoCanceler(audioSessionId) else null
+
+        private val noiseSuppressor =
+            if (enableNoiseSuppressor) initNoiseSuppressor(audioSessionId) else null
+
+
+        fun release() {
+            acousticEchoCanceler?.release()
+            noiseSuppressor?.release()
+        }
+
+        companion object {
+            private fun initNoiseSuppressor(audioSessionId: Int): NoiseSuppressor? {
+                if (!NoiseSuppressor.isAvailable()) {
+                    Logger.w(TAG, "Noise suppressor is not available")
+                    return null
+                }
+
+                val noiseSuppressor = try {
+                    NoiseSuppressor.create(audioSessionId)
+                } catch (e: Exception) {
+                    Logger.e(TAG, "Failed to create noise suppressor", e)
+                    return null
+                }
+
+                if (noiseSuppressor == null) {
+                    Logger.w(TAG, "Failed to create noise suppressor")
+                    return null
+                }
+
+                val result = noiseSuppressor.setEnabled(true)
+                if (result != NoiseSuppressor.SUCCESS) {
+                    noiseSuppressor.release()
+                    Logger.w(TAG, "Failed to enable noise suppressor")
+                    return null
+                }
+
+                return noiseSuppressor
+            }
+
+            private fun initAcousticEchoCanceler(audioSessionId: Int): AcousticEchoCanceler? {
+                if (!AcousticEchoCanceler.isAvailable()) {
+                    Logger.w(TAG, "Acoustic echo canceler is not available")
+                    return null
+                }
+
+                val acousticEchoCanceler = try {
+                    AcousticEchoCanceler.create(audioSessionId)
+                } catch (e: Exception) {
+                    Logger.e(TAG, "Failed to create acoustic echo canceler", e)
+                    return null
+                }
+
+                if (acousticEchoCanceler == null) {
+                    Logger.w(TAG, "Failed to create acoustic echo canceler")
+                    return null
+                }
+
+                val result = acousticEchoCanceler.setEnabled(true)
+                if (result != AcousticEchoCanceler.SUCCESS) {
+                    acousticEchoCanceler.release()
+                    Logger.w(TAG, "Failed to enable acoustic echo canceler")
+                    return null
+                }
+
+                return acousticEchoCanceler
+            }
         }
     }
 }
