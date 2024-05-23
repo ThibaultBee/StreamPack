@@ -17,14 +17,12 @@
 package io.github.thibaultbee.streampack.utils
 
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.ILiveStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.IStreamer
+import io.github.thibaultbee.streampack.streamers.interfaces.ICoroutineStreamer
 
 /**
  * Get a streamer if it from generic class or interface
  */
-inline fun <reified T> IStreamer.getStreamer(): T? {
+inline fun <reified T> ICoroutineStreamer.getStreamer(): T? {
     return if (this is T) {
         this
     } else {
@@ -32,8 +30,4 @@ inline fun <reified T> IStreamer.getStreamer(): T? {
     }
 }
 
-fun IStreamer.getCameraStreamer(): ICameraStreamer? = getStreamer<ICameraStreamer>()
-
-fun IStreamer.getLiveStreamer(): ILiveStreamer? = getStreamer<ILiveStreamer>()
-
-fun IStreamer.getFileStreamer() = getStreamer<IFileStreamer>()
+fun ICoroutineStreamer.getCameraStreamer(): ICameraStreamer? = getStreamer<ICameraStreamer>()

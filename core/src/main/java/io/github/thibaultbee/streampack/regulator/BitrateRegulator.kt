@@ -18,9 +18,10 @@ package io.github.thibaultbee.streampack.regulator
 import io.github.thibaultbee.streampack.data.BitrateRegulatorConfig
 
 /**
- * Base class of bitrate regulation implementation.
+ * Abstract class for the bitrate regulation implementation.
+ *
  * If you want to implement your custom bitrate regulator, it must inherit from this class.
- * The bitrate regulator object is created by streamers through the [IBitrateRegulatorFactory].
+ * The bitrate regulator object is created by streamers through the [IBitrateRegulator.Factory].
  *
  * @param bitrateRegulatorConfig bitrate regulation configuration
  * @param onVideoTargetBitrateChange call when you have to change video bitrate
@@ -30,4 +31,4 @@ abstract class BitrateRegulator(
     protected val bitrateRegulatorConfig: BitrateRegulatorConfig,
     protected val onVideoTargetBitrateChange: ((Int) -> Unit),
     protected val onAudioTargetBitrateChange: ((Int) -> Unit)
-)
+) : IBitrateRegulator

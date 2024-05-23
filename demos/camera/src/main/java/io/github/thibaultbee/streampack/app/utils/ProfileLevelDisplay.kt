@@ -69,6 +69,15 @@ import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileHigh
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileHigh10
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileHigh422
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileMain
+import android.media.MediaCodecInfo.CodecProfileLevel.H263Level10
+import android.media.MediaCodecInfo.CodecProfileLevel.H263Level20
+import android.media.MediaCodecInfo.CodecProfileLevel.H263Level30
+import android.media.MediaCodecInfo.CodecProfileLevel.H263Level40
+import android.media.MediaCodecInfo.CodecProfileLevel.H263Level45
+import android.media.MediaCodecInfo.CodecProfileLevel.H263Level50
+import android.media.MediaCodecInfo.CodecProfileLevel.H263Level60
+import android.media.MediaCodecInfo.CodecProfileLevel.H263Level70
+import android.media.MediaCodecInfo.CodecProfileLevel.H263ProfileBaseline
 import android.media.MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel1
 import android.media.MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel2
 import android.media.MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel21
@@ -100,6 +109,11 @@ import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10
 import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10
 import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10Plus
 import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMainStill
+import android.media.MediaCodecInfo.CodecProfileLevel.VP8Level_Version0
+import android.media.MediaCodecInfo.CodecProfileLevel.VP8Level_Version1
+import android.media.MediaCodecInfo.CodecProfileLevel.VP8Level_Version2
+import android.media.MediaCodecInfo.CodecProfileLevel.VP8Level_Version3
+import android.media.MediaCodecInfo.CodecProfileLevel.VP8ProfileMain
 import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level1
 import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level11
 import android.media.MediaCodecInfo.CodecProfileLevel.VP9Level2
@@ -161,6 +175,10 @@ class ProfileLevelDisplay(private val context: Context) {
             }
         }
 
+    private val h263ProfileNameMap = mapOf(
+        H263ProfileBaseline to context.getString(R.string.video_profile_baseline)
+    )
+
     private val avcProfileNameMap =
         mutableMapOf(
             AVCProfileBaseline to context.getString(R.string.video_profile_baseline),
@@ -200,6 +218,9 @@ class ProfileLevelDisplay(private val context: Context) {
             }
         }
 
+    private val vp8ProfileNameMap =
+        mapOf(VP8ProfileMain to context.getString(R.string.video_profile_main))
+
     private val vp9ProfileNameMap =
         mutableMapOf<Int, String>().apply {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -232,6 +253,18 @@ class ProfileLevelDisplay(private val context: Context) {
                 )
             }
         }
+
+    private val h263LevelNameMap =
+        mutableMapOf(
+            H263Level10 to context.getString(R.string.video_level_10),
+            H263Level20 to context.getString(R.string.video_level_20),
+            H263Level30 to context.getString(R.string.video_level_30),
+            H263Level40 to context.getString(R.string.video_level_40),
+            H263Level45 to context.getString(R.string.video_level_45),
+            H263Level50 to context.getString(R.string.video_level_50),
+            H263Level60 to context.getString(R.string.video_level_60),
+            H263Level70 to context.getString(R.string.video_level_70)
+        )
 
     private val avcLevelNameMap =
         mutableMapOf(
@@ -294,6 +327,13 @@ class ProfileLevelDisplay(private val context: Context) {
             HEVCHighTierLevel62 to context.getString(R.string.video_level_high_level62),
         )
 
+    private val vp8LevelNameMap = mapOf(
+        VP8Level_Version0 to context.getString(R.string.video_level_version0),
+        VP8Level_Version1 to context.getString(R.string.video_level_version1),
+        VP8Level_Version2 to context.getString(R.string.video_level_version2),
+        VP8Level_Version3 to context.getString(R.string.video_level_version3)
+    )
+
     private val vp9LevelNameMap =
         mutableMapOf<Int, String>().apply {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -354,9 +394,11 @@ class ProfileLevelDisplay(private val context: Context) {
 
     private fun getProfileMap(mimeType: String) = when (mimeType) {
         MediaFormat.MIMETYPE_AUDIO_AAC -> aacProfileNameMap
+        MediaFormat.MIMETYPE_VIDEO_H263 -> h263ProfileNameMap
         MediaFormat.MIMETYPE_VIDEO_AVC -> avcProfileNameMap
         MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcProfileNameMap
         MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9ProfileNameMap
+        MediaFormat.MIMETYPE_VIDEO_VP8 -> vp8ProfileNameMap
         MediaFormat.MIMETYPE_VIDEO_AV1 -> av1ProfileNameMap
         else -> emptyMap()
     }
@@ -376,9 +418,11 @@ class ProfileLevelDisplay(private val context: Context) {
     }
 
     private fun getLevelMap(mimeType: String) = when (mimeType) {
+        MediaFormat.MIMETYPE_VIDEO_H263 -> h263LevelNameMap
         MediaFormat.MIMETYPE_VIDEO_AVC -> avcLevelNameMap
         MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcLevelNameMap
         MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9LevelNameMap
+        MediaFormat.MIMETYPE_VIDEO_VP8 -> vp8LevelNameMap
         MediaFormat.MIMETYPE_VIDEO_AV1 -> av1LevelNameMap
         else -> emptyMap()
     }

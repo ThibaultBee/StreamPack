@@ -18,6 +18,7 @@ import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain
 import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10
 import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10
 import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10Plus
+import android.media.MediaCodecInfo.CodecProfileLevel.VP8ProfileMain
 import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile0
 import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile1
 import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile2
@@ -34,7 +35,7 @@ data class DynamicRangeProfile(val dynamicRange: Long, val transferFunction: Int
         get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             dynamicRange != DynamicRangeProfiles.STANDARD
         } else {
-           false
+            false
         }
 
     companion object {
@@ -65,6 +66,8 @@ data class DynamicRangeProfile(val dynamicRange: Long, val transferFunction: Int
             HEVCProfileMain10HDR10Plus to hdr10Plus,
         )
 
+        private val vp8ProfilesMap = mapOf(VP8ProfileMain to sdr)
+
         private val vp9ProfilesMap = mapOf(
             VP9Profile0 to sdr,
             VP9Profile1 to hdr,
@@ -85,8 +88,10 @@ data class DynamicRangeProfile(val dynamicRange: Long, val transferFunction: Int
 
         fun fromProfile(mimetype: String, profile: Int): DynamicRangeProfile {
             return when (mimetype) {
+                MediaFormat.MIMETYPE_VIDEO_H263 -> sdr
                 MediaFormat.MIMETYPE_VIDEO_AVC -> avcProfilesMap[profile]
                 MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcProfilesMap[profile]
+                MediaFormat.MIMETYPE_VIDEO_VP8 -> vp8ProfilesMap[profile]
                 MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9ProfilesMap[profile]
                 MediaFormat.MIMETYPE_VIDEO_AV1 -> av1ProfilesMap[profile]
                 else -> throw IllegalArgumentException("Unknown mimetype $mimetype")

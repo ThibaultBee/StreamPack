@@ -27,10 +27,13 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SeekBarPreference
 import androidx.preference.SwitchPreference
+import io.github.thibaultbee.streampack.internal.endpoints.composites.CompositeEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.composites.muxers.flv.FlvMuxerInfo
+import io.github.thibaultbee.streampack.internal.endpoints.composites.muxers.ts.TSMuxerInfo
 import io.github.thibaultbee.streampack.screenrecorder.R
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointFactory
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
-import io.github.thibaultbee.streampack.streamers.helpers.StreamerConfigurationInfo
+import io.github.thibaultbee.streampack.streamers.infos.StreamerConfigurationInfo
 
 class SettingsFragment : PreferenceFragmentCompat() {
     private lateinit var streamerInfo: StreamerConfigurationInfo
@@ -131,8 +134,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         // Update supported values with a new info
         streamerInfo = when (endpointType) {
-            EndpointType.SRT -> StreamerConfigurationInfo.tsInfo
-            EndpointType.RTMP -> StreamerConfigurationInfo.flvInfo
+            EndpointType.SRT -> StreamerConfigurationInfo(CompositeEndpoint.EndpointInfo(TSMuxerInfo))
+            EndpointType.RTMP -> StreamerConfigurationInfo(
+                CompositeEndpoint.EndpointInfo(
+                    FlvMuxerInfo
+                )
+            )
         }
         loadVideoSettings()
         loadAudioSettings()
