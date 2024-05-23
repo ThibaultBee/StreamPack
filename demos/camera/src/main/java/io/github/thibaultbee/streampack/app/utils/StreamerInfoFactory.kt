@@ -15,19 +15,80 @@
  */
 package io.github.thibaultbee.streampack.app.utils
 
+import android.content.Context
 import io.github.thibaultbee.streampack.app.models.EndpointType
-import io.github.thibaultbee.streampack.streamers.helpers.CameraStreamerConfigurationInfo
+import io.github.thibaultbee.streampack.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.internal.endpoints.DynamicEndpoint
+import io.github.thibaultbee.streampack.internal.endpoints.MediaContainerType
+import io.github.thibaultbee.streampack.internal.endpoints.MediaSinkType
+import io.github.thibaultbee.streampack.streamers.infos.CameraStreamerConfigurationInfo
 
 class StreamerInfoFactory(
+    context: Context,
     private val endpointType: EndpointType,
 ) {
+    private val endpoint = DynamicEndpoint(context)
+
     fun build(): CameraStreamerConfigurationInfo {
         return when (endpointType) {
-            EndpointType.TS_FILE -> CameraStreamerConfigurationInfo.tsInfo
-            EndpointType.FLV_FILE -> CameraStreamerConfigurationInfo.flvInfo
-            EndpointType.SRT -> CameraStreamerConfigurationInfo.tsInfo
-            EndpointType.RTMP -> CameraStreamerConfigurationInfo.flvInfo
-            EndpointType.MP4_FILE -> CameraStreamerConfigurationInfo.mp4Info
+            EndpointType.TS_FILE -> getInfo(
+                MediaDescriptor.Type(MediaContainerType.TS, MediaSinkType.FILE)
+            )
+
+            EndpointType.FLV_FILE -> getInfo(
+                MediaDescriptor.Type(
+                    MediaContainerType.FLV,
+                    MediaSinkType.FILE
+                )
+            )
+
+            EndpointType.SRT -> getInfo(
+                MediaDescriptor.Type(
+                    MediaContainerType.TS,
+                    MediaSinkType.SRT
+                )
+            )
+
+            EndpointType.RTMP -> getInfo(
+                MediaDescriptor.Type(
+                    MediaContainerType.FLV,
+                    MediaSinkType.RTMP
+                )
+            )
+
+            EndpointType.MP4_FILE -> getInfo(
+                MediaDescriptor.Type(
+                    MediaContainerType.MP4,
+                    MediaSinkType.FILE
+                )
+            )
+
+            EndpointType.WEBM_FILE -> getInfo(
+                MediaDescriptor.Type(
+                    MediaContainerType.WEBM,
+                    MediaSinkType.FILE
+                )
+            )
+
+            EndpointType.OGG_FILE -> getInfo(
+                MediaDescriptor.Type(
+                    MediaContainerType.OGG,
+                    MediaSinkType.FILE
+                )
+            )
+
+            EndpointType.THREEGP_FILE -> getInfo(
+                MediaDescriptor.Type(
+                    MediaContainerType.THREEGP,
+                    MediaSinkType.FILE
+                )
+            )
         }
     }
+
+    /**
+     * This is valid only if the [IEndpoint] of the streamer is the [DynamicEndpoint] (default).
+     */
+    private fun getInfo(type: MediaDescriptor.Type) =
+        CameraStreamerConfigurationInfo(endpoint.getInfo(type))
 }

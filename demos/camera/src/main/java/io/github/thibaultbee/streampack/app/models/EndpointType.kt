@@ -20,7 +20,10 @@ enum class EndpointType(val id: Int) {
     FLV_FILE(1),
     SRT(2),
     RTMP(3),
-    MP4_FILE(4);
+    MP4_FILE(4),
+    WEBM_FILE(5),
+    OGG_FILE(6),
+    THREEGP_FILE(7);
 
     companion object {
         fun fromId(id: Int): EndpointType = entries.first { it.id == id }
