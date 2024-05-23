@@ -31,10 +31,9 @@ import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.camera.viewfinder.CameraViewfinder
-import androidx.camera.viewfinder.CameraViewfinder.ScaleType
 import androidx.camera.viewfinder.CameraViewfinderExt.requestSurface
-import androidx.camera.viewfinder.ViewfinderSurfaceRequest
-import androidx.camera.viewfinder.populateFromCharacteristics
+import androidx.camera.viewfinder.surface.ViewfinderSurfaceRequest
+import androidx.camera.viewfinder.surface.populateFromCharacteristics
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -43,6 +42,7 @@ import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.utils.OrientationUtils
 import io.github.thibaultbee.streampack.utils.getCameraCharacteristics
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.CancellationException
 
@@ -62,11 +62,11 @@ class PreviewView @JvmOverloads constructor(
     defStyle: Int = 0
 ) : FrameLayout(context, attrs, defStyle) {
     private val cameraViewFinder = CameraViewfinder(context, attrs, defStyle)
+
     private var viewFinderSurfaceRequest: ViewfinderSurfaceRequest? = null
 
-    private var previewState = PreviewState.STOPPED
-
-    private val lifecycleOwner by lazy { findViewTreeLifecycleOwner()!! }
+    private val lifecycleScope: CoroutineScope?
+        get() = findViewTreeLifecycleOwner()?.lifecycleScope
 
     /**
      * Enables zoom on pinch gesture.
@@ -91,15 +91,13 @@ class PreviewView @JvmOverloads constructor(
          * @param value the [ICameraStreamer] to preview
          */
         set(value) {
-            post {
-                stopPreviewInternal()
-                value?.let {
-                    lifecycleOwner.lifecycleScope.launch {
-                        startPreviewInternal(it, it.camera, size)
-                    }
+            stopPreviewInternal()
+            value?.let {
+                lifecycleScope?.launch {
+                    startPreviewInternal(it, it.camera, size)
                 }
-                field = value
             }
+            field = value
         }
 
     /**
@@ -229,17 +227,23 @@ class PreviewView @JvmOverloads constructor(
     /**
      * Stops the preview.
      */
-    private fun stopPreview() {
-        lifecycleOwner.lifecycleScope.launch {
-            stopPreviewInternal()
-        }
+    fun stopPreview() {
+        stopPreviewInternal()
     }
 
     private fun stopPreviewInternal() {
         streamer?.stopPreview()
         viewFinderSurfaceRequest?.markSurfaceSafeToRelease()
         viewFinderSurfaceRequest = null
-        previewState = PreviewState.STOPPED
+    }
+
+    /**
+     * Starts the preview.
+     */
+    fun startPreview() {
+        streamer?.let {
+            startPreviewIfReady(it, size, false)
+        } ?: throw UnsupportedOperationException("Streamer has not been set")
     }
 
     /**
@@ -263,9 +267,9 @@ class PreviewView @JvmOverloads constructor(
                 throw SecurityException("Camera permission is needed to run this application")
             }
 
-            lifecycleOwner.lifecycleScope.launch {
+            lifecycleScope?.launch {
                 startPreviewInternal(streamer, streamer.camera, targetViewSize)
-            }
+            } ?: throw IllegalStateException("LifecycleScope is not available")
         } catch (e: Exception) {
             if (shouldFailSilently) {
                 Logger.w(TAG, e.toString(), e)
@@ -280,12 +284,11 @@ class PreviewView @JvmOverloads constructor(
         camera: String,
         targetViewSize: Size
     ) {
-        previewState = PreviewState.STARTING
-
         Logger.d(TAG, "Target view size: $targetViewSize")
         Logger.i(TAG, "Starting on camera: $camera")
 
         val request = createRequest(targetViewSize, camera)
+        viewFinderSurfaceRequest?.markSurfaceSafeToRelease()
         viewFinderSurfaceRequest = request
 
         try {
@@ -297,7 +300,6 @@ class PreviewView @JvmOverloads constructor(
             ) {
                 viewFinderSurfaceRequest?.markSurfaceSafeToRelease()
                 viewFinderSurfaceRequest = null
-                previewState = PreviewState.STOPPED
                 Logger.e(
                     TAG,
                     "Camera permission is needed to run this application"
@@ -306,8 +308,9 @@ class PreviewView @JvmOverloads constructor(
             } else {
                 if (surface.isValid) {
                     streamer.startPreview(surface, camera)
-                    previewState = PreviewState.RUNNING
                     listener?.onPreviewStarted()
+                } else {
+                    Logger.w(TAG, "Invalid surface")
                 }
             }
         } catch (e: CancellationException) {
@@ -315,7 +318,6 @@ class PreviewView @JvmOverloads constructor(
         } catch (t: Throwable) {
             viewFinderSurfaceRequest?.markSurfaceSafeToRelease()
             viewFinderSurfaceRequest = null
-            previewState = PreviewState.STOPPED
             Logger.w(TAG, "Failed to get a Surface: $t", t)
             listener?.onPreviewFailed(t)
         }
@@ -350,48 +352,51 @@ class PreviewView @JvmOverloads constructor(
         private const val TAG = "PreviewView"
 
 
-        private fun getPosition(scaleType: ScaleType): Position {
+        private fun getPosition(scaleType: CameraViewfinder.ScaleType): Position {
             return when (scaleType) {
-                ScaleType.FILL_START -> Position.START
-                ScaleType.FILL_CENTER -> Position.CENTER
-                ScaleType.FILL_END -> Position.END
-                ScaleType.FIT_START -> Position.START
-                ScaleType.FIT_CENTER -> Position.CENTER
-                ScaleType.FIT_END -> Position.END
+                CameraViewfinder.ScaleType.FILL_START -> Position.START
+                CameraViewfinder.ScaleType.FILL_CENTER -> Position.CENTER
+                CameraViewfinder.ScaleType.FILL_END -> Position.END
+                CameraViewfinder.ScaleType.FIT_START -> Position.START
+                CameraViewfinder.ScaleType.FIT_CENTER -> Position.CENTER
+                CameraViewfinder.ScaleType.FIT_END -> Position.END
             }
         }
 
-        private fun getScaleMode(scaleType: ScaleType): ScaleMode {
+        private fun getScaleMode(scaleType: CameraViewfinder.ScaleType): ScaleMode {
             return when (scaleType) {
-                ScaleType.FILL_START -> ScaleMode.FILL
-                ScaleType.FILL_CENTER -> ScaleMode.FILL
-                ScaleType.FILL_END -> ScaleMode.FILL
-                ScaleType.FIT_START -> ScaleMode.FIT
-                ScaleType.FIT_CENTER -> ScaleMode.FIT
-                ScaleType.FIT_END -> ScaleMode.FIT
+                CameraViewfinder.ScaleType.FILL_START -> ScaleMode.FILL
+                CameraViewfinder.ScaleType.FILL_CENTER -> ScaleMode.FILL
+                CameraViewfinder.ScaleType.FILL_END -> ScaleMode.FILL
+                CameraViewfinder.ScaleType.FIT_START -> ScaleMode.FIT
+                CameraViewfinder.ScaleType.FIT_CENTER -> ScaleMode.FIT
+                CameraViewfinder.ScaleType.FIT_END -> ScaleMode.FIT
             }
         }
 
-        private fun getScaleType(scaleMode: ScaleMode, position: Position): ScaleType {
+        private fun getScaleType(
+            scaleMode: ScaleMode,
+            position: Position
+        ): CameraViewfinder.ScaleType {
             when (position) {
                 Position.START -> {
                     return when (scaleMode) {
-                        ScaleMode.FILL -> ScaleType.FILL_START
-                        ScaleMode.FIT -> ScaleType.FIT_START
+                        ScaleMode.FILL -> CameraViewfinder.ScaleType.FILL_START
+                        ScaleMode.FIT -> CameraViewfinder.ScaleType.FIT_START
                     }
                 }
 
                 Position.CENTER -> {
                     return when (scaleMode) {
-                        ScaleMode.FILL -> ScaleType.FILL_CENTER
-                        ScaleMode.FIT -> ScaleType.FIT_CENTER
+                        ScaleMode.FILL -> CameraViewfinder.ScaleType.FILL_CENTER
+                        ScaleMode.FIT -> CameraViewfinder.ScaleType.FIT_CENTER
                     }
                 }
 
                 Position.END -> {
                     return when (scaleMode) {
-                        ScaleMode.FILL -> ScaleType.FILL_END
-                        ScaleMode.FIT -> ScaleType.FIT_END
+                        ScaleMode.FILL -> CameraViewfinder.ScaleType.FILL_END
+                        ScaleMode.FIT -> CameraViewfinder.ScaleType.FIT_END
                     }
                 }
             }
@@ -487,23 +492,6 @@ class PreviewView @JvmOverloads constructor(
              */
             internal fun entryOf(value: Int) = entries.first { it.value == value }
         }
-    }
-
-    enum class PreviewState {
-        /**
-         * The preview is stopped.
-         */
-        STOPPED,
-
-        /**
-         * The preview is starting.
-         */
-        STARTING,
-
-        /**
-         * The preview is running.
-         */
-        RUNNING
     }
 
 }
