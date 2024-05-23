@@ -37,7 +37,7 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.isDevicePortra
 import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
 import io.github.thibaultbee.streampack.internal.utils.extensions.landscapize
 import io.github.thibaultbee.streampack.internal.utils.extensions.portraitize
-import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
+import io.github.thibaultbee.streampack.streamers.DefaultStreamer
 import java.security.InvalidParameterException
 import kotlin.math.roundToInt
 
@@ -45,7 +45,7 @@ import kotlin.math.roundToInt
  * Video configuration class.
  * If you don't know how to set class members, [Video encoding recommendations](https://developer.android.com/guide/topics/media/media-formats#video-encoding) should give you hints.
  *
- * @see [BaseStreamer.configure]
+ * @see [DefaultStreamer.configure]
  */
 class VideoConfig(
     /**

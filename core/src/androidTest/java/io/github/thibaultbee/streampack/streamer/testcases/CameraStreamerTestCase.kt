@@ -16,13 +16,15 @@
 package io.github.thibaultbee.streampack.streamer.testcases
 
 import android.Manifest
+import android.content.Context
 import android.graphics.SurfaceTexture
 import android.util.Log
 import android.view.Surface
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
-import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
-import io.github.thibaultbee.streampack.utils.AndroidUtils
-import kotlinx.coroutines.runBlocking
+import io.github.thibaultbee.streampack.streamers.DefaultCameraStreamer
+import io.github.thibaultbee.streampack.utils.DataUtils
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Before
@@ -31,7 +33,9 @@ import org.junit.Test
 
 abstract class CameraStreamerTestCase :
     StreamerTestCase() {
-    abstract override val streamer: BaseCameraStreamer
+    private val context: Context = InstrumentationRegistry.getInstrumentation().context
+
+    override val streamer = DefaultCameraStreamer(context)
     private lateinit var surface: Surface
 
     @Before
@@ -49,42 +53,19 @@ abstract class CameraStreamerTestCase :
         GrantPermissionRule.grant(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
 
     @Test
-    override fun defaultUsageTest() {
+    override fun defaultUsageTest() = runTest {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
             streamer.startPreview(surface)
-            runBlocking {
-                streamer.startStream()
-                streamer.stopStream()
-            }
+            streamer.startStream(descriptor)
+            streamer.stopStream()
             streamer.stopPreview()
             streamer.release()
         } catch (e: Exception) {
             Log.e(TAG, "defaultUsageTest: exception: ", e)
-            fail("Default usage must not throw exception $e")
-        }
-    }
-
-    @Test
-    override fun defaultUsageTest2() {
-        try {
-            streamer.configure(
-                AndroidUtils.fakeValidAudioConfig()
-            )
-            streamer.configure(
-                AndroidUtils.fakeValidVideoConfig()
-            )
-            streamer.startPreview(surface)
-            runBlocking {
-                streamer.startStream()
-                streamer.stopStream()
-            }
-            streamer.release()
-        } catch (e: Exception) {
-            Log.e(TAG, "defaultUsageTest2: exception: ", e)
             fail("Default usage must not throw exception $e")
         }
     }
@@ -113,8 +94,8 @@ abstract class CameraStreamerTestCase :
     fun configureStopPreviewTest() {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
             streamer.stopPreview()
         } catch (e: Exception) {
@@ -127,8 +108,8 @@ abstract class CameraStreamerTestCase :
     fun startPreviewReleaseTest() {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
             streamer.startPreview(surface)
             streamer.release()
@@ -142,8 +123,8 @@ abstract class CameraStreamerTestCase :
     fun startPreviewStopPreviewTest() {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
             streamer.startPreview(surface)
             streamer.stopPreview()
@@ -154,16 +135,14 @@ abstract class CameraStreamerTestCase :
     }
 
     @Test
-    fun startPreviewStopStreamTest() {
+    fun startPreviewStopStreamTest() = runTest {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
             streamer.startPreview(surface)
-            runBlocking {
-                streamer.stopStream()
-            }
+            streamer.stopStream()
         } catch (e: Exception) {
             Log.e(TAG, "startPreviewStopStreamTest: exception: ", e)
             fail("Must be possible to startPreview/stopStream but catches exception: $e")
@@ -172,16 +151,14 @@ abstract class CameraStreamerTestCase :
 
 
     @Test
-    override fun startStreamReleaseTest() {
+    override fun startStreamReleaseTest() = runTest {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
             streamer.startPreview(surface)
-            runBlocking {
-                streamer.startStream()
-            }
+            streamer.startStream(descriptor)
             streamer.release()
         } catch (e: Exception) {
             Log.e(TAG, "startStreamReleaseTest: exception: ", e)
@@ -191,16 +168,14 @@ abstract class CameraStreamerTestCase :
 
 
     @Test
-    fun startStreamStopPreviewTest() {
+    fun startStreamStopPreviewTest() = runTest {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
             streamer.startPreview(surface)
-            runBlocking {
-                streamer.startStream()
-            }
+            streamer.startStream(descriptor)
             streamer.stopPreview()
         } catch (e: Exception) {
             Log.e(TAG, "startStreamStopPreviewTest: exception: ", e)
@@ -209,17 +184,15 @@ abstract class CameraStreamerTestCase :
     }
 
     @Test
-    override fun startStreamStopStreamTest() {
+    override fun startStreamStopStreamTest() = runTest {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
             streamer.startPreview(surface)
-            runBlocking {
-                streamer.startStream()
-                streamer.stopStream()
-            }
+            streamer.startStream(descriptor)
+            streamer.stopStream()
         } catch (e: Exception) {
             Log.e(TAG, "startStreamStopStreamTest: exception: ", e)
             fail("Must be possible to startStream/stopStream but catches exception: $e")
@@ -230,8 +203,8 @@ abstract class CameraStreamerTestCase :
     fun multipleStartPreviewStopPreviewTest() {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
             (0..10).forEach { _ ->
                 streamer.startPreview(surface)
@@ -244,18 +217,16 @@ abstract class CameraStreamerTestCase :
     }
 
     @Test
-    override fun multipleStartStreamStopStreamTest() {
+    override fun multipleStartStreamStopStreamTest() = runTest {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
             streamer.startPreview(surface)
             (0..10).forEach { _ ->
-                runBlocking {
-                    streamer.startStream()
-                    streamer.stopStream()
-                }
+                streamer.startStream(descriptor)
+                streamer.stopStream()
             }
         } catch (e: Exception) {
             Log.e(TAG, "multipleStartStreamStopStreamTest: exception: ", e)

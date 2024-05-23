@@ -15,20 +15,18 @@
  */
 package io.github.thibaultbee.streampack.streamer.testcases
 
-import android.content.Context
 import android.util.Log
-import androidx.test.platform.app.InstrumentationRegistry
-import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
-import io.github.thibaultbee.streampack.utils.AndroidUtils
-import kotlinx.coroutines.runBlocking
+import io.github.thibaultbee.streampack.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.streamers.DefaultStreamer
+import io.github.thibaultbee.streampack.utils.DataUtils
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Test
 
 abstract class StreamerTestCase {
-    protected val context: Context = InstrumentationRegistry.getInstrumentation().context
-
-    abstract val streamer: BaseStreamer
+    protected abstract val streamer: DefaultStreamer
+    protected abstract val descriptor: MediaDescriptor
 
     @After
     open fun tearDown() {
@@ -36,16 +34,14 @@ abstract class StreamerTestCase {
     }
 
     @Test
-    open fun defaultUsageTest() {
+    open fun defaultUsageTest() = runTest {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
-            runBlocking {
-                streamer.startStream()
-                streamer.stopStream()
-            }
+            streamer.startStream(descriptor)
+            streamer.stopStream()
             streamer.release()
         } catch (e: Exception) {
             Log.e(TAG, "defaultUsageTest: exception: ", e)
@@ -53,32 +49,12 @@ abstract class StreamerTestCase {
         }
     }
 
-    @Test
-    open fun defaultUsageTest2() {
-        try {
-            streamer.configure(
-                AndroidUtils.fakeValidAudioConfig()
-            )
-            streamer.configure(
-                AndroidUtils.fakeValidVideoConfig()
-            )
-            runBlocking {
-                streamer.startStream()
-                streamer.stopStream()
-            }
-            streamer.release()
-        } catch (e: Exception) {
-            Log.e(TAG, "defaultUsageTest2: exception: ", e)
-            fail("Default usage must not throw exception $e")
-        }
-    }
-
     // Single method calls
     @Test
-    open fun configureAudioTest() {
+    open fun configureAudioOnlyTest() {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig()
+                DataUtils.dummyValidAudioConfig()
             )
         } catch (e: Exception) {
             Log.e(TAG, "configureAudioTest: exception: ", e)
@@ -87,10 +63,10 @@ abstract class StreamerTestCase {
     }
 
     @Test
-    open fun configureVideoTest() {
+    open fun configureVideoOnlyTest() {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidVideoConfig()
             )
         } catch (e: Exception) {
             Log.e(TAG, "configureVideoTest: exception: ", e)
@@ -102,8 +78,8 @@ abstract class StreamerTestCase {
     open fun configureTest() {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
         } catch (e: Exception) {
             Log.e(TAG, "configureTest: exception: ", e)
@@ -115,8 +91,8 @@ abstract class StreamerTestCase {
     open fun configureErrorTest() {
         try {
             streamer.configure(
-                AndroidUtils.fakeInvalidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyInvalidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
             fail("Invalid configuration must throw an exception")
         } catch (_: Exception) {
@@ -124,22 +100,18 @@ abstract class StreamerTestCase {
     }
 
     @Test
-    fun startStreamTest() {
+    fun startStreamTest() = runTest {
         try {
-            runBlocking {
-                streamer.startStream()
-            }
+            streamer.startStream()
             fail("startStream without configuration must throw an exception")
         } catch (_: Exception) {
         }
     }
 
     @Test
-    fun stopStreamTest() {
+    fun stopStreamTest() = runTest {
         try {
-            runBlocking {
-                streamer.stopStream()
-            }
+            streamer.stopStream()
         } catch (e: Exception) {
             Log.e(TAG, "stopStreamTest: exception: ", e)
             fail("Must be possible to only stopStream without exception: $e")
@@ -158,15 +130,13 @@ abstract class StreamerTestCase {
 
     // Multiple methods calls
     @Test
-    open fun configureStartStreamTest() {
+    open fun configureStartStreamTest() = runTest {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
-            runBlocking {
-                streamer.startStream()
-            }
+            streamer.startStream()
             fail("startStream without startPreview must failed")
         } catch (_: Exception) {
         }
@@ -176,8 +146,8 @@ abstract class StreamerTestCase {
     open fun configureReleaseTest() {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
             streamer.release()
         } catch (e: Exception) {
@@ -187,15 +157,13 @@ abstract class StreamerTestCase {
     }
 
     @Test
-    open fun configureStopStreamTest() {
+    open fun configureStopStreamTest() = runTest {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
-            runBlocking {
-                streamer.stopStream()
-            }
+            streamer.stopStream()
         } catch (e: Exception) {
             Log.e(TAG, "configureStopStreamTest: exception: ", e)
             fail("Must be possible to configure/stopStream but catches exception: $e")
@@ -203,15 +171,13 @@ abstract class StreamerTestCase {
     }
 
     @Test
-    open fun startStreamReleaseTest() {
+    open fun startStreamReleaseTest() = runTest {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
-            runBlocking {
-                streamer.startStream()
-            }
+            streamer.startStream()
             streamer.release()
         } catch (e: Exception) {
             Log.e(TAG, "startStreamReleaseTest: exception: ", e)
@@ -220,16 +186,14 @@ abstract class StreamerTestCase {
     }
 
     @Test
-    open fun startStreamStopStreamTest() {
+    open fun startStreamStopStreamTest() = runTest {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
-            runBlocking {
-                streamer.startStream()
-                streamer.stopStream()
-            }
+            streamer.startStream()
+            streamer.stopStream()
         } catch (e: Exception) {
             Log.e(TAG, "startStreamStopStreamTest: exception: ", e)
             fail("Must be possible to startStream/stopStream but catches exception: $e")
@@ -242,8 +206,8 @@ abstract class StreamerTestCase {
         try {
             (0..10).forEach { _ ->
                 streamer.configure(
-                    AndroidUtils.fakeValidAudioConfig(),
-                    AndroidUtils.fakeValidVideoConfig()
+                    DataUtils.dummyValidAudioConfig(),
+                    DataUtils.dummyValidVideoConfig()
                 )
             }
         } catch (e: Exception) {
@@ -253,17 +217,15 @@ abstract class StreamerTestCase {
     }
 
     @Test
-    open fun multipleStartStreamStopStreamTest() {
+    open fun multipleStartStreamStopStreamTest() = runTest {
         try {
             streamer.configure(
-                AndroidUtils.fakeValidAudioConfig(),
-                AndroidUtils.fakeValidVideoConfig()
+                DataUtils.dummyValidAudioConfig(),
+                DataUtils.dummyValidVideoConfig()
             )
             (0..10).forEach { _ ->
-                runBlocking {
-                    streamer.startStream()
-                    streamer.stopStream()
-                }
+                streamer.startStream()
+                streamer.stopStream()
             }
         } catch (e: Exception) {
             Log.e(TAG, "multipleStartStreamStopStreamTest: exception: ", e)

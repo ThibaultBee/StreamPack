@@ -44,6 +44,13 @@ interface SuspendStreamable {
     suspend fun stopStream()
 }
 
+interface SuspendCloseable {
+    /**
+     * Closes and releases resources
+     */
+    suspend fun close()
+}
+
 interface Configurable<T> {
     /**
      * Configure the [Configurable] implementation.

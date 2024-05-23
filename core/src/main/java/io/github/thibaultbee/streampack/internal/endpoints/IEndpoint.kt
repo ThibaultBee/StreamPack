@@ -16,29 +16,39 @@
 package io.github.thibaultbee.streampack.internal.endpoints
 
 import io.github.thibaultbee.streampack.data.Config
+import io.github.thibaultbee.streampack.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.internal.data.Frame
-import io.github.thibaultbee.streampack.internal.endpoints.sinks.IConnectable
-import io.github.thibaultbee.streampack.internal.endpoints.sinks.IFile
+import io.github.thibaultbee.streampack.internal.endpoints.composites.sinks.FileSink
 import io.github.thibaultbee.streampack.internal.interfaces.Releaseable
+import io.github.thibaultbee.streampack.internal.interfaces.SuspendCloseable
 import io.github.thibaultbee.streampack.internal.interfaces.SuspendStreamable
+import kotlinx.coroutines.flow.StateFlow
 
 
-interface IEndpoint : IPublicEndpoint, SuspendStreamable, Releaseable {
+interface IEndpoint : IPublicEndpoint, SuspendStreamable,
+    SuspendCloseable, Releaseable {
+    /**
+     * Opens the endpoint.
+     * The endpoint must check if the [MediaDescriptor] is supported and if it is not already opened.
+     * @param descriptor the media descriptor
+     */
+    suspend fun open(descriptor: MediaDescriptor)
+
     /**
      * Writes a [Frame] to the [IEndpoint].
      *
      * @param frame the [Frame] to write
      * @param streamPid the stream id the [Frame] belongs to
      */
-    fun write(frame: Frame, streamPid: Int)
+    suspend fun write(frame: Frame, streamPid: Int)
 
     /**
      * Registers new streams to the [IEndpoint].
      *
-     * @param streamsConfig the list of [Config] to register
+     * @param streamConfigs the list of [Config] to register
      * @return the map of [Config] to their corresponding stream id
      */
-    fun addStreams(streamsConfig: List<Config>): Map<Config, Int>
+    fun addStreams(streamConfigs: List<Config>): Map<Config, Int>
 
     /**
      * Registers a new stream to the [IEndpoint].
@@ -50,6 +60,12 @@ interface IEndpoint : IPublicEndpoint, SuspendStreamable, Releaseable {
 }
 
 interface IPublicEndpoint {
+    /**
+     * Whether if the endpoint is opened.
+     * For example, if the file is opened for [FileSink].
+     */
+    val isOpened: StateFlow<Boolean>
+
     /**
      * A info to verify supported formats.
      */
@@ -95,7 +111,3 @@ interface IPublicEndpoint {
         }
     }
 }
-
-interface IConnectableEndpoint : IEndpoint, IConnectable
-
-interface IFileEndpoint : IEndpoint, IFile

@@ -42,15 +42,15 @@ import android.util.Range
 import io.github.thibaultbee.streampack.internal.encoders.mediacodec.MediaCodecHelper
 import io.github.thibaultbee.streampack.internal.endpoints.composites.CompositeEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.IPublicEndpoint
-import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.FlvMuxerInfo
-import io.github.thibaultbee.streampack.internal.endpoints.muxers.mp4.MP4MuxerInfo
-import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.TSMuxerInfo
+import io.github.thibaultbee.streampack.internal.endpoints.composites.muxers.flv.FlvMuxerInfo
+import io.github.thibaultbee.streampack.internal.endpoints.composites.muxers.mp4.MP4MuxerInfo
+import io.github.thibaultbee.streampack.internal.endpoints.composites.muxers.ts.TSMuxerInfo
 import io.github.thibaultbee.streampack.internal.utils.av.video.DynamicRangeProfile
-import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
+import io.github.thibaultbee.streampack.streamers.DefaultStreamer
 import java.security.InvalidParameterException
 
 /**
- * Configuration info for [BaseStreamer].
+ * Configuration info for [DefaultStreamer].
  * It wraps supported values from MediaCodec and TS Muxer.
  *
  * @param endpointInfo the corresponding muxer info
@@ -82,7 +82,7 @@ class AudioStreamerConfigurationInfo(private val audioEndpointInfo: IPublicEndpo
     }
 
     /**
-     * Get supported bitrate range for a [BaseStreamer].
+     * Get supported bitrate range for a [DefaultStreamer].
      *
      * @param mimeType audio encoder mime type
      * @return bitrate range
@@ -136,7 +136,7 @@ class AudioStreamerConfigurationInfo(private val audioEndpointInfo: IPublicEndpo
     }
 
     /**
-     * Get supported profiles for a [BaseStreamer].
+     * Get supported profiles for a [DefaultStreamer].
      *
      * @param mimeType video encoder mime type
      * @return list of profile
@@ -149,14 +149,14 @@ class AudioStreamerConfigurationInfo(private val audioEndpointInfo: IPublicEndpo
 open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo) :
     IVideoConfigurationInfo {
     /**
-     * Supported encoders for a [BaseStreamer]
+     * Supported encoders for a [DefaultStreamer]
      */
     override val supportedEncoders = MediaCodecHelper.Video.supportedEncoders.filter {
         videoEndpointInfo.supportedEncoders.contains(it)
     }
 
     /**
-     * Get supported bitrate range for a [BaseStreamer].
+     * Get supported bitrate range for a [DefaultStreamer].
      *
      * @param mimeType video encoder mime type
      * @return bitrate range
@@ -178,7 +178,7 @@ open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IPublic
     }
 
     /**
-     * Get supported framerate for a [BaseStreamer].
+     * Get supported framerate for a [DefaultStreamer].
      *
      * @param mimeType video encoder mime type
      * @return framerate range supported by encoder
@@ -188,7 +188,7 @@ open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IPublic
     ) = MediaCodecHelper.Video.getFramerateRange(mimeType)
 
     /**
-     * Get supported 8-bit and 10-bit profiles for a [BaseStreamer].
+     * Get supported 8-bit and 10-bit profiles for a [DefaultStreamer].
      * Removes profiles for 10 bits and still images.
      *
      * @param mimeType video encoder mime type
@@ -222,7 +222,7 @@ open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IPublic
     }
 
     /**
-     * Get supported HDR (10-bit only) profiles for a [BaseStreamer].
+     * Get supported HDR (10-bit only) profiles for a [DefaultStreamer].
      * Removes profiles for 8 bits and still images.
      *
      * @param mimeType video encoder mime type
@@ -239,7 +239,7 @@ open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IPublic
     }
 
     /**
-     * Get supported SDR (8-bit only) profiles for a [BaseStreamer].
+     * Get supported SDR (8-bit only) profiles for a [DefaultStreamer].
      * Removes profiles for 10 bits and still images.
      *
      * @param mimeType video encoder mime type
@@ -252,7 +252,7 @@ open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IPublic
     fun getSupportedProfiles(mimeType: String) = getSupportedSdrProfiles(mimeType)
 
     /**
-     * Get supported SDR (8-bit only) profiles for a [BaseStreamer].
+     * Get supported SDR (8-bit only) profiles for a [DefaultStreamer].
      * Removes profiles for 10 bits and still images.
      *
      * @param mimeType video encoder mime type

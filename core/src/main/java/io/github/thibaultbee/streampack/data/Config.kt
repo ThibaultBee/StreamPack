@@ -17,13 +17,13 @@ package io.github.thibaultbee.streampack.data
 
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.internal.encoders.mediacodec.MediaCodecHelper
-import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
+import io.github.thibaultbee.streampack.streamers.DefaultStreamer
 
 /**
  * Base configuration class.
  * If you don't know how to set class members, [Video encoding recommendations](https://developer.android.com/guide/topics/media/media-formats#video-encoding) should give you hints.
  *
- * @see [BaseStreamer.configure]
+ * @see [DefaultStreamer.configure]
  */
 open class Config(
     /**

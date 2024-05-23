@@ -22,23 +22,15 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.encoders.IPublicEncoder
 import io.github.thibaultbee.streampack.internal.endpoints.IPublicEndpoint
+import io.github.thibaultbee.streampack.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.internal.sources.audio.IPublicAudioSource
 import io.github.thibaultbee.streampack.internal.sources.video.IPublicVideoSource
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationInfo
 
+/**
+ * A Streamer that is agnostic to the underlying implementation (either with coroutines or callbacks).
+ */
 interface IStreamer {
-    /**
-     * Listener that reports streamer error.
-     * Supports only one listener.
-     */
-    var onErrorListener: OnErrorListener?
-
-    /**
-     * Access configuration info.
-     */
-    val info: IConfigurationInfo
-
     /**
      * Advanced settings for the audio source.
      */
@@ -63,6 +55,16 @@ interface IStreamer {
      * Advanced settings for the endpoint.
      */
     val endpoint: IPublicEndpoint
+
+    /**
+     * Configuration information
+     */
+    val info: IConfigurationInfo
+
+    /**
+     * Gets configuration information
+     */
+    fun getInfo(descriptor: MediaDescriptor): IConfigurationInfo
 
     /**
      * Configures only audio settings.
@@ -96,22 +98,6 @@ interface IStreamer {
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun configure(audioConfig: AudioConfig, videoConfig: VideoConfig)
-
-    /**
-     * Starts audio/video stream.
-     *
-     * To avoid creating an unresponsive UI, do not call on main thread.
-     *
-     * @see [stopStream]
-     */
-    suspend fun startStream()
-
-    /**
-     * Stops audio/video stream.
-     *
-     * @see [startStream]
-     */
-    suspend fun stopStream()
 
     /**
      * Clean and reset the streamer.

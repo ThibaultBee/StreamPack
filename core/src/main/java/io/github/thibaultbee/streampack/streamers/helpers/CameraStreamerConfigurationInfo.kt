@@ -20,17 +20,17 @@ import android.util.Range
 import android.util.Size
 import io.github.thibaultbee.streampack.internal.endpoints.composites.CompositeEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.IPublicEndpoint
-import io.github.thibaultbee.streampack.internal.endpoints.muxers.flv.FlvMuxerInfo
-import io.github.thibaultbee.streampack.internal.endpoints.muxers.mp4.MP4MuxerInfo
-import io.github.thibaultbee.streampack.internal.endpoints.muxers.ts.TSMuxerInfo
+import io.github.thibaultbee.streampack.internal.endpoints.composites.muxers.flv.FlvMuxerInfo
+import io.github.thibaultbee.streampack.internal.endpoints.composites.muxers.mp4.MP4MuxerInfo
+import io.github.thibaultbee.streampack.internal.endpoints.composites.muxers.ts.TSMuxerInfo
 import io.github.thibaultbee.streampack.internal.utils.av.video.DynamicRangeProfile
-import io.github.thibaultbee.streampack.streamers.bases.BaseCameraStreamer
+import io.github.thibaultbee.streampack.streamers.DefaultCameraStreamer
 import io.github.thibaultbee.streampack.utils.get10BitSupportedProfiles
 import io.github.thibaultbee.streampack.utils.getCameraFpsList
 import io.github.thibaultbee.streampack.utils.getCameraOutputStreamSizes
 
 /**
- * Configuration infos\ for [BaseCameraStreamer].
+ * Configuration infos\ for [DefaultCameraStreamer].
  * It wraps supported values from MediaCodec, Camera and TS Muxer.
  */
 class CameraStreamerConfigurationInfo(endpointInfo: IPublicEndpoint.IEndpointInfo) :
@@ -70,7 +70,7 @@ class VideoCameraStreamerConfigurationInfo(videoEndpointInfo: IPublicEndpoint.IE
     }
 
     /**
-     * Get supported framerate for a [BaseCameraStreamer].
+     * Get supported framerate for a [DefaultCameraStreamer].
      *
      * @param context application context
      * @param mimeType video encoder mime type
@@ -87,7 +87,7 @@ class VideoCameraStreamerConfigurationInfo(videoEndpointInfo: IPublicEndpoint.IE
     }
 
     /**
-     * Get supported 8-bit and 10-bit profiles for a [BaseCameraStreamer].
+     * Get supported 8-bit and 10-bit profiles for a [DefaultCameraStreamer].
      *
      * @param context application context
      * @param mimeType video encoder mime type

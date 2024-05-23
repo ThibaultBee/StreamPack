@@ -15,22 +15,29 @@
  */
 package io.github.thibaultbee.streampack.internal.endpoints
 
+import android.content.Context
 import android.media.MediaCodec.BUFFER_FLAG_KEY_FRAME
 import android.media.MediaCodec.BufferInfo
 import android.media.MediaFormat
 import android.media.MediaMuxer
 import android.os.Build
+import android.os.ParcelFileDescriptor
 import io.github.thibaultbee.streampack.data.Config
+import io.github.thibaultbee.streampack.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.data.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.internal.data.Frame
-import java.io.File
-import java.io.FileDescriptor
-import java.io.OutputStream
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.runBlocking
+import java.security.InvalidParameterException
 
 /**
  * An [IEndpoint] implementation of the [MediaMuxer].
  */
-class MediaMuxerEndpoint : IEndpoint, IFileEndpoint {
+class MediaMuxerEndpoint(private val context: Context) : IEndpoint {
     private var mediaMuxer: MediaMuxer? = null
+    private var fileDescriptor: ParcelFileDescriptor? = null
+
     private var isStarted = false
 
     /**
@@ -41,35 +48,48 @@ class MediaMuxerEndpoint : IEndpoint, IFileEndpoint {
 
     override val info = MediaMuxerEndpointInfo
 
-    override var file: File? = null
-        set(value) {
-            mediaMuxer?.release()
-            if (value != null) {
+    private val _isOpened = MutableStateFlow(false)
+    override val isOpened: StateFlow<Boolean> = _isOpened
+
+    override suspend fun open(descriptor: MediaDescriptor) {
+        descriptor as UriMediaDescriptor // Only UriMediaDescriptor is supported here
+        require(!isOpened.value) { "Endpoint is already opened" }
+        require((descriptor.sinkType == MediaSinkType.FILE) || (descriptor.sinkType == MediaSinkType.CONTENT)) { "MediaDescriptor must have a path" }
+
+        when (descriptor.sinkType) {
+            MediaSinkType.FILE -> {
+                val path = descriptor.uri.path
+                    ?: throw IllegalStateException("Could not get path from uri: ${descriptor.uri}")
                 mediaMuxer =
-                    MediaMuxer(value.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+                    MediaMuxer(path, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
             }
-            field = value
-        }
 
-    override var outputStream: OutputStream? = null
-        set(_) {
-            throw UnsupportedOperationException("MediaMuxerEndpoint does not support OutputStream")
-        }
-
-    override var fileDescriptor: FileDescriptor? = null
-        set(value) {
-            mediaMuxer?.release()
-            if (value != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    mediaMuxer = MediaMuxer(value, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
-                } else {
-                    throw UnsupportedOperationException("MediaMuxerEndpoint does not support FileDescriptor on this device")
-                }
+            MediaSinkType.CONTENT -> {
+                fileDescriptor =
+                    context.contentResolver.openFileDescriptor(
+                        descriptor.uri,
+                        "w"
+                    )?.apply {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            mediaMuxer =
+                                MediaMuxer(
+                                    this.fileDescriptor,
+                                    MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4
+                                )
+                        } else {
+                            throw IllegalStateException("Using content sink for API < 26 is not supported. Use file sink instead.")
+                        }
+                    }
+                        ?: throw IllegalStateException("Could not open file descriptor for uri: ${descriptor.uri}")
             }
-            field = value
+
+            else -> throw InvalidParameterException("Unsupported sink type: ${descriptor.sinkType}")
         }
 
-    override fun write(frame: Frame, streamPid: Int) {
+        _isOpened.emit(true)
+    }
+
+    override suspend fun write(frame: Frame, streamPid: Int) {
         mediaMuxer?.let {
             if (streamIdToTrackId.size < numOfStreams) {
                 addTrack(it, streamPid, frame.format)
@@ -104,13 +124,13 @@ class MediaMuxerEndpoint : IEndpoint, IFileEndpoint {
         }
     }
 
-    override fun addStreams(streamsConfig: List<Config>): Map<Config, Int> {
+    override fun addStreams(streamConfigs: List<Config>): Map<Config, Int> {
         mediaMuxer?.let {
             /**
              * We can't addTrack here because we don't have the codec specific data.
              * We will add it when we receive the first frame.
              */
-            return streamsConfig.associateWith { numOfStreams++ }
+            return streamConfigs.associateWith { numOfStreams++ }
         }
         throw IllegalStateException("MediaMuxer is not initialized")
     }
@@ -136,17 +156,38 @@ class MediaMuxerEndpoint : IEndpoint, IFileEndpoint {
     override suspend fun stopStream() {
         try {
             mediaMuxer?.stop()
-        } catch (e: IllegalStateException) {
-            // MediaMuxer is already stopped
+        } catch (_: IllegalStateException) {
+        }
+
+        try {
+            fileDescriptor?.close()
+        } catch (_: Exception) {
         } finally {
-            numOfStreams = 0
-            streamIdToTrackId.clear()
-            isStarted = false
+            fileDescriptor = null
+        }
+
+        numOfStreams = 0
+        streamIdToTrackId.clear()
+        isStarted = false
+    }
+
+    override suspend fun close() {
+        stopStream()
+        try {
+            mediaMuxer?.release()
+        } catch (e: Exception) {
+            // MediaMuxer is already released
+        } finally {
+            mediaMuxer = null
+            _isOpened.emit(false)
         }
     }
 
     override fun release() {
-        mediaMuxer?.release()
+        runBlocking {
+            stopStream()
+            close()
+        }
     }
 
     object MediaMuxerEndpointInfo : IPublicEndpoint.IEndpointInfo {
