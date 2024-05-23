@@ -20,14 +20,14 @@ import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.os.Build
 import io.github.thibaultbee.streampack.internal.utils.extensions.isAudio
-import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
+import io.github.thibaultbee.streampack.streamers.DefaultStreamer
 import java.security.InvalidParameterException
 
 /**
  * Audio configuration class.
  * If you don't know how to set class members, [Video encoding recommendations](https://developer.android.com/guide/topics/media/media-formats#video-encoding) should give you hints.
  *
- * @see [BaseStreamer.configure]
+ * @see [DefaultStreamer.configure]
  */
 class AudioConfig(
     /**

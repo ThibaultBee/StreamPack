@@ -22,7 +22,7 @@ import android.view.SurfaceView
 import android.view.TextureView
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.internal.sources.video.camera.IPublicCameraSource
-import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
+import io.github.thibaultbee.streampack.streamers.DefaultStreamer
 
 interface ICameraStreamer {
     /**
@@ -38,7 +38,7 @@ interface ICameraStreamer {
 
     /**
      * Starts audio and video capture.
-     * [BaseStreamer.configure] must have been called at least once.
+     * [DefaultStreamer.configure] must have been called at least once.
      *
      * @param previewSurface The [Surface] used for camera preview
      * @param cameraId The camera id where to start preview
@@ -50,7 +50,7 @@ interface ICameraStreamer {
 
     /**
      * Starts audio and video capture.
-     * [BaseStreamer.configure] must have been called at least once.
+     * [DefaultStreamer.configure] must have been called at least once.
      *
      * @param surfaceView The [SurfaceView] used for camera preview
      * @param cameraId The camera id where to start preview
@@ -63,7 +63,7 @@ interface ICameraStreamer {
 
     /**
      * Starts audio and video capture.
-     * [BaseStreamer.configure] must have been called at least once.
+     * [DefaultStreamer.configure] must have been called at least once.
      *
      * @param surfaceHolder The [SurfaceHolder] used for camera preview
      * @param cameraId The camera id where to start preview
@@ -76,7 +76,7 @@ interface ICameraStreamer {
 
     /**
      * Starts audio and video capture.
-     * [BaseStreamer.configure] must have been called at least once.
+     * [DefaultStreamer.configure] must have been called at least once.
      *
      * @param textureView The [TextureView] used for camera preview
      * @param cameraId The camera id where to start preview

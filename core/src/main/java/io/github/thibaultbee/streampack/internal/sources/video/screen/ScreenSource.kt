@@ -33,8 +33,10 @@ import io.github.thibaultbee.streampack.internal.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.internal.utils.extensions.isDevicePortrait
 import io.github.thibaultbee.streampack.internal.utils.extensions.landscapize
 import io.github.thibaultbee.streampack.internal.utils.extensions.portraitize
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
 import io.github.thibaultbee.streampack.logger.Logger
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
 
 class ScreenSource(
@@ -52,12 +54,14 @@ class ScreenSource(
 
     private var mediaProjection: MediaProjection? = null
     var activityResult: ActivityResult? = null
-    var onErrorListener: OnErrorListener? = null
+
+    private val _exception = MutableStateFlow<Exception?>(null)
+    val exception: StateFlow<Exception?> = _exception
 
     /**
      *  Avoid to trigger `onError` when screen source `stopStream` has been called.
      */
-    private var isExplicitelyStopped = false
+    private var isStoppedByUser = false
 
     private val mediaProjectionManager =
         context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
@@ -75,8 +79,10 @@ class ScreenSource(
             super.onStopped()
             Logger.i(TAG, "onStopped")
 
-            if (!isExplicitelyStopped) {
-                onErrorListener?.onError(StreamPackError("Screen source virtual display has been stopped"))
+            if (!isStoppedByUser) {
+                runBlocking {
+                    _exception.emit(StreamPackError("Screen source virtual display has been stopped"))
+                }
             }
         }
     }
@@ -86,8 +92,10 @@ class ScreenSource(
             super.onStop()
             Logger.i(TAG, "onStop")
 
-            if (!isExplicitelyStopped) {
-                onErrorListener?.onError(StreamPackError("Screen source media projection has been stopped"))
+            if (!isStoppedByUser) {
+                runBlocking {
+                    _exception.emit(StreamPackError("Screen source media projection has been stopped"))
+                }
             }
         }
     }
@@ -109,7 +117,7 @@ class ScreenSource(
         val resultCode = activityResult!!.resultCode
         val resultData = activityResult!!.data!!
 
-        isExplicitelyStopped = false
+        isStoppedByUser = false
 
         val orientedSize = orientationProvider.getOrientedSize(videoConfig!!.resolution)
         mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, resultData).apply {
@@ -129,7 +137,7 @@ class ScreenSource(
 
 
     override fun stopStream() {
-        isExplicitelyStopped = true
+        isStoppedByUser = true
 
         virtualDisplay?.release()
         virtualDisplay = null

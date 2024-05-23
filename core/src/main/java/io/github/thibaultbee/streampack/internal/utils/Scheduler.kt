@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.internal.utils
 import kotlinx.coroutines.*
 
 class Scheduler(
-    private val delayTimeMillis: Long,
+    private val delayTimeInMs: Long,
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default),
     private val action: suspend CoroutineScope.() -> Unit
 ) {
@@ -30,13 +30,13 @@ class Scheduler(
         }
         job = coroutineScope.launch {
             while (true) {
-                delay(delayTimeMillis)
+                delay(delayTimeInMs)
                 launch { action() }
             }
         }
     }
 
-    fun cancel() {
+    fun stop() {
         job?.cancel()
         job = null
     }

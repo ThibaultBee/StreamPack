@@ -28,11 +28,7 @@
         <activity android:name=".settings.SettingsActivity" />
 
         <service
-            android:name=".services.DemoScreenRecorderRtmpLiveService"
-            android:exported="false"
-            android:foregroundServiceType="mediaProjection" />
-        <service
-            android:name=".services.DemoScreenRecorderSrtLiveService"
+            android:name=".services.DemoScreenRecorderService"
             android:exported="false"
             android:foregroundServiceType="mediaProjection" />
     </application>
