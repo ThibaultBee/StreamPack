@@ -51,6 +51,7 @@ dependencies {
     implementation project(':core')
     implementation project(':extension-rtmp')
     implementation project(':extension-srt')
+    implementation project(':services')
 
     implementation "androidx.core:core-ktx:${androidxCoreVersion}"
     implementation 'androidx.appcompat:appcompat:1.6.1'

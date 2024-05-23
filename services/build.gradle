@@ -1,0 +1,19 @@
+apply from: "${project.rootDir}/common_library.gradle"
+apply from: "${project.rootDir}/publish.gradle"
+
+android {
+    namespace 'io.github.thibaultbee.streampack.services'
+}
+ext {
+    artifactName = 'streampack-services'
+    artifactDescription = 'Services components for StreamPack.'
+}
+
+dependencies {
+    implementation project(':core')
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    
+    api 'androidx.lifecycle:lifecycle-service:2.8.0'
+}

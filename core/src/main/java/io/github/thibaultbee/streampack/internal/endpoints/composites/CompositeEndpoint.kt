@@ -16,13 +16,17 @@
 package io.github.thibaultbee.streampack.internal.endpoints.composites
 
 import io.github.thibaultbee.streampack.data.Config
+import io.github.thibaultbee.streampack.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.internal.data.Frame
 import io.github.thibaultbee.streampack.internal.data.Packet
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.endpoints.IPublicEndpoint
-import io.github.thibaultbee.streampack.internal.endpoints.muxers.IMuxer
-import io.github.thibaultbee.streampack.internal.endpoints.muxers.IPublicMuxer
-import io.github.thibaultbee.streampack.internal.endpoints.sinks.ISink
+import io.github.thibaultbee.streampack.internal.endpoints.composites.muxers.IMuxer
+import io.github.thibaultbee.streampack.internal.endpoints.composites.muxers.IPublicMuxer
+import io.github.thibaultbee.streampack.internal.endpoints.composites.sinks.EndpointConfiguration
+import io.github.thibaultbee.streampack.internal.endpoints.composites.sinks.ISink
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.runBlocking
 
 /**
  * An [IEndpoint] implementation that combines a [IMuxer] and a [ISink].
@@ -30,37 +34,56 @@ import io.github.thibaultbee.streampack.internal.endpoints.sinks.ISink
 open class CompositeEndpoint(final override val muxer: IMuxer, override val sink: ISink) :
     ICompositeEndpoint {
     /**
-     * The total start bitrate of all streams.
+     * The video and audio configurations.
      * It is used to configure the sink.
      */
-    private var bitrate = 0
+    private val configurations = mutableListOf<Config>()
 
-    override val info = CompositeEndpointInfo(muxer.info)
+    override val info = EndpointInfo(muxer.info)
+    override fun getInfo(type: MediaDescriptor.Type) = info
+
+    override val metrics: Any
+        get() = sink.metrics
 
     init {
-        muxer.listener = object : IMuxer.IMuxerListener {
+        muxer.listener = object :
+            IMuxer.IMuxerListener {
             override fun onOutputFrame(packet: Packet) {
-                sink.write(packet)
+                runBlocking {
+                    sink.write(packet)
+                }
             }
         }
     }
 
-    override fun write(frame: Frame, streamPid: Int) = muxer.write(frame, streamPid)
+    override val isOpened: StateFlow<Boolean>
+        get() = sink.isOpened
 
-    override fun addStreams(streamsConfig: List<Config>): Map<Config, Int> {
-        val streamIds = muxer.addStreams(streamsConfig)
-        bitrate += streamsConfig.sumOf { it.startBitrate }
+    override suspend fun open(descriptor: MediaDescriptor) {
+        sink.open(descriptor)
+    }
+
+    override suspend fun close() {
+        stopStream()
+        sink.close()
+    }
+
+    override suspend fun write(frame: Frame, streamPid: Int) = muxer.write(frame, streamPid)
+
+    override fun addStreams(streamConfigs: List<Config>): Map<Config, Int> {
+        val streamIds = muxer.addStreams(streamConfigs)
+        configurations.addAll(streamConfigs)
         return streamIds
     }
 
     override fun addStream(streamConfig: Config): Int {
         val streamId = muxer.addStream(streamConfig)
-        bitrate += streamConfig.startBitrate
+        configurations.add(streamConfig)
         return streamId
     }
 
     override suspend fun startStream() {
-        sink.configure(bitrate)
+        sink.configure(EndpointConfiguration(configurations))
         sink.startStream()
         muxer.startStream()
     }
@@ -73,14 +96,17 @@ open class CompositeEndpoint(final override val muxer: IMuxer, override val sink
     override suspend fun stopStream() {
         muxer.stopStream()
         sink.stopStream()
-        bitrate = 0
+        configurations.clear()
     }
 
     override fun release() {
-        sink.release()
+        runBlocking {
+            stopStream()
+            close()
+        }
     }
 
-    class CompositeEndpointInfo(
+    class EndpointInfo(
         val muxerInfo: IPublicMuxer.IMuxerInfo
     ) : IPublicEndpoint.IEndpointInfo {
         override val audio = object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {

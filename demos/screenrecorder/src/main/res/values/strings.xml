@@ -45,7 +45,7 @@
     <string name="audio_sample_rate">Sample rate</string>
     <string name="audio_byte_format">Byte format</string>
     <string name="audio_byte_format_key">audio_byte_format_key</string>
-    <string name="video_encoder_h263">3GPP</string>
+    <string name="video_encoder_h263">H.263</string>
     <string name="video_encoder_h264">AVC/H.264</string>
     <string name="video_encoder_h265">HEVC/H.265</string>
     <string name="audio_encoder_aac">AAC</string>

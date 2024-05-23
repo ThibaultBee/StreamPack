@@ -15,22 +15,32 @@
  */
 package io.github.thibaultbee.streampack.internal.endpoints
 
+import android.content.Context
 import android.media.MediaCodec.BUFFER_FLAG_KEY_FRAME
 import android.media.MediaCodec.BufferInfo
 import android.media.MediaFormat
 import android.media.MediaMuxer
+import android.media.MediaMuxer.OutputFormat
 import android.os.Build
+import android.os.ParcelFileDescriptor
 import io.github.thibaultbee.streampack.data.Config
+import io.github.thibaultbee.streampack.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.internal.data.Frame
-import java.io.File
-import java.io.FileDescriptor
-import java.io.OutputStream
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.runBlocking
+import java.security.InvalidParameterException
 
 /**
  * An [IEndpoint] implementation of the [MediaMuxer].
  */
-class MediaMuxerEndpoint : IEndpoint, IFileEndpoint {
+class MediaMuxerEndpoint(
+    private val context: Context,
+) : IEndpoint {
     private var mediaMuxer: MediaMuxer? = null
+    private var containerType: MediaContainerType? = null
+    private var fileDescriptor: ParcelFileDescriptor? = null
+
     private var isStarted = false
 
     /**
@@ -39,45 +49,85 @@ class MediaMuxerEndpoint : IEndpoint, IFileEndpoint {
     private val streamIdToTrackId = mutableMapOf<Int, Int>()
     private var numOfStreams = 0
 
-    override val info = MediaMuxerEndpointInfo
+    override val info: IPublicEndpoint.IEndpointInfo
+        get() = containerType?.let { Companion.getInfo(it) }
+            ?: throw IllegalStateException("Endpoint is not opened")
 
-    override var file: File? = null
-        set(value) {
-            mediaMuxer?.release()
-            if (value != null) {
-                mediaMuxer =
-                    MediaMuxer(value.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
-            }
-            field = value
+    override fun getInfo(type: MediaDescriptor.Type) = Companion.getInfo(type)
+
+    override val metrics: Any
+        get() = TODO("Not yet implemented")
+
+    private val _isOpened = MutableStateFlow(false)
+    override val isOpened: StateFlow<Boolean> = _isOpened
+
+    override suspend fun open(descriptor: MediaDescriptor) {
+        require(!isOpened.value) { "Endpoint is already opened" }
+        require((descriptor.type.sinkType == MediaSinkType.FILE) || (descriptor.type.sinkType == MediaSinkType.CONTENT)) { "MediaDescriptor must have a path" }
+        val containerType = descriptor.type.containerType
+        require(
+            (containerType == MediaContainerType.MP4) ||
+                    (containerType == MediaContainerType.THREEGP) ||
+                    (containerType == MediaContainerType.WEBM) ||
+                    (containerType == MediaContainerType.OGG)
+        ) {
+            "Unsupported container type: $containerType"
         }
+        this.containerType = containerType
 
-    override var outputStream: OutputStream? = null
-        set(_) {
-            throw UnsupportedOperationException("MediaMuxerEndpoint does not support OutputStream")
-        }
-
-    override var fileDescriptor: FileDescriptor? = null
-        set(value) {
-            mediaMuxer?.release()
-            if (value != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    mediaMuxer = MediaMuxer(value, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
-                } else {
-                    throw UnsupportedOperationException("MediaMuxerEndpoint does not support FileDescriptor on this device")
+        try {
+            when (descriptor.type.sinkType) {
+                MediaSinkType.FILE -> {
+                    val path = descriptor.uri.path
+                        ?: throw IllegalStateException("Could not get path from uri: ${descriptor.uri}")
+                    mediaMuxer =
+                        MediaMuxer(path, containerType.outputFormat)
                 }
+
+                MediaSinkType.CONTENT -> {
+                    fileDescriptor =
+                        context.contentResolver.openFileDescriptor(
+                            descriptor.uri,
+                            "w"
+                        )?.apply {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                mediaMuxer =
+                                    MediaMuxer(
+                                        this.fileDescriptor,
+                                        containerType.outputFormat
+                                    )
+                            } else {
+                                throw IllegalStateException("Using content sink for API < 26 is not supported. Use file sink instead.")
+                            }
+                        }
+                            ?: throw IllegalStateException("Could not open file descriptor for uri: ${descriptor.uri}")
+                }
+
+                else -> throw InvalidParameterException("Unsupported sink type: ${descriptor.type.sinkType}")
             }
-            field = value
+        } catch (e: Exception) {
+            this.containerType = null
+            mediaMuxer?.release()
+            mediaMuxer = null
+            fileDescriptor?.close()
+            fileDescriptor = null
+            throw e
         }
 
-    override fun write(frame: Frame, streamPid: Int) {
+        _isOpened.emit(true)
+    }
+
+    override suspend fun write(frame: Frame, streamPid: Int) {
         mediaMuxer?.let {
             if (streamIdToTrackId.size < numOfStreams) {
                 addTrack(it, streamPid, frame.format)
             }
             if (streamIdToTrackId.size == numOfStreams) {
-                if (!isStarted) {
-                    it.start()
-                    isStarted = true
+                synchronized(this) {
+                    if (!isStarted) {
+                        it.start()
+                        isStarted = true
+                    }
                 }
 
                 val trackId = streamIdToTrackId[streamPid]
@@ -104,13 +154,13 @@ class MediaMuxerEndpoint : IEndpoint, IFileEndpoint {
         }
     }
 
-    override fun addStreams(streamsConfig: List<Config>): Map<Config, Int> {
+    override fun addStreams(streamConfigs: List<Config>): Map<Config, Int> {
         mediaMuxer?.let {
             /**
              * We can't addTrack here because we don't have the codec specific data.
              * We will add it when we receive the first frame.
              */
-            return streamsConfig.associateWith { numOfStreams++ }
+            return streamConfigs.associateWith { numOfStreams++ }
         }
         throw IllegalStateException("MediaMuxer is not initialized")
     }
@@ -136,20 +186,41 @@ class MediaMuxerEndpoint : IEndpoint, IFileEndpoint {
     override suspend fun stopStream() {
         try {
             mediaMuxer?.stop()
-        } catch (e: IllegalStateException) {
-            // MediaMuxer is already stopped
+        } catch (_: IllegalStateException) {
+        }
+
+        try {
+            fileDescriptor?.close()
+        } catch (_: Exception) {
         } finally {
-            numOfStreams = 0
-            streamIdToTrackId.clear()
-            isStarted = false
+            fileDescriptor = null
+        }
+
+        numOfStreams = 0
+        streamIdToTrackId.clear()
+        isStarted = false
+    }
+
+    override suspend fun close() {
+        stopStream()
+        try {
+            mediaMuxer?.release()
+        } catch (e: Exception) {
+            // MediaMuxer is already released
+        } finally {
+            mediaMuxer = null
+            _isOpened.emit(false)
         }
     }
 
     override fun release() {
-        mediaMuxer?.release()
+        runBlocking {
+            stopStream()
+            close()
+        }
     }
 
-    object MediaMuxerEndpointInfo : IPublicEndpoint.IEndpointInfo {
+    object Mp4EndpointInfo : IPublicEndpoint.IEndpointInfo {
         override val audio = object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
             override val supportedEncoders = listOf(
                 MediaFormat.MIMETYPE_AUDIO_AAC,
@@ -173,5 +244,103 @@ class MediaMuxerEndpoint : IEndpoint, IFileEndpoint {
                 }
             }
         }
+    }
+
+    object WebMEndpointInfo : IPublicEndpoint.IEndpointInfo {
+        override val audio = object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
+            override val supportedEncoders = listOf(
+                MediaFormat.MIMETYPE_AUDIO_VORBIS,
+                MediaFormat.MIMETYPE_AUDIO_OPUS
+            )
+            override val supportedSampleRates = null
+            override val supportedByteFormats = null
+        }
+
+        override val video = object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
+            override val supportedEncoders = run {
+                mutableListOf(
+                    MediaFormat.MIMETYPE_VIDEO_VP8
+                ).apply {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        add(MediaFormat.MIMETYPE_VIDEO_VP9)
+                    }
+                }
+            }
+        }
+    }
+
+    object ThreeGPEndpointInfo : IPublicEndpoint.IEndpointInfo {
+        override val audio = object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
+            override val supportedEncoders = listOf(
+                MediaFormat.MIMETYPE_AUDIO_AMR_NB,
+                MediaFormat.MIMETYPE_AUDIO_AMR_WB,
+                MediaFormat.MIMETYPE_AUDIO_AAC,
+            )
+            override val supportedSampleRates = null
+            override val supportedByteFormats = null
+        }
+
+        override val video = object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
+            override val supportedEncoders = run {
+                mutableListOf(
+                    MediaFormat.MIMETYPE_VIDEO_H263,
+                    MediaFormat.MIMETYPE_VIDEO_AVC
+                ).apply {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        add(MediaFormat.MIMETYPE_VIDEO_VP9)
+                        add(MediaFormat.MIMETYPE_VIDEO_HEVC)
+                    }
+                }
+            }
+        }
+    }
+
+    object OggEndpointInfo : IPublicEndpoint.IEndpointInfo {
+        override val audio = object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
+            override val supportedEncoders = listOf(
+                MediaFormat.MIMETYPE_AUDIO_VORBIS,
+                MediaFormat.MIMETYPE_AUDIO_OPUS
+            )
+            override val supportedSampleRates = null
+            override val supportedByteFormats = null
+        }
+
+        override val video = object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
+            override val supportedEncoders = emptyList<String>()
+        }
+    }
+
+    private val MediaContainerType.outputFormat: Int
+        get() = when (this) {
+            MediaContainerType.MP4 -> OutputFormat.MUXER_OUTPUT_MPEG_4
+            MediaContainerType.THREEGP -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                OutputFormat.MUXER_OUTPUT_3GPP
+            } else {
+                throw IllegalArgumentException("Unsupported container type for API < 26: $this")
+            }
+
+            MediaContainerType.WEBM -> OutputFormat.MUXER_OUTPUT_WEBM
+            MediaContainerType.OGG -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                OutputFormat.MUXER_OUTPUT_OGG
+            } else {
+                throw IllegalArgumentException("Unsupported container type for API < 29: $this")
+            }
+
+            else -> throw IllegalArgumentException("Unsupported container type: $this")
+        }
+
+    companion object {
+        private fun getInfo(descriptor: MediaDescriptor) = getInfo(descriptor.type.containerType)
+
+        private fun getInfo(type: MediaDescriptor.Type) = getInfo(type.containerType)
+
+        private fun getInfo(containerType: MediaContainerType) =
+            when (containerType) {
+                MediaContainerType.MP4 -> Mp4EndpointInfo
+                MediaContainerType.THREEGP -> ThreeGPEndpointInfo
+                MediaContainerType.WEBM -> WebMEndpointInfo
+                MediaContainerType.OGG -> OggEndpointInfo
+                else -> throw IllegalArgumentException("Unsupported container type: $containerType")
+            }
     }
 }

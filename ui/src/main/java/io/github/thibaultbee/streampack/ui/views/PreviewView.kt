@@ -37,9 +37,9 @@ import androidx.camera.viewfinder.surface.populateFromCharacteristics
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import io.github.thibaultbee.streampack.ui.R
 import io.github.thibaultbee.streampack.logger.Logger
 import io.github.thibaultbee.streampack.streamers.interfaces.ICameraStreamer
+import io.github.thibaultbee.streampack.ui.R
 import io.github.thibaultbee.streampack.utils.OrientationUtils
 import io.github.thibaultbee.streampack.utils.getCameraCharacteristics
 import kotlinx.coroutines.CoroutineScope
@@ -209,7 +209,7 @@ class PreviewView @JvmOverloads constructor(
                 val x = touchUpEvent?.x ?: (width / 2f)
                 val y = touchUpEvent?.y ?: (height / 2f)
                 try {
-                    it.settings.camera.focusMetering.onTap(
+                    it.videoSource.settings.focusMetering.onTap(
                         PointF(x, y),
                         Rect(this.x.toInt(), this.y.toInt(), width, height),
                         OrientationUtils.getSurfaceOrientationDegrees(display.rotation)
@@ -406,7 +406,7 @@ class PreviewView @JvmOverloads constructor(
     private inner class PinchToZoomOnScaleGestureListener :
         SimpleOnScaleGestureListener() {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
-            streamer?.settings?.camera?.zoom?.let {
+            streamer?.videoSource?.settings?.zoom?.let {
                 it.onPinch(detector.scaleFactor)
                 listener?.onZoomRationOnPinchChanged(it.zoomRatio)
             }

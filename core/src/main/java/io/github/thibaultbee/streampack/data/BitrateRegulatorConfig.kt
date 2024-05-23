@@ -22,11 +22,11 @@ import android.util.Range
  */
 data class BitrateRegulatorConfig(
     /**
-     * Video encoder bitrate ranges in bits/s. [Range.upper] is video target bitrate.
+     * Video encoder bitrate ranges in bits/s.
      */
     val videoBitrateRange: Range<Int> = Range(500, 10000),
     /**
-     * Audio encoder bitrate ranges in bits/s. [Range.upper] is video target bitrate.
+     * Audio encoder bitrate ranges in bits/s.
      */
     val audioBitrateRange: Range<Int> = Range(128000, 128000)
 )

@@ -25,7 +25,9 @@ import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileConstrainedHigh
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileExtended
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileHigh
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileMain
+import android.media.MediaCodecInfo.CodecProfileLevel.H263ProfileBaseline
 import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain
+import android.media.MediaCodecInfo.CodecProfileLevel.VP8ProfileMain
 import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile0
 import android.media.MediaFormat
 import android.media.MediaFormat.KEY_PRIORITY
@@ -37,7 +39,7 @@ import io.github.thibaultbee.streampack.internal.utils.extensions.isDevicePortra
 import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
 import io.github.thibaultbee.streampack.internal.utils.extensions.landscapize
 import io.github.thibaultbee.streampack.internal.utils.extensions.portraitize
-import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
+import io.github.thibaultbee.streampack.streamers.DefaultStreamer
 import java.security.InvalidParameterException
 import kotlin.math.roundToInt
 
@@ -45,7 +47,7 @@ import kotlin.math.roundToInt
  * Video configuration class.
  * If you don't know how to set class members, [Video encoding recommendations](https://developer.android.com/guide/topics/media/media-formats#video-encoding) should give you hints.
  *
- * @see [BaseStreamer.configure]
+ * @see [DefaultStreamer.configure]
  */
 class VideoConfig(
     /**
@@ -236,6 +238,10 @@ class VideoConfig(
         }
 
         // Higher priority first
+        private val h263ProfilePriority = listOf(
+            H263ProfileBaseline
+        )
+
         private val avcProfilePriority = listOf(
             AVCProfileHigh,
             AVCProfileMain,
@@ -247,6 +253,10 @@ class VideoConfig(
 
         private val hevcProfilePriority = listOf(
             HEVCProfileMain
+        )
+
+        private val vp8ProfilePriority = listOf(
+            VP8ProfileMain
         )
 
         private val vp9ProfilePriority = listOf(
@@ -262,9 +272,11 @@ class VideoConfig(
          */
         fun getBestProfile(mimeType: String): Int {
             val profilePriority = when (mimeType) {
+                MediaFormat.MIMETYPE_VIDEO_H263 -> h263ProfilePriority
                 MediaFormat.MIMETYPE_VIDEO_AVC -> avcProfilePriority
                 MediaFormat.MIMETYPE_VIDEO_HEVC -> hevcProfilePriority
                 MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9ProfilePriority
+                MediaFormat.MIMETYPE_VIDEO_VP8 -> vp8ProfilePriority
                 MediaFormat.MIMETYPE_VIDEO_AV1 -> av1ProfilePriority
                 else -> throw InvalidParameterException("Profile for $mimeType is not supported")
             }

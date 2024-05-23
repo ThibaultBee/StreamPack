@@ -22,23 +22,17 @@ import io.github.thibaultbee.streampack.data.VideoConfig
 import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.internal.encoders.IPublicEncoder
 import io.github.thibaultbee.streampack.internal.endpoints.IPublicEndpoint
+import io.github.thibaultbee.streampack.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.internal.sources.audio.IPublicAudioSource
 import io.github.thibaultbee.streampack.internal.sources.video.IPublicVideoSource
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.streamers.helpers.IConfigurationInfo
+import io.github.thibaultbee.streampack.regulator.controllers.IBitrateRegulatorController
+import io.github.thibaultbee.streampack.streamers.DefaultStreamer
+import io.github.thibaultbee.streampack.streamers.infos.IConfigurationInfo
 
+/**
+ * A Streamer that is agnostic to the underlying implementation (either with coroutines or callbacks).
+ */
 interface IStreamer {
-    /**
-     * Listener that reports streamer error.
-     * Supports only one listener.
-     */
-    var onErrorListener: OnErrorListener?
-
-    /**
-     * Access configuration info.
-     */
-    val info: IConfigurationInfo
-
     /**
      * Advanced settings for the audio source.
      */
@@ -65,6 +59,16 @@ interface IStreamer {
     val endpoint: IPublicEndpoint
 
     /**
+     * Configuration information
+     */
+    val info: IConfigurationInfo
+
+    /**
+     * Gets configuration information
+     */
+    fun getInfo(descriptor: MediaDescriptor): IConfigurationInfo
+
+    /**
      * Configures only audio settings.
      *
      * @param audioConfig Audio configuration to set
@@ -87,6 +91,13 @@ interface IStreamer {
 
     /**
      * Configures both video and audio settings.
+     * It is the first method to call after a [DefaultStreamer] instantiation.
+     * It must be call when both stream and audio and video capture are not running.
+     *
+     * Use [IConfigurationInfo] to get value limits.
+     *
+     * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
+     * to video encoder default level and default profile.
      *
      * @param audioConfig Audio configuration to set
      * @param videoConfig Video configuration to set
@@ -95,23 +106,10 @@ interface IStreamer {
      * @see [release]
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    fun configure(audioConfig: AudioConfig, videoConfig: VideoConfig)
-
-    /**
-     * Starts audio/video stream.
-     *
-     * To avoid creating an unresponsive UI, do not call on main thread.
-     *
-     * @see [stopStream]
-     */
-    suspend fun startStream()
-
-    /**
-     * Stops audio/video stream.
-     *
-     * @see [startStream]
-     */
-    suspend fun stopStream()
+    fun configure(audioConfig: AudioConfig, videoConfig: VideoConfig) {
+        configure(audioConfig)
+        configure(videoConfig)
+    }
 
     /**
      * Clean and reset the streamer.
@@ -119,4 +117,14 @@ interface IStreamer {
      * @see [configure]
      */
     fun release()
+
+    /**
+     * Adds a bitrate regulator controller to the streamer.
+     */
+    fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory)
+
+    /**
+     * Removes the bitrate regulator controller from the streamer.
+     */
+    fun removeBitrateRegulatorController()
 }
