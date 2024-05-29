@@ -21,23 +21,24 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.TextureView
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
-import io.github.thibaultbee.streampack.streamers.interfaces.settings.IBaseCameraStreamerSettings
+import io.github.thibaultbee.streampack.internal.sources.video.camera.IPublicCameraSource
+import io.github.thibaultbee.streampack.streamers.DefaultStreamer
 
 interface ICameraStreamer {
     /**
-     * Get/Set current camera id.
+     * The camera source settings.
+     */
+    val videoSource: IPublicCameraSource
+
+    /**
+     * Gets/Sets current camera id.
+     * It is a shortcut for [videoSource.cameraId].
      */
     var camera: String
 
     /**
-     *  Access extended camera settings.
-     */
-    val settings: IBaseCameraStreamerSettings
-
-    /**
      * Starts audio and video capture.
-     * [BaseStreamer.configure] must have been called at least once.
+     * [DefaultStreamer.configure] must have been called at least once.
      *
      * @param previewSurface The [Surface] used for camera preview
      * @param cameraId The camera id where to start preview
@@ -45,11 +46,11 @@ interface ICameraStreamer {
      * @see [stopPreview]
      */
     @RequiresPermission(allOf = [Manifest.permission.CAMERA])
-    fun startPreview(previewSurface: Surface, cameraId: String = camera)
+    fun startPreview(previewSurface: Surface, cameraId: String = videoSource.cameraId)
 
     /**
      * Starts audio and video capture.
-     * [BaseStreamer.configure] must have been called at least once.
+     * [DefaultStreamer.configure] must have been called at least once.
      *
      * @param surfaceView The [SurfaceView] used for camera preview
      * @param cameraId The camera id where to start preview
@@ -57,12 +58,12 @@ interface ICameraStreamer {
      * @see [stopPreview]
      */
     @RequiresPermission(allOf = [Manifest.permission.CAMERA])
-    fun startPreview(surfaceView: SurfaceView, cameraId: String = camera) =
+    fun startPreview(surfaceView: SurfaceView, cameraId: String = videoSource.cameraId) =
         startPreview(surfaceView.holder.surface, cameraId)
 
     /**
      * Starts audio and video capture.
-     * [BaseStreamer.configure] must have been called at least once.
+     * [DefaultStreamer.configure] must have been called at least once.
      *
      * @param surfaceHolder The [SurfaceHolder] used for camera preview
      * @param cameraId The camera id where to start preview
@@ -70,12 +71,12 @@ interface ICameraStreamer {
      * @see [stopPreview]
      */
     @RequiresPermission(allOf = [Manifest.permission.CAMERA])
-    fun startPreview(surfaceHolder: SurfaceHolder, cameraId: String = camera) =
+    fun startPreview(surfaceHolder: SurfaceHolder, cameraId: String = videoSource.cameraId) =
         startPreview(surfaceHolder.surface, cameraId)
 
     /**
      * Starts audio and video capture.
-     * [BaseStreamer.configure] must have been called at least once.
+     * [DefaultStreamer.configure] must have been called at least once.
      *
      * @param textureView The [TextureView] used for camera preview
      * @param cameraId The camera id where to start preview
@@ -83,7 +84,7 @@ interface ICameraStreamer {
      * @see [stopPreview]
      */
     @RequiresPermission(allOf = [Manifest.permission.CAMERA])
-    fun startPreview(textureView: TextureView, cameraId: String = camera) =
+    fun startPreview(textureView: TextureView, cameraId: String = videoSource.cameraId) =
         startPreview(Surface(textureView.surfaceTexture), cameraId)
 
     /**

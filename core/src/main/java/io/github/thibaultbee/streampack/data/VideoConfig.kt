@@ -31,13 +31,13 @@ import android.media.MediaFormat
 import android.media.MediaFormat.KEY_PRIORITY
 import android.os.Build
 import android.util.Size
-import io.github.thibaultbee.streampack.internal.encoders.MediaCodecHelper
+import io.github.thibaultbee.streampack.internal.encoders.mediacodec.MediaCodecHelper
 import io.github.thibaultbee.streampack.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.internal.utils.extensions.isDevicePortrait
 import io.github.thibaultbee.streampack.internal.utils.extensions.isVideo
 import io.github.thibaultbee.streampack.internal.utils.extensions.landscapize
 import io.github.thibaultbee.streampack.internal.utils.extensions.portraitize
-import io.github.thibaultbee.streampack.streamers.bases.BaseStreamer
+import io.github.thibaultbee.streampack.streamers.DefaultStreamer
 import java.security.InvalidParameterException
 import kotlin.math.roundToInt
 
@@ -45,7 +45,7 @@ import kotlin.math.roundToInt
  * Video configuration class.
  * If you don't know how to set class members, [Video encoding recommendations](https://developer.android.com/guide/topics/media/media-formats#video-encoding) should give you hints.
  *
- * @see [BaseStreamer.configure]
+ * @see [DefaultStreamer.configure]
  */
 class VideoConfig(
     /**
@@ -145,6 +145,13 @@ class VideoConfig(
     val dynamicRangeProfile = DynamicRangeProfile.fromProfile(mimeType, profile)
 
     /**
+     * Whether the configuration is HDR or not.
+     *
+     * @return true if the configuration is HDR
+     */
+    val isHdr = dynamicRangeProfile != DynamicRangeProfile.sdr
+
+    /**
      * Get resolution according to device orientation
      *
      * @param context activity context
@@ -186,7 +193,7 @@ class VideoConfig(
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                if (dynamicRangeProfile != DynamicRangeProfile.sdr) {
+                if (isHdr) {
                     format.setInteger(
                         MediaFormat.KEY_COLOR_STANDARD,
                         MediaFormat.COLOR_STANDARD_BT2020
@@ -275,6 +282,19 @@ class VideoConfig(
         fun getBestLevel(mimeType: String, profile: Int) =
             MediaCodecHelper.getMaxLevel(mimeType, profile)
     }
+
+    /**
+     * Copy video configuration with new values
+     */
+    fun copy(
+        mimeType: String = this.mimeType,
+        startBitrate: Int = this.startBitrate,
+        resolution: Size = this.resolution,
+        fps: Int = this.fps,
+        profile: Int = this.profile,
+        level: Int = this.level,
+        gopDuration: Float = this.gopDuration
+    ) = VideoConfig(mimeType, startBitrate, resolution, fps, profile, level, gopDuration)
 
     override fun toString() =
         "VideoConfig(mimeType='$mimeType', startBitrate=$startBitrate, resolution=$resolution, fps=$fps, profile=$profile, level=$level)"

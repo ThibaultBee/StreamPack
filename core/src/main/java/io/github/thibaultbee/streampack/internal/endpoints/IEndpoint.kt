@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Thibault B.
+ * Copyright (C) 2024 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,99 @@
  */
 package io.github.thibaultbee.streampack.internal.endpoints
 
-import io.github.thibaultbee.streampack.internal.data.Packet
-import io.github.thibaultbee.streampack.internal.interfaces.Configurable
+import io.github.thibaultbee.streampack.data.Config
+import io.github.thibaultbee.streampack.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.internal.data.Frame
+import io.github.thibaultbee.streampack.internal.endpoints.composites.sinks.FileSink
 import io.github.thibaultbee.streampack.internal.interfaces.Releaseable
+import io.github.thibaultbee.streampack.internal.interfaces.SuspendCloseable
 import io.github.thibaultbee.streampack.internal.interfaces.SuspendStreamable
+import kotlinx.coroutines.flow.StateFlow
 
-interface IEndpoint : SuspendStreamable, Configurable<Int>, Releaseable {
+
+interface IEndpoint : IPublicEndpoint, SuspendStreamable,
+    SuspendCloseable, Releaseable {
+    /**
+     * Opens the endpoint.
+     * The endpoint must check if the [MediaDescriptor] is supported and if it is not already opened.
+     * @param descriptor the media descriptor
+     */
+    suspend fun open(descriptor: MediaDescriptor)
 
     /**
-     * Writes a buffer to endpoint.
-     * @param packet buffer to write
+     * Writes a [Frame] to the [IEndpoint].
+     *
+     * @param frame the [Frame] to write
+     * @param streamPid the stream id the [Frame] belongs to
      */
-    fun write(packet: Packet)
+    suspend fun write(frame: Frame, streamPid: Int)
+
+    /**
+     * Registers new streams to the [IEndpoint].
+     *
+     * @param streamConfigs the list of [Config] to register
+     * @return the map of [Config] to their corresponding stream id
+     */
+    fun addStreams(streamConfigs: List<Config>): Map<Config, Int>
+
+    /**
+     * Registers a new stream to the [IEndpoint].
+     *
+     * @param streamConfig the [Config] to register
+     * @return the stream id
+     */
+    fun addStream(streamConfig: Config): Int
+}
+
+interface IPublicEndpoint {
+    /**
+     * Whether if the endpoint is opened.
+     * For example, if the file is opened for [FileSink].
+     */
+    val isOpened: StateFlow<Boolean>
+
+    /**
+     * A info to verify supported formats.
+     */
+    val info: IEndpointInfo
+
+    interface IEndpointInfo {
+        /**
+         * A info to verify supported audio formats.
+         */
+        val audio: IAudioEndpointInfo
+
+        interface IAudioEndpointInfo {
+            /**
+             * Supported audio encoders.
+             */
+            val supportedEncoders: List<String>
+
+            /**
+             * Supported audio sample rates.
+             *
+             * Returns null if not applicable (no limitation)
+             */
+            val supportedSampleRates: List<Int>?
+
+            /**
+             * Supported audio byte formats.
+             *
+             * Returns null if not applicable (no limitation)
+             */
+            val supportedByteFormats: List<Int>?
+        }
+
+        /**
+         * A info to verify supported video formats.
+         */
+        val video: IVideoEndpointInfo
+
+        interface IVideoEndpointInfo {
+            /**
+             * Supported video encoders.
+             */
+            val supportedEncoders: List<String>
+        }
+    }
 }

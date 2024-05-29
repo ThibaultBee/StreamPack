@@ -29,41 +29,49 @@ import io.github.thibaultbee.streampack.app.BR
 import io.github.thibaultbee.streampack.app.utils.ObservableViewModel
 import io.github.thibaultbee.streampack.app.utils.StreamerManager
 import io.github.thibaultbee.streampack.app.utils.isEmpty
-import io.github.thibaultbee.streampack.error.StreamPackError
 import io.github.thibaultbee.streampack.listeners.OnConnectionListener
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.streamers.StreamerLifeCycleObserver
+import io.github.thibaultbee.streampack.streamers.observers.StreamerLifeCycleObserver
+import io.github.thibaultbee.streampack.ui.views.PreviewView
 import io.github.thibaultbee.streampack.utils.isFrameRateSupported
-import io.github.thibaultbee.streampack.views.PreviewView
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class PreviewViewModel(private val streamerManager: StreamerManager) : ObservableViewModel() {
     val streamerLifeCycleObserver: StreamerLifeCycleObserver
         get() = streamerManager.streamerLifeCycleObserver
 
-    val streamerError = MutableLiveData<String>()
+    val streamerError: MutableLiveData<String> = MutableLiveData()
 
     val requiredPermissions: List<String>
         get() = streamerManager.requiredPermissions
 
-    private val onErrorListener = object : OnErrorListener {
-        override fun onError(error: StreamPackError) {
-            Log.e(TAG, "onError", error)
-            streamerError.postValue("${error.javaClass.simpleName}: ${error.message}")
+
+    init {
+        viewModelScope.launch {
+            streamerManager.exception.filterNotNull()
+                .map { "${it.javaClass.simpleName}: ${it.message}" }.collect {
+                    streamerError.postValue(it)
+                }
+        }
+        viewModelScope.launch {
+            streamerManager.isOpened
+                .collect {
+                    Log.i(TAG, "Streamer is opened: $it")
+                }
+        }
+        viewModelScope.launch {
+            streamerManager.isStreaming
+                .collect {
+                    Log.i(TAG, "Streamer is streaming: $it")
+                }
         }
     }
 
     private val onConnectionListener = object : OnConnectionListener {
         override fun onLost(message: String) {
-            streamerError.postValue("Connection lost: $message")
-        }
-
-        override fun onFailed(message: String) {
-            // Not needed as we catch startStream
-        }
-
-        override fun onSuccess() {
-            Log.i(TAG, "Connection succeeded")
+            //streamerError.postValue("Connection lost: $message")
         }
     }
 
@@ -80,12 +88,10 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
     }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    fun createStreamer() {
+    fun configureStreamer() {
         viewModelScope.launch {
             try {
-                streamerManager.rebuildStreamer()
-                streamerManager.onErrorListener = onErrorListener
-                streamerManager.onConnectionListener = onConnectionListener
+                streamerManager.configureStreamer()
                 Log.d(TAG, "Streamer is created")
             } catch (e: Throwable) {
                 Log.e(TAG, "createStreamer failed", e)
@@ -93,7 +99,7 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
             }
         }
     }
-
+    
     fun startStream() {
         viewModelScope.launch {
             try {

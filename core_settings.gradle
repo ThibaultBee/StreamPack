@@ -1,6 +1,8 @@
 rootProject.name='StreamPack'
 
 include ':core'
+include ':ui'
+include ':services'
 
 // Extensions
 include ':extension-rtmp'

@@ -15,7 +15,6 @@
  */
 package io.github.thibaultbee.streampack.utils
 
-import io.github.thibaultbee.streampack.streamers.interfaces.IFileStreamer
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream

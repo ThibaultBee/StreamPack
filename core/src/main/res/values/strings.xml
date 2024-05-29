@@ -5,6 +5,4 @@
     <string name="service_notification_connection_lost">Connection lost</string>
     <string name="service_notification_connection_failed">Connection failed</string>
     <string name="service_notification_connection_succeeded">Live in progress…</string>
-    <string name="ts_service_default_name">StreamPack</string>
-    <string name="ts_service_default_provider_name">Thibault B.</string>s
 </resources>
