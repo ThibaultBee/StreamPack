@@ -49,7 +49,7 @@ class PesHeader(
         get() = 72 + pesHeaderDataBitLength  // 24 - start code / 8 - stream ids / 16 - packet length / 24 - optional PES header
     override val size = bitSize / Byte.SIZE_BITS
 
-    private var pesPacketLength = payloadLength + pesHeaderDataLength + 3
+    private val pesPacketLength = payloadLength + pesHeaderDataLength + 3
 
     private val pesHeaderDataBitLength: Int
         get() {
@@ -72,9 +72,12 @@ class PesHeader(
         buffer.putShort(0) // start code is 0x000001
         buffer.put(1)
         buffer.put(streamId)
-        if (pesPacketLength > 0xFFFF)
-            pesPacketLength = 0
-        buffer.putShort(pesPacketLength)
+        val packetLength = if (pesPacketLength > 0xFFFF) {
+            0
+        } else {
+            pesPacketLength
+        }
+        buffer.putShort(packetLength)
         // Optional
         buffer.put(
             ((0b10 shl 6)
