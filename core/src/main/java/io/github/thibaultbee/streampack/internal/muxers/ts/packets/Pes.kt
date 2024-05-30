@@ -43,7 +43,7 @@ class Pes(
 
         val header = PesHeader(
             streamId = fromMimeType(stream.config.mimeType).value,
-            payloadLength = frame.buffer.remaining().toShort(),
+            payloadLength = frame.buffer.remaining(),
             pts = frame.pts,
             dts = frame.dts
         )

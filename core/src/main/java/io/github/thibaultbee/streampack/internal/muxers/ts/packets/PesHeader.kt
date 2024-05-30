@@ -27,7 +27,7 @@ import kotlin.math.pow
 
 class PesHeader(
     private val streamId: Short,
-    payloadLength: Short,
+    payloadLength: Int,
     private val esScramblingControl: Byte = 0,
     private val esPriority: Boolean = false,
     private val dataAlignmentIndicator: Boolean = false,
