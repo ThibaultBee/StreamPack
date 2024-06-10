@@ -29,9 +29,9 @@ import io.github.thibaultbee.streampack.internal.encoders.IEncoderListener
 import io.github.thibaultbee.streampack.internal.encoders.VideoMediaCodecEncoder
 import io.github.thibaultbee.streampack.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.internal.events.EventHandler
-import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
+import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.sources.IAudioSource
 import io.github.thibaultbee.streampack.internal.sources.IVideoSource
 import io.github.thibaultbee.streampack.listeners.OnErrorListener
@@ -68,6 +68,8 @@ abstract class BaseStreamer(
      */
     override var onErrorListener: OnErrorListener? = initialOnErrorListener
     override val helper = StreamerConfigurationHelper(muxer.helper)
+
+    private var isStreaming = false
 
     private var audioStreamId: Int? = null
     private var videoStreamId: Int? = null
@@ -276,6 +278,7 @@ abstract class BaseStreamer(
      * @see [stopStream]
      */
     override suspend fun startStream() {
+        isStreaming = true
         try {
             endpoint.startStream()
 
@@ -315,11 +318,17 @@ abstract class BaseStreamer(
      * @see [startStream]
      */
     override suspend fun stopStream() {
+        if (!isStreaming) {
+            Logger.w(TAG, "Stream is not running")
+            return
+        }
+
         stopStreamImpl()
 
         // Encoder does not return to CONFIGURED state... so we have to reset everything...
         resetAudio()
         resetVideo()
+        isStreaming = false
     }
 
     /**
