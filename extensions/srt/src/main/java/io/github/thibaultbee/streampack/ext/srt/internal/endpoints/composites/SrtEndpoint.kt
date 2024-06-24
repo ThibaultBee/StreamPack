@@ -15,11 +15,11 @@
  */
 package io.github.thibaultbee.streampack.ext.srt.internal.endpoints.composites
 
-import io.github.thibaultbee.streampack.data.mediadescriptor.createDefaultTsServiceInfo
+import io.github.thibaultbee.streampack.core.data.mediadescriptor.createDefaultTsServiceInfo
 import io.github.thibaultbee.streampack.ext.srt.internal.endpoints.composites.sinks.SrtSink
-import io.github.thibaultbee.streampack.internal.endpoints.composites.CompositeEndpoint
-import io.github.thibaultbee.streampack.internal.endpoints.composites.muxers.ts.TSMuxer
-import io.github.thibaultbee.streampack.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.CompositeEndpoint
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.TSMuxer
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
 
 /**
  * Creates a [SrtEndpoint] with a default [TSServiceInfo].

@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.ui.views
 
 import android.hardware.camera2.CameraCharacteristics
 import android.util.Size
-import io.github.thibaultbee.streampack.internal.utils.extensions.closestTo
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.closestTo
 
 /**
  * Returns the largest available PREVIEW size. For more information, see:
