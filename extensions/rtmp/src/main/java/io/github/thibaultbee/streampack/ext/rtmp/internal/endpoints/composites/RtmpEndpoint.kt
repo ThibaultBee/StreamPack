@@ -16,8 +16,8 @@
 package io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.composites
 
 import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.composites.sinks.RtmpSink
-import io.github.thibaultbee.streampack.internal.endpoints.composites.CompositeEndpoint
-import io.github.thibaultbee.streampack.internal.endpoints.composites.muxers.flv.FlvMuxer
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.CompositeEndpoint
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.FlvMuxer
 
 /**
  * A RTMP endpoint.

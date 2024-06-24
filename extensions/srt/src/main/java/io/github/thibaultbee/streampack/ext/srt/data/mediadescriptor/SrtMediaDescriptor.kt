@@ -16,12 +16,12 @@
 package io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor
 
 import android.net.Uri
-import io.github.thibaultbee.streampack.data.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.data.mediadescriptor.UriMediaDescriptor
-import io.github.thibaultbee.streampack.data.mediadescriptor.createDefaultTsServiceInfo
-import io.github.thibaultbee.streampack.internal.endpoints.MediaContainerType
-import io.github.thibaultbee.streampack.internal.endpoints.MediaSinkType
-import io.github.thibaultbee.streampack.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
+import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.data.mediadescriptor.createDefaultTsServiceInfo
+import io.github.thibaultbee.streampack.core.internal.endpoints.MediaContainerType
+import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
 import java.security.InvalidParameterException
 
 /**

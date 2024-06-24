@@ -15,12 +15,12 @@
  */
 package io.github.thibaultbee.streampack.ext.srt.regulator.controllers
 
-import io.github.thibaultbee.streampack.data.BitrateRegulatorConfig
+import io.github.thibaultbee.streampack.core.data.BitrateRegulatorConfig
+import io.github.thibaultbee.streampack.core.regulator.controllers.BitrateRegulatorController
+import io.github.thibaultbee.streampack.core.regulator.controllers.DefaultBitrateRegulatorController
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
 import io.github.thibaultbee.streampack.ext.srt.regulator.DefaultSrtBitrateRegulator
 import io.github.thibaultbee.streampack.ext.srt.regulator.SrtBitrateRegulator
-import io.github.thibaultbee.streampack.regulator.controllers.BitrateRegulatorController
-import io.github.thibaultbee.streampack.regulator.controllers.DefaultBitrateRegulatorController
-import io.github.thibaultbee.streampack.streamers.interfaces.ICoroutineStreamer
 
 /**
  * A [DefaultBitrateRegulatorController] implementation for a [SrtSink].
