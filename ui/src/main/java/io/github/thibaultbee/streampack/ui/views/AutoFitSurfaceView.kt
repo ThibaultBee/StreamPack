@@ -19,7 +19,7 @@ package io.github.thibaultbee.streampack.ui.views
 import android.content.Context
 import android.util.AttributeSet
 import android.view.SurfaceView
-import io.github.thibaultbee.streampack.logger.Logger
+import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlin.math.roundToInt
 
 /**
