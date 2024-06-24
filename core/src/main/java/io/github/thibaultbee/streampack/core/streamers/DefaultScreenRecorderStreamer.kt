@@ -48,7 +48,7 @@ open class DefaultScreenRecorderStreamer(
         (internalVideoSource as ScreenSource).apply {
             runBlocking {
                 exception.collect {
-                    this@DefaultScreenRecorderStreamer._exception.emit(it)
+                    this@DefaultScreenRecorderStreamer._throwable.emit(it)
                 }
             }
         }

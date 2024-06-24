@@ -51,7 +51,7 @@ class StreamerManager(
     private val streamer: ICoroutineStreamer =
         DefaultCameraStreamer(context, configuration.audio.enable)
 
-    val exception: StateFlow<Exception?> = streamer.exception
+    val throwable: StateFlow<Throwable?> = streamer.throwable
 
     val isOpened: StateFlow<Boolean> = streamer.isOpened
 

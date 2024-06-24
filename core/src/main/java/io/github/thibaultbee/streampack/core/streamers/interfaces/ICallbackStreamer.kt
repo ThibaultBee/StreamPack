@@ -95,8 +95,8 @@ interface ICallbackStreamer : IStreamer {
         /**
          * Called when an error occurs.
          *
-         * @param exception The exception that occurred
+         * @param throwable The throwable that occurred
          */
-        fun onError(exception: Exception)
+        fun onError(throwable: Throwable)
     }
 }
