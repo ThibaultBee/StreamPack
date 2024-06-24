@@ -20,6 +20,7 @@ import android.media.MediaCodec.BufferInfo
 import android.media.MediaCodec.CodecException
 import android.media.MediaFormat
 import android.os.Bundle
+import android.util.Log
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.error.StreamPackError
 import io.github.thibaultbee.streampack.core.internal.data.Frame
@@ -65,6 +66,7 @@ internal constructor(
 
     private val dispatcher = encoderExecutor.asCoroutineDispatcher()
 
+    private var isStopping = false
     private var isStopped = true
     private var isOnError = false
     private var isReleased = false
@@ -200,6 +202,10 @@ internal constructor(
         if (isStopped) {
             return
         }
+        if (isStopping) {
+            return
+        }
+        isStopping = false
         try {
             if (input is IEncoder.ISurfaceInput) {
                 // If we stop the codec, then it will stop de-queuing
@@ -209,11 +215,11 @@ internal constructor(
             } else {
                 mediaCodec.stop()
             }
-
         } catch (e: IllegalStateException) {
             Logger.d(tag, "Not running")
         } finally {
             isStopped = true
+            isStopping = false
         }
     }
 
@@ -264,13 +270,13 @@ internal constructor(
 
     private fun handleError(e: Exception) {
         isOnError = true
-        if (!isStopped) {
+        if (!isStopped && !isStopping) {
             encoderExecutor.execute {
                 stopStreamSync()
                 notifyError(e)
             }
         } else {
-            notifyError(e)
+            Log.w(tag, "Get error while stopped: ${e.message}")
         }
     }
 
@@ -287,6 +293,9 @@ internal constructor(
             info: BufferInfo
         ) {
             encoderExecutor.execute {
+                if (isStopping) {
+                    return@execute
+                }
                 if (isStopped) {
                     Logger.w(tag, "Receives frame after codec is reset.")
                     return@execute
