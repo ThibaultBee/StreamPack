@@ -2,10 +2,10 @@ apply from: "${project.rootDir}/common_library.gradle"
 apply from: "${project.rootDir}/publish.gradle"
 
 android {
-    namespace 'io.github.thibaultbee.streampack'
+    namespace 'io.github.thibaultbee.streampack.core'
 }
 ext {
-    artifactName = 'streampack'
+    artifactName = 'streampack-core'
     artifactDescription = 'Main library of StreamPack.'
 }
 
