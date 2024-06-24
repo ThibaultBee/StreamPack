@@ -97,10 +97,10 @@ abstract class DefaultScreenRecorderService(
 
             streamer?.let {
                 lifecycleScope.launch {
-                    it.exception.collect { e ->
-                        if (e != null) {
-                            Logger.e(TAG, "An error occurred", e)
-                            onErrorNotification(e)?.let { notify(it) }
+                    it.throwable.collect { t ->
+                        if (t != null) {
+                            Logger.e(TAG, "An error occurred", t)
+                            onErrorNotification(t)?.let { notify(it) }
                             stopSelf()
                         }
                     }
@@ -165,12 +165,12 @@ abstract class DefaultScreenRecorderService(
      *
      * You can override this method to customize the notification.
      *
-     * @param e the exception that was thrown
+     * @param t the throwable that was thrown
      */
-    protected open fun onErrorNotification(e: Exception): Notification? {
+    protected open fun onErrorNotification(t: Throwable): Notification? {
         return notificationUtils.createNotification(
             getString(R.string.service_notification_error),
-            e.rootCause.localizedMessage,
+            t.rootCause.localizedMessage,
             notificationIconResourceId
         )
     }
