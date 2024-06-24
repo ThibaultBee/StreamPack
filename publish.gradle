@@ -55,7 +55,7 @@ afterEvaluate {
             release(MavenPublication) {
                 from components.release
 
-                groupId = "io.github.thibaultbee"
+                groupId = "io.github.thibaultbee.streampack"
                 artifactId = artifactName
                 version = streampackVersion
 
