@@ -23,13 +23,13 @@ import io.github.thibaultbee.srtdroid.listeners.SocketListener
 import io.github.thibaultbee.srtdroid.models.MsgCtrl
 import io.github.thibaultbee.srtdroid.models.Socket
 import io.github.thibaultbee.srtdroid.models.Stats
-import io.github.thibaultbee.streampack.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
-import io.github.thibaultbee.streampack.internal.data.Packet
-import io.github.thibaultbee.streampack.internal.data.SrtPacket
-import io.github.thibaultbee.streampack.internal.endpoints.composites.sinks.EndpointConfiguration
-import io.github.thibaultbee.streampack.internal.endpoints.composites.sinks.ILiveSink
-import io.github.thibaultbee.streampack.listeners.OnConnectionListener
+import io.github.thibaultbee.streampack.core.internal.data.Packet
+import io.github.thibaultbee.streampack.core.internal.data.SrtPacket
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.EndpointConfiguration
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ILiveSink
+import io.github.thibaultbee.streampack.core.listeners.OnConnectionListener
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -133,10 +133,10 @@ class SrtSink(
         }
     }
 
-    override suspend fun write(packet: Packet) {
+    override suspend fun write(packet: io.github.thibaultbee.streampack.core.internal.data.Packet) {
         if (isOnError) return
 
-        packet as SrtPacket
+        packet as io.github.thibaultbee.streampack.core.internal.data.SrtPacket
         val boundary = when {
             packet.isFirstPacketFrame && packet.isLastPacketFrame -> Boundary.SOLO
             packet.isFirstPacketFrame -> Boundary.FIRST

@@ -24,10 +24,10 @@ import android.os.Bundle
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.lifecycleScope
+import io.github.thibaultbee.streampack.core.streamers.DefaultScreenRecorderStreamer
 import io.github.thibaultbee.streampack.screenrecorder.R
 import io.github.thibaultbee.streampack.screenrecorder.models.Actions
 import io.github.thibaultbee.streampack.services.DefaultScreenRecorderService
-import io.github.thibaultbee.streampack.streamers.DefaultScreenRecorderStreamer
 import kotlinx.coroutines.launch
 
 class DemoScreenRecorderService : DefaultScreenRecorderService(

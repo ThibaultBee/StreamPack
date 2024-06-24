@@ -34,12 +34,12 @@ import io.github.thibaultbee.streampack.app.models.FileExtension
 import io.github.thibaultbee.streampack.app.utils.DialogUtils
 import io.github.thibaultbee.streampack.app.utils.ProfileLevelDisplay
 import io.github.thibaultbee.streampack.app.utils.StreamerInfoFactory
-import io.github.thibaultbee.streampack.data.VideoConfig
-import io.github.thibaultbee.streampack.internal.encoders.mediacodec.MediaCodecHelper
-import io.github.thibaultbee.streampack.streamers.infos.CameraStreamerConfigurationInfo
-import io.github.thibaultbee.streampack.utils.cameraList
-import io.github.thibaultbee.streampack.utils.defaultCameraId
-import io.github.thibaultbee.streampack.utils.isFrameRateSupported
+import io.github.thibaultbee.streampack.core.data.VideoConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.MediaCodecHelper
+import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
+import io.github.thibaultbee.streampack.core.utils.cameraList
+import io.github.thibaultbee.streampack.core.utils.defaultCameraId
+import io.github.thibaultbee.streampack.core.utils.isFrameRateSupported
 import java.io.IOException
 
 class SettingsFragment : PreferenceFragmentCompat() {

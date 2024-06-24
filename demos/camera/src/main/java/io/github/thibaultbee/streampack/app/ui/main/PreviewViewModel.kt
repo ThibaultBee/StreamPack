@@ -29,11 +29,10 @@ import io.github.thibaultbee.streampack.app.BR
 import io.github.thibaultbee.streampack.app.utils.ObservableViewModel
 import io.github.thibaultbee.streampack.app.utils.StreamerManager
 import io.github.thibaultbee.streampack.app.utils.isEmpty
-import io.github.thibaultbee.streampack.listeners.OnConnectionListener
-import io.github.thibaultbee.streampack.streamers.observers.StreamerLifeCycleObserver
+import io.github.thibaultbee.streampack.core.listeners.OnConnectionListener
+import io.github.thibaultbee.streampack.core.streamers.observers.StreamerLifeCycleObserver
+import io.github.thibaultbee.streampack.core.utils.isFrameRateSupported
 import io.github.thibaultbee.streampack.ui.views.PreviewView
-import io.github.thibaultbee.streampack.utils.isFrameRateSupported
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -99,7 +98,7 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
             }
         }
     }
-    
+
     fun startStream() {
         viewModelScope.launch {
             try {

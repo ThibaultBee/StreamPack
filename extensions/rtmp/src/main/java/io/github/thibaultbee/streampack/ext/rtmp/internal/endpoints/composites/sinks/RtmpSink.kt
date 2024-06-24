@@ -15,14 +15,14 @@
  */
 package io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.composites.sinks
 
-import io.github.thibaultbee.streampack.data.VideoConfig
-import io.github.thibaultbee.streampack.data.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.internal.data.Packet
-import io.github.thibaultbee.streampack.internal.endpoints.MediaSinkType
-import io.github.thibaultbee.streampack.internal.endpoints.composites.sinks.EndpointConfiguration
-import io.github.thibaultbee.streampack.internal.endpoints.composites.sinks.ILiveSink
-import io.github.thibaultbee.streampack.listeners.OnConnectionListener
-import io.github.thibaultbee.streampack.logger.Logger
+import io.github.thibaultbee.streampack.core.data.VideoConfig
+import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.internal.data.Packet
+import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.EndpointConfiguration
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ILiveSink
+import io.github.thibaultbee.streampack.core.listeners.OnConnectionListener
+import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,7 +42,7 @@ class RtmpSink(
 
     private val _isOpened = MutableStateFlow(false)
     override val isOpened: StateFlow<Boolean> = _isOpened
-    
+
     override val metrics: Any
         get() = TODO("Not yet implemented")
 
@@ -70,26 +70,27 @@ class RtmpSink(
         }
     }
 
-    override suspend fun write(packet: Packet) = withContext(dispatcher) {
-        if (isOnError) {
-            return@withContext
-        }
+    override suspend fun write(packet: Packet) =
+        withContext(dispatcher) {
+            if (isOnError) {
+                return@withContext
+            }
 
-        if (!(isOpened.value)) {
-            Logger.w(TAG, "Socket is not connected, dropping packet")
-            return@withContext
-        }
+            if (!(isOpened.value)) {
+                Logger.w(TAG, "Socket is not connected, dropping packet")
+                return@withContext
+            }
 
-        try {
-            socket.write(packet.buffer)
-        } catch (e: Exception) {
-            close()
-            isOnError = true
-            _isOpened.emit(false)
-            Logger.e(TAG, "Error while writing packet to socket", e)
-            throw e
+            try {
+                socket.write(packet.buffer)
+            } catch (e: Exception) {
+                close()
+                isOnError = true
+                _isOpened.emit(false)
+                Logger.e(TAG, "Error while writing packet to socket", e)
+                throw e
+            }
         }
-    }
 
     override suspend fun startStream() {
         withContext(dispatcher) {

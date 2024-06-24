@@ -30,11 +30,10 @@ import androidx.annotation.StringRes
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
-import io.github.thibaultbee.streampack.R
-import io.github.thibaultbee.streampack.internal.utils.extensions.rootCause
-import io.github.thibaultbee.streampack.logger.Logger
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.rootCause
+import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.streamers.DefaultScreenRecorderStreamer
 import io.github.thibaultbee.streampack.services.utils.NotificationUtils
-import io.github.thibaultbee.streampack.streamers.DefaultScreenRecorderStreamer
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
