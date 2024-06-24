@@ -50,7 +50,7 @@ class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallbackStrea
 
     init {
         coroutineScope.launch {
-            streamer.exception.collect { e ->
+            streamer.throwable.collect { e ->
                 if (e != null) {
                     listeners.forEach { it.onError(e) }
                 }

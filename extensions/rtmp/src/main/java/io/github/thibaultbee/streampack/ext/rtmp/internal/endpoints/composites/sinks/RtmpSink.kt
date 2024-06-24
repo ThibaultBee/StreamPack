@@ -20,8 +20,7 @@ import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescripto
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.EndpointConfiguration
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ILiveSink
-import io.github.thibaultbee.streampack.core.listeners.OnConnectionListener
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ISink
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -34,9 +33,7 @@ import java.util.concurrent.Executors
 class RtmpSink(
     private val dispatcher: CoroutineDispatcher = Executors.newSingleThreadExecutor()
         .asCoroutineDispatcher()
-) : ILiveSink {
-    override var onConnectionListener: OnConnectionListener? = null
-
+) : ISink {
     private var socket = Rtmp()
     private var isOnError = false
 

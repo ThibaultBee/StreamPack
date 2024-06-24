@@ -16,7 +16,6 @@
 package io.github.thibaultbee.streampack.core.streamers.interfaces
 
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -24,9 +23,9 @@ import kotlinx.coroutines.flow.StateFlow
  */
 interface ICoroutineStreamer : IStreamer {
     /**
-     * Returns the last exception that occurred.
+     * Returns the last throwable that occurred.
      */
-    val exception: StateFlow<Exception?>
+    val throwable: StateFlow<Throwable?>
 
     /**
      * Returns true if endpoint is opened.

@@ -24,24 +24,22 @@ import io.github.thibaultbee.srtdroid.models.MsgCtrl
 import io.github.thibaultbee.srtdroid.models.Socket
 import io.github.thibaultbee.srtdroid.models.Stats
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.data.SrtPacket
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.EndpointConfiguration
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ILiveSink
-import io.github.thibaultbee.streampack.core.listeners.OnConnectionListener
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ISink
+import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.net.InetSocketAddress
 
 class SrtSink(
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
-) : ILiveSink {
-    override var onConnectionListener: OnConnectionListener? = null
-
+) : ISink {
     private var socket = Socket()
     private var bitrate = 0L
     private var isOnError = false
@@ -105,7 +103,9 @@ class SrtSink(
                         token: Int
                     ) {
                         socket = Socket()
-                        onConnectionListener?.onLost(error.toString())
+                        runBlocking {
+                            _isOpened.emit(false)
+                        }
                     }
 
                     override fun onListen(
@@ -133,10 +133,10 @@ class SrtSink(
         }
     }
 
-    override suspend fun write(packet: io.github.thibaultbee.streampack.core.internal.data.Packet) {
+    override suspend fun write(packet: Packet) {
         if (isOnError) return
 
-        packet as io.github.thibaultbee.streampack.core.internal.data.SrtPacket
+        packet as SrtPacket
         val boundary = when {
             packet.isFirstPacketFrame && packet.isLastPacketFrame -> Boundary.SOLO
             packet.isFirstPacketFrame -> Boundary.FIRST

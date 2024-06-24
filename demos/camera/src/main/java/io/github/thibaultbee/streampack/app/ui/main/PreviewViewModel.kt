@@ -29,7 +29,6 @@ import io.github.thibaultbee.streampack.app.BR
 import io.github.thibaultbee.streampack.app.utils.ObservableViewModel
 import io.github.thibaultbee.streampack.app.utils.StreamerManager
 import io.github.thibaultbee.streampack.app.utils.isEmpty
-import io.github.thibaultbee.streampack.core.listeners.OnConnectionListener
 import io.github.thibaultbee.streampack.core.streamers.observers.StreamerLifeCycleObserver
 import io.github.thibaultbee.streampack.core.utils.isFrameRateSupported
 import io.github.thibaultbee.streampack.ui.views.PreviewView
@@ -49,7 +48,7 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
 
     init {
         viewModelScope.launch {
-            streamerManager.exception.filterNotNull()
+            streamerManager.throwable.filterNotNull()
                 .map { "${it.javaClass.simpleName}: ${it.message}" }.collect {
                     streamerError.postValue(it)
                 }
@@ -65,12 +64,6 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
                 .collect {
                     Log.i(TAG, "Streamer is streaming: $it")
                 }
-        }
-    }
-
-    private val onConnectionListener = object : OnConnectionListener {
-        override fun onLost(message: String) {
-            //streamerError.postValue("Connection lost: $message")
         }
     }
 

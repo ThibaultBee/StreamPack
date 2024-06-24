@@ -25,13 +25,12 @@ import java.io.OutputStream
  * Sink to write data to an [ChunkedFileOutputStream]
  */
 class ChunkedFileOutputStreamSink(private val chunkSize: Int) : OutputStreamSink() {
-    init {
-        require(chunkSize > 0) { "Chunk size must be greater than 0" }
-    }
-
     override val metrics: Any
         get() = TODO("Not yet implemented")
 
+    init {
+        require(chunkSize > 0) { "Chunk size must be greater than 0" }
+    }
 
     /**
      * Open an [OutputStream] to write data

@@ -26,7 +26,6 @@ import kotlinx.coroutines.flow.StateFlow
  */
 class FakeSink : ISink {
     private val _isOpened = MutableStateFlow(false)
-
     override val isOpened: StateFlow<Boolean> = _isOpened
 
     override val metrics: Any
