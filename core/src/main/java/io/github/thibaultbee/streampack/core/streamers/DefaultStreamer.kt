@@ -70,8 +70,8 @@ open class DefaultStreamer(
     private val dispatcher: CoroutineDispatcher = Executors.newSingleThreadExecutor()
         .asCoroutineDispatcher()
 ) : ICoroutineStreamer {
-    protected val _exception = MutableStateFlow<Exception?>(null)
-    override val exception: StateFlow<Exception?> = _exception
+    protected val _throwable = MutableStateFlow<Throwable?>(null)
+    override val throwable: StateFlow<Throwable?> = _throwable
 
     private var audioStreamId: Int? = null
     private var videoStreamId: Int? = null
@@ -146,7 +146,7 @@ open class DefaultStreamer(
             Logger.e(TAG, "onStreamError: Can't stop stream", e)
         } finally {
             runBlocking {
-                _exception.emit(e)
+                _throwable.emit(e)
             }
         }
     }
