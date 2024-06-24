@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxe
 
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
+import android.util.Log
 import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.data.Config
 import io.github.thibaultbee.streampack.core.internal.data.Frame
@@ -438,7 +439,11 @@ class TSMuxer : IMuxer {
      * @return PES
      */
     private fun getPes(pid: Short): Pes {
-        return tsPes.first { it.stream.pid == pid }
+        try {
+            return tsPes.first { it.stream.pid == pid }
+        } catch (e: NoSuchElementException) {
+            throw NoSuchElementException("Unknown stream pid $pid")
+        }
     }
 
     /**

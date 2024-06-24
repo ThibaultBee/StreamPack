@@ -145,6 +145,7 @@ open class DefaultStreamer(
         } catch (e: Exception) {
             Logger.e(TAG, "onStreamError: Can't stop stream", e)
         } finally {
+            Logger.e(TAG, "onStreamError: ${e.message}", e)
             runBlocking {
                 _throwable.emit(e)
             }
