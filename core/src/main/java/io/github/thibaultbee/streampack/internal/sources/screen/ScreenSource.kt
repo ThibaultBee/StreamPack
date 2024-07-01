@@ -113,6 +113,7 @@ class ScreenSource(
 
         val orientedSize = orientationProvider.getOrientedSize(videoConfig!!.resolution)
         mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, resultData).apply {
+            registerCallback(mediaProjectionCallback, virtualDisplayHandler)
             virtualDisplay = createVirtualDisplay(
                 VIRTUAL_DISPLAY_NAME,
                 orientedSize.width,
@@ -123,7 +124,6 @@ class ScreenSource(
                 virtualDisplayCallback,
                 virtualDisplayHandler
             )
-            registerCallback(mediaProjectionCallback, virtualDisplayHandler)
         }
     }
 
