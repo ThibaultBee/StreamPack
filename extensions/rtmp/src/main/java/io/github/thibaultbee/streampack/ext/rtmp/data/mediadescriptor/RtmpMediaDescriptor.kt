@@ -35,7 +35,7 @@ fun RtmpMediaDescriptor(descriptor: MediaDescriptor) =
             RtmpMediaDescriptor.fromUri(descriptor.uri)
         }
 
-        else -> throw InvalidParameterException("Invalid descriptor ${descriptor::class.java.simpleName}")
+        else -> throw InvalidParameterException("Invalid descriptor ${descriptor::class.java.simpleName} for RTMP")
     }
 
 /**
