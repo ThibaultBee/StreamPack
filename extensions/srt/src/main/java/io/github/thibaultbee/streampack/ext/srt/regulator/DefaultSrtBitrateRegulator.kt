@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.ext.srt.regulator
 
-import io.github.thibaultbee.srtdroid.models.Stats
+import io.github.thibaultbee.srtdroid.core.models.Stats
 import io.github.thibaultbee.streampack.core.data.BitrateRegulatorConfig
 import kotlin.math.max
 import kotlin.math.min
