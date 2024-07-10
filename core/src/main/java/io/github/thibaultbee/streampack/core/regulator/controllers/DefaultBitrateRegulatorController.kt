@@ -57,7 +57,6 @@ open class DefaultBitrateRegulatorController(
     private val bitrateRegulator = bitrateRegulatorFactory.newBitrateRegulator(
         bitrateRegulatorConfig,
         {
-            Logger.i("TEST>>>", "Video target bitrate changed to $it")
             videoEncoder!!.bitrate = it
         },
         { /* Do nothing for audio */ }
