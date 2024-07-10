@@ -12,7 +12,7 @@ ext {
 
 dependencies {
     implementation project(':core')
-    implementation 'io.github.thibaultbee:srtdroid:1.7.0'
+    implementation 'io.github.thibaultbee.srtdroid:srtdroid-ktx:1.8.0'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
     implementation "androidx.core:core-ktx:${androidxCoreVersion}"
