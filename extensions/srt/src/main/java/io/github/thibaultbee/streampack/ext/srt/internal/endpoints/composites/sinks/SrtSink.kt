@@ -15,63 +15,31 @@
  */
 package io.github.thibaultbee.streampack.ext.srt.internal.endpoints.composites.sinks
 
-import io.github.thibaultbee.srtdroid.enums.Boundary
-import io.github.thibaultbee.srtdroid.enums.ErrorType
-import io.github.thibaultbee.srtdroid.enums.SockOpt
-import io.github.thibaultbee.srtdroid.enums.Transtype
-import io.github.thibaultbee.srtdroid.listeners.SocketListener
-import io.github.thibaultbee.srtdroid.models.MsgCtrl
-import io.github.thibaultbee.srtdroid.models.Socket
-import io.github.thibaultbee.srtdroid.models.Stats
+import io.github.thibaultbee.srtdroid.core.enums.Boundary
+import io.github.thibaultbee.srtdroid.core.enums.ErrorType
+import io.github.thibaultbee.srtdroid.core.enums.SockOpt
+import io.github.thibaultbee.srtdroid.core.enums.Transtype
+import io.github.thibaultbee.srtdroid.core.models.MsgCtrl
+import io.github.thibaultbee.srtdroid.core.models.SrtError
+import io.github.thibaultbee.srtdroid.core.models.SrtUrl.Mode
+import io.github.thibaultbee.srtdroid.core.models.Stats
+import io.github.thibaultbee.srtdroid.ktx.CoroutineSrtSocket
+import io.github.thibaultbee.srtdroid.ktx.extensions.connect
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.data.SrtPacket
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.EndpointConfiguration
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ISink
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import java.net.InetSocketAddress
 
-class SrtSink(
-    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
-) : ISink {
-    private var socket = Socket()
+class SrtSink : ISink {
+    private var socket = CoroutineSrtSocket()
     private var bitrate = 0L
-    private var isOnError = false
-
-    /**
-     * Get/set SRT stream ID
-     */
-    private var streamId: String
-        get() = socket.getSockFlag(SockOpt.STREAMID) as String
-        private set(value) = socket.setSockFlag(SockOpt.STREAMID, value)
-
-    /**
-     * Get/set SRT stream passPhrase
-     * It is a set only parameter, so getting the value throws an exception.
-     */
-    private var passPhrase: String
-        get() = socket.getSockFlag(SockOpt.PASSPHRASE) as String
-        private set(value) = socket.setSockFlag(SockOpt.PASSPHRASE, value)
-
-    /**
-     * Get/set bidirectional latency in milliseconds
-     */
-    private var latency: Int
-        get() = socket.getSockFlag(SockOpt.LATENCY) as Int
-        private set(value) = socket.setSockFlag(SockOpt.LATENCY, value)
-
-    /**
-     * Get/set connection timeout in milliseconds
-     */
-    private var connectionTimeout: Int
-        get() = socket.getSockFlag(SockOpt.CONNTIMEO) as Int
-        private set(value) = socket.setSockFlag(SockOpt.CONNTIMEO, value)
+    private val isOnError: Boolean
+        get() = SrtError.lastError != ErrorType.SUCCESS
 
     /**
      * Get SRT stats
@@ -92,44 +60,32 @@ class SrtSink(
 
     private suspend fun open(mediaDescriptor: SrtMediaDescriptor) {
         require(!isOpened.value) { "Sink is already opened" }
+        if (mediaDescriptor.srtUrl.mode != null) {
+            require(mediaDescriptor.srtUrl.mode == Mode.CALLER) { "Invalid mode: ${mediaDescriptor.srtUrl.mode}. Only caller supported." }
+        }
+        if (mediaDescriptor.srtUrl.payloadSize != null) {
+            require(mediaDescriptor.srtUrl.payloadSize == PAYLOAD_SIZE)
+        }
+        if (mediaDescriptor.srtUrl.transtype != null) {
+            require(mediaDescriptor.srtUrl.transtype == Transtype.LIVE)
+        }
 
-        withContext(coroutineDispatcher) {
-            try {
-                socket.listener = object : SocketListener {
-                    override fun onConnectionLost(
-                        ns: Socket,
-                        error: ErrorType,
-                        peerAddress: InetSocketAddress,
-                        token: Int
-                    ) {
-                        socket = Socket()
-                        runBlocking {
-                            _isOpened.emit(false)
-                        }
-                    }
-
-                    override fun onListen(
-                        ns: Socket,
-                        hsVersion: Int,
-                        peerAddress: InetSocketAddress,
-                        streamId: String
-                    ) = 0 // Only for server - not needed here
-                }
-                socket.setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
-                socket.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
-
-                mediaDescriptor.streamId?.let { streamId = it }
-                mediaDescriptor.passPhrase?.let { passPhrase = it }
-                mediaDescriptor.latency?.let { latency = it }
-                mediaDescriptor.connectionTimeout?.let { connectionTimeout = it }
-
-                isOnError = false
-                socket.connect(mediaDescriptor.host, mediaDescriptor.port)
-                _isOpened.emit(true)
-            } catch (e: Exception) {
-                socket = Socket()
-                throw e
+        try {
+            socket = CoroutineSrtSocket().apply {
+                // Forces this value. Only works if they are null in [srtUrl]
+                setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
+                setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
             }
+            socket.socketContext.invokeOnCompletion {
+                runBlocking {
+                    _isOpened.emit(false)
+                }
+            }
+            socket.connect(mediaDescriptor.srtUrl)
+            _isOpened.emit(true)
+        } catch (e: Exception) {
+            socket = CoroutineSrtSocket()
+            throw e
         }
     }
 
@@ -158,7 +114,6 @@ class SrtSink(
             socket.send(packet.buffer, msgCtrl)
         } catch (e: Exception) {
             _isOpened.emit(false)
-            isOnError = true
             throw e
         }
     }
@@ -176,7 +131,6 @@ class SrtSink(
     override suspend fun close() {
         socket.close()
         _isOpened.emit(false)
-        socket = Socket()
     }
 
 

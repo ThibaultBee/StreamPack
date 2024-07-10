@@ -44,7 +44,7 @@ class SrtMediaDescriptorTest {
         assertEquals("host.com", connection.host)
         assertEquals(1234, connection.port)
         assertEquals("streamId", connection.streamId)
-        assertEquals("passPhrase", connection.passPhrase)
+        assertEquals("passPhrase", connection.passphrase)
     }
 
     @Test
