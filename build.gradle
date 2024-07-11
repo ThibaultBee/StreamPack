@@ -1,8 +1,8 @@
 buildscript {
     ext {
         // Upgrade StreamPack version here
-        streampackCode = 2_006_000
-        streampackVersion = '2.6.0'
+        streampackCode = 2_006_001
+        streampackVersion = '2.6.1'
 
         minSdk = 21
         compileSdk = 34

@@ -1,5 +1,28 @@
-Change Log
+Changelog
 ==========
+
+Version 2.6.1
+-------------
+
+## Features:
+
+- Upgrade dependencies (AGP 8.4.2, Kotlin 1.9.24,...)
+
+## Bug fixes:
+
+- Streamer: do not call `stopStream` when streamer is not streaming
+- ScreenRecorder: fix callback
+  registration [#147](https://github.com/ThibaultBee/StreamPack/issues/147)
+- PreviewView: fix facing camera orientation
+- PreviewView: fix synchro
+- MP4: use relative timestamps
+- FLV: fix onMetadata audio sample size
+- FLV: fix onMetadata timestamp
+- FLV: only send header once
+- TS: fix PES packet length when frame size is >
+  65535 [#135](https://github.com/ThibaultBee/StreamPack/issues/135). Thanks to @moliyadi
+- AudioSource: try catch audio processors and properly release them
+- VideoConfig: only set HDR when profile and level can be set
 
 Version 2.6.0
 -------------
