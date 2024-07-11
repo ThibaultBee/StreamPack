@@ -28,20 +28,19 @@ import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.data.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
-import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
-import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrtBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
 import io.github.thibaultbee.streampack.core.streamers.observers.StreamerLifeCycleObserver
-import io.github.thibaultbee.streampack.ui.views.PreviewView
 import io.github.thibaultbee.streampack.core.utils.backCameraList
 import io.github.thibaultbee.streampack.core.utils.frontCameraList
 import io.github.thibaultbee.streampack.core.utils.getCameraStreamer
 import io.github.thibaultbee.streampack.core.utils.isBackCamera
+import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
+import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrtBitrateRegulatorController
+import io.github.thibaultbee.streampack.ui.views.PreviewView
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.runBlocking
 
 
 class StreamerManager(
@@ -214,9 +213,7 @@ class StreamerManager(
     }
 
     suspend fun stopStream() {
-        runBlocking {
-            streamer.stopStream()
-        }
+        streamer.stopStream()
         streamer.close()
     }
 
