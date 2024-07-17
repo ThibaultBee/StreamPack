@@ -24,6 +24,7 @@ import android.os.Build
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 
 /**
  * Helper class to create and manage notifications.
@@ -38,23 +39,13 @@ class NotificationUtils(
     private val notificationManager: NotificationManager by lazy {
         service.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
-    private var hasNotified = false
 
     fun cancel() {
-        service.stopForeground(true)
-        hasNotified = false
+        notificationManager.cancel(notificationId)
     }
 
     fun notify(notification: Notification) {
-        if (!hasNotified) {
-            service.startForeground(
-                notificationId,
-                notification
-            )
-            hasNotified = true
-        } else {
-            notificationManager.notify(notificationId, notification)
-        }
+        notificationManager.notify(notificationId, notification)
     }
 
     fun createNotification(

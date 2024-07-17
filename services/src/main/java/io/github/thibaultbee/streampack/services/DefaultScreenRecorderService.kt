@@ -23,11 +23,13 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Binder
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.app.ActivityCompat
+import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.rootCause
@@ -53,7 +55,7 @@ import kotlinx.coroutines.runBlocking
  *
  *  To customize notification, you can override:
  *   - R.string.service_notification_* string values
- *   - override open onNotification methods: [onConnectionSuccessNotification], [onConnectionLostNotification], [onConnectionFailedNotification] and [onErrorNotification]
+ *   - override open onNotification methods: [onOpenNotification], [onCloseNotification], [onOpenFailedNotification] and [onErrorNotification]
  *
  * If you want to keep the notification, you shall not override [DefaultScreenRecorderStreamer.onErrorListener] and [ILiveStreamer.onConnectionListener].
  *
@@ -75,7 +77,7 @@ abstract class DefaultScreenRecorderService(
     private val notificationUtils: NotificationUtils by lazy {
         NotificationUtils(this, channelId, notificationId)
     }
-    private var hasNotified = false
+    private var isStarted = false
 
     override fun onCreate() {
         super.onCreate()
@@ -108,12 +110,12 @@ abstract class DefaultScreenRecorderService(
                 lifecycleScope.launch {
                     it.isOpened.collect { isOpened ->
                         if (isOpened) {
-                            Logger.i(TAG, "Connection succeeded")
-                            onConnectionSuccessNotification()?.let { notify(it) }
+                            Logger.i(TAG, "Open succeeded")
+                            onOpenNotification()?.let { notify(it) }
                         } else {
-                            val message = "TMP" // TODO
-                            Logger.e(TAG, "Connection lost: $message")
-                            onConnectionLostNotification(message)?.let { notify(it) }
+                            val message = "Closed" // TODO
+                            Logger.e(TAG, "Closed: $message")
+                            onCloseNotification(message)?.let { notify(it) }
                             stopSelf()
                         }
                     }
@@ -176,43 +178,43 @@ abstract class DefaultScreenRecorderService(
     }
 
     /**
-     * Called when connection was lost
+     * Called when streamer is closed
      *
      * You can override this method to customize the notification.
      *
-     * @param message the reason why the connection was lost
+     * @param message the reason why the streamer is closed
      */
-    protected open fun onConnectionLostNotification(message: String): Notification? {
+    protected open fun onCloseNotification(message: String): Notification? {
         return notificationUtils.createNotification(
-            getString(R.string.service_notification_connection_lost),
+            getString(R.string.service_notification_closed),
             message,
             notificationIconResourceId
         )
     }
 
     /**
-     * Called when connection failed to be established
+     * Called when the stream failed to open
      *
      * You can override this method to customize the notification.
      *
-     * @param message the reason why the connection failed to be established
+     * @param message the reason why the open failed
      */
-    protected open fun onConnectionFailedNotification(message: String): Notification? {
+    protected open fun onOpenFailedNotification(message: String): Notification? {
         return notificationUtils.createNotification(
-            getString(R.string.service_notification_connection_failed),
+            getString(R.string.service_notification_open_failed),
             message,
             notificationIconResourceId
         )
     }
 
     /**
-     * Called when connection succeeded
+     * Called when the streamer is opened
      *
      * You can override this method to customize the notification.
      */
-    protected open fun onConnectionSuccessNotification(): Notification? {
+    protected open fun onOpenNotification(): Notification? {
         return notificationUtils.createNotification(
-            R.string.service_notification_connection_succeeded,
+            R.string.service_notification_open,
             0,
             notificationIconResourceId
         )
@@ -224,12 +226,18 @@ abstract class DefaultScreenRecorderService(
      * @param notification the notification to display
      */
     private fun notify(notification: Notification) {
-        if (!hasNotified) {
-            startForeground(
+        if (!isStarted) {
+            ServiceCompat.startForeground(
+                this,
                 notificationId,
-                notification
+                notification,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    this.foregroundServiceType
+                } else {
+                    0
+                }
             )
-            hasNotified = true
+            isStarted = true
         } else {
             notificationUtils.notify(notification)
         }

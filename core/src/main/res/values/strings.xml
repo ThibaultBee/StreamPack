@@ -2,7 +2,7 @@
 <resources>
     <string name="default_channel_name">StreamPack</string>
     <string name="service_notification_error">An error occurred</string>
-    <string name="service_notification_connection_lost">Connection lost</string>
-    <string name="service_notification_connection_failed">Connection failed</string>
-    <string name="service_notification_connection_succeeded">Live in progress…</string>
+    <string name="service_notification_closed">Closed</string>
+    <string name="service_notification_open_failed">Open failed</string>
+    <string name="service_notification_open">Live in progress…</string>
 </resources>
