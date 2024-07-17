@@ -1,0 +1,61 @@
+[versions]
+agp = "8.5.2"
+androidxActivity = "1.9.0"
+androidxAppcompat = "1.7.0"
+androidxCamera = "1.4.0-alpha07"
+androidxConstraintlayout = "2.1.4"
+androidxCore = "1.13.1"
+androidxDatabinding = "8.5.1"
+androidxEspresso = "3.6.1"
+androidxJunit = "1.2.1"
+androidxLifecycle = "2.8.3"
+androidxLifecycleExtensions = "2.2.0"
+androidxNavigation = "2.7.7"
+androidxPreference = "1.2.1"
+dokka = "1.9.20"
+junit = "4.13.2"
+kotlin = "2.0.0"
+kotlinxCoroutines = "1.8.1"
+material = "1.12.0"
+mockk = "1.13.9"
+robolectric = "4.12.2"
+rtmpdroid = "1.2.1"
+rules = "1.6.1"
+srtdroid = "1.8.0"
+
+[libraries]
+android-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+android-material = { module = "com.google.android.material:material", version.ref = "material" }
+androidx-activity = { module = "androidx.activity:activity", version.ref = "androidxActivity" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidxAppcompat" }
+androidx-camera-viewfinder = { module = "androidx.camera:camera-viewfinder", version.ref = "androidxCamera" }
+androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidxConstraintlayout" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
+androidx-databinding-common = { module = "androidx.databinding:databinding-common", version.ref = "androidxDatabinding" }
+androidx-junit = { module = "androidx.test.ext:junit", version.ref = "androidxJunit" }
+androidx-lifecycle-extensions = { module = "androidx.lifecycle:lifecycle-extensions", version.ref = "androidxLifecycleExtensions" }
+androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime", version.ref = "androidxLifecycle" }
+androidx-lifecycle-service = { module = "androidx.lifecycle:lifecycle-service", version.ref = "androidxLifecycle" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "androidxLifecycle" }
+androidx-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "androidxNavigation" }
+androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "androidxNavigation" }
+androidx-preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "androidxPreference" }
+androidx-rules = { module = "androidx.test:rules", version.ref = "rules" }
+androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidxEspresso" }
+junit = { module = "junit:junit", version.ref = "junit" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+rtmpdroid = { module = "video.api:rtmpdroid", version.ref = "rtmpdroid" }
+srtdroid-ktx = { module = "io.github.thibaultbee.srtdroid:srtdroid-ktx", version.ref = "srtdroid" }
+
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+
+
