@@ -69,7 +69,7 @@ class DemoScreenRecorderService : DefaultScreenRecorderService(
         )
     }
 
-    override fun onConnectionSuccessNotification(): Notification {
+    override fun onOpenNotification(): Notification {
         val intent =
             Intent(this, DemoScreenRecorderService::class.java).setAction(Actions.STOP.value)
         val stopIntent =
