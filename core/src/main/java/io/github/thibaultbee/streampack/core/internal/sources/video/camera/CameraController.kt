@@ -222,7 +222,6 @@ class CameraController(
         require(captureRequest != null) { "capture request must not be null" }
 
         captureRequest!!.addTarget(target)
-
         updateRepeatingSession()
     }
 

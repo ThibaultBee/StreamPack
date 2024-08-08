@@ -5,7 +5,6 @@ import android.net.Uri
 import io.github.thibaultbee.streampack.core.internal.endpoints.MediaContainerType
 import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
 
-
 /**
  * Creates a media descriptor from an [Uri].
  *
