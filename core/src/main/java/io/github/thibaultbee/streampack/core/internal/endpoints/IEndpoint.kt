@@ -24,7 +24,6 @@ import io.github.thibaultbee.streampack.core.internal.interfaces.SuspendCloseabl
 import io.github.thibaultbee.streampack.core.internal.interfaces.SuspendStreamable
 import kotlinx.coroutines.flow.StateFlow
 
-
 interface IEndpoint : IPublicEndpoint, SuspendStreamable,
     SuspendCloseable, Releaseable {
     /**

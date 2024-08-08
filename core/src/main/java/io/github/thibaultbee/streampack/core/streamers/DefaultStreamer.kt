@@ -52,7 +52,6 @@ import kotlinx.coroutines.withContext
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 
-
 /**
  * Base class of all streamers.
  *
@@ -450,10 +449,6 @@ open class DefaultStreamer(
      * @see [startStream]
      */
     override suspend fun stopStream() = withContext(dispatcher) {
-        if (!isStreaming.value) {
-            Logger.w(TAG, "Stream is not running")
-            return@withContext
-        }
         stopStreamInternal()
     }
 
