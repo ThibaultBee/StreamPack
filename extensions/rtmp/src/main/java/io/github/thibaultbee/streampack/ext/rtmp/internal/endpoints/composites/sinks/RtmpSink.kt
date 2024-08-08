@@ -70,16 +70,16 @@ class RtmpSink(
     override suspend fun write(packet: Packet) =
         withContext(dispatcher) {
             if (isOnError) {
-                return@withContext
+                return@withContext -1
             }
 
             if (!(isOpened.value)) {
                 Logger.w(TAG, "Socket is not connected, dropping packet")
-                return@withContext
+                return@withContext -1
             }
 
             try {
-                socket.write(packet.buffer)
+                return@withContext socket.write(packet.buffer)
             } catch (e: Exception) {
                 close()
                 isOnError = true
