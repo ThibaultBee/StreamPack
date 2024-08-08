@@ -50,14 +50,14 @@ open class DefaultCameraStreamer(
     internalAudioSource = if (enableMicrophone) MicrophoneSource() else null,
     internalEndpoint = internalEndpoint
 ), ICameraStreamer {
-    private val internalCameraSource = internalVideoSource as CameraSource
+    private val cameraSource = internalVideoSource as CameraSource
 
     /**
      * Gets the camera source.
      * It allows to configure camera settings and to set the camera id.
      */
     override val videoSource: IPublicCameraSource
-        get() = internalCameraSource
+        get() = cameraSource
 
     /**
      * Get/Set current camera id.
@@ -120,9 +120,9 @@ open class DefaultCameraStreamer(
         require(videoConfig != null) { "Video has not been configured!" }
         runBlocking {
             try {
-                internalCameraSource.previewSurface = previewSurface
-                internalCameraSource.encoderSurface = codecSurface?.input
-                internalCameraSource.startPreview(cameraId)
+                cameraSource.previewSurface = previewSurface
+                cameraSource.encoderSurface = codecSurface?.input
+                cameraSource.startPreview(cameraId)
             } catch (e: Exception) {
                 stopPreview()
                 throw StreamPackError(e)
@@ -137,10 +137,7 @@ open class DefaultCameraStreamer(
      * @see [startPreview]
      */
     override fun stopPreview() {
-        runBlocking {
-            stopStream()
-        }
-        internalCameraSource.stopPreview()
+        cameraSource.stopPreview()
     }
 
     /**
