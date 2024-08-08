@@ -92,12 +92,10 @@ class PreviewView @JvmOverloads constructor(
          */
         set(value) {
             stopPreviewInternal()
-            value?.let {
-                lifecycleScope?.launch {
-                    startPreviewInternal(it, it.camera, size)
-                }
-            }
             field = value
+            value?.let {
+                startPreviewIfReady(it, size, false)
+            }
         }
 
     /**
@@ -311,6 +309,7 @@ class PreviewView @JvmOverloads constructor(
                     listener?.onPreviewStarted()
                 } else {
                     Logger.w(TAG, "Invalid surface")
+                    listener?.onPreviewFailed(IllegalStateException("Invalid surface"))
                 }
             }
         } catch (e: CancellationException) {
