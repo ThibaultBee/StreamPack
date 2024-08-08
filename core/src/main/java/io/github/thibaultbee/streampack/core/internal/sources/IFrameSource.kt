@@ -28,5 +28,5 @@ interface IFrameSource<T> : Streamable, Configurable<T>, Releaseable {
      * @param buffer buffer where to write data. Must be set as buffer of returned Frame
      * @return frame with correct infos (at least buffer, mime type and pts)
      */
-    fun getFrame(buffer: ByteBuffer): io.github.thibaultbee.streampack.core.internal.data.Frame
+    fun getFrame(buffer: ByteBuffer): Frame
 }
