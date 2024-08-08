@@ -18,7 +18,7 @@ android {
 dependencies {
     implementation(project(":streampack-core"))
 
-    implementation(libs.srtdroid.ktx)
+    api(libs.srtdroid.ktx)
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.core.ktx)
