@@ -173,6 +173,9 @@ class CodecSurface(
     }
 
     fun stopStream() {
+        if (!isRunning) {
+            return
+        }
         executor.submit {
             synchronized(this) {
                 isRunning = false
