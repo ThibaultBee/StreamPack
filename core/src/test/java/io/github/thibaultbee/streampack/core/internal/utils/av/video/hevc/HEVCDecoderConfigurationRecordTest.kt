@@ -92,7 +92,7 @@ class HEVCDecoderConfigurationRecordTest {
             )
         )
         val expectedBuffer =
-            ResourcesUtils.readByteBuffer("test-samples/video/HEVCDecoderConfigurationRecord")
+            ResourcesUtils.readByteBuffer("test-samples/utils/av/video/HEVCDecoderConfigurationRecord")
         val hevcDecoderConfigurationRecord =
             HEVCDecoderConfigurationRecord(
                 configurationVersion = 1,
