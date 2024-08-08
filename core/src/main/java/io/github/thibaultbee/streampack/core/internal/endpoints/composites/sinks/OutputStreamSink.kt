@@ -18,14 +18,18 @@ package io.github.thibaultbee.streampack.core.internal.endpoints.composites.sink
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.toByteArray
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.withContext
 import java.io.OutputStream
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Sink to write data to an [OutputStream]
  */
-abstract class OutputStreamSink : ISink {
+abstract class OutputStreamSink(private val coroutineContext: CoroutineContext = Dispatchers.IO) :
+    ISink {
     protected var outputStream: OutputStream? = null
 
     private val _isOpened = MutableStateFlow(false)
@@ -49,19 +53,29 @@ abstract class OutputStreamSink : ISink {
         require(outputStream != null) { "Open the sink before starting the stream" }
     }
 
-    override suspend fun write(packet: io.github.thibaultbee.streampack.core.internal.data.Packet) {
+    override suspend fun write(packet: Packet) : Int{
+        val outputStream = outputStream
         require(outputStream != null) { "Open the sink before writing" }
-        outputStream?.write(packet.buffer.toByteArray())
+
+        return withContext(coroutineContext) {
+            val byteWritten = packet.buffer.remaining()
+            outputStream.write(packet.buffer.toByteArray())
+            byteWritten
+        }
     }
 
     override suspend fun stopStream() {
-        outputStream?.flush()
+        withContext(coroutineContext) {
+            outputStream?.flush()
+        }
     }
 
     override suspend fun close() {
         stopStream()
         try {
-            outputStream?.close()
+            withContext(coroutineContext) {
+                outputStream?.close()
+            }
         } catch (e: Exception) {
             // Ignore
         } finally {

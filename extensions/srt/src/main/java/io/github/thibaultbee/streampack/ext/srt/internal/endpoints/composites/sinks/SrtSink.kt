@@ -89,8 +89,8 @@ class SrtSink : ISink {
         }
     }
 
-    override suspend fun write(packet: Packet) {
-        if (isOnError) return
+    override suspend fun write(packet: Packet): Int {
+        if (isOnError) return -1
 
         packet as SrtPacket
         val boundary = when {
@@ -111,7 +111,7 @@ class SrtSink : ISink {
             }
 
         try {
-            socket.send(packet.buffer, msgCtrl)
+            return socket.send(packet.buffer, msgCtrl)
         } catch (e: Exception) {
             _isOpened.emit(false)
             throw e
