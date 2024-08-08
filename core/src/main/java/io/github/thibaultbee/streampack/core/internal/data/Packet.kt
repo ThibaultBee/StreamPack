@@ -35,10 +35,10 @@ open class Packet(
     /**
      * Packet data type
      */
-    var type: io.github.thibaultbee.streampack.core.internal.data.PacketType = io.github.thibaultbee.streampack.core.internal.data.PacketType.UNKNOWN,
+    var type: PacketType = PacketType.UNKNOWN,
 ) {
-    val isVideo = type == io.github.thibaultbee.streampack.core.internal.data.PacketType.VIDEO
-    val isAudio = type == io.github.thibaultbee.streampack.core.internal.data.PacketType.AUDIO
+    val isVideo = type == PacketType.VIDEO
+    val isAudio = type == PacketType.AUDIO
 }
 
 enum class PacketType {
