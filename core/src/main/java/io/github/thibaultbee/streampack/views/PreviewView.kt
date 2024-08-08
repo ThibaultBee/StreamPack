@@ -93,9 +93,7 @@ class PreviewView @JvmOverloads constructor(
         set(value) {
             stopPreviewInternal()
             value?.let {
-                lifecycleScope?.launch {
-                    startPreviewInternal(it, it.camera, size)
-                }
+                startPreviewIfReady(it, size, true)
             }
             field = value
         }
@@ -269,7 +267,7 @@ class PreviewView @JvmOverloads constructor(
 
             lifecycleScope?.launch {
                 startPreviewInternal(streamer, streamer.camera, targetViewSize)
-            } ?: throw IllegalStateException("LifecycleScope is not available")
+            } ?: Logger.w(TAG, "Trying to start preview but lifecycle scope is not available")
         } catch (e: Exception) {
             if (shouldFailSilently) {
                 Logger.w(TAG, e.toString(), e)
