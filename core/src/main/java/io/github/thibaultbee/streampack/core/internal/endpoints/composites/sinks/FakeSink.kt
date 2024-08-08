@@ -43,8 +43,9 @@ class FakeSink : ISink {
         Logger.d(TAG, "configure called")
     }
 
-    override suspend fun write(packet: Packet) {
+    override suspend fun write(packet: Packet): Int {
         Logger.d(TAG, "write called (packet size = ${packet.buffer.remaining()})")
+        return packet.buffer.remaining()
     }
 
     override suspend fun startStream() {

@@ -20,12 +20,14 @@ import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescripto
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.toByteArray
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.withContext
 import java.io.RandomAccessFile
+import kotlin.coroutines.CoroutineContext
 
-
-class FileSink : ISink {
+class FileSink(private val coroutineContext: CoroutineContext = Dispatchers.IO) : ISink {
     private var file: RandomAccessFile? = null
 
     private val _isOpened = MutableStateFlow(false)
@@ -48,10 +50,15 @@ class FileSink : ISink {
         require(file != null) { "Set a file before trying to write it" }
     }
 
-    override suspend fun write(packet: io.github.thibaultbee.streampack.core.internal.data.Packet) {
+    override suspend fun write(packet: Packet): Int {
         val file = file
         require(file != null) { "Set a file before trying to write it" }
-        file.write(packet.buffer.toByteArray())
+        
+        return withContext(coroutineContext) {
+            val byteWritten = packet.buffer.remaining()
+            file.write(packet.buffer.toByteArray())
+            byteWritten
+        }
     }
 
     override suspend fun stopStream() {
@@ -60,7 +67,9 @@ class FileSink : ISink {
 
     override suspend fun close() {
         try {
-            file?.close()
+            withContext(coroutineContext) {
+                file?.close()
+            }
         } catch (e: Exception) {
             // Ignore
         } finally {
@@ -70,7 +79,6 @@ class FileSink : ISink {
     }
 
     companion object {
-
         private fun openLocalFile(uri: Uri): RandomAccessFile {
             return RandomAccessFile(uri.path, "rw")
         }

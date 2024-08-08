@@ -33,8 +33,10 @@ interface ISink : IPublicSink, Configurable<EndpointConfiguration>, SuspendStrea
     /**
      * Writes a buffer to the [ISink].
      * @param packet buffer to write
+     *
+     * @return the number of bytes written
      */
-    suspend fun write(packet: Packet)
+    suspend fun write(packet: Packet): Int
 }
 
 interface IPublicSink {
