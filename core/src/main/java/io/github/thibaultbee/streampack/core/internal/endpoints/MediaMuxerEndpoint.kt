@@ -29,6 +29,8 @@ import io.github.thibaultbee.streampack.core.internal.data.Frame
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.security.InvalidParameterException
 
 /**
@@ -42,6 +44,7 @@ class MediaMuxerEndpoint(
     private var fileDescriptor: ParcelFileDescriptor? = null
 
     private var isStarted = false
+    private val mutex = Mutex()
 
     /**
      * Map streamId to MediaMuxer trackId
@@ -117,19 +120,21 @@ class MediaMuxerEndpoint(
         _isOpened.emit(true)
     }
 
-    override suspend fun write(frame: io.github.thibaultbee.streampack.core.internal.data.Frame, streamPid: Int) {
-        mediaMuxer?.let {
+    override suspend fun write(
+        frame: Frame,
+        streamPid: Int
+    ) {
+        val mediaMuxer = mediaMuxer
+        require(mediaMuxer != null) { "MediaMuxer is not initialized" }
+
+        return mutex.withLock {
             if (streamIdToTrackId.size < numOfStreams) {
-                addTrack(it, streamPid, frame.format)
+                addTrack(mediaMuxer, streamPid, frame.format)
+                if (streamIdToTrackId.size == numOfStreams) {
+                    startMediaMuxer(mediaMuxer)
+                }
             }
             if (streamIdToTrackId.size == numOfStreams) {
-                synchronized(this) {
-                    if (!isStarted) {
-                        it.start()
-                        isStarted = true
-                    }
-                }
-
                 val trackId = streamIdToTrackId[streamPid]
                     ?: throw IllegalStateException("Could not find trackId for streamPid $streamPid: ${frame.format}")
                 val info = BufferInfo().apply {
@@ -140,17 +145,8 @@ class MediaMuxerEndpoint(
                         if (frame.isKeyFrame) BUFFER_FLAG_KEY_FRAME else 0
                     )
                 }
-                return it.writeSampleData(trackId, frame.buffer, info)
-            } else {
-                return
+                mediaMuxer.writeSampleData(trackId, frame.buffer, info)
             }
-        }
-        throw IllegalStateException("MediaMuxer is not initialized")
-    }
-
-    private fun addTrack(mediaMuxer: MediaMuxer, streamId: Int, format: MediaFormat) {
-        if (streamIdToTrackId[streamId] == null) {
-            streamIdToTrackId[streamId] = mediaMuxer.addTrack(format)
         }
     }
 
@@ -177,37 +173,43 @@ class MediaMuxerEndpoint(
     }
 
     override suspend fun startStream() {
+        val mediaMuxer = mediaMuxer
         require(mediaMuxer != null) { "MediaMuxer is not initialized" }
         /**
          * [MediaMuxer.start] is called when we called addTrack for each stream.
          */
+        if (streamIdToTrackId.size == numOfStreams) {
+            mutex.withLock {
+                startMediaMuxer(mediaMuxer)
+            }
+        }
     }
 
     override suspend fun stopStream() {
         try {
             mediaMuxer?.stop()
         } catch (_: IllegalStateException) {
-        }
-
-        try {
-            fileDescriptor?.close()
-        } catch (_: Exception) {
         } finally {
-            fileDescriptor = null
+            isStarted = false
         }
-
-        numOfStreams = 0
-        streamIdToTrackId.clear()
-        isStarted = false
     }
 
     override suspend fun close() {
         stopStream()
         try {
+            try {
+                fileDescriptor?.close()
+            } catch (_: Exception) {
+            } finally {
+                fileDescriptor = null
+            }
+
             mediaMuxer?.release()
         } catch (e: Exception) {
             // MediaMuxer is already released
         } finally {
+            numOfStreams = 0
+            streamIdToTrackId.clear()
             mediaMuxer = null
             _isOpened.emit(false)
         }
@@ -217,6 +219,19 @@ class MediaMuxerEndpoint(
         runBlocking {
             stopStream()
             close()
+        }
+    }
+
+    private fun addTrack(mediaMuxer: MediaMuxer, streamId: Int, format: MediaFormat) {
+        if (streamIdToTrackId[streamId] == null) {
+            streamIdToTrackId[streamId] = mediaMuxer.addTrack(format)
+        }
+    }
+
+    private fun startMediaMuxer(mediaMuxer: MediaMuxer) {
+        if (!isStarted) {
+            mediaMuxer.start()
+            isStarted = true
         }
     }
 
@@ -330,7 +345,8 @@ class MediaMuxerEndpoint(
         }
 
     companion object {
-        private fun getInfo(descriptor: MediaDescriptor) = getInfo(descriptor.type.containerType)
+        private fun getInfo(descriptor: MediaDescriptor) =
+            getInfo(descriptor.type.containerType)
 
         private fun getInfo(type: MediaDescriptor.Type) = getInfo(type.containerType)
 
