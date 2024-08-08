@@ -40,7 +40,7 @@ class AVCDecoderConfigurationRecordTest {
         )
         val pps = ByteBuffer.wrap(byteArrayOf(0x68, 0xCE.toByte(), 0x09, 0xC8.toByte()))
         val expectedBuffer =
-            ResourcesUtils.readByteBuffer("test-samples/video/AVCDecoderConfigurationRecord")
+            ResourcesUtils.readByteBuffer("test-samples/utils/av/video/AVCDecoderConfigurationRecord")
         val avcDecoderConfigurationRecord =
             AVCDecoderConfigurationRecord(
                 profileIdc = 66,
@@ -98,7 +98,7 @@ class AVCDecoderConfigurationRecordTest {
             )
         )
         val expectedBuffer =
-            ResourcesUtils.readByteBuffer("test-samples/video/AVCDecoderConfigurationRecord")
+            ResourcesUtils.readByteBuffer("test-samples/utils/av/video/AVCDecoderConfigurationRecord")
         val avcDecoderConfigurationRecord =
             AVCDecoderConfigurationRecord.fromParameterSets(sps, pps)
 
@@ -146,7 +146,7 @@ class AVCDecoderConfigurationRecordTest {
             )
         )
         val expectedBuffer =
-            ResourcesUtils.readByteBuffer("test-samples/video/AVCDecoderConfigurationRecord")
+            ResourcesUtils.readByteBuffer("test-samples/utils/av/video/AVCDecoderConfigurationRecord")
         val avcDecoderConfigurationRecord =
             AVCDecoderConfigurationRecord.fromParameterSets(sps, pps)
 
