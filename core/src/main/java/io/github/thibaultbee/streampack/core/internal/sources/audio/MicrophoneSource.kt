@@ -39,6 +39,9 @@ class MicrophoneSource : IAudioSource, IFrameSource<AudioConfig> {
     private var mutedByteArray: ByteArray? = null
     override var isMuted: Boolean = false
 
+    private val isRunning: Boolean
+        get() = audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING
+
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun configure(config: AudioConfig) {
         val bufferSize = AudioRecord.getMinBufferSize(
@@ -74,19 +77,11 @@ class MicrophoneSource : IAudioSource, IFrameSource<AudioConfig> {
     }
 
     override fun startStream() {
-        audioRecord?.let {
-            it.startRecording()
-
-            if (!isRunning()) {
-                throw IllegalStateException("AudioSource: failed to start recording")
-            }
-        } ?: throw IllegalStateException("AudioSource: run: : No audioRecorder")
+        audioRecord?.startRecording() ?: throw IllegalStateException("AudioRecorder not initialized")
     }
 
-    private fun isRunning() = audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING
-
     override fun stopStream() {
-        if (!isRunning()) {
+        if (!isRunning) {
             Logger.d(TAG, "Not running")
             return
         }
@@ -152,7 +147,7 @@ class MicrophoneSource : IAudioSource, IFrameSource<AudioConfig> {
             } else {
                 throw IllegalArgumentException(audioRecordErrorToString(length))
             }
-        } ?: throw IllegalStateException("AudioSource: getFrame: No audioRecorder")
+        } ?: throw IllegalStateException("AudioRecorder not initialized")
     }
 
     private fun audioRecordErrorToString(audioRecordError: Int) = when (audioRecordError) {
