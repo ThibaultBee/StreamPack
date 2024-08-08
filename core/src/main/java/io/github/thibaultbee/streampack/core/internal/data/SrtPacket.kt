@@ -38,4 +38,4 @@ class SrtPacket(
      * Frame timestamp in µs.
      */
     ts: Long, // in µs
-) : io.github.thibaultbee.streampack.core.internal.data.Packet(buffer, ts)
+) : Packet(buffer, ts)

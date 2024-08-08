@@ -26,7 +26,9 @@ class VideoEncoderConfig(
     videoConfig: VideoConfig,
     val useSurfaceMode: Boolean = true,
     private val orientationProvider: ISourceOrientationProvider? = null
-) : io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.EncoderConfig<VideoConfig>(videoConfig) {
+) : EncoderConfig<VideoConfig>(
+    videoConfig
+) {
     override val isVideo = true
     override fun buildFormat(withProfileLevel: Boolean): MediaFormat {
         val format = config.getFormat(withProfileLevel)
@@ -62,7 +64,9 @@ class VideoEncoderConfig(
 }
 
 class AudioEncoderConfig(audioConfig: AudioConfig) :
-    io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.EncoderConfig<AudioConfig>(audioConfig) {
+    EncoderConfig<AudioConfig>(
+        audioConfig
+    ) {
     override val isVideo = false
 
     override fun buildFormat(withProfileLevel: Boolean) =
