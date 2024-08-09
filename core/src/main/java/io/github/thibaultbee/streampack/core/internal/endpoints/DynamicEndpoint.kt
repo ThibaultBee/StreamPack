@@ -27,12 +27,12 @@ import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ContentSink
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.FileSink
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import io.github.thibaultbee.streampack.core.internal.utils.DerivedStateFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.update
 
 /**
  * Default implementation of [IEndpoint].
@@ -42,10 +42,12 @@ import kotlinx.coroutines.launch
 class DynamicEndpoint(
     private val context: Context
 ) : IEndpoint {
-    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
-
     // Current endpoint
-    private var _endpoint: IEndpoint? = null
+    private var _endpointFlow: MutableStateFlow<IEndpoint?> = MutableStateFlow(null)
+    private val endpointFlow: StateFlow<IEndpoint?> = _endpointFlow
+
+    private val _endpoint: IEndpoint?
+        get() = endpointFlow.value
 
     private val endpoint: IEndpoint
         get() {
@@ -63,8 +65,11 @@ class DynamicEndpoint(
     private var srtEndpoint: IEndpoint? = null
     private var rtmpEndpoint: IEndpoint? = null
 
-    private var _isOpened = MutableStateFlow(false)
-    override val isOpened: StateFlow<Boolean> = _isOpened
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override val isOpened: StateFlow<Boolean> = DerivedStateFlow(
+        getValue = { _endpoint?.isOpened?.value ?: false },
+        flow = endpointFlow.flatMapLatest { it?.isOpened ?: MutableStateFlow(false) }
+    )
 
     /**
      * Only available when the endpoint is opened.
@@ -78,13 +83,12 @@ class DynamicEndpoint(
         get() = endpoint.metrics
 
     override suspend fun open(descriptor: MediaDescriptor) {
-        require(!_isOpened.value) { "Endpoint is already opened" }
+        require(!isOpened.value) { "Endpoint is already opened" }
 
-        _endpoint = getEndpointAndConfig(descriptor).apply {
-            coroutineScope.launch {
-                this@DynamicEndpoint._isOpened.emitAll(this@apply.isOpened)
+        _endpointFlow.update {
+            getEndpointAndConfig(descriptor).apply {
+                open(descriptor)
             }
-            open(descriptor)
         }
     }
 
@@ -105,7 +109,9 @@ class DynamicEndpoint(
         try {
             _endpoint?.close()
         } finally {
-            _endpoint = null
+            _endpointFlow.update {
+                null
+            }
         }
     }
 
