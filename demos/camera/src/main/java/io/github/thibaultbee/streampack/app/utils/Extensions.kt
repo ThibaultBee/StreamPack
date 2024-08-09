@@ -45,7 +45,7 @@ fun Context.createVideoContentUri(name: String): Uri {
         ?: throw Exception("Unable to create video file: $name")
 }
 
-fun Context.createAudiContentUri(name: String): Uri {
+fun Context.createAudioContentUri(name: String): Uri {
     val audioDetails = ContentValues().apply {
         put(MediaStore.Audio.Media.TITLE, name)
         put(
