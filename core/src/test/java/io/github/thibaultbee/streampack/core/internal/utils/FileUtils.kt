@@ -1,5 +1,6 @@
 package io.github.thibaultbee.streampack.core.internal.utils
 
+import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 
 object FileUtils {
@@ -7,5 +8,9 @@ object FileUtils {
         val tmpFile = File.createTempFile("test", suffix)
         tmpFile.deleteOnExit()
         return tmpFile
+    }
+
+    fun createCacheFile(name: String): File {
+        return File(InstrumentationRegistry.getInstrumentation().context.cacheDir, name)
     }
 }
