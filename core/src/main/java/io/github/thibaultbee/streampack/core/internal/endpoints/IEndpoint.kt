@@ -23,6 +23,7 @@ import io.github.thibaultbee.streampack.core.internal.interfaces.Releaseable
 import io.github.thibaultbee.streampack.core.internal.interfaces.SuspendCloseable
 import io.github.thibaultbee.streampack.core.internal.interfaces.SuspendStreamable
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.runBlocking
 
 interface IEndpoint : IPublicEndpoint, SuspendStreamable,
     SuspendCloseable, Releaseable {
@@ -59,6 +60,16 @@ interface IEndpoint : IPublicEndpoint, SuspendStreamable,
      * @return the stream id
      */
     fun addStream(streamConfig: Config): Int
+
+    /**
+     * Releases an [IEndpoint].
+     */
+    override fun release() {
+        runBlocking {
+            stopStream()
+            close()
+        }
+    }
 }
 
 interface IPublicEndpoint {

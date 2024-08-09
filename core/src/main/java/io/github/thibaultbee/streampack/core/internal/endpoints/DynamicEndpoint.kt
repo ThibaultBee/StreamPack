@@ -109,10 +109,6 @@ class DynamicEndpoint(
         }
     }
 
-    override fun release() {
-        _endpoint?.release()
-    }
-
     private fun getEndpointAndConfig(mediaDescriptor: MediaDescriptor): IEndpoint {
         val endpoint = getEndpoint(mediaDescriptor.type)
 

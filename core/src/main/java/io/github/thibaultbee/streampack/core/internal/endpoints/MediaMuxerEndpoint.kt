@@ -215,13 +215,6 @@ class MediaMuxerEndpoint(
         }
     }
 
-    override fun release() {
-        runBlocking {
-            stopStream()
-            close()
-        }
-    }
-
     private fun addTrack(mediaMuxer: MediaMuxer, streamId: Int, format: MediaFormat) {
         if (streamIdToTrackId[streamId] == null) {
             streamIdToTrackId[streamId] = mediaMuxer.addTrack(format)
