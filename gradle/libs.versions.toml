@@ -12,6 +12,7 @@ androidxLifecycle = "2.8.3"
 androidxLifecycleExtensions = "2.2.0"
 androidxNavigation = "2.7.7"
 androidxPreference = "1.2.1"
+androidxTest = "1.6.1"
 dokka = "1.9.20"
 junit = "4.13.2"
 kotlin = "2.0.0"
@@ -20,8 +21,8 @@ material = "1.12.0"
 mockk = "1.13.9"
 robolectric = "4.12.2"
 rtmpdroid = "1.2.1"
-rules = "1.6.1"
 srtdroid = "1.8.0"
+junitKtx = "1.2.1"
 
 [libraries]
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -40,8 +41,10 @@ androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifec
 androidx-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "androidxNavigation" }
 androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "androidxNavigation" }
 androidx-preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "androidxPreference" }
-androidx-rules = { module = "androidx.test:rules", version.ref = "rules" }
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidxEspresso" }
+androidx-test-core-ktx = { group = "androidx.test", name = "core-ktx", version.ref = "androidxTest" }
+androidx-test-rules = { module = "androidx.test:rules", version.ref = "androidxTest" }
+androidx-test-ext-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junitKtx" }
 junit = { module = "junit:junit", version.ref = "junit" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
@@ -49,7 +52,6 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 rtmpdroid = { module = "video.api:rtmpdroid", version.ref = "rtmpdroid" }
 srtdroid-ktx = { module = "io.github.thibaultbee.srtdroid:srtdroid-ktx", version.ref = "srtdroid" }
-
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

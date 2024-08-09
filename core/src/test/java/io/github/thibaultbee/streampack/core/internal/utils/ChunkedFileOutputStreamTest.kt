@@ -1,6 +1,5 @@
 package io.github.thibaultbee.streampack.core.internal.utils
 
-import io.github.thibaultbee.streampack.core.internal.utils.Utils
 import org.junit.After
 import org.junit.Assert
 import org.junit.Rule

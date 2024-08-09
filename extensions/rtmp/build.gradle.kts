@@ -25,6 +25,6 @@ dependencies {
 
     testImplementation(libs.junit)
 
-    androidTestImplementation(libs.androidx.rules)
+    androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.androidx.junit)
 }

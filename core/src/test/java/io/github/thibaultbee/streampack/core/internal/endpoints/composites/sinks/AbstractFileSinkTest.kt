@@ -171,4 +171,24 @@ abstract class AbstractFileSinkTest(val sink: ISink) {
         assertArrayEquals(randomArray1, tmpFile1.readBytes())
         assertEquals(randomArray1.size, byteWritten)
     }
+
+    @Test
+    fun `multiple opens`() = runTest {
+        val tmpFile = FileUtils.createTestFile(".mp4")
+        sink.open(
+            UriMediaDescriptor(
+                tmpFile.toUri()
+            )
+        )
+
+        try {
+            sink.open(
+                UriMediaDescriptor(
+                    tmpFile.toUri()
+                )
+            )
+            fail("Sink must not be openable twice")
+        } catch (_: Exception) {
+        }
+    }
 }
