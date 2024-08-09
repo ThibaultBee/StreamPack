@@ -165,7 +165,7 @@ class StreamerManager(
 
             EndpointType.OGG_FILE -> UriMediaDescriptor(
                 context,
-                context.createAudiContentUri(
+                context.createAudioContentUri(
                     configuration.endpoint.file.filename.appendIfNotEndsWith(
                         FileExtension.OGG.extension
                     )
