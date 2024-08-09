@@ -102,13 +102,6 @@ open class CompositeEndpoint(final override val muxer: IMuxer, override val sink
         configurations.clear()
     }
 
-    override fun release() {
-        runBlocking {
-            stopStream()
-            close()
-        }
-    }
-
     class EndpointInfo(
         val muxerInfo: IPublicMuxer.IMuxerInfo
     ) : IPublicEndpoint.IEndpointInfo {
