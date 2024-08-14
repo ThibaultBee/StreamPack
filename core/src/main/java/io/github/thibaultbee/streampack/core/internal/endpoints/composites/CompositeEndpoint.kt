@@ -39,7 +39,7 @@ open class CompositeEndpoint(final override val muxer: IMuxer, override val sink
      */
     private val configurations = mutableListOf<Config>()
 
-    override val info = EndpointInfo(muxer.info)
+    override val info by lazy { EndpointInfo(muxer.info) }
     override fun getInfo(type: MediaDescriptor.Type) = info
 
     override val metrics: Any
@@ -105,14 +105,18 @@ open class CompositeEndpoint(final override val muxer: IMuxer, override val sink
     class EndpointInfo(
         val muxerInfo: IPublicMuxer.IMuxerInfo
     ) : IPublicEndpoint.IEndpointInfo {
-        override val audio = object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
-            override val supportedEncoders = muxerInfo.audio.supportedEncoders
-            override val supportedSampleRates = muxerInfo.audio.supportedSampleRates
-            override val supportedByteFormats = muxerInfo.audio.supportedByteFormats
+        override val audio by lazy {
+            object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
+                override val supportedEncoders by lazy { muxerInfo.audio.supportedEncoders }
+                override val supportedSampleRates by lazy { muxerInfo.audio.supportedSampleRates }
+                override val supportedByteFormats by lazy { muxerInfo.audio.supportedByteFormats }
+            }
         }
 
-        override val video = object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
-            override val supportedEncoders = muxerInfo.video.supportedEncoders
+        override val video by lazy {
+            object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
+                override val supportedEncoders by lazy { muxerInfo.video.supportedEncoders }
+            }
         }
     }
 }

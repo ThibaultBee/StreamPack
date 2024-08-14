@@ -40,7 +40,7 @@ class MP4Muxer(
     private val timescale: Int = DEFAULT_TIMESCALE,
     private val segmenterFactory: MP4SegmenterFactory = DefaultMP4SegmenterFactory()
 ) : IMuxer {
-    override val info = MP4MuxerInfo
+    override val info by lazy { MP4MuxerInfo }
 
     private val tracks = mutableListOf<Track>()
     private val hasAudio: Boolean

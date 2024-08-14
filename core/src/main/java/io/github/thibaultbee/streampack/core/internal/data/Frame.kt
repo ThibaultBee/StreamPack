@@ -54,7 +54,7 @@ data class Frame(
     /**
      * Frame mime type
      */
-    val mimeType = format.getString(MediaFormat.KEY_MIME)!!
+    val mimeType by lazy { format.getString(MediaFormat.KEY_MIME)!! }
 
     /**
      * [Boolean.true] if frame is a video frame.

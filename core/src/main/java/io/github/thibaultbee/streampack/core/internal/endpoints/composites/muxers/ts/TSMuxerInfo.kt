@@ -20,8 +20,8 @@ import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxer
 
 object TSMuxerInfo :
     IPublicMuxer.IMuxerInfo {
-    override val audio = AudioTSMuxerInfo
-    override val video = VideoTSMuxerInfo
+    override val audio by lazy { AudioTSMuxerInfo }
+    override val video by lazy { VideoTSMuxerInfo }
 }
 
 object AudioTSMuxerInfo :
@@ -29,8 +29,9 @@ object AudioTSMuxerInfo :
     /**
      * Get TS Muxer supported audio encoders list
      */
-    override val supportedEncoders =
+    override val supportedEncoders by lazy {
         listOf(MediaFormat.MIMETYPE_AUDIO_AAC, MediaFormat.MIMETYPE_AUDIO_OPUS)
+    }
 
     override val supportedSampleRates: List<Int>? = null
 
@@ -42,9 +43,10 @@ object VideoTSMuxerInfo :
     /**
      * Get TS Muxer supported video encoders list
      */
-    override val supportedEncoders =
+    override val supportedEncoders by lazy {
         listOf(
             MediaFormat.MIMETYPE_VIDEO_AVC,
             MediaFormat.MIMETYPE_VIDEO_HEVC
         )
+    }
 }

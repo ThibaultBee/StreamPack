@@ -25,7 +25,7 @@ import io.github.thibaultbee.streampack.core.internal.utils.extensions.isVideo
 import java.security.InvalidParameterException
 
 object MediaCodecHelper {
-    private val codecList = MediaCodecList(MediaCodecList.REGULAR_CODECS)
+    private val codecList by lazy { MediaCodecList(MediaCodecList.REGULAR_CODECS) }
 
     /**
      * On Build.VERSION_CODES.LOLLIPOP, format must not contain a frame rate.
@@ -82,17 +82,12 @@ object MediaCodecHelper {
      * @param filter the filter a specific type of encoders
      * @return the list of supported encoder type
      */
-    private fun getEncodersType(filter: ((String) -> Boolean)): List<String> {
-        val encoders = mutableListOf<String>()
+    private fun getEncodersType(filter: ((String) -> Boolean)) =
         codecList.codecInfos
             .filter { it.isEncoder }
             .flatMap { it.supportedTypes.toList() }
             .filter { filter(it) }
             .distinct()
-            .forEach { encoders.add(it) }
-
-        return encoders
-    }
 
     /**
      * Get encoders name.
@@ -100,16 +95,12 @@ object MediaCodecHelper {
      * @param filter the filter a specific type of encoders
      * @return the list of encoders name
      */
-    private fun getEncodersName(filter: ((String) -> Boolean)): List<String> {
-        val encoders = mutableListOf<String>()
+    private fun getEncodersName(filter: ((String) -> Boolean)) =
         codecList.codecInfos
             .filter { it.isEncoder }
             .filter { it.supportedTypes.any { type -> filter(type) } }
             .distinct()
-            .forEach { encoders.add(it.name) }
-
-        return encoders
-    }
+            .map { it.name }
 
     /**
      * Get the encoders for a particular mime type
@@ -118,16 +109,8 @@ object MediaCodecHelper {
      * @return the encoder name list
      * @see getTypesForName
      */
-    fun getNamesForType(mimeType: String): List<String> {
-        val encoders = mutableListOf<String>()
-        codecList.codecInfos
-            .filter { it.isEncoder }
-            .filter { it.supportedTypes.any { type -> type == mimeType } }
-            .distinct()
-            .forEach { encoders.add(it.name) }
-
-        return encoders
-    }
+    fun getNamesForType(mimeType: String) =
+        getEncodersName { type -> type == mimeType }
 
     /**
      * Get the encoders for a particular mime type
@@ -217,7 +200,7 @@ object MediaCodecHelper {
     fun getProfileLevel(
         mimeType: String,
     ): List<MediaCodecInfo.CodecProfileLevel> =
-        getCodecCapabilities(mimeType).profileLevels.toList().toSet().toList()
+        getCodecCapabilities(mimeType).profileLevels.toSet().toList()
 
     /**
      * Get encoder supported profile level list for the specified encoder.
@@ -230,7 +213,7 @@ object MediaCodecHelper {
         mimeType: String,
         name: String
     ): List<MediaCodecInfo.CodecProfileLevel> =
-        getCodecCapabilities(mimeType, name).profileLevels.toList().toSet().toList()
+        getCodecCapabilities(mimeType, name).profileLevels.toSet().toList()
 
     /**
      * Get encoder supported profiles list for the default encoder.
@@ -353,12 +336,12 @@ object MediaCodecHelper {
         /**
          * Get supported video encoders list
          */
-        val supportedEncoders = getEncodersType { type -> type.isVideo }
+        val supportedEncoders by lazy { getEncodersType { type -> type.isVideo } }
 
         /**
          * Get the name of all video encoders
          */
-        val encodersName = getEncodersName { type -> type.isVideo }
+        val encodersName by lazy { getEncodersName { type -> type.isVideo } }
 
         /**
          * Get video encoder video capabilities for the default video encoder.
@@ -470,13 +453,13 @@ object MediaCodecHelper {
         /**
          * Get supported audio encoders list
          */
-        val supportedEncoders = getEncodersType { type -> type.isAudio }
+        val supportedEncoders by lazy { getEncodersType { type -> type.isAudio } }
 
 
         /**
          * Get the name of all audio encoders
          */
-        val encodersName = getEncodersName { type -> type.isAudio }
+        val encodersName by lazy { getEncodersName { type -> type.isAudio } }
 
         /**
          * Get encoder audio capabilities for the default audio encoder.

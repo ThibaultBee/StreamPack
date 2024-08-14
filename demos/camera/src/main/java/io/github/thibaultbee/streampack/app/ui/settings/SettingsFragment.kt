@@ -37,7 +37,7 @@ import io.github.thibaultbee.streampack.app.utils.StreamerInfoFactory
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.MediaCodecHelper
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
-import io.github.thibaultbee.streampack.core.utils.cameraList
+import io.github.thibaultbee.streampack.core.utils.cameras
 import io.github.thibaultbee.streampack.core.utils.defaultCameraId
 import io.github.thibaultbee.streampack.core.utils.isFrameRateSupported
 import java.io.IOException
@@ -237,7 +237,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
         videoFpsListPreference.setOnPreferenceChangeListener { _, newValue ->
             val fps = (newValue as String).toInt()
-            val unsupportedCameras = requireContext().cameraList.filter {
+            val unsupportedCameras = requireContext().cameras.filter {
                 !requireContext().isFrameRateSupported(it, fps)
             }
             if (unsupportedCameras.isNotEmpty()) {

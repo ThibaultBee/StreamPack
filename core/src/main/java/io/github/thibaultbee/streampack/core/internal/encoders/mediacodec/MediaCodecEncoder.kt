@@ -101,7 +101,7 @@ internal constructor(
         object : IEncoder.IListener {}
     private var listenerExecutor: Executor = Executors.newSingleThreadExecutor()
 
-    override val mimeType = format.getString(MediaFormat.KEY_MIME)!!
+    override val mimeType by lazy { format.getString(MediaFormat.KEY_MIME)!! }
 
     override val input =
         if (encoderConfig is VideoEncoderConfig) {
@@ -114,7 +114,7 @@ internal constructor(
             ByteBufferInput()
         }
 
-    override val info = EncoderInfo.build(mediaCodec.codecInfo, mimeType)
+    override val info by lazy { EncoderInfo.build(mediaCodec.codecInfo, mimeType) }
 
 
     override fun requestKeyFrame() {

@@ -27,7 +27,7 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.error.CameraError
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.utils.getCameraFpsList
+import io.github.thibaultbee.streampack.core.utils.getCameraFps
 import kotlinx.coroutines.*
 import java.security.InvalidParameterException
 import kotlin.coroutines.resume
@@ -51,7 +51,7 @@ class CameraController(
     }
 
     private fun getClosestFpsRange(cameraId: String, fps: Int): Range<Int> {
-        var fpsRangeList = context.getCameraFpsList(cameraId)
+        var fpsRangeList = context.getCameraFps(cameraId)
         Logger.i(TAG, "Supported FPS range list: $fpsRangeList")
 
         // Get range that contains FPS
