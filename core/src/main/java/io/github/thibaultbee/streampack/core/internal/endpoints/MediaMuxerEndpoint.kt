@@ -28,7 +28,6 @@ import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescripto
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.security.InvalidParameterException
@@ -229,25 +228,31 @@ class MediaMuxerEndpoint(
     }
 
     object Mp4EndpointInfo : IPublicEndpoint.IEndpointInfo {
-        override val audio = object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
-            override val supportedEncoders = listOf(
-                MediaFormat.MIMETYPE_AUDIO_AAC,
-                MediaFormat.MIMETYPE_AUDIO_AMR_NB,
-                MediaFormat.MIMETYPE_AUDIO_AMR_WB
-            )
-            override val supportedSampleRates = null
-            override val supportedByteFormats = null
+        override val audio by lazy {
+            object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
+                override val supportedEncoders by lazy {
+                    listOf(
+                        MediaFormat.MIMETYPE_AUDIO_AAC,
+                        MediaFormat.MIMETYPE_AUDIO_AMR_NB,
+                        MediaFormat.MIMETYPE_AUDIO_AMR_WB
+                    )
+                }
+                override val supportedSampleRates = null
+                override val supportedByteFormats = null
+            }
         }
 
-        override val video = object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
-            override val supportedEncoders = run {
-                mutableListOf(
-                    MediaFormat.MIMETYPE_VIDEO_H263,
-                    MediaFormat.MIMETYPE_VIDEO_AVC,
-                    MediaFormat.MIMETYPE_VIDEO_MPEG4
-                ).apply {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        add(MediaFormat.MIMETYPE_VIDEO_HEVC)
+        override val video by lazy {
+            object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
+                override val supportedEncoders by lazy {
+                    mutableListOf(
+                        MediaFormat.MIMETYPE_VIDEO_H263,
+                        MediaFormat.MIMETYPE_VIDEO_AVC,
+                        MediaFormat.MIMETYPE_VIDEO_MPEG4
+                    ).apply {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            add(MediaFormat.MIMETYPE_VIDEO_HEVC)
+                        }
                     }
                 }
             }
@@ -255,22 +260,28 @@ class MediaMuxerEndpoint(
     }
 
     object WebMEndpointInfo : IPublicEndpoint.IEndpointInfo {
-        override val audio = object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
-            override val supportedEncoders = listOf(
-                MediaFormat.MIMETYPE_AUDIO_VORBIS,
-                MediaFormat.MIMETYPE_AUDIO_OPUS
-            )
-            override val supportedSampleRates = null
-            override val supportedByteFormats = null
+        override val audio by lazy {
+            object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
+                override val supportedEncoders by lazy {
+                    listOf(
+                        MediaFormat.MIMETYPE_AUDIO_VORBIS,
+                        MediaFormat.MIMETYPE_AUDIO_OPUS
+                    )
+                }
+                override val supportedSampleRates = null
+                override val supportedByteFormats = null
+            }
         }
 
-        override val video = object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
-            override val supportedEncoders = run {
-                mutableListOf(
-                    MediaFormat.MIMETYPE_VIDEO_VP8
-                ).apply {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        add(MediaFormat.MIMETYPE_VIDEO_VP9)
+        override val video by lazy {
+            object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
+                override val supportedEncoders by lazy {
+                    mutableListOf(
+                        MediaFormat.MIMETYPE_VIDEO_VP8
+                    ).apply {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            add(MediaFormat.MIMETYPE_VIDEO_VP9)
+                        }
                     }
                 }
             }
@@ -278,25 +289,31 @@ class MediaMuxerEndpoint(
     }
 
     object ThreeGPEndpointInfo : IPublicEndpoint.IEndpointInfo {
-        override val audio = object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
-            override val supportedEncoders = listOf(
-                MediaFormat.MIMETYPE_AUDIO_AMR_NB,
-                MediaFormat.MIMETYPE_AUDIO_AMR_WB,
-                MediaFormat.MIMETYPE_AUDIO_AAC,
-            )
-            override val supportedSampleRates = null
-            override val supportedByteFormats = null
+        override val audio by lazy {
+            object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
+                override val supportedEncoders by lazy {
+                    listOf(
+                        MediaFormat.MIMETYPE_AUDIO_AMR_NB,
+                        MediaFormat.MIMETYPE_AUDIO_AMR_WB,
+                        MediaFormat.MIMETYPE_AUDIO_AAC,
+                    )
+                }
+                override val supportedSampleRates = null
+                override val supportedByteFormats = null
+            }
         }
 
-        override val video = object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
-            override val supportedEncoders = run {
-                mutableListOf(
-                    MediaFormat.MIMETYPE_VIDEO_H263,
-                    MediaFormat.MIMETYPE_VIDEO_AVC
-                ).apply {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        add(MediaFormat.MIMETYPE_VIDEO_VP9)
-                        add(MediaFormat.MIMETYPE_VIDEO_HEVC)
+        override val video by lazy {
+            object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
+                override val supportedEncoders by lazy {
+                    mutableListOf(
+                        MediaFormat.MIMETYPE_VIDEO_H263,
+                        MediaFormat.MIMETYPE_VIDEO_AVC
+                    ).apply {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            add(MediaFormat.MIMETYPE_VIDEO_VP9)
+                            add(MediaFormat.MIMETYPE_VIDEO_HEVC)
+                        }
                     }
                 }
             }
@@ -304,17 +321,23 @@ class MediaMuxerEndpoint(
     }
 
     object OggEndpointInfo : IPublicEndpoint.IEndpointInfo {
-        override val audio = object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
-            override val supportedEncoders = listOf(
-                MediaFormat.MIMETYPE_AUDIO_VORBIS,
-                MediaFormat.MIMETYPE_AUDIO_OPUS
-            )
-            override val supportedSampleRates = null
-            override val supportedByteFormats = null
+        override val audio by lazy {
+            object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
+                override val supportedEncoders by lazy {
+                    listOf(
+                        MediaFormat.MIMETYPE_AUDIO_VORBIS,
+                        MediaFormat.MIMETYPE_AUDIO_OPUS
+                    )
+                }
+                override val supportedSampleRates = null
+                override val supportedByteFormats = null
+            }
         }
 
-        override val video = object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
-            override val supportedEncoders = emptyList<String>()
+        override val video by lazy {
+            object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
+                override val supportedEncoders by lazy { emptyList<String>() }
+            }
         }
     }
 

@@ -48,11 +48,11 @@ fun Context.getCameraCharacteristics(cameraId: String): CameraCharacteristics {
  */
 val Context.defaultCameraId: String
     get() {
-        val cameraList = this.cameraList
+        val cameraList = this.cameras
         if (cameraList.isEmpty()) {
             throw IllegalStateException("No camera available")
         }
-        val backCameraList = this.backCameraList
+        val backCameraList = this.backCameras
         return if (backCameraList.isEmpty()) {
             cameraList.first()
         } else {
@@ -65,7 +65,7 @@ val Context.defaultCameraId: String
  *
  * @return List of camera ids
  */
-val Context.cameraList: List<String>
+val Context.cameras: List<String>
     get() {
         val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
         return cameraManager.cameraIdList.toList()
@@ -77,26 +77,26 @@ val Context.cameraList: List<String>
  *
  * @return List of back camera ids
  */
-val Context.backCameraList: List<String>
-    get() = cameraList.filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_BACK }
+val Context.backCameras: List<String>
+    get() = cameras.filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_BACK }
 
 /**
  * Gets front camera id list.
  *
  * @return List of front camera ids
  */
-val Context.frontCameraList: List<String>
-    get() = cameraList.filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_FRONT }
+val Context.frontCameras: List<String>
+    get() = cameras.filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_FRONT }
 
 /**
  * Gets external camera id list.
  *
  * @return List of front camera ids
  */
-val Context.externalCameraList: List<String>
+val Context.externalCameras: List<String>
     get() =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            cameraList.filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_EXTERNAL }
+            cameras.filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_EXTERNAL }
         } else {
             emptyList()
         }
@@ -160,7 +160,7 @@ fun <T : Any> Context.getCameraOutputSizes(klass: Class<T>, cameraId: String): L
  * @return [Boolean.true] if camera supports fps, [Boolean.false] otherwise.
  */
 fun Context.isFrameRateSupported(cameraId: String, fps: Int) =
-    getCameraFpsList(cameraId).any { it.contains(fps) }
+    getCameraFps(cameraId).any { it.contains(fps) }
 
 /**
  * Checks if the camera has a flash device.
@@ -314,7 +314,7 @@ fun Context.isOpticalStabilizationAvailable(cameraId: String) =
  * @return List of resolutions supported by all camera
  */
 fun Context.getCameraOutputStreamSizes(): List<Size> {
-    val cameraIdList = cameraList
+    val cameraIdList = cameras
     val resolutionSet = mutableSetOf<Size>()
     cameraIdList.forEach { cameraId ->
         resolutionSet.addAll(getCameraOutputStreamSizes(cameraId))
@@ -344,7 +344,7 @@ fun Context.getCameraOutputStreamSizes(
  * @param cameraId camera id
  * @return List of fps supported by a camera
  */
-fun Context.getCameraFpsList(cameraId: String): List<Range<Int>> {
+fun Context.getCameraFps(cameraId: String): List<Range<Int>> {
     return this.getCameraCharacteristics(cameraId)[CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES]?.toList()
         ?: emptyList()
 }

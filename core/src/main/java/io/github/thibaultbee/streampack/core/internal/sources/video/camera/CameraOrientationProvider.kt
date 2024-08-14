@@ -24,7 +24,7 @@ import io.github.thibaultbee.streampack.core.internal.utils.extensions.deviceOri
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.isDevicePortrait
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.landscapize
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.portraitize
-import io.github.thibaultbee.streampack.core.utils.cameraList
+import io.github.thibaultbee.streampack.core.utils.cameras
 import io.github.thibaultbee.streampack.core.utils.getFacingDirection
 import kotlin.math.max
 import kotlin.math.min
@@ -33,7 +33,7 @@ import kotlin.math.min
 class CameraOrientationProvider(private val context: Context, initialCameraId: String) :
     AbstractSourceOrientationProvider() {
     private val isFrontFacingMap =
-        context.cameraList.associateWith { (context.getFacingDirection(it) == CameraCharacteristics.LENS_FACING_FRONT) }
+        context.cameras.associateWith { (context.getFacingDirection(it) == CameraCharacteristics.LENS_FACING_FRONT) }
 
     var cameraId: String = initialCameraId
         set(value) {
