@@ -30,7 +30,7 @@ class FlvMuxer(
     override var listener: IMuxer.IMuxerListener? = null,
     private val isForFile: Boolean,
 ) : IMuxer {
-    override val info = FlvMuxerInfo
+    override val info by lazy { FlvMuxerInfo }
     private val streams = mutableListOf<Stream>()
     private val hasAudio: Boolean
         get() = streams.any { it.config.mimeType.isAudio }

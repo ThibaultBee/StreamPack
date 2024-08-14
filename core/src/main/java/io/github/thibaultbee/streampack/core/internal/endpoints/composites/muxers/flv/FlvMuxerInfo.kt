@@ -24,8 +24,8 @@ import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxer
 
 object FlvMuxerInfo :
     IPublicMuxer.IMuxerInfo {
-    override val video = VideoFlvMuxerInfo
-    override val audio = AudioFlvMuxerInfo
+    override val video by lazy { VideoFlvMuxerInfo }
+    override val audio  by lazy { AudioFlvMuxerInfo }
 }
 
 object AudioFlvMuxerInfo :
@@ -33,7 +33,7 @@ object AudioFlvMuxerInfo :
     /**
      * Get FLV Muxer supported audio encoders list
      */
-    override val supportedEncoders =
+    override val supportedEncoders  by lazy {
         SoundFormat.entries.mapNotNull {
             try {
                 it.toMimeType()
@@ -41,10 +41,11 @@ object AudioFlvMuxerInfo :
                 null
             }
         }
+    }
 
-    override val supportedSampleRates = SoundRate.entries.map { it.toSampleRate() }
+    override val supportedSampleRates by lazy { SoundRate.entries.map { it.toSampleRate() } }
 
-    override val supportedByteFormats = SoundSize.entries.map { it.toByteFormat() }
+    override val supportedByteFormats by lazy { SoundSize.entries.map { it.toByteFormat() } }
 }
 
 object VideoFlvMuxerInfo :
@@ -52,7 +53,7 @@ object VideoFlvMuxerInfo :
     /**
      * Get FLV Muxer supported video encoders list
      */
-    override val supportedEncoders = run {
+    override val supportedEncoders by lazy {
         val extendedSupportedCodec = listOf(
             MediaFormat.MIMETYPE_VIDEO_HEVC,
             MediaFormat.MIMETYPE_VIDEO_VP9,

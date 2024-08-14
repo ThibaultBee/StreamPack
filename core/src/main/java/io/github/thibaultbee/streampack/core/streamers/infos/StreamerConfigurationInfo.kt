@@ -57,10 +57,12 @@ import java.security.InvalidParameterException
  */
 open class StreamerConfigurationInfo(endpointInfo: IPublicEndpoint.IEndpointInfo) :
     IConfigurationInfo {
-    override val audio =
+    override val audio by lazy {
         AudioStreamerConfigurationInfo(endpointInfo.audio)
-    override val video =
+    }
+    override val video by lazy {
         VideoStreamerConfigurationInfo(endpointInfo.video)
+    }
 }
 
 class AudioStreamerConfigurationInfo(private val audioEndpointInfo: IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo) :
@@ -68,8 +70,10 @@ class AudioStreamerConfigurationInfo(private val audioEndpointInfo: IPublicEndpo
     /**
      * Get supported audio encoders list
      */
-    override val supportedEncoders = MediaCodecHelper.Audio.supportedEncoders.filter {
-        audioEndpointInfo.supportedEncoders.contains(it)
+    override val supportedEncoders by lazy {
+        MediaCodecHelper.Audio.supportedEncoders.filter {
+            audioEndpointInfo.supportedEncoders.contains(it)
+        }
     }
 
     /**
@@ -142,8 +146,10 @@ open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IPublic
     /**
      * Supported encoders for a [DefaultStreamer]
      */
-    override val supportedEncoders = MediaCodecHelper.Video.supportedEncoders.filter {
-        videoEndpointInfo.supportedEncoders.contains(it)
+    override val supportedEncoders by lazy {
+        MediaCodecHelper.Video.supportedEncoders.filter {
+            videoEndpointInfo.supportedEncoders.contains(it)
+        }
     }
 
     /**
@@ -265,45 +271,57 @@ open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IPublic
      * Only 420 profiles (8 and 10 bits) are supported.
      */
     // H.263: as format is old, only few profiles has been added
-    private val h263Profiles = listOf(
-        H263ProfileBaseline,
-        H263ProfileBackwardCompatible,
-        H263ProfileInternet
-    )
+    private val h263Profiles by lazy {
+        listOf(
+            H263ProfileBaseline,
+            H263ProfileBackwardCompatible,
+            H263ProfileInternet
+        )
+    }
 
-    private val avcProfiles = listOf(
-        AVCProfileBaseline,
-        AVCProfileConstrainedBaseline,
-        AVCProfileConstrainedHigh,
-        AVCProfileExtended,
-        AVCProfileHigh,
-        AVCProfileHigh10,
-        AVCProfileMain,
-    )
+    private val avcProfiles by lazy {
+        listOf(
+            AVCProfileBaseline,
+            AVCProfileConstrainedBaseline,
+            AVCProfileConstrainedHigh,
+            AVCProfileExtended,
+            AVCProfileHigh,
+            AVCProfileHigh10,
+            AVCProfileMain,
+        )
+    }
 
-    private val hevcProfiles = listOf(
-        HEVCProfileMain,
-        HEVCProfileMain10,
-        HEVCProfileMain10HDR10,
-        HEVCProfileMain10HDR10Plus
-    )
+    private val hevcProfiles by lazy {
+        listOf(
+            HEVCProfileMain,
+            HEVCProfileMain10,
+            HEVCProfileMain10HDR10,
+            HEVCProfileMain10HDR10Plus
+        )
+    }
 
-    private val vp8Profiles = listOf(
-        VP8ProfileMain
-    )
+    private val vp8Profiles by lazy {
+        listOf(
+            VP8ProfileMain
+        )
+    }
 
-    private val vp9Profiles = listOf(
-        VP9Profile0,
-        VP9Profile2,
-        VP9Profile2HDR,
-        VP9Profile2HDR10Plus
-    )
+    private val vp9Profiles by lazy {
+        listOf(
+            VP9Profile0,
+            VP9Profile2,
+            VP9Profile2HDR,
+            VP9Profile2HDR10Plus
+        )
+    }
 
-    private val av1Profiles = listOf(
-        AV1ProfileMain8,
-        AV1ProfileMain10,
-        AV1ProfileMain10HDR10,
-        AV1ProfileMain10HDR10Plus
-    )
+    private val av1Profiles by lazy {
+        listOf(
+            AV1ProfileMain8,
+            AV1ProfileMain10,
+            AV1ProfileMain10HDR10,
+            AV1ProfileMain10HDR10Plus
+        )
+    }
 }
 

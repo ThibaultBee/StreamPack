@@ -33,8 +33,8 @@ import io.github.thibaultbee.streampack.core.internal.sources.video.camera.Camer
 import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
 import io.github.thibaultbee.streampack.core.streamers.observers.StreamerLifeCycleObserver
-import io.github.thibaultbee.streampack.core.utils.backCameraList
-import io.github.thibaultbee.streampack.core.utils.frontCameraList
+import io.github.thibaultbee.streampack.core.utils.backCameras
+import io.github.thibaultbee.streampack.core.utils.frontCameras
 import io.github.thibaultbee.streampack.core.utils.getCameraStreamer
 import io.github.thibaultbee.streampack.core.utils.isBackCamera
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
@@ -225,9 +225,9 @@ class StreamerManager(
         streamer.getCameraStreamer()?.let {
             // Handle devices with only one camera
             val cameras = if (context.isBackCamera(it.camera)) {
-                context.frontCameraList
+                context.frontCameras
             } else {
-                context.backCameraList
+                context.backCameras
             }
             if (cameras.isNotEmpty()) {
                 it.camera = cameras[0]

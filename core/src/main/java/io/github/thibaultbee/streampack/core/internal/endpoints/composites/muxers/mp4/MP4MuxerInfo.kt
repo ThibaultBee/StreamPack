@@ -19,19 +19,20 @@ import android.media.MediaFormat
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IPublicMuxer
 
 object MP4MuxerInfo : IPublicMuxer.IMuxerInfo {
-    override val audio = AudioMP4MuxerInfo
-    override val video = VideoMP4MuxerInfo
+    override val audio by lazy { AudioMP4MuxerInfo }
+    override val video by lazy { VideoMP4MuxerInfo }
 }
 
 object AudioMP4MuxerInfo : IPublicMuxer.IMuxerInfo.IAudioMuxerInfo {
     /**
      * Get MP4 Muxer supported audio encoders list
      */
-    override val supportedEncoders =
+    override val supportedEncoders by lazy {
         listOf(
             MediaFormat.MIMETYPE_AUDIO_AAC,
             MediaFormat.MIMETYPE_AUDIO_OPUS
         )
+    }
 
     override val supportedSampleRates: List<Int>? = null
 
@@ -43,11 +44,12 @@ object VideoMP4MuxerInfo :
     /**
      * Get MP4 Muxer supported video encoders list
      */
-    override val supportedEncoders =
+    override val supportedEncoders by lazy {
         listOf(
             MediaFormat.MIMETYPE_VIDEO_AVC,
             MediaFormat.MIMETYPE_VIDEO_HEVC,
             MediaFormat.MIMETYPE_VIDEO_VP9,
             MediaFormat.MIMETYPE_VIDEO_AV1
         )
+    }
 }

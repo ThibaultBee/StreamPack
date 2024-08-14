@@ -144,14 +144,14 @@ class VideoConfig(
      * It is deduced from the [profile].
      * **See Also:** [DynamicRangeProfiles](https://developer.android.com/reference/android/hardware/camera2/params/DynamicRangeProfiles)
      */
-    val dynamicRangeProfile = DynamicRangeProfile.fromProfile(mimeType, profile)
+    val dynamicRangeProfile by lazy { DynamicRangeProfile.fromProfile(mimeType, profile) }
 
     /**
      * Whether the configuration is HDR or not.
      *
      * @return true if the configuration is HDR
      */
-    val isHdr = dynamicRangeProfile != DynamicRangeProfile.sdr
+    val isHdr by lazy { dynamicRangeProfile != DynamicRangeProfile.sdr }
 
     /**
      * Get resolution according to device orientation
@@ -238,34 +238,46 @@ class VideoConfig(
         }
 
         // Higher priority first
-        private val h263ProfilePriority = listOf(
-            H263ProfileBaseline
-        )
+        private val h263ProfilePriority by lazy {
+            listOf(
+                H263ProfileBaseline
+            )
+        }
 
-        private val avcProfilePriority = listOf(
-            AVCProfileHigh,
-            AVCProfileMain,
-            AVCProfileExtended,
-            AVCProfileBaseline,
-            AVCProfileConstrainedHigh,
-            AVCProfileConstrainedBaseline
-        )
+        private val avcProfilePriority by lazy {
+            listOf(
+                AVCProfileHigh,
+                AVCProfileMain,
+                AVCProfileExtended,
+                AVCProfileBaseline,
+                AVCProfileConstrainedHigh,
+                AVCProfileConstrainedBaseline
+            )
+        }
 
-        private val hevcProfilePriority = listOf(
-            HEVCProfileMain
-        )
+        private val hevcProfilePriority by lazy {
+            listOf(
+                HEVCProfileMain
+            )
+        }
 
-        private val vp8ProfilePriority = listOf(
-            VP8ProfileMain
-        )
+        private val vp8ProfilePriority by lazy {
+            listOf(
+                VP8ProfileMain
+            )
+        }
 
-        private val vp9ProfilePriority = listOf(
-            VP9Profile0
-        )
+        private val vp9ProfilePriority by lazy {
+            listOf(
+                VP9Profile0
+            )
+        }
 
-        private val av1ProfilePriority = listOf(
-            AV1ProfileMain8
-        )
+        private val av1ProfilePriority by lazy {
+            listOf(
+                AV1ProfileMain8
+            )
+        }
 
         /**
          * Return the higher profile with the higher level

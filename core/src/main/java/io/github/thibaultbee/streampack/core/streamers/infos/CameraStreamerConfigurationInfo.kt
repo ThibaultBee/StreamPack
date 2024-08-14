@@ -22,7 +22,7 @@ import io.github.thibaultbee.streampack.core.internal.endpoints.IPublicEndpoint
 import io.github.thibaultbee.streampack.core.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
 import io.github.thibaultbee.streampack.core.utils.get10BitSupportedProfiles
-import io.github.thibaultbee.streampack.core.utils.getCameraFpsList
+import io.github.thibaultbee.streampack.core.utils.getCameraFps
 import io.github.thibaultbee.streampack.core.utils.getCameraOutputStreamSizes
 
 /**
@@ -31,7 +31,7 @@ import io.github.thibaultbee.streampack.core.utils.getCameraOutputStreamSizes
  */
 open class CameraStreamerConfigurationInfo(endpointInfo: IPublicEndpoint.IEndpointInfo) :
     StreamerConfigurationInfo(endpointInfo) {
-    override val video = VideoCameraStreamerConfigurationInfo(endpointInfo.video)
+    override val video by lazy {  VideoCameraStreamerConfigurationInfo(endpointInfo.video) }
 }
 
 class VideoCameraStreamerConfigurationInfo(videoEndpointInfo: IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo) :
@@ -67,7 +67,7 @@ class VideoCameraStreamerConfigurationInfo(videoEndpointInfo: IPublicEndpoint.IE
         cameraId: String
     ): List<Range<Int>> {
         val encoderFpsRange = super.getSupportedFramerate(mimeType)
-        return context.getCameraFpsList(cameraId).filter { encoderFpsRange.contains(it) }
+        return context.getCameraFps(cameraId).filter { encoderFpsRange.contains(it) }
     }
 
     /**
