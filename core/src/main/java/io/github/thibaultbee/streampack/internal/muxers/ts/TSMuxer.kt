@@ -34,6 +34,7 @@ import io.github.thibaultbee.streampack.internal.muxers.ts.utils.MuxerConst
 import io.github.thibaultbee.streampack.internal.muxers.ts.utils.TSConst
 import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.ADTSFrameWriter
 import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.LATMFrameWriter
+import io.github.thibaultbee.streampack.internal.utils.av.audio.opus.OpusFrameWriter
 import java.nio.ByteBuffer
 import java.util.MissingFormatArgumentException
 import kotlin.random.Random
@@ -150,13 +151,7 @@ class TSMuxer(
             }
 
             MediaFormat.MIMETYPE_AUDIO_OPUS -> {
-                val payload = frame.rawBuffer
-                val controlHeader = opusControlHeader(payload.remaining())
-                val opusAccessUnit = ByteBuffer.allocate(controlHeader.remaining() + payload.remaining())
-                opusAccessUnit.put(controlHeader)
-                opusAccessUnit.put(payload)
-                opusAccessUnit.rewind()
-                frame.copy(rawBuffer = opusAccessUnit)
+                frame.copy(rawBuffer = OpusFrameWriter.fromPayload(frame.rawBuffer).toByteBuffer())
             }
             else -> throw IllegalArgumentException("Unsupported mimeType ${frame.mimeType}")
         }
@@ -164,31 +159,6 @@ class TSMuxer(
         synchronized(this) {
             generateStreams(newFrame, pes)
         }
-    }
-
-    private fun opusControlHeader(payloadSize: Int): ByteBuffer {
-        val payloadSizeFullBytesCount = payloadSize / 255
-        val payloadSizeRemainderByte = payloadSize % 255
-        val headerSize = 2 + payloadSizeFullBytesCount + payloadSizeRemainderByte.coerceAtMost(1)
-        val header = ByteBuffer.allocate(headerSize)
-
-        // control_header_prefix 11 bits (0x3FF or 01111111111)
-        // start_trim_flag 1 bit (0)
-        // end_trim_flag 1 bit (0)
-        // control_extension_flag 1 bit (0)
-        // reserved 2 bits (0)
-        header.put(0x7F.toByte())
-        header.put(0xE0.toByte())
-
-        repeat(payloadSizeFullBytesCount) {
-            header.put(0xFF.toByte())
-        }
-        if (payloadSizeRemainderByte > 0) {
-            header.put(payloadSizeRemainderByte.toByte())
-        }
-
-        header.rewind()
-        return header
     }
 
     /**
