@@ -24,7 +24,7 @@ class SrtMediaDescriptorTest {
     @Test
     fun fromUrl() {
         val url = "srt://broadcast.host.com:1234"
-        val connection = SrtMediaDescriptor.fromUrl(url)
+        val connection = SrtMediaDescriptor(url)
         assertEquals("broadcast.host.com", connection.host)
         assertEquals(1234, connection.port)
     }
@@ -32,7 +32,7 @@ class SrtMediaDescriptorTest {
     @Test
     fun fromIp() {
         val url = "srt://192.168.1.12:1234"
-        val connection = SrtMediaDescriptor.fromUrl(url)
+        val connection = SrtMediaDescriptor(url)
         assertEquals("192.168.1.12", connection.host)
         assertEquals(1234, connection.port)
     }
@@ -40,7 +40,7 @@ class SrtMediaDescriptorTest {
     @Test
     fun fromUrlWithParameters() {
         val url = "srt://host.com:1234?streamid=streamId&passphrase=passPhrase"
-        val connection = SrtMediaDescriptor.fromUrl(url)
+        val connection = SrtMediaDescriptor(url)
         assertEquals("host.com", connection.host)
         assertEquals(1234, connection.port)
         assertEquals("streamId", connection.streamId)
@@ -51,7 +51,7 @@ class SrtMediaDescriptorTest {
     fun fromUrlWithBadScheme() {
         val url = "srtp://broadcast.host.com:1234"
         try {
-            SrtMediaDescriptor.fromUrl(url)
+            SrtMediaDescriptor(url)
             fail("Should throw an exception")
         } catch (_: Exception) {
         }
@@ -61,7 +61,7 @@ class SrtMediaDescriptorTest {
     fun fromUrlWithUnknownParam() {
         val url = "srt://host.com:1234?streamid=streamId&passphrase=passPhrase&unknown=unknown"
         try {
-            SrtMediaDescriptor.fromUrl(url)
+            SrtMediaDescriptor(url)
         } catch (e: Exception) {
             assertEquals("Failed to parse URL $url: unknown parameter(s): unknown", e.message)
         }
