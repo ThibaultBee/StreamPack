@@ -16,11 +16,12 @@
 package io.github.thibaultbee.streampack.internal.utils.extensions
 
 import android.content.Context
-import android.content.res.Configuration.ORIENTATION_LANDSCAPE
-import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.hardware.display.DisplayManager
+import android.util.Size
 import android.view.Display
 import android.view.Surface
+import androidx.core.content.ContextCompat
+import androidx.core.view.DisplayCompat
 import io.github.thibaultbee.streampack.R
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.TsServiceInfo
 import io.github.thibaultbee.streampack.utils.OrientationUtils
@@ -53,7 +54,19 @@ val Context.deviceOrientation: Int
  * @return true if the device is in portrait, otherwise false
  */
 val Context.isDevicePortrait: Boolean
-    get() = resources.configuration.orientation == ORIENTATION_PORTRAIT
+    get() {
+        val display = ContextCompat.getDisplayOrDefault(this)
+        val mode = DisplayCompat.getMode(this, display)
+        val naturalResolution = Size(mode.physicalWidth, mode.physicalHeight)
+        val naturalIsPortrait = naturalResolution.isPortrait
+        return when (display.rotation) {
+            Surface.ROTATION_0   -> naturalIsPortrait
+            Surface.ROTATION_90  -> !naturalIsPortrait
+            Surface.ROTATION_180 -> naturalIsPortrait
+            Surface.ROTATION_270 -> !naturalIsPortrait
+            else                 -> naturalIsPortrait
+        }
+    }
 
 
 /**
@@ -62,7 +75,7 @@ val Context.isDevicePortrait: Boolean
  * @return true if the device is in landscape, otherwise false
  */
 val Context.isDeviceLandscape: Boolean
-    get() = resources.configuration.orientation == ORIENTATION_LANDSCAPE
+    get() = !isDevicePortrait
 
 val Context.defaultTsServiceInfo
     get() = TsServiceInfo(
