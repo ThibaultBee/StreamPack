@@ -138,7 +138,7 @@ class SrtMediaDescriptor(
     Type(MediaContainerType.TS, MediaSinkType.SRT),
     listOf(serviceInfo)
 ) {
-    override val uri: Uri = srtUrl.uri
+    override val uri: Uri = Uri.parse(srtUrl.srtUri.toString())
 
     /**
      * The SRT host
