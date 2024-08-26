@@ -9,7 +9,7 @@ buildscript {
         targetSdk = 34
         appTargetSdk = 34
 
-        kotlinVersion = '1.9.24'
+        kotlinVersion = '2.0.20'
         dokkaVersion = '1.9.20'
         agpVersion = '8.4.2'
 
