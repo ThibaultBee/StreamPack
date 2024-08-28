@@ -18,7 +18,6 @@ package io.github.thibaultbee.streampack.core.streamer.testcases
 import android.Manifest
 import android.content.Context
 import android.graphics.SurfaceTexture
-import android.util.Log
 import android.view.Surface
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
@@ -26,7 +25,6 @@ import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
 import io.github.thibaultbee.streampack.core.utils.DataUtils
 import kotlinx.coroutines.test.runTest
 import org.junit.After
-import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -36,7 +34,7 @@ abstract class CameraStreamerTestCase :
     private val context: Context = InstrumentationRegistry.getInstrumentation().context
 
     override val streamer = DefaultCameraStreamer(context)
-    private lateinit var surface: Surface
+    protected lateinit var surface: Surface
 
     @Before
     fun setUp() {
@@ -53,188 +51,90 @@ abstract class CameraStreamerTestCase :
         GrantPermissionRule.grant(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
 
     @Test
-    override fun defaultUsageTest() = runTest {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig(),
-                DataUtils.dummyValidVideoConfig()
-            )
-            streamer.startPreview(surface)
-            streamer.startStream(descriptor)
-            streamer.stopStream()
-            streamer.stopPreview()
-            streamer.release()
-        } catch (e: Exception) {
-            Log.e(TAG, "defaultUsageTest: exception: ", e)
-            fail("Default usage must not throw exception $e")
-        }
+    fun defaultUsageTestWithPreview() = runTest {
+        streamer.configure(
+            DataUtils.dummyValidAudioConfig(),
+            DataUtils.dummyValidVideoConfig()
+        )
+        streamer.startPreview(surface)
+        streamer.startStream(descriptor)
+        streamer.stopStream()
+        streamer.stopPreview()
+        streamer.release()
     }
 
     // Single method calls
     @Test
-    fun startPreviewTest() {
-        try {
-            streamer.startPreview(surface)
-            fail("startPreviewTest without configuration must throw an exception")
-        } catch (_: Exception) {
-        }
+    open fun startPreviewTest() = runTest {
+        streamer.startPreview(surface)
     }
 
     @Test
     fun stopPreviewTest() {
-        try {
-            streamer.stopPreview()
-        } catch (e: Exception) {
-            fail("Must be possible to only stopPreview without exception: $e")
-        }
+        streamer.stopPreview()
     }
 
     // Multiple methods calls
     @Test
     fun configureStopPreviewTest() {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig(),
-                DataUtils.dummyValidVideoConfig()
-            )
-            streamer.stopPreview()
-        } catch (e: Exception) {
-            Log.e(TAG, "configureStopPreviewTest: exception: ", e)
-            fail("Must be possible to configure/stopPreview but catches exception: $e")
-        }
+        streamer.configure(
+            DataUtils.dummyValidAudioConfig(),
+            DataUtils.dummyValidVideoConfig()
+        )
+        streamer.stopPreview()
     }
 
     @Test
-    fun startPreviewReleaseTest() {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig(),
-                DataUtils.dummyValidVideoConfig()
-            )
-            streamer.startPreview(surface)
-            streamer.release()
-        } catch (e: Exception) {
-            Log.e(TAG, "startPreviewReleaseTest: exception: ", e)
-            fail("Must be possible to startPreview/release but catches exception: $e")
-        }
+    fun startPreviewReleaseTest() = runTest {
+        streamer.configure(
+            DataUtils.dummyValidAudioConfig(),
+            DataUtils.dummyValidVideoConfig()
+        )
+        streamer.startPreview(surface)
+        streamer.release()
     }
 
     @Test
-    fun startPreviewStopPreviewTest() {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig(),
-                DataUtils.dummyValidVideoConfig()
-            )
-            streamer.startPreview(surface)
-            streamer.stopPreview()
-        } catch (e: Exception) {
-            Log.e(TAG, "startPreviewStopPreviewTest: exception: ", e)
-            fail("Must be possible to startPreview/stopPreview but catches exception: $e")
-        }
+    fun startPreviewStopPreviewTest() = runTest {
+        streamer.configure(
+            DataUtils.dummyValidAudioConfig(),
+            DataUtils.dummyValidVideoConfig()
+        )
+        streamer.startPreview(surface)
+        streamer.stopPreview()
     }
 
     @Test
     fun startPreviewStopStreamTest() = runTest {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig(),
-                DataUtils.dummyValidVideoConfig()
-            )
-            streamer.startPreview(surface)
-            streamer.stopStream()
-        } catch (e: Exception) {
-            Log.e(TAG, "startPreviewStopStreamTest: exception: ", e)
-            fail("Must be possible to startPreview/stopStream but catches exception: $e")
-        }
+        streamer.configure(
+            DataUtils.dummyValidAudioConfig(),
+            DataUtils.dummyValidVideoConfig()
+        )
+        streamer.startPreview(surface)
+        streamer.stopStream()
     }
-
-
-    @Test
-    override fun startStreamReleaseTest() = runTest {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig(),
-                DataUtils.dummyValidVideoConfig()
-            )
-            streamer.startPreview(surface)
-            streamer.startStream(descriptor)
-            streamer.release()
-        } catch (e: Exception) {
-            Log.e(TAG, "startStreamReleaseTest: exception: ", e)
-            fail("Must be possible to startStream/release but catches exception: $e")
-        }
-    }
-
 
     @Test
     fun startStreamStopPreviewTest() = runTest {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig(),
-                DataUtils.dummyValidVideoConfig()
-            )
+
+        streamer.configure(
+            DataUtils.dummyValidAudioConfig(),
+            DataUtils.dummyValidVideoConfig()
+        )
+        streamer.startPreview(surface)
+        streamer.startStream(descriptor)
+        streamer.stopPreview()
+    }
+
+    @Test
+    fun multipleStartPreviewStopPreviewTest() = runTest {
+        streamer.configure(
+            DataUtils.dummyValidAudioConfig(),
+            DataUtils.dummyValidVideoConfig()
+        )
+        (0..10).forEach { _ ->
             streamer.startPreview(surface)
-            streamer.startStream(descriptor)
             streamer.stopPreview()
-        } catch (e: Exception) {
-            Log.e(TAG, "startStreamStopPreviewTest: exception: ", e)
-            fail("Must be possible to startStream/stopPreview but catches exception: $e")
         }
-    }
-
-    @Test
-    override fun startStreamStopStreamTest() = runTest {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig(),
-                DataUtils.dummyValidVideoConfig()
-            )
-            streamer.startPreview(surface)
-            streamer.startStream(descriptor)
-            streamer.stopStream()
-        } catch (e: Exception) {
-            Log.e(TAG, "startStreamStopStreamTest: exception: ", e)
-            fail("Must be possible to startStream/stopStream but catches exception: $e")
-        }
-    }
-
-    @Test
-    fun multipleStartPreviewStopPreviewTest() {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig(),
-                DataUtils.dummyValidVideoConfig()
-            )
-            (0..10).forEach { _ ->
-                streamer.startPreview(surface)
-                streamer.stopPreview()
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "multipleStartPreviewStopPreviewTest: exception: ", e)
-            fail("Must be possible to startPreview/stopPreview multiple times but catches exception: $e")
-        }
-    }
-
-    @Test
-    override fun multipleStartStreamStopStreamTest() = runTest {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig(),
-                DataUtils.dummyValidVideoConfig()
-            )
-            streamer.startPreview(surface)
-            (0..10).forEach { _ ->
-                streamer.startStream(descriptor)
-                streamer.stopStream()
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "multipleStartStreamStopStreamTest: exception: ", e)
-            fail("Must be possible to startStream/stopStream multiple times but catches exception: $e")
-        }
-    }
-
-    companion object {
-        private const val TAG = "CameraStreamerTestCase"
     }
 }
