@@ -37,55 +37,91 @@ interface ICameraStreamer {
     var camera: String
 
     /**
-     * Starts audio and video capture.
-     * [DefaultStreamer.configure] must have been called at least once.
+     * Sets a preview surface.
      *
-     * @param previewSurface The [Surface] used for camera preview
-     * @param cameraId The camera id where to start preview
-     *
-     * @see [stopPreview]
+     * @param surface The [Surface] used for camera preview
      */
-    @RequiresPermission(allOf = [Manifest.permission.CAMERA])
-    fun startPreview(previewSurface: Surface, cameraId: String = videoSource.cameraId)
+    fun setPreview(surface: Surface)
 
     /**
-     * Starts audio and video capture.
-     * [DefaultStreamer.configure] must have been called at least once.
+     * Sets a preview surface.
      *
      * @param surfaceView The [SurfaceView] used for camera preview
-     * @param cameraId The camera id where to start preview
-     *
-     * @see [stopPreview]
      */
-    @RequiresPermission(allOf = [Manifest.permission.CAMERA])
-    fun startPreview(surfaceView: SurfaceView, cameraId: String = videoSource.cameraId) =
-        startPreview(surfaceView.holder.surface, cameraId)
+    fun setPreview(surfaceView: SurfaceView) = setPreview(surfaceView.holder.surface)
 
     /**
-     * Starts audio and video capture.
-     * [DefaultStreamer.configure] must have been called at least once.
+     * Sets a preview surface holder.
      *
      * @param surfaceHolder The [SurfaceHolder] used for camera preview
-     * @param cameraId The camera id where to start preview
-     *
-     * @see [stopPreview]
      */
-    @RequiresPermission(allOf = [Manifest.permission.CAMERA])
-    fun startPreview(surfaceHolder: SurfaceHolder, cameraId: String = videoSource.cameraId) =
-        startPreview(surfaceHolder.surface, cameraId)
+    fun setPreview(surfaceHolder: SurfaceHolder) = setPreview(surfaceHolder.surface)
+
+    /**
+     * Sets a preview surface.
+     *
+     * @param textureView The [TextureView] used for camera preview
+     */
+    fun setPreview(textureView: TextureView) = setPreview(Surface(textureView.surfaceTexture))
+
+    /**
+     * Starts audio and video capture.
+     */
+    suspend fun startPreview()
 
     /**
      * Starts audio and video capture.
      * [DefaultStreamer.configure] must have been called at least once.
+     * It is a shortcut for [setPreview] and [startPreview].
      *
-     * @param textureView The [TextureView] used for camera preview
-     * @param cameraId The camera id where to start preview
+     * @param previewSurface The [Surface] used for camera preview
      *
      * @see [stopPreview]
      */
     @RequiresPermission(allOf = [Manifest.permission.CAMERA])
-    fun startPreview(textureView: TextureView, cameraId: String = videoSource.cameraId) =
-        startPreview(Surface(textureView.surfaceTexture), cameraId)
+    suspend fun startPreview(previewSurface: Surface) {
+        setPreview(previewSurface)
+        startPreview()
+    }
+
+    /**
+     * Starts audio and video capture.
+     * [DefaultStreamer.configure] must have been called at least once.
+     * It is a shortcut for [setPreview] and [startPreview].
+     *
+     * @param surfaceView The [SurfaceView] used for camera preview
+     *
+     * @see [stopPreview]
+     */
+    @RequiresPermission(allOf = [Manifest.permission.CAMERA])
+    suspend fun startPreview(surfaceView: SurfaceView) =
+        startPreview(surfaceView.holder.surface)
+
+    /**
+     * Starts audio and video capture.
+     * [DefaultStreamer.configure] must have been called at least once.
+     * It is a shortcut for [setPreview] and [startPreview].
+     *
+     * @param surfaceHolder The [SurfaceHolder] used for camera preview
+     *
+     * @see [stopPreview]
+     */
+    @RequiresPermission(allOf = [Manifest.permission.CAMERA])
+    suspend fun startPreview(surfaceHolder: SurfaceHolder) =
+        startPreview(surfaceHolder.surface)
+
+    /**
+     * Starts audio and video capture.
+     * [DefaultStreamer.configure] must have been called at least once.
+     * It is a shortcut for [setPreview] and [startPreview].
+     *
+     * @param textureView The [TextureView] used for camera preview
+     *
+     * @see [stopPreview]
+     */
+    @RequiresPermission(allOf = [Manifest.permission.CAMERA])
+    suspend fun startPreview(textureView: TextureView) =
+        startPreview(Surface(textureView.surfaceTexture))
 
     /**
      * Stops capture.

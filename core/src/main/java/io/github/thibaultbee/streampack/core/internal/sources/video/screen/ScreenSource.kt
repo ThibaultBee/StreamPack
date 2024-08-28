@@ -42,9 +42,9 @@ import java.nio.ByteBuffer
 class ScreenSource(
     context: Context
 ) : IVideoSource {
-    override var encoderSurface: Surface? = null
+    override var outputSurface: Surface? = null
     override val timestampOffset = 0L
-    override val hasSurface = true
+    override val hasOutputSurface = true
     override val hasFrames = false
     override val orientationProvider = ScreenSourceOrientationProvider(context)
 
@@ -110,7 +110,7 @@ class ScreenSource(
         videoConfig = config
     }
 
-    override fun startStream() {
+    override suspend fun startStream() {
         require(videoConfig != null) { "Video has not been configured!" }
         require(activityResult != null) { "Activity result must be set!" }
 
@@ -128,7 +128,7 @@ class ScreenSource(
                 orientedSize.height,
                 320,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                encoderSurface,
+                outputSurface,
                 virtualDisplayCallback,
                 virtualDisplayHandler
             )
@@ -136,11 +136,12 @@ class ScreenSource(
     }
 
 
-    override fun stopStream() {
+    override suspend fun stopStream() {
         isStoppedByUser = true
 
         virtualDisplay?.release()
         virtualDisplay = null
+
         mediaProjection?.stop()
         mediaProjection = null
     }

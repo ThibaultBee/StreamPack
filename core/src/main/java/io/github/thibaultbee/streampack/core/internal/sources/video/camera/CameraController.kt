@@ -17,9 +17,13 @@ package io.github.thibaultbee.streampack.core.internal.sources.video.camera
 
 import android.Manifest
 import android.content.Context
-import android.hardware.camera2.*
+import android.hardware.camera2.CameraCaptureSession
+import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraDevice.AUDIO_RESTRICTION_NONE
 import android.hardware.camera2.CameraDevice.AUDIO_RESTRICTION_VIBRATION_SOUND
+import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CaptureFailure
+import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.params.OutputConfiguration
 import android.os.Build
 import android.util.Range
@@ -28,7 +32,11 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.error.CameraError
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.utils.getCameraFps
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import java.security.InvalidParameterException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -44,7 +52,12 @@ class CameraController(
     private var captureSession: CameraCaptureSession? = null
     private var captureRequest: CaptureRequest.Builder? = null
 
-    private val threadManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+    /**
+     * List of surfaces used in the current request session.
+     */
+    private val requestSessionSurface = mutableSetOf<Surface>()
+
+    private val cameraDispatchManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         CameraExecutorManager()
     } else {
         CameraHandlerManager()
@@ -87,14 +100,15 @@ class CameraController(
             Logger.e(TAG, "Camera ${camera.id} is in error $error")
 
             val exc = when (error) {
-                ERROR_CAMERA_IN_USE -> io.github.thibaultbee.streampack.core.error.CameraError("Camera already in use")
-                ERROR_MAX_CAMERAS_IN_USE -> io.github.thibaultbee.streampack.core.error.CameraError(
+                ERROR_CAMERA_IN_USE -> CameraError("Camera already in use")
+                ERROR_MAX_CAMERAS_IN_USE -> CameraError(
                     "Max cameras in use"
                 )
-                ERROR_CAMERA_DISABLED -> io.github.thibaultbee.streampack.core.error.CameraError("Camera has been disabled")
-                ERROR_CAMERA_DEVICE -> io.github.thibaultbee.streampack.core.error.CameraError("Camera device has crashed")
-                ERROR_CAMERA_SERVICE -> io.github.thibaultbee.streampack.core.error.CameraError("Camera service has crashed")
-                else -> io.github.thibaultbee.streampack.core.error.CameraError("Unknown error")
+
+                ERROR_CAMERA_DISABLED -> CameraError("Camera has been disabled")
+                ERROR_CAMERA_DEVICE -> CameraError("Camera device has crashed")
+                ERROR_CAMERA_SERVICE -> CameraError("Camera service has crashed")
+                else -> CameraError("Unknown error")
             }
             if (cont.isActive) cont.resumeWithException(exc)
         }
@@ -116,7 +130,7 @@ class CameraController(
             session: CameraCaptureSession, request: CaptureRequest, failure: CaptureFailure
         ) {
             super.onCaptureFailed(session, request, failure)
-            Logger.e(TAG, "Capture failed  with code ${failure.reason}")
+            Logger.e(TAG, "Capture failed with code ${failure.reason}")
         }
     }
 
@@ -124,7 +138,7 @@ class CameraController(
     private suspend fun openCamera(
         manager: CameraManager, cameraId: String
     ): CameraDevice = suspendCancellableCoroutine { cont ->
-        threadManager.openCamera(
+        cameraDispatchManager.openCamera(
             manager, cameraId, CameraDeviceCallback(cont)
         )
     }
@@ -143,11 +157,11 @@ class CameraController(
                 }
             }
 
-            threadManager.createCaptureSessionByOutputConfiguration(
+            cameraDispatchManager.createCaptureSessionByOutputConfiguration(
                 camera, outputConfigurations, CameraCaptureSessionCallback(cont)
             )
         } else {
-            threadManager.createCaptureSession(
+            cameraDispatchManager.createCaptureSession(
                 camera, targets, CameraCaptureSessionCallback(cont)
             )
         }
@@ -159,16 +173,19 @@ class CameraController(
         fpsRange: Range<Int>,
         surfaces: List<Surface>
     ): CaptureRequest.Builder {
-        if (surfaces.isEmpty()) {
-            throw RuntimeException("No target surface")
-        }
-
         return camera.createCaptureRequest(CameraDevice.TEMPLATE_RECORD).apply {
             surfaces.forEach { addTarget(it) }
             set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
-            threadManager.setRepeatingSingleRequest(captureSession, build(), captureCallback)
+            cameraDispatchManager.setRepeatingSingleRequest(
+                captureSession,
+                build(),
+                captureCallback
+            )
         }
     }
+
+    val isCameraRunning: Boolean
+        get() = camera != null
 
     @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun startCamera(
@@ -188,17 +205,21 @@ class CameraController(
         }
     }
 
+    val isRequestSessionRunning: Boolean
+        get() = captureRequest != null
+
     fun startRequestSession(fps: Int, targets: List<Surface>) {
         require(camera != null) { "Camera must not be null" }
         require(captureSession != null) { "Capture session must not be null" }
-        require(targets.isNotEmpty()) { " At least one target is required" }
 
         captureRequest = createRequestSession(
             camera!!, captureSession!!, getClosestFpsRange(camera!!.id, fps), targets
         )
+        requestSessionSurface.addAll(targets)
     }
 
-    fun stopCamera() {
+    fun stop() {
+        requestSessionSurface.clear()
         captureRequest = null
 
         captureSession?.close()
@@ -208,12 +229,22 @@ class CameraController(
         camera = null
     }
 
+    /**
+     * Whether the target is in the current request session.
+     */
+    fun hasTarget(target: Surface): Boolean {
+        return requestSessionSurface.contains(target)
+    }
+
     fun addTargets(targets: List<Surface>) {
         require(captureRequest != null) { "capture request must not be null" }
         require(targets.isNotEmpty()) { " At least one target is required" }
 
         targets.forEach {
-            captureRequest!!.addTarget(it)
+            if (!hasTarget(it)) {
+                captureRequest!!.addTarget(it)
+                requestSessionSurface.add(it)
+            }
         }
         updateRepeatingSession()
     }
@@ -221,31 +252,65 @@ class CameraController(
     fun addTarget(target: Surface) {
         require(captureRequest != null) { "capture request must not be null" }
 
+        if (hasTarget(target)) {
+            return
+        }
+
         captureRequest!!.addTarget(target)
+        requestSessionSurface.add(target)
+
         updateRepeatingSession()
+    }
+
+    fun removeTargets(targets: List<Surface>) {
+        require(captureRequest != null) { "capture request must not be null" }
+
+        targets.forEach {
+            captureRequest!!.removeTarget(it)
+            requestSessionSurface.remove(it)
+        }
+
+        if (requestSessionSurface.isNotEmpty()) {
+            updateRepeatingSession()
+        } else {
+            stop()
+        }
     }
 
     fun removeTarget(target: Surface) {
         require(captureRequest != null) { "capture request must not be null" }
 
         captureRequest!!.removeTarget(target)
-        updateRepeatingSession()
+        requestSessionSurface.remove(target)
+
+        if (requestSessionSurface.isNotEmpty()) {
+            updateRepeatingSession()
+        } else {
+            stop()
+        }
     }
 
     fun release() {
-        threadManager.release()
+        cameraDispatchManager.release()
     }
-
 
     fun muteVibrationAndSound() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            camera?.cameraAudioRestriction = AUDIO_RESTRICTION_VIBRATION_SOUND
+            try {
+                camera?.cameraAudioRestriction = AUDIO_RESTRICTION_VIBRATION_SOUND
+            } catch (t: Throwable) {
+                Logger.e(TAG, "Failed to mute vibration and sound", t)
+            }
         }
     }
 
     fun unmuteVibrationAndSound() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            camera?.cameraAudioRestriction = AUDIO_RESTRICTION_NONE
+            try {
+                camera?.cameraAudioRestriction = AUDIO_RESTRICTION_NONE
+            } catch (t: Throwable) {
+                Logger.e(TAG, "Failed to unmute vibration and sound", t)
+            }
         }
     }
 
@@ -253,7 +318,7 @@ class CameraController(
         require(captureSession != null) { "capture session must not be null" }
         require(captureRequest != null) { "capture request must not be null" }
 
-        threadManager.setRepeatingSingleRequest(
+        cameraDispatchManager.setRepeatingSingleRequest(
             captureSession!!, captureRequest!!.build(), captureCallback
         )
     }
@@ -262,7 +327,7 @@ class CameraController(
         require(captureSession != null) { "capture session must not be null" }
         require(captureRequest != null) { "capture request must not be null" }
 
-        threadManager.captureBurstRequests(
+        cameraDispatchManager.captureBurstRequests(
             captureSession!!, listOf(captureRequest!!.build()), captureCallback
         )
     }

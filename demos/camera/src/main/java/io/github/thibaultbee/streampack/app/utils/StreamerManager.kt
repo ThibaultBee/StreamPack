@@ -125,7 +125,6 @@ class StreamerManager(
     }
 
     suspend fun startStream() {
-
         val descriptor = when (configuration.endpoint.endpointType) {
             EndpointType.TS_FILE -> UriMediaDescriptor(
                 context,
