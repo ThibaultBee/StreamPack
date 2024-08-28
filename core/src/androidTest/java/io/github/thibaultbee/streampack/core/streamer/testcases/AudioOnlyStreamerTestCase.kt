@@ -17,7 +17,6 @@ package io.github.thibaultbee.streampack.core.streamer.testcases
 
 import android.Manifest
 import android.content.Context
-import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
@@ -40,30 +39,20 @@ abstract class AudioOnlyStreamerTestCase {
 
     @Test
     fun defaultUsageTest() = runTest {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig()
-            )
-            streamer.startStream(descriptor)
-            streamer.stopStream()
-            streamer.release()
-        } catch (e: Exception) {
-            Log.e(TAG, "defaultUsageTest: exception: ", e)
-            fail("Default usage must not throw exception $e")
-        }
+        streamer.configure(
+            DataUtils.dummyValidAudioConfig()
+        )
+        streamer.startStream(descriptor)
+        streamer.stopStream()
+        streamer.release()
     }
 
     // Single method calls
     @Test
     fun configureAudioOnlyTest() {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig()
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "configureAudioTest: exception: ", e)
-            fail("Must be possible to only configure audio without exception: $e")
-        }
+        streamer.configure(
+            DataUtils.dummyValidAudioConfig()
+        )
     }
 
     @Test
@@ -103,103 +92,64 @@ abstract class AudioOnlyStreamerTestCase {
     // Multiple methods calls
     @Test
     fun configureStartStreamTest() = runTest {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig()
-            )
-            streamer.startStream(descriptor)
-        } catch (e: Exception) {
-            Log.e(TAG, "configureStartStreamTest: exception: ", e)
-            fail("Must be possible to configure/startStream but catches exception: $e")
-        }
+        streamer.configure(
+            DataUtils.dummyValidAudioConfig()
+        )
+        streamer.startStream(descriptor)
     }
 
     @Test
     fun configureReleaseTest() {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig()
-            )
-            streamer.release()
-        } catch (e: Exception) {
-            Log.e(TAG, "configureReleaseTest: exception: ", e)
-            fail("Must be possible to configure/release but catches exception: $e")
-        }
+        streamer.configure(
+            DataUtils.dummyValidAudioConfig()
+        )
+        streamer.release()
     }
 
     @Test
     fun configureStopStreamTest() = runTest {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig()
-            )
-            streamer.stopStream()
-        } catch (e: Exception) {
-            Log.e(TAG, "configureStopStreamTest: exception: ", e)
-            fail("Must be possible to configure/stopStream but catches exception: $e")
-        }
+        streamer.configure(
+            DataUtils.dummyValidAudioConfig()
+        )
+        streamer.stopStream()
     }
 
     @Test
     fun startStreamReleaseTest() = runTest {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig()
-            )
-            streamer.startStream(descriptor)
-            streamer.release()
-        } catch (e: Exception) {
-            Log.e(TAG, "startStreamReleaseTest: exception: ", e)
-            fail("Must be possible to startStream/release but catches exception: $e")
-        }
+        streamer.configure(
+            DataUtils.dummyValidAudioConfig()
+        )
+        streamer.startStream(descriptor)
+        streamer.release()
     }
 
     @Test
     fun startStreamStopStreamTest() = runTest {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig()
-            )
-            streamer.startStream(descriptor)
-            streamer.stopStream()
-        } catch (e: Exception) {
-            Log.e(TAG, "startStreamStopStreamTest: exception: ", e)
-            fail("Must be possible to startStream/stopStream but catches exception: $e")
-        }
+        streamer.configure(
+            DataUtils.dummyValidAudioConfig()
+        )
+        streamer.startStream(descriptor)
+        streamer.stopStream()
     }
 
     @Test
     fun multipleStartStreamStopStreamTest() = runTest {
-        try {
-            streamer.configure(
-                DataUtils.dummyValidAudioConfig()
-            )
-            (0..10).forEach { _ ->
-                streamer.startStream(descriptor)
-                streamer.stopStream()
-                streamer.close()
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "multipleStartStreamStopStreamTest: exception: ", e)
-            fail("Must be possible to startStream/stopStream multiple times but catches exception: $e")
+        streamer.configure(
+            DataUtils.dummyValidAudioConfig()
+        )
+        (0..10).forEach { _ ->
+            streamer.startStream(descriptor)
+            streamer.stopStream()
+            streamer.close()
         }
     }
 
     @Test
     fun multipleConfigureTest() {
-        try {
-            (0..10).forEach { _ ->
-                streamer.configure(
-                    DataUtils.dummyValidAudioConfig()
-                )
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "multipleConfigureTest: exception: ", e)
-            fail("Must be possible to call configure multiple times but catches exception: $e")
+        (0..10).forEach { _ ->
+            streamer.configure(
+                DataUtils.dummyValidAudioConfig()
+            )
         }
-    }
-
-    companion object {
-        private const val TAG = "AudioOnlyStreamerTestCase"
     }
 }
