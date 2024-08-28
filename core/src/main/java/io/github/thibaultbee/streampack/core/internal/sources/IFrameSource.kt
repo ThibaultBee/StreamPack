@@ -21,7 +21,7 @@ import io.github.thibaultbee.streampack.core.internal.interfaces.Releaseable
 import io.github.thibaultbee.streampack.core.internal.interfaces.Streamable
 import java.nio.ByteBuffer
 
-interface IFrameSource<T> : Streamable, Configurable<T>, Releaseable {
+interface IFrameSource<T> {
 
     /**
      * Generate a frame from capture device

@@ -305,7 +305,7 @@ class PreviewView @JvmOverloads constructor(
                 listener?.onPreviewFailed(SecurityException("Camera permission is needed to run this application"))
             } else {
                 if (surface.isValid) {
-                    streamer.startPreview(surface, camera)
+                    streamer.startPreview(surface)
                     listener?.onPreviewStarted()
                 } else {
                     Logger.w(TAG, "Invalid surface")

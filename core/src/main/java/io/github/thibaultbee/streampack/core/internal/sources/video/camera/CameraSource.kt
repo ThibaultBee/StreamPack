@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.core.internal.sources.video.camera
 
 import android.Manifest
 import android.content.Context
+import android.util.Log
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.data.VideoConfig
@@ -32,7 +33,47 @@ class CameraSource(
     private val context: Context,
 ) : IVideoSource, IPublicCameraSource {
     var previewSurface: Surface? = null
-    override var encoderSurface: Surface? = null
+        set(value) {
+            if (field == value) {
+                Log.w(TAG, "Preview surface is already set to $value")
+                return
+            }
+            if (cameraController.isCameraRunning) {
+                if (value == null) {
+                    stopPreview()
+                } else {
+                    Log.e(TAG, "Need to restart camera to change preview surface")
+                    field = value
+                    runBlocking {
+                        restartCamera()
+                    }
+                }
+            } else {
+                field = value
+            }
+        }
+
+    override var outputSurface: Surface? = null
+        set(value) {
+            if (field == value) {
+                Log.w(TAG, "Output surface is already set to $value")
+                return
+            }
+            if (cameraController.isCameraRunning) {
+                if (value == null) {
+                    runBlocking {
+                        stopStream()
+                    }
+                } else {
+                    Log.e(TAG, "Need to restart camera to change output surface")
+                    field = value
+                    runBlocking {
+                        restartCamera()
+                    }
+                }
+            }
+            field = value
+        }
 
     override var cameraId: String = context.defaultCameraId
         get() = cameraController.cameraId ?: field
@@ -41,21 +82,23 @@ class CameraSource(
             if (!context.isFrameRateSupported(value, fps)) {
                 throw UnsupportedOperationException("Camera $value does not support $fps fps")
             }
+            if (field == value) {
+                Log.w(TAG, "Camera ID is already set to $value")
+                return
+            }
+
+            field = value
+            orientationProvider.cameraId = value
             runBlocking {
-                val restartStream = isStreaming
-                val restartPreview = isPreviewing
-                stopPreview()
-                field = value
-                if (restartPreview) {
-                    startPreview(value, restartStream)
-                }
+                restartCamera()
             }
         }
+
     private var cameraController = CameraController(context)
     override val settings = CameraSettings(context, cameraController)
 
     override val timestampOffset = CameraHelper.getTimeOffsetToMonoClock(context, cameraId)
-    override val hasSurface = true
+    override val hasOutputSurface = true
     override val hasFrames = false
     override val orientationProvider = CameraOrientationProvider(context, cameraId)
 
@@ -65,60 +108,105 @@ class CameraSource(
 
     private var fps: Int = 30
     private var dynamicRangeProfile: DynamicRangeProfile = DynamicRangeProfile.sdr
-    private var isStreaming = false
-    private var isPreviewing = false
+
+    private val isStreaming: Boolean
+        get() {
+            val outputSurface = outputSurface ?: return false
+            return cameraController.hasTarget(outputSurface)
+        }
+    private val isPreviewing: Boolean
+        get() {
+            val previewSurface = previewSurface ?: return false
+            return cameraController.hasTarget(previewSurface)
+        }
 
     override fun configure(config: VideoConfig) {
         this.fps = config.fps
         this.dynamicRangeProfile = config.dynamicRangeProfile
     }
 
-    @RequiresPermission(Manifest.permission.CAMERA)
-    suspend fun startPreview(cameraId: String = this.cameraId, restartStream: Boolean = false) {
-        var targets = mutableListOf<Surface>()
-        previewSurface?.let { targets.add(it) }
-        encoderSurface?.let { targets.add(it) }
-        cameraController.startCamera(cameraId, targets, dynamicRangeProfile.dynamicRange)
-
-        targets = mutableListOf()
-        previewSurface?.let { targets.add(it) }
-        if (restartStream) {
-            encoderSurface?.let { targets.add(it) }
+    private suspend fun restartCamera() {
+        val surfacesToRestart = listOfNotNull(previewSurface, outputSurface).filter {
+            cameraController.hasTarget(it)
         }
-        cameraController.startRequestSession(fps, targets)
-        isPreviewing = true
-        orientationProvider.cameraId = cameraId
+        cameraController.stop()
+        if (surfacesToRestart.isNotEmpty()) {
+            startCameraRequestSessionIfNeeded(surfacesToRestart)
+        } else {
+            Log.w(TAG, "Trying to restart camera without surfaces")
+        }
+    }
+
+    private suspend fun startCameraRequestSessionIfNeeded(sessionTargets: List<Surface>) {
+        if (!cameraController.isCameraRunning) {
+            val targets = mutableListOf<Surface>()
+            previewSurface?.let { targets.add(it) }
+            outputSurface?.let { targets.add(it) }
+
+            cameraController.startCamera(
+                cameraId, targets, dynamicRangeProfile.dynamicRange
+            )
+        }
+
+        if (!cameraController.isRequestSessionRunning) {
+            try {
+                cameraController.startRequestSession(fps, sessionTargets)
+            } catch (e: Exception) {
+                cameraController.stop()
+                throw e
+            }
+        } else {
+            cameraController.addTargets(sessionTargets)
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.CAMERA)
+    suspend fun startPreview() {
+        if (isPreviewing) {
+            Log.w(TAG, "Camera is already previewing")
+            return
+        }
+
+        val previewSurface = requireNotNull(previewSurface)
+        startCameraRequestSessionIfNeeded(listOf(previewSurface))
     }
 
     fun stopPreview() {
-        isPreviewing = false
-        cameraController.stopCamera()
+        if (!isPreviewing) {
+            Log.w(TAG, "Camera is not previewing")
+            return
+        }
+
+        cameraController.removeTarget(requireNotNull(previewSurface))
     }
 
-    private fun checkStream() =
-        require(encoderSurface != null) { "encoder surface must not be null" }
+    override suspend fun startStream() {
+        if (isStreaming) {
+            Log.w(TAG, "Camera is already streaming")
+            return
+        }
 
-    override fun startStream() {
-        checkStream()
+        val outputSurface = requireNotNull(outputSurface)
+        startCameraRequestSessionIfNeeded(listOf(outputSurface))
 
         cameraController.muteVibrationAndSound()
-        cameraController.addTarget(encoderSurface!!)
-        isStreaming = true
     }
 
-    override fun stopStream() {
-        if (isStreaming) {
-            checkStream()
-
-            cameraController.unmuteVibrationAndSound()
-
-            isStreaming = false
-            cameraController.removeTarget(encoderSurface!!)
+    override suspend fun stopStream() {
+        if (!isStreaming) {
+            Log.w(TAG, "Camera is not streaming")
+            return
         }
+
+        cameraController.unmuteVibrationAndSound()
+        cameraController.removeTarget(requireNotNull(outputSurface))
     }
 
     override fun release() {
         cameraController.release()
     }
-}
 
+    companion object {
+        private const val TAG = "CameraSource"
+    }
+}

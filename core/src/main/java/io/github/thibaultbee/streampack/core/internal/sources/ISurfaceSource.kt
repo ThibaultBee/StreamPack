@@ -21,7 +21,7 @@ import io.github.thibaultbee.streampack.core.internal.interfaces.Configurable
 import io.github.thibaultbee.streampack.core.internal.interfaces.Releaseable
 import io.github.thibaultbee.streampack.core.internal.interfaces.Streamable
 
-interface ISurfaceSource : Streamable, Configurable<VideoConfig>, Releaseable {
+interface ISurfaceSource {
     /**
      * The offset between source capture time and MONOTONIC clock. It is used to synchronize video
      * with audio. It is only useful for camera source.
@@ -31,5 +31,5 @@ interface ISurfaceSource : Streamable, Configurable<VideoConfig>, Releaseable {
     /**
      * Set surface where capture source will render its frame.
      */
-    var encoderSurface: Surface?
+    var outputSurface: Surface?
 }

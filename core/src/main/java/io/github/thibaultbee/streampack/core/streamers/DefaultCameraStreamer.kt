@@ -18,11 +18,8 @@ package io.github.thibaultbee.streampack.core.streamers
 import android.Manifest
 import android.content.Context
 import android.view.Surface
-import android.view.SurfaceView
-import android.view.TextureView
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.error.StreamPackError
 import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.internal.sources.audio.MicrophoneSource
@@ -31,7 +28,6 @@ import io.github.thibaultbee.streampack.core.internal.sources.video.camera.IPubl
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
-import kotlinx.coroutines.runBlocking
 
 /**
  * A [DefaultStreamer] that sends microphone and camera frames.
@@ -104,30 +100,28 @@ open class DefaultCameraStreamer(
     }
 
     /**
-     * Starts audio and video capture.
-     * [DefaultStreamer.configure] must have been called at least once.
-     *
-     * Inside, it launches both camera and microphone capture.
-     *
-     * @param previewSurface Where to display camera capture. Could be a [Surface] from a [SurfaceView] or a [TextureView].
-     * @param cameraId camera id (get camera id list from [Context.cameraList])
-     *
-     * @throws [StreamPackError] if audio or video capture couldn't be launch
-     * @see [stopPreview]
+     * Sets a preview surface.
      */
-    @RequiresPermission(allOf = [Manifest.permission.CAMERA])
-    override fun startPreview(previewSurface: Surface, cameraId: String) {
-        require(videoConfig != null) { "Video has not been configured!" }
-        runBlocking {
-            try {
-                cameraSource.previewSurface = previewSurface
-                cameraSource.encoderSurface = codecSurface?.input
-                cameraSource.startPreview(cameraId)
-            } catch (e: Exception) {
-                stopPreview()
-                throw StreamPackError(e)
-            }
-        }
+    override fun setPreview(surface: Surface) {
+        cameraSource.previewSurface = surface
+    }
+
+    /**
+     * Starts video preview.
+     *
+     * The preview will be rendered on the surface set by [setPreview].
+     * It is recommend to call configure before call [startPreview] to avoid camera restart when
+     * encoder surface will be added.
+     *
+     * @see [stopPreview]
+     * @see [setPreview]
+     */
+    override suspend fun startPreview() {
+        /**
+         * Trying to set encoder surface to avoid a camera restart.
+         */
+        cameraSource.outputSurface = codecSurface?.input
+        cameraSource.startPreview()
     }
 
     /**

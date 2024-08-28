@@ -86,13 +86,4 @@ open class DefaultScreenRecorderStreamer(
         set(value) {
             screenSource.activityResult = value
         }
-
-    /**
-     * Same as [DefaultStreamer] but it prepares [ScreenSource.encoderSurface].
-     * You must have set [activityResult] before.
-     */
-    override suspend fun startStream() {
-        screenSource.encoderSurface = codecSurface?.input
-        super.startStream()
-    }
 }
