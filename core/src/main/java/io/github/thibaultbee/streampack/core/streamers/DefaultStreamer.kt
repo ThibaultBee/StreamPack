@@ -189,7 +189,7 @@ open class DefaultStreamer(
 
 
     protected val codecSurface =
-        if (internalVideoSource?.hasSurface == true) CodecSurface(sourceOrientationProvider) else null
+        if (internalVideoSource?.hasOutputSurface == true) CodecSurface(sourceOrientationProvider) else null
 
     // ENDPOINT
 
@@ -295,7 +295,7 @@ open class DefaultStreamer(
         val videoEncoder = MediaCodecEncoder(
             VideoEncoderConfig(
                 videoConfig,
-                videoSource.hasSurface,
+                videoSource.hasOutputSurface,
                 videoSource.orientationProvider
             ), listener = videoEncoderListener
         )
@@ -309,6 +309,7 @@ open class DefaultStreamer(
                         override fun onSurfaceUpdated(surface: Surface) {
                             Logger.d(TAG, "Updating with new encoder surface input")
                             codecSurface.outputSurface = surface
+                            videoSource.outputSurface = codecSurface.input
                         }
                     }
             }
