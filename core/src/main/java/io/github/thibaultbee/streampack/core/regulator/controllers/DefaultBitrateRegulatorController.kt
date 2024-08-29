@@ -48,7 +48,7 @@ open class DefaultBitrateRegulatorController(
     bitrateRegulatorConfig
 ) {
     init {
-        require(videoEncoder != null) { "Video encoder is required" }
+        requireNotNull(videoEncoder) { "Video encoder is required" }
     }
 
     /**

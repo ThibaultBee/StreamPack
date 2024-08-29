@@ -250,7 +250,7 @@ open class DefaultStreamer(
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun configure(audioConfig: AudioConfig) {
         require(hasAudio) { "Do not need to set audio as it is a video only streamer" }
-        require(internalAudioSource != null) { "Audio source must not be null" }
+        requireNotNull(internalAudioSource) { "Audio source must not be null" }
 
         this.audioConfig = audioConfig
 
@@ -343,7 +343,7 @@ open class DefaultStreamer(
      */
     override fun configure(videoConfig: VideoConfig) {
         require(hasVideo) { "Do not need to set video as it is a audio only streamer" }
-        require(internalVideoSource != null) { "Video source must not be null" }
+        requireNotNull(internalVideoSource) { "Video source must not be null" }
 
         this.videoConfig = videoConfig
 
@@ -391,17 +391,17 @@ open class DefaultStreamer(
         try {
             val streams = mutableListOf<Config>()
             val orientedVideoConfig = if (hasVideo) {
-                require(videoConfig != null) { "Requires video config" }
+                val videoConfig = requireNotNull(videoConfig) { "Requires video config" }
                 /**
                  * If sourceOrientationProvider is not null, we need to get oriented size.
                  * For example, the [FlvMuxer] `onMetaData` event needs to know the oriented size.
                  */
                 if (sourceOrientationProvider != null) {
                     val orientedSize =
-                        sourceOrientationProvider.getOrientedSize(videoConfig!!.resolution)
-                    videoConfig!!.copy(resolution = orientedSize)
+                        sourceOrientationProvider.getOrientedSize(videoConfig.resolution)
+                    videoConfig.copy(resolution = orientedSize)
                 } else {
-                    videoConfig!!
+                    videoConfig
                 }
             } else {
                 null
@@ -411,8 +411,8 @@ open class DefaultStreamer(
             }
 
             if (hasAudio) {
-                require(audioConfig != null) { "Requires audio config" }
-                streams.add(audioConfig!!)
+                val audioConfig = requireNotNull(audioConfig) { "Requires audio config" }
+                streams.add(audioConfig)
             }
 
             val streamsIdMap = internalEndpoint.addStreams(streams)
