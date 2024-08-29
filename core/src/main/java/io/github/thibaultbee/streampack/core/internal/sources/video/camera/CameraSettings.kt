@@ -836,7 +836,7 @@ class FocusMetering(
         val sensorOrientationDegrees =
             characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
 
-        require(sensorOrientationDegrees != null) {
+        requireNotNull(sensorOrientationDegrees) {
             "Camera $cameraId has no defined sensor orientation."
         }
 

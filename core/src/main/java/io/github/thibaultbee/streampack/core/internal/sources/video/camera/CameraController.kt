@@ -209,11 +209,11 @@ class CameraController(
         get() = captureRequest != null
 
     fun startRequestSession(fps: Int, targets: List<Surface>) {
-        require(camera != null) { "Camera must not be null" }
-        require(captureSession != null) { "Capture session must not be null" }
+        val camera = requireNotNull(camera) { "Camera must not be null" }
+        val captureSession = requireNotNull(captureSession) { "Capture session must not be null" }
 
         captureRequest = createRequestSession(
-            camera!!, captureSession!!, getClosestFpsRange(camera!!.id, fps), targets
+            camera, captureSession, getClosestFpsRange(camera.id, fps), targets
         )
         requestSessionSurface.addAll(targets)
     }
@@ -237,12 +237,12 @@ class CameraController(
     }
 
     fun addTargets(targets: List<Surface>) {
-        require(captureRequest != null) { "capture request must not be null" }
+        val captureRequest = requireNotNull(captureRequest) { "capture request must not be null" }
         require(targets.isNotEmpty()) { " At least one target is required" }
 
         targets.forEach {
             if (!hasTarget(it)) {
-                captureRequest!!.addTarget(it)
+                captureRequest.addTarget(it)
                 requestSessionSurface.add(it)
             }
         }
@@ -250,23 +250,23 @@ class CameraController(
     }
 
     fun addTarget(target: Surface) {
-        require(captureRequest != null) { "capture request must not be null" }
+        val captureRequest = requireNotNull(captureRequest) { "capture request must not be null" }
 
         if (hasTarget(target)) {
             return
         }
 
-        captureRequest!!.addTarget(target)
+        captureRequest.addTarget(target)
         requestSessionSurface.add(target)
 
         updateRepeatingSession()
     }
 
     fun removeTargets(targets: List<Surface>) {
-        require(captureRequest != null) { "capture request must not be null" }
+        val captureRequest = requireNotNull(captureRequest) { "capture request must not be null" }
 
         targets.forEach {
-            captureRequest!!.removeTarget(it)
+            captureRequest.removeTarget(it)
             requestSessionSurface.remove(it)
         }
 
@@ -278,9 +278,9 @@ class CameraController(
     }
 
     fun removeTarget(target: Surface) {
-        require(captureRequest != null) { "capture request must not be null" }
+        val captureRequest = requireNotNull(captureRequest) { "capture request must not be null" }
 
-        captureRequest!!.removeTarget(target)
+        captureRequest.removeTarget(target)
         requestSessionSurface.remove(target)
 
         if (requestSessionSurface.isNotEmpty()) {
@@ -315,20 +315,20 @@ class CameraController(
     }
 
     fun updateRepeatingSession() {
-        require(captureSession != null) { "capture session must not be null" }
-        require(captureRequest != null) { "capture request must not be null" }
+        val captureSession = requireNotNull(captureSession) { "capture session must not be null" }
+        val captureRequest = requireNotNull(captureRequest) { "capture request must not be null" }
 
         cameraDispatchManager.setRepeatingSingleRequest(
-            captureSession!!, captureRequest!!.build(), captureCallback
+            captureSession, captureRequest.build(), captureCallback
         )
     }
 
     private fun updateBurstSession() {
-        require(captureSession != null) { "capture session must not be null" }
-        require(captureRequest != null) { "capture request must not be null" }
+        val captureSession = requireNotNull(captureSession) { "capture session must not be null" }
+        val captureRequest = requireNotNull(captureRequest) { "capture request must not be null" }
 
         cameraDispatchManager.captureBurstRequests(
-            captureSession!!, listOf(captureRequest!!.build()), captureCallback
+            captureSession, listOf(captureRequest.build()), captureCallback
         )
     }
 

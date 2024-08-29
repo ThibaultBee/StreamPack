@@ -23,7 +23,7 @@ class SampleSizeBox(
 ) : FullBox("stsz", 0, 0) {
     init {
         if (sampleSize == 0) {
-            require(sampleSizeEntries != null) { "sampleSizeEntries must be set if sampleSize is 0" }
+            requireNotNull(sampleSizeEntries) { "sampleSizeEntries must be set if sampleSize is 0" }
         }
     }
 

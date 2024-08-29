@@ -102,15 +102,15 @@ class ScreenSource(
     }
 
     override suspend fun startStream() {
-        require(videoConfig != null) { "Video has not been configured!" }
-        require(activityResult != null) { "Activity result must be set!" }
+        val videoConfig = requireNotNull(videoConfig) { "Video has not been configured!" }
+        val activityResult = requireNotNull(activityResult) { "Activity result must be set!" }
 
-        val resultCode = activityResult!!.resultCode
-        val resultData = activityResult!!.data!!
+        val resultCode = activityResult.resultCode
+        val resultData = activityResult.data!!
 
         isStoppedByUser = false
 
-        val orientedSize = orientationProvider.getOrientedSize(videoConfig!!.resolution)
+        val orientedSize = orientationProvider.getOrientedSize(videoConfig.resolution)
         mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, resultData).apply {
             registerCallback(mediaProjectionCallback, virtualDisplayHandler)
             virtualDisplay = createVirtualDisplay(

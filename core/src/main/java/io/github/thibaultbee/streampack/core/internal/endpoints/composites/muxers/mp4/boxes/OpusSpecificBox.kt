@@ -31,7 +31,7 @@ class OpusSpecificBox(
 
     init {
         if (channelMappingFamily != 0.toByte()) {
-            require(channelMapping != null) { "Channel mapping is required when channel mapping family is not 0" }
+            requireNotNull(channelMapping) { "Channel mapping is required when channel mapping family is not 0" }
         }
     }
 

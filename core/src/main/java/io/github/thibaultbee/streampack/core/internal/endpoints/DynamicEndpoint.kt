@@ -50,11 +50,7 @@ class DynamicEndpoint(
         get() = endpointFlow.value
 
     private val endpoint: IEndpoint
-        get() {
-            val endpoint = _endpoint
-            require(endpoint != null) { "Endpoint is not open" }
-            return endpoint
-        }
+        get() = requireNotNull(_endpoint) { "Endpoint is not open" }
 
     // Endpoints
     private var mediaMuxerEndpoint: IEndpoint? = null
