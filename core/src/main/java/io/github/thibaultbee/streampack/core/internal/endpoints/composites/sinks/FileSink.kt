@@ -47,13 +47,12 @@ class FileSink(private val coroutineContext: CoroutineContext = Dispatchers.IO) 
     override fun configure(config: EndpointConfiguration) {} // Nothing to configure
 
     override suspend fun startStream() {
-        require(file != null) { "Set a file before trying to write it" }
+        requireNotNull(file) { "Set a file before trying to write it" }
     }
 
     override suspend fun write(packet: Packet): Int {
-        val file = file
-        require(file != null) { "Set a file before trying to write it" }
-        
+        val file = requireNotNull(file) { "Set a file before trying to write it" }
+
         return withContext(coroutineContext) {
             val byteWritten = packet.buffer.remaining()
             file.write(packet.buffer.toByteArray())

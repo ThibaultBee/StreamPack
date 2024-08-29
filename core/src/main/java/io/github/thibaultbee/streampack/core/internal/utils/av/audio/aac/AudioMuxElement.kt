@@ -153,12 +153,12 @@ class StreamMuxConfig(
 
     init {
         if (audioMuxVersionA == 0) {
-            require(allStreamsSameTimeFraming != null) { "allStreamsSameTimeFraming must be set" }
-            require(numSubFrames != null) { "numSubFrames must be set" }
-            require(numProgram != null) { "numProgram must be set" }
-            require(numLayer != null) { "numLayer must be set" }
-            require(audioSpecificConfig != null) { "audioSpecificConfig must be set" }
-            require(frameLengthType != null) { "frameLengthType must be set" }
+            requireNotNull(allStreamsSameTimeFraming) { "allStreamsSameTimeFraming must be set" }
+            requireNotNull(numSubFrames) { "numSubFrames must be set" }
+            requireNotNull(numProgram) { "numProgram must be set" }
+            requireNotNull(numLayer) { "numLayer must be set" }
+            requireNotNull(audioSpecificConfig) { "audioSpecificConfig must be set" }
+            requireNotNull(frameLengthType) { "frameLengthType must be set" }
         }
     }
 

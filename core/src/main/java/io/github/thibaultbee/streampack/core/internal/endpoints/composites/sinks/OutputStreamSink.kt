@@ -50,12 +50,11 @@ abstract class OutputStreamSink(private val coroutineContext: CoroutineContext =
     override fun configure(config: EndpointConfiguration) {} // Nothing to configure
 
     override suspend fun startStream() {
-        require(outputStream != null) { "Open the sink before starting the stream" }
+        requireNotNull(outputStream) { "Open the sink before starting the stream" }
     }
 
-    override suspend fun write(packet: Packet) : Int{
-        val outputStream = outputStream
-        require(outputStream != null) { "Open the sink before writing" }
+    override suspend fun write(packet: Packet): Int {
+        val outputStream = requireNotNull(outputStream) { "Open the sink before writing" }
 
         return withContext(coroutineContext) {
             val byteWritten = packet.buffer.remaining()

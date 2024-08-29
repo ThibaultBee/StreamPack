@@ -38,7 +38,7 @@ abstract class MediaDescriptor(
                 when (mediaSinkType) {
                     MediaSinkType.FILE -> MediaContainerType.inferFromFileUri(uri)
                     MediaSinkType.CONTENT -> {
-                        require(context != null) { "Context is required to infer container type from content uri" }
+                        requireNotNull(context) { "Context is required to infer container type from content uri" }
                         MediaContainerType.inferFromContentUri(context, uri)
                     }
 

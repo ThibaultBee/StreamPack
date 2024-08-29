@@ -67,7 +67,7 @@ data class GASpecificConfig(
 
     init {
         if (channelConfiguration == ChannelConfiguration.SPECIFIC) {
-            require(programConfigElement != null) { "Program config element must be set" }
+            requireNotNull(programConfigElement) { "Program config element must be set" }
         }
     }
 

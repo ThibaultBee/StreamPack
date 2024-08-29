@@ -123,8 +123,7 @@ class MediaMuxerEndpoint(
         frame: Frame,
         streamPid: Int
     ) {
-        val mediaMuxer = mediaMuxer
-        require(mediaMuxer != null) { "MediaMuxer is not initialized" }
+        val mediaMuxer = requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
 
         return mutex.withLock {
             if (streamIdToTrackId.size < numOfStreams) {
@@ -150,30 +149,26 @@ class MediaMuxerEndpoint(
     }
 
     override fun addStreams(streamConfigs: List<Config>): Map<Config, Int> {
-        mediaMuxer?.let {
-            /**
-             * We can't addTrack here because we don't have the codec specific data.
-             * We will add it when we receive the first frame.
-             */
-            return streamConfigs.associateWith { numOfStreams++ }
-        }
-        throw IllegalStateException("MediaMuxer is not initialized")
+        requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
+        /**
+         * We can't addTrack here because we don't have the codec specific data.
+         * We will add it when we receive the first frame.
+         */
+        return streamConfigs.associateWith { numOfStreams++ }
     }
 
     override fun addStream(streamConfig: Config): Int {
-        mediaMuxer?.let {
-            /**
-             * We can't addTrack here because we don't have the codec specific data.
-             * We will add it when we receive the first frame.
-             */
-            return numOfStreams++
-        }
-        throw IllegalStateException("MediaMuxer is not initialized")
+        requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
+        /**
+         * We can't addTrack here because we don't have the codec specific data.
+         * We will add it when we receive the first frame.
+         */
+        return numOfStreams++
     }
 
     override suspend fun startStream() {
-        val mediaMuxer = mediaMuxer
-        require(mediaMuxer != null) { "MediaMuxer is not initialized" }
+        val mediaMuxer = requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
+
         /**
          * [MediaMuxer.start] is called when we called addTrack for each stream.
          */
