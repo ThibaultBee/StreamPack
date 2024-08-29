@@ -69,7 +69,7 @@ open class DefaultStreamer(
     private val dispatcher: CoroutineDispatcher = Executors.newSingleThreadExecutor()
         .asCoroutineDispatcher()
 ) : ICoroutineStreamer {
-    protected val _throwable = MutableStateFlow<Throwable?>(null)
+    private val _throwable = MutableStateFlow<Throwable?>(null)
     override val throwable: StateFlow<Throwable?> = _throwable
 
     private var audioStreamId: Int? = null
@@ -78,7 +78,7 @@ open class DefaultStreamer(
     private var bitrateRegulatorController: IBitrateRegulatorController? = null
 
     // Keep video configuration
-    protected var videoConfig: VideoConfig? = null
+    private var videoConfig: VideoConfig? = null
     private var audioConfig: AudioConfig? = null
 
     private val sourceOrientationProvider = internalVideoSource?.orientationProvider
@@ -92,7 +92,6 @@ open class DefaultStreamer(
             override fun onOutputFrame(frame: Frame) {
                 audioStreamId?.let {
                     try {
-                        // TODO: use streamer as scope
                         runBlocking {
                             this@DefaultStreamer.internalEndpoint.write(frame, it)
                         }
@@ -118,7 +117,6 @@ open class DefaultStreamer(
                         } else {
                             null
                         }
-                        // TODO: use streamer as scope
                         runBlocking {
                             this@DefaultStreamer.internalEndpoint.write(frame, it)
                         }
@@ -134,20 +132,18 @@ open class DefaultStreamer(
      * Manages error on stream.
      * Stops only stream.
      *
-     * @param e triggered [Exception]
+     * @param t triggered [Throwable]
      */
-    private fun onStreamError(e: Exception) {
+    protected fun onStreamError(t: Throwable) {
         try {
             runBlocking {
                 stopStream()
             }
-        } catch (e: Exception) {
-            Logger.e(TAG, "onStreamError: Can't stop stream", e)
+        } catch (t: Throwable) {
+            Logger.e(TAG, "onStreamError: Can't stop stream", t)
         } finally {
-            Logger.e(TAG, "onStreamError: ${e.message}", e)
-            runBlocking {
-                _throwable.emit(e)
-            }
+            Logger.e(TAG, "onStreamError: ${t.message}", t)
+            _throwable.tryEmit(t)
         }
     }
 

@@ -61,7 +61,6 @@ class RtmpSink(
                 _isOpened.emit(true)
             } catch (e: Exception) {
                 socket = Rtmp()
-                _isOpened.emit(false)
                 throw e
             }
         }
@@ -83,7 +82,6 @@ class RtmpSink(
             } catch (e: Exception) {
                 close()
                 isOnError = true
-                _isOpened.emit(false)
                 Logger.e(TAG, "Error while writing packet to socket", e)
                 throw e
             }
