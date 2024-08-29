@@ -78,7 +78,7 @@ class SrtSink : ISink {
             }
             socket.socketContext.invokeOnCompletion {
                 runBlocking {
-                    _isOpened.emit(false)
+                    close()
                 }
             }
             socket.connect(mediaDescriptor.srtUrl)
@@ -113,7 +113,7 @@ class SrtSink : ISink {
         try {
             return socket.send(packet.buffer, msgCtrl)
         } catch (e: Exception) {
-            _isOpened.emit(false)
+            close()
             throw e
         }
     }

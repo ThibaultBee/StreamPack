@@ -26,7 +26,6 @@ import android.util.Size
 import android.view.Surface
 import androidx.activity.result.ActivityResult
 import io.github.thibaultbee.streampack.core.data.VideoConfig
-import io.github.thibaultbee.streampack.core.error.StreamPackError
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.orientation.AbstractSourceOrientationProvider
 import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSource
@@ -34,9 +33,6 @@ import io.github.thibaultbee.streampack.core.internal.utils.extensions.isDeviceP
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.landscapize
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.portraitize
 import io.github.thibaultbee.streampack.core.logger.Logger
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
 
 class ScreenSource(
@@ -55,8 +51,7 @@ class ScreenSource(
     private var mediaProjection: MediaProjection? = null
     var activityResult: ActivityResult? = null
 
-    private val _exception = MutableStateFlow<Exception?>(null)
-    val exception: StateFlow<Exception?> = _exception
+    var listener: Listener? = null
 
     /**
      *  Avoid to trigger `onError` when screen source `stopStream` has been called.
@@ -80,9 +75,7 @@ class ScreenSource(
             Logger.i(TAG, "onStopped")
 
             if (!isStoppedByUser) {
-                runBlocking {
-                    _exception.emit(StreamPackError("Screen source virtual display has been stopped"))
-                }
+                listener?.onStop()
             }
         }
     }
@@ -93,9 +86,7 @@ class ScreenSource(
             Logger.i(TAG, "onStop")
 
             if (!isStoppedByUser) {
-                runBlocking {
-                    _exception.emit(StreamPackError("Screen source media projection has been stopped"))
-                }
+                listener?.onStop()
             }
         }
     }
@@ -166,5 +157,9 @@ class ScreenSource(
                 size.landscapize
             }
         }
+    }
+
+    interface Listener {
+        fun onStop()
     }
 }

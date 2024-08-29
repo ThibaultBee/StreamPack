@@ -22,10 +22,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.app.ActivityCompat
@@ -36,6 +38,7 @@ import io.github.thibaultbee.streampack.core.internal.utils.extensions.rootCause
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.streamers.DefaultScreenRecorderStreamer
 import io.github.thibaultbee.streampack.services.utils.NotificationUtils
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -55,9 +58,7 @@ import kotlinx.coroutines.runBlocking
  *
  *  To customize notification, you can override:
  *   - R.string.service_notification_* string values
- *   - override open onNotification methods: [onOpenNotification], [onCloseNotification], [onOpenFailedNotification] and [onErrorNotification]
- *
- * If you want to keep the notification, you shall not override [DefaultScreenRecorderStreamer.onErrorListener] and [ILiveStreamer.onConnectionListener].
+ *   - override open onNotification methods: [onOpenNotification], [onCloseNotification] and [onErrorNotification]
  *
  * @param notificationId the notification id a unique number
  * @param channelId the notification channel id
@@ -77,15 +78,28 @@ abstract class DefaultScreenRecorderService(
     private val notificationUtils: NotificationUtils by lazy {
         NotificationUtils(this, channelId, notificationId)
     }
-    private var isStarted = false
 
     override fun onCreate() {
         super.onCreate()
-
         notificationUtils.createNotificationChannel(
             channelNameResourceId,
             channelDescriptionResourceId
         )
+        ServiceCompat.startForeground(
+            this,
+            notificationId,
+            onCreateNotification(),
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+            } else {
+                0
+            }
+        )
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
+        return START_NOT_STICKY
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -95,28 +109,22 @@ abstract class DefaultScreenRecorderService(
             val customBundle = intent.extras?.getBundle(CUSTOM_BUNDLE_KEY)
                 ?: throw IllegalStateException("Config bundle must be pass to the service")
 
-            streamer = createStreamer(customBundle)
-
-            streamer?.let {
+            streamer = createStreamer(customBundle).apply {
                 lifecycleScope.launch {
-                    it.throwable.collect { t ->
-                        if (t != null) {
-                            Logger.e(TAG, "An error occurred", t)
-                            onErrorNotification(t)?.let { notify(it) }
-                            stopSelf()
-                        }
+                    throwable.filterNotNull().collect { t ->
+                        Logger.e(TAG, "An error occurred", t)
+                        onErrorNotification(t)?.let { notify(it) }
+                        stopSelf()
                     }
                 }
                 lifecycleScope.launch {
-                    it.isOpened.collect { isOpened ->
+                    isOpened.collect { isOpened ->
                         if (isOpened) {
                             Logger.i(TAG, "Open succeeded")
                             onOpenNotification()?.let { notify(it) }
                         } else {
-                            val message = "Closed" // TODO
-                            Logger.e(TAG, "Closed: $message")
-                            onCloseNotification(message)?.let { notify(it) }
-                            stopSelf()
+                            onCloseNotification()?.let { notify(it) }
+                            Logger.w(TAG, "Closed")
                         }
                     }
                 }
@@ -126,7 +134,6 @@ abstract class DefaultScreenRecorderService(
             onErrorNotification(e)?.let { notify(it) }
             stopSelf()
         }
-
         return binder
     }
 
@@ -134,32 +141,51 @@ abstract class DefaultScreenRecorderService(
      * Calls when service needs to create the streamer.
      * You can customize the streamer by overriding this method.
      *
-     * @param bundle the custom bundle passed as [launch] parameter.
+     * @param customBundle the custom bundle passed as [launch] parameter.
      * @return the streamer to use.
      */
-    open fun createStreamer(bundle: Bundle): DefaultScreenRecorderStreamer {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.RECORD_AUDIO
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            throw SecurityException("Permission RECORD_AUDIO must have been granted!")
+    open fun createStreamer(customBundle: Bundle): DefaultScreenRecorderStreamer {
+        val enableMicrophone = customBundle.getBoolean(ENABLE_MICROPHONE_KEY, false)
+        if (enableMicrophone) {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.RECORD_AUDIO
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                throw SecurityException("Permission RECORD_AUDIO must have been granted!")
+            }
         }
 
         return DefaultScreenRecorderStreamer(
             applicationContext,
-            enableMicrophone = true,
+            enableMicrophone = enableMicrophone,
         )
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        notificationUtils.cancel()
+
         runBlocking {
             streamer?.stopStream()
             streamer?.close()
         }
         streamer?.release()
         streamer = null
+        Log.i(TAG, "Service destroyed")
+    }
+
+    /**
+     * Called when the service is created
+     *
+     * You can override this method to customize the notification.
+     */
+    protected open fun onCreateNotification(): Notification {
+        return notificationUtils.createNotification(
+            getString(R.string.service_notification_service_created),
+            null,
+            notificationIconResourceId
+        )
     }
 
     /**
@@ -171,7 +197,7 @@ abstract class DefaultScreenRecorderService(
      */
     protected open fun onErrorNotification(t: Throwable): Notification? {
         return notificationUtils.createNotification(
-            getString(R.string.service_notification_error),
+            getString(R.string.service_notification_streamer_error),
             t.rootCause.localizedMessage,
             notificationIconResourceId
         )
@@ -181,28 +207,11 @@ abstract class DefaultScreenRecorderService(
      * Called when streamer is closed
      *
      * You can override this method to customize the notification.
-     *
-     * @param message the reason why the streamer is closed
      */
-    protected open fun onCloseNotification(message: String): Notification? {
+    protected open fun onCloseNotification(): Notification? {
         return notificationUtils.createNotification(
-            getString(R.string.service_notification_closed),
-            message,
-            notificationIconResourceId
-        )
-    }
-
-    /**
-     * Called when the stream failed to open
-     *
-     * You can override this method to customize the notification.
-     *
-     * @param message the reason why the open failed
-     */
-    protected open fun onOpenFailedNotification(message: String): Notification? {
-        return notificationUtils.createNotification(
-            getString(R.string.service_notification_open_failed),
-            message,
+            getString(R.string.service_notification_streamer_closed),
+            null,
             notificationIconResourceId
         )
     }
@@ -214,7 +223,7 @@ abstract class DefaultScreenRecorderService(
      */
     protected open fun onOpenNotification(): Notification? {
         return notificationUtils.createNotification(
-            R.string.service_notification_open,
+            R.string.service_notification_streamer_open,
             0,
             notificationIconResourceId
         )
@@ -226,21 +235,7 @@ abstract class DefaultScreenRecorderService(
      * @param notification the notification to display
      */
     private fun notify(notification: Notification) {
-        if (!isStarted) {
-            ServiceCompat.startForeground(
-                this,
-                notificationId,
-                notification,
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    this.foregroundServiceType
-                } else {
-                    0
-                }
-            )
-            isStarted = true
-        } else {
-            notificationUtils.notify(notification)
-        }
+        notificationUtils.notify(notification)
     }
 
     protected inner class ScreenRecorderServiceBinder : Binder() {
@@ -249,30 +244,35 @@ abstract class DefaultScreenRecorderService(
     }
 
     companion object {
-        private const val TAG = "DefaultScreenRecorderService"
+        private const val TAG = "ScreenRecorderService"
 
         const val DEFAULT_NOTIFICATION_CHANNEL_ID =
             "io.github.thibaultbee.streampack.streamers.services"
         const val DEFAULT_NOTIFICATION_ID = 3782
 
+        // Config
         private const val CUSTOM_BUNDLE_KEY = "bundle"
+        private const val ENABLE_MICROPHONE_KEY = "enableMicrophone"
 
         /**
          * Starts and binds the service with the appropriate parameters.
          *
-         * @param context The application context.
-         * @param serviceClass The service class to launch. It is a children of [DefaultScreenRecorderService].
-         * @param customBundle the user defined [Bundle].
-         * @param onServiceCreated Callback that returns a children of [DefaultScreenRecorderService] instance when the service has been connected.
-         * @param onServiceDisconnected Callback that will be called when the service is disconnected.
+         * @param context the application context.
+         * @param serviceClass the service class to launch. It is a children of [DefaultScreenRecorderService].
+         * @param customBundle the user defined [Bundle]. It will be passed to the service. You can retrieve it in [createStreamer] method.
+         * @param onServiceCreated the callback that returns a children of [DefaultScreenRecorderService] instance when the service has been connected.
+         * @param onServiceDisconnected the callback that will be called when the service is disconnected.
+         * @param enableAudio enable audio recording.
+         * @return the service connection. Use it to [Context.unbindService] when you don't need the service anymore.
          */
         fun launch(
             context: Context,
             serviceClass: Class<out DefaultScreenRecorderService>,
-            customBundle: Bundle,
             onServiceCreated: (DefaultScreenRecorderStreamer) -> Unit,
-            onServiceDisconnected: (name: ComponentName?) -> Unit
-        ) {
+            onServiceDisconnected: (name: ComponentName?) -> Unit = {},
+            customBundle: Bundle = Bundle(),
+            enableAudio: Boolean = false
+        ): ServiceConnection {
             val connection = object : ServiceConnection {
                 override fun onServiceConnected(name: ComponentName?, service: IBinder) {
                     if (service is ScreenRecorderServiceBinder) {
@@ -285,6 +285,28 @@ abstract class DefaultScreenRecorderService(
                 }
             }
 
+            launch(context, serviceClass, connection, customBundle, enableAudio)
+
+            return connection
+        }
+
+        /**
+         * Starts and binds the service with the appropriate parameters.
+         *
+         * @param context the application context.
+         * @param serviceClass the service class to launch. It is a children of [DefaultScreenRecorderService].
+         * @param connection the service connection.
+         * @param customBundle the user defined [Bundle]. It will be passed to the service. You can retrieve it in [createStreamer] method.
+         * @param enableAudio enable audio recording.
+         */
+        fun launch(
+            context: Context,
+            serviceClass: Class<out DefaultScreenRecorderService>,
+            connection: ServiceConnection,
+            customBundle: Bundle = Bundle(),
+            enableAudio: Boolean = false
+        ) {
+            customBundle.putBoolean(ENABLE_MICROPHONE_KEY, enableAudio)
             val intent = Intent(context, serviceClass).apply {
                 putExtra(CUSTOM_BUNDLE_KEY, customBundle)
             }
