@@ -20,7 +20,6 @@ import android.media.MediaFormat
 import io.github.thibaultbee.streampack.data.AudioConfig
 import io.github.thibaultbee.streampack.data.Config
 import io.github.thibaultbee.streampack.internal.data.Frame
-import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.muxers.IMuxer
 import io.github.thibaultbee.streampack.internal.muxers.IMuxerListener
 import io.github.thibaultbee.streampack.internal.muxers.ts.data.Service
@@ -32,9 +31,10 @@ import io.github.thibaultbee.streampack.internal.muxers.ts.packets.Pmt
 import io.github.thibaultbee.streampack.internal.muxers.ts.packets.Sdt
 import io.github.thibaultbee.streampack.internal.muxers.ts.utils.MuxerConst
 import io.github.thibaultbee.streampack.internal.muxers.ts.utils.TSConst
+import io.github.thibaultbee.streampack.internal.muxers.ts.utils.av.OpusControlHeader
+import io.github.thibaultbee.streampack.internal.orientation.ISourceOrientationProvider
 import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.ADTSFrameWriter
 import io.github.thibaultbee.streampack.internal.utils.av.audio.aac.LATMFrameWriter
-import io.github.thibaultbee.streampack.internal.utils.av.audio.opus.OpusFrameWriter
 import java.nio.ByteBuffer
 import java.util.MissingFormatArgumentException
 import kotlin.random.Random
@@ -151,8 +151,17 @@ class TSMuxer(
             }
 
             MediaFormat.MIMETYPE_AUDIO_OPUS -> {
-                frame.copy(rawBuffer = OpusFrameWriter.fromPayload(frame.rawBuffer).toByteBuffer())
+                val payloadSize = frame.buffer.remaining()
+                val controlHeader = OpusControlHeader(
+                    payloadSize = payloadSize
+                )
+                val buffer = ByteBuffer.allocate(controlHeader.size + payloadSize)
+                controlHeader.write(buffer)
+                buffer.put(frame.buffer)
+                buffer.rewind()
+                frame.copy(rawBuffer = buffer)
             }
+
             else -> throw IllegalArgumentException("Unsupported mimeType ${frame.mimeType}")
         }
 
