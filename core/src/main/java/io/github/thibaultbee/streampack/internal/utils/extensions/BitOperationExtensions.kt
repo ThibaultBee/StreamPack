@@ -55,10 +55,11 @@ infix fun Byte.shr(i: Int) =
 infix fun Byte.or(b: Byte) =
     this.toInt() or b.toInt()
 
-
 infix fun Byte.or(other: Int) =
     this.toInt() or other
 
+infix fun Short.shl(i: Int) =
+    this.toInt() shl i
 
 fun Int.toBitList(): List<Boolean> {
     val list = mutableListOf<Boolean>()
