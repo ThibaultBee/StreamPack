@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="default_channel_name">StreamPack</string>
-    <string name="service_notification_error">An error occurred</string>
-    <string name="service_notification_closed">Closed</string>
+    <string name="service_notification_service_created">Waiting</string>
+    <string name="service_notification_streamer_error">An error occurred</string>
+    <string name="service_notification_streamer_closed">Closed</string>
     <string name="service_notification_open_failed">Open failed</string>
-    <string name="service_notification_open">Live in progress…</string>
+    <string name="service_notification_streamer_open">Live in progress…</string>
 </resources>

@@ -25,7 +25,6 @@ import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.internal.sources.audio.MicrophoneSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.screen.ScreenSource
-import kotlinx.coroutines.runBlocking
 
 /**
  * A [DefaultStreamer] that sends microphone and screen frames.
@@ -46,9 +45,9 @@ open class DefaultScreenRecorderStreamer(
 ) {
     private val screenSource =
         (internalVideoSource as ScreenSource).apply {
-            runBlocking {
-                exception.collect {
-                    this@DefaultScreenRecorderStreamer._throwable.emit(it)
+            listener = object : ScreenSource.Listener {
+                override fun onStop() {
+                    onStreamError(Exception("Screen source has been stopped"))
                 }
             }
         }

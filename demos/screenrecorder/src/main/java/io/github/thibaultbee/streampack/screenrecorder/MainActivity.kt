@@ -19,6 +19,7 @@ import android.Manifest
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
 import android.net.Uri
@@ -42,7 +43,6 @@ import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDes
 import io.github.thibaultbee.streampack.screenrecorder.databinding.ActivityMainBinding
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
 import io.github.thibaultbee.streampack.screenrecorder.services.DemoScreenRecorderService
-import io.github.thibaultbee.streampack.screenrecorder.services.DemoScreenRecorderService.Companion.ENABLE_MICROPHONE_KEY
 import io.github.thibaultbee.streampack.screenrecorder.settings.SettingsActivity
 import io.github.thibaultbee.streampack.services.DefaultScreenRecorderService
 import kotlinx.coroutines.runBlocking
@@ -52,18 +52,6 @@ class MainActivity : AppCompatActivity() {
     private val configuration by lazy {
         Configuration(this)
     }
-    private lateinit var streamer: DefaultScreenRecorderStreamer
-
-    /**
-     * Custom bundle to pass to [DefaultScreenRecorderService].
-     */
-    private val customBundle: Bundle
-        get() {
-            return Bundle().apply {
-                putBoolean(ENABLE_MICROPHONE_KEY, configuration.audio.enable)
-                // Add other parameters here
-            }
-        }
 
     private val tsServiceInfo: TSServiceInfo
         get() = TSServiceInfo(
@@ -72,6 +60,9 @@ class MainActivity : AppCompatActivity() {
             configuration.muxer.service,
             configuration.muxer.provider
         )
+
+    private var connection: ServiceConnection? = null
+    private var streamer: DefaultScreenRecorderStreamer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,9 +82,17 @@ class MainActivity : AppCompatActivity() {
             if (isChecked) {
                 requestAudioPermissionsLauncher.launch(Manifest.permission.RECORD_AUDIO)
             } else {
-                stopService()
+                runBlocking {
+                    streamer?.stopStream()
+                    streamer?.close()
+                }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopService()
     }
 
     private val requestAudioPermissionsLauncher =
@@ -113,34 +112,36 @@ class MainActivity : AppCompatActivity() {
 
     private var getContent =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            DefaultScreenRecorderService.launch(
-                this,
-                DemoScreenRecorderService::class.java,
-                customBundle,
-                { streamer ->
-                    this.streamer = streamer.apply {
-                        activityResult = result
-                    }
-                    try {
-                        configureAndStart()
-                        moveTaskToBack(true)
-                    } catch (e: Exception) {
-                        this@MainActivity.showAlertDialog(
-                            this@MainActivity,
-                            "Error",
-                            e.message ?: "Unknown error"
-                        )
+            if (streamer != null) {
+                startStream(requireNotNull(streamer))
+            } else {
+                connection = DefaultScreenRecorderService.launch(
+                    this,
+                    DemoScreenRecorderService::class.java,
+                    { streamer ->
+                        streamer.activityResult = result
+                        try {
+                            configure(streamer)
+                        } catch (e: Exception) {
+                            this@MainActivity.showAlertDialog(
+                                this@MainActivity,
+                                "Error",
+                                e.message ?: "Unknown error"
+                            )
+                            binding.liveButton.isChecked = false
+                            Log.e(TAG, "Error while starting streamer", e)
+                        }
+                        startStream(streamer)
+                        this.streamer = streamer
+                    },
+                    {
                         binding.liveButton.isChecked = false
-                        Log.e(TAG, "Error while starting streamer", e)
-                    }
-                },
-                {
-                    binding.liveButton.isChecked = false
-                    Log.i(TAG, "Service disconnected")
-                })
+                        Log.i(TAG, "Service disconnected")
+                    })
+            }
         }
 
-    private fun configureAndStart() {
+    private fun configure(streamer: DefaultScreenRecorderStreamer) {
         val deviceRefreshRate =
             (this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager).getDisplay(
                 Display.DEFAULT_DISPLAY
@@ -183,36 +184,40 @@ class MainActivity : AppCompatActivity() {
                 throw SecurityException("Permission RECORD_AUDIO must have been granted!")
             }
         }
+    }
 
-        runBlocking {
-            val descriptor = when (configuration.endpoint.type) {
-                EndpointType.SRT -> SrtMediaDescriptor(
-                    configuration.endpoint.srt.ip,
-                    configuration.endpoint.srt.port,
-                    configuration.endpoint.srt.streamID,
-                    configuration.endpoint.srt.passPhrase,
-                    serviceInfo = tsServiceInfo
-                )
+    private fun startStream(streamer: DefaultScreenRecorderStreamer) {
+        try {
+            runBlocking {
+                val descriptor = when (configuration.endpoint.type) {
+                    EndpointType.SRT -> SrtMediaDescriptor(
+                        configuration.endpoint.srt.ip,
+                        configuration.endpoint.srt.port,
+                        configuration.endpoint.srt.streamID,
+                        configuration.endpoint.srt.passPhrase,
+                        serviceInfo = tsServiceInfo
+                    )
 
-                EndpointType.RTMP -> UriMediaDescriptor(Uri.parse(configuration.endpoint.rtmp.url))
+                    EndpointType.RTMP -> UriMediaDescriptor(Uri.parse(configuration.endpoint.rtmp.url))
+                }
+
+                streamer.startStream(descriptor)
             }
-
-            streamer.startStream(descriptor)
+            moveTaskToBack(true)
+        } catch (e: Exception) {
+            this.showAlertDialog(
+                this,
+                "Error",
+                e.message ?: "Unknown error"
+            )
+            binding.liveButton.isChecked = false
+            Log.e(TAG, "Error while starting streamer", e)
         }
     }
 
     private fun stopService() {
-        runBlocking {
-            streamer.stopStream()
-            streamer.close()
-        }
-
-        stopService(
-            Intent(
-                this,
-                DemoScreenRecorderService::class.java
-            )
-        )
+        connection?.let { unbindService(it) }
+        connection = null
     }
 
     private fun showPopup() {
