@@ -189,7 +189,6 @@ class MediaMuxerEndpoint(
     }
 
     override suspend fun close() {
-        stopStream()
         try {
             try {
                 fileDescriptor?.close()
