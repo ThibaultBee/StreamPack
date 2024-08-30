@@ -138,6 +138,11 @@ class PreviewFragment : Fragment() {
         requestCameraAndMicrophonePermissions()
     }
 
+    override fun onPause() {
+        super.onPause()
+        binding.liveButton.isChecked = false
+    }
+
     @SuppressLint("MissingPermission")
     private fun requestCameraAndMicrophonePermissions() {
         when {
