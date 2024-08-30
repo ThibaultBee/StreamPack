@@ -204,12 +204,14 @@ fun ByteBuffer.startsWith(prefixes: List<ByteBuffer>): Pair<Boolean, Int> {
 fun ByteBuffer.toByteArray(): ByteArray {
     return if (this.hasArray() && !isDirect) {
         val offset = position() + arrayOffset()
-        val array = array()
-        if (offset == 0 && array.size == remaining()) {
-            array
+        val bufferArray = array()
+        val array = if (offset == 0 && bufferArray.size == remaining()) {
+            bufferArray
         } else {
-            array.copyOfRange(offset, offset + remaining())
+            bufferArray.copyOfRange(offset, offset + remaining())
         }
+        position(limit())
+        return array
     } else {
         val byteArray = ByteArray(this.remaining())
         get(byteArray)
