@@ -373,6 +373,7 @@ open class DefaultStreamer(
      * Closes the streamer endpoint.
      */
     override suspend fun close() = withContext(dispatcher) {
+        stopStreamInternal()
         internalEndpoint.close()
     }
 

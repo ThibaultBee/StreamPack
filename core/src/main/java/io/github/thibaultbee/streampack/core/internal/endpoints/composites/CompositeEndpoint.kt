@@ -64,7 +64,6 @@ open class CompositeEndpoint(final override val muxer: IMuxer, override val sink
     }
 
     override suspend fun close() {
-        stopStream()
         sink.close()
     }
 
