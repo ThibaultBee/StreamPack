@@ -15,9 +15,11 @@
  */
 package io.github.thibaultbee.streampack.ext.srt.internal.endpoints.composites.sinks
 
+import android.util.Log
 import io.github.thibaultbee.srtdroid.core.enums.Boundary
 import io.github.thibaultbee.srtdroid.core.enums.ErrorType
 import io.github.thibaultbee.srtdroid.core.enums.SockOpt
+import io.github.thibaultbee.srtdroid.core.enums.SockStatus
 import io.github.thibaultbee.srtdroid.core.enums.Transtype
 import io.github.thibaultbee.srtdroid.core.models.MsgCtrl
 import io.github.thibaultbee.srtdroid.core.models.SrtError
@@ -30,22 +32,25 @@ import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.data.SrtPacket
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.EndpointConfiguration
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ISink
+import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 
 class SrtSink : ISink {
-    private var socket = CoroutineSrtSocket()
-    private var bitrate = 0L
+    private var socket: CoroutineSrtSocket? = null
     private val isOnError: Boolean
         get() = SrtError.lastError != ErrorType.SUCCESS
+
+    private var bitrate = 0L
 
     /**
      * Get SRT stats
      */
     override val metrics: Stats
-        get() = socket.bistats(clear = true, instantaneous = true)
+        get() = socket?.bistats(clear = true, instantaneous = true)
+            ?: throw IllegalStateException("Socket is not initialized")
 
     private val _isOpened = MutableStateFlow(false)
     override val isOpened: StateFlow<Boolean> = _isOpened
@@ -75,22 +80,28 @@ class SrtSink : ISink {
                 // Forces this value. Only works if they are null in [srtUrl]
                 setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
                 setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
-            }
-            socket.socketContext.invokeOnCompletion {
-                runBlocking {
-                    close()
+                socketContext.invokeOnCompletion {
+                    runBlocking {
+                        close()
+                    }
                 }
+                connect(mediaDescriptor.srtUrl)
             }
-            socket.connect(mediaDescriptor.srtUrl)
             _isOpened.emit(true)
         } catch (e: Exception) {
-            socket = CoroutineSrtSocket()
             throw e
         }
     }
 
     override suspend fun write(packet: Packet): Int {
         if (isOnError) return -1
+
+        val socket = requireNotNull(socket) { "SrtEndpoint is not initialized" }
+
+        if (socket.sockState == SockStatus.CLOSED) {
+            Logger.w(TAG, "Socket is not connected, dropping packet")
+            return -1
+        }
 
         packet as SrtPacket
         val boundary = when {
@@ -119,6 +130,7 @@ class SrtSink : ISink {
     }
 
     override suspend fun startStream() {
+        val socket = requireNotNull(socket) { "SrtEndpoint is not initialized" }
         require(socket.isConnected) { "SrtEndpoint should be connected at this point" }
 
         socket.setSockFlag(SockOpt.MAXBW, 0L)
@@ -129,12 +141,14 @@ class SrtSink : ISink {
     }
 
     override suspend fun close() {
-        socket.close()
+        socket?.close()
         _isOpened.emit(false)
     }
 
 
     companion object {
+        private const val TAG = "SrtSink"
+
         private const val PAYLOAD_SIZE = 1316
     }
 }
