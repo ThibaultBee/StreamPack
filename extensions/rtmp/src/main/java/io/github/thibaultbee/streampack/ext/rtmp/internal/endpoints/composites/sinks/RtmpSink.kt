@@ -34,8 +34,10 @@ class RtmpSink(
     private val dispatcher: CoroutineDispatcher = Executors.newSingleThreadExecutor()
         .asCoroutineDispatcher()
 ) : ISink {
-    private var socket = Rtmp()
+    private var socket: Rtmp? = null
     private var isOnError = false
+
+    private val supportedVideoCodecs = mutableListOf<String>()
 
     private val _isOpened = MutableStateFlow(false)
     override val isOpened: StateFlow<Boolean> = _isOpened
@@ -46,7 +48,8 @@ class RtmpSink(
     override fun configure(config: EndpointConfiguration) {
         val videoConfig = config.streamConfigs.firstOrNull { it is VideoConfig }
         if (videoConfig != null) {
-            socket.supportedVideoCodecs = listOf(videoConfig.mimeType)
+            supportedVideoCodecs.clear()
+            supportedVideoCodecs += listOf(videoConfig.mimeType)
         }
     }
 
@@ -57,10 +60,18 @@ class RtmpSink(
         withContext(dispatcher) {
             try {
                 isOnError = false
-                socket.connect("${mediaDescriptor.uri} live=1 flashver=FMLE/3.0\\20(compatible;\\20FMSc/1.0)")
+                socket = Rtmp().apply {
+                    /**
+                     * TODO: Add supportedVideoCodecs to Rtmp
+                     * The workaround could be to split connect and connect message.
+                     * The first would be call here and the connect message would be send in
+                     * [startStream] (when configure has been called).
+                     */
+                    // supportedVideoCodecs = this@RtmpSink.supportedVideoCodecs
+                    connect("${mediaDescriptor.uri} live=1 flashver=FMLE/3.0\\20(compatible;\\20FMSc/1.0)")
+                }
                 _isOpened.emit(true)
             } catch (e: Exception) {
-                socket = Rtmp()
                 throw e
             }
         }
@@ -77,6 +88,8 @@ class RtmpSink(
                 return@withContext -1
             }
 
+            val socket = requireNotNull(socket) { "Socket is not initialized" }
+
             try {
                 return@withContext socket.write(packet.buffer)
             } catch (e: Exception) {
@@ -89,6 +102,7 @@ class RtmpSink(
 
     override suspend fun startStream() {
         withContext(dispatcher) {
+            val socket = requireNotNull(socket) { "Socket is not initialized" }
             socket.connectStream()
         }
     }
@@ -99,9 +113,8 @@ class RtmpSink(
 
     override suspend fun close() {
         withContext(dispatcher) {
-            socket.close()
+            socket?.close()
             _isOpened.emit(false)
-            socket = Rtmp()
         }
     }
 
