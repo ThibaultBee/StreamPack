@@ -30,8 +30,10 @@ import io.github.thibaultbee.streampack.app.utils.ObservableViewModel
 import io.github.thibaultbee.streampack.app.utils.StreamerManager
 import io.github.thibaultbee.streampack.app.utils.isEmpty
 import io.github.thibaultbee.streampack.core.streamers.observers.StreamerLifeCycleObserver
+import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
 import io.github.thibaultbee.streampack.ui.views.PreviewView
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -48,8 +50,14 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
 
     init {
         viewModelScope.launch {
-            streamerManager.throwable.filterNotNull()
+            streamerManager.throwable.filterNotNull().filter { !it.isClosedException }
                 .map { "${it.javaClass.simpleName}: ${it.message}" }.collect {
+                    streamerError.postValue(it)
+                }
+        }
+        viewModelScope.launch {
+            streamerManager.throwable.filterNotNull().filter { it.isClosedException }
+                .map { "Connection lost: ${it.message}" }.collect {
                     streamerError.postValue(it)
                 }
         }
