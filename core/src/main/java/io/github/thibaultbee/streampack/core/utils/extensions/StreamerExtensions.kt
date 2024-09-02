@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.thibaultbee.streampack.core.utils
+package io.github.thibaultbee.streampack.core.utils.extensions
 
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer

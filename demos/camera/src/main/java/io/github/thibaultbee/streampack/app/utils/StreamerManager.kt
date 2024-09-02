@@ -33,10 +33,10 @@ import io.github.thibaultbee.streampack.core.internal.sources.video.camera.Camer
 import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
 import io.github.thibaultbee.streampack.core.streamers.observers.StreamerLifeCycleObserver
-import io.github.thibaultbee.streampack.core.utils.backCameras
-import io.github.thibaultbee.streampack.core.utils.frontCameras
-import io.github.thibaultbee.streampack.core.utils.getCameraStreamer
-import io.github.thibaultbee.streampack.core.utils.isBackCamera
+import io.github.thibaultbee.streampack.core.utils.extensions.backCameras
+import io.github.thibaultbee.streampack.core.utils.extensions.frontCameras
+import io.github.thibaultbee.streampack.core.utils.extensions.getCameraStreamer
+import io.github.thibaultbee.streampack.core.utils.extensions.isBackCamera
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrtBitrateRegulatorController
 import io.github.thibaultbee.streampack.ui.views.PreviewView
