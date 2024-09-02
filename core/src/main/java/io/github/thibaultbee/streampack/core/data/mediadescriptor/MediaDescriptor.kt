@@ -9,7 +9,7 @@ import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
 
 abstract class MediaDescriptor(
     val type: Type,
-    val customData: List<Any> = emptyList()
+    private val customData: List<Any> = emptyList()
 ) {
     abstract val uri: Uri
 
