@@ -77,7 +77,7 @@ data class Frame(
         } else {
             null
         }
-    } catch (e: Exception) {
+    } catch (t: Throwable) {
         null
     }
 

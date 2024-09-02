@@ -66,7 +66,7 @@ interface IEncoder : SuspendStreamable, Releaseable,
         /**
          * Calls when an encoder has an error.
          */
-        fun onError(e: Exception) {}
+        fun onError(t: Throwable) {}
 
         /**
          * Calls when an encoder has generated an output frame.

@@ -61,9 +61,9 @@ object CompositeEndpoints {
                 "Attempting to stream RTMP stream without depending on the RTMP extension",
                 e
             )
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             // The RTMP extension is present, but instantiation failed.
-            throw RuntimeException("Error instantiating RTMP extension", e)
+            throw RuntimeException("Error instantiating RTMP extension", t)
         }
     }
 
@@ -78,9 +78,9 @@ object CompositeEndpoints {
                 "Attempting to stream SRT stream without depending on the SRT extension",
                 e
             )
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             // The SRT extension is present, but instantiation failed.
-            throw RuntimeException("Error instantiating SRT extension", e)
+            throw RuntimeException("Error instantiating SRT extension", t)
         }
     }
 }

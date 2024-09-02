@@ -53,7 +53,7 @@ class SrtMediaDescriptorTest {
         try {
             SrtMediaDescriptor(url)
             fail("Should throw an exception")
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 
@@ -62,8 +62,8 @@ class SrtMediaDescriptorTest {
         val url = "srt://host.com:1234?streamid=streamId&passphrase=passPhrase&unknown=unknown"
         try {
             SrtMediaDescriptor(url)
-        } catch (e: Exception) {
-            assertEquals("Failed to parse URL $url: unknown parameter(s): unknown", e.message)
+        } catch (t: Throwable) {
+            assertEquals("Failed to parse URL $url: unknown parameter(s): unknown", t.message)
         }
     }
 }

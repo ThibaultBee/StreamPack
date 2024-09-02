@@ -75,7 +75,7 @@ abstract class OutputStreamSink(private val coroutineContext: CoroutineContext =
             withContext(coroutineContext) {
                 outputStream?.close()
             }
-        } catch (e: Exception) {
+        } catch (_: Throwable) {
             // Ignore
         } finally {
             outputStream = null

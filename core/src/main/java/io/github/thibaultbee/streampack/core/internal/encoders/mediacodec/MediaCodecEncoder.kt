@@ -22,7 +22,6 @@ import android.media.MediaFormat
 import android.os.Bundle
 import android.util.Log
 import android.view.Surface
-import io.github.thibaultbee.streampack.core.error.StreamPackError
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -155,10 +154,10 @@ internal constructor(
             if (input is SurfaceInput) {
                 input.reset()
             }
-        } catch (e: Exception) {
-            Logger.e(tag, "Failed to configure for format: $format", e)
+        } catch (t: Throwable) {
+            Logger.e(tag, "Failed to configure for format: $format", t)
             release()
-            throw e
+            throw t
         }
     }
 
@@ -239,7 +238,7 @@ internal constructor(
             if (input is SurfaceInput) {
                 input.release()
             }
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         } finally {
             isReleased = true
         }
@@ -256,7 +255,7 @@ internal constructor(
         }
     }
 
-    private fun notifyError(e: Exception) {
+    private fun notifyError(t: Throwable) {
         var listener: IEncoder.IListener
         var listenerExecutor: Executor
         synchronized(listenerLock) {
@@ -264,19 +263,19 @@ internal constructor(
             listenerExecutor = this.listenerExecutor
         }
         listenerExecutor.execute {
-            listener.onError(e)
+            listener.onError(t)
         }
     }
 
-    private fun handleError(e: Exception) {
+    private fun handleError(t: Throwable) {
         isOnError = true
         if (!isStopped && !isStopping) {
             encoderExecutor.execute {
                 stopStreamSync()
-                notifyError(e)
+                notifyError(t)
             }
         } else {
-            Log.w(tag, "Get error while stopped: ${e.message}")
+            Log.w(tag, "Get error while stopped: ${t.message}")
         }
     }
 
@@ -322,8 +321,8 @@ internal constructor(
                                 listenerExecutor.execute {
                                     try {
                                         listener.onOutputFrame(frame)
-                                    } catch (e: Exception) {
-                                        handleError(e)
+                                    } catch (t: Throwable) {
+                                        handleError(t)
                                     } finally {
                                         try {
                                             codec.releaseOutputBuffer(index, false)
@@ -373,10 +372,8 @@ internal constructor(
                         ?: throw UnsupportedOperationException("MediaCodecEncoder: can't get input buffer")
                     val frame = input.listener.onFrameRequested(buffer)
                     queueInputFrame(index, frame)
-                } catch (e: Exception) {
-                    handleError(e)
-                } catch (e: StreamPackError) {
-                    handleError(e)
+                } catch (t: Throwable) {
+                    handleError(t)
                 }
             }
         }
@@ -386,7 +383,7 @@ internal constructor(
         }
 
         override fun onError(codec: MediaCodec, e: CodecException) {
-            handleError(StreamPackError(e))
+            handleError(e)
         }
 
         private fun queueInputFrame(

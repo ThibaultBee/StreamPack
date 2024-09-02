@@ -116,7 +116,7 @@ data class VPCodecConfigurationRecord(
                 ChromaSubsampling.fromValue(
                     format.getInteger(MediaFormat.KEY_COLOR_FORMAT).toByte()
                 )
-            } catch (e: Exception) {
+            } catch (t: Throwable) {
                 Logger.e(TAG, "Missing KEY_COLOR_FORMAT in MediaFormat")
                 ChromaSubsampling.YUV420_VERTICAL
             }

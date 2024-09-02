@@ -205,9 +205,9 @@ class StreamerManager(
 
         try {
             streamer.startStream(descriptor)
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             streamer.close()
-            throw e
+            throw t
         }
     }
 

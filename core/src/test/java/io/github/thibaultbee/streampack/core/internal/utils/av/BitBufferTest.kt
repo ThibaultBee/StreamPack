@@ -14,15 +14,15 @@ class BitBufferTest {
         try {
             bitBuffer.getLong(17)
             fail("Should throw exception")
-        } catch (e: Exception) {
-            assertTrue(e is IllegalStateException)
+        } catch (t: Throwable) {
+            assertTrue(t is IllegalStateException)
         }
 
         try {
             bitBuffer.put(111, 17)
             fail("Should throw exception")
-        } catch (e: Exception) {
-            assertTrue(e is IllegalStateException)
+        } catch (t: Throwable) {
+            assertTrue(t is IllegalStateException)
         }
     }
 

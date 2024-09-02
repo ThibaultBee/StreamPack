@@ -24,8 +24,8 @@ enum class MediaSinkType(val schemes: Set<String>) {
             }
             try {
                 return entries.first { it.schemes.contains(scheme) }
-            } catch (e: Exception) {
-                throw IllegalArgumentException("Unknown scheme: $scheme", e)
+            } catch (t: Throwable) {
+                throw IllegalArgumentException("Unknown scheme: $scheme", t)
             }
         }
 

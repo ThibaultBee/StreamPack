@@ -16,19 +16,9 @@
 package io.github.thibaultbee.streampack.core.error
 
 /**
- * Class that encapsulates StreamPack errors
+ * Class that encapsulates camera errors
  *
- * @param cause the error cause
+ * @param message the error message
  */
-open class StreamPackError(cause: Throwable) : Exception(cause) {
-    /**
-     * @param message the error message
-     * @param cause the error cause
-     */
-    constructor(message: String, cause: Throwable) : this(Exception(message, cause))
-
-    /**
-     * @param message the error message
-     */
-    constructor(message: String) : this(Exception(message))
-}
+class CameraException(message: String) :
+    Exception(message)

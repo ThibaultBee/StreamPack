@@ -69,7 +69,7 @@ class FileSink(private val coroutineContext: CoroutineContext = Dispatchers.IO) 
             withContext(coroutineContext) {
                 file?.close()
             }
-        } catch (e: Exception) {
+        } catch (_: Throwable) {
             // Ignore
         } finally {
             file = null
