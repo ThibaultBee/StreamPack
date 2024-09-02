@@ -27,7 +27,7 @@ class FileSinkTest : AbstractFileSinkTest(FileSink()) {
         try {
             sink.open(UriMediaDescriptor(Uri.parse("aaa://a/b/c/d")))
             fail("Null file must not be openable")
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 }

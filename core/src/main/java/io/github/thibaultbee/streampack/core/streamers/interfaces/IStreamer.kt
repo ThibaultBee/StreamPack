@@ -20,7 +20,6 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.error.StreamPackError
 import io.github.thibaultbee.streampack.core.internal.encoders.IPublicEncoder
 import io.github.thibaultbee.streampack.core.internal.endpoints.IPublicEndpoint
 import io.github.thibaultbee.streampack.core.internal.sources.audio.IPublicAudioSource
@@ -84,7 +83,7 @@ interface IStreamer {
      *
      * @param videoConfig Video configuration to set
      *
-     * @throws [StreamPackError] if configuration can not be applied.
+     * @throws [Throwable] if configuration can not be applied.
      * @see [release]
      */
     fun configure(videoConfig: VideoConfig)
@@ -102,7 +101,7 @@ interface IStreamer {
      * @param audioConfig Audio configuration to set
      * @param videoConfig Video configuration to set
      *
-     * @throws [StreamPackError] if configuration can not be applied.
+     * @throws [Throwable] if configuration can not be applied.
      * @see [release]
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)

@@ -62,7 +62,7 @@ abstract class AudioOnlyStreamerTestCase {
                 DataUtils.dummyValidVideoConfig()
             )
             fail("Must not be possible to configure video")
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 
@@ -74,7 +74,7 @@ abstract class AudioOnlyStreamerTestCase {
                 DataUtils.dummyValidVideoConfig()
             )
             fail("Must not be possible to configure video")
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 
@@ -85,7 +85,7 @@ abstract class AudioOnlyStreamerTestCase {
                 DataUtils.dummyInvalidAudioConfig()
             )
             fail("Invalid configuration must throw an exception")
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 

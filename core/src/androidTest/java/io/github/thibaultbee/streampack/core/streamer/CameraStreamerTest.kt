@@ -32,8 +32,8 @@ class TsCameraStreamerTest : CameraStreamerTestCase() {
     override fun startPreviewTest() = runTest {
         try {
             streamer.startPreview(surface)
-        } catch (e: Exception) {
-            fail("Must be possible to only start preview without exception: $e")
+        } catch (t: Throwable) {
+            fail("Must be possible to only start preview without exception: $t")
         }
     }
 }

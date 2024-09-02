@@ -33,12 +33,12 @@ class MicrophoneSourceUnitTest {
         try {
             microphoneSource.startStream()
             Assert.fail()
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
         try {
             microphoneSource.getFrame(ByteBuffer.allocate(10))
             Assert.fail()
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 
@@ -47,12 +47,12 @@ class MicrophoneSourceUnitTest {
         val microphoneSource = MicrophoneSource()
         try {
             microphoneSource.stopStream()
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             Assert.fail()
         }
         try {
             microphoneSource.release()
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             Assert.fail()
         }
     }

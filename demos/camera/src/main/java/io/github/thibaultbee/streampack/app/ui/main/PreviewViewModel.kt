@@ -127,9 +127,9 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
         try {
             streamerManager.toggleCamera()
             notifyCameraChanged()
-        } catch (e: Exception) {
-            Log.e(TAG, "toggleCamera failed", e)
-            streamerError.postValue("toggleCamera: ${e.message ?: "Unknown error"}")
+        } catch (t: Throwable) {
+            Log.e(TAG, "toggleCamera failed", t)
+            streamerError.postValue("toggleCamera: ${t.message ?: "Unknown error"}")
         }
     }
 
@@ -262,8 +262,8 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
         super.onCleared()
         try {
             streamerManager.release()
-        } catch (e: Exception) {
-            Log.e(TAG, "streamer.release failed", e)
+        } catch (t: Throwable) {
+            Log.e(TAG, "streamer.release failed", t)
         }
     }
 

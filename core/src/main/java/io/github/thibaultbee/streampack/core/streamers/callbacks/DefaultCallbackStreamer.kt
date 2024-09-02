@@ -85,8 +85,8 @@ class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallbackStrea
         coroutineScope.launch {
             try {
                 streamer.open(descriptor)
-            } catch (e: Exception) {
-                listeners.forEach { it.onIsOpenFailed(e) }
+            } catch (t: Throwable) {
+                listeners.forEach { it.onIsOpenFailed(t) }
             }
         }
     }
@@ -95,8 +95,8 @@ class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallbackStrea
         coroutineScope.launch {
             try {
                 streamer.close()
-            } catch (e: Exception) {
-                listeners.forEach { it.onError(e) }
+            } catch (t: Throwable) {
+                listeners.forEach { it.onError(t) }
             }
         }
     }
@@ -105,8 +105,8 @@ class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallbackStrea
         coroutineScope.launch {
             try {
                 streamer.startStream()
-            } catch (e: Exception) {
-                listeners.forEach { it.onError(e) }
+            } catch (t: Throwable) {
+                listeners.forEach { it.onError(t) }
             }
         }
     }
@@ -115,8 +115,8 @@ class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallbackStrea
         coroutineScope.launch {
             try {
                 streamer.startStream(descriptor)
-            } catch (e: Exception) {
-                listeners.forEach { it.onError(e) }
+            } catch (t: Throwable) {
+                listeners.forEach { it.onError(t) }
             }
         }
     }
@@ -125,8 +125,8 @@ class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallbackStrea
         coroutineScope.launch {
             try {
                 streamer.stopStream()
-            } catch (e: Exception) {
-                listeners.forEach { it.onError(e) }
+            } catch (t: Throwable) {
+                listeners.forEach { it.onError(t) }
             }
         }
     }

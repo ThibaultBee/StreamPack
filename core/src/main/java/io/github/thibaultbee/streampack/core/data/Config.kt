@@ -95,10 +95,10 @@ open class Config(
     val defaultEncoderName: String? by lazy {
         try {
             MediaCodecHelper.findEncoder(getFormat(true))
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
             try {
                 MediaCodecHelper.findEncoder(getFormat(false))
-            } catch (_: Exception) {
+            } catch (_: Throwable) {
                 null
             }
         }

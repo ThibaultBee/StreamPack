@@ -25,7 +25,7 @@ class MediaMuxerEndpointTest {
     fun openNotAFileTest() = runTest {
         try {
             mediaMuxerEndpoint.open(UriMediaDescriptor(Uri.parse("aaa://a/b/c/d")))
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 

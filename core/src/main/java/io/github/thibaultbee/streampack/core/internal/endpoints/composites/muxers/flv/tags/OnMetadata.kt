@@ -150,7 +150,7 @@ class VideoMetadata(
             } else {
                 try {
                     CodecID.fromMimeType(config.mimeType).value
-                } catch (e: Exception) {
+                } catch (t: Throwable) {
                     Logger.e(TAG, "Failed to get videocodecid for: ${config.mimeType}")
                     null
                 }

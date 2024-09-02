@@ -129,9 +129,9 @@ abstract class DefaultScreenRecorderService(
                     }
                 }
             }
-        } catch (e: Exception) {
-            Logger.e(TAG, "An error occurred", e)
-            onErrorNotification(e)?.let { notify(it) }
+        } catch (t: Throwable) {
+            Logger.e(TAG, "An error occurred", t)
+            onErrorNotification(t)?.let { notify(it) }
             stopSelf()
         }
         return binder
