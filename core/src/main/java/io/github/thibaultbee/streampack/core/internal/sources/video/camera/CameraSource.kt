@@ -24,8 +24,8 @@ import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.internal.utils.av.video.DynamicRangeProfile
-import io.github.thibaultbee.streampack.core.utils.defaultCameraId
-import io.github.thibaultbee.streampack.core.utils.isFrameRateSupported
+import io.github.thibaultbee.streampack.core.utils.extensions.defaultCameraId
+import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
 

@@ -21,7 +21,7 @@ import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.hardware.display.DisplayManager
 import android.view.Display
 import android.view.Surface
-import io.github.thibaultbee.streampack.core.utils.OrientationUtils
+import io.github.thibaultbee.streampack.core.internal.utils.OrientationUtils
 
 /**
  * Returns the device orientation in degrees from the natural orientation: portrait.

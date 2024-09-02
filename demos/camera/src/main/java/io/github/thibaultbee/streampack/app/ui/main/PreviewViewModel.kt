@@ -30,7 +30,7 @@ import io.github.thibaultbee.streampack.app.utils.ObservableViewModel
 import io.github.thibaultbee.streampack.app.utils.StreamerManager
 import io.github.thibaultbee.streampack.app.utils.isEmpty
 import io.github.thibaultbee.streampack.core.streamers.observers.StreamerLifeCycleObserver
-import io.github.thibaultbee.streampack.core.utils.isFrameRateSupported
+import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
 import io.github.thibaultbee.streampack.ui.views.PreviewView
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map

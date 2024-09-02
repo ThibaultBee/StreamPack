@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.streamers.observers
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
-import io.github.thibaultbee.streampack.core.utils.getCameraStreamer
+import io.github.thibaultbee.streampack.core.utils.extensions.getCameraStreamer
 import kotlinx.coroutines.runBlocking
 
 /**

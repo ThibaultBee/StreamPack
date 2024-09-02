@@ -20,7 +20,7 @@ import android.content.Context
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraMetadata
 import android.os.SystemClock
-import io.github.thibaultbee.streampack.core.utils.getCameraCharacteristics
+import io.github.thibaultbee.streampack.core.utils.extensions.getCameraCharacteristics
 
 
 object CameraHelper {
