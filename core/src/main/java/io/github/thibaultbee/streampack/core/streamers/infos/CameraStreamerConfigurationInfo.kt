@@ -21,9 +21,9 @@ import android.util.Size
 import io.github.thibaultbee.streampack.core.internal.endpoints.IPublicEndpoint
 import io.github.thibaultbee.streampack.core.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
-import io.github.thibaultbee.streampack.core.utils.get10BitSupportedProfiles
-import io.github.thibaultbee.streampack.core.utils.getCameraFps
-import io.github.thibaultbee.streampack.core.utils.getCameraOutputStreamSizes
+import io.github.thibaultbee.streampack.core.utils.extensions.get10BitSupportedProfiles
+import io.github.thibaultbee.streampack.core.utils.extensions.getCameraFps
+import io.github.thibaultbee.streampack.core.utils.extensions.getCameraOutputStreamSizes
 
 /**
  * Configuration infos\ for [DefaultCameraStreamer].

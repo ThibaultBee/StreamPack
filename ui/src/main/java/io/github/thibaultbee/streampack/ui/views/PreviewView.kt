@@ -39,8 +39,8 @@ import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
-import io.github.thibaultbee.streampack.core.utils.OrientationUtils
-import io.github.thibaultbee.streampack.core.utils.getCameraCharacteristics
+import io.github.thibaultbee.streampack.core.internal.utils.OrientationUtils
+import io.github.thibaultbee.streampack.core.utils.extensions.getCameraCharacteristics
 import io.github.thibaultbee.streampack.ui.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch

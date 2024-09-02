@@ -24,8 +24,8 @@ import io.github.thibaultbee.streampack.core.internal.utils.extensions.deviceOri
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.isDevicePortrait
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.landscapize
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.portraitize
-import io.github.thibaultbee.streampack.core.utils.cameras
-import io.github.thibaultbee.streampack.core.utils.getFacingDirection
+import io.github.thibaultbee.streampack.core.utils.extensions.cameras
+import io.github.thibaultbee.streampack.core.utils.extensions.getFacingDirection
 import kotlin.math.max
 import kotlin.math.min
 
