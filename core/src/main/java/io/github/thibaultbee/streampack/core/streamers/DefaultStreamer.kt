@@ -91,12 +91,8 @@ open class DefaultStreamer(
 
             override fun onOutputFrame(frame: Frame) {
                 audioStreamId?.let {
-                    try {
-                        runBlocking {
-                            this@DefaultStreamer.internalEndpoint.write(frame, it)
-                        }
-                    } catch (e: Exception) {
-                        throw StreamPackError(e)
+                    runBlocking {
+                        this@DefaultStreamer.internalEndpoint.write(frame, it)
                     }
                 }
             }
@@ -110,19 +106,14 @@ open class DefaultStreamer(
 
             override fun onOutputFrame(frame: Frame) {
                 videoStreamId?.let {
-                    try {
-                        frame.pts += internalVideoSource!!.timestampOffset
-                        frame.dts = if (frame.dts != null) {
-                            frame.dts!! + internalVideoSource.timestampOffset
-                        } else {
-                            null
-                        }
-                        runBlocking {
-                            this@DefaultStreamer.internalEndpoint.write(frame, it)
-                        }
-                    } catch (e: Exception) {
-                        // Send exception to encoder
-                        throw StreamPackError(e)
+                    frame.pts += internalVideoSource!!.timestampOffset
+                    frame.dts = if (frame.dts != null) {
+                        frame.dts!! + internalVideoSource.timestampOffset
+                    } else {
+                        null
+                    }
+                    runBlocking {
+                        this@DefaultStreamer.internalEndpoint.write(frame, it)
                     }
                 }
             }
