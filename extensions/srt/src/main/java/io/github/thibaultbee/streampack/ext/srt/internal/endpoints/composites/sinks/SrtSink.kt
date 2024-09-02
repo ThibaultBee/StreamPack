@@ -15,14 +15,10 @@
  */
 package io.github.thibaultbee.streampack.ext.srt.internal.endpoints.composites.sinks
 
-import android.util.Log
 import io.github.thibaultbee.srtdroid.core.enums.Boundary
-import io.github.thibaultbee.srtdroid.core.enums.ErrorType
 import io.github.thibaultbee.srtdroid.core.enums.SockOpt
-import io.github.thibaultbee.srtdroid.core.enums.SockStatus
 import io.github.thibaultbee.srtdroid.core.enums.Transtype
 import io.github.thibaultbee.srtdroid.core.models.MsgCtrl
-import io.github.thibaultbee.srtdroid.core.models.SrtError
 import io.github.thibaultbee.srtdroid.core.models.SrtUrl.Mode
 import io.github.thibaultbee.srtdroid.core.models.Stats
 import io.github.thibaultbee.srtdroid.ktx.CoroutineSrtSocket
@@ -40,8 +36,8 @@ import kotlinx.coroutines.runBlocking
 
 class SrtSink : ISink {
     private var socket: CoroutineSrtSocket? = null
-    private val isOnError: Boolean
-        get() = SrtError.lastError != ErrorType.SUCCESS
+    private var completionException: Throwable? = null
+    private var isOnError: Boolean = false
 
     private var bitrate = 0L
 
@@ -80,9 +76,12 @@ class SrtSink : ISink {
                 // Forces this value. Only works if they are null in [srtUrl]
                 setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
                 setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
-                socketContext.invokeOnCompletion {
+                completionException = null
+                isOnError = false
+                socketContext.invokeOnCompletion { t ->
+                    completionException = t
                     runBlocking {
-                        close()
+                        this@SrtSink.close()
                     }
                 }
                 connect(mediaDescriptor.srtUrl)
@@ -94,38 +93,55 @@ class SrtSink : ISink {
     }
 
     override suspend fun write(packet: Packet): Int {
-        if (isOnError) return -1
-
-        val socket = requireNotNull(socket) { "SrtEndpoint is not initialized" }
-
-        if (socket.sockState == SockStatus.CLOSED) {
-            Logger.w(TAG, "Socket is not connected, dropping packet")
+        if (isOnError) {
             return -1
         }
 
-        packet as SrtPacket
-        val boundary = when {
-            packet.isFirstPacketFrame && packet.isLastPacketFrame -> Boundary.SOLO
-            packet.isFirstPacketFrame -> Boundary.FIRST
-            packet.isLastPacketFrame -> Boundary.LAST
-            else -> Boundary.SUBSEQUENT
+        completionException?.let {
+            isOnError = true
+            throw it
+        }
+
+        val socket = requireNotNull(socket) { "SrtEndpoint is not initialized" }
+
+        val boundary = if (packet is SrtPacket) {
+            when {
+                packet.isFirstPacketFrame && packet.isLastPacketFrame -> Boundary.SOLO
+                packet.isFirstPacketFrame -> Boundary.FIRST
+                packet.isLastPacketFrame -> Boundary.LAST
+                else -> Boundary.SUBSEQUENT
+            }
+        } else {
+            null
         }
         val msgCtrl =
             if (packet.ts == 0L) {
-                MsgCtrl(boundary = boundary)
+                if (boundary != null) {
+                    MsgCtrl(boundary = boundary)
+                } else {
+                    MsgCtrl()
+                }
             } else {
-                MsgCtrl(
-                    ttl = 500,
-                    srcTime = packet.ts,
-                    boundary = boundary
-                )
+                if (boundary != null) {
+                    MsgCtrl(
+                        ttl = 500,
+                        srcTime = packet.ts,
+                        boundary = boundary
+                    )
+                } else {
+                    MsgCtrl(
+                        ttl = 500,
+                        srcTime = packet.ts
+                    )
+                }
             }
 
         try {
             return socket.send(packet.buffer, msgCtrl)
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             close()
-            throw e
+            isOnError = true
+            throw t
         }
     }
 
