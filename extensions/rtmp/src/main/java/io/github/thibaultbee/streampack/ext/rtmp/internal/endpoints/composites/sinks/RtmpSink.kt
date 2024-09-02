@@ -39,8 +39,8 @@ class RtmpSink(
 
     private val supportedVideoCodecs = mutableListOf<String>()
 
-    private val _isOpened = MutableStateFlow(false)
-    override val isOpened: StateFlow<Boolean> = _isOpened
+    private val _isOpen = MutableStateFlow(false)
+    override val isOpen: StateFlow<Boolean> = _isOpen
 
     override val metrics: Any
         get() = TODO("Not yet implemented")
@@ -54,7 +54,7 @@ class RtmpSink(
     }
 
     override suspend fun open(mediaDescriptor: MediaDescriptor) {
-        require(!isOpened.value) { "SrtEndpoint is already opened" }
+        require(!isOpen.value) { "SrtEndpoint is already opened" }
         require(mediaDescriptor.type.sinkType == MediaSinkType.RTMP) { "MediaDescriptor must be a rtmp Uri" }
 
         withContext(dispatcher) {
@@ -70,7 +70,7 @@ class RtmpSink(
                     // supportedVideoCodecs = this@RtmpSink.supportedVideoCodecs
                     connect("${mediaDescriptor.uri} live=1 flashver=FMLE/3.0\\20(compatible;\\20FMSc/1.0)")
                 }
-                _isOpened.emit(true)
+                _isOpen.emit(true)
             } catch (e: Exception) {
                 throw e
             }
@@ -83,7 +83,7 @@ class RtmpSink(
                 return@withContext -1
             }
 
-            if (!(isOpened.value)) {
+            if (!(isOpen.value)) {
                 Logger.w(TAG, "Socket is not connected, dropping packet")
                 return@withContext -1
             }
@@ -114,7 +114,7 @@ class RtmpSink(
     override suspend fun close() {
         withContext(dispatcher) {
             socket?.close()
-            _isOpened.emit(false)
+            _isOpen.emit(false)
         }
     }
 

@@ -77,7 +77,7 @@ interface IPublicEndpoint {
      * Whether if the endpoint is opened.
      * For example, if the file is opened for [FileSink].
      */
-    val isOpened: StateFlow<Boolean>
+    val isOpen: StateFlow<Boolean>
 
     /**
      * A info to verify supported formats.

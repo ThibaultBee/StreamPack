@@ -52,7 +52,7 @@ class StreamerManager(
 
     val throwable: StateFlow<Throwable?> = streamer.throwable
 
-    val isOpened: StateFlow<Boolean> = streamer.isOpened
+    val isOpen: StateFlow<Boolean> = streamer.isOpen
 
     val isStreaming: StateFlow<Boolean> = streamer.isStreaming
 

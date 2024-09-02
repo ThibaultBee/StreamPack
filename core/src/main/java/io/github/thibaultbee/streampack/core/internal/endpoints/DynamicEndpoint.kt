@@ -62,9 +62,9 @@ class DynamicEndpoint(
     private var rtmpEndpoint: IEndpoint? = null
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override val isOpened: StateFlow<Boolean> = DerivedStateFlow(
-        getValue = { _endpoint?.isOpened?.value ?: false },
-        flow = endpointFlow.flatMapLatest { it?.isOpened ?: MutableStateFlow(false) }
+    override val isOpen: StateFlow<Boolean> = DerivedStateFlow(
+        getValue = { _endpoint?.isOpen?.value ?: false },
+        flow = endpointFlow.flatMapLatest { it?.isOpen ?: MutableStateFlow(false) }
     )
 
     /**
@@ -79,7 +79,7 @@ class DynamicEndpoint(
         get() = endpoint.metrics
 
     override suspend fun open(descriptor: MediaDescriptor) {
-        require(!isOpened.value) { "Endpoint is already opened" }
+        require(!isOpen.value) { "Endpoint is already opened" }
 
         _endpointFlow.update {
             getEndpointAndConfig(descriptor).apply {
