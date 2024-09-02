@@ -19,32 +19,32 @@ class DynamicEndpointTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
 
     @Test
-    fun `isOpened test`() = runTest {
+    fun `isOpen test`() = runTest {
         val dynamicEndpoint = DynamicEndpoint(context)
-        assertFalse(dynamicEndpoint.isOpened.value)
+        assertFalse(dynamicEndpoint.isOpen.value)
         dynamicEndpoint.open(DescriptorUtils.createFileDescriptor("dynamic.ts"))
-        assertTrue(dynamicEndpoint.isOpened.value)
+        assertTrue(dynamicEndpoint.isOpen.value)
     }
 
     @Test
     fun `test open mp4 file descriptor`() = runTest {
         val dynamicEndpoint = DynamicEndpoint(context)
         dynamicEndpoint.open(DescriptorUtils.createFileDescriptor("dynamic.mp4"))
-        assertTrue(dynamicEndpoint.isOpened.value)
+        assertTrue(dynamicEndpoint.isOpen.value)
     }
 
     @Test
     fun `test open ts file descriptor`() = runTest {
         val dynamicEndpoint = DynamicEndpoint(context)
         dynamicEndpoint.open(DescriptorUtils.createFileDescriptor("dynamic.ts"))
-        assertTrue(dynamicEndpoint.isOpened.value)
+        assertTrue(dynamicEndpoint.isOpen.value)
     }
 
     @Test
     fun `test open flv file descriptor`() = runTest {
         val dynamicEndpoint = DynamicEndpoint(context)
         dynamicEndpoint.open(DescriptorUtils.createFileDescriptor("dynamic.flv"))
-        assertTrue(dynamicEndpoint.isOpened.value)
+        assertTrue(dynamicEndpoint.isOpen.value)
     }
 
     @Test
@@ -54,7 +54,7 @@ class DynamicEndpointTest {
             dynamicEndpoint.open(DescriptorUtils.createFileDescriptor("dynamic.unknown"))
             fail("IllegalArgumentException expected")
         } catch (e: Throwable) {
-            assertFalse(dynamicEndpoint.isOpened.value)
+            assertFalse(dynamicEndpoint.isOpen.value)
         }
     }
 
@@ -69,7 +69,7 @@ class DynamicEndpointTest {
                 ), containerType = MediaContainerType.FLV
             )
         )
-        assertTrue(dynamicEndpoint.isOpened.value)
+        assertTrue(dynamicEndpoint.isOpen.value)
     }
 
     @Test
@@ -79,7 +79,7 @@ class DynamicEndpointTest {
             dynamicEndpoint.write(FakeFrames.generate(MediaFormat.MIMETYPE_AUDIO_AAC), 0)
             fail("Throwable expected")
         } catch (e: Throwable) {
-            assertFalse(dynamicEndpoint.isOpened.value)
+            assertFalse(dynamicEndpoint.isOpen.value)
         }
     }
 }

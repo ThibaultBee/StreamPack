@@ -31,7 +31,7 @@ interface ICoroutineStreamer : IStreamer {
      * Returns true if endpoint is opened.
      * For example, if the streamer is connected to a server if the endpoint is SRT or RTMP.
      */
-    val isOpened: StateFlow<Boolean>
+    val isOpen: StateFlow<Boolean>
 
     /**
      * Returns true if stream is running.

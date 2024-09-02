@@ -54,7 +54,7 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
                 }
         }
         viewModelScope.launch {
-            streamerManager.isOpened
+            streamerManager.isOpen
                 .collect {
                     Log.i(TAG, "Streamer is opened: $it")
                 }

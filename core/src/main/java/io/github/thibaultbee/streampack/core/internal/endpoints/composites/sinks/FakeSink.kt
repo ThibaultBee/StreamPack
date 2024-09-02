@@ -25,18 +25,18 @@ import kotlinx.coroutines.flow.StateFlow
  * A fake endpoint for test purpose.
  */
 class FakeSink : ISink {
-    private val _isOpened = MutableStateFlow(false)
-    override val isOpened: StateFlow<Boolean> = _isOpened
+    private val _isOpen = MutableStateFlow(false)
+    override val isOpen: StateFlow<Boolean> = _isOpen
 
     override val metrics: Any
         get() = TODO("Not yet implemented")
 
 
     override suspend fun open(mediaDescriptor: MediaDescriptor) {
-        require(!isOpened.value) { "FakeSink is already opened" }
+        require(!isOpen.value) { "FakeSink is already opened" }
 
         Logger.d(TAG, "open called: $mediaDescriptor")
-        _isOpened.emit(true)
+        _isOpen.emit(true)
     }
 
     override fun configure(config: EndpointConfiguration) {
@@ -58,7 +58,7 @@ class FakeSink : ISink {
 
     override suspend fun close() {
         Logger.d(TAG, "close called")
-        _isOpened.emit(false)
+        _isOpen.emit(false)
     }
 
     companion object {

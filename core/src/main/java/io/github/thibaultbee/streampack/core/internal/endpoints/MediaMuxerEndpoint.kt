@@ -60,11 +60,11 @@ class MediaMuxerEndpoint(
     override val metrics: Any
         get() = TODO("Not yet implemented")
 
-    private val _isOpened = MutableStateFlow(false)
-    override val isOpened: StateFlow<Boolean> = _isOpened
+    private val _isOpen = MutableStateFlow(false)
+    override val isOpen: StateFlow<Boolean> = _isOpen
 
     override suspend fun open(descriptor: MediaDescriptor) {
-        require(!isOpened.value) { "Endpoint is already opened" }
+        require(!isOpen.value) { "Endpoint is already opened" }
         require((descriptor.type.sinkType == MediaSinkType.FILE) || (descriptor.type.sinkType == MediaSinkType.CONTENT)) { "MediaDescriptor must have a path" }
         val containerType = descriptor.type.containerType
         require(
@@ -116,7 +116,7 @@ class MediaMuxerEndpoint(
             throw e
         }
 
-        _isOpened.emit(true)
+        _isOpen.emit(true)
     }
 
     override suspend fun write(
@@ -204,7 +204,7 @@ class MediaMuxerEndpoint(
             numOfStreams = 0
             streamIdToTrackId.clear()
             mediaMuxer = null
-            _isOpened.emit(false)
+            _isOpen.emit(false)
         }
     }
 

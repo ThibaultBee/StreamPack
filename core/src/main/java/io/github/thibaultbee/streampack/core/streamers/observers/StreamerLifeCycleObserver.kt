@@ -37,7 +37,7 @@ open class StreamerLifeCycleObserver(var streamer: ICoroutineStreamer) : Default
         streamer.getCameraStreamer()?.stopPreview()
         runBlocking {
             streamer.stopStream()
-            if (streamer.endpoint.isOpened.value) {
+            if (streamer.endpoint.isOpen.value) {
                 streamer.close()
             }
         }

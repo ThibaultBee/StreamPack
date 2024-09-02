@@ -28,7 +28,6 @@ import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.data.SrtPacket
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.EndpointConfiguration
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ISink
-import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,8 +47,8 @@ class SrtSink : ISink {
         get() = socket?.bistats(clear = true, instantaneous = true)
             ?: throw IllegalStateException("Socket is not initialized")
 
-    private val _isOpened = MutableStateFlow(false)
-    override val isOpened: StateFlow<Boolean> = _isOpened
+    private val _isOpen = MutableStateFlow(false)
+    override val isOpen: StateFlow<Boolean> = _isOpen
 
     override fun configure(config: EndpointConfiguration) {
         bitrate = config.streamConfigs.sumOf { it.startBitrate.toLong() }
@@ -60,7 +59,7 @@ class SrtSink : ISink {
     ) = open(SrtMediaDescriptor(mediaDescriptor))
 
     private suspend fun open(mediaDescriptor: SrtMediaDescriptor) {
-        require(!isOpened.value) { "Sink is already opened" }
+        require(!isOpen.value) { "Sink is already opened" }
         if (mediaDescriptor.srtUrl.mode != null) {
             require(mediaDescriptor.srtUrl.mode == Mode.CALLER) { "Invalid mode: ${mediaDescriptor.srtUrl.mode}. Only caller supported." }
         }
@@ -86,7 +85,7 @@ class SrtSink : ISink {
                 }
                 connect(mediaDescriptor.srtUrl)
             }
-            _isOpened.emit(true)
+            _isOpen.emit(true)
         } catch (e: Exception) {
             throw e
         }
@@ -158,7 +157,7 @@ class SrtSink : ISink {
 
     override suspend fun close() {
         socket?.close()
-        _isOpened.emit(false)
+        _isOpen.emit(false)
     }
 
 

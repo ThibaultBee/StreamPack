@@ -22,7 +22,7 @@ interface ICallbackStreamer : IStreamer {
      * Returns true if endpoint is opened.
      * For example, if the streamer is connected to a server if the endpoint is SRT or RTMP.
      */
-    val isOpened: Boolean
+    val isOpen: Boolean
 
     /**
      * Returns true if stream is running.
@@ -78,7 +78,7 @@ interface ICallbackStreamer : IStreamer {
         /**
          * Called when the streamer is opened or closed.
          */
-        fun onIsOpenChanged(isOpened: Boolean)
+        fun onIsOpenChanged(isOpen: Boolean)
 
         /**
          * Called when the streamer opening failed.

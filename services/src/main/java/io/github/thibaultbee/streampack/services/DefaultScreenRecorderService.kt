@@ -118,8 +118,8 @@ abstract class DefaultScreenRecorderService(
                     }
                 }
                 lifecycleScope.launch {
-                    isOpened.collect { isOpened ->
-                        if (isOpened) {
+                    isOpen.collect { isOpen ->
+                        if (isOpen) {
                             Logger.i(TAG, "Open succeeded")
                             onOpenNotification()?.let { notify(it) }
                         } else {
