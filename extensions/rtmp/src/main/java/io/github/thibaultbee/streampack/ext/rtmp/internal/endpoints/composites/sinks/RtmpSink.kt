@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.composites.
 
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.error.ClosedException
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.EndpointConfiguration
@@ -89,10 +90,10 @@ class RtmpSink(
             try {
                 return@withContext socket.write(packet.buffer)
             } catch (t: Throwable) {
-                close()
                 isOnError = true
+                close()
                 Logger.e(TAG, "Error while writing packet to socket", t)
-                throw t
+                throw ClosedException(t)
             }
         }
 

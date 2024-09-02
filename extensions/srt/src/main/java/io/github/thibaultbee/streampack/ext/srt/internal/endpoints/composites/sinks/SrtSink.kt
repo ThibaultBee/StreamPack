@@ -24,6 +24,7 @@ import io.github.thibaultbee.srtdroid.core.models.Stats
 import io.github.thibaultbee.srtdroid.ktx.CoroutineSrtSocket
 import io.github.thibaultbee.srtdroid.ktx.extensions.connect
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.error.ClosedException
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.data.SrtPacket
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.EndpointConfiguration
@@ -94,7 +95,7 @@ class SrtSink : ISink {
 
         completionException?.let {
             isOnError = true
-            throw it
+            throw ClosedException(it)
         }
 
         val socket = requireNotNull(socket) { "SrtEndpoint is not initialized" }
@@ -134,9 +135,9 @@ class SrtSink : ISink {
         try {
             return socket.send(packet.buffer, msgCtrl)
         } catch (t: Throwable) {
-            close()
             isOnError = true
-            throw t
+            close()
+            throw ClosedException(t)
         }
     }
 
