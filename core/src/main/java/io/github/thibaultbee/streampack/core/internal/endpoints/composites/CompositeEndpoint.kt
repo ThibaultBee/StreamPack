@@ -56,8 +56,8 @@ open class CompositeEndpoint(final override val muxer: IMuxer, override val sink
         }
     }
 
-    override val isOpened: StateFlow<Boolean>
-        get() = sink.isOpened
+    override val isOpen: StateFlow<Boolean>
+        get() = sink.isOpen
 
     override suspend fun open(descriptor: MediaDescriptor) {
         sink.open(descriptor)

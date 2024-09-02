@@ -183,8 +183,8 @@ open class DefaultStreamer(
     override val endpoint: IPublicEndpoint
         get() = internalEndpoint
 
-    override val isOpened: StateFlow<Boolean>
-        get() = internalEndpoint.isOpened
+    override val isOpen: StateFlow<Boolean>
+        get() = internalEndpoint.isOpen
 
 
     private val _isStreaming = MutableStateFlow(false)
@@ -377,7 +377,7 @@ open class DefaultStreamer(
      * @see [stopStream]
      */
     override suspend fun startStream() = withContext(dispatcher) {
-        require(isOpened.value) { "Endpoint must be opened before starting stream" }
+        require(isOpen.value) { "Endpoint must be opened before starting stream" }
         require(!isStreaming.value) { "Stream is already running" }
 
         try {

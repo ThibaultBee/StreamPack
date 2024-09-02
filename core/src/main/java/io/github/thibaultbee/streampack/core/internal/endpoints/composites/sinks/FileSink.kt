@@ -30,18 +30,18 @@ import kotlin.coroutines.CoroutineContext
 class FileSink(private val coroutineContext: CoroutineContext = Dispatchers.IO) : ISink {
     private var file: RandomAccessFile? = null
 
-    private val _isOpened = MutableStateFlow(false)
-    override val isOpened: StateFlow<Boolean> = _isOpened
+    private val _isOpen = MutableStateFlow(false)
+    override val isOpen: StateFlow<Boolean> = _isOpen
 
     override val metrics: Any
         get() = TODO("Not yet implemented")
 
     override suspend fun open(mediaDescriptor: MediaDescriptor) {
-        require(!isOpened.value) { "FileSink is already opened" }
+        require(!isOpen.value) { "FileSink is already opened" }
         require(mediaDescriptor.type.sinkType == MediaSinkType.FILE) { "MediaDescriptor must be a file" }
 
         file = openLocalFile(mediaDescriptor.uri)
-        _isOpened.emit(true)
+        _isOpen.emit(true)
     }
 
     override fun configure(config: EndpointConfiguration) {} // Nothing to configure
@@ -73,7 +73,7 @@ class FileSink(private val coroutineContext: CoroutineContext = Dispatchers.IO) 
             // Ignore
         } finally {
             file = null
-            _isOpened.emit(false)
+            _isOpen.emit(false)
         }
     }
 

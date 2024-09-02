@@ -44,7 +44,7 @@ interface IPublicSink {
      * Whether if the endpoint is opened.
      * For example, if the file is opened for [FileSink].
      */
-    val isOpened: StateFlow<Boolean>
+    val isOpen: StateFlow<Boolean>
 
     /**
      * Metrics of the sink.

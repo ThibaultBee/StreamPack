@@ -32,8 +32,8 @@ abstract class OutputStreamSink(private val coroutineContext: CoroutineContext =
     ISink {
     protected var outputStream: OutputStream? = null
 
-    private val _isOpened = MutableStateFlow(false)
-    override val isOpened: StateFlow<Boolean> = _isOpened
+    private val _isOpen = MutableStateFlow(false)
+    override val isOpen: StateFlow<Boolean> = _isOpen
 
     /**
      * Open an [OutputStream] to write data
@@ -41,10 +41,10 @@ abstract class OutputStreamSink(private val coroutineContext: CoroutineContext =
     abstract suspend fun openOutputStream(mediaDescriptor: MediaDescriptor): OutputStream
 
     override suspend fun open(mediaDescriptor: MediaDescriptor) {
-        require(!isOpened.value) { "OutputStreamSink is already opened" }
+        require(!isOpen.value) { "OutputStreamSink is already opened" }
 
         outputStream = openOutputStream(mediaDescriptor)
-        _isOpened.emit(true)
+        _isOpen.emit(true)
     }
 
     override fun configure(config: EndpointConfiguration) {} // Nothing to configure
@@ -79,7 +79,7 @@ abstract class OutputStreamSink(private val coroutineContext: CoroutineContext =
             // Ignore
         } finally {
             outputStream = null
-            _isOpened.emit(false)
+            _isOpen.emit(false)
         }
     }
 }

@@ -30,8 +30,8 @@ class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallbackStrea
 
     private val listeners = mutableListOf<ICallbackStreamer.Listener>()
 
-    override val isOpened: Boolean
-        get() = streamer.isOpened.value
+    override val isOpen: Boolean
+        get() = streamer.isOpen.value
     override val isStreaming: Boolean
         get() = streamer.isStreaming.value
 
@@ -57,8 +57,8 @@ class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallbackStrea
             }
         }
         coroutineScope.launch {
-            streamer.isOpened.collect { isOpened ->
-                listeners.forEach { it.onIsOpenChanged(isOpened) }
+            streamer.isOpen.collect { isOpen ->
+                listeners.forEach { it.onIsOpenChanged(isOpen) }
             }
         }
         coroutineScope.launch {
