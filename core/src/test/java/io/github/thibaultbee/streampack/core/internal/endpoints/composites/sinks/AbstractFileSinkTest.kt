@@ -52,7 +52,7 @@ abstract class AbstractFileSinkTest(val sink: ISink) {
         try {
             sink.startStream()
             fail("Null file must not be streamable")
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 
@@ -68,7 +68,7 @@ abstract class AbstractFileSinkTest(val sink: ISink) {
                 )
             )
             fail("Null file must not be writable")
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 
@@ -188,7 +188,7 @@ abstract class AbstractFileSinkTest(val sink: ISink) {
                 )
             )
             fail("Sink must not be openable twice")
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 }

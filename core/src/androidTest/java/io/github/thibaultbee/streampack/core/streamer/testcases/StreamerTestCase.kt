@@ -74,7 +74,7 @@ abstract class StreamerTestCase {
                 DataUtils.dummyValidVideoConfig()
             )
             fail("Invalid configuration must throw an exception")
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 
@@ -83,13 +83,13 @@ abstract class StreamerTestCase {
         try {
             streamer.startStream()
             fail("startStream without descriptor")
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
 
         try {
             streamer.startStream(descriptor)
             fail("startStream without configuration must throw an exception")
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 

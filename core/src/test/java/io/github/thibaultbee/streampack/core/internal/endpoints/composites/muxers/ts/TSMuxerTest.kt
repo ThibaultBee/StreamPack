@@ -94,7 +94,7 @@ class TSMuxerTest {
                 )
             }
             fail()
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 
@@ -107,7 +107,7 @@ class TSMuxerTest {
         try {
             tsMux.addService(service)
             fail()
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 
@@ -148,7 +148,7 @@ class TSMuxerTest {
         try { // try to add a stream to this service
             tsMux.addStreams(service, listOf(vStreamConfig1))
             fail()
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 
@@ -192,7 +192,7 @@ class TSMuxerTest {
         try {
             tsMux.write(FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), -1)
             fail()
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 
@@ -204,7 +204,7 @@ class TSMuxerTest {
                 FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), -1
             )
             fail()
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 

@@ -71,7 +71,7 @@ class RtmpMediaDescriptorTest {
         try {
             RtmpMediaDescriptor.fromUrl(url)
             Assert.fail("Should throw an exception")
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 }

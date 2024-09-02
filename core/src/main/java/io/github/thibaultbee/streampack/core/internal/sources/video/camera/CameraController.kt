@@ -29,7 +29,7 @@ import android.os.Build
 import android.util.Range
 import android.view.Surface
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.core.error.CameraError
+import io.github.thibaultbee.streampack.core.error.CameraException
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.utils.getCameraFps
 import kotlinx.coroutines.CancellableContinuation
@@ -100,15 +100,15 @@ class CameraController(
             Logger.e(TAG, "Camera ${camera.id} is in error $error")
 
             val exc = when (error) {
-                ERROR_CAMERA_IN_USE -> CameraError("Camera already in use")
-                ERROR_MAX_CAMERAS_IN_USE -> CameraError(
+                ERROR_CAMERA_IN_USE -> CameraException("Camera already in use")
+                ERROR_MAX_CAMERAS_IN_USE -> CameraException(
                     "Max cameras in use"
                 )
 
-                ERROR_CAMERA_DISABLED -> CameraError("Camera has been disabled")
-                ERROR_CAMERA_DEVICE -> CameraError("Camera device has crashed")
-                ERROR_CAMERA_SERVICE -> CameraError("Camera service has crashed")
-                else -> CameraError("Unknown error")
+                ERROR_CAMERA_DISABLED -> CameraException("Camera has been disabled")
+                ERROR_CAMERA_DEVICE -> CameraException("Camera device has crashed")
+                ERROR_CAMERA_SERVICE -> CameraException("Camera service has crashed")
+                else -> CameraException("Unknown error")
             }
             if (cont.isActive) cont.resumeWithException(exc)
         }
@@ -121,7 +121,7 @@ class CameraController(
 
         override fun onConfigureFailed(session: CameraCaptureSession) {
             Logger.e(TAG, "Camera Session configuration failed")
-            cont.resumeWithException(CameraError("Camera: failed to configure the capture session"))
+            cont.resumeWithException(CameraException("Camera: failed to configure the capture session"))
         }
     }
 

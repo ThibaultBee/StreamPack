@@ -194,8 +194,8 @@ class MicrophoneSource : IAudioSource, IFrameSource<AudioConfig> {
 
                 val noiseSuppressor = try {
                     NoiseSuppressor.create(audioSessionId)
-                } catch (e: Exception) {
-                    Logger.e(TAG, "Failed to create noise suppressor", e)
+                } catch (t: Throwable) {
+                    Logger.e(TAG, "Failed to create noise suppressor", t)
                     return null
                 }
 
@@ -222,8 +222,8 @@ class MicrophoneSource : IAudioSource, IFrameSource<AudioConfig> {
 
                 val acousticEchoCanceler = try {
                     AcousticEchoCanceler.create(audioSessionId)
-                } catch (e: Exception) {
-                    Logger.e(TAG, "Failed to create acoustic echo canceler", e)
+                } catch (t: Throwable) {
+                    Logger.e(TAG, "Failed to create acoustic echo canceler", t)
                     return null
                 }
 

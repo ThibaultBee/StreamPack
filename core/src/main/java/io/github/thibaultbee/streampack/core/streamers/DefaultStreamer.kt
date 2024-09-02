@@ -23,7 +23,6 @@ import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.data.Config
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.error.StreamPackError
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.internal.encoders.IPublicEncoder
@@ -85,8 +84,8 @@ open class DefaultStreamer(
 
     private val audioEncoderListener =
         object : IEncoder.IListener {
-            override fun onError(e: Exception) {
-                onStreamError(e)
+            override fun onError(t: Throwable) {
+                onStreamError(t)
             }
 
             override fun onOutputFrame(frame: Frame) {
@@ -100,8 +99,8 @@ open class DefaultStreamer(
 
     private val videoEncoderListener =
         object : IEncoder.IListener {
-            override fun onError(e: Exception) {
-                onStreamError(e)
+            override fun onError(t: Throwable) {
+                onStreamError(t)
             }
 
             override fun onOutputFrame(frame: Frame) {
@@ -221,7 +220,7 @@ open class DefaultStreamer(
     override fun getInfo(descriptor: MediaDescriptor): IConfigurationInfo {
         val endpointInfo = try {
             endpoint.info
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
             endpoint.getInfo(descriptor)
         }
         return StreamerConfigurationInfo(endpointInfo)
@@ -236,7 +235,7 @@ open class DefaultStreamer(
      *
      * @param audioConfig Audio configuration to set
      *
-     * @throws [StreamPackError] if configuration can not be applied.
+     * @throws [Throwable] if configuration can not be applied.
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun configure(audioConfig: AudioConfig) {
@@ -269,9 +268,9 @@ open class DefaultStreamer(
                     }
                     configure()
                 }
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             release()
-            throw StreamPackError(e)
+            throw t
         }
     }
 
@@ -330,7 +329,7 @@ open class DefaultStreamer(
      *
      * @param videoConfig Video configuration to set
      *
-     * @throws [StreamPackError] if configuration can not be applied.
+     * @throws [Throwable] if configuration can not be applied.
      */
     override fun configure(videoConfig: VideoConfig) {
         require(hasVideo) { "Do not need to set video as it is a audio only streamer" }
@@ -345,9 +344,9 @@ open class DefaultStreamer(
             internalVideoEncoder = buildVideoEncoder(videoConfig, internalVideoSource).apply {
                 configure()
             }
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             release()
-            throw StreamPackError(e)
+            throw t
         }
     }
 
@@ -423,9 +422,9 @@ open class DefaultStreamer(
             bitrateRegulatorController?.start()
 
             _isStreaming.emit(true)
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             stopStreamInternal()
-            throw StreamPackError(e)
+            throw t
         }
     }
 

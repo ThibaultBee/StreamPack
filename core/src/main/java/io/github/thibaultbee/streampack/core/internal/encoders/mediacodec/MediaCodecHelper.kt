@@ -38,7 +38,7 @@ object MediaCodecHelper {
     ): Any? {
         val frameRate = try {
             format.getInteger(MediaFormat.KEY_FRAME_RATE)
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             null
         }
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {

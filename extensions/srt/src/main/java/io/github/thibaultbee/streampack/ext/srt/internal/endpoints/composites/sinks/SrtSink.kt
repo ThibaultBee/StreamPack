@@ -70,25 +70,21 @@ class SrtSink : ISink {
             require(mediaDescriptor.srtUrl.transtype == Transtype.LIVE)
         }
 
-        try {
-            socket = CoroutineSrtSocket().apply {
-                // Forces this value. Only works if they are null in [srtUrl]
-                setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
-                setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
-                completionException = null
-                isOnError = false
-                socketContext.invokeOnCompletion { t ->
-                    completionException = t
-                    runBlocking {
-                        this@SrtSink.close()
-                    }
+        socket = CoroutineSrtSocket().apply {
+            // Forces this value. Only works if they are null in [srtUrl]
+            setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
+            setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
+            completionException = null
+            isOnError = false
+            socketContext.invokeOnCompletion { t ->
+                completionException = t
+                runBlocking {
+                    this@SrtSink.close()
                 }
-                connect(mediaDescriptor.srtUrl)
             }
-            _isOpen.emit(true)
-        } catch (e: Exception) {
-            throw e
+            connect(mediaDescriptor.srtUrl)
         }
+        _isOpen.emit(true)
     }
 
     override suspend fun write(packet: Packet): Int {

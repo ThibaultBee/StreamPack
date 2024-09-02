@@ -83,9 +83,9 @@ interface ICallbackStreamer : IStreamer {
         /**
          * Called when the streamer opening failed.
          *
-         * @param e The exception that occurred
+         * @param t The exception that occurred
          */
-        fun onIsOpenFailed(e: Exception)
+        fun onIsOpenFailed(t: Throwable)
 
         /**
          * Called when the stream is started or stopped.

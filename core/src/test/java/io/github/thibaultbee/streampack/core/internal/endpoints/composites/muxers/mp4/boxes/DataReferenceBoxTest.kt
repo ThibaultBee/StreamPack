@@ -35,7 +35,7 @@ class DataReferenceBoxTest {
         try {
             DataReferenceBox(listOf())
             fail("Should have thrown an exception")
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
     }
 }

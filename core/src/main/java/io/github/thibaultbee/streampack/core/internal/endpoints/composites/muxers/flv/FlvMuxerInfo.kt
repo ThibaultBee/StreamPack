@@ -37,7 +37,7 @@ object AudioFlvMuxerInfo :
         SoundFormat.entries.mapNotNull {
             try {
                 it.toMimeType()
-            } catch (e: Exception) {
+            } catch (t: Throwable) {
                 null
             }
         }
@@ -62,7 +62,7 @@ object VideoFlvMuxerInfo :
         val supportedCodecList = CodecID.entries.mapNotNull {
             try {
                 it.toMimeType()
-            } catch (e: Exception) {
+            } catch (t: Throwable) {
                 null
             }
         }.filter {

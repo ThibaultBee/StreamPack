@@ -151,9 +151,9 @@ class CameraSource(
         if (!cameraController.isRequestSessionRunning) {
             try {
                 cameraController.startRequestSession(fps, sessionTargets)
-            } catch (e: Exception) {
+            } catch (t: Throwable) {
                 cameraController.stop()
-                throw e
+                throw t
             }
         } else {
             cameraController.addTargets(sessionTargets)

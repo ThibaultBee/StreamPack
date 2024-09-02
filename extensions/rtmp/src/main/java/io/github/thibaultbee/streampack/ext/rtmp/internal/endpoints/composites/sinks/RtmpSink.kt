@@ -58,22 +58,18 @@ class RtmpSink(
         require(mediaDescriptor.type.sinkType == MediaSinkType.RTMP) { "MediaDescriptor must be a rtmp Uri" }
 
         withContext(dispatcher) {
-            try {
-                isOnError = false
-                socket = Rtmp().apply {
-                    /**
-                     * TODO: Add supportedVideoCodecs to Rtmp
-                     * The workaround could be to split connect and connect message.
-                     * The first would be call here and the connect message would be send in
-                     * [startStream] (when configure has been called).
-                     */
-                    // supportedVideoCodecs = this@RtmpSink.supportedVideoCodecs
-                    connect("${mediaDescriptor.uri} live=1 flashver=FMLE/3.0\\20(compatible;\\20FMSc/1.0)")
-                }
-                _isOpen.emit(true)
-            } catch (e: Exception) {
-                throw e
+            isOnError = false
+            socket = Rtmp().apply {
+                /**
+                 * TODO: Add supportedVideoCodecs to Rtmp
+                 * The workaround could be to split connect and connect message.
+                 * The first would be call here and the connect message would be send in
+                 * [startStream] (when configure has been called).
+                 */
+                // supportedVideoCodecs = this@RtmpSink.supportedVideoCodecs
+                connect("${mediaDescriptor.uri} live=1 flashver=FMLE/3.0\\20(compatible;\\20FMSc/1.0)")
             }
+            _isOpen.emit(true)
         }
     }
 
@@ -92,11 +88,11 @@ class RtmpSink(
 
             try {
                 return@withContext socket.write(packet.buffer)
-            } catch (e: Exception) {
+            } catch (t: Throwable) {
                 close()
                 isOnError = true
-                Logger.e(TAG, "Error while writing packet to socket", e)
-                throw e
+                Logger.e(TAG, "Error while writing packet to socket", t)
+                throw t
             }
         }
 

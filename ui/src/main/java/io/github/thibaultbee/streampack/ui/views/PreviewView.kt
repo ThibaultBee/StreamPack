@@ -39,9 +39,9 @@ import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
-import io.github.thibaultbee.streampack.ui.R
 import io.github.thibaultbee.streampack.core.utils.OrientationUtils
 import io.github.thibaultbee.streampack.core.utils.getCameraCharacteristics
+import io.github.thibaultbee.streampack.ui.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.CancellationException
@@ -212,8 +212,8 @@ class PreviewView @JvmOverloads constructor(
                         Rect(this.x.toInt(), this.y.toInt(), width, height),
                         OrientationUtils.getSurfaceOrientationDegrees(display.rotation)
                     )
-                } catch (e: Exception) {
-                    Logger.e(TAG, "Failed to focus at $x, $y", e)
+                } catch (t: Throwable) {
+                    Logger.e(TAG, "Failed to focus at $x, $y", t)
                 }
             }
 
@@ -268,11 +268,11 @@ class PreviewView @JvmOverloads constructor(
             lifecycleScope?.launch {
                 startPreviewInternal(streamer, streamer.camera, targetViewSize)
             } ?: throw IllegalStateException("LifecycleScope is not available")
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             if (shouldFailSilently) {
-                Logger.w(TAG, e.toString(), e)
+                Logger.w(TAG, t.toString(), t)
             } else {
-                throw e
+                throw t
             }
         }
     }

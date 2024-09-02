@@ -122,14 +122,14 @@ class MainActivity : AppCompatActivity() {
                         streamer.activityResult = result
                         try {
                             configure(streamer)
-                        } catch (e: Exception) {
+                        } catch (t: Throwable) {
                             this@MainActivity.showAlertDialog(
                                 this@MainActivity,
                                 "Error",
-                                e.message ?: "Unknown error"
+                                t.message ?: "Unknown error"
                             )
                             binding.liveButton.isChecked = false
-                            Log.e(TAG, "Error while starting streamer", e)
+                            Log.e(TAG, "Error while starting streamer", t)
                         }
                         startStream(streamer)
                         this.streamer = streamer
@@ -204,14 +204,14 @@ class MainActivity : AppCompatActivity() {
                 streamer.startStream(descriptor)
             }
             moveTaskToBack(true)
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             this.showAlertDialog(
                 this,
                 "Error",
-                e.message ?: "Unknown error"
+                t.message ?: "Unknown error"
             )
             binding.liveButton.isChecked = false
-            Log.e(TAG, "Error while starting streamer", e)
+            Log.e(TAG, "Error while starting streamer", t)
         }
     }
 

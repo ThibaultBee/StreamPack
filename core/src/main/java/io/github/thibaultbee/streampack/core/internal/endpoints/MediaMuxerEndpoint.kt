@@ -107,13 +107,13 @@ class MediaMuxerEndpoint(
 
                 else -> throw InvalidParameterException("Unsupported sink type: ${descriptor.type.sinkType}")
             }
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             this.containerType = null
             mediaMuxer?.release()
             mediaMuxer = null
             fileDescriptor?.close()
             fileDescriptor = null
-            throw e
+            throw t
         }
 
         _isOpen.emit(true)
@@ -192,13 +192,13 @@ class MediaMuxerEndpoint(
         try {
             try {
                 fileDescriptor?.close()
-            } catch (_: Exception) {
+            } catch (_: Throwable) {
             } finally {
                 fileDescriptor = null
             }
 
             mediaMuxer?.release()
-        } catch (e: Exception) {
+        } catch (_: Throwable) {
             // MediaMuxer is already released
         } finally {
             numOfStreams = 0

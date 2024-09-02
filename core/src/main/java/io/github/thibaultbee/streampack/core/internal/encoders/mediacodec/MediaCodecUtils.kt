@@ -18,13 +18,13 @@ internal object MediaCodecUtils {
         return try {
             try {
                 createCodec(encoderConfig, true)
-            } catch (e: Exception) {
-                Logger.i(TAG, "Fallback without profile and level (reason: $e)")
+            } catch (t: Throwable) {
+                Logger.i(TAG, "Fallback without profile and level (reason: $t)")
                 createCodec(encoderConfig, false)
             }
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             Logger.e(TAG, "Failed to create encoder for ${encoderConfig.config}")
-            throw e
+            throw t
         }
     }
 

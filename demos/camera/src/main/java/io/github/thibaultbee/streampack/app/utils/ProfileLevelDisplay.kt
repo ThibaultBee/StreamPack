@@ -407,7 +407,7 @@ class ProfileLevelDisplay(private val context: Context) {
         val nameMap = getProfileMap(mimeType)
         return try {
             nameMap[profile]!!
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
             context.getString(R.string.av_profile_unknown)
         }
     }
@@ -431,7 +431,7 @@ class ProfileLevelDisplay(private val context: Context) {
         val nameMap = getLevelMap(mimeType)
         return try {
             nameMap[level]!!
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
             context.getString(R.string.av_level_unknown)
         }
     }
