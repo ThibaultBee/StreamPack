@@ -35,9 +35,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 
 /**
- * Default implementation of [IEndpoint].
+ * An implementation of [IEndpoint] where the endpoint is created based on the [MediaDescriptor].
  *
- * It creates an [IEndpoint] based on the [MediaDescriptor].
+ * @param context The application context
  */
 class DynamicEndpoint(
     private val context: Context
