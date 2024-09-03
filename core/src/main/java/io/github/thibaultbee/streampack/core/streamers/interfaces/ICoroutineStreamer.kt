@@ -58,18 +58,6 @@ interface ICoroutineStreamer : IStreamer {
     suspend fun startStream()
 
     /**
-     * Starts audio/video stream.
-     *
-     * Same as doing [open] and [startStream].
-     *
-     * @see [stopStream]
-     */
-    suspend fun startStream(descriptor: MediaDescriptor) {
-        open(descriptor)
-        startStream()
-    }
-
-    /**
      * Stops audio/video stream.
      *
      * @see [startStream]
