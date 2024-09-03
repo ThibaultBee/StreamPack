@@ -48,11 +48,14 @@ fun SrtMediaDescriptor(descriptor: MediaDescriptor): SrtMediaDescriptor =
 /**
  * Creates a SRT connection descriptor from an [String]
  *
- * @param uri the srt server uri
+ * @param uriString the srt server uri
  * @param serviceInfo the TS service information
  */
-fun SrtMediaDescriptor(uri: String, serviceInfo: TSServiceInfo = createDefaultTsServiceInfo()) =
-    SrtMediaDescriptor.fromUrl(uri, serviceInfo = serviceInfo)
+fun SrtMediaDescriptor(
+    uriString: String,
+    serviceInfo: TSServiceInfo = createDefaultTsServiceInfo()
+) =
+    SrtMediaDescriptor.fromUrl(uriString, serviceInfo = serviceInfo)
 
 /**
  * Creates a SRT connection descriptor from an [Uri]
@@ -62,7 +65,6 @@ fun SrtMediaDescriptor(uri: String, serviceInfo: TSServiceInfo = createDefaultTs
  */
 fun SrtMediaDescriptor(uri: Uri, serviceInfo: TSServiceInfo = createDefaultTsServiceInfo()) =
     SrtMediaDescriptor.fromUri(uri, serviceInfo = serviceInfo)
-
 
 /**
  * Creates a SRT connection descriptor from parameters
@@ -167,7 +169,10 @@ class SrtMediaDescriptor(
          * @param url server url (syntax: srt://host:port?streamid=streamId&passphrase=passPhrase)
          * @return SRT connection descriptor
          */
-        internal fun fromUrl(url: String, serviceInfo: TSServiceInfo = createDefaultTsServiceInfo()) =
+        internal fun fromUrl(
+            url: String,
+            serviceInfo: TSServiceInfo = createDefaultTsServiceInfo()
+        ) =
             fromUri(Uri.parse(url), serviceInfo)
 
         /**

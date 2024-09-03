@@ -39,6 +39,7 @@ import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescri
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.MediaCodecHelper
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.streamers.DefaultScreenRecorderStreamer
+import io.github.thibaultbee.streampack.core.utils.extensions.startStream
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import io.github.thibaultbee.streampack.screenrecorder.databinding.ActivityMainBinding
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
