@@ -23,7 +23,6 @@ import java.io.OutputStream
  * A class that allows to write into multiple files.
  * It is useful when you want to upload a file to a server but you don't want to wait for the record
  * to finish before.
- * Use this class as an [OutputStream] of a [IFileStreamer].
  *
  * @param filesDir the directory where the files will be written
  * @param chunkSize the size of each file in bytes
