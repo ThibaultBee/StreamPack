@@ -25,7 +25,7 @@ import io.github.thibaultbee.streampack.core.internal.utils.extensions.closestTo
  * https://d.android.com/reference/android/hardware/camera2/CameraDevice and
  * https://developer.android.com/reference/android/hardware/camera2/params/StreamConfigurationMap
  */
-internal fun <T> getPreviewOutputSize(
+fun <T> getPreviewOutputSize(
     characteristics: CameraCharacteristics,
     targetSize: Size,
     targetClass: Class<T>,
