@@ -23,6 +23,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
 import io.github.thibaultbee.streampack.core.utils.DataUtils
+import io.github.thibaultbee.streampack.core.utils.extensions.startStream
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before

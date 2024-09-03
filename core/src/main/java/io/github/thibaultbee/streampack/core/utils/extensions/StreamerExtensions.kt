@@ -16,13 +16,109 @@
 
 package io.github.thibaultbee.streampack.core.utils.extensions
 
+import android.net.Uri
+import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.IStreamer
+
+/**
+ * Opens the streamer endpoint.
+ *
+ * @param uri The uri to open
+ */
+suspend fun ICoroutineStreamer.open(uri: Uri) =
+    open(UriMediaDescriptor(uri))
+
+/**
+ * Opens the streamer endpoint.
+ *
+ * @param uriString The uri to open
+ */
+suspend fun ICoroutineStreamer.open(uriString: String) =
+    open(UriMediaDescriptor(Uri.parse(uriString)))
+
+/**
+ * Starts audio/video stream.
+ *
+ * Same as doing [open] and [startStream].
+ *
+ * @param descriptor The media descriptor to open
+ * @see [stopStream]
+ */
+suspend fun ICoroutineStreamer.startStream(descriptor: MediaDescriptor) {
+    open(descriptor)
+    startStream()
+}
+
+/**
+ * Starts audio/video stream.
+ *
+ * Same as doing [open] and [startStream].
+ *
+ * @param uri The uri to open
+ * @see [stopStream]
+ */
+suspend fun ICoroutineStreamer.startStream(uri: Uri) {
+    open(uri)
+    startStream()
+}
+
+/**
+ * Starts audio/video stream.
+ *
+ * Same as doing [open] and [startStream].
+ *
+ * @param uriString The uri to open
+ * @see [stopStream]
+ */
+suspend fun ICoroutineStreamer.startStream(uriString: String) {
+    open(uriString)
+    startStream()
+}
+
+/**
+ * Opens the streamer endpoint.
+ *
+ * @param uri The uri to open
+ */
+fun ICallbackStreamer.open(uri: Uri) =
+    open(UriMediaDescriptor(uri))
+
+/**
+ * Opens the streamer endpoint.
+ *
+ * @param uriString The uri to open
+ */
+fun ICallbackStreamer.open(uriString: String) =
+    open(UriMediaDescriptor(Uri.parse(uriString)))
+
+/**
+ * Starts audio/video stream.
+ *
+ * Same as doing [open] and [startStream].
+ *
+ * @param uri The uri to open
+ * @see [stopStream]
+ */
+fun ICallbackStreamer.startStream(uri: Uri) = startStream(UriMediaDescriptor(uri))
+
+/**
+ * Starts audio/video stream.
+ *
+ * Same as doing [open] and [startStream].
+ *
+ * @param uriString The uri to open
+ * @see [stopStream]
+ */
+fun ICallbackStreamer.startStream(uriString: String) = startStream(Uri.parse(uriString))
 
 /**
  * Get a streamer if it from generic class or interface
  */
-inline fun <reified T> ICoroutineStreamer.getStreamer(): T? {
+inline fun <reified T> IStreamer.getStreamer(): T? {
     return if (this is T) {
         this
     } else {
@@ -30,4 +126,7 @@ inline fun <reified T> ICoroutineStreamer.getStreamer(): T? {
     }
 }
 
-fun ICoroutineStreamer.getCameraStreamer(): ICameraStreamer? = getStreamer<ICameraStreamer>()
+/**
+ * Casts streamer to [ICameraStreamer].
+ */
+fun IStreamer.getCameraStreamer(): ICameraStreamer? = getStreamer<ICameraStreamer>()
