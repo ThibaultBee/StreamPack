@@ -25,7 +25,7 @@ class ChunkedFileOutputStreamTest {
         val isLastChunkCountDownLatch = CountDownLatch(1)
         var nextChunkId = 0
         val listener = object : ChunkedFileOutputStream.Listener {
-            override fun onFileClosed(index: Int, isLast: Boolean, file: File) {
+            override fun onFileAvailable(index: Int, isLast: Boolean, file: File) {
                 Assert.assertEquals(nextChunkId, index)
                 chunkReadyCountDownLatch.countDown()
                 if (isLast) {
@@ -61,7 +61,7 @@ class ChunkedFileOutputStreamTest {
     fun `write data == chunk`() {
         val countDownLatch = CountDownLatch(4)
         val listener = object : ChunkedFileOutputStream.Listener {
-            override fun onFileClosed(index: Int, isLast: Boolean, file: File) {
+            override fun onFileAvailable(index: Int, isLast: Boolean, file: File) {
                 countDownLatch.countDown()
             }
         }
@@ -92,7 +92,7 @@ class ChunkedFileOutputStreamTest {
         val isLastChunkCountDownLatch = CountDownLatch(1)
         var nextChunkId = 0
         val listener = object : ChunkedFileOutputStream.Listener {
-            override fun onFileClosed(index: Int, isLast: Boolean, file: File) {
+            override fun onFileAvailable(index: Int, isLast: Boolean, file: File) {
                 Assert.assertEquals(nextChunkId, index)
                 chunkReadyCountDownLatch.countDown()
                 if (isLast) {
@@ -133,7 +133,7 @@ class ChunkedFileOutputStreamTest {
     fun `write single int`() {
         val countDownLatch = CountDownLatch(4)
         val listener = object : ChunkedFileOutputStream.Listener {
-            override fun onFileClosed(index: Int, isLast: Boolean, file: File) {
+            override fun onFileAvailable(index: Int, isLast: Boolean, file: File) {
                 countDownLatch.countDown()
             }
         }
@@ -164,7 +164,7 @@ class ChunkedFileOutputStreamTest {
     fun `multiple close test`() {
         val countDownLatch = CountDownLatch(3)
         val listener = object : ChunkedFileOutputStream.Listener {
-            override fun onFileClosed(index: Int, isLast: Boolean, file: File) {
+            override fun onFileAvailable(index: Int, isLast: Boolean, file: File) {
                 countDownLatch.countDown()
             }
         }
@@ -191,7 +191,7 @@ class ChunkedFileOutputStreamTest {
     fun `close without writing data`() {
         val countDownLatch = CountDownLatch(1)
         val listener = object : ChunkedFileOutputStream.Listener {
-            override fun onFileClosed(index: Int, isLast: Boolean, file: File) {
+            override fun onFileAvailable(index: Int, isLast: Boolean, file: File) {
                 countDownLatch.countDown()
             }
         }
