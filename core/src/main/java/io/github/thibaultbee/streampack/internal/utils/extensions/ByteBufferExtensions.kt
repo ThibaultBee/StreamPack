@@ -155,30 +155,47 @@ fun ByteBuffer.slices(prefix: ByteArray): List<ByteBuffer> {
 /**
  * Whether the [ByteBuffer] starts with a [ByteArray] [prefix] from the current position.
  */
-fun ByteBuffer.startsWith(prefix: ByteArray): Boolean {
-    if (this.remaining() < prefix.size) {
-        return false
+fun ByteBuffer.startsWith(
+    prefix: ByteArray,
+    prefixSkip: Int = 0
+): Boolean {
+    val size = minOf(remaining(), prefix.size - prefixSkip)
+    if (size <= 0) return false
+
+    val position = position()
+
+    for (i in 0 until size) {
+        if (get(position + i) != prefix[prefixSkip + i]) return false
     }
 
-    val position = this.position()
-    for (i in prefix.indices) {
-        if (this.get(position + i) != prefix[i]) {
-            return false
-        }
+    return true
+}
+
+
+/**
+ * Whether the [ByteBuffer] starts with a [ByteArray] [prefix] from the current position.
+ */
+fun ByteBuffer.startsWith(
+    prefix: ByteBuffer,
+    prefixSkip: Int = 0
+): Boolean {
+    val size = minOf(remaining(), prefix.remaining() - prefixSkip)
+    if (size <= 0) return false
+
+    val position = position()
+    val prefixPosition = prefix.position() + prefixSkip
+
+    for (i in 0 until size) {
+        if (get(position + i) != prefix.get(prefixPosition + i)) return false
     }
+
     return true
 }
 
 /**
  * Whether the [ByteBuffer] starts with a [String] [prefix] from the current position.
  */
-fun ByteBuffer.startWith(prefix: String) = startsWith(prefix.toByteArray())
-
-
-/**
- * Whether the [ByteBuffer] starts with a [ByteBuffer] [prefix] from the current position.
- */
-fun ByteBuffer.startWith(prefix: ByteBuffer) = startsWith(prefix.toByteArray())
+fun ByteBuffer.startsWith(prefix: String) = startsWith(prefix.toByteArray())
 
 /**
  * Whether the [ByteBuffer] starts with a list of [ByteBuffer] [prefixes] from the current position.
@@ -188,7 +205,7 @@ fun ByteBuffer.startWith(prefix: ByteBuffer) = startsWith(prefix.toByteArray())
  */
 fun ByteBuffer.startsWith(prefixes: List<ByteBuffer>): Pair<Boolean, Int> {
     prefixes.forEachIndexed { index, byteBuffer ->
-        if (this.startWith(byteBuffer)) {
+        if (this.startsWith(byteBuffer)) {
             return Pair(true, index)
         }
     }
@@ -204,14 +221,12 @@ fun ByteBuffer.startsWith(prefixes: List<ByteBuffer>): Pair<Boolean, Int> {
 fun ByteBuffer.toByteArray(): ByteArray {
     return if (this.hasArray() && !isDirect) {
         val offset = position() + arrayOffset()
-        val bufferArray = array()
-        val array = if (offset == 0 && bufferArray.size == remaining()) {
-            bufferArray
+        val array = array()
+        if (offset == 0 && array.size == remaining()) {
+            array
         } else {
-            bufferArray.copyOfRange(offset, offset + remaining())
+            array.copyOfRange(offset, offset + remaining())
         }
-        position(limit())
-        return array
     } else {
         val byteArray = ByteArray(this.remaining())
         get(byteArray)

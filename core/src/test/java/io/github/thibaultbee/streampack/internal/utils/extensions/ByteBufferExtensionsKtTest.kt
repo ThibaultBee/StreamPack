@@ -3,6 +3,7 @@ package io.github.thibaultbee.streampack.internal.utils.extensions
 import io.github.thibaultbee.streampack.utils.Utils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.nio.ByteBuffer
 
@@ -323,5 +324,16 @@ class ByteBufferExtensionsKtTest {
         testBuffer2.putString(value)
         testBuffer2.rewind()
         assertEquals(testBuffer2.getString(5), value)
+    }
+
+    @Test
+    fun `startWith ByteBuffer test`() {
+        val prefix = "PREFIX"
+        val testBuffer = ByteBuffer.wrap("PREFIX_AND_BUFFER".toByteArray())
+        val prefixBuffer = ByteBuffer.wrap(prefix.toByteArray())
+
+        assertTrue(testBuffer.startsWith(prefixBuffer))
+        assertEquals(0, prefixBuffer.position())
+        assertEquals(0, testBuffer.position())
     }
 }

@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.internal.utils.av.audio.opus
 
 import io.github.thibaultbee.streampack.internal.utils.extensions.getLong
 import io.github.thibaultbee.streampack.internal.utils.extensions.getString
-import io.github.thibaultbee.streampack.internal.utils.extensions.startWith
+import io.github.thibaultbee.streampack.internal.utils.extensions.startsWith
 import java.nio.ByteBuffer
 
 class OpusCsdParser {
@@ -32,7 +32,7 @@ class OpusCsdParser {
 
         private const val LENGTH_SIZE = Long.SIZE_BYTES
 
-        fun isCsdSyntax(buffer: ByteBuffer) = buffer.startWith(MARKER_PREFIX)
+        fun isCsdSyntax(buffer: ByteBuffer) = buffer.startsWith(MARKER_PREFIX)
 
         fun parse(buffer: ByteBuffer): Triple<IdentificationHeader, ByteBuffer?, ByteBuffer?> {
             if (IdentificationHeader.isIdentificationHeader(buffer)) {

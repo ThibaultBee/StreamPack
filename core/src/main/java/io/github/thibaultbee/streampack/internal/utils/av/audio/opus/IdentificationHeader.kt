@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.internal.utils.av.audio.opus
 
 import io.github.thibaultbee.streampack.internal.utils.av.buffer.ByteBufferWriter
 import io.github.thibaultbee.streampack.internal.utils.extensions.getString
-import io.github.thibaultbee.streampack.internal.utils.extensions.startWith
+import io.github.thibaultbee.streampack.internal.utils.extensions.startsWith
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -40,7 +40,7 @@ class IdentificationHeader(
         private const val MAGIC_SIGNATURE_SIZE = 8
         private const val MAGIC_SIGNATURE = "OpusHead"
 
-        fun isIdentificationHeader(buffer: ByteBuffer) = buffer.startWith(MAGIC_SIGNATURE)
+        fun isIdentificationHeader(buffer: ByteBuffer) = buffer.startsWith(MAGIC_SIGNATURE)
 
         fun parse(buffer: ByteBuffer): IdentificationHeader {
             val magicSignature =
