@@ -33,8 +33,7 @@ class ChunkedFileOutputStream(
     private val chunkSize: Int,
     private val chunkNameGenerator: (Int) -> String = { id -> "chunk_$id" },
 ) : OutputStream() {
-    private var currentFileBytesWritten = 0
-    private var totalBytesWritten = 0
+    private var currentOutputStreamBytesWritten = 0
 
     private var _isClosed = false
 
@@ -73,7 +72,7 @@ class ChunkedFileOutputStream(
     private fun closeOutputStream(outputStream: FileOutputStream, isLast: Boolean) {
         outputStream.close()
         listener.forEach {
-            it.onFileClosed(
+            it.onFileAvailable(
                 fileId,
                 isLast,
                 getFile()
@@ -82,14 +81,14 @@ class ChunkedFileOutputStream(
     }
 
     private fun getOutputStream(): FileOutputStream {
-        if ((currentFileBytesWritten >= chunkSize) || (outputStream == null)) {
-            // Close current stream
+        if ((currentOutputStreamBytesWritten >= chunkSize) || (outputStream == null)) {
+            // Close previous stream
             outputStream?.let {
                 closeOutputStream(it, false)
             }
 
             // Prepare a new stream
-            currentFileBytesWritten = 0
+            currentOutputStreamBytesWritten = 0
             _numOfFiles++
 
             outputStream = FileOutputStream(getFile())
@@ -97,24 +96,20 @@ class ChunkedFileOutputStream(
         return outputStream!!
     }
 
-    private val hasRemainingBytesInFile: Boolean
-        get() = currentFileBytesWritten < chunkSize
-
     /**
      * Write [i] to the stream.
      *
      * @param i the byte to write
      */
     override fun write(i: Int) {
-        if (_isClosed) {
-            throw IllegalStateException("Stream is closed")
-        }
-
         synchronized(this) {
+            if (isClosed) {
+                throw IllegalStateException("Stream is closed")
+            }
+
             val outputStream = getOutputStream()
             outputStream.write(i)
-            currentFileBytesWritten++
-            totalBytesWritten++
+            currentOutputStreamBytesWritten++
         }
     }
 
@@ -135,39 +130,41 @@ class ChunkedFileOutputStream(
      * @param len the number of bytes to write
      */
     override fun write(b: ByteArray, offset: Int, len: Int) {
-        if (_isClosed) {
-            throw IllegalStateException("Stream is closed")
-        }
-
         var remainingBytes = len
-        var numOfBytesWritten = 0
+        var offsetShift = 0
+
         synchronized(this) {
+            if (isClosed) {
+                throw IllegalStateException("Stream is closed")
+            }
+
             while (remainingBytes > 0) {
                 val outputStream = getOutputStream()
-                val bytesToWrite = minOf(remainingBytes, chunkSize - currentFileBytesWritten)
+                val numOfBytesToWrite = minOf(remainingBytes, chunkSize - currentOutputStreamBytesWritten)
 
-                outputStream.write(b, offset + numOfBytesWritten, bytesToWrite)
+                outputStream.write(b, offset + offsetShift, numOfBytesToWrite)
 
-                currentFileBytesWritten += bytesToWrite
-                totalBytesWritten += bytesToWrite
-                numOfBytesWritten += bytesToWrite
-                remainingBytes -= bytesToWrite
+                currentOutputStreamBytesWritten += numOfBytesToWrite
+                offsetShift += numOfBytesToWrite
+                remainingBytes -= numOfBytesToWrite
             }
         }
     }
 
     /**
      * Close the stream.
-     * This will close the current file and call [Listener.onFileClosed] with the last file.
+     * This will close the current file and call [Listener.onFileAvailable] with the last file.
      */
     override fun close() {
-        if (_isClosed) {
+        if (isClosed) {
             return
         }
         _isClosed = true
 
-        outputStream?.let {
-            closeOutputStream(it, true)
+        synchronized(this) {
+            outputStream?.let {
+                closeOutputStream(it, true)
+            }
         }
     }
 
@@ -205,14 +202,14 @@ class ChunkedFileOutputStream(
      */
     interface Listener {
         /**
-         * Called when a file has been closed.
+         * Called when a file is available for other operations.
+         *
          * It means that the file is ready to be read and won't be used anymore for the stream.
-         * You can use the file as you please like uploading it to a server.
          *
          * @param index the index of the file
          * @param isLast true if this is the last file
          * @param file the file
          */
-        fun onFileClosed(index: Int, isLast: Boolean, file: File) {}
+        fun onFileAvailable(index: Int, isLast: Boolean, file: File) {}
     }
 }
