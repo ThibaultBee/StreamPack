@@ -63,6 +63,9 @@ fun UriMediaDescriptor(uri: Uri, customData: List<Any> = emptyList()) = UriMedia
     uri, MediaDescriptor.Type.getContainerType(null, uri), customData
 )
 
+/**
+ * A Media descriptor for [Uri].
+ */
 class UriMediaDescriptor
 internal constructor(
     override val uri: Uri, containerType: MediaContainerType, customData: List<Any> = emptyList()
