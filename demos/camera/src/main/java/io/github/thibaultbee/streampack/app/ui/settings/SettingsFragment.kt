@@ -41,6 +41,7 @@ import io.github.thibaultbee.streampack.core.utils.extensions.cameras
 import io.github.thibaultbee.streampack.core.utils.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
 import java.io.IOException
+import java.nio.file.Path
 
 class SettingsFragment : PreferenceFragmentCompat() {
     private lateinit var streamerInfo: CameraStreamerConfigurationInfo
@@ -504,7 +505,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         if (endpoint.hasFileCapabilities) {
             // Remove previous extension
             FileExtension.entries.forEach {
-                fileNamePreference.text = fileNamePreference.text?.removeSuffix(it.extension)
+                fileNamePreference.text = fileNamePreference.text?.substringBeforeLast(".")
             }
             // Add correct extension
             fileNamePreference.text += when {
