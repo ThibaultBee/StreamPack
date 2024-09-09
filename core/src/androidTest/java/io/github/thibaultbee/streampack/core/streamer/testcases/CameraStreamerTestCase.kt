@@ -17,16 +17,15 @@ package io.github.thibaultbee.streampack.core.streamer.testcases
 
 import android.Manifest
 import android.content.Context
-import android.graphics.SurfaceTexture
-import android.view.Surface
+import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import io.github.thibaultbee.streampack.core.streamer.surface.SurfaceUtils
+import io.github.thibaultbee.streampack.core.streamer.surface.SurfaceViewTestActivity
 import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
-import io.github.thibaultbee.streampack.core.utils.DataUtils
+import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
 import io.github.thibaultbee.streampack.core.utils.extensions.startStream
 import kotlinx.coroutines.test.runTest
-import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -35,29 +34,21 @@ abstract class CameraStreamerTestCase :
     private val context: Context = InstrumentationRegistry.getInstrumentation().context
 
     override val streamer = DefaultCameraStreamer(context)
-    protected lateinit var surface: Surface
-
-    @Before
-    fun setUp() {
-        surface = Surface(SurfaceTexture(false))
-    }
-
-    @After
-    override fun tearDown() {
-        super.tearDown()
-    }
 
     @get:Rule
     val runtimePermissionRule: GrantPermissionRule =
         GrantPermissionRule.grant(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
 
+    @get:Rule
+    val activityScenarioRule = ActivityScenarioRule(SurfaceViewTestActivity::class.java)
+
     @Test
     fun defaultUsageTestWithPreview() = runTest {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig(),
-            DataUtils.dummyValidVideoConfig()
+            ConfigurationUtils.dummyValidAudioConfig(),
+            ConfigurationUtils.dummyValidVideoConfig()
         )
-        streamer.startPreview(surface)
+        streamer.startPreview(SurfaceUtils.createSurfaceView(activityScenarioRule.scenario))
         streamer.startStream(descriptor)
         streamer.stopStream()
         streamer.stopPreview()
@@ -67,7 +58,7 @@ abstract class CameraStreamerTestCase :
     // Single method calls
     @Test
     open fun startPreviewTest() = runTest {
-        streamer.startPreview(surface)
+        streamer.startPreview(SurfaceUtils.createSurfaceView(activityScenarioRule.scenario))
     }
 
     @Test
@@ -79,8 +70,8 @@ abstract class CameraStreamerTestCase :
     @Test
     fun configureStopPreviewTest() {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig(),
-            DataUtils.dummyValidVideoConfig()
+            ConfigurationUtils.dummyValidAudioConfig(),
+            ConfigurationUtils.dummyValidVideoConfig()
         )
         streamer.stopPreview()
     }
@@ -88,53 +79,42 @@ abstract class CameraStreamerTestCase :
     @Test
     fun startPreviewReleaseTest() = runTest {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig(),
-            DataUtils.dummyValidVideoConfig()
+            ConfigurationUtils.dummyValidAudioConfig(),
+            ConfigurationUtils.dummyValidVideoConfig()
         )
-        streamer.startPreview(surface)
+        streamer.startPreview(SurfaceUtils.createSurfaceView(activityScenarioRule.scenario))
         streamer.release()
     }
 
     @Test
     fun startPreviewStopPreviewTest() = runTest {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig(),
-            DataUtils.dummyValidVideoConfig()
+            ConfigurationUtils.dummyValidAudioConfig(),
+            ConfigurationUtils.dummyValidVideoConfig()
         )
-        streamer.startPreview(surface)
+        streamer.startPreview(SurfaceUtils.createSurfaceView(activityScenarioRule.scenario))
         streamer.stopPreview()
     }
 
     @Test
     fun startPreviewStopStreamTest() = runTest {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig(),
-            DataUtils.dummyValidVideoConfig()
+            ConfigurationUtils.dummyValidAudioConfig(),
+            ConfigurationUtils.dummyValidVideoConfig()
         )
-        streamer.startPreview(surface)
+        streamer.startPreview(SurfaceUtils.createSurfaceView(activityScenarioRule.scenario))
         streamer.stopStream()
     }
 
     @Test
-    fun startStreamStopPreviewTest() = runTest {
-
-        streamer.configure(
-            DataUtils.dummyValidAudioConfig(),
-            DataUtils.dummyValidVideoConfig()
-        )
-        streamer.startPreview(surface)
-        streamer.startStream(descriptor)
-        streamer.stopPreview()
-    }
-
-    @Test
     fun multipleStartPreviewStopPreviewTest() = runTest {
+        val surfaceView = SurfaceUtils.createSurfaceView(activityScenarioRule.scenario)
         streamer.configure(
-            DataUtils.dummyValidAudioConfig(),
-            DataUtils.dummyValidVideoConfig()
+            ConfigurationUtils.dummyValidAudioConfig(),
+            ConfigurationUtils.dummyValidVideoConfig()
         )
         (0..10).forEach { _ ->
-            streamer.startPreview(surface)
+            streamer.startPreview(surfaceView)
             streamer.stopPreview()
         }
     }

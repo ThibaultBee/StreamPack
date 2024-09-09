@@ -29,6 +29,7 @@ dependencies {
     testImplementation(libs.robolectric)
 
 
+    androidTestImplementation(libs.androidx.test.core.ktx)
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

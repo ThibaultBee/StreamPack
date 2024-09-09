@@ -22,7 +22,7 @@ import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
 import kotlin.random.Random
 
-object DataUtils {
+object ConfigurationUtils {
     /**
      * Generates a TS service information for test
      *

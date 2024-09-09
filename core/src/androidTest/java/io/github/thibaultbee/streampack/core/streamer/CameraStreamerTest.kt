@@ -20,22 +20,10 @@ import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescripto
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.streamer.testcases.CameraStreamerTestCase
 import io.github.thibaultbee.streampack.core.utils.FileUtils
-import kotlinx.coroutines.test.runTest
-import org.junit.Assert.fail
-import org.junit.Test
 
 class TsCameraStreamerTest : CameraStreamerTestCase() {
     override val descriptor: MediaDescriptor =
         UriMediaDescriptor(FileUtils.createCacheFile("video.ts").toUri())
-
-    @Test
-    override fun startPreviewTest() = runTest {
-        try {
-            streamer.startPreview(surface)
-        } catch (t: Throwable) {
-            fail("Must be possible to only start preview without exception: $t")
-        }
-    }
 }
 
 class FlvCameraStreamerTest : CameraStreamerTestCase() {
