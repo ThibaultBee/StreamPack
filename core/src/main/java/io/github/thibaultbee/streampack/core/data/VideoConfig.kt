@@ -61,7 +61,7 @@ class VideoConfig(
     /**
      * Video encoder bitrate in bits/s.
      */
-    startBitrate: Int = 2000000,
+    startBitrate: Int = 2_000_000,
     /**
      * Video output resolution in pixel.
      */
@@ -229,11 +229,11 @@ class VideoConfig(
         fun getBestBitrate(resolution: Size): Int {
             val numOfPixels = resolution.width * resolution.height
             return when {
-                numOfPixels <= 320 * 240 -> 800000
-                numOfPixels <= 640 * 480 -> 1000000
-                numOfPixels <= 1280 * 720 -> 2000000
-                numOfPixels <= 1920 * 1080 -> 3500000
-                else -> 4000000
+                numOfPixels <= 320 * 240 -> 800_000
+                numOfPixels <= 640 * 480 -> 1_000_000
+                numOfPixels <= 1280 * 720 -> 2_000_000
+                numOfPixels <= 1920 * 1080 -> 3_500_000
+                else -> 4_000_000
             }
         }
 
