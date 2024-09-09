@@ -21,7 +21,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.streamers.DefaultAudioOnlyStreamer
-import io.github.thibaultbee.streampack.core.utils.DataUtils
+import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
 import io.github.thibaultbee.streampack.core.utils.extensions.startStream
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.fail
@@ -41,7 +41,7 @@ abstract class AudioOnlyStreamerTestCase {
     @Test
     fun defaultUsageTest() = runTest {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig()
+            ConfigurationUtils.dummyValidAudioConfig()
         )
         streamer.startStream(descriptor)
         streamer.stopStream()
@@ -52,7 +52,7 @@ abstract class AudioOnlyStreamerTestCase {
     @Test
     fun configureAudioOnlyTest() {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig()
+            ConfigurationUtils.dummyValidAudioConfig()
         )
     }
 
@@ -60,7 +60,7 @@ abstract class AudioOnlyStreamerTestCase {
     fun configureVideoOnlyTest() {
         try {
             streamer.configure(
-                DataUtils.dummyValidVideoConfig()
+                ConfigurationUtils.dummyValidVideoConfig()
             )
             fail("Must not be possible to configure video")
         } catch (_: Throwable) {
@@ -71,8 +71,8 @@ abstract class AudioOnlyStreamerTestCase {
     fun configureTest() {
         try {
             streamer.configure(
-                DataUtils.dummyValidAudioConfig(),
-                DataUtils.dummyValidVideoConfig()
+                ConfigurationUtils.dummyValidAudioConfig(),
+                ConfigurationUtils.dummyValidVideoConfig()
             )
             fail("Must not be possible to configure video")
         } catch (_: Throwable) {
@@ -83,7 +83,7 @@ abstract class AudioOnlyStreamerTestCase {
     fun configureErrorTest() {
         try {
             streamer.configure(
-                DataUtils.dummyInvalidAudioConfig()
+                ConfigurationUtils.dummyInvalidAudioConfig()
             )
             fail("Invalid configuration must throw an exception")
         } catch (_: Throwable) {
@@ -94,7 +94,7 @@ abstract class AudioOnlyStreamerTestCase {
     @Test
     fun configureStartStreamTest() = runTest {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig()
+            ConfigurationUtils.dummyValidAudioConfig()
         )
         streamer.startStream(descriptor)
     }
@@ -102,7 +102,7 @@ abstract class AudioOnlyStreamerTestCase {
     @Test
     fun configureReleaseTest() {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig()
+            ConfigurationUtils.dummyValidAudioConfig()
         )
         streamer.release()
     }
@@ -110,7 +110,7 @@ abstract class AudioOnlyStreamerTestCase {
     @Test
     fun configureStopStreamTest() = runTest {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig()
+            ConfigurationUtils.dummyValidAudioConfig()
         )
         streamer.stopStream()
     }
@@ -118,7 +118,7 @@ abstract class AudioOnlyStreamerTestCase {
     @Test
     fun startStreamReleaseTest() = runTest {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig()
+            ConfigurationUtils.dummyValidAudioConfig()
         )
         streamer.startStream(descriptor)
         streamer.release()
@@ -127,7 +127,7 @@ abstract class AudioOnlyStreamerTestCase {
     @Test
     fun startStreamStopStreamTest() = runTest {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig()
+            ConfigurationUtils.dummyValidAudioConfig()
         )
         streamer.startStream(descriptor)
         streamer.stopStream()
@@ -136,7 +136,7 @@ abstract class AudioOnlyStreamerTestCase {
     @Test
     fun multipleStartStreamStopStreamTest() = runTest {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig()
+            ConfigurationUtils.dummyValidAudioConfig()
         )
         (0..10).forEach { _ ->
             streamer.startStream(descriptor)
@@ -149,7 +149,7 @@ abstract class AudioOnlyStreamerTestCase {
     fun multipleConfigureTest() {
         (0..10).forEach { _ ->
             streamer.configure(
-                DataUtils.dummyValidAudioConfig()
+                ConfigurationUtils.dummyValidAudioConfig()
             )
         }
     }
