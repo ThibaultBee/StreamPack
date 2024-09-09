@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.core.streamer.testcases
 
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
-import io.github.thibaultbee.streampack.core.utils.DataUtils
+import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
 import io.github.thibaultbee.streampack.core.utils.extensions.startStream
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -36,8 +36,8 @@ abstract class StreamerTestCase {
     @Test
     open fun defaultUsageTest() = runTest {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig(),
-            DataUtils.dummyValidVideoConfig()
+            ConfigurationUtils.dummyValidAudioConfig(),
+            ConfigurationUtils.dummyValidVideoConfig()
         )
         streamer.startStream(descriptor)
         streamer.stopStream()
@@ -48,22 +48,22 @@ abstract class StreamerTestCase {
     @Test
     open fun configureAudioOnlyTest() {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig()
+            ConfigurationUtils.dummyValidAudioConfig()
         )
     }
 
     @Test
     open fun configureVideoOnlyTest() {
         streamer.configure(
-            DataUtils.dummyValidVideoConfig()
+            ConfigurationUtils.dummyValidVideoConfig()
         )
     }
 
     @Test
     open fun configureTest() {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig(),
-            DataUtils.dummyValidVideoConfig()
+            ConfigurationUtils.dummyValidAudioConfig(),
+            ConfigurationUtils.dummyValidVideoConfig()
         )
     }
 
@@ -71,8 +71,8 @@ abstract class StreamerTestCase {
     open fun configureErrorTest() {
         try {
             streamer.configure(
-                DataUtils.dummyInvalidAudioConfig(),
-                DataUtils.dummyValidVideoConfig()
+                ConfigurationUtils.dummyInvalidAudioConfig(),
+                ConfigurationUtils.dummyValidVideoConfig()
             )
             fail("Invalid configuration must throw an exception")
         } catch (_: Throwable) {
@@ -108,8 +108,8 @@ abstract class StreamerTestCase {
     @Test
     open fun configureStartStreamTest() = runTest {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig(),
-            DataUtils.dummyValidVideoConfig()
+            ConfigurationUtils.dummyValidAudioConfig(),
+            ConfigurationUtils.dummyValidVideoConfig()
         )
         streamer.startStream(descriptor)
     }
@@ -117,8 +117,8 @@ abstract class StreamerTestCase {
     @Test
     open fun configureReleaseTest() {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig(),
-            DataUtils.dummyValidVideoConfig()
+            ConfigurationUtils.dummyValidAudioConfig(),
+            ConfigurationUtils.dummyValidVideoConfig()
         )
         streamer.release()
     }
@@ -126,8 +126,8 @@ abstract class StreamerTestCase {
     @Test
     open fun configureStopStreamTest() = runTest {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig(),
-            DataUtils.dummyValidVideoConfig()
+            ConfigurationUtils.dummyValidAudioConfig(),
+            ConfigurationUtils.dummyValidVideoConfig()
         )
         streamer.stopStream()
     }
@@ -135,8 +135,8 @@ abstract class StreamerTestCase {
     @Test
     open fun startStreamReleaseTest() = runTest {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig(),
-            DataUtils.dummyValidVideoConfig()
+            ConfigurationUtils.dummyValidAudioConfig(),
+            ConfigurationUtils.dummyValidVideoConfig()
         )
         streamer.startStream(descriptor)
         streamer.release()
@@ -145,8 +145,8 @@ abstract class StreamerTestCase {
     @Test
     open fun startStreamStopStreamTest() = runTest {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig(),
-            DataUtils.dummyValidVideoConfig()
+            ConfigurationUtils.dummyValidAudioConfig(),
+            ConfigurationUtils.dummyValidVideoConfig()
         )
         streamer.startStream(descriptor)
         streamer.stopStream()
@@ -157,8 +157,8 @@ abstract class StreamerTestCase {
     open fun multipleConfigureTest() {
         (0..10).forEach { _ ->
             streamer.configure(
-                DataUtils.dummyValidAudioConfig(),
-                DataUtils.dummyValidVideoConfig()
+                ConfigurationUtils.dummyValidAudioConfig(),
+                ConfigurationUtils.dummyValidVideoConfig()
             )
         }
     }
@@ -166,8 +166,8 @@ abstract class StreamerTestCase {
     @Test
     open fun multipleStartStreamStopStreamTest() = runTest {
         streamer.configure(
-            DataUtils.dummyValidAudioConfig(),
-            DataUtils.dummyValidVideoConfig()
+            ConfigurationUtils.dummyValidAudioConfig(),
+            ConfigurationUtils.dummyValidVideoConfig()
         )
         (0..10).forEach { _ ->
             streamer.startStream(descriptor)
