@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.streamer.testcases
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
-import io.github.thibaultbee.streampack.core.utils.extensions.startStream
+import io.github.thibaultbee.streampack.core.streamers.startStream
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.fail

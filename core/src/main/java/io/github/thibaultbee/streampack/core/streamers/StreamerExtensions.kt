@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.thibaultbee.streampack.core.utils.extensions
+package io.github.thibaultbee.streampack.core.streamers
 
 import android.net.Uri
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
