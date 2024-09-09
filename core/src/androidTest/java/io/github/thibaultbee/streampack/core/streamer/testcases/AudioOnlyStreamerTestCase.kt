@@ -22,7 +22,7 @@ import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.streamers.DefaultAudioOnlyStreamer
 import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
-import io.github.thibaultbee.streampack.core.utils.extensions.startStream
+import io.github.thibaultbee.streampack.core.streamers.startStream
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.fail
 import org.junit.Rule

@@ -13,7 +13,7 @@ import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegul
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
-import io.github.thibaultbee.streampack.core.utils.extensions.startStream
+import io.github.thibaultbee.streampack.core.streamers.startStream
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
