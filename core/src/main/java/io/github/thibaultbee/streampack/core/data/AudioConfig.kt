@@ -41,7 +41,7 @@ class AudioConfig(
     /**
      * Audio encoder bitrate in bits/s.
      */
-    startBitrate: Int = 128000,
+    startBitrate: Int = 128_000,
 
     /**
      * Audio capture sample rate in Hz.
@@ -135,8 +135,8 @@ class AudioConfig(
 
     companion object {
         private fun getDefaultSampleRate(mimeType: String) = when (mimeType) {
-            MediaFormat.MIMETYPE_AUDIO_AAC -> 44100
-            MediaFormat.MIMETYPE_AUDIO_OPUS -> 48000
+            MediaFormat.MIMETYPE_AUDIO_AAC -> 44_100
+            MediaFormat.MIMETYPE_AUDIO_OPUS -> 48_000
             else -> throw InvalidParameterException("Mimetype not supported: $mimeType")
         }
 
