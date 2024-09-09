@@ -1,5 +1,6 @@
 [versions]
 agp = "8.5.2"
+videoApiClient = "1.5.7"
 androidxActivity = "1.9.0"
 androidxAppcompat = "1.7.0"
 androidxCamera = "1.4.0-alpha07"
@@ -25,6 +26,7 @@ srtdroid = "1.8.1"
 junitKtx = "1.2.1"
 
 [libraries]
+video-api-client = { module = "video.api:android-api-client", version.ref = "videoApiClient" }
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 android-material = { module = "com.google.android.material:material", version.ref = "material" }
 androidx-activity = { module = "androidx.activity:activity", version.ref = "androidxActivity" }
