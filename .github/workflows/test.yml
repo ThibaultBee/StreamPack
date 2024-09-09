@@ -52,12 +52,19 @@ jobs:
           disable-animations: true
           emulator-options: -no-snapshot -no-window -no-boot-anim -camera-back emulated -camera-front emulated -gpu swiftshader_indirect
           script: |
+            adb root
             adb logcat -c
-            adb logcat -s &
-            ./gradlew connectedCheck
+            touch emulator.log
+            chmod 777 emulator.log
+            adb logcat >> emulator.log &
+            ./gradlew -Pandroid.testInstrumentationRunnerArguments.INTEGRATION_TESTS_API_KEY=$INTEGRATION_TESTS_API_KEY connectedCheck
+        env:
+          INTEGRATION_TESTS_API_KEY: ${{ secrets.INTEGRATION_TESTS_API_KEY }}
       - name: Upload test reports
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: test-reports-${{ matrix.api-level }}
-          path: '**/build/reports/androidTests'
+          path: |
+            '**/build/reports/androidTests'
+            emulator.log
