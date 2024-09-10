@@ -14,10 +14,13 @@ import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
 import io.github.thibaultbee.streampack.core.streamers.startStream
+import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
 /**
@@ -51,10 +54,13 @@ class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallbackStrea
 
     init {
         coroutineScope.launch {
-            streamer.throwable.collect { e ->
-                if (e != null) {
-                    listeners.forEach { it.onError(e) }
-                }
+            streamer.throwable.filterNotNull().filter { !it.isClosedException }.collect { e ->
+                listeners.forEach { it.onError(e) }
+            }
+        }
+        coroutineScope.launch {
+            streamer.throwable.filterNotNull().filter { it.isClosedException }.collect { e ->
+                listeners.forEach { it.onClose(e) }
             }
         }
         coroutineScope.launch {
@@ -87,7 +93,7 @@ class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallbackStrea
             try {
                 streamer.open(descriptor)
             } catch (t: Throwable) {
-                listeners.forEach { it.onIsOpenFailed(t) }
+                listeners.forEach { it.onOpenFailed(t) }
             }
         }
     }
