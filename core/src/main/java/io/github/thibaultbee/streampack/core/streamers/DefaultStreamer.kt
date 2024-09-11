@@ -174,7 +174,7 @@ open class DefaultStreamer(
         get() = internalVideoEncoder
 
 
-    protected val codecSurface =
+    private val codecSurface =
         if (internalVideoSource?.hasOutputSurface == true) CodecSurface(sourceOrientationProvider) else null
 
     // ENDPOINT
