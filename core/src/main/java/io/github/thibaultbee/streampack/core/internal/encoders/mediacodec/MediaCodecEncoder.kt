@@ -24,10 +24,14 @@ import android.util.Log
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
+import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.extensions.hasEndOfStreamFlag
+import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.extensions.isKeyFrame
+import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.extensions.isValid
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import java.io.Closeable
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -41,8 +45,7 @@ internal fun MediaCodecEncoder(
     listenerExecutor: Executor = Executors.newSingleThreadExecutor(),
 ): MediaCodecEncoder {
     return MediaCodecEncoder(
-        encoderConfig,
-        encoderExecutor
+        encoderConfig, encoderExecutor
     ).apply { setListener(listener, listenerExecutor) }
 }
 
@@ -56,8 +59,7 @@ class MediaCodecEncoder
 internal constructor(
     private val encoderConfig: EncoderConfig<*>,
     private val encoderExecutor: Executor = Executors.newSingleThreadExecutor()
-) :
-    IEncoder {
+) : IEncoder {
     private val mediaCodec: MediaCodec
     private val format: MediaFormat
     private val isVideo = encoderConfig.isVideo
@@ -65,10 +67,7 @@ internal constructor(
 
     private val dispatcher = encoderExecutor.asCoroutineDispatcher()
 
-    private var isStopping = false
-    private var isStopped = true
-    private var isOnError = false
-    private var isReleased = false
+    private var state = State.IDLE
 
     override val startBitrate = encoderConfig.config.startBitrate
     override var bitrate: Int = startBitrate
@@ -96,25 +95,22 @@ internal constructor(
     }
 
     private val listenerLock = Any()
-    private var listener: IEncoder.IListener =
-        object : IEncoder.IListener {}
+    private var listener: IEncoder.IListener = object : IEncoder.IListener {}
     private var listenerExecutor: Executor = Executors.newSingleThreadExecutor()
 
     override val mimeType by lazy { format.getString(MediaFormat.KEY_MIME)!! }
 
-    override val input =
-        if (encoderConfig is VideoEncoderConfig) {
-            if (encoderConfig.useSurfaceMode) {
-                SurfaceInput()
-            } else {
-                ByteBufferInput()
-            }
+    override val input = if (encoderConfig is VideoEncoderConfig) {
+        if (encoderConfig.useSurfaceMode) {
+            SurfaceInput()
         } else {
             ByteBufferInput()
         }
+    } else {
+        ByteBufferInput()
+    }
 
     override val info by lazy { EncoderInfo.build(mediaCodec.codecInfo, mimeType) }
-
 
     override fun requestKeyFrame() {
         val bundle = Bundle()
@@ -123,8 +119,7 @@ internal constructor(
     }
 
     override fun setListener(
-        listener: IEncoder.IListener,
-        listenerExecutor: Executor
+        listener: IEncoder.IListener, listenerExecutor: Executor
     ) {
         synchronized(listenerLock) {
             this.listenerExecutor = listenerExecutor
@@ -154,6 +149,7 @@ internal constructor(
             if (input is SurfaceInput) {
                 input.reset()
             }
+            setState(State.CONFIGURED)
         } catch (t: Throwable) {
             Logger.e(tag, "Failed to configure for format: $format", t)
             release()
@@ -162,14 +158,17 @@ internal constructor(
     }
 
     private fun resetSync() {
+        if (state == State.CONFIGURED) {
+            return
+        }
+
         try {
             mediaCodec.reset()
         } catch (e: IllegalStateException) {
             Logger.d(tag, "Failed to reset")
         } finally {
-            isOnError = false
+            configure()
         }
-        configure()
     }
 
     override fun reset() {
@@ -179,15 +178,28 @@ internal constructor(
     }
 
     private fun startStreamSync() {
-        if (!isStopped) {
-            return
-        }
-        try {
-            mediaCodec.start()
-        } catch (e: IllegalStateException) {
-            Logger.d(tag, "Not running")
-        } finally {
-            isStopped = false
+        when (state) {
+            State.STARTED, State.PENDING_START, State.ERROR -> {
+                return
+            }
+
+            State.PENDING_RELEASE, State.RELEASED -> {
+                throw IllegalStateException("Encoder is released")
+            }
+
+            State.CONFIGURED -> {
+                setState(State.PENDING_START)
+                try {
+                    mediaCodec.start()
+                    setState(State.STARTED)
+                } catch (e: CodecException) {
+                    setState(State.ERROR)
+                    throw e
+                }
+            }
+
+            else -> {
+            }
         }
     }
 
@@ -198,27 +210,35 @@ internal constructor(
     }
 
     private fun stopStreamSync() {
-        if (isStopped) {
-            return
-        }
-        if (isStopping) {
-            return
-        }
-        isStopping = false
-        try {
-            if (input is IEncoder.ISurfaceInput) {
-                // If we stop the codec, then it will stop de-queuing
-                // buffers and the BufferQueue may run out of input buffers, causing the camera
-                // pipeline to stall. Instead of stopping, we will flush the codec.
-                mediaCodec.flush()
-            } else {
-                mediaCodec.stop()
+        when (state) {
+            State.PENDING_STOP, State.STOPPED, State.ERROR -> {
+                return
             }
-        } catch (e: IllegalStateException) {
-            Logger.d(tag, "Not running")
-        } finally {
-            isStopped = true
-            isStopping = false
+
+            State.RELEASED, State.PENDING_RELEASE -> {
+                throw IllegalStateException("Encoder is released")
+            }
+
+            State.STARTED, State.PAUSED -> {
+                setState(State.PENDING_STOP)
+                try {
+                    if (input is IEncoder.ISurfaceInput) {
+                        // If we stop the codec, then it will stop de-queuing
+                        // buffers and the BufferQueue may run out of input buffers, causing the camera
+                        // pipeline to stall. Instead of stopping, we will flush the codec.
+                        mediaCodec.flush()
+                    } else {
+                        mediaCodec.stop()
+                    }
+                } catch (e: IllegalStateException) {
+                    Logger.d(tag, "Not running")
+                } finally {
+                    setState(State.STOPPED)
+                }
+            }
+
+            else -> {
+            }
         }
     }
 
@@ -229,9 +249,16 @@ internal constructor(
     }
 
     private fun releaseSync() {
-        if (isReleased) {
+        try {
+            mediaCodec.stop()
+        } catch (e: IllegalStateException) {
+            Logger.d(tag, "Failed to stop")
+        }
+        if (state == State.RELEASED || state == State.PENDING_RELEASE) {
             return
         }
+
+        setState(State.PENDING_RELEASE)
         try {
             mediaCodec.release()
 
@@ -240,15 +267,12 @@ internal constructor(
             }
         } catch (_: Throwable) {
         } finally {
-            isReleased = true
+            setState(State.RELEASED)
         }
     }
 
     override fun release() {
         runBlocking {
-            if (!isStopped) {
-                stopStream()
-            }
             withContext(dispatcher) {
                 releaseSync()
             }
@@ -268,14 +292,37 @@ internal constructor(
     }
 
     private fun handleError(t: Throwable) {
-        isOnError = true
-        if (!isStopped && !isStopping) {
-            encoderExecutor.execute {
-                stopStreamSync()
-                notifyError(t)
+        encoderExecutor.execute {
+            when (state) {
+                State.CONFIGURED -> {
+                    notifyError(t)
+                    // Trying to reset
+                    reset()
+                }
+
+                State.RELEASED -> { // Do Nothing
+                }
+
+                State.PENDING_STOP -> { // Do Nothing
+                }
+
+                State.STOPPED -> { // Do Nothing
+                }
+
+                State.ERROR -> {
+                    Logger.w(tag, "Get another error while in error state: ${t.message}", t)
+                }
+
+                else -> {
+                    try {
+                        stopStreamSync()
+                    } catch (e: Throwable) {
+                        Logger.w(tag, "Failed to stop stream", e)
+                    }
+                    setState(State.ERROR)
+                    notifyError(t)
+                }
             }
-        } else {
-            Log.w(tag, "Get error while stopped: ${t.message}")
         }
     }
 
@@ -285,68 +332,73 @@ internal constructor(
         }
     }
 
+    private fun setState(state: State) {
+        if (state == this.state) {
+            return
+        }
+        Logger.d(tag, "Transitioning encoder internal state: ${this.state} --> $state")
+        this.state = state
+    }
+
     private inner class EncoderCallback : MediaCodec.Callback() {
         override fun onOutputBufferAvailable(
-            codec: MediaCodec,
-            index: Int,
-            info: BufferInfo
+            codec: MediaCodec, index: Int, info: BufferInfo
         ) {
             encoderExecutor.execute {
-                if (isStopping) {
-                    return@execute
-                }
-                if (isStopped) {
-                    Logger.w(tag, "Receives frame after codec is reset.")
-                    return@execute
-                }
-                if (isOnError) {
-                    return@execute
-                }
+                when {
+                    !state.isRunning -> {
+                        Logger.w(tag, "Receives output frame after codec is not running: $state.")
+                        return@execute
+                    }
 
-                if (isBufferInfoValid(info, tag)) {
-                    try {
-                        var listener: IEncoder.IListener
-                        var listenerExecutor: Executor
-                        synchronized(listenerLock) {
-                            listener = this@MediaCodecEncoder.listener
-                            listenerExecutor = this@MediaCodecEncoder.listenerExecutor
-                        }
-
+                    info.isValid -> {
                         try {
-                            Frame(
-                                codec,
-                                index,
-                                info
-                            ).let { frame ->
-                                listenerExecutor.execute {
-                                    try {
-                                        listener.onOutputFrame(frame)
-                                    } catch (t: Throwable) {
+                            var listener: IEncoder.IListener
+                            var listenerExecutor: Executor
+                            synchronized(listenerLock) {
+                                listener = this@MediaCodecEncoder.listener
+                                listenerExecutor = this@MediaCodecEncoder.listenerExecutor
+                            }
+
+                            val extractor = ClosableFrameExtractor(
+                                codec, index, info, tag
+                            )
+                            listenerExecutor.execute {
+                                try {
+                                    listener.onOutputFrame(extractor.frame)
+                                } catch (t: Throwable) {
+                                    if (state.isRunning) {
                                         handleError(t)
-                                    } finally {
-                                        try {
-                                            codec.releaseOutputBuffer(index, false)
-                                        } catch (e: java.lang.IllegalStateException) {
-                                            Logger.w(tag, "Failed to release output buffer", e)
-                                        }
+                                    } else {
+                                        /**
+                                         * Next streamer element could be stopped and we are still processing.
+                                         * In that case, just log the error.
+                                         */
+                                        Logger.w(
+                                            tag,
+                                            "OnOutputFrame error ${t.message} but codec is not running: $state."
+                                        )
                                     }
+                                } finally {
+                                    extractor.close()
                                 }
                             }
-                        } catch (e: CodecException) {
-                            handleError(e)
+
+                        } catch (t: Throwable) {
+                            handleError(t)
                         }
-                    } catch (e: CodecException) {
-                        handleError(e)
                     }
-                } else {
-                    try {
-                        codec.releaseOutputBuffer(index, false)
-                    } catch (e: CodecException) {
-                        handleError(e)
+
+                    else -> {
+                        try {
+                            codec.releaseOutputBuffer(index, false)
+                        } catch (e: CodecException) {
+                            Log.e(tag, "Failed to release output buffer", e)
+                        }
                     }
                 }
 
-                if (hasEndOfStreamFlag(info)) {
+                if (info.hasEndOfStreamFlag) {
                     reachEndOfStream()
                 }
             }
@@ -354,26 +406,24 @@ internal constructor(
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
             encoderExecutor.execute {
-                if (isStopped) {
-                    Logger.w(tag, "Receives input frame after codec is reset.")
-                    return@execute
-                }
-                if (isOnError) {
-                    return@execute
-                }
+                when {
+                    !state.isRunning -> {
+                        Logger.w(tag, "Receives input frame after codec is not running: $state.")
+                        return@execute
+                    }
 
-                if (input !is IEncoder.IByteBufferInput) {
-                    Logger.w(tag, "Input buffer is only available for byte buffer input")
-                    return@execute
-                }
+                    input !is IEncoder.IByteBufferInput -> {
+                        Logger.w(tag, "Input buffer is only available for byte buffer input")
+                        return@execute
+                    }
 
-                try {
-                    val buffer = mediaCodec.getInputBuffer(index)
-                        ?: throw UnsupportedOperationException("MediaCodecEncoder: can't get input buffer")
-                    val frame = input.listener.onFrameRequested(buffer)
-                    queueInputFrame(index, frame)
-                } catch (t: Throwable) {
-                    handleError(t)
+                    else -> try {
+                        val buffer = requireNotNull(mediaCodec.getInputBuffer(index))
+                        val frame = input.listener.onFrameRequested(buffer)
+                        queueInputFrame(index, frame)
+                    } catch (t: Throwable) {
+                        handleError(t)
+                    }
                 }
             }
         }
@@ -387,27 +437,20 @@ internal constructor(
         }
 
         private fun queueInputFrame(
-            index: Int,
-            frame: Frame
+            index: Int, frame: Frame
         ) {
             mediaCodec.queueInputBuffer(
-                index,
-                frame.buffer.position(),
-                frame.buffer.limit(),
-                frame.pts /* in us */,
-                0
+                index, frame.buffer.position(), frame.buffer.limit(), frame.pts /* in us */, 0
             )
         }
     }
 
-    internal inner class SurfaceInput :
-        IEncoder.ISurfaceInput {
+    internal inner class SurfaceInput : IEncoder.ISurfaceInput {
         private val obsoleteSurfaces = mutableListOf<Surface>()
 
         private var surface: Surface? = null
 
-        override var listener = object :
-            IEncoder.ISurfaceInput.OnSurfaceUpdateListener {}
+        override var listener = object : IEncoder.ISurfaceInput.OnSurfaceUpdateListener {}
             set(value) {
                 field = value
                 surface?.let { notifySurfaceUpdate(it) }
@@ -441,73 +484,80 @@ internal constructor(
         }
     }
 
-    internal inner class ByteBufferInput :
-        IEncoder.IByteBufferInput {
+    internal inner class ByteBufferInput : IEncoder.IByteBufferInput {
         override lateinit var listener: IEncoder.IByteBufferInput.OnFrameRequestedListener
     }
 
-    companion object {
-        private fun isBufferInfoValid(info: BufferInfo, tag: String): Boolean {
-            if (info.size <= 0) {
-                Logger.w(tag, "Invalid buffer size: ${info.size}")
-                return false
-            }
+    private class ClosableFrameExtractor(
+        private val codec: MediaCodec,
+        private val index: Int,
+        info: BufferInfo,
+        private val tag: String
+    ) : Closeable {
 
-            if (isCodecConfig(info)) {
-                Logger.d(tag, "Drop buffer by codec config.")
-                return false
+        val frame = Frame(codec, index, info)
+
+        override fun close() {
+            try {
+                codec.releaseOutputBuffer(index, false)
+            } catch (e: IllegalStateException) {
+                Logger.w(tag, "Failed to release output buffer for code: ${e.message}")
             }
-            return true
         }
 
-        /**
-         * Whether if the buffer is a codec config buffer
-         *
-         * @param info the buffer info
-         * @return true if the buffer is a codec config buffer
-         */
-        private fun isCodecConfig(info: BufferInfo) =
-            info.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG != 0
-
-        /**
-         * Whether if the buffer is a key frame
-         *
-         * @param info the buffer info
-         * @return true if the buffer is a key frame
-         */
-        private fun isKeyFrame(info: BufferInfo) =
-            info.flags and MediaCodec.BUFFER_FLAG_KEY_FRAME != 0
-
-        /**
-         * Whether if the buffer is an end of stream buffer
-         *
-         * @param info the buffer info
-         * @return true if the buffer is an end of stream buffer
-         */
-        private fun hasEndOfStreamFlag(info: BufferInfo) =
-            info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0
-
-        /**
-         * Create a [Frame] from a [MediaCodec] output buffer
-         *
-         * @param mediaCodec the [MediaCodec] instance
-         * @param index the buffer index
-         * @param info the buffer info
-         */
-        private fun Frame(
-            mediaCodec: MediaCodec,
-            index: Int,
-            info: BufferInfo
-        ): Frame {
-            val buffer = mediaCodec.getOutputBuffer(index)
-                ?: throw UnsupportedOperationException("MediaCodecEncoder: can't get output buffer for index $index")
-            return Frame(
-                buffer,
-                info.presentationTimeUs, // pts
-                null, // dts
-                isKeyFrame(info),
-                mediaCodec.outputFormat
-            )
+        companion object {
+            /**
+             * Create a [Frame] from a [MediaCodec] output buffer
+             *
+             * @param mediaCodec the [MediaCodec] instance
+             * @param index the buffer index
+             * @param info the buffer info
+             */
+            private fun Frame(
+                mediaCodec: MediaCodec, index: Int, info: BufferInfo
+            ): Frame {
+                val buffer = requireNotNull(mediaCodec.getOutputBuffer(index))
+                return Frame(
+                    buffer, info.presentationTimeUs, // pts
+                    null, // dts
+                    info.isKeyFrame,
+                    mediaCodec.outputFormat
+                )
+            }
         }
     }
+
+
+    private enum class State {
+        /**
+         * The initial state.
+         */
+        IDLE,
+
+        /**
+         * The encoder is configured
+         */
+        CONFIGURED,
+
+        STARTED,
+
+        PAUSED,
+
+        STOPPED,
+
+        PENDING_START,
+
+        PENDING_STOP,
+
+        PENDING_RELEASE,
+
+        ERROR,
+
+        /** The state is when the encoder is released.  */
+        RELEASED;
+
+        val isRunning: Boolean
+            get() = this == STARTED
+    }
+
 }
