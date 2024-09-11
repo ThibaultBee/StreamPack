@@ -468,8 +468,16 @@ open class DefaultStreamer(
         codecSurface?.stopStream()
 
         // Encoders
-        internalAudioEncoder?.stopStream()
-        internalVideoEncoder?.stopStream()
+        try {
+            internalAudioEncoder?.stopStream()
+        } catch (e: IllegalStateException) {
+            Logger.w(TAG, "stopStreamImpl: Can't stop audio encoder: ${e.message}")
+        }
+        try {
+            internalVideoEncoder?.stopStream()
+        } catch (e: IllegalStateException) {
+            Logger.w(TAG, "stopStreamImpl: Can't stop video encoder: ${e.message}")
+        }
 
         // Endpoint
         internalEndpoint.stopStream()
