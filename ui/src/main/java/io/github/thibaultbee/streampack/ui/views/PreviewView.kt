@@ -37,9 +37,11 @@ import androidx.camera.viewfinder.surface.populateFromCharacteristics
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.core.internal.utils.OrientationUtils
+import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.core.utils.extensions.getCameraCharacteristics
 import io.github.thibaultbee.streampack.ui.R
 import kotlinx.coroutines.CoroutineScope
@@ -305,7 +307,20 @@ class PreviewView @JvmOverloads constructor(
                 listener?.onPreviewFailed(SecurityException("Camera permission is needed to run this application"))
             } else {
                 if (surface.isValid) {
-                    streamer.startPreview(surface)
+                    when (streamer) {
+                        is ICameraCoroutineStreamer -> {
+                            streamer.startPreview(surface)
+                        }
+
+                        is ICameraCallbackStreamer -> {
+                            streamer.startPreview(surface)
+                        }
+
+                        else -> {
+                            Logger.e(TAG, "Streamer is not a ICameraCoroutineStreamer")
+                            listener?.onPreviewFailed(IllegalStateException("Streamer is not a ICameraCoroutineStreamer"))
+                        }
+                    }
                     listener?.onPreviewStarted()
                 } else {
                     Logger.w(TAG, "Invalid surface")

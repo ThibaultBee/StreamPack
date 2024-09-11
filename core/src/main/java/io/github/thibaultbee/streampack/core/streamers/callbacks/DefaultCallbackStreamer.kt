@@ -29,10 +29,12 @@ import kotlinx.coroutines.launch
  *
  * @param streamer the [ICoroutineStreamer] to use
  */
-class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallbackStreamer {
-    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+open class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallbackStreamer {
+    protected val coroutineScope: CoroutineScope = CoroutineScope(
+        SupervisorJob() + Dispatchers.Default
+    )
 
-    private val listeners = mutableListOf<ICallbackStreamer.Listener>()
+    protected val listeners = mutableListOf<ICallbackStreamer.Listener>()
 
     override val isOpen: Boolean
         get() = streamer.isOpen.value
