@@ -1,19 +1,4 @@
-/*
- * Copyright (C) 2021 Thibault B.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package io.github.thibaultbee.streampack.core.streamers
+package io.github.thibaultbee.streampack.core.streamers.callbacks
 
 import android.Manifest
 import android.content.Context
@@ -22,30 +7,31 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.core.internal.sources.audio.MicrophoneSource
-import io.github.thibaultbee.streampack.core.internal.sources.video.camera.CameraSource
+import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
+import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.open
+import kotlinx.coroutines.launch
 
 /**
- * A [DefaultStreamer] that sends microphone and camera frames.
+ * Default implementation of [ICallbackStreamer] that uses [ICoroutineStreamer] to handle streamer logic.
+ * It is a bridge between [ICoroutineStreamer] and [ICallbackStreamer].
  *
  * @param context application context
  * @param enableMicrophone [Boolean.true] to capture audio
  * @param internalEndpoint the [IEndpoint] implementation
  */
-open class DefaultCameraStreamer(
+class DefaultCameraCallbackStreamer(
     private val context: Context,
     enableMicrophone: Boolean = true,
     internalEndpoint: IEndpoint = DynamicEndpoint(context)
-) : DefaultStreamer(
-    context = context,
-    internalVideoSource = CameraSource(context),
-    internalAudioSource = if (enableMicrophone) MicrophoneSource() else null,
-    internalEndpoint = internalEndpoint
-), ICameraCoroutineStreamer {
-    private val cameraSource = internalVideoSource as CameraSource
+) : DefaultCallbackStreamer(DefaultCameraStreamer(context, enableMicrophone, internalEndpoint)),
+    ICameraCallbackStreamer {
+    private val cameraSource = (streamer as DefaultCameraStreamer).videoSource
 
     /**
      * Gets the camera source.
@@ -55,7 +41,7 @@ open class DefaultCameraStreamer(
 
     /**
      * Get/Set current camera id.
-     * It is a shortcut for [videoSource.cameraId]
+     * It is a shortcut for [CameraSource.cameraId]
      */
     override var camera: String
         /**
@@ -67,7 +53,7 @@ open class DefaultCameraStreamer(
         /**
          * Set current camera id.
          *
-         * @param value string that described the camera. Retrieves list of camera from [Context.cameraList]
+         * @param value string that described the camera. Retrieves list of camera from [Context.cameras]
          */
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
@@ -82,6 +68,7 @@ open class DefaultCameraStreamer(
      */
     override val info: IConfigurationInfo
         get() = CameraStreamerConfigurationInfo(endpoint.info)
+
 
     /**
      * Gets configuration information from [MediaDescriptor].
@@ -114,8 +101,17 @@ open class DefaultCameraStreamer(
      * @see [stopPreview]
      * @see [setPreview]
      */
-    override suspend fun startPreview() {
-        cameraSource.startPreview()
+    override fun startPreview() {
+        /**
+         * Trying to set encoder surface to avoid a camera restart.
+         */
+        coroutineScope.launch {
+            try {
+                videoSource.startPreview()
+            } catch (t: Throwable) {
+                listeners.forEach { it.onError(t) }
+            }
+        }
     }
 
     /**

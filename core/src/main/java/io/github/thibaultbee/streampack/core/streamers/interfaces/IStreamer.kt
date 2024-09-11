@@ -27,6 +27,7 @@ import io.github.thibaultbee.streampack.core.internal.sources.video.IPublicVideo
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * A Streamer that is agnostic to the underlying implementation (either with coroutines or callbacks).
@@ -126,4 +127,142 @@ interface IStreamer {
      * Removes the bitrate regulator controller from the streamer.
      */
     fun removeBitrateRegulatorController()
+}
+
+/**
+ * A Streamer based on coroutines.
+ */
+interface ICoroutineStreamer : IStreamer {
+    /**
+     * Returns the last throwable that occurred.
+     */
+    val throwable: StateFlow<Throwable?>
+
+    /**
+     * Returns true if endpoint is opened.
+     * For example, if the streamer is connected to a server if the endpoint is SRT or RTMP.
+     */
+    val isOpen: StateFlow<Boolean>
+
+    /**
+     * Returns true if stream is running.
+     */
+    val isStreaming: StateFlow<Boolean>
+
+    /**
+     * Opens the streamer endpoint.
+     *
+     * @param descriptor Media descriptor to open
+     */
+    suspend fun open(descriptor: MediaDescriptor)
+
+    /**
+     * Closes the streamer endpoint.
+     */
+    suspend fun close()
+
+    /**
+     * Starts audio/video stream.
+     *
+     * @see [stopStream]
+     */
+    suspend fun startStream()
+
+    /**
+     * Stops audio/video stream.
+     *
+     * @see [startStream]
+     */
+    suspend fun stopStream()
+}
+
+interface ICallbackStreamer : IStreamer {
+    /**
+     * Returns true if endpoint is opened.
+     * For example, if the streamer is connected to a server if the endpoint is SRT or RTMP.
+     */
+    val isOpen: Boolean
+
+    /**
+     * Returns true if stream is running.
+     */
+    val isStreaming: Boolean
+
+    /**
+     * Opens the streamer endpoint asynchronously.
+     *
+     * @param descriptor Media descriptor to open
+     */
+    fun open(descriptor: MediaDescriptor)
+
+    /**
+     * Closes the streamer endpoint.
+     */
+    fun close()
+
+    /**
+     * Starts audio/video stream asynchronously.
+     *
+     * @see [stopStream]
+     */
+    fun startStream()
+
+    /**
+     * Starts audio/video stream asynchronously.
+     *
+     * Same as doing [open] and [startStream].
+     *
+     * @see [stopStream]
+     */
+    fun startStream(descriptor: MediaDescriptor)
+
+    /**
+     * Stops audio/video stream asynchronously.
+     *
+     * @see [startStream]
+     */
+    fun stopStream()
+
+    /**
+     * Adds a listener to the streamer.
+     */
+    fun addListener(listener: Listener)
+
+    /**
+     * Removes a listener from the streamer.
+     */
+    fun removeListener(listener: Listener)
+
+    interface Listener {
+        /**
+         * Called when the streamer opening failed.
+         *
+         * @param t The throwable that occurred
+         */
+        fun onOpenFailed(t: Throwable)
+
+        /**
+         * Called when the streamer was closed by an error.
+         *
+         * @param t The reason why the streamer was closed
+         */
+        fun onClose(t: Throwable)
+
+        /**
+         * Called when the streamer is opened or closed.
+         */
+        fun onIsOpenChanged(isOpen: Boolean)
+
+        /**
+         * Called when the stream is started or stopped.
+         */
+        fun onIsStreamingChanged(isStarted: Boolean)
+
+        /**
+         * Called when an error occurs.
+         *
+         * @param throwable The throwable that occurred
+         */
+        fun onError(throwable: Throwable)
+    }
 }
