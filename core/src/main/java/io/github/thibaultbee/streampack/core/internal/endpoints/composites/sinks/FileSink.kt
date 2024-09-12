@@ -20,6 +20,7 @@ import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescripto
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.toByteArray
+import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,7 +38,11 @@ class FileSink(private val coroutineContext: CoroutineContext = Dispatchers.IO) 
         get() = TODO("Not yet implemented")
 
     override suspend fun open(mediaDescriptor: MediaDescriptor) {
-        require(!isOpen.value) { "FileSink is already opened" }
+        if (isOpen.value) {
+            Logger.w(TAG, "FileSink is already opened")
+            return
+        }
+
         require(mediaDescriptor.type.sinkType == MediaSinkType.FILE) { "MediaDescriptor must be a file" }
 
         file = openLocalFile(mediaDescriptor.uri)
@@ -78,6 +83,8 @@ class FileSink(private val coroutineContext: CoroutineContext = Dispatchers.IO) 
     }
 
     companion object {
+        private const val TAG = "FileSink"
+
         private fun openLocalFile(uri: Uri): RandomAccessFile {
             return RandomAccessFile(uri.path, "rw")
         }
