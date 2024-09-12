@@ -5,10 +5,10 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.internal.encoders.IPublicEncoder
-import io.github.thibaultbee.streampack.core.internal.endpoints.IPublicEndpoint
-import io.github.thibaultbee.streampack.core.internal.sources.audio.IPublicAudioSource
-import io.github.thibaultbee.streampack.core.internal.sources.video.IPublicVideoSource
+import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
+import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSource
+import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackStreamer
@@ -41,15 +41,15 @@ open class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallback
     override val isStreaming: Boolean
         get() = streamer.isStreaming.value
 
-    override val audioSource: IPublicAudioSource?
+    override val audioSource: IAudioSource?
         get() = streamer.audioSource
-    override val audioEncoder: IPublicEncoder?
+    override val audioEncoder: IEncoder?
         get() = streamer.audioEncoder
-    override val videoSource: IPublicVideoSource?
+    override val videoSource: IVideoSource?
         get() = streamer.videoSource
-    override val videoEncoder: IPublicEncoder?
+    override val videoEncoder: IEncoder?
         get() = streamer.videoEncoder
-    override val endpoint: IPublicEndpoint
+    override val endpoint: IEndpoint
         get() = streamer.endpoint
     override val info: IConfigurationInfo
         get() = streamer.info

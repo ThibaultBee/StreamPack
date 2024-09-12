@@ -16,27 +16,26 @@
 package io.github.thibaultbee.streampack.core.regulator.controllers
 
 import io.github.thibaultbee.streampack.core.data.BitrateRegulatorConfig
-import io.github.thibaultbee.streampack.core.internal.encoders.IPublicEncoder
-import io.github.thibaultbee.streampack.core.internal.endpoints.IPublicEndpoint
+import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
+import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.internal.utils.Scheduler
-import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
 
 /**
  * A [BitrateRegulatorController] implementation that triggers [IBitrateRegulator.update] every [delayTimeInMs].
  *
- * @param audioEncoder the audio [IPublicEncoder]
- * @param videoEncoder the video [IPublicEncoder]
- * @param endpoint the [IPublicEndpoint] implementation
+ * @param audioEncoder the audio [IEncoder]
+ * @param videoEncoder the video [IEncoder]
+ * @param endpoint the [IEndpoint] implementation
  * @param bitrateRegulatorFactory the [IBitrateRegulator.Factory] implementation. Use it to make your own bitrate regulator.
  * @param bitrateRegulatorConfig bitrate regulator configuration
  * @param delayTimeInMs delay between each call to [IBitrateRegulator.update]
  */
 open class DefaultBitrateRegulatorController(
-    audioEncoder: IPublicEncoder?,
-    videoEncoder: IPublicEncoder?,
-    endpoint: IPublicEndpoint,
+    audioEncoder: IEncoder?,
+    videoEncoder: IEncoder?,
+    endpoint: IEndpoint,
     bitrateRegulatorFactory: IBitrateRegulator.Factory,
     bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
     delayTimeInMs: Long = 500

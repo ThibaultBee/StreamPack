@@ -44,7 +44,7 @@ import android.media.MediaFormat
 import android.os.Build
 import android.util.Range
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.MediaCodecHelper
-import io.github.thibaultbee.streampack.core.internal.endpoints.IPublicEndpoint
+import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 import java.security.InvalidParameterException
@@ -55,7 +55,7 @@ import java.security.InvalidParameterException
  *
  * @param endpointInfo the corresponding muxer info
  */
-open class StreamerConfigurationInfo(endpointInfo: IPublicEndpoint.IEndpointInfo) :
+open class StreamerConfigurationInfo(endpointInfo: IEndpoint.IEndpointInfo) :
     IConfigurationInfo {
     override val audio by lazy {
         AudioStreamerConfigurationInfo(endpointInfo.audio)
@@ -65,7 +65,7 @@ open class StreamerConfigurationInfo(endpointInfo: IPublicEndpoint.IEndpointInfo
     }
 }
 
-class AudioStreamerConfigurationInfo(private val audioEndpointInfo: IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo) :
+class AudioStreamerConfigurationInfo(private val audioEndpointInfo: IEndpoint.IEndpointInfo.IAudioEndpointInfo) :
     IAudioConfigurationInfo {
     /**
      * Get supported audio encoders list
@@ -141,7 +141,7 @@ class AudioStreamerConfigurationInfo(private val audioEndpointInfo: IPublicEndpo
     }
 }
 
-open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo) :
+open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IEndpoint.IEndpointInfo.IVideoEndpointInfo) :
     IVideoConfigurationInfo {
     /**
      * Supported encoders for a [DefaultStreamer]

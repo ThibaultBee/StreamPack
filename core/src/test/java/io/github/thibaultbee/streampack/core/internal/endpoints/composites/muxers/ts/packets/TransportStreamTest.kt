@@ -15,8 +15,6 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.packets
 
-import io.github.thibaultbee.streampack.core.internal.data.Packet
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.descriptors.AdaptationField
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -28,7 +26,7 @@ class TransportStreamTest {
     class MockMuxerListener(
         private val expectedBuffer: ByteBuffer,
         private val numExpectedBuffer: Int = 1
-    ) : io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer.IMuxerListener {
+    ) : io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal.IMuxerListener {
         private var nBuffer = 0
         override fun onOutputFrame(packet: io.github.thibaultbee.streampack.core.internal.data.Packet) {
             assertEquals(TS.PACKET_SIZE * numExpectedBuffer, packet.buffer.limit())
@@ -45,7 +43,7 @@ class TransportStreamTest {
     }
 
     class MockTransportStream(
-        muxerListener: io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer.IMuxerListener,
+        muxerListener: io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal.IMuxerListener,
         pid: Short = Random.nextInt().toShort()
     ) :
         TS(muxerListener, pid) {

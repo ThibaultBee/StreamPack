@@ -34,11 +34,11 @@ import kotlinx.coroutines.sync.withLock
 import java.security.InvalidParameterException
 
 /**
- * An [IEndpoint] implementation of the [MediaMuxer].
+ * An [IEndpointInternal] implementation of the [MediaMuxer].
  */
 class MediaMuxerEndpoint(
     private val context: Context,
-) : IEndpoint {
+) : IEndpointInternal {
     private var mediaMuxer: MediaMuxer? = null
     private var containerType: MediaContainerType? = null
     private var fileDescriptor: ParcelFileDescriptor? = null
@@ -52,7 +52,7 @@ class MediaMuxerEndpoint(
     private val streamIdToTrackId = mutableMapOf<Int, Int>()
     private var numOfStreams = 0
 
-    override val info: IPublicEndpoint.IEndpointInfo
+    override val info: IEndpoint.IEndpointInfo
         get() = containerType?.let { Companion.getInfo(it) }
             ?: throw IllegalStateException("Endpoint is not opened")
 
@@ -226,9 +226,9 @@ class MediaMuxerEndpoint(
         }
     }
 
-    object Mp4EndpointInfo : IPublicEndpoint.IEndpointInfo {
+    object Mp4EndpointInfo : IEndpoint.IEndpointInfo {
         override val audio by lazy {
-            object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
+            object : IEndpoint.IEndpointInfo.IAudioEndpointInfo {
                 override val supportedEncoders by lazy {
                     listOf(
                         MediaFormat.MIMETYPE_AUDIO_AAC,
@@ -242,7 +242,7 @@ class MediaMuxerEndpoint(
         }
 
         override val video by lazy {
-            object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
+            object : IEndpoint.IEndpointInfo.IVideoEndpointInfo {
                 override val supportedEncoders by lazy {
                     mutableListOf(
                         MediaFormat.MIMETYPE_VIDEO_H263,
@@ -258,9 +258,9 @@ class MediaMuxerEndpoint(
         }
     }
 
-    object WebMEndpointInfo : IPublicEndpoint.IEndpointInfo {
+    object WebMEndpointInfo : IEndpoint.IEndpointInfo {
         override val audio by lazy {
-            object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
+            object : IEndpoint.IEndpointInfo.IAudioEndpointInfo {
                 override val supportedEncoders by lazy {
                     listOf(
                         MediaFormat.MIMETYPE_AUDIO_VORBIS,
@@ -273,7 +273,7 @@ class MediaMuxerEndpoint(
         }
 
         override val video by lazy {
-            object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
+            object : IEndpoint.IEndpointInfo.IVideoEndpointInfo {
                 override val supportedEncoders by lazy {
                     mutableListOf(
                         MediaFormat.MIMETYPE_VIDEO_VP8
@@ -287,9 +287,9 @@ class MediaMuxerEndpoint(
         }
     }
 
-    object ThreeGPEndpointInfo : IPublicEndpoint.IEndpointInfo {
+    object ThreeGPEndpointInfo : IEndpoint.IEndpointInfo {
         override val audio by lazy {
-            object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
+            object : IEndpoint.IEndpointInfo.IAudioEndpointInfo {
                 override val supportedEncoders by lazy {
                     listOf(
                         MediaFormat.MIMETYPE_AUDIO_AMR_NB,
@@ -303,7 +303,7 @@ class MediaMuxerEndpoint(
         }
 
         override val video by lazy {
-            object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
+            object : IEndpoint.IEndpointInfo.IVideoEndpointInfo {
                 override val supportedEncoders by lazy {
                     mutableListOf(
                         MediaFormat.MIMETYPE_VIDEO_H263,
@@ -319,9 +319,9 @@ class MediaMuxerEndpoint(
         }
     }
 
-    object OggEndpointInfo : IPublicEndpoint.IEndpointInfo {
+    object OggEndpointInfo : IEndpoint.IEndpointInfo {
         override val audio by lazy {
-            object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
+            object : IEndpoint.IEndpointInfo.IAudioEndpointInfo {
                 override val supportedEncoders by lazy {
                     listOf(
                         MediaFormat.MIMETYPE_AUDIO_VORBIS,
@@ -334,7 +334,7 @@ class MediaMuxerEndpoint(
         }
 
         override val video by lazy {
-            object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
+            object : IEndpoint.IEndpointInfo.IVideoEndpointInfo {
                 override val supportedEncoders by lazy { emptyList<String>() }
             }
         }

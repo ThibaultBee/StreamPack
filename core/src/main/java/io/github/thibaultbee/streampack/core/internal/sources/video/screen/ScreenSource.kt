@@ -28,7 +28,7 @@ import androidx.activity.result.ActivityResult
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.orientation.AbstractSourceOrientationProvider
-import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSource
+import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.isDevicePortrait
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.landscapize
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.portraitize
@@ -37,7 +37,7 @@ import java.nio.ByteBuffer
 
 class ScreenSource(
     context: Context
-) : IVideoSource {
+) : IVideoSourceInternal {
     override var outputSurface: Surface? = null
     override val timestampOffset = 0L
     override val hasOutputSurface = true

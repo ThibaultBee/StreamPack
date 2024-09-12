@@ -16,14 +16,14 @@
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4
 
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IPublicMuxer
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer
 
-object MP4MuxerInfo : IPublicMuxer.IMuxerInfo {
+object MP4MuxerInfo : IMuxer.IMuxerInfo {
     override val audio by lazy { AudioMP4MuxerInfo }
     override val video by lazy { VideoMP4MuxerInfo }
 }
 
-object AudioMP4MuxerInfo : IPublicMuxer.IMuxerInfo.IAudioMuxerInfo {
+object AudioMP4MuxerInfo : IMuxer.IMuxerInfo.IAudioMuxerInfo {
     /**
      * Get MP4 Muxer supported audio encoders list
      */
@@ -40,7 +40,7 @@ object AudioMP4MuxerInfo : IPublicMuxer.IMuxerInfo.IAudioMuxerInfo {
 }
 
 object VideoMP4MuxerInfo :
-    IPublicMuxer.IMuxerInfo.IVideoMuxerInfo {
+    IMuxer.IMuxerInfo.IVideoMuxerInfo {
     /**
      * Get MP4 Muxer supported video encoders list
      */

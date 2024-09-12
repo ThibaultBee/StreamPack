@@ -22,7 +22,6 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.internal.data.Frame
-import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.utils.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
@@ -31,7 +30,7 @@ import java.nio.ByteBuffer
 
 class CameraSource(
     private val context: Context,
-) : IVideoSource, IPublicCameraSource {
+) : ICameraSourceInternal {
     var previewSurface: Surface? = null
         set(value) {
             if (field == value) {

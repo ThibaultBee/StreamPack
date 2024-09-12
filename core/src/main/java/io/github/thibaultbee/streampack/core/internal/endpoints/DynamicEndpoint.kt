@@ -36,31 +36,31 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 
 /**
- * An implementation of [IEndpoint] where the endpoint is created based on the [MediaDescriptor].
+ * An implementation of [IEndpointInternal] where the endpoint is created based on the [MediaDescriptor].
  *
  * @param context The application context
  */
 class DynamicEndpoint(
     private val context: Context
-) : IEndpoint {
+) : IEndpointInternal {
     // Current endpoint
-    private var _endpointFlow: MutableStateFlow<IEndpoint?> = MutableStateFlow(null)
-    private val endpointFlow: StateFlow<IEndpoint?> = _endpointFlow
+    private var _endpointFlow: MutableStateFlow<IEndpointInternal?> = MutableStateFlow(null)
+    private val endpointFlow: StateFlow<IEndpointInternal?> = _endpointFlow
 
-    private val _endpoint: IEndpoint?
+    private val _endpoint: IEndpointInternal?
         get() = endpointFlow.value
 
-    private val endpoint: IEndpoint
+    private val endpoint: IEndpointInternal
         get() = requireNotNull(_endpoint) { "Endpoint is not open" }
 
     // Endpoints
-    private var mediaMuxerEndpoint: IEndpoint? = null
-    private var flvFileEndpoint: IEndpoint? = null
-    private var flvContentEndpoint: IEndpoint? = null
-    private var tsFileEndpoint: IEndpoint? = null
-    private var tsContentEndpoint: IEndpoint? = null
-    private var srtEndpoint: IEndpoint? = null
-    private var rtmpEndpoint: IEndpoint? = null
+    private var mediaMuxerEndpoint: IEndpointInternal? = null
+    private var flvFileEndpoint: IEndpointInternal? = null
+    private var flvContentEndpoint: IEndpointInternal? = null
+    private var tsFileEndpoint: IEndpointInternal? = null
+    private var tsContentEndpoint: IEndpointInternal? = null
+    private var srtEndpoint: IEndpointInternal? = null
+    private var rtmpEndpoint: IEndpointInternal? = null
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val isOpen: StateFlow<Boolean> = DerivedStateFlow(
@@ -71,7 +71,7 @@ class DynamicEndpoint(
     /**
      * Only available when the endpoint is opened.
      */
-    override val info: IPublicEndpoint.IEndpointInfo
+    override val info: IEndpoint.IEndpointInfo
         get() = endpoint.info
 
     override fun getInfo(type: MediaDescriptor.Type) = getEndpoint(type).getInfo(type)
@@ -115,7 +115,7 @@ class DynamicEndpoint(
         }
     }
 
-    private fun getEndpointAndConfig(mediaDescriptor: MediaDescriptor): IEndpoint {
+    private fun getEndpointAndConfig(mediaDescriptor: MediaDescriptor): IEndpointInternal {
         val endpoint = getEndpoint(mediaDescriptor.type)
 
         if (endpoint is CompositeEndpoint) {
@@ -131,7 +131,7 @@ class DynamicEndpoint(
         return endpoint
     }
 
-    private fun getEndpoint(type: MediaDescriptor.Type): IEndpoint {
+    private fun getEndpoint(type: MediaDescriptor.Type): IEndpointInternal {
         return when (type.sinkType) {
             MediaSinkType.FILE -> when (type.containerType) {
                 MediaContainerType.MP4, MediaContainerType.WEBM, MediaContainerType.OGG, MediaContainerType.THREEGP -> getMediaMuxerEndpoint()
@@ -151,14 +151,14 @@ class DynamicEndpoint(
         }
     }
 
-    private fun getMediaMuxerEndpoint(): IEndpoint {
+    private fun getMediaMuxerEndpoint(): IEndpointInternal {
         if (mediaMuxerEndpoint == null) {
             mediaMuxerEndpoint = MediaMuxerEndpoint(context)
         }
         return mediaMuxerEndpoint!!
     }
 
-    private fun getFlvFileEndpoint(): IEndpoint {
+    private fun getFlvFileEndpoint(): IEndpointInternal {
         if (flvFileEndpoint == null) {
             flvFileEndpoint = CompositeEndpoint(
                 FlvMuxer(
@@ -169,7 +169,7 @@ class DynamicEndpoint(
         return flvFileEndpoint!!
     }
 
-    private fun getFlvContentEndpoint(): IEndpoint {
+    private fun getFlvContentEndpoint(): IEndpointInternal {
         if (flvContentEndpoint == null) {
             flvContentEndpoint = CompositeEndpoint(
                 FlvMuxer(
@@ -180,7 +180,7 @@ class DynamicEndpoint(
         return flvContentEndpoint!!
     }
 
-    private fun getTsFileEndpoint(): IEndpoint {
+    private fun getTsFileEndpoint(): IEndpointInternal {
         if (tsFileEndpoint == null) {
             tsFileEndpoint = CompositeEndpoint(
                 TSMuxer(),
@@ -190,7 +190,7 @@ class DynamicEndpoint(
         return tsFileEndpoint!!
     }
 
-    private fun getTsContentEndpoint(): IEndpoint {
+    private fun getTsContentEndpoint(): IEndpointInternal {
         if (tsContentEndpoint == null) {
             tsContentEndpoint = CompositeEndpoint(
                 TSMuxer(), ContentSink(context)
@@ -199,14 +199,14 @@ class DynamicEndpoint(
         return tsContentEndpoint!!
     }
 
-    private fun getSrtEndpoint(): IEndpoint {
+    private fun getSrtEndpoint(): IEndpointInternal {
         if (srtEndpoint == null) {
             srtEndpoint = CompositeEndpoints.createSrtEndpoint(null)
         }
         return srtEndpoint!!
     }
 
-    private fun getRtmpEndpoint(): IEndpoint {
+    private fun getRtmpEndpoint(): IEndpointInternal {
         if (rtmpEndpoint == null) {
             rtmpEndpoint = CompositeEndpoints.createRtmpEndpoint()
         }

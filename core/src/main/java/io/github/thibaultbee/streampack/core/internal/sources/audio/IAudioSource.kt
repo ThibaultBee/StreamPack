@@ -21,12 +21,12 @@ import io.github.thibaultbee.streampack.core.internal.interfaces.Releaseable
 import io.github.thibaultbee.streampack.core.internal.interfaces.Streamable
 import io.github.thibaultbee.streampack.core.internal.sources.IFrameSource
 
-interface IAudioSource : IPublicAudioSource, IFrameSource<AudioConfig>, Streamable,
+interface IAudioSourceInternal : IAudioSource, IFrameSource<AudioConfig>, Streamable,
     Configurable<AudioConfig>, Releaseable
 
-interface IPublicAudioSource {
+interface IAudioSource {
     /**
-     * [Boolean.true] to mute [IAudioSource], [Boolean.false] to unmute.
+     * [Boolean.true] to mute [IAudioSourceInternal], [Boolean.false] to unmute.
      */
     var isMuted: Boolean
 }

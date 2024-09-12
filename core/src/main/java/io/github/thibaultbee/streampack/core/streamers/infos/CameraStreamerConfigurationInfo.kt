@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.streamers.infos
 import android.content.Context
 import android.util.Range
 import android.util.Size
-import io.github.thibaultbee.streampack.core.internal.endpoints.IPublicEndpoint
+import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
 import io.github.thibaultbee.streampack.core.utils.extensions.get10BitSupportedProfiles
@@ -29,12 +29,12 @@ import io.github.thibaultbee.streampack.core.utils.extensions.getCameraOutputStr
  * Configuration infos\ for [DefaultCameraStreamer].
  * It wraps supported values from MediaCodec, Camera and TS Muxer.
  */
-open class CameraStreamerConfigurationInfo(endpointInfo: IPublicEndpoint.IEndpointInfo) :
+open class CameraStreamerConfigurationInfo(endpointInfo: IEndpoint.IEndpointInfo) :
     StreamerConfigurationInfo(endpointInfo) {
     override val video by lazy {  VideoCameraStreamerConfigurationInfo(endpointInfo.video) }
 }
 
-class VideoCameraStreamerConfigurationInfo(videoEndpointInfo: IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo) :
+class VideoCameraStreamerConfigurationInfo(videoEndpointInfo: IEndpoint.IEndpointInfo.IVideoEndpointInfo) :
     VideoStreamerConfigurationInfo(videoEndpointInfo) {
     /**
      * Get camera resolutions that are supported by the encoder.

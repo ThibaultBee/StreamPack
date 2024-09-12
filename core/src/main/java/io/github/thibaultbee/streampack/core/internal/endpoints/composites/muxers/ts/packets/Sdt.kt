@@ -15,7 +15,6 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.packets
 
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.ITSElement
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.Service
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.put
@@ -25,7 +24,7 @@ import java.nio.ByteBuffer
 
 
 class Sdt(
-    listener: io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer.IMuxerListener? = null,
+    listener: io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal.IMuxerListener? = null,
     private val services: List<Service>,
     tsId: Short,
     private val originalNetworkId: Short = 0xff01.toShort(),

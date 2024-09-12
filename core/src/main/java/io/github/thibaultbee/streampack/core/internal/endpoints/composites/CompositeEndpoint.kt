@@ -19,19 +19,19 @@ import io.github.thibaultbee.streampack.core.data.Config
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.data.Packet
+import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.core.internal.endpoints.IPublicEndpoint
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IPublicMuxer
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.EndpointConfiguration
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ISink
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ISinkInternal
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 
 /**
- * An [IEndpoint] implementation that combines a [IMuxer] and a [ISink].
+ * An [IEndpointInternal] implementation that combines a [IMuxerInternal] and a [ISinkInternal].
  */
-open class CompositeEndpoint(final override val muxer: IMuxer, override val sink: ISink) :
+open class CompositeEndpoint(final override val muxer: IMuxerInternal, override val sink: ISinkInternal) :
     ICompositeEndpoint {
     /**
      * The video and audio configurations.
@@ -47,7 +47,7 @@ open class CompositeEndpoint(final override val muxer: IMuxer, override val sink
 
     init {
         muxer.listener = object :
-            IMuxer.IMuxerListener {
+            IMuxerInternal.IMuxerListener {
             override fun onOutputFrame(packet: Packet) {
                 runBlocking {
                     sink.write(packet)
@@ -102,10 +102,10 @@ open class CompositeEndpoint(final override val muxer: IMuxer, override val sink
     }
 
     class EndpointInfo(
-        val muxerInfo: IPublicMuxer.IMuxerInfo
-    ) : IPublicEndpoint.IEndpointInfo {
+        val muxerInfo: IMuxer.IMuxerInfo
+    ) : IEndpoint.IEndpointInfo {
         override val audio by lazy {
-            object : IPublicEndpoint.IEndpointInfo.IAudioEndpointInfo {
+            object : IEndpoint.IEndpointInfo.IAudioEndpointInfo {
                 override val supportedEncoders by lazy { muxerInfo.audio.supportedEncoders }
                 override val supportedSampleRates by lazy { muxerInfo.audio.supportedSampleRates }
                 override val supportedByteFormats by lazy { muxerInfo.audio.supportedByteFormats }
@@ -113,7 +113,7 @@ open class CompositeEndpoint(final override val muxer: IMuxer, override val sink
         }
 
         override val video by lazy {
-            object : IPublicEndpoint.IEndpointInfo.IVideoEndpointInfo {
+            object : IEndpoint.IEndpointInfo.IVideoEndpointInfo {
                 override val supportedEncoders by lazy { muxerInfo.video.supportedEncoders }
             }
         }

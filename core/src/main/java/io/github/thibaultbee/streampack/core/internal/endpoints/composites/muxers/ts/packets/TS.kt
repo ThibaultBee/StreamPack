@@ -15,8 +15,6 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.packets
 
-import io.github.thibaultbee.streampack.core.internal.data.SrtPacket
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.utils.MuxerConst
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.utils.TSOutputCallback
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.toInt
@@ -24,7 +22,7 @@ import java.nio.ByteBuffer
 import java.security.InvalidParameterException
 
 open class TS(
-    listener: io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer.IMuxerListener? = null,
+    listener: io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal.IMuxerListener? = null,
     val pid: Short,
     private val transportErrorIndicator: Boolean = false,
     private val transportPriority: Boolean = false,

@@ -25,7 +25,7 @@ import io.github.thibaultbee.streampack.core.internal.interfaces.SuspendStreamab
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 
-interface IEndpoint : IPublicEndpoint, SuspendStreamable,
+interface IEndpointInternal : IEndpoint, SuspendStreamable,
     SuspendCloseable, Releaseable {
     /**
      * Opens the endpoint.
@@ -35,7 +35,7 @@ interface IEndpoint : IPublicEndpoint, SuspendStreamable,
     suspend fun open(descriptor: MediaDescriptor)
 
     /**
-     * Writes a [Frame] to the [IEndpoint].
+     * Writes a [Frame] to the [IEndpointInternal].
      *
      * @param frame the [Frame] to write
      * @param streamPid the stream id the [Frame] belongs to
@@ -46,7 +46,7 @@ interface IEndpoint : IPublicEndpoint, SuspendStreamable,
     )
 
     /**
-     * Registers new streams to the [IEndpoint].
+     * Registers new streams to the [IEndpointInternal].
      *
      * @param streamConfigs the list of [Config] to register
      * @return the map of [Config] to their corresponding stream id
@@ -54,7 +54,7 @@ interface IEndpoint : IPublicEndpoint, SuspendStreamable,
     fun addStreams(streamConfigs: List<Config>): Map<Config, Int>
 
     /**
-     * Registers a new stream to the [IEndpoint].
+     * Registers a new stream to the [IEndpointInternal].
      *
      * @param streamConfig the [Config] to register
      * @return the stream id
@@ -62,7 +62,7 @@ interface IEndpoint : IPublicEndpoint, SuspendStreamable,
     fun addStream(streamConfig: Config): Int
 
     /**
-     * Releases an [IEndpoint].
+     * Releases an [IEndpointInternal].
      */
     override fun release() {
         runBlocking {
@@ -72,7 +72,7 @@ interface IEndpoint : IPublicEndpoint, SuspendStreamable,
     }
 }
 
-interface IPublicEndpoint {
+interface IEndpoint {
     /**
      * Whether if the endpoint is opened.
      * For example, if the file is opened for [FileSink].
