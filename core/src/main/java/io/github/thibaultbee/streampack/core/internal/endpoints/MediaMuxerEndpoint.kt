@@ -26,6 +26,7 @@ import android.os.ParcelFileDescriptor
 import io.github.thibaultbee.streampack.core.data.Config
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Frame
+import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.sync.Mutex
@@ -64,7 +65,11 @@ class MediaMuxerEndpoint(
     override val isOpen: StateFlow<Boolean> = _isOpen
 
     override suspend fun open(descriptor: MediaDescriptor) {
-        require(!isOpen.value) { "Endpoint is already opened" }
+        if (isOpen.value) {
+            Logger.w(TAG, "MediaMuxerEndpoint is already opened")
+            return
+        }
+
         require((descriptor.type.sinkType == MediaSinkType.FILE) || (descriptor.type.sinkType == MediaSinkType.CONTENT)) { "MediaDescriptor must have a path" }
         val containerType = descriptor.type.containerType
         require(
@@ -355,6 +360,8 @@ class MediaMuxerEndpoint(
         }
 
     companion object {
+        private const val TAG = "MediaMuxerEndpoint"
+
         private fun getInfo(descriptor: MediaDescriptor) =
             getInfo(descriptor.type.containerType)
 

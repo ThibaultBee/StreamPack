@@ -29,6 +29,7 @@ import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.data.SrtPacket
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.EndpointConfiguration
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ISink
+import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -60,7 +61,11 @@ class SrtSink : ISink {
     ) = open(SrtMediaDescriptor(mediaDescriptor))
 
     private suspend fun open(mediaDescriptor: SrtMediaDescriptor) {
-        require(!isOpen.value) { "Sink is already opened" }
+        if (isOpen.value) {
+            Logger.w(TAG, "SrtSink is already opened")
+            return
+        }
+
         if (mediaDescriptor.srtUrl.mode != null) {
             require(mediaDescriptor.srtUrl.mode == Mode.CALLER) { "Invalid mode: ${mediaDescriptor.srtUrl.mode}. Only caller supported." }
         }

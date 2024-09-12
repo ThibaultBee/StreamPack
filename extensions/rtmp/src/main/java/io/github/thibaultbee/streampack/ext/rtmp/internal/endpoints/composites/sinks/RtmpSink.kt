@@ -21,6 +21,8 @@ import io.github.thibaultbee.streampack.core.error.ClosedException
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.EndpointConfiguration
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.FileSink
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.FileSink.Companion
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ISink
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
@@ -55,7 +57,11 @@ class RtmpSink(
     }
 
     override suspend fun open(mediaDescriptor: MediaDescriptor) {
-        require(!isOpen.value) { "SrtEndpoint is already opened" }
+        if (isOpen.value) {
+            Logger.w(TAG, "RtmpSink is already opened")
+            return
+        }
+
         require(mediaDescriptor.type.sinkType == MediaSinkType.RTMP) { "MediaDescriptor must be a rtmp Uri" }
 
         withContext(dispatcher) {

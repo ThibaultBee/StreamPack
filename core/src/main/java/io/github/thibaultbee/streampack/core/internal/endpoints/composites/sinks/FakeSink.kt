@@ -33,7 +33,10 @@ class FakeSink : ISink {
 
 
     override suspend fun open(mediaDescriptor: MediaDescriptor) {
-        require(!isOpen.value) { "FakeSink is already opened" }
+        if (isOpen.value) {
+            Logger.w(TAG, "FileSink is already opened")
+            return
+        }
 
         Logger.d(TAG, "open called: $mediaDescriptor")
         _isOpen.emit(true)
