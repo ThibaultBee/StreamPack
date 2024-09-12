@@ -28,6 +28,7 @@ import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ContentSink
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.FileSink
 import io.github.thibaultbee.streampack.core.internal.utils.DerivedStateFlow
+import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -79,7 +80,10 @@ class DynamicEndpoint(
         get() = endpoint.metrics
 
     override suspend fun open(descriptor: MediaDescriptor) {
-        require(!isOpen.value) { "Endpoint is already opened" }
+        if (isOpen.value) {
+            Logger.w(TAG, "DynamicEndpoint is already opened")
+            return
+        }
 
         _endpointFlow.update {
             getEndpointAndConfig(descriptor).apply {
@@ -207,5 +211,9 @@ class DynamicEndpoint(
             rtmpEndpoint = CompositeEndpoints.createRtmpEndpoint()
         }
         return rtmpEndpoint!!
+    }
+
+    companion object {
+        private const val TAG = "DynamicEndpoint"
     }
 }

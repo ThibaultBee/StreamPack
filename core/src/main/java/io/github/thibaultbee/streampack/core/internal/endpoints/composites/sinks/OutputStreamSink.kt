@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.core.internal.endpoints.composites.sink
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.toByteArray
+import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,7 +42,10 @@ abstract class OutputStreamSink(private val coroutineContext: CoroutineContext =
     abstract suspend fun openOutputStream(mediaDescriptor: MediaDescriptor): OutputStream
 
     override suspend fun open(mediaDescriptor: MediaDescriptor) {
-        require(!isOpen.value) { "OutputStreamSink is already opened" }
+        if (isOpen.value) {
+            Logger.w(TAG, "OutputStreamSink is already opened")
+            return
+        }
 
         outputStream = openOutputStream(mediaDescriptor)
         _isOpen.emit(true)
@@ -81,5 +85,9 @@ abstract class OutputStreamSink(private val coroutineContext: CoroutineContext =
             outputStream = null
             _isOpen.emit(false)
         }
+    }
+
+    companion object {
+        private const val TAG = "OutputStreamSink"
     }
 }
