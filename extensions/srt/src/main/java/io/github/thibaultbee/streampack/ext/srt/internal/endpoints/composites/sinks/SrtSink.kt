@@ -28,14 +28,14 @@ import io.github.thibaultbee.streampack.core.error.ClosedException
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.data.SrtPacket
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.EndpointConfiguration
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ISink
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ISinkInternal
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 
-class SrtSink : ISink {
+class SrtSink : ISinkInternal {
     private var socket: CoroutineSrtSocket? = null
     private var completionException: Throwable? = null
     private var isOnError: Boolean = false

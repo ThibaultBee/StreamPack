@@ -15,13 +15,12 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.packets
 
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.utils.CRC32
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.put
 import java.nio.ByteBuffer
 
 open class Psi(
-    listener: io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer.IMuxerListener? = null,
+    listener: io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal.IMuxerListener? = null,
     pid: Short,
     private val tableId: Byte,
     private val sectionSyntaxIndicator: Boolean = false,

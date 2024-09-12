@@ -19,8 +19,6 @@ import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.data.VideoConfig
-import io.github.thibaultbee.streampack.core.internal.data.Packet
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.utils.TSConst
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.utils.Utils.createFakeServiceInfo
 import io.github.thibaultbee.streampack.core.internal.utils.FakeFrames
@@ -32,7 +30,7 @@ import org.junit.Test
 
 class TSMuxerTest {
     class MockMuxerListener :
-        io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer.IMuxerListener {
+        io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal.IMuxerListener {
         override fun onOutputFrame(packet: io.github.thibaultbee.streampack.core.internal.data.Packet) {}
     }
 

@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxe
 import io.github.thibaultbee.streampack.core.data.Config
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.data.Packet
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.boxes.FileTypeBox
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.boxes.MovieFragmentRandomAccessBox
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.boxes.TrackFragmentRandomAccessBox
@@ -36,10 +36,10 @@ import io.github.thibaultbee.streampack.core.internal.utils.extensions.isVideo
 import java.nio.ByteBuffer
 
 class MP4Muxer(
-    override var listener: IMuxer.IMuxerListener? = null,
+    override var listener: IMuxerInternal.IMuxerListener? = null,
     private val timescale: Int = DEFAULT_TIMESCALE,
     private val segmenterFactory: MP4SegmenterFactory = DefaultMP4SegmenterFactory()
-) : IMuxer {
+) : IMuxerInternal {
     override val info by lazy { MP4MuxerInfo }
 
     private val tracks = mutableListOf<Track>()

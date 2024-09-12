@@ -21,9 +21,7 @@ import io.github.thibaultbee.streampack.core.error.ClosedException
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.EndpointConfiguration
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.FileSink
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.FileSink.Companion
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ISink
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ISinkInternal
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -36,7 +34,7 @@ import java.util.concurrent.Executors
 class RtmpSink(
     private val dispatcher: CoroutineDispatcher = Executors.newSingleThreadExecutor()
         .asCoroutineDispatcher()
-) : ISink {
+) : ISinkInternal {
     private var socket: Rtmp? = null
     private var isOnError = false
 

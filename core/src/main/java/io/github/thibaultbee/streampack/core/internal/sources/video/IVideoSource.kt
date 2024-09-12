@@ -23,7 +23,7 @@ import io.github.thibaultbee.streampack.core.internal.orientation.ISourceOrienta
 import io.github.thibaultbee.streampack.core.internal.sources.IFrameSource
 import io.github.thibaultbee.streampack.core.internal.sources.ISurfaceSource
 
-interface IVideoSource : IFrameSource<VideoConfig>, ISurfaceSource, IPublicVideoSource,
+interface IVideoSourceInternal : IFrameSource<VideoConfig>, ISurfaceSource, IVideoSource,
     SuspendStreamable, Configurable<VideoConfig>, Releaseable {
     /**
      * Set to [Boolean.true] to use video source as a Surface renderer (see [ISurfaceSource]). For example, this is useful
@@ -44,4 +44,4 @@ interface IVideoSource : IFrameSource<VideoConfig>, ISurfaceSource, IPublicVideo
     val orientationProvider: ISourceOrientationProvider
 }
 
-interface IPublicVideoSource
+interface IVideoSource

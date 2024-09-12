@@ -16,20 +16,20 @@
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv
 
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IPublicMuxer
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.tags.SoundFormat
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.tags.SoundRate
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.tags.SoundSize
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.tags.video.CodecID
 
 object FlvMuxerInfo :
-    IPublicMuxer.IMuxerInfo {
+    IMuxer.IMuxerInfo {
     override val video by lazy { VideoFlvMuxerInfo }
     override val audio  by lazy { AudioFlvMuxerInfo }
 }
 
 object AudioFlvMuxerInfo :
-    IPublicMuxer.IMuxerInfo.IAudioMuxerInfo {
+    IMuxer.IMuxerInfo.IAudioMuxerInfo {
     /**
      * Get FLV Muxer supported audio encoders list
      */
@@ -49,7 +49,7 @@ object AudioFlvMuxerInfo :
 }
 
 object VideoFlvMuxerInfo :
-    IPublicMuxer.IMuxerInfo.IVideoMuxerInfo {
+    IMuxer.IMuxerInfo.IVideoMuxerInfo {
     /**
      * Get FLV Muxer supported video encoders list
      */

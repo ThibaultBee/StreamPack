@@ -22,7 +22,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
-import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.internal.sources.audio.MicrophoneSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.screen.ScreenSource
 
@@ -31,20 +31,20 @@ import io.github.thibaultbee.streampack.core.internal.sources.video.screen.Scree
  *
  * @param context application context
  * @param enableMicrophone [Boolean.true] to capture audio
- * @param internalEndpoint the [IEndpoint] implementation
+ * @param internalEndpoint the [IEndpointInternal] implementation
  */
 open class DefaultScreenRecorderStreamer(
     context: Context,
     enableMicrophone: Boolean = true,
-    internalEndpoint: IEndpoint = DynamicEndpoint(context)
+    internalEndpoint: IEndpointInternal = DynamicEndpoint(context)
 ) : DefaultStreamer(
     context = context,
-    internalVideoSource = ScreenSource(context),
-    internalAudioSource = if (enableMicrophone) MicrophoneSource() else null,
-    internalEndpoint = internalEndpoint
+    videoSourceInternal = ScreenSource(context),
+    audioSourceInternal = if (enableMicrophone) MicrophoneSource() else null,
+    endpointInternal = internalEndpoint
 ) {
     private val screenSource =
-        (internalVideoSource as ScreenSource).apply {
+        (videoSourceInternal as ScreenSource).apply {
             listener = object : ScreenSource.Listener {
                 override fun onStop() {
                     onStreamError(Exception("Screen source has been stopped"))

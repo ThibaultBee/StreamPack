@@ -21,7 +21,7 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
-import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.internal.sources.audio.MicrophoneSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
@@ -33,19 +33,19 @@ import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCorouti
  *
  * @param context application context
  * @param enableMicrophone [Boolean.true] to capture audio
- * @param internalEndpoint the [IEndpoint] implementation
+ * @param internalEndpoint the [IEndpointInternal] implementation
  */
 open class DefaultCameraStreamer(
     private val context: Context,
     enableMicrophone: Boolean = true,
-    internalEndpoint: IEndpoint = DynamicEndpoint(context)
+    internalEndpoint: IEndpointInternal = DynamicEndpoint(context)
 ) : DefaultStreamer(
     context = context,
-    internalVideoSource = CameraSource(context),
-    internalAudioSource = if (enableMicrophone) MicrophoneSource() else null,
-    internalEndpoint = internalEndpoint
+    videoSourceInternal = CameraSource(context),
+    audioSourceInternal = if (enableMicrophone) MicrophoneSource() else null,
+    endpointInternal = internalEndpoint
 ), ICameraCoroutineStreamer {
-    private val cameraSource = internalVideoSource as CameraSource
+    private val cameraSource = videoSourceInternal as CameraSource
 
     /**
      * Gets the camera source.

@@ -22,7 +22,7 @@ import io.github.thibaultbee.streampack.core.internal.interfaces.SuspendCloseabl
 import io.github.thibaultbee.streampack.core.internal.interfaces.SuspendStreamable
 import kotlinx.coroutines.flow.StateFlow
 
-interface ISink : IPublicSink, Configurable<EndpointConfiguration>, SuspendStreamable,
+interface ISinkInternal : ISink, Configurable<EndpointConfiguration>, SuspendStreamable,
     SuspendCloseable {
     /**
      * Opens the endpoint.
@@ -31,7 +31,7 @@ interface ISink : IPublicSink, Configurable<EndpointConfiguration>, SuspendStrea
     suspend fun open(mediaDescriptor: MediaDescriptor)
 
     /**
-     * Writes a buffer to the [ISink].
+     * Writes a buffer to the [ISinkInternal].
      * @param packet buffer to write
      *
      * @return the number of bytes written
@@ -39,7 +39,7 @@ interface ISink : IPublicSink, Configurable<EndpointConfiguration>, SuspendStrea
     suspend fun write(packet: Packet): Int
 }
 
-interface IPublicSink {
+interface ISink {
     /**
      * Whether if the endpoint is opened.
      * For example, if the file is opened for [FileSink].

@@ -31,7 +31,7 @@ import io.github.thibaultbee.streampack.core.internal.utils.TimeUtils
 import io.github.thibaultbee.streampack.core.logger.Logger
 import java.nio.ByteBuffer
 
-class MicrophoneSource : IAudioSource, IFrameSource<AudioConfig> {
+class MicrophoneSource : IAudioSourceInternal, IFrameSource<AudioConfig> {
     private var audioRecord: AudioRecord? = null
 
     private var processor: EffectProcessor? = null

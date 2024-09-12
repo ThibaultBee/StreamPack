@@ -30,7 +30,7 @@ import kotlin.coroutines.CoroutineContext
  * Sink to write data to an [OutputStream]
  */
 abstract class OutputStreamSink(private val coroutineContext: CoroutineContext = Dispatchers.IO) :
-    ISink {
+    ISinkInternal {
     protected var outputStream: OutputStream? = null
 
     private val _isOpen = MutableStateFlow(false)

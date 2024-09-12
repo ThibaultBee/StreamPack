@@ -21,8 +21,8 @@ import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.interfaces.Releaseable
 import io.github.thibaultbee.streampack.core.internal.interfaces.Streamable
 
-interface IMuxer :
-    IPublicMuxer, Streamable,
+interface IMuxerInternal :
+    IMuxer, Streamable,
     Releaseable {
     var listener: IMuxerListener?
 
@@ -37,7 +37,7 @@ interface IMuxer :
     fun addStream(streamConfig: Config): Int
 }
 
-interface IPublicMuxer {
+interface IMuxer {
     val info: IMuxerInfo
 
     interface IMuxerInfo {

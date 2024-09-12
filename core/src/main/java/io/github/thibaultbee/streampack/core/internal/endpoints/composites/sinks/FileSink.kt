@@ -28,7 +28,7 @@ import kotlinx.coroutines.withContext
 import java.io.RandomAccessFile
 import kotlin.coroutines.CoroutineContext
 
-class FileSink(private val coroutineContext: CoroutineContext = Dispatchers.IO) : ISink {
+class FileSink(private val coroutineContext: CoroutineContext = Dispatchers.IO) : ISinkInternal {
     private var file: RandomAccessFile? = null
 
     private val _isOpen = MutableStateFlow(false)
