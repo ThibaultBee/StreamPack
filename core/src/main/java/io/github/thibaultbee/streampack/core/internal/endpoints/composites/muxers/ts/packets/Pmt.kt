@@ -18,7 +18,6 @@ package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxe
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.ITSElement
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.Service
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.Stream
@@ -27,7 +26,7 @@ import io.github.thibaultbee.streampack.core.internal.utils.extensions.putShort
 import java.nio.ByteBuffer
 
 class Pmt(
-    listener: io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer.IMuxerListener? = null,
+    listener: io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal.IMuxerListener? = null,
     private val service: Service,
     var streams: List<Stream>,
     pid: Short,

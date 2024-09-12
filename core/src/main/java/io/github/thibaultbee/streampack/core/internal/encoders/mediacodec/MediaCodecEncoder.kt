@@ -23,7 +23,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.internal.data.Frame
-import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
+import io.github.thibaultbee.streampack.core.internal.encoders.IEncoderInternal
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.extensions.hasEndOfStreamFlag
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.extensions.isKeyFrame
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.extensions.isValid
@@ -40,7 +40,7 @@ import java.util.concurrent.Executors
  */
 internal fun MediaCodecEncoder(
     encoderConfig: EncoderConfig<*>,
-    listener: IEncoder.IListener,
+    listener: IEncoderInternal.IListener,
     encoderExecutor: Executor = Executors.newSingleThreadExecutor(),
     listenerExecutor: Executor = Executors.newSingleThreadExecutor(),
 ): MediaCodecEncoder {
@@ -59,7 +59,7 @@ class MediaCodecEncoder
 internal constructor(
     private val encoderConfig: EncoderConfig<*>,
     private val encoderExecutor: Executor = Executors.newSingleThreadExecutor()
-) : IEncoder {
+) : IEncoderInternal {
     private val mediaCodec: MediaCodec
     private val format: MediaFormat
     private val isVideo = encoderConfig.isVideo
@@ -95,7 +95,7 @@ internal constructor(
     }
 
     private val listenerLock = Any()
-    private var listener: IEncoder.IListener = object : IEncoder.IListener {}
+    private var listener: IEncoderInternal.IListener = object : IEncoderInternal.IListener {}
     private var listenerExecutor: Executor = Executors.newSingleThreadExecutor()
 
     override val mimeType by lazy { format.getString(MediaFormat.KEY_MIME)!! }
@@ -119,7 +119,7 @@ internal constructor(
     }
 
     override fun setListener(
-        listener: IEncoder.IListener, listenerExecutor: Executor
+        listener: IEncoderInternal.IListener, listenerExecutor: Executor
     ) {
         synchronized(listenerLock) {
             this.listenerExecutor = listenerExecutor
@@ -222,7 +222,7 @@ internal constructor(
             State.STARTED, State.PAUSED -> {
                 setState(State.PENDING_STOP)
                 try {
-                    if (input is IEncoder.ISurfaceInput) {
+                    if (input is IEncoderInternal.ISurfaceInput) {
                         // If we stop the codec, then it will stop de-queuing
                         // buffers and the BufferQueue may run out of input buffers, causing the camera
                         // pipeline to stall. Instead of stopping, we will flush the codec.
@@ -280,7 +280,7 @@ internal constructor(
     }
 
     private fun notifyError(t: Throwable) {
-        var listener: IEncoder.IListener
+        var listener: IEncoderInternal.IListener
         var listenerExecutor: Executor
         synchronized(listenerLock) {
             listener = this.listener
@@ -353,7 +353,7 @@ internal constructor(
 
                     info.isValid -> {
                         try {
-                            var listener: IEncoder.IListener
+                            var listener: IEncoderInternal.IListener
                             var listenerExecutor: Executor
                             synchronized(listenerLock) {
                                 listener = this@MediaCodecEncoder.listener
@@ -412,7 +412,7 @@ internal constructor(
                         return@execute
                     }
 
-                    input !is IEncoder.IByteBufferInput -> {
+                    input !is IEncoderInternal.IByteBufferInput -> {
                         Logger.w(tag, "Input buffer is only available for byte buffer input")
                         return@execute
                     }
@@ -445,12 +445,12 @@ internal constructor(
         }
     }
 
-    internal inner class SurfaceInput : IEncoder.ISurfaceInput {
+    internal inner class SurfaceInput : IEncoderInternal.ISurfaceInput {
         private val obsoleteSurfaces = mutableListOf<Surface>()
 
         private var surface: Surface? = null
 
-        override var listener = object : IEncoder.ISurfaceInput.OnSurfaceUpdateListener {}
+        override var listener = object : IEncoderInternal.ISurfaceInput.OnSurfaceUpdateListener {}
             set(value) {
                 field = value
                 surface?.let { notifySurfaceUpdate(it) }
@@ -484,8 +484,8 @@ internal constructor(
         }
     }
 
-    internal inner class ByteBufferInput : IEncoder.IByteBufferInput {
-        override lateinit var listener: IEncoder.IByteBufferInput.OnFrameRequestedListener
+    internal inner class ByteBufferInput : IEncoderInternal.IByteBufferInput {
+        override lateinit var listener: IEncoderInternal.IByteBufferInput.OnFrameRequestedListener
     }
 
     private class ClosableFrameExtractor(

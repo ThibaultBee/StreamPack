@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.packets
 
 import io.github.thibaultbee.streampack.core.internal.data.Frame
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.Stream
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.descriptors.AdaptationField
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.packets.Pes.StreamId.Companion.fromMimeType
@@ -25,7 +25,7 @@ import io.github.thibaultbee.streampack.core.internal.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.isVideo
 
 class Pes(
-    muxerListener: IMuxer.IMuxerListener? = null,
+    muxerListener: IMuxerInternal.IMuxerListener? = null,
     val stream: Stream,
     private val hasPcr: Boolean,
 ) : TS(muxerListener, stream.pid) {

@@ -20,10 +20,10 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.internal.encoders.IPublicEncoder
-import io.github.thibaultbee.streampack.core.internal.endpoints.IPublicEndpoint
-import io.github.thibaultbee.streampack.core.internal.sources.audio.IPublicAudioSource
-import io.github.thibaultbee.streampack.core.internal.sources.video.IPublicVideoSource
+import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
+import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSource
+import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
@@ -36,27 +36,27 @@ interface IStreamer {
     /**
      * Advanced settings for the audio source.
      */
-    val audioSource: IPublicAudioSource?
+    val audioSource: IAudioSource?
 
     /**
      * Advanced settings for the audio encoder.
      */
-    val audioEncoder: IPublicEncoder?
+    val audioEncoder: IEncoder?
 
     /**
      * Advanced settings for the video source.
      */
-    val videoSource: IPublicVideoSource?
+    val videoSource: IVideoSource?
 
     /**
      * Advanced settings for the video encoder.
      */
-    val videoEncoder: IPublicEncoder?
+    val videoEncoder: IEncoder?
 
     /**
      * Advanced settings for the endpoint.
      */
-    val endpoint: IPublicEndpoint
+    val endpoint: IEndpoint
 
     /**
      * Configuration information

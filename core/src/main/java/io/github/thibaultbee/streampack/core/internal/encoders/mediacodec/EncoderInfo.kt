@@ -1,11 +1,11 @@
 package io.github.thibaultbee.streampack.core.internal.encoders.mediacodec
 
 import android.media.MediaCodecInfo
-import io.github.thibaultbee.streampack.core.internal.encoders.IPublicEncoder
+import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.isVideo
 
-sealed class EncoderInfo(codecInfo: MediaCodecInfo, mimeType: String) : IPublicEncoder.IEncoderInfo {
+sealed class EncoderInfo(codecInfo: MediaCodecInfo, mimeType: String) : IEncoder.IEncoderInfo {
     protected val codecCapabilities: MediaCodecInfo.CodecCapabilities =
         codecInfo.getCapabilitiesForType(mimeType)
 

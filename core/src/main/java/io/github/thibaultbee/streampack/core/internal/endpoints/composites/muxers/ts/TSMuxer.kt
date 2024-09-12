@@ -17,11 +17,10 @@ package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxe
 
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
-import android.util.Log
 import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.data.Config
 import io.github.thibaultbee.streampack.core.internal.data.Frame
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.Service
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.Stream
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
@@ -38,12 +37,12 @@ import java.nio.ByteBuffer
 import java.util.MissingFormatArgumentException
 import kotlin.random.Random
 
-class TSMuxer : IMuxer {
+class TSMuxer : IMuxerInternal {
     override val info by lazy { TSMuxerInfo }
     private val tsServices = mutableListOf<Service>()
     private val tsPes = mutableListOf<Pes>()
 
-    override var listener: IMuxer.IMuxerListener? =
+    override var listener: IMuxerInternal.IMuxerListener? =
         null
         set(value) {
             pat.listener = value

@@ -16,24 +16,24 @@
 package io.github.thibaultbee.streampack.core.regulator.controllers
 
 import io.github.thibaultbee.streampack.core.data.BitrateRegulatorConfig
-import io.github.thibaultbee.streampack.core.internal.encoders.IPublicEncoder
-import io.github.thibaultbee.streampack.core.internal.endpoints.IPublicEndpoint
+import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
+import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
 
 /**
  * The [BitrateRegulatorController] triggers [IBitrateRegulator.update].
  *
- * @param audioEncoder the audio [IPublicEncoder]
- * @param videoEncoder the video [IPublicEncoder]
- * @param endpoint the [IPublicEndpoint] implementation
+ * @param audioEncoder the audio [IEncoder]
+ * @param videoEncoder the video [IEncoder]
+ * @param endpoint the [IEndpoint] implementation
  * @param bitrateRegulatorFactory the [IBitrateRegulator.Factory] implementation. Use it to make your own bitrate regulator.
  * @param bitrateRegulatorConfig bitrate regulator configuration
  */
 abstract class BitrateRegulatorController(
-    private val audioEncoder: IPublicEncoder?,
-    private val videoEncoder: IPublicEncoder?,
-    private val endpoint: IPublicEndpoint,
+    private val audioEncoder: IEncoder?,
+    private val videoEncoder: IEncoder?,
+    private val endpoint: IEndpoint,
     private val bitrateRegulatorFactory: IBitrateRegulator.Factory,
     private val bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig()
 ) : IBitrateRegulatorController {

@@ -15,14 +15,14 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.packets
 
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.ITSElement
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.Service
 import java.nio.ByteBuffer
 import kotlin.experimental.or
 
 class Pat(
-    listener: IMuxer.IMuxerListener? = null,
+    listener: IMuxerInternal.IMuxerListener? = null,
     private val services: List<Service>,
     tsId: Short,
     versionNumber: Byte = 0,

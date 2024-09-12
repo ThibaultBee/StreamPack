@@ -19,7 +19,7 @@ import io.github.thibaultbee.streampack.core.data.Config
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.data.PacketType
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.tags.AVTagsFactory
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.tags.FlvHeader
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.tags.OnMetadata
@@ -27,9 +27,9 @@ import io.github.thibaultbee.streampack.core.internal.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.isVideo
 
 class FlvMuxer(
-    override var listener: IMuxer.IMuxerListener? = null,
+    override var listener: IMuxerInternal.IMuxerListener? = null,
     private val isForFile: Boolean,
-) : IMuxer {
+) : IMuxerInternal {
     override val info by lazy { FlvMuxerInfo }
     private val streams = mutableListOf<Stream>()
     private val hasAudio: Boolean

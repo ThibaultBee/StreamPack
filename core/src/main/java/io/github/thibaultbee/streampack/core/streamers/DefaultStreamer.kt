@@ -25,18 +25,18 @@ import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
-import io.github.thibaultbee.streampack.core.internal.encoders.IPublicEncoder
+import io.github.thibaultbee.streampack.core.internal.encoders.IEncoderInternal
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.AudioEncoderConfig
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.MediaCodecEncoder
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.VideoEncoderConfig
 import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.core.internal.endpoints.IPublicEndpoint
+import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.internal.gl.CodecSurface
 import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSource
-import io.github.thibaultbee.streampack.core.internal.sources.audio.IPublicAudioSource
-import io.github.thibaultbee.streampack.core.internal.sources.video.IPublicVideoSource
+import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSource
+import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
@@ -55,16 +55,16 @@ import java.util.concurrent.Executors
  * Base class of all streamers.
  *
  * @param context the application context
- * @param internalVideoSource the video source
- * @param internalAudioSource the audio source
- * @param internalEndpoint the [IEndpoint] implementation
+ * @param videoSourceInternal the video source
+ * @param audioSourceInternal the audio source
+ * @param endpointInternal the [IEndpointInternal] implementation
  * @param dispatcher the [CoroutineDispatcher] to execute suspendable methods. For test only. Do not change.
  */
 open class DefaultStreamer(
     private val context: Context,
-    protected val internalAudioSource: IAudioSource?,
-    protected val internalVideoSource: IVideoSource?,
-    protected val internalEndpoint: IEndpoint = DynamicEndpoint(context),
+    protected val audioSourceInternal: IAudioSourceInternal?,
+    protected val videoSourceInternal: IVideoSourceInternal?,
+    protected val endpointInternal: IEndpointInternal = DynamicEndpoint(context),
     private val dispatcher: CoroutineDispatcher = Executors.newSingleThreadExecutor()
         .asCoroutineDispatcher()
 ) : ICoroutineStreamer {
@@ -80,10 +80,10 @@ open class DefaultStreamer(
     private var videoConfig: VideoConfig? = null
     private var audioConfig: AudioConfig? = null
 
-    private val sourceOrientationProvider = internalVideoSource?.orientationProvider
+    private val sourceOrientationProvider = videoSourceInternal?.orientationProvider
 
     private val audioEncoderListener =
-        object : IEncoder.IListener {
+        object : IEncoderInternal.IListener {
             override fun onError(t: Throwable) {
                 onStreamError(t)
             }
@@ -91,28 +91,28 @@ open class DefaultStreamer(
             override fun onOutputFrame(frame: Frame) {
                 audioStreamId?.let {
                     runBlocking {
-                        this@DefaultStreamer.internalEndpoint.write(frame, it)
+                        this@DefaultStreamer.endpointInternal.write(frame, it)
                     }
                 }
             }
         }
 
     private val videoEncoderListener =
-        object : IEncoder.IListener {
+        object : IEncoderInternal.IListener {
             override fun onError(t: Throwable) {
                 onStreamError(t)
             }
 
             override fun onOutputFrame(frame: Frame) {
                 videoStreamId?.let {
-                    frame.pts += internalVideoSource!!.timestampOffset
+                    frame.pts += videoSourceInternal!!.timestampOffset
                     frame.dts = if (frame.dts != null) {
-                        frame.dts!! + internalVideoSource.timestampOffset
+                        frame.dts!! + videoSourceInternal.timestampOffset
                     } else {
                         null
                     }
                     runBlocking {
-                        this@DefaultStreamer.internalEndpoint.write(frame, it)
+                        this@DefaultStreamer.endpointInternal.write(frame, it)
                     }
                 }
             }
@@ -143,47 +143,47 @@ open class DefaultStreamer(
      * The audio source.
      * It allows advanced audio settings.
      */
-    override val audioSource: IPublicAudioSource?
-        get() = internalAudioSource
+    override val audioSource: IAudioSource?
+        get() = audioSourceInternal
 
     /**
      * The video source.
      * It allows advanced video settings.
      */
-    override val videoSource: IPublicVideoSource?
-        get() = internalVideoSource
+    override val videoSource: IVideoSource?
+        get() = videoSourceInternal
 
     // ENCODERS
 
-    private var internalAudioEncoder: MediaCodecEncoder? = null
+    private var audioEncoderInternal: IEncoderInternal? = null
 
     /**
      * The audio encoder.
      * Only valid when audio has been [configure]. It is null after [release].
      */
-    override val audioEncoder: IPublicEncoder?
-        get() = internalAudioEncoder
+    override val audioEncoder: IEncoder?
+        get() = audioEncoderInternal
 
-    private var internalVideoEncoder: MediaCodecEncoder? = null
+    private var videoEncoderInternal: IEncoderInternal? = null
 
     /**
      * The video encoder.
      * Only valid when audio has been [configure]. It is null after [release].
      */
-    override val videoEncoder: IPublicEncoder?
-        get() = internalVideoEncoder
+    override val videoEncoder: IEncoder?
+        get() = videoEncoderInternal
 
 
     private val codecSurface =
-        if (internalVideoSource?.hasOutputSurface == true) CodecSurface(sourceOrientationProvider) else null
+        if (videoSourceInternal?.hasOutputSurface == true) CodecSurface(sourceOrientationProvider) else null
 
     // ENDPOINT
 
-    override val endpoint: IPublicEndpoint
-        get() = internalEndpoint
+    override val endpoint: IEndpoint
+        get() = endpointInternal
 
     override val isOpen: StateFlow<Boolean>
-        get() = internalEndpoint.isOpen
+        get() = endpointInternal.isOpen
 
 
     private val _isStreaming = MutableStateFlow(false)
@@ -192,12 +192,12 @@ open class DefaultStreamer(
     /**
      * Whether the streamer has audio.
      */
-    val hasAudio = internalAudioSource != null
+    val hasAudio = audioSourceInternal != null
 
     /**
      * Whether the streamer has video.
      */
-    val hasVideo = internalVideoSource != null
+    val hasVideo = videoSourceInternal != null
 
     /**
      * Gets configuration information.
@@ -240,15 +240,15 @@ open class DefaultStreamer(
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun configure(audioConfig: AudioConfig) {
         require(hasAudio) { "Do not need to set audio as it is a video only streamer" }
-        requireNotNull(internalAudioSource) { "Audio source must not be null" }
+        requireNotNull(audioSourceInternal) { "Audio source must not be null" }
 
         this.audioConfig = audioConfig
 
         try {
-            internalAudioSource.configure(audioConfig)
+            audioSourceInternal.configure(audioConfig)
 
-            internalAudioEncoder?.release()
-            internalAudioEncoder =
+            audioEncoderInternal?.release()
+            audioEncoderInternal =
                 MediaCodecEncoder(
                     AudioEncoderConfig(
                         audioConfig
@@ -258,9 +258,9 @@ open class DefaultStreamer(
                     if (input is MediaCodecEncoder.ByteBufferInput) {
                         input.listener =
                             object :
-                                IEncoder.IByteBufferInput.OnFrameRequestedListener {
+                                IEncoderInternal.IByteBufferInput.OnFrameRequestedListener {
                                 override fun onFrameRequested(buffer: ByteBuffer): Frame {
-                                    return internalAudioSource.getFrame(buffer)
+                                    return audioSourceInternal.getFrame(buffer)
                                 }
                             }
                     } else {
@@ -276,7 +276,7 @@ open class DefaultStreamer(
 
     private fun buildVideoEncoder(
         videoConfig: VideoConfig,
-        videoSource: IVideoSource
+        videoSource: IVideoSourceInternal
     ): MediaCodecEncoder {
         val videoEncoder = MediaCodecEncoder(
             VideoEncoderConfig(
@@ -291,7 +291,7 @@ open class DefaultStreamer(
                 codecSurface!!.useHighBitDepth = videoConfig.isHdr
                 videoEncoder.input.listener =
                     object :
-                        IEncoder.ISurfaceInput.OnSurfaceUpdateListener {
+                        IEncoderInternal.ISurfaceInput.OnSurfaceUpdateListener {
                         override fun onSurfaceUpdated(surface: Surface) {
                             Logger.d(TAG, "Updating with new encoder surface input")
                             codecSurface.outputSurface = surface
@@ -303,7 +303,7 @@ open class DefaultStreamer(
             is MediaCodecEncoder.ByteBufferInput -> {
                 videoEncoder.input.listener =
                     object :
-                        IEncoder.IByteBufferInput.OnFrameRequestedListener {
+                        IEncoderInternal.IByteBufferInput.OnFrameRequestedListener {
                         override fun onFrameRequested(buffer: ByteBuffer): Frame {
                             return videoSource.getFrame(buffer)
                         }
@@ -333,15 +333,15 @@ open class DefaultStreamer(
      */
     override fun configure(videoConfig: VideoConfig) {
         require(hasVideo) { "Do not need to set video as it is a audio only streamer" }
-        requireNotNull(internalVideoSource) { "Video source must not be null" }
+        requireNotNull(videoSourceInternal) { "Video source must not be null" }
 
         this.videoConfig = videoConfig
 
         try {
-            internalVideoSource.configure(videoConfig)
+            videoSourceInternal.configure(videoConfig)
 
-            internalVideoEncoder?.release()
-            internalVideoEncoder = buildVideoEncoder(videoConfig, internalVideoSource).apply {
+            videoEncoderInternal?.release()
+            videoEncoderInternal = buildVideoEncoder(videoConfig, videoSourceInternal).apply {
                 configure()
             }
         } catch (t: Throwable) {
@@ -356,7 +356,7 @@ open class DefaultStreamer(
      * @param descriptor Media descriptor to open
      */
     override suspend fun open(descriptor: MediaDescriptor) = withContext(dispatcher) {
-        internalEndpoint.open(descriptor)
+        endpointInternal.open(descriptor)
     }
 
     /**
@@ -364,7 +364,7 @@ open class DefaultStreamer(
      */
     override suspend fun close() = withContext(dispatcher) {
         stopStreamInternal()
-        internalEndpoint.close()
+        endpointInternal.close()
     }
 
     /**
@@ -406,18 +406,18 @@ open class DefaultStreamer(
                 streams.add(audioConfig)
             }
 
-            val streamsIdMap = internalEndpoint.addStreams(streams)
+            val streamsIdMap = endpointInternal.addStreams(streams)
             orientedVideoConfig?.let { videoStreamId = streamsIdMap[orientedVideoConfig] }
             audioConfig?.let { audioStreamId = streamsIdMap[audioConfig as Config] }
 
-            internalEndpoint.startStream()
+            endpointInternal.startStream()
 
-            internalAudioSource?.startStream()
-            internalAudioEncoder?.startStream()
+            audioSourceInternal?.startStream()
+            audioEncoderInternal?.startStream()
 
-            internalVideoSource?.startStream()
+            videoSourceInternal?.startStream()
             codecSurface?.startStream()
-            internalVideoEncoder?.startStream()
+            videoEncoderInternal?.startStream()
 
             bitrateRegulatorController?.start()
 
@@ -448,8 +448,8 @@ open class DefaultStreamer(
     private suspend fun stopStreamInternal() {
         stopStreamImpl()
 
-        internalAudioEncoder?.reset()
-        internalVideoEncoder?.reset()
+        audioEncoderInternal?.reset()
+        videoEncoderInternal?.reset()
 
         _isStreaming.emit(false)
     }
@@ -463,24 +463,24 @@ open class DefaultStreamer(
         bitrateRegulatorController?.stop()
 
         // Sources
-        internalAudioSource?.stopStream()
-        internalVideoSource?.stopStream()
+        audioSourceInternal?.stopStream()
+        videoSourceInternal?.stopStream()
         codecSurface?.stopStream()
 
         // Encoders
         try {
-            internalAudioEncoder?.stopStream()
+            audioEncoderInternal?.stopStream()
         } catch (e: IllegalStateException) {
             Logger.w(TAG, "stopStreamImpl: Can't stop audio encoder: ${e.message}")
         }
         try {
-            internalVideoEncoder?.stopStream()
+            videoEncoderInternal?.stopStream()
         } catch (e: IllegalStateException) {
             Logger.w(TAG, "stopStreamImpl: Can't stop video encoder: ${e.message}")
         }
 
         // Endpoint
-        internalEndpoint.stopStream()
+        endpointInternal.stopStream()
     }
 
     /**
@@ -491,18 +491,18 @@ open class DefaultStreamer(
      */
     override fun release() {
         // Sources
-        internalAudioSource?.release()
-        internalVideoSource?.release()
+        audioSourceInternal?.release()
+        videoSourceInternal?.release()
         codecSurface?.release()
 
         // Encoders
-        internalAudioEncoder?.release()
-        internalAudioEncoder = null
-        internalVideoEncoder?.release()
-        internalVideoEncoder = null
+        audioEncoderInternal?.release()
+        audioEncoderInternal = null
+        videoEncoderInternal?.release()
+        videoEncoderInternal = null
 
         // Endpoint
-        internalEndpoint.release()
+        endpointInternal.release()
     }
 
     /**

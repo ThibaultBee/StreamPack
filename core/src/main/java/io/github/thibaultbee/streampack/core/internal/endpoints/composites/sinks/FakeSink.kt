@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.StateFlow
 /**
  * A fake endpoint for test purpose.
  */
-class FakeSink : ISink {
+class FakeSink : ISinkInternal {
     private val _isOpen = MutableStateFlow(false)
     override val isOpen: StateFlow<Boolean> = _isOpen
 
