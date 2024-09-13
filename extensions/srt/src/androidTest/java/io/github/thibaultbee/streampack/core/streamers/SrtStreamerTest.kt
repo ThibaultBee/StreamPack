@@ -41,7 +41,7 @@ class SrtStreamerTest {
     }
 
     @Test
-    fun test() = runTest(timeout = 200.seconds) {
+    fun writeToSrt() = runTest(timeout = 200.seconds) {
         assumeTrue("Required API key", apiKey != null)
         assumeTrue("API key not set", apiKey != "null")
 
@@ -58,7 +58,7 @@ class SrtStreamerTest {
                 AudioConfig(),
                 VideoConfig(startBitrate = 500_000, resolution = Size(VIDEO_WIDTH, VIDEO_HEIGHT))
             )
-            streamer.startStream("srt://broadcast.api.video:6200?streamid=${liveStream.streamKey}&latency=300000")
+            streamer.startStream("srt://broadcast.api.video:6200?streamid=${liveStream.streamKey}")
             var i = 0
             val numOfLoop = LIVE_STREAM_DURATION_MS / LIVE_STREAM_POLLING_MS
             withContext(Dispatchers.Default) {
@@ -98,7 +98,7 @@ class SrtStreamerTest {
                     if (videoStatus.encoding?.playable == true) {
                         return@withContext videoStatus
                     }
-                    delay(10000)
+                    delay(1000)
                 }
             }
             status as VideoStatus
@@ -121,9 +121,11 @@ class SrtStreamerTest {
 
     companion object {
         private const val TAG = "SRTStreamerTest"
+
+        private const val LIVE_STREAM_DURATION_MS = 30_000L
+        private const val LIVE_STREAM_POLLING_MS = 1_000L
+
         private const val VIDEO_WIDTH = 640
         private const val VIDEO_HEIGHT = 360
-        private const val LIVE_STREAM_DURATION_MS = 60_000L
-        private const val LIVE_STREAM_POLLING_MS = 1_000L
     }
 }

@@ -41,7 +41,7 @@ class RtmpStreamerTest {
     }
 
     @Test
-    fun test() = runTest(timeout = 200.seconds) {
+    fun writetoRtmp() = runTest(timeout = 200.seconds) {
         assumeTrue("Required API key", apiKey != null)
         assumeTrue("API key not set", apiKey != "null")
 
@@ -98,7 +98,7 @@ class RtmpStreamerTest {
                     if (videoStatus.encoding?.playable == true) {
                         return@withContext videoStatus
                     }
-                    delay(10000)
+                    delay(1000)
                 }
             }
             status as VideoStatus
@@ -121,9 +121,11 @@ class RtmpStreamerTest {
 
     companion object {
         private const val TAG = "RTMPStreamerTest"
+
+        private const val LIVE_STREAM_DURATION_MS = 30_000L
+        private const val LIVE_STREAM_POLLING_MS = 1_000L
+
         private const val VIDEO_WIDTH = 640
         private const val VIDEO_HEIGHT = 360
-        private const val LIVE_STREAM_DURATION_MS = 60_000L
-        private const val LIVE_STREAM_POLLING_MS = 1_000L
     }
 }
