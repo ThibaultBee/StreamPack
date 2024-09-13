@@ -25,6 +25,7 @@ import io.github.thibaultbee.streampack.core.streamer.surface.SurfaceViewTestAct
 import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
 import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
 import io.github.thibaultbee.streampack.core.streamers.startStream
+import io.github.thibaultbee.streampack.core.streamers.startPreview
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test

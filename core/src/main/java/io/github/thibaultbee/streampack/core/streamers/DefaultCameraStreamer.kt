@@ -55,7 +55,7 @@ open class DefaultCameraStreamer(
 
     /**
      * Get/Set current camera id.
-     * It is a shortcut for [videoSource.cameraId]
+     * It is a shortcut for [CameraSource.cameraId]
      */
     override var camera: String
         /**
@@ -66,8 +66,9 @@ open class DefaultCameraStreamer(
         get() = videoSource.cameraId
         /**
          * Set current camera id.
+         * Retrieves list of cameras from [Context.cameras]
          *
-         * @param value string that described the camera. Retrieves list of camera from [Context.cameraList]
+         * @param value string that described the camera.
          */
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
