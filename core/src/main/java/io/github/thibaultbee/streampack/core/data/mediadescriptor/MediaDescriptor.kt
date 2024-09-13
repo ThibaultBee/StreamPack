@@ -47,6 +47,10 @@ abstract class MediaDescriptor(
                 }
         }
     }
+
+    override fun toString(): String {
+        return "MediaDescriptor(uri=$uri, containerType=${type.containerType}, sinkType=${type.sinkType}, customData=$customData)"
+    }
 }
 
 fun MediaType(uri: Uri) =
