@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.streamer.testcases
+package io.github.thibaultbee.streampack.core.streamer.state
 
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
-import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
 import io.github.thibaultbee.streampack.core.streamers.startStream
+import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Test
 
-abstract class StreamerTestCase {
+abstract class StreamerStateTest(
+    protected val descriptor: MediaDescriptor
+) {
     protected abstract val streamer: DefaultStreamer
-    protected abstract val descriptor: MediaDescriptor
 
     @After
     open fun tearDown() {

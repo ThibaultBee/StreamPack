@@ -13,26 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.streamer.testcases
+package io.github.thibaultbee.streampack.core.streamer.state
 
 import android.Manifest
 import android.content.Context
+import androidx.core.net.toUri
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.streamers.DefaultAudioOnlyStreamer
-import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
 import io.github.thibaultbee.streampack.core.streamers.startStream
+import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
+import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
-abstract class AudioOnlyStreamerTestCase {
+@RunWith(Parameterized::class)
+class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) {
     private val context: Context = InstrumentationRegistry.getInstrumentation().context
     private val streamer = DefaultAudioOnlyStreamer(context)
-
-    protected abstract val descriptor: MediaDescriptor
 
     @get:Rule
     val runtimePermissionRule: GrantPermissionRule =
@@ -150,6 +154,23 @@ abstract class AudioOnlyStreamerTestCase {
         (0..10).forEach { _ ->
             streamer.configure(
                 ConfigurationUtils.dummyValidAudioConfig()
+            )
+        }
+    }
+
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(
+            name = "MediaDescriptor: {0}"
+        )
+        fun getMediaDescriptor(): Iterable<MediaDescriptor> {
+            return arrayListOf(
+                UriMediaDescriptor(FileUtils.createCacheFile("audio.ts").toUri()),
+                UriMediaDescriptor(FileUtils.createCacheFile("audio.mp4").toUri()),
+                UriMediaDescriptor(FileUtils.createCacheFile("audio.flv").toUri()),
+                UriMediaDescriptor(FileUtils.createCacheFile("audio.webm").toUri()),
+                UriMediaDescriptor(FileUtils.createCacheFile("audio.ogg").toUri()),
+                UriMediaDescriptor(FileUtils.createCacheFile("audio.3gp").toUri())
             )
         }
     }
