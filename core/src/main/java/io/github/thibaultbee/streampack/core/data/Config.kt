@@ -105,4 +105,22 @@ open class Config(
     }
 
     override fun toString() = "Config(mimeType='$mimeType', startBitrate=$startBitrate)"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Config) return false
+
+        if (mimeType != other.mimeType) return false
+        if (startBitrate != other.startBitrate) return false
+        if (profile != other.profile) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = mimeType.hashCode()
+        result = 31 * result + startBitrate
+        result = 31 * result + profile
+        return result
+    }
 }

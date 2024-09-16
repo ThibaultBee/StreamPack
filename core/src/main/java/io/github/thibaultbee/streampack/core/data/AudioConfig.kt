@@ -191,4 +191,28 @@ class AudioConfig(
 
     override fun toString() =
         "AudioConfig(mimeType=$mimeType, startBitrate=$startBitrate, sampleRate=$sampleRate, channelConfig=$channelConfig, byteFormat=$byteFormat, enableEchoCanceler=$enableEchoCanceler, enableNoiseSuppressor=$enableNoiseSuppressor)"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is AudioConfig) return false
+
+        if (!super.equals(other)) return false
+        if (sampleRate != other.sampleRate) return false
+        if (channelConfig != other.channelConfig) return false
+        if (byteFormat != other.byteFormat) return false
+        if (enableEchoCanceler != other.enableEchoCanceler) return false
+        if (enableNoiseSuppressor != other.enableNoiseSuppressor) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + sampleRate
+        result = 31 * result + channelConfig
+        result = 31 * result + byteFormat
+        result = 31 * result + enableEchoCanceler.hashCode()
+        result = 31 * result + enableNoiseSuppressor.hashCode()
+        return result
+    }
 }
