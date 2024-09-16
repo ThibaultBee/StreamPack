@@ -17,11 +17,11 @@ package io.github.thibaultbee.streampack.core.internal.utils.av.audio
 
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.internal.utils.av.buffer.BitBuffer
-import io.github.thibaultbee.streampack.core.internal.utils.av.buffer.BitBufferWriter
 import io.github.thibaultbee.streampack.core.internal.utils.av.audio.aac.config.ELDSpecificConfig
 import io.github.thibaultbee.streampack.core.internal.utils.av.audio.aac.config.GASpecificConfig
 import io.github.thibaultbee.streampack.core.internal.utils.av.audio.aac.config.SpecificConfig
+import io.github.thibaultbee.streampack.core.internal.utils.av.buffer.BitBuffer
+import io.github.thibaultbee.streampack.core.internal.utils.av.buffer.BitBufferWriter
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.put
 import java.nio.ByteBuffer
 
@@ -122,6 +122,7 @@ data class AudioSpecificConfig(
                 AudioObjectType.ER_TWIN_VQ,
                 AudioObjectType.ER_BSAC,
                 AudioObjectType.ER_AAC_LD -> true
+
                 else -> false
             }
         }
@@ -155,6 +156,7 @@ data class AudioSpecificConfig(
                 AudioObjectType.ER_AAC_ELD,
                 AudioObjectType.SMR_SIMPLE,
                 AudioObjectType.SMR_MAIN -> return true
+
                 else -> return hasGASpecificConfig(audioObjectType) || hasELDSpecificConfig(
                     audioObjectType
                 )
@@ -176,6 +178,7 @@ data class AudioSpecificConfig(
                 AudioObjectType.ER_AAC_ELD -> {
                     true
                 }
+
                 else -> false
             }
         }
@@ -301,7 +304,7 @@ data class AudioSpecificConfig(
             decoderSpecificInfo: ByteBuffer,
             audioConfig: AudioConfig
         ) {
-            if (audioConfig.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
+            if (AudioConfig.isAacMimeType(audioConfig.mimeType)) {
                 buffer.put(decoderSpecificInfo)
             } else {
                 throw NotImplementedError("No support for ${audioConfig.mimeType}")

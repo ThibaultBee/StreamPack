@@ -85,28 +85,28 @@ class TrackChunks(
 
     val isValid: Boolean
         // Needs at least 2 samples because of time difference
-        get() = (numOfSamples > 0) && when (track.config.mimeType) {
-            MediaFormat.MIMETYPE_VIDEO_AVC -> {
+        get() = (numOfSamples > 0) && when {
+            track.config.mimeType == MediaFormat.MIMETYPE_VIDEO_AVC -> {
                 this.extra.size == 2
             }
 
-            MediaFormat.MIMETYPE_VIDEO_HEVC -> {
+            track.config.mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC -> {
                 this.extra.size == 3
             }
 
-            MediaFormat.MIMETYPE_VIDEO_VP9 -> {
+            track.config.mimeType == MediaFormat.MIMETYPE_VIDEO_VP9 -> {
                 this.format.isNotEmpty()
             }
 
-            MediaFormat.MIMETYPE_VIDEO_AV1 -> {
+            track.config.mimeType == MediaFormat.MIMETYPE_VIDEO_AV1 -> {
                 this.extra.size == 1
             }
 
-            MediaFormat.MIMETYPE_AUDIO_AAC -> {
+            AudioConfig.isAacMimeType(track.config.mimeType) -> {
                 this.extra.size == 1
             }
 
-            MediaFormat.MIMETYPE_AUDIO_OPUS -> {
+            track.config.mimeType == MediaFormat.MIMETYPE_AUDIO_OPUS -> {
                 /**
                  * According the MediaCodec, there are 3 parameter sets. But on Pixel 4A, there is
                  * only 1. So we are trying to be compatible with both.
@@ -169,7 +169,7 @@ class TrackChunks(
         chunks.add(newChunk)
     }
 
-    fun add(frame: io.github.thibaultbee.streampack.core.internal.data.Frame) {
+    fun add(frame: Frame) {
         if (chunks.isEmpty()) {
             createNewChunk()
         }
@@ -307,8 +307,8 @@ class TrackChunks(
     }
 
     private fun createSampleDescriptionBox(): SampleDescriptionBox {
-        val sampleEntry = when (track.config.mimeType) {
-            MediaFormat.MIMETYPE_VIDEO_AVC -> {
+        val sampleEntry = when {
+            track.config.mimeType == MediaFormat.MIMETYPE_VIDEO_AVC -> {
                 val format = this.format.first()
                 val extra = this.extra
                 require(extra.size == 2) { "For AVC, extra must contain 2 parameter sets" }
@@ -324,7 +324,7 @@ class TrackChunks(
                 )
             }
 
-            MediaFormat.MIMETYPE_VIDEO_HEVC -> {
+            track.config.mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC -> {
                 val format = this.format.first()
                 val extra = this.extra
                 require(extra.size == 3) { "For HEVC, extra must contain 3 parameter sets" }
@@ -339,7 +339,7 @@ class TrackChunks(
                 )
             }
 
-            MediaFormat.MIMETYPE_VIDEO_VP9 -> {
+            track.config.mimeType == MediaFormat.MIMETYPE_VIDEO_VP9 -> {
                 val format = this.format.first()
                 (track.config as VideoConfig)
                 VP9SampleEntry(
@@ -350,7 +350,7 @@ class TrackChunks(
                 )
             }
 
-            MediaFormat.MIMETYPE_VIDEO_AV1 -> {
+            track.config.mimeType == MediaFormat.MIMETYPE_VIDEO_AV1 -> {
                 val format = this.format.first()
                 val extra = this.extra
                 require(extra.size == 1) { "For AV1, extra must contain 1 extra" }
@@ -363,7 +363,7 @@ class TrackChunks(
                 )
             }
 
-            MediaFormat.MIMETYPE_AUDIO_AAC -> {
+            AudioConfig.isAacMimeType(track.config.mimeType) -> {
                 (track.config as AudioConfig)
                 MP4AudioSampleEntry(
                     AudioConfig.getNumberOfChannels(track.config.channelConfig).toShort(),
@@ -386,7 +386,7 @@ class TrackChunks(
                 )
             }
 
-            MediaFormat.MIMETYPE_AUDIO_OPUS -> {
+            track.config.mimeType == MediaFormat.MIMETYPE_AUDIO_OPUS -> {
                 val extra = this.extra
                 require((this.extra.size == 3) || (this.extra.size == 1)) { "For Opus, extra must contain 1 or 3 parameter sets" }
                 (track.config as AudioConfig)

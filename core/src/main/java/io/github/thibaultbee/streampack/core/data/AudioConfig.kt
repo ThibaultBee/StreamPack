@@ -32,7 +32,6 @@ import java.security.InvalidParameterException
 class AudioConfig(
     /**
      * Audio encoder mime type.
-     * Only [MediaFormat.MIMETYPE_AUDIO_AAC] is supported yet.
      *
      * **See Also:** [MediaFormat MIMETYPE_AUDIO_*](https://developer.android.com/reference/android/media/MediaFormat)
      */
@@ -96,6 +95,9 @@ class AudioConfig(
                 require(channelConfig == AudioFormat.CHANNEL_IN_STEREO) { "AACObjectHE_PS only supports stereo" }
             }
         }
+        if (mimeType == MediaFormat.MIMETYPE_AUDIO_AAC_HE_V2) {
+            require(channelConfig == AudioFormat.CHANNEL_IN_STEREO) { "AAC_HE_V2 only supports stereo" }
+        }
     }
 
     /**
@@ -134,6 +136,15 @@ class AudioConfig(
     }
 
     companion object {
+        private const val MIMETYPE_AAC_PREFIX = "audio/mp4a"
+
+        internal fun isAacMimeType(mimeType: String) = mimeType.startsWith(MIMETYPE_AAC_PREFIX)
+
+        private fun getAacProfileFromMimeType(mimeType: String) = when (mimeType) {
+            MediaFormat.MIMETYPE_AUDIO_AAC -> MediaCodecInfo.CodecProfileLevel.AACObjectLC
+            else -> 0 // We suppose that profile is not needed when mimeType is an AAC extension
+        }
+
         private fun getDefaultSampleRate(mimeType: String) = when (mimeType) {
             MediaFormat.MIMETYPE_AUDIO_AAC -> 44_100
             MediaFormat.MIMETYPE_AUDIO_OPUS -> 48_000
@@ -143,9 +154,9 @@ class AudioConfig(
         /**
          * Get the default audio profile
          */
-        private fun getDefaultProfile(mimeType: String) = when (mimeType) {
-            MediaFormat.MIMETYPE_AUDIO_AAC -> MediaCodecInfo.CodecProfileLevel.AACObjectLC
-            MediaFormat.MIMETYPE_AUDIO_OPUS -> 0
+        private fun getDefaultProfile(mimeType: String) = when {
+            isAacMimeType(mimeType) -> getAacProfileFromMimeType(mimeType)
+            mimeType == MediaFormat.MIMETYPE_AUDIO_OPUS -> 0
             else -> throw InvalidParameterException("Mimetype not supported: $mimeType")
         }
 

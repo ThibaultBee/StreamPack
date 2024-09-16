@@ -78,8 +78,8 @@ class TSMuxer : IMuxerInternal {
         streamPid: Int
     ) {
         val pes = getPes(streamPid.toShort())
-        val newFrame = when (frame.mimeType) {
-            MediaFormat.MIMETYPE_VIDEO_AVC -> {
+        val newFrame = when {
+            frame.mimeType == MediaFormat.MIMETYPE_VIDEO_AVC -> {
                 // Copy sps & pps before buffer
                 if (frame.isKeyFrame) {
                     if (frame.extra == null) {
@@ -102,7 +102,7 @@ class TSMuxer : IMuxerInternal {
                 }
             }
 
-            MediaFormat.MIMETYPE_VIDEO_HEVC -> {
+            frame.mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC -> {
                 // Copy sps & pps & vps before buffer
                 if (frame.isKeyFrame) {
                     if (frame.extra == null) {
@@ -126,7 +126,7 @@ class TSMuxer : IMuxerInternal {
                 }
             }
 
-            MediaFormat.MIMETYPE_AUDIO_AAC -> {
+            AudioConfig.isAacMimeType(frame.mimeType) -> {
                 frame.copy(
                     rawBuffer =
                     if (pes.stream.config.profile == MediaCodecInfo.CodecProfileLevel.AACObjectLC) {
@@ -140,7 +140,7 @@ class TSMuxer : IMuxerInternal {
                 )
             }
 
-            MediaFormat.MIMETYPE_AUDIO_OPUS -> {
+            frame.mimeType == MediaFormat.MIMETYPE_AUDIO_OPUS -> {
                 val payloadSize = frame.buffer.remaining()
                 val controlHeader = OpusControlHeader(
                     payloadSize = payloadSize

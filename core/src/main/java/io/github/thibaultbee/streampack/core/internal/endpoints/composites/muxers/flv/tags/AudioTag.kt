@@ -41,7 +41,7 @@ class AudioTag(
                     (SoundSize.fromByteFormat(audioConfig.byteFormat).value shl 1) or
                     (SoundType.fromChannelConfig(audioConfig.channelConfig).value)
         )
-        if (audioConfig.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
+        if (AudioConfig.isAacMimeType(audioConfig.mimeType)) {
             output.put(aacPacketType!!.value)
         }
     }
@@ -50,14 +50,14 @@ class AudioTag(
 
     private fun computeHeaderSize(): Int {
         var size = AUDIO_TAG_HEADER_SIZE
-        if (audioConfig.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
+        if (AudioConfig.isAacMimeType(audioConfig.mimeType)) {
             size += 1 // AACPacketType
         }
         return size
     }
 
     override fun writeBody(output: ByteBuffer) {
-        if (audioConfig.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
+        if (AudioConfig.isAacMimeType(audioConfig.mimeType)) {
             if (aacPacketType == AACPacketType.SEQUENCE_HEADER) {
                 AudioSpecificConfig.writeFromByteBuffer(output, frameBuffer, audioConfig)
             } else {
@@ -95,11 +95,11 @@ enum class SoundFormat(val value: Int) {
     }
 
     companion object {
-        fun fromMimeType(mimeType: String) = when (mimeType) {
-            MediaFormat.MIMETYPE_AUDIO_RAW -> PCM
-            MediaFormat.MIMETYPE_AUDIO_G711_ALAW -> G711_ALAW
-            MediaFormat.MIMETYPE_AUDIO_G711_MLAW -> G711_MLAW
-            MediaFormat.MIMETYPE_AUDIO_AAC -> AAC
+        fun fromMimeType(mimeType: String) = when {
+            mimeType == MediaFormat.MIMETYPE_AUDIO_RAW -> PCM
+            mimeType == MediaFormat.MIMETYPE_AUDIO_G711_ALAW -> G711_ALAW
+            mimeType == MediaFormat.MIMETYPE_AUDIO_G711_MLAW -> G711_MLAW
+            AudioConfig.isAacMimeType(mimeType) -> AAC
             else -> throw IOException("MimeType is not supported: $mimeType")
         }
     }

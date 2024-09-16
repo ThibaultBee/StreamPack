@@ -57,7 +57,7 @@ class AVTagsFactory(
                 AudioTag(
                     frame.pts,
                     frame.extra!![0],
-                    if (config.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
+                    if (AudioConfig.isAacMimeType(config.mimeType)) {
                         AACPacketType.SEQUENCE_HEADER
                     } else {
                         null
@@ -70,7 +70,7 @@ class AVTagsFactory(
             AudioTag(
                 frame.pts,
                 frame.buffer,
-                if (config.mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
+                if (AudioConfig.isAacMimeType(config.mimeType)) {
                     AACPacketType.RAW
                 } else {
                     null
