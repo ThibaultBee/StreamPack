@@ -28,9 +28,8 @@ import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 open class Config(
     /**
      * The encoder mime type.
-     * Only [MediaFormat.MIMETYPE_AUDIO_AAC] is supported yet.
      *
-     * **See Also:** [MediaFormat MIMETYPE_AUDIO_*](https://developer.android.com/reference/android/media/MediaFormat)
+     * **See Also:** [MediaFormat MIMETYPE_AUDIO_*] and [MediaFormat MIMETYPE_VIDEO_*] (https://developer.android.com/reference/android/media/MediaFormat)
      */
     val mimeType: String,
 
