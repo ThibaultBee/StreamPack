@@ -44,6 +44,18 @@ class MicrophoneSource : IAudioSourceInternal, IFrameSource<AudioConfig> {
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun configure(config: AudioConfig) {
+        /**
+         * [configure] might be called multiple times.
+         * If audio source is already running, we need to prevent reconfiguration.
+         */
+        audioRecord?.let {
+            if (it.state == AudioRecord.RECORDSTATE_RECORDING) {
+                throw IllegalStateException("Audio source is already running")
+            } else {
+                release()
+            }
+        }
+
         val bufferSize = AudioRecord.getMinBufferSize(
             config.sampleRate,
             config.channelConfig,
@@ -69,15 +81,16 @@ class MicrophoneSource : IAudioSourceInternal, IFrameSource<AudioConfig> {
                 config.enableNoiseSuppressor,
                 it.audioSessionId
             )
-        }
 
-        if (audioRecord?.state != AudioRecord.STATE_INITIALIZED) {
-            throw IllegalArgumentException("Failed to initialized AudioRecord")
+            if (it.state != AudioRecord.STATE_INITIALIZED) {
+                throw IllegalArgumentException("Failed to initialized audio source with config: $config")
+            }
         }
     }
 
     override fun startStream() {
-        audioRecord?.startRecording() ?: throw IllegalStateException("AudioRecorder not initialized")
+        val audioRecord = requireNotNull(audioRecord)
+        audioRecord.startRecording()
     }
 
     override fun stopStream() {
@@ -92,6 +105,7 @@ class MicrophoneSource : IAudioSourceInternal, IFrameSource<AudioConfig> {
 
     override fun release() {
         mutedByteArray = null
+
         // Release audio record
         audioRecord?.release()
         audioRecord = null
@@ -114,6 +128,7 @@ class MicrophoneSource : IAudioSourceInternal, IFrameSource<AudioConfig> {
                 timestamp = timestampOut.nanoTime / 1000 // to us
             }
         }
+
         // Fallback
         if (timestamp < 0) {
             timestamp = TimeUtils.currentTime()
@@ -123,31 +138,30 @@ class MicrophoneSource : IAudioSourceInternal, IFrameSource<AudioConfig> {
     }
 
     override fun getFrame(buffer: ByteBuffer): Frame {
-        audioRecord?.let {
-            val length = it.read(buffer, buffer.remaining())
-            if (length >= 0) {
-                return if (isMuted) {
-                    if (length != mutedByteArray?.size) {
-                        mutedByteArray = ByteArray(length)
-                    }
-                    buffer.put(mutedByteArray!!, 0, length)
-                    buffer.clear()
-                    Frame(
-                        buffer,
-                        getTimestamp(it),
-                        format = format
-                    )
-                } else {
-                    Frame(
-                        buffer,
-                        getTimestamp(it),
-                        format = format
-                    )
+        val audioRecord = requireNotNull(audioRecord)
+        val length = audioRecord.read(buffer, buffer.remaining())
+        if (length >= 0) {
+            return if (isMuted) {
+                if (length != mutedByteArray?.size) {
+                    mutedByteArray = ByteArray(length)
                 }
+                buffer.put(mutedByteArray!!, 0, length)
+                buffer.clear()
+                Frame(
+                    buffer,
+                    getTimestamp(audioRecord),
+                    format = rawFormat
+                )
             } else {
-                throw IllegalArgumentException(audioRecordErrorToString(length))
+                Frame(
+                    buffer,
+                    getTimestamp(audioRecord),
+                    format = rawFormat
+                )
             }
-        } ?: throw IllegalStateException("AudioRecorder not initialized")
+        } else {
+            throw IllegalArgumentException(audioRecordErrorToString(length))
+        }
     }
 
     private fun audioRecordErrorToString(audioRecordError: Int) = when (audioRecordError) {
@@ -160,7 +174,7 @@ class MicrophoneSource : IAudioSourceInternal, IFrameSource<AudioConfig> {
     companion object {
         private const val TAG = "AudioSource"
 
-        private val format = MediaFormat().apply {
+        private val rawFormat = MediaFormat().apply {
             setString(
                 MediaFormat.KEY_MIME,
                 MediaFormat.MIMETYPE_AUDIO_RAW

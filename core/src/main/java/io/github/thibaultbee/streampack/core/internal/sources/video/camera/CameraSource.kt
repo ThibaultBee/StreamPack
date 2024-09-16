@@ -120,8 +120,26 @@ class CameraSource(
         }
 
     override fun configure(config: VideoConfig) {
-        this.fps = config.fps
-        this.dynamicRangeProfile = config.dynamicRangeProfile
+        if (!context.isFrameRateSupported(cameraId, config.fps)) {
+            Log.w(TAG, "Camera $cameraId does not support ${config.fps} fps")
+        }
+
+        var needRestart = false
+        if ((fps != config.fps) || (dynamicRangeProfile != config.dynamicRangeProfile)) {
+            needRestart = true
+        }
+        if (needRestart) {
+            if (isStreaming) {
+                throw IllegalStateException("Camera is streaming, cannot change it configuration")
+            } else {
+                runBlocking {
+                    restartCamera()
+                }
+            }
+        }
+
+        fps = config.fps
+        dynamicRangeProfile = config.dynamicRangeProfile
     }
 
     private suspend fun restartCamera() {
