@@ -82,6 +82,11 @@ enum class AudioObjectType(val value: Int) {
         }
 
         fun fromProfile(mimeType: String, profile: Int) = when (mimeType) {
+            MediaFormat.MIMETYPE_AUDIO_AAC_LC -> AAC_LC
+            MediaFormat.MIMETYPE_AUDIO_AAC_ELD -> ER_AAC_ELD
+            MediaFormat.MIMETYPE_AUDIO_AAC_HE_V1 -> SBR
+            MediaFormat.MIMETYPE_AUDIO_AAC_HE_V2 -> PS
+            MediaFormat.MIMETYPE_AUDIO_AAC_XHE -> USAC_NO_SBR
             MediaFormat.MIMETYPE_AUDIO_AAC -> {
                 when (profile) {
                     MediaCodecInfo.CodecProfileLevel.AACObjectMain -> AAC_MAIN
@@ -99,6 +104,7 @@ enum class AudioObjectType(val value: Int) {
                     else -> throw IOException("Unsupported AAC profile: $profile")
                 }
             }
+
             else -> throw IOException("MimeType is not supported: $mimeType")
         }
     }

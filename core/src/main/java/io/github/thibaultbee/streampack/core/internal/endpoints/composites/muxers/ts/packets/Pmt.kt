@@ -149,6 +149,12 @@ class Pmt(
                         AUDIO_AAC_LATM
                     }
                 }
+
+                MediaFormat.MIMETYPE_AUDIO_AAC_LC -> AUDIO_AAC
+                MediaFormat.MIMETYPE_AUDIO_AAC_ELD -> AUDIO_AAC_LATM
+                MediaFormat.MIMETYPE_AUDIO_AAC_HE_V1 -> AUDIO_AAC_LATM
+                MediaFormat.MIMETYPE_AUDIO_AAC_HE_V2 -> AUDIO_AAC_LATM
+                MediaFormat.MIMETYPE_AUDIO_AAC_XHE -> AUDIO_AAC_LATM
                 MediaFormat.MIMETYPE_VIDEO_MPEG4 -> VIDEO_MPEG4
                 MediaFormat.MIMETYPE_VIDEO_AVC -> VIDEO_H264
                 MediaFormat.MIMETYPE_VIDEO_HEVC -> VIDEO_HEVC
