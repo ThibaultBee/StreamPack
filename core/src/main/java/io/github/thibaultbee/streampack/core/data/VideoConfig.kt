@@ -322,5 +322,29 @@ class VideoConfig(
 
     override fun toString() =
         "VideoConfig(mimeType='$mimeType', startBitrate=$startBitrate, resolution=$resolution, fps=$fps, profile=$profile, level=$level)"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is VideoConfig) return false
+
+        if (!super.equals(other)) return false
+        if (resolution != other.resolution) return false
+        if (fps != other.fps) return false
+        if (level != other.level) return false
+        if (gopDuration != other.gopDuration) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = mimeType.hashCode()
+        result = 31 * result + startBitrate
+        result = 31 * result + resolution.hashCode()
+        result = 31 * result + fps
+        result = 31 * result + profile
+        result = 31 * result + level
+        result = 31 * result + gopDuration.hashCode()
+        return result
+    }
 }
 

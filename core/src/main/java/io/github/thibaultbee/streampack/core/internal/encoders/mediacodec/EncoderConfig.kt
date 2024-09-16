@@ -20,6 +20,21 @@ sealed class EncoderConfig<T : Config>(val config: T) {
      * @return MediaFormat
      */
     abstract fun buildFormat(withProfileLevel: Boolean): MediaFormat
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is EncoderConfig<*>) return false
+
+        if (config != other.config) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = config.hashCode()
+        result = 31 * result + isVideo.hashCode()
+        return result
+    }
 }
 
 class VideoEncoderConfig(
@@ -30,6 +45,7 @@ class VideoEncoderConfig(
     videoConfig
 ) {
     override val isVideo = true
+    
     override fun buildFormat(withProfileLevel: Boolean): MediaFormat {
         val format = config.getFormat(withProfileLevel)
         if (useSurfaceMode) {
@@ -61,6 +77,25 @@ class VideoEncoderConfig(
             }
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is VideoEncoderConfig) return false
+
+        if (!super.equals(other)) return false
+        if (useSurfaceMode != other.useSurfaceMode) return false
+        if (orientationProvider != other.orientationProvider) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + useSurfaceMode.hashCode()
+        result = 31 * result + (orientationProvider?.hashCode() ?: 0)
+        result = 31 * result + isVideo.hashCode()
+        return result
+    }
 }
 
 class AudioEncoderConfig(audioConfig: AudioConfig) :
@@ -71,4 +106,19 @@ class AudioEncoderConfig(audioConfig: AudioConfig) :
 
     override fun buildFormat(withProfileLevel: Boolean) =
         config.getFormat(withProfileLevel)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is AudioEncoderConfig) return false
+
+        if (!super.equals(other)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + isVideo.hashCode()
+        return result
+    }
 }
