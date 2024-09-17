@@ -124,16 +124,9 @@ class SrtSink : ISinkInternal {
                 }
             } else {
                 if (boundary != null) {
-                    MsgCtrl(
-                        ttl = 500,
-                        srcTime = packet.ts,
-                        boundary = boundary
-                    )
+                    MsgCtrl(srcTime = packet.ts, boundary = boundary)
                 } else {
-                    MsgCtrl(
-                        ttl = 500,
-                        srcTime = packet.ts
-                    )
+                    MsgCtrl(srcTime = packet.ts)
                 }
             }
 
