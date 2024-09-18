@@ -31,13 +31,13 @@ import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescri
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.startStream
 import io.github.thibaultbee.streampack.core.streamers.observers.StreamerLifeCycleObserver
 import io.github.thibaultbee.streampack.core.utils.extensions.backCameras
 import io.github.thibaultbee.streampack.core.utils.extensions.frontCameras
-import io.github.thibaultbee.streampack.core.streamers.getCameraStreamer
 import io.github.thibaultbee.streampack.core.utils.extensions.isBackCamera
-import io.github.thibaultbee.streampack.core.streamers.startStream
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrtBitrateRegulatorController
 import io.github.thibaultbee.streampack.ui.views.PreviewView
@@ -58,7 +58,7 @@ class StreamerManager(
     val isStreaming: StateFlow<Boolean> = streamer.isStreaming
 
     val cameraId: String?
-        get() = streamer.getCameraStreamer()?.videoSource?.cameraId
+        get() = (streamer as ICameraStreamer?)?.videoSource?.cameraId
 
     val streamerLifeCycleObserver: StreamerLifeCycleObserver by lazy {
         StreamerLifeCycleObserver(streamer)
@@ -122,7 +122,7 @@ class StreamerManager(
     }
 
     fun inflateStreamerView(view: PreviewView) {
-        view.streamer = streamer.getCameraStreamer()
+        view.streamer = (streamer as ICameraStreamer?)
     }
 
     suspend fun startStream() {
@@ -222,7 +222,7 @@ class StreamerManager(
     }
 
     fun toggleCamera() {
-        streamer.getCameraStreamer()?.let {
+        (streamer as ICameraStreamer?)?.let {
             // Handle devices with only one camera
             val cameras = if (context.isBackCamera(it.camera)) {
                 context.frontCameras
@@ -236,7 +236,7 @@ class StreamerManager(
     }
 
     val cameraSettings: CameraSettings?
-        get() = streamer.getCameraStreamer()?.videoSource?.settings
+        get() = (streamer as ICameraStreamer?)?.videoSource?.settings
 
 
     var isMuted: Boolean
