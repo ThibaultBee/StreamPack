@@ -16,10 +16,12 @@
 package io.github.thibaultbee.streampack.core.streamers.interfaces
 
 import android.Manifest
+import android.net.Uri
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSource
@@ -176,6 +178,61 @@ interface ICoroutineStreamer : IStreamer {
     suspend fun stopStream()
 }
 
+/**
+ * Opens the streamer endpoint.
+ *
+ * @param uri The uri to open
+ */
+suspend fun ICoroutineStreamer.open(uri: Uri) =
+    open(UriMediaDescriptor(uri))
+
+/**
+ * Opens the streamer endpoint.
+ *
+ * @param uriString The uri to open
+ */
+suspend fun ICoroutineStreamer.open(uriString: String) =
+    open(UriMediaDescriptor(Uri.parse(uriString)))
+
+/**
+ * Starts audio/video stream.
+ *
+ * Same as doing [open] and [startStream].
+ *
+ * @param descriptor The media descriptor to open
+ * @see [stopStream]
+ */
+suspend fun ICoroutineStreamer.startStream(descriptor: MediaDescriptor) {
+    open(descriptor)
+    startStream()
+}
+
+/**
+ * Starts audio/video stream.
+ *
+ * Same as doing [open] and [startStream].
+ *
+ * @param uri The uri to open
+ * @see [stopStream]
+ */
+suspend fun ICoroutineStreamer.startStream(uri: Uri) {
+    open(uri)
+    startStream()
+}
+
+/**
+ * Starts audio/video stream.
+ *
+ * Same as doing [open] and [startStream].
+ *
+ * @param uriString The uri to open
+ * @see [stopStream]
+ */
+suspend fun ICoroutineStreamer.startStream(uriString: String) {
+    open(uriString)
+    startStream()
+}
+
 interface ICallbackStreamer : IStreamer {
     /**
      * Returns true if endpoint is opened.
@@ -266,3 +323,40 @@ interface ICallbackStreamer : IStreamer {
         fun onError(throwable: Throwable)
     }
 }
+
+
+/**
+ * Opens the streamer endpoint.
+ *
+ * @param uri The uri to open
+ */
+fun ICallbackStreamer.open(uri: Uri) =
+    open(UriMediaDescriptor(uri))
+
+/**
+ * Opens the streamer endpoint.
+ *
+ * @param uriString The uri to open
+ */
+fun ICallbackStreamer.open(uriString: String) =
+    open(UriMediaDescriptor(Uri.parse(uriString)))
+
+/**
+ * Starts audio/video stream.
+ *
+ * Same as doing [open] and [startStream].
+ *
+ * @param uri The uri to open
+ * @see [stopStream]
+ */
+fun ICallbackStreamer.startStream(uri: Uri) = startStream(UriMediaDescriptor(uri))
+
+/**
+ * Starts audio/video stream.
+ *
+ * Same as doing [open] and [startStream].
+ *
+ * @param uriString The uri to open
+ * @see [stopStream]
+ */
+fun ICallbackStreamer.startStream(uriString: String) = startStream(Uri.parse(uriString))

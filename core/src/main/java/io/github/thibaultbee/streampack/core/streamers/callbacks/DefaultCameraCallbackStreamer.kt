@@ -14,7 +14,7 @@ import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
-import io.github.thibaultbee.streampack.core.streamers.open
+import io.github.thibaultbee.streampack.core.streamers.interfaces.open
 import kotlinx.coroutines.launch
 
 /**

@@ -17,8 +17,8 @@ package io.github.thibaultbee.streampack.core.streamers.observers
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
-import io.github.thibaultbee.streampack.core.streamers.getCameraStreamer
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -32,9 +32,11 @@ import kotlinx.coroutines.runBlocking
  *
  *  @param streamer The streamer to observe
  */
-open class StreamerLifeCycleObserver(var streamer: ICoroutineStreamer) : DefaultLifecycleObserver {
+open class StreamerLifeCycleObserver(val streamer: ICoroutineStreamer) : DefaultLifecycleObserver {
     override fun onPause(owner: LifecycleOwner) {
-        streamer.getCameraStreamer()?.stopPreview()
+        if (streamer is ICameraStreamer) {
+            streamer.stopPreview()
+        }
         runBlocking {
             streamer.stopStream()
             if (streamer.endpoint.isOpen.value) {

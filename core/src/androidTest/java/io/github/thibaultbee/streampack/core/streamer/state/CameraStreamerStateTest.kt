@@ -26,8 +26,8 @@ import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescri
 import io.github.thibaultbee.streampack.core.streamer.surface.SurfaceUtils
 import io.github.thibaultbee.streampack.core.streamer.surface.SurfaceViewTestActivity
 import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
-import io.github.thibaultbee.streampack.core.streamers.startPreview
-import io.github.thibaultbee.streampack.core.streamers.startStream
+import io.github.thibaultbee.streampack.core.streamers.interfaces.startPreview
+import io.github.thibaultbee.streampack.core.streamers.interfaces.startStream
 import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.test.runTest

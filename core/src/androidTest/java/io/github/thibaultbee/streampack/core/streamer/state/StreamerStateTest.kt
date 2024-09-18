@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.core.streamer.state
 
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
-import io.github.thibaultbee.streampack.core.streamers.startStream
+import io.github.thibaultbee.streampack.core.streamers.interfaces.startStream
 import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
 import kotlinx.coroutines.test.runTest
 import org.junit.After

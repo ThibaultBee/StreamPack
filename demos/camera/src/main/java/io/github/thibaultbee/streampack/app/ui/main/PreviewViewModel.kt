@@ -33,6 +33,7 @@ import io.github.thibaultbee.streampack.core.streamers.observers.StreamerLifeCyc
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
 import io.github.thibaultbee.streampack.ui.views.PreviewView
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
@@ -100,8 +101,9 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
         }
     }
 
+    var connectJob: Job? = null
     fun startStream() {
-        viewModelScope.launch {
+        connectJob = viewModelScope.launch {
             try {
                 streamerManager.startStream()
             } catch (e: Throwable) {
@@ -112,6 +114,7 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
     }
 
     fun stopStream() {
+        connectJob?.cancel()
         viewModelScope.launch {
             try {
                 streamerManager.stopStream()
