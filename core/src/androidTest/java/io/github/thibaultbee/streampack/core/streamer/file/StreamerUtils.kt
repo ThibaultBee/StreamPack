@@ -2,7 +2,7 @@ package io.github.thibaultbee.streampack.core.streamer.file
 
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
-import io.github.thibaultbee.streampack.core.streamers.startStream
+import io.github.thibaultbee.streampack.core.streamers.interfaces.startStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
