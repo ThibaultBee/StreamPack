@@ -22,7 +22,7 @@ import io.github.thibaultbee.srtdroid.core.models.MsgCtrl
 import io.github.thibaultbee.srtdroid.core.models.SrtUrl.Mode
 import io.github.thibaultbee.srtdroid.core.models.Stats
 import io.github.thibaultbee.srtdroid.ktx.CoroutineSrtSocket
-import io.github.thibaultbee.srtdroid.ktx.extensions.connect
+import io.github.thibaultbee.srtdroid.ktx.connect
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.error.ClosedException
 import io.github.thibaultbee.streampack.core.internal.data.Packet
@@ -93,18 +93,7 @@ class SrtSink : ISinkInternal {
         _isOpen.emit(true)
     }
 
-    override suspend fun write(packet: Packet): Int {
-        if (isOnError) {
-            return -1
-        }
-
-        completionException?.let {
-            isOnError = true
-            throw ClosedException(it)
-        }
-
-        val socket = requireNotNull(socket) { "SrtEndpoint is not initialized" }
-
+    private fun buildMsgCtrl(packet: Packet): MsgCtrl {
         val boundary = if (packet is SrtPacket) {
             when {
                 packet.isFirstPacketFrame && packet.isLastPacketFrame -> Boundary.SOLO
@@ -115,25 +104,42 @@ class SrtSink : ISinkInternal {
         } else {
             null
         }
-        val msgCtrl =
-            if (packet.ts == 0L) {
-                if (boundary != null) {
-                    MsgCtrl(boundary = boundary)
-                } else {
-                    MsgCtrl()
-                }
+        return if (packet.ts == 0L) {
+            if (boundary != null) {
+                MsgCtrl(boundary = boundary)
             } else {
-                if (boundary != null) {
-                    MsgCtrl(srcTime = packet.ts, boundary = boundary)
-                } else {
-                    MsgCtrl(srcTime = packet.ts)
-                }
+                MsgCtrl()
             }
+        } else {
+            if (boundary != null) {
+                MsgCtrl(srcTime = packet.ts, boundary = boundary)
+            } else {
+                MsgCtrl(srcTime = packet.ts)
+            }
+        }
+    }
+
+    override suspend fun write(packet: Packet): Int {
+        if (isOnError) {
+            return -1
+        }
+
+        // Pick up completionException if any
+        completionException?.let {
+            isOnError = true
+            throw ClosedException(it)
+        }
+
+        val socket = requireNotNull(socket) { "SrtEndpoint is not initialized" }
 
         try {
-            return socket.send(packet.buffer, msgCtrl)
+            return socket.send(packet.buffer, buildMsgCtrl(packet))
         } catch (t: Throwable) {
             isOnError = true
+            if (completionException != null) {
+                // Socket already closed
+                throw ClosedException(completionException!!)
+            }
             close()
             throw ClosedException(t)
         }

@@ -22,7 +22,7 @@ material = "1.12.0"
 mockk = "1.13.9"
 robolectric = "4.12.2"
 rtmpdroid = "1.2.1"
-srtdroid = "1.8.2"
+srtdroid = "1.8.3"
 junitKtx = "1.2.1"
 
 [libraries]
