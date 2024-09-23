@@ -19,6 +19,6 @@ dependencies {
     implementation(project(":streampack-core"))
 
     implementation(libs.androidx.lifecycle.runtime)
-    implementation(libs.androidx.camera.viewfinder)
+    implementation(libs.androidx.camera.viewfinder.view)
     implementation(libs.androidx.core.ktx)
 }
