@@ -23,6 +23,7 @@ import androidx.activity.result.ActivityResult
 import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.internal.sources.audio.MicrophoneSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.screen.ScreenSource
 
@@ -33,14 +34,31 @@ import io.github.thibaultbee.streampack.core.internal.sources.video.screen.Scree
  * @param enableMicrophone [Boolean.true] to capture audio
  * @param internalEndpoint the [IEndpointInternal] implementation
  */
-open class DefaultScreenRecorderStreamer(
+fun DefaultScreenRecorderStreamer(
     context: Context,
     enableMicrophone: Boolean = true,
     internalEndpoint: IEndpointInternal = DynamicEndpoint(context)
+) = DefaultScreenRecorderStreamer(
+    context,
+    if (enableMicrophone) MicrophoneSource() else null,
+    internalEndpoint
+)
+
+/**
+ * A [DefaultStreamer] that sends microphone and screen frames.
+ *
+ * @param context application context
+ * @param audioSourceInternal the audio source implementation
+ * @param internalEndpoint the [IEndpointInternal] implementation
+ */
+open class DefaultScreenRecorderStreamer(
+    context: Context,
+    audioSourceInternal: IAudioSourceInternal?,
+    internalEndpoint: IEndpointInternal = DynamicEndpoint(context)
 ) : DefaultStreamer(
     context = context,
+    audioSourceInternal = audioSourceInternal,
     videoSourceInternal = ScreenSource(context),
-    audioSourceInternal = if (enableMicrophone) MicrophoneSource() else null,
     endpointInternal = internalEndpoint
 ) {
     private val screenSource =
