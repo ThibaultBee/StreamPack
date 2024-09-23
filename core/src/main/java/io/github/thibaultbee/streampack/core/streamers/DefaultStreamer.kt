@@ -55,8 +55,8 @@ import java.util.concurrent.Executors
  * Base class of all streamers.
  *
  * @param context the application context
- * @param videoSourceInternal the video source
- * @param audioSourceInternal the audio source
+ * @param videoSourceInternal the video source implementation
+ * @param audioSourceInternal the audio source implementation
  * @param endpointInternal the [IEndpointInternal] implementation
  * @param dispatcher the [CoroutineDispatcher] to execute suspendable methods. For test only. Do not change.
  */

@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.core.streamers
 import android.content.Context
 import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.internal.sources.audio.MicrophoneSource
 
 /**
@@ -28,10 +29,11 @@ import io.github.thibaultbee.streampack.core.internal.sources.audio.MicrophoneSo
  */
 open class DefaultAudioOnlyStreamer(
     context: Context,
+    audioSourceInternal: IAudioSourceInternal? = MicrophoneSource(),
     internalEndpoint: IEndpointInternal = DynamicEndpoint(context)
 ) : DefaultStreamer(
     context = context,
     videoSourceInternal = null,
-    audioSourceInternal = MicrophoneSource(),
+    audioSourceInternal = audioSourceInternal,
     endpointInternal = internalEndpoint
 )
