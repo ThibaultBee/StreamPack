@@ -248,6 +248,9 @@ interface ICallbackStreamer : IStreamer {
     /**
      * Opens the streamer endpoint asynchronously.
      *
+     * The open error is returned through [Listener.onOpenFailed].
+     * Also, you can use [Listener.onIsOpenChanged] to know when the endpoint is opened.
+     *
      * @param descriptor Media descriptor to open
      */
     fun open(descriptor: MediaDescriptor)
@@ -259,6 +262,9 @@ interface ICallbackStreamer : IStreamer {
 
     /**
      * Starts audio/video stream asynchronously.
+     *
+     * You must call [open] before calling this method.
+     * The streamer must be opened before starting the stream. You can use [Listener.onIsOpenChanged].
      *
      * @see [stopStream]
      */
@@ -290,37 +296,40 @@ interface ICallbackStreamer : IStreamer {
      */
     fun removeListener(listener: Listener)
 
+    /**
+     * Listener for the callback streamer.
+     */
     interface Listener {
         /**
          * Called when the streamer opening failed.
          *
          * @param t The throwable that occurred
          */
-        fun onOpenFailed(t: Throwable)
+        fun onOpenFailed(t: Throwable) = Unit
+
+        /**
+         * Called when the streamer is opened or closed.
+         */
+        fun onIsOpenChanged(isOpen: Boolean) = Unit
 
         /**
          * Called when the streamer was closed by an error.
          *
          * @param t The reason why the streamer was closed
          */
-        fun onClose(t: Throwable)
-
-        /**
-         * Called when the streamer is opened or closed.
-         */
-        fun onIsOpenChanged(isOpen: Boolean)
+        fun onClose(t: Throwable) = Unit
 
         /**
          * Called when the stream is started or stopped.
          */
-        fun onIsStreamingChanged(isStarted: Boolean)
+        fun onIsStreamingChanged(isStarted: Boolean) = Unit
 
         /**
          * Called when an error occurs.
          *
          * @param throwable The throwable that occurred
          */
-        fun onError(throwable: Throwable)
+        fun onError(throwable: Throwable) = Unit
     }
 }
 
