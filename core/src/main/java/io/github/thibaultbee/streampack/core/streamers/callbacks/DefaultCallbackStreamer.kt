@@ -13,12 +13,12 @@ import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegul
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.startStream
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
@@ -66,7 +66,8 @@ open class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallback
             }
         }
         coroutineScope.launch {
-            streamer.isOpen.collect { isOpen ->
+            // Skip first value to avoid duplicate event
+            streamer.isOpen.drop(1).collect { isOpen ->
                 listeners.forEach { it.onIsOpenChanged(isOpen) }
             }
         }
@@ -123,7 +124,13 @@ open class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallback
     override fun startStream(descriptor: MediaDescriptor) {
         coroutineScope.launch {
             try {
-                streamer.startStream(descriptor)
+                streamer.open(descriptor)
+            } catch (t: Throwable) {
+                listeners.forEach { it.onOpenFailed(t) }
+                return@launch
+            }
+            try {
+                streamer.startStream()
             } catch (t: Throwable) {
                 listeners.forEach { it.onError(t) }
             }
