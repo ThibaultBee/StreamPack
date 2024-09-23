@@ -132,8 +132,16 @@ To simplify integration, StreamPack provides an `PreviewView`.
 
 3. Instantiates the streamer (main live streaming class)
 
+There are 2 types of streamers:
+
+- Kotlin Coroutine based
+- callback based
+
 ```kotlin
+// For coroutine based
 val streamer = DefaultCameraStreamer(context = requireContext())
+// For callback based
+// val streamer = DefaultCameraCallbackStreamer(context = requireContext())
 ```
 
 4. Configures audio and video settings
