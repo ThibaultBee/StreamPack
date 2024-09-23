@@ -24,6 +24,7 @@ import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.internal.sources.audio.MicrophoneSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.CameraSource
+import io.github.thibaultbee.streampack.core.internal.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
@@ -51,7 +52,7 @@ open class DefaultCameraStreamer(
      * Gets the camera source.
      * It allows to configure camera settings and to set the camera id.
      */
-    override val videoSource = cameraSource
+    override val videoSource = cameraSource as ICameraSource
 
     /**
      * Get/Set current camera id.

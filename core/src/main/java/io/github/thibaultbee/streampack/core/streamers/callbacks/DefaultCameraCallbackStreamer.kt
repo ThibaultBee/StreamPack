@@ -7,6 +7,8 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.internal.sources.video.camera.CameraSource
+import io.github.thibaultbee.streampack.core.internal.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
 import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
@@ -31,13 +33,13 @@ class DefaultCameraCallbackStreamer(
     internalEndpoint: IEndpointInternal = DynamicEndpoint(context)
 ) : DefaultCallbackStreamer(DefaultCameraStreamer(context, enableMicrophone, internalEndpoint)),
     ICameraCallbackStreamer {
-    private val cameraSource = (streamer as DefaultCameraStreamer).videoSource
+    private val cameraSource = (streamer as DefaultCameraStreamer).videoSource as CameraSource
 
     /**
      * Gets the camera source.
      * It allows to configure camera settings and to set the camera id.
      */
-    override val videoSource = cameraSource
+    override val videoSource = cameraSource as ICameraSource
 
     /**
      * Get/Set current camera id.
@@ -107,7 +109,7 @@ class DefaultCameraCallbackStreamer(
          */
         coroutineScope.launch {
             try {
-                videoSource.startPreview()
+                cameraSource.startPreview()
             } catch (t: Throwable) {
                 listeners.forEach { it.onError(t) }
             }
