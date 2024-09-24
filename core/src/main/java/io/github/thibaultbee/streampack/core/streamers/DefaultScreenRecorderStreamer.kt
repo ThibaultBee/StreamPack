@@ -23,6 +23,7 @@ import androidx.activity.result.ActivityResult
 import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.internal.sources.IMediaProjectionSource
 import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.internal.sources.audio.MicrophoneSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.mediaprojection.MediaProjectionVideoSource
@@ -102,5 +103,8 @@ open class DefaultScreenRecorderStreamer(
          */
         set(value) {
             mediaProjectionVideoSource.activityResult = value
+            if (audioSourceInternal is IMediaProjectionSource) {
+                (audioSourceInternal as IMediaProjectionSource).activityResult = value
+            }
         }
 }
