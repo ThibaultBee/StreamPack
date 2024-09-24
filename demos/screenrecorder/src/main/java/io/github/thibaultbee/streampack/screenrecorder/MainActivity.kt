@@ -170,9 +170,7 @@ class MainActivity : AppCompatActivity() {
                 startBitrate = configuration.audio.bitrate,
                 sampleRate = configuration.audio.sampleRate,
                 channelConfig = AudioConfig.getChannelConfig(configuration.audio.numberOfChannels),
-                byteFormat = configuration.audio.byteFormat,
-                enableEchoCanceler = configuration.audio.enableEchoCanceler,
-                enableNoiseSuppressor = configuration.audio.enableNoiseSuppressor
+                byteFormat = configuration.audio.byteFormat
             )
 
             if (ActivityCompat.checkSelfPermission(

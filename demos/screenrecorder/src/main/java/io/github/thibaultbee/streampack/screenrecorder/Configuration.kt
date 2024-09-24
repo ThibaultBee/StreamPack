@@ -83,18 +83,6 @@ class Configuration(context: Context) {
                 resources.getString(R.string.audio_byte_format_key),
                 field.toString()
             )!!.toInt()
-
-        var enableEchoCanceler: Boolean = false
-            get() = sharedPref.getBoolean(
-                resources.getString(R.string.audio_enable_echo_canceler_key),
-                field
-            )
-
-        var enableNoiseSuppressor: Boolean = false
-            get() = sharedPref.getBoolean(
-                resources.getString(R.string.audio_enable_noise_suppressor_key),
-                field
-            )
     }
 
     class Muxer(private val sharedPref: SharedPreferences, private val resources: Resources) {
