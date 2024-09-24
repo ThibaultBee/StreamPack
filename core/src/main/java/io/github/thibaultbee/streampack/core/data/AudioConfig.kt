@@ -75,18 +75,6 @@ class AudioConfig(
      * @see [MediaCodecInfo.CodecProfileLevel.AACObjectHE]
      */
     profile: Int = getDefaultProfile(mimeType),
-
-    /**
-     * Enable/disable audio echo canceller.
-     * If device does not have an echo canceller, it does nothing.
-     */
-    val enableEchoCanceler: Boolean = true,
-
-    /**
-     * Enable/disable audio noise suppressor.
-     * If device does not have a noise suppressor, it does nothing.
-     */
-    val enableNoiseSuppressor: Boolean = true
 ) : Config(mimeType, startBitrate, profile) {
     init {
         require(mimeType.isAudio) { "MimeType must be audio" }
@@ -201,7 +189,7 @@ class AudioConfig(
     }
 
     override fun toString() =
-        "AudioConfig(mimeType=$mimeType, startBitrate=$startBitrate, sampleRate=$sampleRate, channelConfig=$channelConfig, byteFormat=$byteFormat, enableEchoCanceler=$enableEchoCanceler, enableNoiseSuppressor=$enableNoiseSuppressor)"
+        "AudioConfig(mimeType=$mimeType, startBitrate=$startBitrate, sampleRate=$sampleRate, channelConfig=$channelConfig, byteFormat=$byteFormat, profile=$profile)"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -211,8 +199,6 @@ class AudioConfig(
         if (sampleRate != other.sampleRate) return false
         if (channelConfig != other.channelConfig) return false
         if (byteFormat != other.byteFormat) return false
-        if (enableEchoCanceler != other.enableEchoCanceler) return false
-        if (enableNoiseSuppressor != other.enableNoiseSuppressor) return false
 
         return true
     }
@@ -222,8 +208,6 @@ class AudioConfig(
         result = 31 * result + sampleRate
         result = 31 * result + channelConfig
         result = 31 * result + byteFormat
-        result = 31 * result + enableEchoCanceler.hashCode()
-        result = 31 * result + enableNoiseSuppressor.hashCode()
         return result
     }
 }
