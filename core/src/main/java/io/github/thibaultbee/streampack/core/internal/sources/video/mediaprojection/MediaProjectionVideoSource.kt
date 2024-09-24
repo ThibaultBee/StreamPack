@@ -28,6 +28,7 @@ import androidx.activity.result.ActivityResult
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.orientation.AbstractSourceOrientationProvider
+import io.github.thibaultbee.streampack.core.internal.sources.IMediaProjectionSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.isDevicePortrait
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.landscapize
@@ -37,7 +38,7 @@ import java.nio.ByteBuffer
 
 class MediaProjectionVideoSource(
     context: Context
-) : IVideoSourceInternal {
+) : IVideoSourceInternal, IMediaProjectionSource {
     override var outputSurface: Surface? = null
     override val timestampOffset = 0L
     override val hasOutputSurface = true
@@ -45,11 +46,15 @@ class MediaProjectionVideoSource(
     override val orientationProvider = ScreenSourceOrientationProvider(context)
 
     override fun getFrame(buffer: ByteBuffer): Frame {
-        throw UnsupportedOperationException("Screen source expects to run in Surface mode")
+        throw UnsupportedOperationException("Screen source run in Surface mode")
     }
 
     private var mediaProjection: MediaProjection? = null
-    var activityResult: ActivityResult? = null
+
+    /**
+     * Set the activity result to get the media projection.
+     */
+    override var activityResult: ActivityResult? = null
 
     var listener: Listener? = null
 
@@ -103,15 +108,17 @@ class MediaProjectionVideoSource(
 
     override suspend fun startStream() {
         val videoConfig = requireNotNull(videoConfig) { "Video has not been configured!" }
-        val activityResult = requireNotNull(activityResult) { "Activity result must be set!" }
-
-        val resultCode = activityResult.resultCode
-        val resultData = activityResult.data!!
+        val activityResult = requireNotNull(activityResult) {
+            "MediaProjection requires an activity result to be set"
+        }
 
         isStoppedByUser = false
 
         val orientedSize = orientationProvider.getOrientedSize(videoConfig.resolution)
-        mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, resultData).apply {
+        mediaProjection = mediaProjectionManager.getMediaProjection(
+            activityResult.resultCode,
+            activityResult.data!!
+        ).apply {
             registerCallback(mediaProjectionCallback, virtualDisplayHandler)
             virtualDisplay = createVirtualDisplay(
                 VIRTUAL_DISPLAY_NAME,
@@ -125,7 +132,6 @@ class MediaProjectionVideoSource(
             )
         }
     }
-
 
     override suspend fun stopStream() {
         isStoppedByUser = true
