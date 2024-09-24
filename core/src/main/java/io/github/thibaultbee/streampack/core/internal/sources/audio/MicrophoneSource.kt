@@ -31,7 +31,16 @@ import io.github.thibaultbee.streampack.core.internal.utils.TimeUtils
 import io.github.thibaultbee.streampack.core.logger.Logger
 import java.nio.ByteBuffer
 
-class MicrophoneSource : IAudioSourceInternal, IFrameSource<AudioConfig> {
+/**
+ * The [MicrophoneSource] class is an implementation of [IAudioSourceInternal] that captures audio from the microphone.
+ *
+ * @param enableAcousticEchoCanceler [Boolean.true] to enable AcousticEchoCanceler
+ * @param enableNoiseSuppressor [Boolean.true] to enable NoiseSuppressor
+ */
+class MicrophoneSource(
+    private val enableAcousticEchoCanceler: Boolean = true,
+    private val enableNoiseSuppressor: Boolean = true
+) : IAudioSourceInternal, IFrameSource<AudioConfig> {
     private var audioRecord: AudioRecord? = null
 
     private var processor: EffectProcessor? = null
@@ -77,8 +86,8 @@ class MicrophoneSource : IAudioSourceInternal, IFrameSource<AudioConfig> {
             config.channelConfig, config.byteFormat, bufferSize
         ).also {
             processor = EffectProcessor(
-                config.enableEchoCanceler,
-                config.enableNoiseSuppressor,
+                enableAcousticEchoCanceler,
+                enableNoiseSuppressor,
                 it.audioSessionId
             )
 
