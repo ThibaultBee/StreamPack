@@ -124,18 +124,6 @@ class Configuration(context: Context) {
                 field.toString()
             )!!.toInt()
 
-        var enableEchoCanceler: Boolean = false
-            get() = sharedPref.getBoolean(
-                resources.getString(R.string.audio_enable_echo_canceler_key),
-                field
-            )
-
-        var enableNoiseSuppressor: Boolean = false
-            get() = sharedPref.getBoolean(
-                resources.getString(R.string.audio_enable_noise_suppressor_key),
-                field
-            )
-
         var profile: Int = MediaCodecInfo.CodecProfileLevel.AACObjectLC
             get() = sharedPref.getString(
                 resources.getString(R.string.audio_profile_key),
