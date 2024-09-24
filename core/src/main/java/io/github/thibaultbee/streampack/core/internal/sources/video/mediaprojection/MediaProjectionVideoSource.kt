@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.internal.sources.video.screen
+package io.github.thibaultbee.streampack.core.internal.sources.video.mediaprojection
 
 import android.content.Context
 import android.hardware.display.DisplayManager
@@ -35,7 +35,7 @@ import io.github.thibaultbee.streampack.core.internal.utils.extensions.portraiti
 import io.github.thibaultbee.streampack.core.logger.Logger
 import java.nio.ByteBuffer
 
-class ScreenSource(
+class MediaProjectionVideoSource(
     context: Context
 ) : IVideoSourceInternal {
     override var outputSurface: Surface? = null
