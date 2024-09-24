@@ -25,7 +25,7 @@ import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.internal.sources.audio.MicrophoneSource
-import io.github.thibaultbee.streampack.core.internal.sources.video.screen.ScreenSource
+import io.github.thibaultbee.streampack.core.internal.sources.video.mediaprojection.MediaProjectionVideoSource
 
 /**
  * A [DefaultStreamer] that sends microphone and screen frames.
@@ -58,12 +58,12 @@ open class DefaultScreenRecorderStreamer(
 ) : DefaultStreamer(
     context = context,
     audioSourceInternal = audioSourceInternal,
-    videoSourceInternal = ScreenSource(context),
+    videoSourceInternal = MediaProjectionVideoSource(context),
     endpointInternal = internalEndpoint
 ) {
-    private val screenSource =
-        (videoSourceInternal as ScreenSource).apply {
-            listener = object : ScreenSource.Listener {
+    private val mediaProjectionVideoSource =
+        (videoSourceInternal as MediaProjectionVideoSource).apply {
+            listener = object : MediaProjectionVideoSource.Listener {
                 override fun onStop() {
                     onStreamError(Exception("Screen source has been stopped"))
                 }
@@ -94,13 +94,13 @@ open class DefaultScreenRecorderStreamer(
          *
          * @return activity result previously set.
          */
-        get() = screenSource.activityResult
+        get() = mediaProjectionVideoSource.activityResult
         /**
          * Set activity result. Must be call before [startStream].
          *
          * @param value activity result returns from [ComponentActivity.registerForActivityResult] callback.
          */
         set(value) {
-            screenSource.activityResult = value
+            mediaProjectionVideoSource.activityResult = value
         }
 }
