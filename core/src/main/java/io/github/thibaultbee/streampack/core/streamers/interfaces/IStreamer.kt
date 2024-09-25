@@ -36,6 +36,20 @@ import kotlinx.coroutines.flow.StateFlow
  */
 interface IStreamer {
     /**
+     * Audio configuration.
+     *
+     * @see [configure]
+     */
+    val audioConfig: AudioConfig?
+
+    /**
+     * Video configuration.
+     *
+     * @see [configure]
+     */
+    val videoConfig: VideoConfig?
+
+    /**
      * Advanced settings for the audio source.
      */
     val audioSource: IAudioSource?
