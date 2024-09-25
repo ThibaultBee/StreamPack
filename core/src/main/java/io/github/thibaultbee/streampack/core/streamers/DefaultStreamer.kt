@@ -76,9 +76,15 @@ open class DefaultStreamer(
 
     private var bitrateRegulatorController: IBitrateRegulatorController? = null
 
-    // Keep video configuration
-    private var videoConfig: VideoConfig? = null
-    private var audioConfig: AudioConfig? = null
+    // Keep configurations
+    private var _audioConfig: AudioConfig? = null
+    private var _videoConfig: VideoConfig? = null
+    
+    override val audioConfig: AudioConfig?
+        get() = _audioConfig
+
+    override val videoConfig: VideoConfig?
+        get() = _videoConfig
 
     private val sourceOrientationProvider = videoSourceInternal?.orientationProvider
 
@@ -242,7 +248,12 @@ open class DefaultStreamer(
         require(hasAudio) { "Do not need to set audio as it is a video only streamer" }
         requireNotNull(audioSourceInternal) { "Audio source must not be null" }
 
-        this.audioConfig = audioConfig
+        if (this._audioConfig == audioConfig) {
+            Logger.i(TAG, "Audio configuration is the same, skipping configuration")
+            return
+        }
+
+        this._audioConfig = audioConfig
 
         try {
             audioSourceInternal.configure(audioConfig)
@@ -335,7 +346,12 @@ open class DefaultStreamer(
         require(hasVideo) { "Do not need to set video as it is a audio only streamer" }
         requireNotNull(videoSourceInternal) { "Video source must not be null" }
 
-        this.videoConfig = videoConfig
+        if (this._videoConfig == videoConfig) {
+            Logger.i(TAG, "Video configuration is the same, skipping configuration")
+            return
+        }
+
+        this._videoConfig = videoConfig
 
         try {
             videoSourceInternal.configure(videoConfig)
@@ -382,7 +398,7 @@ open class DefaultStreamer(
         try {
             val streams = mutableListOf<Config>()
             val orientedVideoConfig = if (hasVideo) {
-                val videoConfig = requireNotNull(videoConfig) { "Requires video config" }
+                val videoConfig = requireNotNull(_videoConfig) { "Requires video config" }
                 /**
                  * If sourceOrientationProvider is not null, we need to get oriented size.
                  * For example, the [FlvMuxer] `onMetaData` event needs to know the oriented size.
@@ -402,13 +418,13 @@ open class DefaultStreamer(
             }
 
             if (hasAudio) {
-                val audioConfig = requireNotNull(audioConfig) { "Requires audio config" }
+                val audioConfig = requireNotNull(_audioConfig) { "Requires audio config" }
                 streams.add(audioConfig)
             }
 
             val streamsIdMap = endpointInternal.addStreams(streams)
             orientedVideoConfig?.let { videoStreamId = streamsIdMap[orientedVideoConfig] }
-            audioConfig?.let { audioStreamId = streamsIdMap[audioConfig as Config] }
+            _audioConfig?.let { audioStreamId = streamsIdMap[_audioConfig as Config] }
 
             endpointInternal.startStream()
 

@@ -36,11 +36,10 @@ open class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallback
 
     protected val listeners = mutableListOf<ICallbackStreamer.Listener>()
 
-    override val isOpen: Boolean
-        get() = streamer.isOpen.value
-    override val isStreaming: Boolean
-        get() = streamer.isStreaming.value
-
+    override val audioConfig: AudioConfig?
+        get() = streamer.audioConfig
+    override val videoConfig: VideoConfig?
+        get() = streamer.videoConfig
     override val audioSource: IAudioSource?
         get() = streamer.audioSource
     override val audioEncoder: IEncoder?
@@ -51,8 +50,14 @@ open class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallback
         get() = streamer.videoEncoder
     override val endpoint: IEndpoint
         get() = streamer.endpoint
+
     override val info: IConfigurationInfo
         get() = streamer.info
+
+    override val isOpen: Boolean
+        get() = streamer.isOpen.value
+    override val isStreaming: Boolean
+        get() = streamer.isStreaming.value
 
     init {
         coroutineScope.launch {
