@@ -18,13 +18,18 @@ package io.github.thibaultbee.streampack.core.internal.sources.video.camera
 import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSourceInternal
 
-interface ICameraSourceInternal: IVideoSourceInternal, ICameraSource
+interface ICameraSourceInternal : IVideoSourceInternal, ICameraSource
 
 interface ICameraSource : IVideoSource {
     /**
      * Get/Set current camera id.
      */
     var cameraId: String
+
+    /**
+     * Whether the camera preview is running.
+     */
+    val isPreviewing: Boolean
 
     /**
      * The camera settings (auto-exposure, auto-focus, etc.).
