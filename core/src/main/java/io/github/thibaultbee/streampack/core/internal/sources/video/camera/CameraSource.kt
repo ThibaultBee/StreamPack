@@ -113,7 +113,8 @@ class CameraSource(
             val outputSurface = outputSurface ?: return false
             return cameraController.hasTarget(outputSurface)
         }
-    private val isPreviewing: Boolean
+
+    override val isPreviewing: Boolean
         get() {
             val previewSurface = previewSurface ?: return false
             return cameraController.hasTarget(previewSurface)
