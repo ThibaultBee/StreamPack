@@ -61,7 +61,7 @@ import java.util.concurrent.Executors
  * @param dispatcher the [CoroutineDispatcher] to execute suspendable methods. For test only. Do not change.
  */
 open class DefaultStreamer(
-    private val context: Context,
+    protected val context: Context,
     protected val audioSourceInternal: IAudioSourceInternal?,
     protected val videoSourceInternal: IVideoSourceInternal?,
     protected val endpointInternal: IEndpointInternal = DynamicEndpoint(context),
@@ -79,7 +79,7 @@ open class DefaultStreamer(
     // Keep configurations
     private var _audioConfig: AudioConfig? = null
     private var _videoConfig: VideoConfig? = null
-    
+
     override val audioConfig: AudioConfig?
         get() = _audioConfig
 

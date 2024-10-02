@@ -55,7 +55,7 @@ fun DefaultCameraStreamer(
  * @param internalEndpoint the [IEndpointInternal] implementation
  */
 open class DefaultCameraStreamer(
-    private val context: Context,
+    context: Context,
     audioSourceInternal: IAudioSourceInternal?,
     internalEndpoint: IEndpointInternal = DynamicEndpoint(context)
 ) : DefaultStreamer(

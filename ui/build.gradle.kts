@@ -21,4 +21,5 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime)
     implementation(libs.androidx.camera.viewfinder.view)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.guava)
 }

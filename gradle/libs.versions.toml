@@ -1,5 +1,6 @@
 [versions]
 agp = "8.5.2"
+guava = "33.3.1-android"
 videoApiClient = "1.5.7"
 androidxActivity = "1.9.2"
 androidxAppcompat = "1.7.0"
@@ -26,6 +27,7 @@ srtdroid = "1.8.3"
 junitKtx = "1.2.1"
 
 [libraries]
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
 video-api-client = { module = "video.api:android-api-client", version.ref = "videoApiClient" }
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 android-material = { module = "com.google.android.material:material", version.ref = "material" }
