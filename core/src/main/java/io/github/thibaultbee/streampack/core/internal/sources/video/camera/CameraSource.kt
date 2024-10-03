@@ -17,12 +17,12 @@ package io.github.thibaultbee.streampack.core.internal.sources.video.camera
 
 import android.Manifest
 import android.content.Context
-import android.util.Log
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.utils.av.video.DynamicRangeProfile
+import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.utils.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
 import kotlinx.coroutines.runBlocking
@@ -34,14 +34,14 @@ class CameraSource(
     var previewSurface: Surface? = null
         set(value) {
             if (field == value) {
-                Log.w(TAG, "Preview surface is already set to $value")
+                Logger.w(TAG, "Preview surface is already set to $value")
                 return
             }
             if (cameraController.isCameraRunning) {
                 if (value == null) {
                     stopPreview()
                 } else {
-                    Log.e(TAG, "Need to restart camera to change preview surface")
+                    Logger.e(TAG, "Need to restart camera to change preview surface")
                     field = value
                     runBlocking {
                         restartCamera()
@@ -55,7 +55,7 @@ class CameraSource(
     override var outputSurface: Surface? = null
         set(value) {
             if (field == value) {
-                Log.w(TAG, "Output surface is already set to $value")
+                Logger.w(TAG, "Output surface is already set to $value")
                 return
             }
             if (cameraController.isCameraRunning) {
@@ -64,26 +64,27 @@ class CameraSource(
                         stopStream()
                     }
                 } else {
-                    Log.e(TAG, "Need to restart camera to change output surface")
+                    Logger.e(TAG, "Need to restart camera to change output surface")
                     field = value
                     runBlocking {
                         restartCamera()
                     }
                 }
+            } else {
+                field = value
             }
-            field = value
         }
 
     override var cameraId: String = context.defaultCameraId
         get() = cameraController.cameraId ?: field
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
+            if (field == value) {
+                Logger.w(TAG, "Camera ID is already set to $value")
+                return
+            }
             if (!context.isFrameRateSupported(value, fps)) {
                 throw UnsupportedOperationException("Camera $value does not support $fps fps")
-            }
-            if (field == value) {
-                Log.w(TAG, "Camera ID is already set to $value")
-                return
             }
 
             field = value
@@ -93,7 +94,7 @@ class CameraSource(
             }
         }
 
-    private var cameraController = CameraController(context)
+    private val cameraController = CameraController(context)
     override val settings = CameraSettings(context, cameraController)
 
     override val timestampOffset = CameraHelper.getTimeOffsetToMonoClock(context, cameraId)
@@ -122,7 +123,7 @@ class CameraSource(
 
     override fun configure(config: VideoConfig) {
         if (!context.isFrameRateSupported(cameraId, config.fps)) {
-            Log.w(TAG, "Camera $cameraId does not support ${config.fps} fps")
+            Logger.w(TAG, "Camera $cameraId does not support ${config.fps} fps")
         }
 
         var needRestart = false
@@ -151,7 +152,7 @@ class CameraSource(
         if (surfacesToRestart.isNotEmpty()) {
             startCameraRequestSessionIfNeeded(surfacesToRestart)
         } else {
-            Log.w(TAG, "Trying to restart camera without surfaces")
+            Logger.w(TAG, "Trying to restart camera without surfaces")
         }
     }
 
@@ -181,7 +182,7 @@ class CameraSource(
     @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun startPreview() {
         if (isPreviewing) {
-            Log.w(TAG, "Camera is already previewing")
+            Logger.w(TAG, "Camera is already previewing")
             return
         }
 
@@ -191,7 +192,7 @@ class CameraSource(
 
     fun stopPreview() {
         if (!isPreviewing) {
-            Log.w(TAG, "Camera is not previewing")
+            Logger.w(TAG, "Camera is not previewing")
             return
         }
 
@@ -200,7 +201,7 @@ class CameraSource(
 
     override suspend fun startStream() {
         if (isStreaming) {
-            Log.w(TAG, "Camera is already streaming")
+            Logger.w(TAG, "Camera is already streaming")
             return
         }
 
@@ -212,7 +213,7 @@ class CameraSource(
 
     override suspend fun stopStream() {
         if (!isStreaming) {
-            Log.w(TAG, "Camera is not streaming")
+            Logger.w(TAG, "Camera is not streaming")
             return
         }
 
