@@ -112,13 +112,13 @@ class CameraSource(
     private val isStreaming: Boolean
         get() {
             val outputSurface = outputSurface ?: return false
-            return cameraController.hasTarget(outputSurface)
+            return cameraController.hasTarget(outputSurface) && cameraController.isRequestSessionRunning && cameraController.isCameraRunning
         }
 
     override val isPreviewing: Boolean
         get() {
             val previewSurface = previewSurface ?: return false
-            return cameraController.hasTarget(previewSurface)
+            return cameraController.hasTarget(previewSurface) && cameraController.isRequestSessionRunning && cameraController.isCameraRunning
         }
 
     override fun configure(config: VideoConfig) {
