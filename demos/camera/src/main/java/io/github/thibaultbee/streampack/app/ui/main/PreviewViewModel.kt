@@ -76,7 +76,14 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
     }
 
     fun inflateStreamerView(view: PreviewView) {
-        streamerManager.inflateStreamerView(view)
+        viewModelScope.launch {
+            try {
+                streamerManager.inflateStreamerView(view)
+            } catch (t: Throwable) {
+                Log.e(TAG, "inflateStreamerView failed", t)
+                streamerError.postValue("Preview: ${t.message ?: "Unknown error"}")
+            }
+        }
     }
 
     fun onPreviewStarted() {
@@ -166,8 +173,9 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
     val exposureCompensationRange = MutableLiveData<Range<Int>>()
     val exposureCompensationStep = MutableLiveData<Rational>()
     var exposureCompensation: Float
-        @Bindable get() = streamerManager.cameraSettings?.exposure?.let { it.compensation * it.availableCompensationStep.toFloat() }
-            ?: 0f
+        @Bindable get() =
+            streamerManager.cameraSettings?.exposure?.let { it.compensation * it.availableCompensationStep.toFloat() }
+                ?: 0f
         set(value) {
             streamerManager.cameraSettings?.exposure?.let {
                 it.compensation = (value / it.availableCompensationStep.toFloat()).toInt()

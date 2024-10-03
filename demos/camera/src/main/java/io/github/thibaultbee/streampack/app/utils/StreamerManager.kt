@@ -120,8 +120,9 @@ class StreamerManager(
         }
     }
 
-    fun inflateStreamerView(view: PreviewView) {
+    suspend fun inflateStreamerView(view: PreviewView) {
         view.streamer = (streamer as ICameraStreamer?)
+        view.startPreview()
     }
 
     suspend fun startStream() {
@@ -250,5 +251,9 @@ class StreamerManager(
             // Do nothing
             // The ViewModel onCleared() method will call release() method
         }
+    }
+
+    companion object {
+        private const val TAG = "StreamerManager"
     }
 }
