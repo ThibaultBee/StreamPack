@@ -17,7 +17,6 @@ package io.github.thibaultbee.streampack.ui.views
 
 import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
 import android.graphics.PointF
 import android.graphics.Rect
 import android.util.AttributeSet
@@ -25,16 +24,12 @@ import android.util.Size
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
-import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.camera.viewfinder.CameraViewfinder
-import androidx.camera.viewfinder.CameraViewfinderExt.requestSurface
 import androidx.camera.viewfinder.surface.ViewfinderSurfaceRequest
-import androidx.camera.viewfinder.surface.populateFromCharacteristics
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.core.internal.utils.OrientationUtils
@@ -47,6 +42,7 @@ import io.github.thibaultbee.streampack.core.utils.extensions.getCameraCharacter
 import io.github.thibaultbee.streampack.ui.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.security.InvalidParameterException
 import java.util.concurrent.CancellationException
 
 /**
@@ -54,8 +50,9 @@ import java.util.concurrent.CancellationException
  *
  * It handles the display, the aspect ratio and the scaling of the preview.
  *
- * In the case, you are using it, do not call [ICameraStreamer.startPreview] or
- * [ICameraStreamer.stopPreview] on application side. It will be handled by the [PreviewView].
+ * In the case, you are using it, do not call [ICameraCoroutineStreamer.startPreview] (or
+ * [ICameraCallbackStreamer.stopPreview]) and [ICameraCoroutineStreamer.stopPreview] on application
+ * side. It will be handled by the [PreviewView].
  *
  * The [Manifest.permission.CAMERA] permission must be granted before using this view.
  */
@@ -64,9 +61,9 @@ class PreviewView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyle: Int = 0
 ) : FrameLayout(context, attrs, defStyle) {
-    private val cameraViewFinder = CameraViewfinder(context, attrs, defStyle)
+    private val cameraViewfinder = CameraViewfinder(context, attrs, defStyle)
 
-    private var viewFinderSurfaceRequest: ViewfinderSurfaceRequest? = null
+    private var viewfinderSurfaceRequest: ViewfinderSurfaceRequest? = null
 
     private val lifecycleScope: CoroutineScope?
         get() = findViewTreeLifecycleOwner()?.lifecycleScope
@@ -83,9 +80,7 @@ class PreviewView @JvmOverloads constructor(
 
     /**
      * Sets the [ICameraStreamer] to preview.
-     * Once set, the [PreviewView] will try to start the preview.
-     *
-     * Only one [ICameraStreamer] can be set.
+     * To force the preview to start, use [startPreviewAsync] or [startPreview].
      */
     var streamer: ICameraStreamer? = null
         /**
@@ -94,29 +89,26 @@ class PreviewView @JvmOverloads constructor(
          * @param value the [ICameraStreamer] to preview
          */
         set(value) {
-            stopPreviewInternal()
+            field?.stopPreview()
             field = value
-            value?.let {
-                startPreviewIfReady(it, size, false)
-            }
         }
 
     /**
      * The position of the [PreviewView] within its container.
      */
     var position: Position
-        get() = getPosition(cameraViewFinder.scaleType)
+        get() = getPosition(cameraViewfinder.scaleType)
         set(value) {
-            cameraViewFinder.scaleType = getScaleType(scaleMode, value)
+            cameraViewfinder.scaleType = getScaleType(scaleMode, value)
         }
 
     /**
      * The scale mode of the [PreviewView] within its container.
      */
     var scaleMode: ScaleMode
-        get() = getScaleMode(cameraViewFinder.scaleType)
+        get() = getScaleMode(cameraViewfinder.scaleType)
         set(value) {
-            cameraViewFinder.scaleType = getScaleType(value, position)
+            cameraViewfinder.scaleType = getScaleType(value, position)
         }
 
     /**
@@ -158,7 +150,7 @@ class PreviewView @JvmOverloads constructor(
         }
 
         addView(
-            cameraViewFinder,
+            cameraViewfinder,
             ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
@@ -168,8 +160,10 @@ class PreviewView @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         if (w != oldw || h != oldh) {
-            stopPreviewInternal()
-            streamer?.let { startPreviewIfReady(it, size, true) }
+            streamer?.let {
+                it.stopPreview()
+                startPreviewAsyncInternal(true)
+            }
         }
     }
 
@@ -234,42 +228,31 @@ class PreviewView @JvmOverloads constructor(
 
     private fun stopPreviewInternal() {
         streamer?.stopPreview()
-        viewFinderSurfaceRequest?.markSurfaceSafeToRelease()
-        viewFinderSurfaceRequest = null
+        viewfinderSurfaceRequest?.markSurfaceSafeToRelease()
+        viewfinderSurfaceRequest = null
     }
 
     /**
      * Starts the preview.
      */
-    fun startPreview() {
-        streamer?.let {
-            startPreviewIfReady(it, size, false)
-        } ?: throw UnsupportedOperationException("Streamer has not been set")
+    suspend fun startPreview() {
+        startPreviewInternal(false)
     }
 
     /**
-     * Starts the preview if the view size is ready.
-     *
-     * @param streamer the camera streamer
-     * @param targetViewSize the view size
-     * @param shouldFailSilently true to fail silently
+     * Starts the preview asynchronously.
      */
-    private fun startPreviewIfReady(
-        streamer: ICameraStreamer,
-        targetViewSize: Size,
-        shouldFailSilently: Boolean
-    ) {
-        try {
-            if (ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.CAMERA
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                throw SecurityException("Camera permission is needed to run this application")
-            }
+    fun startPreviewAsync() {
+        startPreviewAsyncInternal(false)
+    }
 
+    /**
+     * Starts the preview.
+     */
+    private fun startPreviewAsyncInternal(shouldFailSilently: Boolean) {
+        try {
             lifecycleScope?.launch {
-                startPreviewInternal(streamer, streamer.camera, targetViewSize)
+                startPreviewInternal(true)
             } ?: throw IllegalStateException("LifecycleScope is not available")
         } catch (t: Throwable) {
             if (shouldFailSilently) {
@@ -280,7 +263,48 @@ class PreviewView @JvmOverloads constructor(
         }
     }
 
-    private suspend fun startPreviewInternal(
+    /**
+     * Starts the preview.
+     */
+    private suspend fun startPreviewInternal(shouldFailSilently: Boolean) {
+        try {
+            if (size.width == 0 || size.height == 0) {
+                return
+            }
+
+            try {
+                streamer?.let {
+                    setPreview(it, size)
+                    startPreview(it)
+                    listener?.onPreviewStarted()
+                } ?: throw UnsupportedOperationException("Streamer has not been set")
+            } catch (e: CancellationException) {
+                Logger.w(TAG, "Preview has been cancelled", e)
+            } catch (t: Throwable) {
+                listener?.onPreviewFailed(t)
+                throw t
+            }
+        } catch (t: Throwable) {
+            if (shouldFailSilently) {
+                Logger.w(TAG, t.toString(), t)
+            } else {
+                throw t
+            }
+        }
+    }
+
+    /**
+     * Sets the preview if the view size is ready.
+     *
+     * @param streamer the camera streamer
+     * @param targetViewSize the view size
+     */
+    private suspend fun setPreview(
+        streamer: ICameraStreamer,
+        targetViewSize: Size,
+    ) = setPreviewInternal(streamer, streamer.camera, targetViewSize)
+
+    private suspend fun setPreviewInternal(
         streamer: ICameraStreamer,
         camera: String,
         targetViewSize: Size
@@ -288,60 +312,23 @@ class PreviewView @JvmOverloads constructor(
         Logger.d(TAG, "Target view size: $targetViewSize")
         Logger.i(TAG, "Starting on camera: $camera")
 
-        val request = createRequest(targetViewSize, camera)
-        viewFinderSurfaceRequest?.markSurfaceSafeToRelease()
-        viewFinderSurfaceRequest = request
+        val previewSize = getPreviewSize(targetViewSize, camera)
 
         try {
-            val surface = sendRequest(request)
-            if (ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.CAMERA
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                viewFinderSurfaceRequest?.markSurfaceSafeToRelease()
-                viewFinderSurfaceRequest = null
-                Logger.e(
-                    TAG,
-                    "Camera permission is needed to run this application"
-                )
-                listener?.onPreviewFailed(SecurityException("Camera permission is needed to run this application"))
-            } else {
-                if (surface.isValid) {
-                    when (streamer) {
-                        is ICameraCoroutineStreamer -> {
-                            streamer.startPreview(surface)
-                        }
-
-                        is ICameraCallbackStreamer -> {
-                            streamer.startPreview(surface)
-                        }
-
-                        else -> {
-                            Logger.e(TAG, "Streamer is not a ICameraCoroutineStreamer")
-                            listener?.onPreviewFailed(IllegalStateException("Streamer is not a ICameraCoroutineStreamer"))
-                        }
-                    }
-                    listener?.onPreviewStarted()
-                } else {
-                    Logger.w(TAG, "Invalid surface")
-                    listener?.onPreviewFailed(IllegalStateException("Invalid surface"))
-                }
-            }
-        } catch (e: CancellationException) {
-            Logger.w(TAG, "Preview request cancelled")
+            // Request a new preview
+            viewfinderSurfaceRequest = setPreview(streamer, cameraViewfinder, previewSize)
         } catch (t: Throwable) {
-            viewFinderSurfaceRequest?.markSurfaceSafeToRelease()
-            viewFinderSurfaceRequest = null
+            viewfinderSurfaceRequest?.markSurfaceSafeToRelease()
+            viewfinderSurfaceRequest = null
             Logger.w(TAG, "Failed to get a Surface: $t", t)
-            listener?.onPreviewFailed(t)
+            throw t
         }
     }
 
-    private fun createRequest(
+    private fun getPreviewSize(
         targetViewSize: Size,
         camera: String,
-    ): ViewfinderSurfaceRequest {
+    ): Size {
         /**
          * Get the closest available preview size to the view size.
          */
@@ -353,19 +340,35 @@ class PreviewView @JvmOverloads constructor(
 
         Logger.d(TAG, "Selected preview size: $previewSize")
 
-        val builder = ViewfinderSurfaceRequest.Builder(previewSize)
-        builder.populateFromCharacteristics(context.getCameraCharacteristics(camera))
-
-        return builder.build()
-    }
-
-    private suspend fun sendRequest(request: ViewfinderSurfaceRequest): Surface {
-        return cameraViewFinder.requestSurface(request)
+        return previewSize
     }
 
     companion object {
         private const val TAG = "PreviewView"
 
+        private suspend fun startPreview(streamer: ICameraStreamer) {
+            when (streamer) {
+                is ICameraCoroutineStreamer -> streamer.startPreview()
+                is ICameraCallbackStreamer -> streamer.startPreview()
+                else -> {
+                    throw InvalidParameterException("Streamer is not a recognized type: ${streamer::class.java.simpleName}")
+                }
+            }
+        }
+
+        private suspend fun setPreview(
+            streamer: ICameraStreamer,
+            viewfinder: CameraViewfinder,
+            previewSize: Size
+        ): ViewfinderSurfaceRequest {
+            return when (streamer) {
+                is ICameraCoroutineStreamer -> streamer.setPreview(viewfinder, previewSize)
+                is ICameraCallbackStreamer -> streamer.setPreview(viewfinder, previewSize)
+                else -> {
+                    throw InvalidParameterException("Streamer is not a recognized type: ${streamer::class.java.simpleName}")
+                }
+            }
+        }
 
         private fun getPosition(scaleType: CameraViewfinder.ScaleType): Position {
             return when (scaleType) {
