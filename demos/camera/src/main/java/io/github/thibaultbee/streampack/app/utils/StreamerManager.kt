@@ -21,6 +21,7 @@ import android.net.Uri
 import android.os.Build
 import android.util.Range
 import androidx.annotation.RequiresPermission
+import androidx.lifecycle.LifecycleOwner
 import io.github.thibaultbee.streampack.app.configuration.Configuration
 import io.github.thibaultbee.streampack.app.models.EndpointType
 import io.github.thibaultbee.streampack.app.models.FileExtension
@@ -61,7 +62,7 @@ class StreamerManager(
         get() = (streamer as ICameraStreamer?)?.videoSource?.cameraId
 
     val streamerLifeCycleObserver: StreamerLifeCycleObserver by lazy {
-        StreamerLifeCycleObserver(streamer)
+        CustomStreamerLifeCycleObserver(streamer)
     }
 
     val requiredPermissions: List<String>
@@ -242,4 +243,12 @@ class StreamerManager(
         set(value) {
             streamer.audioSource?.isMuted = value
         }
+
+    class CustomStreamerLifeCycleObserver(streamer: ICoroutineStreamer) :
+        StreamerLifeCycleObserver(streamer) {
+        override fun onDestroy(owner: LifecycleOwner) {
+            // Do nothing
+            // The ViewModel onCleared() method will call release() method
+        }
+    }
 }

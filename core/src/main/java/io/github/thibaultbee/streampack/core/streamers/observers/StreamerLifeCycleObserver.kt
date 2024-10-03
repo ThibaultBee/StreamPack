@@ -32,7 +32,8 @@ import kotlinx.coroutines.runBlocking
  *
  *  @param streamer The streamer to observe
  */
-open class StreamerLifeCycleObserver(val streamer: ICoroutineStreamer) : DefaultLifecycleObserver {
+open class StreamerLifeCycleObserver(protected val streamer: ICoroutineStreamer) :
+    DefaultLifecycleObserver {
     override fun onPause(owner: LifecycleOwner) {
         if (streamer is ICameraStreamer) {
             streamer.stopPreview()
