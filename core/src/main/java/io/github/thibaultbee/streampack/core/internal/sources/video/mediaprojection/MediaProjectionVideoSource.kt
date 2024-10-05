@@ -22,28 +22,26 @@ import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Handler
 import android.os.HandlerThread
-import android.util.Size
 import android.view.Surface
 import androidx.activity.result.ActivityResult
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.internal.data.Frame
-import io.github.thibaultbee.streampack.core.internal.orientation.AbstractSourceOrientationProvider
+import io.github.thibaultbee.streampack.core.internal.processing.video.source.AbstractSourceInfoProvider
 import io.github.thibaultbee.streampack.core.internal.sources.IMediaProjectionSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSourceInternal
-import io.github.thibaultbee.streampack.core.internal.utils.extensions.isDevicePortrait
-import io.github.thibaultbee.streampack.core.internal.utils.extensions.landscapize
-import io.github.thibaultbee.streampack.core.internal.utils.extensions.portraitize
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.densityDpi
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.screenRect
 import io.github.thibaultbee.streampack.core.logger.Logger
 import java.nio.ByteBuffer
 
 class MediaProjectionVideoSource(
-    context: Context
+    private val context: Context
 ) : IVideoSourceInternal, IMediaProjectionSource {
     override var outputSurface: Surface? = null
     override val timestampOffset = 0L
     override val hasOutputSurface = true
     override val hasFrames = false
-    override val orientationProvider = ScreenSourceOrientationProvider(context)
+    override val infoProvider = ScreenSourceInfoProvider(context)
 
     override fun getFrame(buffer: ByteBuffer): Frame {
         throw UnsupportedOperationException("Screen source run in Surface mode")
@@ -66,7 +64,7 @@ class MediaProjectionVideoSource(
     private val mediaProjectionManager =
         context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
     private var virtualDisplay: VirtualDisplay? = null
-    private var videoConfig: VideoConfig? = null
+
     private val virtualDisplayThread = HandlerThread("VirtualDisplayThread").apply { start() }
     private val virtualDisplayHandler = Handler(virtualDisplayThread.looper)
     private val virtualDisplayCallback = object : VirtualDisplay.Callback() {
@@ -102,19 +100,16 @@ class MediaProjectionVideoSource(
         private const val VIRTUAL_DISPLAY_NAME = "StreamPackScreenSource"
     }
 
-    override fun configure(config: VideoConfig) {
-        videoConfig = config
-    }
+    override fun configure(config: VideoConfig) = Unit
 
     override suspend fun startStream() {
-        val videoConfig = requireNotNull(videoConfig) { "Video has not been configured!" }
         val activityResult = requireNotNull(activityResult) {
             "MediaProjection requires an activity result to be set"
         }
 
         isStoppedByUser = false
+        val screenRect = context.screenRect
 
-        val orientedSize = orientationProvider.getOrientedSize(videoConfig.resolution)
         mediaProjection = mediaProjectionManager.getMediaProjection(
             activityResult.resultCode,
             activityResult.data!!
@@ -122,9 +117,9 @@ class MediaProjectionVideoSource(
             registerCallback(mediaProjectionCallback, virtualDisplayHandler)
             virtualDisplay = createVirtualDisplay(
                 VIRTUAL_DISPLAY_NAME,
-                orientedSize.width,
-                orientedSize.height,
-                320,
+                screenRect.width(),
+                screenRect.height(),
+                context.densityDpi,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                 outputSurface,
                 virtualDisplayCallback,
@@ -152,18 +147,8 @@ class MediaProjectionVideoSource(
         }
     }
 
-    class ScreenSourceOrientationProvider(private val context: Context) :
-        AbstractSourceOrientationProvider() {
-        override val orientation = 0
-
-        override fun getOrientedSize(size: Size): Size {
-            return if (context.isDevicePortrait) {
-                size.portraitize
-            } else {
-                size.landscapize
-            }
-        }
-    }
+    class ScreenSourceInfoProvider(private val context: Context) :
+        AbstractSourceInfoProvider()
 
     interface Listener {
         fun onStop()

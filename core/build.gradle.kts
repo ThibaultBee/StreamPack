@@ -19,6 +19,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.androidx.window)
+    implementation(libs.androidx.concurrent.futures)
 
     testImplementation(libs.androidx.test.rules)
     testImplementation(libs.androidx.test.core.ktx)
@@ -27,7 +29,6 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)
-
 
     androidTestImplementation(libs.androidx.test.core.ktx)
     androidTestImplementation(libs.androidx.test.rules)

@@ -134,8 +134,8 @@ To simplify integration, StreamPack provides an `PreviewView`.
 
 There are 2 types of streamers:
 
-- Kotlin Coroutine based
-- callback based
+- Kotlin Coroutine based: streamer APIs use `suspend` functions and `Flow`
+- callback based: streamer APIs use callbacks
 
 ```kotlin
 // For coroutine based
@@ -147,6 +147,9 @@ val streamer = DefaultCameraStreamer(context = requireContext())
 4. Configures audio and video settings
 
 ```kotlin
+// Already instantiated streamer
+val streamer = DefaultCameraStreamer(context = requireContext())
+
 val audioConfig = AudioConfig(
     startBitrate = 128000,
     sampleRate = 44100,
@@ -165,12 +168,15 @@ streamer.configure(audioConfig, videoConfig)
 5. Inflates the camera preview with the streamer
 
 ```kotlin
+// Already instantiated streamer
+val streamer = DefaultCameraStreamer(context = requireContext())
+
 /**
- * If the preview is in a PreviewView
+ * If the preview is a [PreviewView]
  */
 preview.streamer = streamer
 /**
- * If the preview is in a SurfaceView, a TextureView, or any View that can provide a Surface
+ * If the preview is in a SurfaceView, a TextureView, a Surface,... you can use:
  */
 streamer.startPreview(preview)
 ```
@@ -178,6 +184,10 @@ streamer.startPreview(preview)
 6. Starts the live streaming
 
 ```kotlin
+// Already instantiated streamer
+val streamer = DefaultCameraStreamer(context = requireContext())
+
+
 val descriptor =
     UriMediaDescriptor("rtmps://serverip:1935/s/streamKey") // For RTMP/RTMPS. Uri also supports SRT url, file, content path,...
 /**
@@ -192,6 +202,9 @@ streamer.startStream()
 7. Stops and releases the streamer
 
 ```kotlin
+// Already instantiated streamer
+val streamer = DefaultCameraStreamer(context = requireContext())
+
 streamer.stopStream()
 streamer.close() // Disconnect from server or close the file
 streamer.stopPreview() // The StreamerSurfaceView will be automatically stop the preview
@@ -265,50 +278,88 @@ You will also have to declare the `Service`,
 </application>
 ```
 
+## Rotations
+
+To set the `Streamer` orientation, you can use the `targetRotation` setter:
+
+```kotlin
+// Already instantiated streamer
+val streamer = DefaultCameraStreamer(context = requireContext())
+
+streamer.targetRotation =
+    Surface.ROTATION_90 // Or Surface.ROTATION_0, Surface.ROTATION_180, Surface.ROTATION_270
+```
+
+StreamPack comes with a `RotationProvider` that fetches and listens the device rotation: the
+`DeviceRotationProvider`. The `DeviceRotationProvider` is backed by the `OrientationEventListener`.
+
+```kotlin
+// Already instantiated streamer
+val streamer = DefaultCameraStreamer(context = requireContext())
+
+val listener = object : IRotationProvider.Listener {
+    override fun onOrientationChanged(rotation: Int) {
+        streamer.targetRotation = rotation
+    }
+}
+rotationProvider.addListener(listener)
+
+// Don't forget to remove the listener when you don't need it anymore
+rotationProvider.removeListener(listener)
+```
+
+See the `demos/camera` for a complete example.
+
+To only get the device supported orientations, you can use the `DisplayManager.DisplayListener` or
+create your own `targetRotation` provider.
+
 ## Tips
 
 ### RTMP or SRT
 
-RTMP and SRT are both live streaming protocols. SRT is a UDP-based modern protocol, it is reliable
-and ultra low latency. RTMP is a TCP-based protocol, it is also reliable but it is only low latency.
+RTMP and SRT are both live streaming protocols . SRT is a UDP - based modern protocol, it is
+reliable
+and ultra low latency . RTMP is a TCP - based protocol, it is also reliable but it is only low
+latency .
 There are already a lot of comparison over the Internet, so here is a summary:
 SRT:
 
-- Ultra low latency (< 1s)
-- HEVC support through MPEG-TS RTMP:
-- Low latency (2-3s)
-- HEVC not officially support (specification has been aban by its creator)
+-Ultra low latency(< 1 s)
+-HEVC support through MPEG -TS RTMP :
+-Low latency (2 - 3 s)
+-HEVC not officially support (specification has been aban by its creator)
 
-So, the main question is: "which protocol to use?"
+So, the main question is : "which protocol to use?"
 It is easy: if your server has SRT support, use SRT otherwise use RTMP.
 
 ### Streamers
 
 Let's start with some definitions! `Streamers` are classes that represent a streaming pipeline:
-capture, encode, mux and send.
-They comes in multiple flavours: with different audio and video source. 3 types of base streamers
-are available:
+capture, encode, mux and send.They comes in multiple flavours: with different audio and video
+source . 3 types of base streamers
+are available :
 
-- `DefaultCameraStreamer`: for streaming from camera
-- `DefaultScreenRecorderStreamer`: for streaming from screen
-- `DefaultAudioOnlyStreamer`: for streaming audio only
+-`DefaultCameraStreamer`: for streaming from camera
+-`DefaultScreenRecorderStreamer`: for streaming from screen
+-`DefaultAudioOnlyStreamer`: for streaming audio only
 
 Since 3.0.0, the endpoint of a `Streamer` is inferred from the `MediaDescriptor` object passed to
-the `open` or `startStream` methods. It is possible to limit the possibility of the endpoint by
+the `open` or `startStream` methods.It is possible to limit the possibility of the endpoint by
 implementing your own `DynamicEndpoint.Factory` or passing a endpoint as the `Streamer` `endpoint`
-parameter.
-
-To create a `Streamer` for a new source, you have to create a new `Streamer` class that inherits
-from `DefaultStreamer`.
+parameter.To create a `Streamer` for a new source, you have to create a new `Streamer` class that
+inherits
+from `DefaultStreamer` .
 
 ### Get device capabilities
 
-Have you ever wonder: "What are the supported resolution of my cameras?" or "What is the supported
-sample rate of my audio codecs?"? `Info` classes are made for this. All `Streamer` comes with a
-specific `Info` object:
+Have you ever wonder : "What are the supported resolution of my cameras?" or "What is the supported
+sample rate of my audio codecs ?"? `Info` classes are made for this. All `Streamer` comes with a
+specific `Info` object :
 
-```kotlin
+    ```kotlin
+
 val info = streamer.getInfo(MediaDescriptor("rtmps://serverip:1935/s/streamKey"))
+
 ```
 
 For static endpoint or an opened dynamic endpoint, you can directly get the info:

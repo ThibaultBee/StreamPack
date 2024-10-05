@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.core.streamers.interfaces
 
 import android.Manifest
 import android.net.Uri
+import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.data.VideoConfig
@@ -26,6 +27,8 @@ import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSource
+import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.rotationToDegrees
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
@@ -78,6 +81,12 @@ interface IStreamer {
      * Configuration information
      */
     val info: IConfigurationInfo
+
+    /**
+     * The rotation in one the [Surface] rotations from the device natural orientation.
+     */
+    @RotationValue
+    var targetRotation: Int
 
     /**
      * Gets configuration information
@@ -144,6 +153,13 @@ interface IStreamer {
      */
     fun removeBitrateRegulatorController()
 }
+
+/**
+ * Returns the rotation in degrees from [Int] rotation.
+ */
+val IStreamer.targetRotationDegrees: Int
+    @IntRange(from = 0, to = 359)
+    get() = targetRotation.rotationToDegrees
 
 /**
  * A Streamer based on coroutines.

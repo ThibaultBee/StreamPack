@@ -85,6 +85,7 @@ internal constructor(
             }
         }
 
+    override val config = encoderConfig.config
 
     private val encoderCallback = EncoderCallback()
 
@@ -128,15 +129,6 @@ internal constructor(
     }
 
     override fun configure() {
-        /**
-         * This is a workaround because few Samsung devices (such as Samsung Galaxy J7 Prime does
-         * not find any encoder if the width and height are oriented to portrait.
-         * We defer orientation of width and height to here.
-         */
-        if (encoderConfig is VideoEncoderConfig) {
-            encoderConfig.orientateFormat(format)
-        }
-
         try {
             /**
              * Set encoder callback without handler.
@@ -448,7 +440,8 @@ internal constructor(
     internal inner class SurfaceInput : IEncoderInternal.ISurfaceInput {
         private val obsoleteSurfaces = mutableListOf<Surface>()
 
-        private var surface: Surface? = null
+        override var surface: Surface? = null
+            private set
 
         override var listener = object : IEncoderInternal.ISurfaceInput.OnSurfaceUpdateListener {}
             set(value) {

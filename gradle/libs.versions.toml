@@ -1,5 +1,6 @@
 [versions]
 agp = "8.7.2"
+concurrentFutures = "1.2.0"
 guava = "33.3.1-android"
 videoApiClient = "1.5.7"
 androidxActivity = "1.9.3"
@@ -25,6 +26,7 @@ robolectric = "4.14-beta-1"
 rtmpdroid = "1.2.1"
 srtdroid = "1.8.4"
 junitKtx = "1.2.1"
+window = "1.3.0"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
@@ -34,6 +36,7 @@ android-material = { module = "com.google.android.material:material", version.re
 androidx-activity = { module = "androidx.activity:activity", version.ref = "androidxActivity" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidxAppcompat" }
 androidx-camera-viewfinder-view = { module = "androidx.camera.viewfinder:viewfinder-view", version.ref = "androidxCamera" }
+androidx-concurrent-futures = { module = "androidx.concurrent:concurrent-futures", version.ref = "concurrentFutures" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidxConstraintlayout" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
 androidx-databinding-common = { module = "androidx.databinding:databinding-common", version.ref = "androidxDatabinding" }
@@ -56,6 +59,7 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 rtmpdroid = { module = "video.api:rtmpdroid", version.ref = "rtmpdroid" }
 srtdroid-ktx = { module = "io.github.thibaultbee.srtdroid:srtdroid-ktx", version.ref = "srtdroid" }
+androidx-window = { group = "androidx.window", name = "window", version.ref = "window" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

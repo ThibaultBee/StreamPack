@@ -18,46 +18,128 @@ package io.github.thibaultbee.streampack.core.internal.utils.extensions
 import android.content.Context
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
-import android.hardware.display.DisplayManager
-import android.view.Display
+import android.graphics.Rect
+import android.util.Size
 import android.view.Surface
-import io.github.thibaultbee.streampack.core.internal.utils.OrientationUtils
+import androidx.annotation.IntRange
+import androidx.core.content.ContextCompat
+import androidx.core.view.DisplayCompat
+import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
+import io.github.thibaultbee.streampack.core.internal.utils.WindowUtils
+import io.github.thibaultbee.streampack.core.utils.extensions.is90Multiple
 
 /**
- * Returns the device orientation in degrees from the natural orientation: portrait.
+ * Returns the device orientation in degrees from the natural orientation.
  *
  * @return the device orientation in degrees
  */
-val Context.deviceOrientationDegrees: Int
-    get() {
-        val displayManager = this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-        return OrientationUtils.getSurfaceOrientationDegrees(displayManager.getDisplay(Display.DEFAULT_DISPLAY).rotation)
-    }
+val Context.deviceRotationDegrees: Int
+    @IntRange(
+        from = 0,
+        to = 359
+    )
+    get() = deviceRotation.rotationToDegrees
 
 /**
- * Returns the device orientation in degrees from the natural orientation: portrait.
+ * Returns the device orientation in degrees from the natural orientation.
  *
  * @return the device orientation as [Surface.ROTATION_0], [Surface.ROTATION_90], [Surface.ROTATION_180] or [Surface.ROTATION_270]
  */
-val Context.deviceOrientation: Int
+
+val Context.deviceRotation: Int
+    @RotationValue
     get() {
-        val displayManager = this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-        return displayManager.getDisplay(Display.DEFAULT_DISPLAY).rotation
+        return ContextCompat.getDisplayOrDefault(this).rotation
     }
 
 /**
- * Check if the device is in portrait.
- *
- * @return true if the device is in portrait, otherwise false
+ * Whether the device is in portrait orientation.
  */
 val Context.isDevicePortrait: Boolean
-    get() = resources.configuration.orientation == ORIENTATION_PORTRAIT
-
+    get() = isRotationPortrait(deviceRotation)
 
 /**
- * Check if the device is in landscape.
- *
- * @return true if the device is in landscape, otherwise false
+ * Whether the device is in landscape orientation.
  */
 val Context.isDeviceLandscape: Boolean
+    get() = !isDevicePortrait
+
+/**
+ * Returns the device natural size in pixels.
+ */
+private val Context.naturalSize: Size
+    get() {
+        val display = ContextCompat.getDisplayOrDefault(this)
+        val mode = DisplayCompat.getMode(this, display)
+        return Size(mode.physicalWidth, mode.physicalHeight)
+    }
+
+/**
+ * Whether the natural orientation is portrait.
+ */
+val Context.isNaturalToPortrait: Boolean
+    get() = naturalSize.isPortrait
+
+/**
+ * Whether the application is in landscape orientation.
+ */
+val Context.isNaturalToLandscape: Boolean
+    get() = !isNaturalToPortrait
+
+/**
+ * Whether the application is in portrait.
+ *
+ * @return true if the application is in portrait, otherwise false
+ */
+val Context.isApplicationPortrait: Boolean
+    get() = resources.configuration.orientation == ORIENTATION_PORTRAIT
+
+/**
+ * Whether the application is in landscape.
+ *
+ * @return true if the application is in landscape, otherwise false
+ */
+val Context.isApplicationLandscape: Boolean
     get() = resources.configuration.orientation == ORIENTATION_LANDSCAPE
+
+/**
+ * Whether the rotation is portrait for this device.
+ */
+fun Context.isRotationDegreesPortrait(
+    @IntRange(
+        from = 0,
+        to = 359
+    ) rotationDegrees: Int
+): Boolean {
+    require(rotationDegrees.is90Multiple) { "Orientation must be a multiple of 90 but $rotationDegrees" }
+    return if (isNaturalToPortrait) {
+        rotationDegrees % 180 == 0
+    } else {
+        rotationDegrees % 180 != 0
+    }
+}
+
+/**
+ * Whether the rotation is portrait for this device.
+ */
+fun Context.isRotationPortrait(
+    @RotationValue rotation: Int
+): Boolean {
+    return if (isNaturalToPortrait) {
+        rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180
+    } else {
+        rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270
+    }
+}
+
+/**
+ * Get the application pixel density
+ */
+val Context.densityDpi: Int
+    get() = resources.displayMetrics.densityDpi
+
+/**
+ * Get the screen rectangle in pixels
+ */
+val Context.screenRect: Rect
+    get() = WindowUtils.getScreenRect(this)

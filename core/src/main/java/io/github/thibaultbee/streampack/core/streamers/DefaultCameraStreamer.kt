@@ -19,6 +19,7 @@ import android.Manifest
 import android.content.Context
 import android.view.Surface
 import androidx.annotation.RequiresPermission
+import androidx.annotation.RestrictTo.*
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
@@ -26,9 +27,12 @@ import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.internal.sources.audio.MicrophoneSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.ICameraSource
+import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.deviceRotation
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
+
 
 /**
  * A [DefaultStreamer] that sends microphone and camera frames.
@@ -36,15 +40,18 @@ import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCorouti
  * @param context application context
  * @param enableMicrophone [Boolean.true] to capture audio
  * @param internalEndpoint the [IEndpointInternal] implementation
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 fun DefaultCameraStreamer(
     context: Context,
     enableMicrophone: Boolean = true,
-    internalEndpoint: IEndpointInternal = DynamicEndpoint(context)
+    internalEndpoint: IEndpointInternal = DynamicEndpoint(context),
+    @RotationValue defaultRotation: Int = context.deviceRotation
 ) = DefaultCameraStreamer(
     context,
     if (enableMicrophone) MicrophoneSource() else null,
-    internalEndpoint
+    internalEndpoint,
+    defaultRotation
 )
 
 /**
@@ -53,16 +60,19 @@ fun DefaultCameraStreamer(
  * @param context application context
  * @param audioSourceInternal the audio source implementation
  * @param internalEndpoint the [IEndpointInternal] implementation
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 open class DefaultCameraStreamer(
     context: Context,
     audioSourceInternal: IAudioSourceInternal?,
-    internalEndpoint: IEndpointInternal = DynamicEndpoint(context)
+    internalEndpoint: IEndpointInternal = DynamicEndpoint(context),
+    @RotationValue defaultRotation: Int = context.deviceRotation
 ) : DefaultStreamer(
     context = context,
     audioSourceInternal = audioSourceInternal,
     videoSourceInternal = CameraSource(context),
-    endpointInternal = internalEndpoint
+    endpointInternal = internalEndpoint,
+    defaultRotation = defaultRotation
 ), ICameraCoroutineStreamer {
     private val cameraSource = videoSourceInternal as CameraSource
 
@@ -92,6 +102,7 @@ open class DefaultCameraStreamer(
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
             videoSource.cameraId = value
+            updateTransformation()
         }
 
     /**
@@ -115,6 +126,10 @@ open class DefaultCameraStreamer(
             endpoint.info
         }
         return CameraStreamerConfigurationInfo(endpointInfo)
+    }
+
+    override fun isMirroringRequired(): Boolean {
+        return cameraSource.infoProvider.isFrontFacing
     }
 
     /**

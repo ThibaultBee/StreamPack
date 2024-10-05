@@ -9,6 +9,7 @@ import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSource
+import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackStreamer
@@ -58,6 +59,13 @@ open class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallback
         get() = streamer.isOpen.value
     override val isStreaming: Boolean
         get() = streamer.isStreaming.value
+
+    override var targetRotation: Int
+        @RotationValue
+        get() = streamer.targetRotation
+        set(@RotationValue value) {
+            streamer.targetRotation = value
+        }
 
     init {
         coroutineScope.launch {

@@ -31,11 +31,13 @@ import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.CameraSettings
+import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
 import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.startStream
 import io.github.thibaultbee.streampack.core.streamers.observers.StreamerLifeCycleObserver
+import io.github.thibaultbee.streampack.core.streamers.orientation.IRotationProvider
 import io.github.thibaultbee.streampack.core.utils.extensions.backCameras
 import io.github.thibaultbee.streampack.core.utils.extensions.frontCameras
 import io.github.thibaultbee.streampack.core.utils.extensions.isBackCamera
@@ -48,7 +50,7 @@ import kotlinx.coroutines.flow.StateFlow
 class StreamerManager(
     private val context: Context,
     private val configuration: Configuration
-) {
+) : IRotationProvider.Listener {
     private val streamer: ICoroutineStreamer =
         DefaultCameraStreamer(context, configuration.audio.enable)
 
@@ -91,6 +93,15 @@ class StreamerManager(
             configuration.endpoint.srt.videoBitrateRange,
             Range(configuration.audio.bitrate, configuration.audio.bitrate)
         )
+
+    /**
+     * Updates rotation value in streamer
+     *
+     * @param rotation the rotation in one the [Surface] rotations.
+     */
+    override fun onOrientationChanged(@RotationValue rotation: Int) {
+        streamer.targetRotation = rotation
+    }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun configureStreamer() {
