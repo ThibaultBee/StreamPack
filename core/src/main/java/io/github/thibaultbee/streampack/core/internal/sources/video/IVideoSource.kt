@@ -19,7 +19,7 @@ import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.internal.interfaces.Configurable
 import io.github.thibaultbee.streampack.core.internal.interfaces.Releaseable
 import io.github.thibaultbee.streampack.core.internal.interfaces.SuspendStreamable
-import io.github.thibaultbee.streampack.core.internal.orientation.ISourceOrientationProvider
+import io.github.thibaultbee.streampack.core.internal.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.internal.sources.IFrameSource
 import io.github.thibaultbee.streampack.core.internal.sources.ISurfaceSource
 
@@ -41,7 +41,7 @@ interface IVideoSourceInternal : IFrameSource<VideoConfig>, ISurfaceSource, IVid
      * Orientation provider of the capture source.
      * It is used to orientate the frame according to the source orientation.
      */
-    val orientationProvider: ISourceOrientationProvider
+    val infoProvider: ISourceInfoProvider
 }
 
 interface IVideoSource

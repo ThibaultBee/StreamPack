@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.core.internal.encoders
 
 import android.view.Surface
+import io.github.thibaultbee.streampack.core.data.Config
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.interfaces.Releaseable
 import io.github.thibaultbee.streampack.core.internal.interfaces.SuspendStreamable
@@ -62,6 +63,12 @@ interface IEncoder {
 
 interface IEncoderInternal : SuspendStreamable, Releaseable,
     IEncoder {
+
+    /**
+     * The encoder configuration
+     */
+    val config: Config
+
     interface IListener {
         /**
          * Calls when an encoder has an error.
@@ -99,6 +106,11 @@ interface IEncoderInternal : SuspendStreamable, Releaseable,
      */
     interface ISurfaceInput :
         IEncoderInput {
+        /**
+         * The surface where to write the frame
+         */
+        val surface: Surface?
+
         /**
          * The surface update listener
          */
