@@ -37,6 +37,8 @@ import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.rootCause
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.streamers.DefaultScreenRecorderStreamer
+import io.github.thibaultbee.streampack.core.streamers.orientation.DeviceRotationProvider
+import io.github.thibaultbee.streampack.core.streamers.orientation.IRotationProvider
 import io.github.thibaultbee.streampack.services.utils.NotificationUtils
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
@@ -72,8 +74,12 @@ abstract class DefaultScreenRecorderService(
     @StringRes protected val channelNameResourceId: Int = R.string.default_channel_name,
     @StringRes protected val channelDescriptionResourceId: Int = 0,
     @DrawableRes protected val notificationIconResourceId: Int = R.drawable.ic_baseline_linked_camera_24
-) : LifecycleService() {
+) : LifecycleService(), IRotationProvider.Listener {
     protected var streamer: DefaultScreenRecorderStreamer? = null
+        private set
+
+    protected open val rotationProvider: IRotationProvider by lazy { DeviceRotationProvider(this) }
+
     private val binder = ScreenRecorderServiceBinder()
     private val notificationUtils: NotificationUtils by lazy {
         NotificationUtils(this, channelId, notificationId)
@@ -81,10 +87,14 @@ abstract class DefaultScreenRecorderService(
 
     override fun onCreate() {
         super.onCreate()
+
+        rotationProvider.addListener(this)
+
         notificationUtils.createNotificationChannel(
             channelNameResourceId,
             channelDescriptionResourceId
         )
+
         ServiceCompat.startForeground(
             this,
             notificationId,
@@ -162,9 +172,15 @@ abstract class DefaultScreenRecorderService(
         )
     }
 
+    override fun onOrientationChanged(rotation: Int) {
+        streamer?.targetRotation = rotation
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         notificationUtils.cancel()
+
+        rotationProvider.removeListener(this)
 
         runBlocking {
             streamer?.stopStream()

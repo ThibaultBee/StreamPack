@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.core.streamers
 import android.content.Context
 import android.content.Intent
 import android.media.projection.MediaProjectionManager
+import android.view.Surface
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.core.app.ActivityCompat
@@ -27,6 +28,8 @@ import io.github.thibaultbee.streampack.core.internal.sources.IMediaProjectionSo
 import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.internal.sources.audio.MicrophoneSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.mediaprojection.MediaProjectionVideoSource
+import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.deviceRotation
 
 /**
  * A [DefaultStreamer] that sends microphone and screen frames.
@@ -34,15 +37,18 @@ import io.github.thibaultbee.streampack.core.internal.sources.video.mediaproject
  * @param context application context
  * @param enableMicrophone [Boolean.true] to capture audio
  * @param internalEndpoint the [IEndpointInternal] implementation
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 fun DefaultScreenRecorderStreamer(
     context: Context,
     enableMicrophone: Boolean = true,
-    internalEndpoint: IEndpointInternal = DynamicEndpoint(context)
+    internalEndpoint: IEndpointInternal = DynamicEndpoint(context),
+    @RotationValue defaultRotation: Int = context.deviceRotation
 ) = DefaultScreenRecorderStreamer(
     context,
     if (enableMicrophone) MicrophoneSource() else null,
-    internalEndpoint
+    internalEndpoint,
+    defaultRotation
 )
 
 /**
@@ -51,16 +57,19 @@ fun DefaultScreenRecorderStreamer(
  * @param context application context
  * @param audioSourceInternal the audio source implementation
  * @param internalEndpoint the [IEndpointInternal] implementation
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 open class DefaultScreenRecorderStreamer(
     context: Context,
     audioSourceInternal: IAudioSourceInternal?,
-    internalEndpoint: IEndpointInternal = DynamicEndpoint(context)
+    internalEndpoint: IEndpointInternal = DynamicEndpoint(context),
+    @RotationValue defaultRotation: Int = context.deviceRotation
 ) : DefaultStreamer(
     context = context,
     audioSourceInternal = audioSourceInternal,
     videoSourceInternal = MediaProjectionVideoSource(context),
-    endpointInternal = internalEndpoint
+    endpointInternal = internalEndpoint,
+    defaultRotation = defaultRotation
 ) {
     private val mediaProjectionVideoSource =
         (videoSourceInternal as MediaProjectionVideoSource).apply {
