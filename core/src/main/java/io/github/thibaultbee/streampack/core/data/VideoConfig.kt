@@ -33,12 +33,13 @@ import android.media.MediaFormat
 import android.media.MediaFormat.KEY_PRIORITY
 import android.os.Build
 import android.util.Size
+import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.MediaCodecHelper
+import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
 import io.github.thibaultbee.streampack.core.internal.utils.av.video.DynamicRangeProfile
-import io.github.thibaultbee.streampack.core.internal.utils.extensions.isDevicePortrait
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.isVideo
-import io.github.thibaultbee.streampack.core.internal.utils.extensions.landscapize
-import io.github.thibaultbee.streampack.core.internal.utils.extensions.portraitize
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.rotateFromNaturalOrientation
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.rotationToDegrees
 import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 import java.security.InvalidParameterException
 import kotlin.math.roundToInt
@@ -152,20 +153,6 @@ class VideoConfig(
      * @return true if the configuration is HDR
      */
     val isHdr by lazy { dynamicRangeProfile != DynamicRangeProfile.sdr }
-
-    /**
-     * Get resolution according to device orientation
-     *
-     * @param context activity context
-     * @return oriented resolution
-     */
-    fun getDeviceOrientedResolution(context: Context): Size {
-        return if (context.isDevicePortrait) {
-            resolution.portraitize
-        } else {
-            resolution.landscapize
-        }
-    }
 
     /**
      * Get the media format from the video configuration
@@ -345,6 +332,27 @@ class VideoConfig(
         result = 31 * result + level
         result = 31 * result + gopDuration.hashCode()
         return result
+    }
+}
+
+/**
+ * Rotates video configuration to [rotation] from device natural orientation.
+ */
+fun VideoConfig.rotateFromNaturalOrientation(context: Context, @RotationValue rotation: Int) =
+    rotateDegreesFromNaturalOrientation(context, rotation.rotationToDegrees)
+
+/**
+ * Rotatse video configuration to [rotationDegrees] from device natural orientation.
+ */
+fun VideoConfig.rotateDegreesFromNaturalOrientation(
+    context: Context,
+    @IntRange(from = 0, to = 359) rotationDegrees: Int
+): VideoConfig {
+    val newResolution = resolution.rotateFromNaturalOrientation(context, rotationDegrees)
+    return if (resolution != newResolution) {
+        copy(resolution = newResolution)
+    } else {
+        this
     }
 }
 

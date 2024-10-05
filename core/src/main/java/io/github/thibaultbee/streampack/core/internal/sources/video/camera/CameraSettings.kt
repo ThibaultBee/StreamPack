@@ -26,10 +26,11 @@ import android.hardware.camera2.params.MeteringRectangle
 import android.os.Build
 import android.util.Range
 import android.util.Rational
+import androidx.annotation.IntRange
 import androidx.annotation.RequiresApi
 import io.github.thibaultbee.streampack.core.internal.utils.*
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.clamp
-import io.github.thibaultbee.streampack.core.internal.utils.extensions.isDevicePortrait
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.isApplicationPortrait
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.isNormalized
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.normalize
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.rotate
@@ -827,10 +828,11 @@ class FocusMetering(
      * @param surfaceRotationDegrees The current Surface orientation in degrees.
      * @return Relative rotation of the camera sensor output.
      */
+    @IntRange(from = 0, to = 359)
     private fun getSensorRotationDegrees(
         context: Context,
         cameraId: String,
-        surfaceRotationDegrees: Int = 0
+        @IntRange(from = 0, to = 359) surfaceRotationDegrees: Int = 0
     ): Int {
         val characteristics = context.getCameraCharacteristics(cameraId)
         val sensorOrientationDegrees =
@@ -853,9 +855,10 @@ class FocusMetering(
         )
     }
 
+    @IntRange(from = 0, to = 359)
     private fun getRelativeRotationDegrees(
-        sourceRotationDegrees: Int,
-        destRotationDegrees: Int,
+        @IntRange(from = 0, to = 359) sourceRotationDegrees: Int,
+        @IntRange(from = 0, to = 359) destRotationDegrees: Int,
         isFacingFront: Boolean
     ): Int {
         return if (isFacingFront) {
@@ -907,7 +910,7 @@ class FocusMetering(
             afPoints.map { normalizePoint(it, fovRect, relativeRotation) },
             aePoints.map { normalizePoint(it, fovRect, relativeRotation) },
             awbPoints.map { normalizePoint(it, fovRect, relativeRotation) },
-            if (context.isDevicePortrait) {
+            if (context.isApplicationPortrait) {
                 Rational(fovRect.height(), fovRect.width())
             } else {
                 Rational(fovRect.width(), fovRect.height())

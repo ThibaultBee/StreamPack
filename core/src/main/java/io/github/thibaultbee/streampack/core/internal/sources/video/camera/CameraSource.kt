@@ -88,7 +88,7 @@ class CameraSource(
             }
 
             field = value
-            orientationProvider.cameraId = value
+            infoProvider.cameraId = value
             runBlocking {
                 restartCamera()
             }
@@ -100,7 +100,7 @@ class CameraSource(
     override val timestampOffset = CameraHelper.getTimeOffsetToMonoClock(context, cameraId)
     override val hasOutputSurface = true
     override val hasFrames = false
-    override val orientationProvider = CameraOrientationProvider(context, cameraId)
+    override val infoProvider = CameraInfoProvider(context, cameraId)
 
     override fun getFrame(buffer: ByteBuffer): Frame {
         throw UnsupportedOperationException("Camera expects to run in Surface mode")

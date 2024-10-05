@@ -207,7 +207,7 @@ class PreviewView @JvmOverloads constructor(
                     it.videoSource.settings.focusMetering.onTap(
                         PointF(x, y),
                         Rect(this.x.toInt(), this.y.toInt(), width, height),
-                        OrientationUtils.getSurfaceOrientationDegrees(display.rotation)
+                        OrientationUtils.getSurfaceRotationDegrees(display.rotation)
                     )
                 } catch (t: Throwable) {
                     Logger.e(TAG, "Failed to focus at $x, $y", t)

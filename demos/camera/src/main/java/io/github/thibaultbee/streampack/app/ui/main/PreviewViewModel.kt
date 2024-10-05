@@ -32,6 +32,7 @@ import io.github.thibaultbee.streampack.app.utils.ObservableViewModel
 import io.github.thibaultbee.streampack.app.utils.StreamerManager
 import io.github.thibaultbee.streampack.app.utils.isEmpty
 import io.github.thibaultbee.streampack.core.streamers.observers.StreamerLifeCycleObserver
+import io.github.thibaultbee.streampack.core.streamers.orientation.DeviceRotationProvider
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
 import io.github.thibaultbee.streampack.ui.views.PreviewView
@@ -45,6 +46,8 @@ class PreviewViewModel(application: Application) : ObservableViewModel() {
         application,
         Configuration(application)
     )
+
+    private val rotationProvider = DeviceRotationProvider(application)
 
     val streamerLifeCycleObserver: StreamerLifeCycleObserver
         get() = streamerManager.streamerLifeCycleObserver
@@ -80,6 +83,7 @@ class PreviewViewModel(application: Application) : ObservableViewModel() {
                     Log.i(TAG, "Streamer is streaming: $it")
                 }
         }
+        rotationProvider.addListener(streamerManager)
     }
 
     fun inflateStreamerView(view: PreviewView) {
@@ -284,6 +288,7 @@ class PreviewViewModel(application: Application) : ObservableViewModel() {
     override fun onCleared() {
         super.onCleared()
         try {
+            rotationProvider.removeListener(streamerManager)
             streamerManager.release()
         } catch (t: Throwable) {
             Log.e(TAG, "streamer.release failed", t)

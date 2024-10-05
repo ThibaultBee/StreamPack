@@ -16,12 +16,14 @@
 package io.github.thibaultbee.streampack.core.internal.utils
 
 import android.view.Surface
+import androidx.annotation.IntRange
 
 object OrientationUtils {
     /**
-     * Returns the surface orientation in degrees from [Surface] orientation ([Surface.ROTATION_0], ...).
+     * Returns the surface orientation in degrees from [Surface] rotation ([Surface.ROTATION_0], ...).
      */
-    fun getSurfaceOrientationDegrees(surfaceOrientation: Int): Int {
+    @IntRange(from = 0, to = 359)
+    fun getSurfaceRotationDegrees(surfaceOrientation: Int): Int {
         return when (surfaceOrientation) {
             Surface.ROTATION_0 -> 0
             Surface.ROTATION_90 -> 90
