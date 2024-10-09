@@ -58,16 +58,16 @@ import java.util.concurrent.Executors
  * @param videoSourceInternal the video source implementation
  * @param audioSourceInternal the audio source implementation
  * @param endpointInternal the [IEndpointInternal] implementation
- * @param dispatcher the [CoroutineDispatcher] to execute suspendable methods. For test only. Do not change.
  */
 open class DefaultStreamer(
     protected val context: Context,
     protected val audioSourceInternal: IAudioSourceInternal?,
     protected val videoSourceInternal: IVideoSourceInternal?,
-    protected val endpointInternal: IEndpointInternal = DynamicEndpoint(context),
-    private val dispatcher: CoroutineDispatcher = Executors.newSingleThreadExecutor()
-        .asCoroutineDispatcher()
+    protected val endpointInternal: IEndpointInternal = DynamicEndpoint(context)
 ) : ICoroutineStreamer {
+    private val dispatcher: CoroutineDispatcher =
+        Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+
     private val _throwable = MutableStateFlow<Throwable?>(null)
     override val throwable: StateFlow<Throwable?> = _throwable
 
