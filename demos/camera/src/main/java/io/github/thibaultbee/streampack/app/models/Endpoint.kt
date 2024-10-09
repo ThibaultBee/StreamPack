@@ -28,6 +28,10 @@ sealed class Endpoint(
     class Mp4FileEndpoint : Endpoint(false, false, true, true, false, false)
     class SrtEndpoint : Endpoint(true, false, false, false, true, false)
     class RtmpEndpoint : Endpoint(false, true, false, false, false, true)
+
+    class WebmFileEndpoint : Endpoint(false, false, false, true, false, false)
+    class OggFileEndpoint : Endpoint(false, false, false, true, false, false)
+    class ThreeGPFileEndpoint : Endpoint(false, false, false, true, false, false)
 }
 
 class EndpointFactory(private val type: EndpointType) {
@@ -38,6 +42,9 @@ class EndpointFactory(private val type: EndpointType) {
             EndpointType.SRT -> Endpoint.SrtEndpoint()
             EndpointType.RTMP -> Endpoint.RtmpEndpoint()
             EndpointType.MP4_FILE -> Endpoint.Mp4FileEndpoint()
+            EndpointType.WEBM_FILE -> Endpoint.WebmFileEndpoint()
+            EndpointType.OGG_FILE -> Endpoint.OggFileEndpoint()
+            EndpointType.THREEGP_FILE -> Endpoint.ThreeGPFileEndpoint()
         }
     }
 }

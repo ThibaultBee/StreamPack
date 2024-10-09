@@ -31,7 +31,7 @@ import io.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import io.github.thibaultbee.streampack.app.utils.DialogUtils
 import io.github.thibaultbee.streampack.app.utils.PermissionManager
 import io.github.thibaultbee.streampack.app.utils.StreamerManager
-import io.github.thibaultbee.streampack.views.PreviewView
+import io.github.thibaultbee.streampack.ui.views.PreviewView
 
 class PreviewFragment : Fragment() {
     private lateinit var binding: MainFragmentBinding
@@ -86,6 +86,7 @@ class PreviewFragment : Fragment() {
             ) -> {
                 startStopLive()
             }
+
             else -> {
                 requestStreamerPermissionsLauncher.launch(
                     permissions.toTypedArray()
@@ -137,6 +138,11 @@ class PreviewFragment : Fragment() {
         requestCameraAndMicrophonePermissions()
     }
 
+    override fun onPause() {
+        super.onPause()
+        binding.liveButton.isChecked = false
+    }
+
     @SuppressLint("MissingPermission")
     private fun requestCameraAndMicrophonePermissions() {
         when {
@@ -144,8 +150,9 @@ class PreviewFragment : Fragment() {
                 requireContext(),
                 Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO
             ) -> {
-                createStreamer()
+                configureStreamer()
             }
+
             shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO) -> {
                 showPermissionError()
                 requestCameraAndMicrophonePermissionsLauncher.launch(
@@ -154,6 +161,7 @@ class PreviewFragment : Fragment() {
                     )
                 )
             }
+
             shouldShowRequestPermissionRationale(Manifest.permission.CAMERA) -> {
                 showPermissionError()
                 requestCameraAndMicrophonePermissionsLauncher.launch(
@@ -162,6 +170,7 @@ class PreviewFragment : Fragment() {
                     )
                 )
             }
+
             else -> {
                 requestCameraAndMicrophonePermissionsLauncher.launch(
                     arrayOf(
@@ -174,8 +183,8 @@ class PreviewFragment : Fragment() {
     }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    private fun createStreamer() {
-        viewModel.createStreamer()
+    private fun configureStreamer() {
+        viewModel.configureStreamer()
 
         // Set camera settings button when camera is started
         binding.preview.listener = object : PreviewView.Listener {
@@ -203,7 +212,7 @@ class PreviewFragment : Fragment() {
             if (permissions.toList().all {
                     it.second
                 }) {
-                createStreamer()
+                configureStreamer()
             } else {
                 showPermissionErrorAndFinish()
             }
