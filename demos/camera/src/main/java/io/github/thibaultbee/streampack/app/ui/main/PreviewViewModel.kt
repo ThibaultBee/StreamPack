@@ -29,46 +29,61 @@ import io.github.thibaultbee.streampack.app.BR
 import io.github.thibaultbee.streampack.app.utils.ObservableViewModel
 import io.github.thibaultbee.streampack.app.utils.StreamerManager
 import io.github.thibaultbee.streampack.app.utils.isEmpty
-import io.github.thibaultbee.streampack.error.StreamPackError
-import io.github.thibaultbee.streampack.listeners.OnConnectionListener
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.streamers.StreamerLifeCycleObserver
-import io.github.thibaultbee.streampack.utils.isFrameRateSupported
-import io.github.thibaultbee.streampack.views.PreviewView
+import io.github.thibaultbee.streampack.core.streamers.observers.StreamerLifeCycleObserver
+import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
+import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
+import io.github.thibaultbee.streampack.ui.views.PreviewView
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class PreviewViewModel(private val streamerManager: StreamerManager) : ObservableViewModel() {
     val streamerLifeCycleObserver: StreamerLifeCycleObserver
         get() = streamerManager.streamerLifeCycleObserver
 
-    val streamerError = MutableLiveData<String>()
+    val streamerError: MutableLiveData<String> = MutableLiveData()
 
     val requiredPermissions: List<String>
         get() = streamerManager.requiredPermissions
 
-    private val onErrorListener = object : OnErrorListener {
-        override fun onError(error: StreamPackError) {
-            Log.e(TAG, "onError", error)
-            streamerError.postValue("${error.javaClass.simpleName}: ${error.message}")
-        }
-    }
 
-    private val onConnectionListener = object : OnConnectionListener {
-        override fun onLost(message: String) {
-            streamerError.postValue("Connection lost: $message")
+    init {
+        viewModelScope.launch {
+            streamerManager.throwable.filterNotNull().filter { !it.isClosedException }
+                .map { "${it.javaClass.simpleName}: ${it.message}" }.collect {
+                    streamerError.postValue(it)
+                }
         }
-
-        override fun onFailed(message: String) {
-            // Not needed as we catch startStream
+        viewModelScope.launch {
+            streamerManager.throwable.filterNotNull().filter { it.isClosedException }
+                .map { "Connection lost: ${it.message}" }.collect {
+                    streamerError.postValue(it)
+                }
         }
-
-        override fun onSuccess() {
-            Log.i(TAG, "Connection succeeded")
+        viewModelScope.launch {
+            streamerManager.isOpen
+                .collect {
+                    Log.i(TAG, "Streamer is opened: $it")
+                }
+        }
+        viewModelScope.launch {
+            streamerManager.isStreaming
+                .collect {
+                    Log.i(TAG, "Streamer is streaming: $it")
+                }
         }
     }
 
     fun inflateStreamerView(view: PreviewView) {
-        streamerManager.inflateStreamerView(view)
+        viewModelScope.launch {
+            try {
+                streamerManager.inflateStreamerView(view)
+            } catch (t: Throwable) {
+                Log.e(TAG, "inflateStreamerView failed", t)
+                streamerError.postValue("Preview: ${t.message ?: "Unknown error"}")
+            }
+        }
     }
 
     fun onPreviewStarted() {
@@ -80,12 +95,10 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
     }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    fun createStreamer() {
+    fun configureStreamer() {
         viewModelScope.launch {
             try {
-                streamerManager.rebuildStreamer()
-                streamerManager.onErrorListener = onErrorListener
-                streamerManager.onConnectionListener = onConnectionListener
+                streamerManager.configureStreamer()
                 Log.d(TAG, "Streamer is created")
             } catch (e: Throwable) {
                 Log.e(TAG, "createStreamer failed", e)
@@ -129,9 +142,9 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
         try {
             streamerManager.toggleCamera()
             notifyCameraChanged()
-        } catch (e: Exception) {
-            Log.e(TAG, "toggleCamera failed", e)
-            streamerError.postValue("toggleCamera: ${e.message ?: "Unknown error"}")
+        } catch (t: Throwable) {
+            Log.e(TAG, "toggleCamera failed", t)
+            streamerError.postValue("toggleCamera: ${t.message ?: "Unknown error"}")
         }
     }
 
@@ -160,8 +173,9 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
     val exposureCompensationRange = MutableLiveData<Range<Int>>()
     val exposureCompensationStep = MutableLiveData<Rational>()
     var exposureCompensation: Float
-        @Bindable get() = streamerManager.cameraSettings?.exposure?.let { it.compensation * it.availableCompensationStep.toFloat() }
-            ?: 0f
+        @Bindable get() =
+            streamerManager.cameraSettings?.exposure?.let { it.compensation * it.availableCompensationStep.toFloat() }
+                ?: 0f
         set(value) {
             streamerManager.cameraSettings?.exposure?.let {
                 it.compensation = (value / it.availableCompensationStep.toFloat()).toInt()
@@ -264,8 +278,8 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
         super.onCleared()
         try {
             streamerManager.release()
-        } catch (e: Exception) {
-            Log.e(TAG, "streamer.release failed", e)
+        } catch (t: Throwable) {
+            Log.e(TAG, "streamer.release failed", t)
         }
     }
 
