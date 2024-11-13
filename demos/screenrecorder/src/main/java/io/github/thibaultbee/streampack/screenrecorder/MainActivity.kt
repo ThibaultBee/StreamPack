@@ -138,7 +138,8 @@ class MainActivity : AppCompatActivity() {
                     {
                         binding.liveButton.isChecked = false
                         Log.i(TAG, "Service disconnected")
-                    })
+                    },
+                    enableAudio = configuration.audio.enable)
             }
         }
 
