@@ -25,27 +25,18 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import io.github.thibaultbee.streampack.app.configuration.Configuration
+import androidx.fragment.app.viewModels
 import io.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import io.github.thibaultbee.streampack.app.utils.DialogUtils
 import io.github.thibaultbee.streampack.app.utils.PermissionManager
-import io.github.thibaultbee.streampack.app.utils.StreamerManager
 import io.github.thibaultbee.streampack.ui.views.PreviewView
+
 
 class PreviewFragment : Fragment() {
     private lateinit var binding: MainFragmentBinding
 
-    private val viewModel: PreviewViewModel by lazy {
-        ViewModelProvider(
-            this,
-            PreviewViewModelFactory(
-                StreamerManager(
-                    requireContext(),
-                    Configuration(requireContext())
-                )
-            )
-        )[PreviewViewModel::class.java]
+    private val previewViewModel: PreviewViewModel by viewModels {
+        PreviewViewModelFactory(requireActivity().application)
     }
 
     override fun onCreateView(
@@ -54,7 +45,7 @@ class PreviewFragment : Fragment() {
     ): View {
         binding = MainFragmentBinding.inflate(inflater, container, false)
         binding.lifecycleOwner = this
-        binding.viewmodel = viewModel
+        binding.viewmodel = previewViewModel
         bindProperties()
         return binding.root
     }
@@ -62,10 +53,10 @@ class PreviewFragment : Fragment() {
     @SuppressLint("MissingPermission")
     private fun bindProperties() {
         binding.liveButton.setOnClickListener {
-            requestStreamerPermissions(viewModel.requiredPermissions)
+            requestStreamerPermissions(previewViewModel.requiredPermissions)
         }
 
-        viewModel.streamerError.observe(viewLifecycleOwner) {
+        previewViewModel.streamerError.observe(viewLifecycleOwner) {
             showError("Oops", it)
         }
     }
@@ -103,7 +94,7 @@ class PreviewFragment : Fragment() {
          * [ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE] in [onCreate] or [onResume].
          */
         requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
-        viewModel.startStream()
+        previewViewModel.startStream()
     }
 
     private fun unLockScreen() {
@@ -111,7 +102,7 @@ class PreviewFragment : Fragment() {
     }
 
     private fun stopStream() {
-        viewModel.stopStream()
+        previewViewModel.stopStream()
         unLockScreen()
     }
 
@@ -184,24 +175,24 @@ class PreviewFragment : Fragment() {
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     private fun configureStreamer() {
-        viewModel.configureStreamer()
+        previewViewModel.configureStreamer()
 
         // Set camera settings button when camera is started
         binding.preview.listener = object : PreviewView.Listener {
             override fun onPreviewStarted() {
-                viewModel.onPreviewStarted()
+                previewViewModel.onPreviewStarted()
             }
 
             override fun onZoomRationOnPinchChanged(zoomRatio: Float) {
-                viewModel.onZoomRationOnPinchChanged()
+                previewViewModel.onZoomRationOnPinchChanged()
             }
         }
 
         // Wait till streamer exists to set it to the SurfaceView.
-        viewModel.inflateStreamerView(binding.preview)
+        previewViewModel.inflateStreamerView(binding.preview)
 
         // Wait till streamer exists
-        lifecycle.addObserver(viewModel.streamerLifeCycleObserver)
+        lifecycle.addObserver(previewViewModel.streamerLifeCycleObserver)
     }
 
     @SuppressLint("MissingPermission")
