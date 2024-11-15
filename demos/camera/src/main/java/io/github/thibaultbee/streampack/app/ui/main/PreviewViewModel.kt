@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.app.ui.main
 
 import android.Manifest
+import android.app.Application
 import android.content.Context
 import android.hardware.camera2.CaptureResult
 import android.util.Log
@@ -26,6 +27,7 @@ import androidx.databinding.Bindable
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import io.github.thibaultbee.streampack.app.BR
+import io.github.thibaultbee.streampack.app.configuration.Configuration
 import io.github.thibaultbee.streampack.app.utils.ObservableViewModel
 import io.github.thibaultbee.streampack.app.utils.StreamerManager
 import io.github.thibaultbee.streampack.app.utils.isEmpty
@@ -38,7 +40,12 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-class PreviewViewModel(private val streamerManager: StreamerManager) : ObservableViewModel() {
+class PreviewViewModel(application: Application) : ObservableViewModel() {
+    private val streamerManager = StreamerManager(
+        application,
+        Configuration(application)
+    )
+
     val streamerLifeCycleObserver: StreamerLifeCycleObserver
         get() = streamerManager.streamerLifeCycleObserver
 
