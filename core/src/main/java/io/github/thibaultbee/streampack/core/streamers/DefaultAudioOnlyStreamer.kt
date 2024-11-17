@@ -19,7 +19,7 @@ import android.content.Context
 import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSourceInternal
-import io.github.thibaultbee.streampack.core.internal.sources.audio.MicrophoneSource
+import io.github.thibaultbee.streampack.core.internal.sources.audio.audiorecord.MicrophoneSource.Companion.buildDefaultMicrophoneSource
 
 /**
  * A [DefaultStreamer] that sends only microphone frames.
@@ -29,7 +29,7 @@ import io.github.thibaultbee.streampack.core.internal.sources.audio.MicrophoneSo
  */
 open class DefaultAudioOnlyStreamer(
     context: Context,
-    audioSourceInternal: IAudioSourceInternal? = MicrophoneSource(),
+    audioSourceInternal: IAudioSourceInternal? = buildDefaultMicrophoneSource(),
     internalEndpoint: IEndpointInternal = DynamicEndpoint(context)
 ) : DefaultStreamer(
     context = context,

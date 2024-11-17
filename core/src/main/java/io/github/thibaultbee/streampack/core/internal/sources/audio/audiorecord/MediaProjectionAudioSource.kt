@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.internal.sources.audio
+package io.github.thibaultbee.streampack.core.internal.sources.audio.audiorecord
 
 import android.content.Context
 import android.media.AudioAttributes
@@ -33,18 +33,12 @@ import io.github.thibaultbee.streampack.core.internal.sources.IMediaProjectionSo
  * captures audio played by other apps.
  *
  * @param context The application context
- * @param enableAcousticEchoCanceler [Boolean.true] to enable AcousticEchoCanceler
- * @param enableNoiseSuppressor [Boolean.true] to enable NoiseSuppressor
  */
 @RequiresApi(Build.VERSION_CODES.Q)
 fun MediaProjectionAudioSource(
     context: Context,
-    enableAcousticEchoCanceler: Boolean = true,
-    enableNoiseSuppressor: Boolean = true
 ) = MediaProjectionAudioSource(
     context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager,
-    enableAcousticEchoCanceler,
-    enableNoiseSuppressor
 )
 
 /**
@@ -52,15 +46,11 @@ fun MediaProjectionAudioSource(
  * captures audio played by other apps.
  *
  * @param mediaProjectionManager The media projection manager
- * @param enableAcousticEchoCanceler [Boolean.true] to enable AcousticEchoCanceler
- * @param enableNoiseSuppressor [Boolean.true] to enable NoiseSuppressor
  */
 @RequiresApi(Build.VERSION_CODES.Q)
 class MediaProjectionAudioSource(
     private val mediaProjectionManager: MediaProjectionManager,
-    private val enableAcousticEchoCanceler: Boolean = true,
-    private val enableNoiseSuppressor: Boolean = true
-) : AudioRecordSource(enableAcousticEchoCanceler, enableNoiseSuppressor), IMediaProjectionSource {
+) : AudioRecordSource(), IMediaProjectionSource {
     private var mediaProjection: MediaProjection? = null
 
     /**

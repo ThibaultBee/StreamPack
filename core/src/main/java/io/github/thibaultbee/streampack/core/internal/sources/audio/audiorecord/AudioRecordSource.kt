@@ -13,37 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.internal.sources.audio
+package io.github.thibaultbee.streampack.core.internal.sources.audio.audiorecord
 
 import android.Manifest
 import android.media.AudioRecord
 import android.media.AudioTimestamp
 import android.media.MediaFormat
-import android.media.audiofx.AcousticEchoCanceler
-import android.media.audiofx.NoiseSuppressor
+import android.media.audiofx.AudioEffect
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.internal.data.Frame
-import io.github.thibaultbee.streampack.core.internal.sources.IFrameSource
+import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.internal.sources.audio.audiorecord.AudioRecordEffect.Companion.isValidUUID
+import io.github.thibaultbee.streampack.core.internal.sources.audio.audiorecord.AudioRecordEffect.Factory.Companion.getFactoryForEffectType
 import io.github.thibaultbee.streampack.core.internal.utils.TimeUtils
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.type
 import io.github.thibaultbee.streampack.core.logger.Logger
 import java.nio.ByteBuffer
+import java.util.UUID
 
 /**
  * The [AudioRecordSource] class is an implementation of [IAudioSourceInternal] that captures audio
  * from [AudioRecord].
- *
- * @param enableAcousticEchoCanceler [Boolean.true] to enable AcousticEchoCanceler
- * @param enableNoiseSuppressor [Boolean.true] to enable NoiseSuppressor
  */
-sealed class AudioRecordSource(
-    private val enableAcousticEchoCanceler: Boolean = true,
-    private val enableNoiseSuppressor: Boolean = true
-) : IAudioSourceInternal, IFrameSource<AudioConfig> {
+sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
     private var audioRecord: AudioRecord? = null
 
     private var processor: EffectProcessor? = null
+    private var pendingAudioEffects = mutableListOf<UUID>()
 
     private var mutedByteArray: ByteArray? = null
     override var isMuted: Boolean = false
@@ -87,11 +85,20 @@ sealed class AudioRecordSource(
         mutedByteArray = ByteArray(bufferSize)
 
         audioRecord = buildAudioRecord(config, bufferSize).also {
-            processor = EffectProcessor(
-                enableAcousticEchoCanceler,
-                enableNoiseSuppressor,
-                it.audioSessionId
-            )
+            val previousEffects = processor?.getAll() ?: emptyList()
+            processor?.clear()
+
+            // Add effects
+            processor = EffectProcessor(it.audioSessionId).apply {
+                (previousEffects + pendingAudioEffects).forEach { effectType ->
+                    try {
+                        add(effectType)
+                    } catch (t: Throwable) {
+                        Logger.e(TAG, "Failed to add effect: $effectType: ${t.message}")
+                    }
+                }
+                pendingAudioEffects.clear()
+            }
 
             if (it.state != AudioRecord.STATE_INITIALIZED) {
                 throw IllegalArgumentException("Failed to initialized audio source with config: $config")
@@ -100,7 +107,14 @@ sealed class AudioRecordSource(
     }
 
     override fun startStream() {
+        if (isRunning) {
+            Logger.d(TAG, "Already running")
+            return
+        }
         val audioRecord = requireNotNull(audioRecord)
+
+        processor?.setEnabled(true)
+
         audioRecord.startRecording()
     }
 
@@ -112,17 +126,19 @@ sealed class AudioRecordSource(
 
         // Stop audio record
         audioRecord?.stop()
+
+        processor?.setEnabled(false)
     }
 
     override fun release() {
         mutedByteArray = null
 
+        processor?.clear()
+        processor = null
+
         // Release audio record
         audioRecord?.release()
         audioRecord = null
-
-        processor?.release()
-        processor = null
     }
 
     private fun getTimestamp(audioRecord: AudioRecord): Long {
@@ -182,6 +198,42 @@ sealed class AudioRecordSource(
         else -> "Unknown audio record error: $audioRecordError"
     }
 
+    /**
+     * Adds and enables an effect to the audio source.
+     *
+     * Get supported effects with [getSupportedEffectTypes].
+     */
+    override fun addEffect(effectType: UUID): Boolean {
+        require(isValidUUID(effectType)) { "Unsupported effect type: $effectType" }
+        require(isEffectAvailable(effectType)) { "Effect $effectType is not available" }
+
+        val processor = processor
+        return if (processor == null) {
+            pendingAudioEffects.add(effectType)
+            false
+        } else {
+            try {
+                processor.add(effectType)
+            } catch (t: Throwable) {
+                Logger.e(TAG, "Failed to add effect: $effectType: ${t.message}")
+                false
+            }
+        }
+    }
+
+    /**
+     * Removes an effect from the audio source.
+     */
+    override fun removeEffect(effectType: UUID) {
+        val processor = processor
+        if (processor == null) {
+            pendingAudioEffects.remove(effectType)
+            return
+        } else {
+            processor.remove(effectType)
+        }
+    }
+
     companion object {
         private const val TAG = "AudioSource"
 
@@ -191,81 +243,80 @@ sealed class AudioRecordSource(
                 MediaFormat.MIMETYPE_AUDIO_RAW
             )
         }
+
+        /**
+         * Get available effects.
+         *
+         * @return [List] of supported effects.
+         * @see AudioEffect
+         */
+        val availableEffect: List<UUID>
+            get() = AudioRecordEffect.availableEffects
+
+        /**
+         * Whether the effect is available.
+         *
+         * @param effectType Effect type
+         * @return true if effect is available
+         */
+        fun isEffectAvailable(effectType: UUID): Boolean {
+            return AudioRecordEffect.isEffectAvailable(effectType)
+        }
     }
 
-    private class EffectProcessor(
-        enableAcousticEchoCanceler: Boolean,
-        enableNoiseSuppressor: Boolean,
-        audioSessionId: Int
-    ) {
-        private val acousticEchoCanceler =
-            if (enableAcousticEchoCanceler) initAcousticEchoCanceler(audioSessionId) else null
 
-        private val noiseSuppressor =
-            if (enableNoiseSuppressor) initNoiseSuppressor(audioSessionId) else null
+    private class EffectProcessor(private val audioSessionId: Int) {
+        private val audioEffects: MutableSet<AudioEffect> = mutableSetOf()
 
+        init {
+            require(audioSessionId >= 0) { "Invalid audio session ID: $audioSessionId" }
+        }
+
+        fun getAll(): List<UUID> {
+            return audioEffects.map { it.type }
+        }
+
+        fun add(effectType: UUID): Boolean {
+            require(isValidUUID(effectType)) { "Unsupported effect type: $effectType" }
+
+            val previousEffect = audioEffects.firstOrNull { it.type == effectType }
+            if (previousEffect != null) {
+                Logger.w(TAG, "Effect ${previousEffect.descriptor.name} already enabled")
+                return false
+            }
+
+            val factory = getFactoryForEffectType(effectType)
+            factory.build(audioSessionId).let {
+                audioEffects.add(it)
+                return true
+            }
+        }
+
+        fun setEnabled(enabled: Boolean) {
+            audioEffects.forEach { it.enabled = enabled }
+        }
+
+        fun remove(effectType: UUID) {
+            require(isValidUUID(effectType)) { "Unknown effect type: $effectType" }
+
+            val effect = audioEffects.firstOrNull { it.descriptor.type == effectType }
+            if (effect != null) {
+                effect.release()
+                audioEffects.remove(effect)
+            }
+        }
 
         fun release() {
-            acousticEchoCanceler?.release()
-            noiseSuppressor?.release()
+            audioEffects.forEach { it.release() }
+        }
+
+        fun clear() {
+            release()
+            audioEffects.clear()
         }
 
         companion object {
-            private fun initNoiseSuppressor(audioSessionId: Int): NoiseSuppressor? {
-                if (!NoiseSuppressor.isAvailable()) {
-                    Logger.w(TAG, "Noise suppressor is not available")
-                    return null
-                }
-
-                val noiseSuppressor = try {
-                    NoiseSuppressor.create(audioSessionId)
-                } catch (t: Throwable) {
-                    Logger.e(TAG, "Failed to create noise suppressor", t)
-                    return null
-                }
-
-                if (noiseSuppressor == null) {
-                    Logger.w(TAG, "Failed to create noise suppressor")
-                    return null
-                }
-
-                val result = noiseSuppressor.setEnabled(true)
-                if (result != NoiseSuppressor.SUCCESS) {
-                    noiseSuppressor.release()
-                    Logger.w(TAG, "Failed to enable noise suppressor")
-                    return null
-                }
-
-                return noiseSuppressor
-            }
-
-            private fun initAcousticEchoCanceler(audioSessionId: Int): AcousticEchoCanceler? {
-                if (!AcousticEchoCanceler.isAvailable()) {
-                    Logger.w(TAG, "Acoustic echo canceler is not available")
-                    return null
-                }
-
-                val acousticEchoCanceler = try {
-                    AcousticEchoCanceler.create(audioSessionId)
-                } catch (t: Throwable) {
-                    Logger.e(TAG, "Failed to create acoustic echo canceler", t)
-                    return null
-                }
-
-                if (acousticEchoCanceler == null) {
-                    Logger.w(TAG, "Failed to create acoustic echo canceler")
-                    return null
-                }
-
-                val result = acousticEchoCanceler.setEnabled(true)
-                if (result != AcousticEchoCanceler.SUCCESS) {
-                    acousticEchoCanceler.release()
-                    Logger.w(TAG, "Failed to enable acoustic echo canceler")
-                    return null
-                }
-
-                return acousticEchoCanceler
-            }
+            private const val TAG = "EffectProcessor"
         }
     }
 }

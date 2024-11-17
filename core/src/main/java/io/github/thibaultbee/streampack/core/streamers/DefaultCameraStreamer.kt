@@ -24,7 +24,7 @@ import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescripto
 import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSourceInternal
-import io.github.thibaultbee.streampack.core.internal.sources.audio.MicrophoneSource
+import io.github.thibaultbee.streampack.core.internal.sources.audio.audiorecord.MicrophoneSource.Companion.buildDefaultMicrophoneSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
@@ -49,7 +49,7 @@ fun DefaultCameraStreamer(
     @RotationValue defaultRotation: Int = context.deviceRotation
 ) = DefaultCameraStreamer(
     context,
-    if (enableMicrophone) MicrophoneSource() else null,
+    if (enableMicrophone) buildDefaultMicrophoneSource() else null,
     internalEndpoint,
     defaultRotation
 )
