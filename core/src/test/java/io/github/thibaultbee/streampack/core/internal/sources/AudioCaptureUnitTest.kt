@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.internal.sources
 
-import io.github.thibaultbee.streampack.core.internal.sources.audio.MicrophoneSource
+import io.github.thibaultbee.streampack.core.internal.sources.audio.audiorecord.MicrophoneSource
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.internal.utils.FakeLogger
 import org.junit.Assert
