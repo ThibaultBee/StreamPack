@@ -13,25 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.internal.sources.audio
+package io.github.thibaultbee.streampack.core.internal.sources.audio.audiorecord
 
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.media.audiofx.AudioEffect
 import android.os.Build
 import io.github.thibaultbee.streampack.core.data.AudioConfig
 
 /**
  * The [MicrophoneSource] class is an implementation of [AudioRecordSource] that captures audio
  * from the microphone.
- *
- * @param enableAcousticEchoCanceler [Boolean.true] to enable AcousticEchoCanceler
- * @param enableNoiseSuppressor [Boolean.true] to enable NoiseSuppressor
  */
-class MicrophoneSource(
-    private val enableAcousticEchoCanceler: Boolean = true,
-    private val enableNoiseSuppressor: Boolean = true
-) : AudioRecordSource(enableAcousticEchoCanceler, enableNoiseSuppressor) {
+class MicrophoneSource : AudioRecordSource() {
     override fun buildAudioRecord(config: AudioConfig, bufferSize: Int): AudioRecord {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val audioFormat = AudioFormat.Builder()
@@ -53,6 +48,22 @@ class MicrophoneSource(
                 config.byteFormat,
                 bufferSize
             )
+        }
+    }
+
+    companion object {
+        /**
+         * Build a [MicrophoneSource] with default effects.
+         */
+        fun buildDefaultMicrophoneSource(): MicrophoneSource {
+            return MicrophoneSource().apply {
+                if (isEffectAvailable(AudioEffect.EFFECT_TYPE_AEC)) {
+                    addEffect(AudioEffect.EFFECT_TYPE_AEC)
+                }
+                if (isEffectAvailable(AudioEffect.EFFECT_TYPE_NS)) {
+                    addEffect(AudioEffect.EFFECT_TYPE_NS)
+                }
+            }
         }
     }
 }
