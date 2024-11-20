@@ -32,6 +32,7 @@ import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescri
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
+import io.github.thibaultbee.streampack.core.streamers.DefaultAudioOnlyStreamer
 import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
@@ -51,7 +52,7 @@ class StreamerManager(
     private val context: Context,
     private val configuration: Configuration
 ) : IRotationProvider.Listener {
-    private val streamer: ICoroutineStreamer =
+    private var streamer: ICoroutineStreamer =
         DefaultCameraStreamer(context, configuration.audio.enable)
 
     val throwable: StateFlow<Throwable?> = streamer.throwable
@@ -105,6 +106,20 @@ class StreamerManager(
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun configureStreamer() {
+        require(configuration.video.enable || configuration.audio.enable) { "At least one of audio or video must be enabled" }
+        
+        // Change streamer if needed
+        if (configuration.video.enable) {
+            if (streamer !is DefaultCameraStreamer) {
+                streamer = DefaultCameraStreamer(context, configuration.audio.enable)
+            }
+        } else {
+            if (streamer !is DefaultAudioOnlyStreamer) {
+                streamer = DefaultAudioOnlyStreamer(context)
+            }
+        }
+
+        // Configure
         val videoConfig = VideoConfig(
             mimeType = configuration.video.encoder,
             startBitrate = configuration.video.bitrate * 1000, // to b/s
@@ -132,8 +147,10 @@ class StreamerManager(
     }
 
     suspend fun inflateStreamerView(view: PreviewView) {
-        view.streamer = (streamer as ICameraStreamer?)
-        view.startPreview()
+        if (streamer is ICameraStreamer) {
+            view.streamer = streamer as ICameraStreamer
+            view.startPreview()
+        }
     }
 
     suspend fun startStream() {
@@ -233,21 +250,28 @@ class StreamerManager(
     }
 
     fun toggleCamera() {
-        (streamer as ICameraStreamer?)?.let {
+        if (streamer is ICameraStreamer) {
+            val streamer = (streamer as ICameraStreamer)
             // Handle devices with only one camera
-            val cameras = if (context.isBackCamera(it.camera)) {
+            val cameras = if (context.isBackCamera(streamer.camera)) {
                 context.frontCameras
             } else {
                 context.backCameras
             }
             if (cameras.isNotEmpty()) {
-                it.camera = cameras[0]
+                streamer.camera = cameras[0]
             }
         }
     }
 
     val cameraSettings: CameraSettings?
-        get() = (streamer as ICameraStreamer?)?.videoSource?.settings
+        get() {
+            return if (streamer is ICameraStreamer) {
+                (streamer as ICameraStreamer).videoSource.settings
+            } else {
+                null
+            }
+        }
 
 
     var isMuted: Boolean
