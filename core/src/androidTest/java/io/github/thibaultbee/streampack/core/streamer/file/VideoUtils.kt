@@ -11,6 +11,7 @@ import android.media.MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH
 import android.net.Uri
 import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.data.VideoConfig
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.isDevicePortrait
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import java.io.File
@@ -35,14 +36,28 @@ object VideoUtils {
             // Video
             if (videoConfig != null) {
                 assertEquals("yes", metadataRetriever.extractMetadata(METADATA_KEY_HAS_VIDEO)!!)
-                assertEquals(
-                    videoConfig.resolution.height,
-                    metadataRetriever.extractMetadata(METADATA_KEY_VIDEO_WIDTH)!!.toInt()
-                )
-                assertEquals(
-                    videoConfig.resolution.width,
-                    metadataRetriever.extractMetadata(METADATA_KEY_VIDEO_HEIGHT)!!.toInt()
-                )
+                /**
+                 * Warning: it doesn't work if device is rotated during the test
+                 */
+                if (context.isDevicePortrait) {
+                    assertEquals(
+                        videoConfig.resolution.height,
+                        metadataRetriever.extractMetadata(METADATA_KEY_VIDEO_WIDTH)!!.toInt()
+                    )
+                    assertEquals(
+                        videoConfig.resolution.width,
+                        metadataRetriever.extractMetadata(METADATA_KEY_VIDEO_HEIGHT)!!.toInt()
+                    )
+                } else {
+                    assertEquals(
+                        videoConfig.resolution.width,
+                        metadataRetriever.extractMetadata(METADATA_KEY_VIDEO_WIDTH)!!.toInt()
+                    )
+                    assertEquals(
+                        videoConfig.resolution.height,
+                        metadataRetriever.extractMetadata(METADATA_KEY_VIDEO_HEIGHT)!!.toInt()
+                    )
+                }
             }
 
             // Audio
