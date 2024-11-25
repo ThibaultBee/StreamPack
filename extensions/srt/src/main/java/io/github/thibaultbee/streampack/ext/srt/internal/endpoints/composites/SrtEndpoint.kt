@@ -32,7 +32,7 @@ fun SrtEndpoint(serviceInfo: TSServiceInfo = createDefaultTsServiceInfo()) = Srt
  * A SRT endpoint.
  * It encapsulates a [TSMuxer] and a [SrtSink].
  */
-class SrtEndpoint :
+class SrtEndpoint internal constructor() :
     CompositeEndpoint(TSMuxer(), SrtSink()) {
     fun addService(serviceInfo: TSServiceInfo = createDefaultTsServiceInfo()) {
         (muxer as TSMuxer).addService(serviceInfo)
