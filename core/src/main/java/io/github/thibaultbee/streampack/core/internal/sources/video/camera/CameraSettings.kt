@@ -60,7 +60,7 @@ import java.util.concurrent.TimeUnit
  * Use to change camera settings.
  * This object is returned by [DefaultCameraStreamer.videoSource.settings].
  */
-class CameraSettings(context: Context, cameraController: CameraController) {
+class CameraSettings(context: Context, private val cameraController: CameraController) {
     /**
      * Current camera flash API.
      */
@@ -101,6 +101,26 @@ class CameraSettings(context: Context, cameraController: CameraController) {
      */
     val focusMetering =
         FocusMetering(context, cameraController, zoom, focus, exposure, whiteBalance)
+
+    /**
+     * Directly gets a [CaptureResult] from the camera.
+     *
+     * @param key the key to get
+     * @return the value associated with the key
+     */
+    fun <T> get(key: CaptureRequest.Key<T?>): T? {
+        return cameraController.getSetting(key)
+    }
+
+    /**
+     * Directly sets a [CaptureRequest] key to the camera.
+     *
+     * @param key the key to set
+     * @param value the value to set
+     */
+    fun <T> set(key: CaptureRequest.Key<T>, value: T) {
+        cameraController.setRepeatingSetting(key, value)
+    }
 }
 
 class Flash(private val context: Context, private val cameraController: CameraController) {

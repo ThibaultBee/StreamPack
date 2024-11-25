@@ -332,7 +332,7 @@ class CameraController(
         )
     }
 
-    fun <T> getSetting(key: CaptureRequest.Key<T>?): T? {
+    fun <T> getSetting(key: CaptureRequest.Key<T?>): T? {
         return captureRequest?.get(key)
     }
 
