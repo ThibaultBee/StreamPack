@@ -15,8 +15,11 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.utils
 
-open class TSOutputCallback(var listener: io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal.IMuxerListener? = null) {
-    protected fun writePacket(packet: io.github.thibaultbee.streampack.core.internal.data.SrtPacket) {
+import io.github.thibaultbee.streampack.core.internal.data.SrtPacket
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal
+
+open class TSOutputCallback(var listener: IMuxerInternal.IMuxerListener? = null) {
+    protected fun writePacket(packet: SrtPacket) {
         packet.buffer.rewind()
         listener?.onOutputFrame(packet)
     }
