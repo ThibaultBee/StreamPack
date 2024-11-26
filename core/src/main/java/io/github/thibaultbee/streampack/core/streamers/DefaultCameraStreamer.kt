@@ -102,7 +102,10 @@ open class DefaultCameraStreamer(
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
             videoSource.cameraId = value
-            updateTransformation()
+            // If config has not been set yet, [configure] will update transformation later.
+            if (videoConfig != null) {
+                updateTransformation()
+            }
         }
 
     /**
