@@ -602,6 +602,20 @@ open class DefaultStreamer(
 
         // Only reset if the encoder is the same. Otherwise, it is already configured.
         if (previousVideoEncoder == videoEncoderInternal) {
+            /**
+             * Workaround to avoid spurious frame from the SurfaceTexture on the new stream when
+             * SurfaceTexture is not changed.
+             */
+            surfaceProcessor?.let { processor ->
+                videoSourceInternal?.let { source ->
+                    source.outputSurface?.let { surface -> processor.removeInputSurface(surface) }
+                    source.outputSurface = processor.createInputSurface(
+                        source.infoProvider.getSurfaceSize(
+                            videoConfig!!.resolution, targetRotation
+                        )
+                    )
+                }
+            }
             videoEncoderInternal?.reset()
         }
     }
