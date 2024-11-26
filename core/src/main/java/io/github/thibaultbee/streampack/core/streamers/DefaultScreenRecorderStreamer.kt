@@ -29,7 +29,7 @@ import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.internal.sources.audio.audiorecord.MicrophoneSource.Companion.buildDefaultMicrophoneSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.mediaprojection.MediaProjectionVideoSource
 import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
-import io.github.thibaultbee.streampack.core.internal.utils.extensions.deviceRotation
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.displayRotation
 
 /**
  * A [DefaultStreamer] that sends microphone and screen frames.
@@ -43,7 +43,7 @@ fun DefaultScreenRecorderStreamer(
     context: Context,
     enableMicrophone: Boolean = true,
     internalEndpoint: IEndpointInternal = DynamicEndpoint(context),
-    @RotationValue defaultRotation: Int = context.deviceRotation
+    @RotationValue defaultRotation: Int = context.displayRotation
 ) = DefaultScreenRecorderStreamer(
     context,
     if (enableMicrophone) buildDefaultMicrophoneSource() else null,
@@ -63,7 +63,7 @@ open class DefaultScreenRecorderStreamer(
     context: Context,
     audioSourceInternal: IAudioSourceInternal?,
     internalEndpoint: IEndpointInternal = DynamicEndpoint(context),
-    @RotationValue defaultRotation: Int = context.deviceRotation
+    @RotationValue defaultRotation: Int = context.displayRotation
 ) : DefaultStreamer(
     context = context,
     audioSourceInternal = audioSourceInternal,

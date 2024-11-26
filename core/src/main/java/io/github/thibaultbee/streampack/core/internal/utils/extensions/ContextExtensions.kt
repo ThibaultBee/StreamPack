@@ -29,24 +29,24 @@ import io.github.thibaultbee.streampack.core.internal.utils.WindowUtils
 import io.github.thibaultbee.streampack.core.utils.extensions.is90Multiple
 
 /**
- * Returns the device orientation in degrees from the natural orientation.
+ * Returns the display orientation in degrees from the natural orientation.
  *
- * @return the device orientation in degrees
+ * @return the display orientation in degrees
  */
-val Context.deviceRotationDegrees: Int
+val Context.displayRotationDegrees: Int
     @IntRange(
         from = 0,
         to = 359
     )
-    get() = deviceRotation.rotationToDegrees
+    get() = displayRotation.rotationToDegrees
 
 /**
- * Returns the device orientation in degrees from the natural orientation.
+ * Returns the display orientation in degrees from the natural orientation.
  *
- * @return the device orientation as [Surface.ROTATION_0], [Surface.ROTATION_90], [Surface.ROTATION_180] or [Surface.ROTATION_270]
+ * @return the display orientation as [Surface.ROTATION_0], [Surface.ROTATION_90], [Surface.ROTATION_180] or [Surface.ROTATION_270]
  */
 
-val Context.deviceRotation: Int
+val Context.displayRotation: Int
     @RotationValue
     get() {
         return ContextCompat.getDisplayOrDefault(this).rotation
@@ -56,7 +56,7 @@ val Context.deviceRotation: Int
  * Whether the device is in portrait orientation.
  */
 val Context.isDevicePortrait: Boolean
-    get() = isRotationPortrait(deviceRotation)
+    get() = isRotationPortrait(displayRotation)
 
 /**
  * Whether the device is in landscape orientation.
