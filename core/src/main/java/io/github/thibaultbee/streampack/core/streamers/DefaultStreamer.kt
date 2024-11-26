@@ -43,7 +43,7 @@ import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
-import io.github.thibaultbee.streampack.core.internal.utils.extensions.deviceRotation
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
@@ -72,7 +72,7 @@ open class DefaultStreamer(
     protected val audioSourceInternal: IAudioSourceInternal?,
     protected val videoSourceInternal: IVideoSourceInternal?,
     protected val endpointInternal: IEndpointInternal = DynamicEndpoint(context),
-    @RotationValue defaultRotation: Int = context.deviceRotation
+    @RotationValue defaultRotation: Int = context.displayRotation
 ) : ICoroutineStreamer {
     private val dispatcher: CoroutineDispatcher =
         Executors.newSingleThreadExecutor().asCoroutineDispatcher()

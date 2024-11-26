@@ -18,13 +18,13 @@ package io.github.thibaultbee.streampack.core.streamers.orientation
 import android.content.Context
 import android.view.OrientationEventListener
 import android.view.Surface
-import io.github.thibaultbee.streampack.core.internal.utils.extensions.deviceRotation
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.utils.extensions.clamp90
 
 
 class DeviceRotationProvider(val context: Context) : RotationProvider() {
     private val lock = Any()
-    private var _rotation = context.deviceRotation
+    private var _rotation = context.displayRotation
 
     private val eventListener by lazy {
         object : OrientationEventListener(context) {
