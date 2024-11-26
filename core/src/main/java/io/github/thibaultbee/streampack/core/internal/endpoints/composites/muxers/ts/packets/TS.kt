@@ -15,6 +15,8 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.packets
 
+import io.github.thibaultbee.streampack.core.internal.data.SrtPacket
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.utils.MuxerConst
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.utils.TSOutputCallback
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.toInt
@@ -22,7 +24,7 @@ import java.nio.ByteBuffer
 import java.security.InvalidParameterException
 
 open class TS(
-    listener: io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal.IMuxerListener? = null,
+    listener: IMuxerInternal.IMuxerListener? = null,
     val pid: Short,
     private val transportErrorIndicator: Boolean = false,
     private val transportPriority: Boolean = false,
@@ -68,12 +70,15 @@ open class TS(
                             adaptationFieldIndicator and payloadIndicator -> {
                                 (0b11 shl 4)
                             }
+
                             adaptationFieldIndicator -> {
                                 (0b10 shl 4)
                             }
+
                             payloadIndicator -> {
                                 (0b01 shl 4)
                             }
+
                             else -> throw InvalidParameterException("TS must have either a payload either an adaption field")
                         }
             buffer.put(byte.toByte())
@@ -126,7 +131,7 @@ open class TS(
             val isLastPacket = payload?.let { !it.hasRemaining() } ?: true
             if (buffer.limit() == buffer.capacity() || isLastPacket) {
                 writePacket(
-                    io.github.thibaultbee.streampack.core.internal.data.SrtPacket(
+                    SrtPacket(
                         buffer,
                         packetIndicator == 0,
                         isLastPacket,
