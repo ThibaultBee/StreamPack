@@ -19,6 +19,8 @@ import android.media.AudioFormat
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.os.Build
+import io.github.thibaultbee.streampack.core.internal.utils.ByteFormatValue
+import io.github.thibaultbee.streampack.core.internal.utils.ChannelConfigValue
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 import java.security.InvalidParameterException
@@ -55,7 +57,7 @@ class AudioConfig(
      * @see [AudioFormat.CHANNEL_IN_MONO]
      * @see [AudioFormat.CHANNEL_IN_STEREO]
      */
-    val channelConfig: Int = AudioFormat.CHANNEL_IN_STEREO,
+    @ChannelConfigValue val channelConfig: Int = AudioFormat.CHANNEL_IN_STEREO,
 
     /**
      * Audio byte format.
@@ -64,7 +66,7 @@ class AudioConfig(
      * @see [AudioFormat.ENCODING_PCM_16BIT]
      * @see [AudioFormat.ENCODING_PCM_FLOAT]
      */
-    val byteFormat: Int = AudioFormat.ENCODING_PCM_16BIT,
+    @ByteFormatValue val byteFormat: Int = AudioFormat.ENCODING_PCM_16BIT,
 
     /**
      * Audio profile.
@@ -95,16 +97,13 @@ class AudioConfig(
      */
     override fun getFormat(withProfileLevel: Boolean): MediaFormat {
         val format = MediaFormat.createAudioFormat(
-            mimeType,
-            sampleRate,
-            getNumberOfChannels(channelConfig)
+            mimeType, sampleRate, getNumberOfChannels(channelConfig)
         )
 
         // Extended audio format
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             format.setInteger(
-                MediaFormat.KEY_PCM_ENCODING,
-                byteFormat
+                MediaFormat.KEY_PCM_ENCODING, byteFormat
             )
         }
         format.setInteger(MediaFormat.KEY_BIT_RATE, startBitrate)
@@ -112,8 +111,7 @@ class AudioConfig(
         if (withProfileLevel) {
             if (mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
                 format.setInteger(
-                    MediaFormat.KEY_AAC_PROFILE,
-                    profile
+                    MediaFormat.KEY_AAC_PROFILE, profile
                 )
             }
         }
