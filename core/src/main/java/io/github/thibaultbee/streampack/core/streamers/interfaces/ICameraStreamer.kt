@@ -76,6 +76,7 @@ interface ICameraCoroutineStreamer : ICameraStreamer {
     /**
      * Starts audio and video capture.
      */
+    @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun startPreview()
 }
 
@@ -89,7 +90,7 @@ interface ICameraCoroutineStreamer : ICameraStreamer {
  *
  * @see [stopPreview]
  */
-@RequiresPermission(allOf = [Manifest.permission.CAMERA])
+@RequiresPermission(Manifest.permission.CAMERA)
 suspend fun ICameraCoroutineStreamer.startPreview(previewSurface: Surface) {
     setPreview(previewSurface)
     startPreview()
@@ -104,7 +105,7 @@ suspend fun ICameraCoroutineStreamer.startPreview(previewSurface: Surface) {
  *
  * @see [stopPreview]
  */
-@RequiresPermission(allOf = [Manifest.permission.CAMERA])
+@RequiresPermission(Manifest.permission.CAMERA)
 suspend fun ICameraCoroutineStreamer.startPreview(surfaceView: SurfaceView) =
     startPreview(surfaceView.holder.surface)
 
@@ -117,7 +118,7 @@ suspend fun ICameraCoroutineStreamer.startPreview(surfaceView: SurfaceView) =
  *
  * @see [stopPreview]
  */
-@RequiresPermission(allOf = [Manifest.permission.CAMERA])
+@RequiresPermission(Manifest.permission.CAMERA)
 suspend fun ICameraCoroutineStreamer.startPreview(surfaceHolder: SurfaceHolder) =
     startPreview(surfaceHolder.surface)
 
@@ -130,7 +131,7 @@ suspend fun ICameraCoroutineStreamer.startPreview(surfaceHolder: SurfaceHolder) 
  *
  * @see [stopPreview]
  */
-@RequiresPermission(allOf = [Manifest.permission.CAMERA])
+@RequiresPermission(Manifest.permission.CAMERA)
 suspend fun ICameraCoroutineStreamer.startPreview(textureView: TextureView) =
     startPreview(Surface(textureView.surfaceTexture))
 
@@ -139,6 +140,7 @@ interface ICameraCallbackStreamer : ICameraStreamer {
     /**
      * Starts audio and video capture.
      */
+    @RequiresPermission(Manifest.permission.CAMERA)
     fun startPreview()
 }
 
@@ -152,7 +154,7 @@ interface ICameraCallbackStreamer : ICameraStreamer {
  *
  * @see [stopPreview]
  */
-@RequiresPermission(allOf = [Manifest.permission.CAMERA])
+@RequiresPermission(Manifest.permission.CAMERA)
 fun ICameraCallbackStreamer.startPreview(previewSurface: Surface) {
     setPreview(previewSurface)
     startPreview()
@@ -167,7 +169,7 @@ fun ICameraCallbackStreamer.startPreview(previewSurface: Surface) {
  *
  * @see [stopPreview]
  */
-@RequiresPermission(allOf = [Manifest.permission.CAMERA])
+@RequiresPermission(Manifest.permission.CAMERA)
 fun ICameraCallbackStreamer.startPreview(surfaceView: SurfaceView) =
     startPreview(surfaceView.holder.surface)
 
@@ -180,7 +182,7 @@ fun ICameraCallbackStreamer.startPreview(surfaceView: SurfaceView) =
  *
  * @see [stopPreview]
  */
-@RequiresPermission(allOf = [Manifest.permission.CAMERA])
+@RequiresPermission(Manifest.permission.CAMERA)
 fun ICameraCallbackStreamer.startPreview(surfaceHolder: SurfaceHolder) =
     startPreview(surfaceHolder.surface)
 
@@ -193,6 +195,6 @@ fun ICameraCallbackStreamer.startPreview(surfaceHolder: SurfaceHolder) =
  *
  * @see [stopPreview]
  */
-@RequiresPermission(allOf = [Manifest.permission.CAMERA])
+@RequiresPermission(Manifest.permission.CAMERA)
 fun ICameraCallbackStreamer.startPreview(textureView: TextureView) =
     startPreview(Surface(textureView.surfaceTexture))
