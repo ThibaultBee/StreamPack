@@ -15,8 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class SurfaceProcessor(
     val dynamicRangeProfile: DynamicRangeProfile
-) : ISurfaceProcessorInternal,
-    SurfaceTexture.OnFrameAvailableListener {
+) : ISurfaceProcessorInternal, SurfaceTexture.OnFrameAvailableListener {
     private val renderer = OpenGlRenderer()
 
     private val isReleaseRequested = AtomicBoolean(false)
@@ -147,8 +146,8 @@ class SurfaceProcessor(
         if (isReleased && surfaceInputs.isEmpty()) {
             // Once release is called, we can stop sending frame to output surfaces.
             surfaceOutputs.forEach { it.close() }
+            removeAllOutputSurfaces()
 
-            surfaceOutputs.clear()
             renderer.release()
             glThread.quit()
         }
@@ -184,9 +183,7 @@ class SurfaceProcessor(
     }
 
     private fun <T> executeSafely(
-        block: () -> T,
-        onSuccess: ((T) -> Unit),
-        onError: ((Throwable) -> Unit)
+        block: () -> T, onSuccess: ((T) -> Unit), onError: ((Throwable) -> Unit)
     ) {
         try {
             glHandler.post {
