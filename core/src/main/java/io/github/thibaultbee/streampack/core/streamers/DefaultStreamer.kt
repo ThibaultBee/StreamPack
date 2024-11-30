@@ -671,8 +671,12 @@ open class DefaultStreamer(
     override fun release() {
         // Sources
         audioSourceInternal?.release()
+        videoSourceInternal?.outputSurface?.let {
+            surfaceProcessor?.removeInputSurface(it)
+        }
+        videoSourceInternal?.outputSurface = null
         videoSourceInternal?.release()
-        surfaceProcessor?.removeAllOutputSurfaces()
+
         surfaceProcessor?.release()
 
         // Encoders
