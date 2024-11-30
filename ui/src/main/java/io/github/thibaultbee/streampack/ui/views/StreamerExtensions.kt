@@ -44,7 +44,7 @@ suspend fun ICameraCoroutineStreamer.setPreview(
     previewSize: Size
 ): ViewfinderSurfaceRequest {
     val builder = ViewfinderSurfaceRequest.Builder(previewSize)
-    val cameraCharacteristics = viewfinder.context.getCameraCharacteristics(camera)
+    val cameraCharacteristics = viewfinder.context.getCameraCharacteristics(cameraId)
     val request = builder.populateFromCharacteristics(cameraCharacteristics).build()
     setPreview(viewfinder.requestSurface(request))
     return request
@@ -61,7 +61,7 @@ fun ICameraCallbackStreamer.startPreview(
     viewfinder: CameraViewfinder,
     previewSize: Size
 ): ViewfinderSurfaceRequest {
-    val cameraCharacteristics = viewfinder.context.getCameraCharacteristics(camera)
+    val cameraCharacteristics = viewfinder.context.getCameraCharacteristics(cameraId)
     return executeSurfaceRequest(
         viewfinder.context,
         viewfinder,
@@ -83,7 +83,7 @@ fun ICameraCallbackStreamer.setPreview(
     viewfinder: CameraViewfinder,
     previewSize: Size
 ): ViewfinderSurfaceRequest {
-    val cameraCharacteristics = viewfinder.context.getCameraCharacteristics(camera)
+    val cameraCharacteristics = viewfinder.context.getCameraCharacteristics(cameraId)
     return executeSurfaceRequest(
         viewfinder.context,
         viewfinder,
