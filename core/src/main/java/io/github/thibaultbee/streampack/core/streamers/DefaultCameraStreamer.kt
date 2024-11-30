@@ -86,7 +86,7 @@ open class DefaultCameraStreamer(
      * Get/Set current camera id.
      * It is a shortcut for [CameraSource.cameraId]
      */
-    override var camera: String
+    override var cameraId: String
         /**
          * Get current camera id.
          *

@@ -34,7 +34,7 @@ interface ICameraStreamer {
      * Gets/Sets current camera id.
      * It is a shortcut for [videoSource.cameraId].
      */
-    var camera: String
+    var cameraId: String
 
     /**
      * Sets a preview surface.

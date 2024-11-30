@@ -253,13 +253,13 @@ class StreamerManager(
         if (streamer is ICameraStreamer) {
             val streamer = (streamer as ICameraStreamer)
             // Handle devices with only one camera
-            val cameras = if (context.isBackCamera(streamer.camera)) {
+            val cameras = if (context.isBackCamera(streamer.cameraId)) {
                 context.frontCameras
             } else {
                 context.backCameras
             }
             if (cameras.isNotEmpty()) {
-                streamer.camera = cameras[0]
+                streamer.cameraId = cameras[0]
             }
         }
     }

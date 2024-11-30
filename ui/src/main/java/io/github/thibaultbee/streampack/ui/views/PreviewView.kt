@@ -303,7 +303,7 @@ class PreviewView @JvmOverloads constructor(
     private suspend fun setPreview(
         streamer: ICameraStreamer,
         targetViewSize: Size,
-    ) = setPreviewInternal(streamer, streamer.camera, targetViewSize)
+    ) = setPreviewInternal(streamer, streamer.cameraId, targetViewSize)
 
     private suspend fun setPreviewInternal(
         streamer: ICameraStreamer, camera: String, targetViewSize: Size
