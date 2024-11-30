@@ -57,9 +57,7 @@ import java.util.concurrent.CancellationException
  * The [Manifest.permission.CAMERA] permission must be granted before using this view.
  */
 class PreviewView @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyle: Int = 0
+    context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
 ) : FrameLayout(context, attrs, defStyle) {
     private val cameraViewfinder = CameraViewfinder(context, attrs, defStyle)
 
@@ -85,12 +83,22 @@ class PreviewView @JvmOverloads constructor(
     var streamer: ICameraStreamer? = null
         /**
          * Sets the [ICameraStreamer] to preview.
+         * It stops the current preview if it's running.
+         * It starts the preview of the new streamer if the previous one was running.
          *
          * @param value the [ICameraStreamer] to preview
          */
         set(value) {
+            if (field == value) {
+                Logger.w(TAG, "No need to set the same streamer")
+                return
+            }
+            val isPreviewing = field?.videoSource?.isPreviewing
             field?.stopPreview()
             field = value
+            if (isPreviewing == true) {
+                startPreviewAsyncInternal(true)
+            }
         }
 
     /**
@@ -119,29 +127,24 @@ class PreviewView @JvmOverloads constructor(
     private var touchUpEvent: MotionEvent? = null
 
     private val pinchGesture = ScaleGestureDetector(
-        context,
-        PinchToZoomOnScaleGestureListener()
+        context, PinchToZoomOnScaleGestureListener()
     )
 
     init {
         val a = context.obtainStyledAttributes(attrs, R.styleable.PreviewView)
 
         try {
-            enableZoomOnPinch =
-                a.getBoolean(R.styleable.PreviewView_enableZoomOnPinch, true)
-            enableTapToFocus =
-                a.getBoolean(R.styleable.PreviewView_enableTapToFocus, true)
+            enableZoomOnPinch = a.getBoolean(R.styleable.PreviewView_enableZoomOnPinch, true)
+            enableTapToFocus = a.getBoolean(R.styleable.PreviewView_enableTapToFocus, true)
 
             scaleMode = ScaleMode.entryOf(
                 a.getInt(
-                    R.styleable.PreviewView_scaleMode,
-                    ScaleMode.FILL.value
+                    R.styleable.PreviewView_scaleMode, ScaleMode.FILL.value
                 )
             )
             position = Position.entryOf(
                 a.getInt(
-                    R.styleable.PreviewView_position,
-                    Position.CENTER.value
+                    R.styleable.PreviewView_position, Position.CENTER.value
                 )
             )
 
@@ -150,10 +153,8 @@ class PreviewView @JvmOverloads constructor(
         }
 
         addView(
-            cameraViewfinder,
-            ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
+            cameraViewfinder, ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
             )
         )
     }
@@ -305,9 +306,7 @@ class PreviewView @JvmOverloads constructor(
     ) = setPreviewInternal(streamer, streamer.camera, targetViewSize)
 
     private suspend fun setPreviewInternal(
-        streamer: ICameraStreamer,
-        camera: String,
-        targetViewSize: Size
+        streamer: ICameraStreamer, camera: String, targetViewSize: Size
     ) {
         Logger.d(TAG, "Target view size: $targetViewSize")
         Logger.i(TAG, "Starting on camera: $camera")
@@ -333,9 +332,7 @@ class PreviewView @JvmOverloads constructor(
          * Get the closest available preview size to the view size.
          */
         val previewSize = getPreviewOutputSize(
-            context.getCameraCharacteristics(camera),
-            targetViewSize,
-            SurfaceHolder::class.java
+            context.getCameraCharacteristics(camera), targetViewSize, SurfaceHolder::class.java
         )
 
         Logger.d(TAG, "Selected preview size: $previewSize")
@@ -357,9 +354,7 @@ class PreviewView @JvmOverloads constructor(
         }
 
         private suspend fun setPreview(
-            streamer: ICameraStreamer,
-            viewfinder: CameraViewfinder,
-            previewSize: Size
+            streamer: ICameraStreamer, viewfinder: CameraViewfinder, previewSize: Size
         ): ViewfinderSurfaceRequest {
             return when (streamer) {
                 is ICameraCoroutineStreamer -> streamer.setPreview(viewfinder, previewSize)
@@ -393,8 +388,7 @@ class PreviewView @JvmOverloads constructor(
         }
 
         private fun getScaleType(
-            scaleMode: ScaleMode,
-            position: Position
+            scaleMode: ScaleMode, position: Position
         ): CameraViewfinder.ScaleType {
             when (position) {
                 Position.START -> {
@@ -421,8 +415,7 @@ class PreviewView @JvmOverloads constructor(
         }
     }
 
-    private inner class PinchToZoomOnScaleGestureListener :
-        SimpleOnScaleGestureListener() {
+    private inner class PinchToZoomOnScaleGestureListener : SimpleOnScaleGestureListener() {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             streamer?.videoSource?.settings?.zoom?.let {
                 it.onPinch(detector.scaleFactor)
