@@ -49,8 +49,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 
 class StreamerManager(
-    private val context: Context,
-    private val configuration: Configuration
+    private val context: Context, private val configuration: Configuration
 ) : IRotationProvider.Listener {
     private var streamer: ICoroutineStreamer =
         DefaultCameraStreamer(context, configuration.audio.enable)
@@ -71,8 +70,7 @@ class StreamerManager(
     val requiredPermissions: List<String>
         get() {
             val permissions = mutableListOf(
-                Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO
+                Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO
             )
             // Only needed for File (MP4, TS, FLV,...)
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
@@ -107,11 +105,15 @@ class StreamerManager(
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun configureStreamer() {
         require(configuration.video.enable || configuration.audio.enable) { "At least one of audio or video must be enabled" }
-        
+
         // Change streamer if needed
         if (configuration.video.enable) {
             if (streamer !is DefaultCameraStreamer) {
                 streamer = DefaultCameraStreamer(context, configuration.audio.enable)
+            } else {
+                if (((streamer.audioSource == null) && configuration.audio.enable) || ((streamer.audioSource != null) && !configuration.audio.enable)) {
+                    streamer = DefaultCameraStreamer(context, configuration.audio.enable)
+                }
             }
         } else {
             if (streamer !is DefaultAudioOnlyStreamer) {
@@ -156,8 +158,7 @@ class StreamerManager(
     suspend fun startStream() {
         val descriptor = when (configuration.endpoint.endpointType) {
             EndpointType.TS_FILE -> UriMediaDescriptor(
-                context,
-                context.createVideoContentUri(
+                context, context.createVideoContentUri(
                     configuration.endpoint.file.filename.appendIfNotEndsWith(
                         FileExtension.TS.extension
                     )
@@ -165,8 +166,7 @@ class StreamerManager(
             )
 
             EndpointType.FLV_FILE -> UriMediaDescriptor(
-                context,
-                context.createVideoContentUri(
+                context, context.createVideoContentUri(
                     configuration.endpoint.file.filename.appendIfNotEndsWith(
                         FileExtension.FLV.extension
                     )
@@ -174,8 +174,7 @@ class StreamerManager(
             )
 
             EndpointType.MP4_FILE -> UriMediaDescriptor(
-                context,
-                context.createVideoContentUri(
+                context, context.createVideoContentUri(
                     configuration.endpoint.file.filename.appendIfNotEndsWith(
                         FileExtension.MP4.extension
                     )
@@ -183,8 +182,7 @@ class StreamerManager(
             )
 
             EndpointType.WEBM_FILE -> UriMediaDescriptor(
-                context,
-                context.createVideoContentUri(
+                context, context.createVideoContentUri(
                     configuration.endpoint.file.filename.appendIfNotEndsWith(
                         FileExtension.WEBM.extension
                     )
@@ -192,8 +190,7 @@ class StreamerManager(
             )
 
             EndpointType.OGG_FILE -> UriMediaDescriptor(
-                context,
-                context.createAudioContentUri(
+                context, context.createAudioContentUri(
                     configuration.endpoint.file.filename.appendIfNotEndsWith(
                         FileExtension.OGG.extension
                     )
@@ -201,8 +198,7 @@ class StreamerManager(
             )
 
             EndpointType.THREEGP_FILE -> UriMediaDescriptor(
-                context,
-                context.createVideoContentUri(
+                context, context.createVideoContentUri(
                     configuration.endpoint.file.filename.appendIfNotEndsWith(
                         FileExtension.THREEGP.extension
                     )
