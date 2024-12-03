@@ -42,8 +42,9 @@ class TSMuxer : IMuxerInternal {
     private val tsServices = mutableListOf<Service>()
     private val tsPes = mutableListOf<Pes>()
 
-    override var listener: IMuxerInternal.IMuxerListener? =
-        null
+    private var isStarted = false
+
+    override var listener: IMuxerInternal.IMuxerListener? = null
         set(value) {
             pat.listener = value
             sdt.listener = value
@@ -55,16 +56,10 @@ class TSMuxer : IMuxerInternal {
 
     private val tsId = Random.nextInt(Byte.MIN_VALUE.toInt(), Byte.MAX_VALUE.toInt()).toShort()
     private var pat = Pat(
-        listener,
-        tsServices,
-        tsId,
-        packetCount = 0
+        listener, tsServices, tsId, packetCount = 0
     )
     private var sdt = Sdt(
-        listener,
-        tsServices,
-        tsId,
-        packetCount = 0
+        listener, tsServices, tsId, packetCount = 0
     )
 
     /**
@@ -74,8 +69,7 @@ class TSMuxer : IMuxerInternal {
      * @param streamPid Pid of frame stream. Throw a NoSuchElementException if streamPid refers to an unknown stream
      */
     override fun write(
-        frame: Frame,
-        streamPid: Int
+        frame: Frame, streamPid: Int
     ) {
         val pes = getPes(streamPid.toShort())
         val newFrame = when {
@@ -86,9 +80,7 @@ class TSMuxer : IMuxerInternal {
                         throw MissingFormatArgumentException("Missing extra for AVC")
                     }
                     val buffer =
-                        ByteBuffer.allocate(
-                            6 + frame.extra.sumOf { it.limit() } + frame.buffer.limit()
-                        )
+                        ByteBuffer.allocate(6 + frame.extra.sumOf { it.limit() } + frame.buffer.limit())
                     // Add access unit delimiter (AUD) before the AVC access unit
                     buffer.putInt(0x00000001)
                     buffer.put(0x09.toByte())
@@ -109,9 +101,7 @@ class TSMuxer : IMuxerInternal {
                         throw MissingFormatArgumentException("Missing extra for HEVC")
                     }
                     val buffer =
-                        ByteBuffer.allocate(
-                            7 + frame.extra.sumOf { it.limit() } + frame.buffer.limit()
-                        )
+                        ByteBuffer.allocate(7 + frame.extra.sumOf { it.limit() } + frame.buffer.limit())
                     // Add access unit delimiter (AUD) before the HEVC access unit
                     buffer.putInt(0x00000001)
                     buffer.put(0x46.toByte())
@@ -128,8 +118,7 @@ class TSMuxer : IMuxerInternal {
 
             AudioConfig.isAacMimeType(frame.mimeType) -> {
                 frame.copy(
-                    rawBuffer =
-                    if (pes.stream.config.profile == MediaCodecInfo.CodecProfileLevel.AACObjectLC) {
+                    rawBuffer = if (pes.stream.config.profile == MediaCodecInfo.CodecProfileLevel.AACObjectLC) {
                         ADTSFrameWriter.fromAudioConfig(
                             frame.buffer, pes.stream.config as AudioConfig
                         ).toByteBuffer()
@@ -166,8 +155,7 @@ class TSMuxer : IMuxerInternal {
      * @param frame frame to mux
      */
     private fun generateStreams(
-        frame: Frame,
-        pes: Pes
+        frame: Frame, pes: Pes
     ) {
         retransmitPsi(frame.isVideo and frame.isKeyFrame)
         pes.write(frame)
@@ -272,8 +260,10 @@ class TSMuxer : IMuxerInternal {
             removeStreams(service, service.streams)
         }
 
-        upgradeSdt()
-        upgradePat()
+        if (isStarted) {
+            upgradeSdt()
+            upgradePat()
+        }
     }
 
     /**
@@ -354,11 +344,13 @@ class TSMuxer : IMuxerInternal {
             ).run { tsPes.add(this) }
         }
 
-        // Send tables
-        sendPmt(service)
-        if (isNewService) {
-            upgradeSdt()
-            upgradePat()
+        if (isStarted) {
+            // Send tables
+            sendPmt(service)
+            if (isNewService) {
+                upgradeSdt()
+                upgradePat()
+            }
         }
 
         val streamMap = mutableMapOf<Config, Int>()
@@ -392,7 +384,9 @@ class TSMuxer : IMuxerInternal {
             it.streams = service.streams
         }
 
-        sendPmt(service)
+        if (isStarted) {
+            sendPmt(service)
+        }
     }
 
     /**
@@ -408,13 +402,14 @@ class TSMuxer : IMuxerInternal {
     }
 
     override fun startStream() {
-        // Nothing to start
+        isStarted = true
     }
 
     /**
      * Clears all streams of all services
      */
     override fun stopStream() {
+        isStarted = false
         tsServices.forEach {
             removeStreams(it)
         }
