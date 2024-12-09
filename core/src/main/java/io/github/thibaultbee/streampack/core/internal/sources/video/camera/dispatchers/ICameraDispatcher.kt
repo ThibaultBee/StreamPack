@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.internal.sources.video.camera
+package io.github.thibaultbee.streampack.core.internal.sources.video.camera.dispatchers
 
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraDevice
@@ -25,7 +25,7 @@ import android.view.Surface
 /**
  * Encapsulates camera2 API changes and deprecation.
  */
-interface ICameraThreadManager {
+interface ICameraDispatcher {
 
     /**
      * Opens camera device.
@@ -35,9 +35,7 @@ interface ICameraThreadManager {
      * @param callback an implementation of [CameraDevice.StateCallback]
      */
     fun openCamera(
-        manager: CameraManager,
-        cameraId: String,
-        callback: CameraDevice.StateCallback
+        manager: CameraManager, cameraId: String, callback: CameraDevice.StateCallback
     )
 
     /**
@@ -48,9 +46,7 @@ interface ICameraThreadManager {
      * @param callback an implementation of [CameraCaptureSession.StateCallback]
      */
     fun createCaptureSession(
-        camera: CameraDevice,
-        targets: List<Surface>,
-        callback: CameraCaptureSession.StateCallback
+        camera: CameraDevice, targets: List<Surface>, callback: CameraCaptureSession.StateCallback
     )
 
     /**

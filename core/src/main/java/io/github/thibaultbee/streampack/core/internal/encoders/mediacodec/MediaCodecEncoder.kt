@@ -340,6 +340,11 @@ internal constructor(
                 when {
                     !state.isRunning -> {
                         Logger.w(tag, "Receives output frame after codec is not running: $state.")
+                        try {
+                            codec.releaseOutputBuffer(index, false)
+                        } catch (_: Throwable) {
+                            // Do nothing
+                        }
                         return@execute
                     }
 
@@ -513,8 +518,7 @@ internal constructor(
                 return Frame(
                     buffer, info.presentationTimeUs, // pts
                     null, // dts
-                    info.isKeyFrame,
-                    mediaCodec.outputFormat
+                    info.isKeyFrame, mediaCodec.outputFormat
                 )
             }
         }

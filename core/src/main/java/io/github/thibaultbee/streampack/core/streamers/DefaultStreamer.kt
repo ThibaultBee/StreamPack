@@ -608,12 +608,10 @@ open class DefaultStreamer(
              */
             surfaceProcessor?.let { processor ->
                 videoSourceInternal?.let { source ->
-                    source.outputSurface?.let { surface -> processor.removeInputSurface(surface) }
-                    source.outputSurface = processor.createInputSurface(
-                        source.infoProvider.getSurfaceSize(
-                            videoConfig!!.resolution, targetRotation
-                        )
-                    )
+                    val surface = source.outputSurface
+                    if (surface == null) {
+                        Logger.w(TAG, "Surface is null")
+                    }
                 }
             }
             videoEncoderInternal?.reset()
@@ -671,11 +669,12 @@ open class DefaultStreamer(
     override fun release() {
         // Sources
         audioSourceInternal?.release()
-        videoSourceInternal?.outputSurface?.let {
+        val outputSurface = videoSourceInternal?.outputSurface
+        videoSourceInternal?.release()
+        videoSourceInternal?.outputSurface = null
+        outputSurface?.let {
             surfaceProcessor?.removeInputSurface(it)
         }
-        videoSourceInternal?.outputSurface = null
-        videoSourceInternal?.release()
 
         surfaceProcessor?.release()
 
