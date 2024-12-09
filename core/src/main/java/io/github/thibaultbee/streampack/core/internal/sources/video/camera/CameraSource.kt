@@ -39,7 +39,9 @@ class CameraSource(
             }
             if (cameraController.isCameraRunning) {
                 if (value == null) {
-                    stopPreview()
+                    runBlocking {
+                        stopPreview()
+                    }
                 } else {
                     Logger.e(TAG, "Need to restart camera to change preview surface")
                     field = value
@@ -77,8 +79,7 @@ class CameraSource(
 
     override var cameraId: String = context.defaultCameraId
         get() = cameraController.cameraId ?: field
-        @RequiresPermission(Manifest.permission.CAMERA)
-        set(value) {
+        @RequiresPermission(Manifest.permission.CAMERA) set(value) {
             if (field == value) {
                 Logger.w(TAG, "Camera ID is already set to $value")
                 return
@@ -196,7 +197,9 @@ class CameraSource(
             return
         }
 
-        cameraController.removeTarget(requireNotNull(previewSurface))
+        runBlocking {
+            cameraController.removeTarget(requireNotNull(previewSurface))
+        }
     }
 
     override suspend fun startStream() {

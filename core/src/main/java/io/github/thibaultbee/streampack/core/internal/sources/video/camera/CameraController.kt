@@ -24,12 +24,16 @@ import android.hardware.camera2.CameraDevice.AUDIO_RESTRICTION_VIBRATION_SOUND
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
+import android.hardware.camera2.TotalCaptureResult
 import android.hardware.camera2.params.OutputConfiguration
 import android.os.Build
 import android.util.Range
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.error.CameraException
+import io.github.thibaultbee.streampack.core.internal.sources.video.camera.dispatchers.CameraDispatchers
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.resumeIfActive
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.resumeWithExceptionIfActive
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.utils.extensions.getAutoFocusModes
 import io.github.thibaultbee.streampack.core.utils.extensions.getCameraFps
@@ -57,11 +61,10 @@ class CameraController(
      */
     private val requestSessionSurface = mutableSetOf<Surface>()
 
-    private val cameraDispatchManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-        CameraExecutorManager()
-    } else {
-        CameraHandlerManager()
-    }
+    /**
+     * Camera dispatcher to use. Either run on executor or handler.
+     */
+    private val cameraDispatcher = CameraDispatchers.build()
 
     private fun getClosestFpsRange(cameraId: String, fps: Int): Range<Int> {
         var fpsRangeList = context.getCameraFps(cameraId)
@@ -92,9 +95,9 @@ class CameraController(
     }
 
     private class CameraDeviceCallback(
-        private val cont: CancellableContinuation<CameraDevice>,
+        private val continuation: CancellableContinuation<CameraDevice>,
     ) : CameraDevice.StateCallback() {
-        override fun onOpened(device: CameraDevice) = cont.resume(device)
+        override fun onOpened(device: CameraDevice) = continuation.resume(device)
 
         override fun onDisconnected(camera: CameraDevice) {
             Logger.w(TAG, "Camera ${camera.id} has been disconnected")
@@ -114,18 +117,44 @@ class CameraController(
                 ERROR_CAMERA_SERVICE -> CameraException("Camera service has crashed")
                 else -> CameraException("Unknown error")
             }
-            if (cont.isActive) cont.resumeWithException(exc)
+            if (continuation.isActive) continuation.resumeWithException(exc)
         }
     }
 
     private class CameraCaptureSessionCallback(
-        private val cont: CancellableContinuation<CameraCaptureSession>,
+        private val continuation: CancellableContinuation<CameraCaptureSession>,
     ) : CameraCaptureSession.StateCallback() {
-        override fun onConfigured(session: CameraCaptureSession) = cont.resume(session)
+        override fun onConfigured(session: CameraCaptureSession) = continuation.resume(session)
 
         override fun onConfigureFailed(session: CameraCaptureSession) {
             Logger.e(TAG, "Camera Session configuration failed")
-            cont.resumeWithException(CameraException("Camera: failed to configure the capture session"))
+            continuation.resumeWithException(CameraException("Camera: failed to configure the capture session"))
+        }
+
+        override fun onClosed(session: CameraCaptureSession) {
+            Logger.e(TAG, "Camera Session configuration closed")
+        }
+    }
+
+    private class CameraCaptureSessionCaptureCallback(
+        private val onCaptureRequestComparator: (CaptureRequest) -> Boolean,
+        private val continuation: CancellableContinuation<Unit>,
+    ) : CameraCaptureSession.CaptureCallback() {
+        override fun onCaptureCompleted(
+            session: CameraCaptureSession, request: CaptureRequest, result: TotalCaptureResult
+        ) {
+            if (onCaptureRequestComparator(request)) {
+                continuation.resumeIfActive(Unit)
+            }
+        }
+
+        override fun onCaptureFailed(
+            session: CameraCaptureSession, request: CaptureRequest, failure: CaptureFailure
+        ) {
+            if (onCaptureRequestComparator(request)) {
+                Logger.e(TAG, "Capture failed with code ${failure.reason}")
+                continuation.resumeWithExceptionIfActive(CameraException("Capture failed with code ${failure.reason}"))
+            }
         }
     }
 
@@ -142,7 +171,7 @@ class CameraController(
     private suspend fun openCamera(
         manager: CameraManager, cameraId: String
     ): CameraDevice = suspendCancellableCoroutine { cont ->
-        cameraDispatchManager.openCamera(
+        cameraDispatcher.openCamera(
             manager, cameraId, CameraDeviceCallback(cont)
         )
     }
@@ -151,7 +180,7 @@ class CameraController(
         camera: CameraDevice,
         targets: List<Surface>,
         dynamicRange: Long,
-    ): CameraCaptureSession = suspendCancellableCoroutine { cont ->
+    ): CameraCaptureSession = suspendCancellableCoroutine { continuation ->
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             val outputConfigurations = targets.map {
                 OutputConfiguration(it).apply {
@@ -161,12 +190,12 @@ class CameraController(
                 }
             }
 
-            cameraDispatchManager.createCaptureSessionByOutputConfiguration(
-                camera, outputConfigurations, CameraCaptureSessionCallback(cont)
+            cameraDispatcher.createCaptureSessionByOutputConfiguration(
+                camera, outputConfigurations, CameraCaptureSessionCallback(continuation)
             )
         } else {
-            cameraDispatchManager.createCaptureSession(
-                camera, targets, CameraCaptureSessionCallback(cont)
+            cameraDispatcher.createCaptureSession(
+                camera, targets, CameraCaptureSessionCallback(continuation)
             )
         }
     }
@@ -185,7 +214,7 @@ class CameraController(
             ) {
                 set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO)
             }
-            cameraDispatchManager.setRepeatingSingleRequest(
+            cameraDispatcher.setRepeatingSingleRequest(
                 captureSession, build(), captureCallback
             )
         }
@@ -269,7 +298,7 @@ class CameraController(
         updateRepeatingSession()
     }
 
-    fun removeTargets(targets: List<Surface>) {
+    suspend fun removeTargets(targets: List<Surface>) {
         val captureRequest = requireNotNull(captureRequest) { "capture request must not be null" }
 
         targets.forEach {
@@ -278,27 +307,48 @@ class CameraController(
         }
 
         if (requestSessionSurface.isNotEmpty()) {
-            updateRepeatingSession()
+            val tag = "removeTargets-${System.currentTimeMillis()}"
+            captureRequest.setTag(tag)
+            withContext(coroutineDispatcher) {
+                suspendCancellableCoroutine { continuation ->
+                    updateRepeatingSession(
+                        CameraCaptureSessionCaptureCallback(
+                            { it.tag == tag }, continuation
+                        )
+                    )
+                }
+            }
         } else {
             stop()
         }
     }
 
-    fun removeTarget(target: Surface) {
+    suspend fun removeTarget(target: Surface) {
         val captureRequest = requireNotNull(captureRequest) { "capture request must not be null" }
 
         captureRequest.removeTarget(target)
         requestSessionSurface.remove(target)
 
         if (requestSessionSurface.isNotEmpty()) {
-            updateRepeatingSession()
+            val tag = "removeTarget-${System.currentTimeMillis()}"
+            captureRequest.setTag(tag)
+            withContext(coroutineDispatcher) {
+                suspendCancellableCoroutine { continuation ->
+                    updateRepeatingSession(
+                        CameraCaptureSessionCaptureCallback(
+                            { it.tag == tag }, continuation
+                        )
+                    )
+                }
+            }
         } else {
             stop()
         }
     }
 
     fun release() {
-        cameraDispatchManager.release()
+        stop()
+        cameraDispatcher.release()
     }
 
     fun muteVibrationAndSound() {
@@ -321,21 +371,21 @@ class CameraController(
         }
     }
 
-    fun updateRepeatingSession() {
+    fun updateRepeatingSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
         val captureSession = requireNotNull(captureSession) { "capture session must not be null" }
         val captureRequest = requireNotNull(captureRequest) { "capture request must not be null" }
 
-        cameraDispatchManager.setRepeatingSingleRequest(
-            captureSession, captureRequest.build(), captureCallback
+        cameraDispatcher.setRepeatingSingleRequest(
+            captureSession, captureRequest.build(), cameraCaptureCallback
         )
     }
 
-    private fun updateBurstSession() {
+    private fun updateBurstSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback) {
         val captureSession = requireNotNull(captureSession) { "capture session must not be null" }
         val captureRequest = requireNotNull(captureRequest) { "capture request must not be null" }
 
-        cameraDispatchManager.captureBurstRequests(
-            captureSession, listOf(captureRequest.build()), captureCallback
+        cameraDispatcher.captureBurstRequests(
+            captureSession, listOf(captureRequest.build()), cameraCaptureCallback
         )
     }
 
@@ -364,7 +414,7 @@ class CameraController(
             for (item in settingsMap) {
                 it.set(item.key, item.value)
             }
-            updateBurstSession()
+            updateBurstSession(captureCallback)
         }
     }
 
