@@ -31,13 +31,13 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.error.CameraException
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.utils.extensions.getAutoFocusModes
 import io.github.thibaultbee.streampack.core.utils.extensions.getCameraFps
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import java.security.InvalidParameterException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -71,7 +71,11 @@ class CameraController(
         fpsRangeList =
             fpsRangeList.filter { it.contains(fps) or it.contains(fps * 1000) } // On Samsung S4 fps range is [4000-30000] instead of [4-30]
         if (fpsRangeList.isEmpty()) {
-            throw InvalidParameterException("Failed to find a single FPS range that contains $fps")
+            Logger.e(
+                TAG,
+                "Failed to find a single FPS range that contains $fps. Trying to selected rate."
+            )
+            return Range(fps, fps)
         }
 
         // Get smaller range
@@ -176,10 +180,13 @@ class CameraController(
         return camera.createCaptureRequest(CameraDevice.TEMPLATE_RECORD).apply {
             surfaces.forEach { addTarget(it) }
             set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
+            if (context.getAutoFocusModes(camera.id)
+                    .contains(CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO)
+            ) {
+                set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO)
+            }
             cameraDispatchManager.setRepeatingSingleRequest(
-                captureSession,
-                build(),
-                captureCallback
+                captureSession, build(), captureCallback
             )
         }
     }
