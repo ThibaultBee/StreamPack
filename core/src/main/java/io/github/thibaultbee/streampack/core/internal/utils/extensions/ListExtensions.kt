@@ -15,6 +15,8 @@
  */
 package io.github.thibaultbee.streampack.core.internal.utils.extensions
 
+import android.util.Range
+
 fun <T> Iterable<List<T>>.unzip(): List<List<T>> {
     val expectedSize = this.first().size
     val result = MutableList(expectedSize) { mutableListOf<T>() }
@@ -27,4 +29,8 @@ fun <T> Iterable<List<T>>.unzip(): List<List<T>> {
         }
     }
     return result
+}
+
+fun <T : Comparable<T>> List<Range<T>>.contains(value: T): Boolean {
+    return this.any { range -> range.contains(value) }
 }

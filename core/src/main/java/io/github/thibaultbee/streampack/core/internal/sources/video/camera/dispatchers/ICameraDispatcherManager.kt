@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.internal.sources.video.camera
+package io.github.thibaultbee.streampack.core.internal.sources.video.camera.dispatchers
 
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
-import android.hardware.camera2.params.OutputConfiguration
 import android.view.Surface
 
 /**
  * Encapsulates camera2 API changes and deprecation.
  */
-interface ICameraThreadManager {
+interface ICameraDispatcherManager {
 
     /**
      * Opens camera device.
@@ -35,34 +34,23 @@ interface ICameraThreadManager {
      * @param callback an implementation of [CameraDevice.StateCallback]
      */
     fun openCamera(
-        manager: CameraManager,
-        cameraId: String,
-        callback: CameraDevice.StateCallback
+        manager: CameraManager, cameraId: String, callback: CameraDevice.StateCallback
     )
 
     /**
      * Create a camera capture session for surfaces.
      *
      * @param camera the [CameraDevice]
+     * @param isHfr true if high frame rate is enabled
+     * @param dynamicRange the dynamic range profile
      * @param targets list of [Surface]
      * @param callback an implementation of [CameraCaptureSession.StateCallback]
      */
     fun createCaptureSession(
         camera: CameraDevice,
+        isHfr: Boolean,
+        dynamicRange: Long,
         targets: List<Surface>,
-        callback: CameraCaptureSession.StateCallback
-    )
-
-    /**
-     * Create a camera capture session for output configurations.
-     *
-     * @param camera the [CameraDevice]
-     * @param outputConfigurations list of [OutputConfiguration]
-     * @param callback an implementation of [CameraCaptureSession.StateCallback]
-     */
-    fun createCaptureSessionByOutputConfiguration(
-        camera: CameraDevice,
-        outputConfigurations: List<OutputConfiguration>,
         callback: CameraCaptureSession.StateCallback
     )
 

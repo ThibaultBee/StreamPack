@@ -26,6 +26,8 @@ import android.os.Build
 import android.util.Range
 import android.util.Size
 import androidx.annotation.RequiresApi
+import io.github.thibaultbee.streampack.core.data.VideoConfig
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.contains
 
 /**
  * Get camera characteristics.
@@ -71,7 +73,6 @@ val Context.cameras: List<String>
         return cameraManager.cameraIdList.toList()
     }
 
-
 /**
  * Gets back camera id list.
  *
@@ -94,15 +95,14 @@ val Context.frontCameras: List<String>
  * @return List of front camera ids
  */
 val Context.externalCameras: List<String>
-    get() =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            cameras.filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_EXTERNAL }
-        } else {
-            emptyList()
-        }
+    get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        cameras.filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_EXTERNAL }
+    } else {
+        emptyList()
+    }
 
 /**
- * Check if string is a back camera id
+ * Whether the [cameraId] is a back camera id
  *
  * @return true if string is a back camera id, otherwise false
  */
@@ -110,7 +110,7 @@ fun Context.isBackCamera(cameraId: String) =
     getFacingDirection(cameraId) == CameraCharacteristics.LENS_FACING_BACK
 
 /**
- * Check if string is a front camera id
+ * Whether the [cameraId] is a front camera id
  *
  * @return true if string is a front camera id, otherwise false
  */
@@ -118,7 +118,7 @@ fun Context.isFrontCamera(cameraId: String) =
     getFacingDirection(cameraId) == CameraCharacteristics.LENS_FACING_FRONT
 
 /**
- * Check if string is an external camera id
+ * Whether the [cameraId] is an external camera id
  *
  * @return true if string is a external camera id, otherwise false
  */
@@ -153,24 +153,108 @@ fun <T : Any> Context.getCameraOutputSizes(klass: Class<T>, cameraId: String): L
 }
 
 /**
- * Checks if the camera supports a frame rate
+ * Whether the camera supports a frame rate
  *
  * @param cameraId camera id
  * @param fps frame rate
  * @return [Boolean.true] if camera supports fps, [Boolean.false] otherwise.
  */
-fun Context.isFrameRateSupported(cameraId: String, fps: Int) =
+fun Context.isStandardFrameRateSupported(cameraId: String, fps: Int) =
     getCameraFps(cameraId).any { it.contains(fps) }
 
 /**
- * Checks if the camera has a flash device.
+ * Whether the camera supports a frame rate
+ *
+ * @param cameraId camera id
+ * @param fps frame rate
+ * @return [Boolean.true] if camera supports fps, [Boolean.false] otherwise.
+ */
+fun Context.isFrameRateSupported(cameraId: String, fps: Int): Boolean {
+    val isHighSpeed = isHighSpeedVideoSupported(cameraId)
+    val isHighSpeedFps = isFpsHighSpeed(cameraId, fps)
+    return if (isHighSpeed && isHighSpeedFps) {
+        val streamMap =
+            getCameraCharacteristics(cameraId)[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]
+                ?: return false
+        streamMap.highSpeedVideoFpsRanges.toList().contains(fps)
+    } else {
+        isStandardFrameRateSupported(
+            cameraId, fps
+        )
+    }
+}
+
+
+/**
+ * Whether the camera supports the video configuration.
+ *
+ * @param cameraId the camera id
+ * @param config the video configuration
+ * @return [Boolean.true] if camera supports resolution and fps, [Boolean.false] otherwise.
+ */
+fun Context.isConfigSupported(cameraId: String, config: VideoConfig) =
+    isFpsAndResolutionSupported(cameraId, config.fps, config.resolution)
+
+/**
+ * Whether the camera supports the video configuration.
+ *
+ * @param cameraId the camera id
+ * @param fps the frame rate
+ * @param resolution the resolution
+ * @return [Boolean.true] if camera supports resolution and fps, [Boolean.false] otherwise.
+ */
+fun Context.isFpsAndResolutionSupported(cameraId: String, fps: Int, resolution: Size): Boolean {
+    val isHighSpeed = isHighSpeedVideoSupported(cameraId)
+    val isHighSpeedFps = isFpsHighSpeed(cameraId, fps)
+    return if (isHighSpeed && isHighSpeedFps) {
+        val streamMap =
+            getCameraCharacteristics(cameraId)[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]
+                ?: return false
+        streamMap.getHighSpeedVideoSizesFor(
+            Range(fps, fps)
+        ).contains(resolution)
+    } else {
+        getCameraOutputStreamSizes(cameraId).contains(resolution) && isStandardFrameRateSupported(
+            cameraId, fps
+        )
+    }
+}
+
+/**
+ * Whether the frame rate is considered high speed.
+ *
+ * @param cameraId the camera id
+ * @param fps the frame rate
+ * @return [Boolean.true] if the frame rate is considered high speed, [Boolean.false] otherwise.
+ */
+fun Context.isFpsHighSpeed(cameraId: String, fps: Int): Boolean {
+    val fpsList = getCameraFps(cameraId)
+    return fps > fpsList.maxOf { it.upper }
+}
+
+/**
+ * Whether the camera supports high speed video.
+ *
+ * @param cameraId camera id
+ * @return [Boolean.true] if camera supports high speed video, [Boolean.false] otherwise.
+ */
+fun Context.isHighSpeedVideoSupported(cameraId: String) =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        getCameraCharacteristics(cameraId).get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)
+            ?.contains(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_CONSTRAINED_HIGH_SPEED_VIDEO)
+            ?: false
+    } else {
+        false
+    }
+
+/**
+ * Whether the camera has a flash device.
  *
  * @param cameraId camera id
  * @return [Boolean.true] if camera has a flash device, [Boolean.false] otherwise.
  */
 fun Context.isFlashAvailable(cameraId: String) =
-    getCameraCharacteristics(cameraId).get(CameraCharacteristics.FLASH_INFO_AVAILABLE)
-        ?: false
+    getCameraCharacteristics(cameraId).get(CameraCharacteristics.FLASH_INFO_AVAILABLE) ?: false
 
 /**
  * Gets supported auto white balance modes
@@ -183,7 +267,7 @@ fun Context.getAutoWhiteBalanceModes(cameraId: String) =
         ?.toList() ?: emptyList()
 
 /**
- *  Get supported iso range
+ * Gets supported iso range
  *
  * @param cameraId camera id
  * @return the iso range
@@ -192,7 +276,7 @@ fun Context.getSensitivityRange(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE)
 
 /**
- * Get if camera supports white balance metering regions.
+ * Gets if camera supports white balance metering regions.
  *
  * @param cameraId camera id
  * @return true if camera supports metering regions, false otherwise
@@ -201,7 +285,7 @@ fun Context.getWhiteBalanceMeteringRegionsSupported(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_MAX_REGIONS_AWB)
 
 /**
- * Get supported auto exposure modes.
+ * Gets supported auto exposure modes.
  *
  * @param cameraId camera id
  * @return list of supported auto focus modes
@@ -220,7 +304,7 @@ fun Context.getExposureRange(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE)
 
 /**
- * Get exposure compensation step.
+ * Gets exposure compensation step.
  *
  * This is the unit for [getExposureRange]. For example, if this key has a value of 1/2, then a
  * setting of -2 for  [getExposureRange] means that the target EV offset for the auto-exposure
@@ -233,7 +317,7 @@ fun Context.getExposureStep(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP)
 
 /**
- * Get if camera supports exposure metering regions.
+ * Gets if camera supports exposure metering regions.
  *
  * @param cameraId camera id
  * @return true if camera supports metering regions, false otherwise
@@ -264,7 +348,7 @@ fun Context.getScalerMaxZoom(cameraId: String): Float {
 }
 
 /**
- * Get supported auto focus modes.
+ * Gets supported auto focus modes.
  *
  * @param cameraId camera id
  * @return list of supported auto focus modes
@@ -274,20 +358,19 @@ fun Context.getAutoFocusModes(cameraId: String) =
         ?.toList() ?: emptyList()
 
 /**
- * Get supported lens distance range.
+ * Gets supported lens distance range.
  *
  * @param cameraId camera id
  * @return lens distance range
  */
-fun Context.getLensDistanceRange(cameraId: String) =
-    Range(
-        0f,
-        getCameraCharacteristics(cameraId).get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE)
-            ?: 0f
-    )
+fun Context.getLensDistanceRange(cameraId: String) = Range(
+    0f,
+    getCameraCharacteristics(cameraId).get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE)
+        ?: 0f
+)
 
 /**
- * Get if camera supports focus metering regions.
+ * Gets if camera supports focus metering regions.
  *
  * @param cameraId camera id
  * @return true if camera supports metering regions, false otherwise
@@ -296,7 +379,7 @@ fun Context.getFocusMaxMeteringRegionsSupported(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF)
 
 /**
- * Checks if the camera supports optical stabilization.
+ * Whether the camera supports optical stabilization.
  *
  * @param cameraId camera id
  * @return [Boolean.true] if camera supports optical stabilization, [Boolean.false] otherwise.
@@ -330,8 +413,7 @@ fun Context.getCameraOutputStreamSizes(): List<Size> {
  * @see [Context.getCameraOutputStreamSizes]
  */
 fun Context.getCameraOutputStreamSizes(
-    cameraId: String,
-    imageFormat: Int = ImageFormat.YUV_420_888
+    cameraId: String, imageFormat: Int = ImageFormat.YUV_420_888
 ): List<Size> {
     return this.getCameraCharacteristics(cameraId)[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]?.getOutputSizes(
         imageFormat
@@ -339,7 +421,7 @@ fun Context.getCameraOutputStreamSizes(
 }
 
 /**
- * Get list of framerate for a camera.
+ * Gets list of framerate for a camera.
  *
  * @param cameraId camera id
  * @return List of fps supported by a camera
@@ -370,8 +452,7 @@ private fun Context.isCapabilitiesSupported(cameraId: String, capability: Int): 
 fun Context.is10BitProfileSupported(cameraId: String): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         isCapabilitiesSupported(
-            cameraId,
-            CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_DYNAMIC_RANGE_TEN_BIT
+            cameraId, CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_DYNAMIC_RANGE_TEN_BIT
         )
     } else {
         false
@@ -379,7 +460,7 @@ fun Context.is10BitProfileSupported(cameraId: String): Boolean {
 }
 
 /**
- * Get list of 10-bit dynamic range output profiles.
+ * Gets list of 10-bit dynamic range output profiles.
  *
  * @param cameraId camera id
  * @return List of 10-bit dynamic range output profiles

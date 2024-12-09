@@ -24,6 +24,8 @@ import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.utils.extensions.defaultCameraId
+import io.github.thibaultbee.streampack.core.utils.extensions.isConfigSupported
+import io.github.thibaultbee.streampack.core.utils.extensions.isFpsHighSpeed
 import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
@@ -77,8 +79,7 @@ class CameraSource(
 
     override var cameraId: String = context.defaultCameraId
         get() = cameraController.cameraId ?: field
-        @RequiresPermission(Manifest.permission.CAMERA)
-        set(value) {
+        @RequiresPermission(Manifest.permission.CAMERA) set(value) {
             if (field == value) {
                 Logger.w(TAG, "Camera ID is already set to $value")
                 return
@@ -122,8 +123,8 @@ class CameraSource(
         }
 
     override fun configure(config: VideoConfig) {
-        if (!context.isFrameRateSupported(cameraId, config.fps)) {
-            Logger.w(TAG, "Camera $cameraId does not support ${config.fps} fps")
+        if (context.isConfigSupported(cameraId, config)) {
+            "Camera $cameraId does not support $config"
         }
 
         var needRestart = false
@@ -162,8 +163,9 @@ class CameraSource(
             previewSurface?.let { targets.add(it) }
             outputSurface?.let { targets.add(it) }
 
+            val isHfr = context.isFpsHighSpeed(cameraId, fps)
             cameraController.startCamera(
-                cameraId, targets, dynamicRangeProfile.dynamicRange
+                cameraId, targets, isHfr, dynamicRangeProfile.dynamicRange
             )
         }
 

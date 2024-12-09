@@ -24,12 +24,13 @@ import android.hardware.camera2.CameraDevice.AUDIO_RESTRICTION_VIBRATION_SOUND
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
-import android.hardware.camera2.params.OutputConfiguration
 import android.os.Build
 import android.util.Range
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.error.CameraException
+import io.github.thibaultbee.streampack.core.internal.sources.video.camera.dispatchers.CameraExecutorManager
+import io.github.thibaultbee.streampack.core.internal.sources.video.camera.dispatchers.CameraHandlerManager
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.utils.extensions.getAutoFocusModes
 import io.github.thibaultbee.streampack.core.utils.extensions.getCameraFps
@@ -64,6 +65,7 @@ class CameraController(
     }
 
     private fun getClosestFpsRange(cameraId: String, fps: Int): Range<Int> {
+        return Range(fps, fps)
         var fpsRangeList = context.getCameraFps(cameraId)
         Logger.i(TAG, "Supported FPS range list: $fpsRangeList")
 
@@ -148,27 +150,11 @@ class CameraController(
     }
 
     private suspend fun createCaptureSession(
-        camera: CameraDevice,
-        targets: List<Surface>,
-        dynamicRange: Long,
+        camera: CameraDevice, targets: List<Surface>, isHfr: Boolean, dynamicRange: Long,
     ): CameraCaptureSession = suspendCancellableCoroutine { cont ->
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val outputConfigurations = targets.map {
-                OutputConfiguration(it).apply {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        dynamicRangeProfile = dynamicRange
-                    }
-                }
-            }
-
-            cameraDispatchManager.createCaptureSessionByOutputConfiguration(
-                camera, outputConfigurations, CameraCaptureSessionCallback(cont)
-            )
-        } else {
-            cameraDispatchManager.createCaptureSession(
-                camera, targets, CameraCaptureSessionCallback(cont)
-            )
-        }
+        cameraDispatchManager.createCaptureSession(
+            camera, isHfr, dynamicRange, targets, CameraCaptureSessionCallback(cont)
+        )
     }
 
     private fun createRequestSession(
@@ -198,6 +184,7 @@ class CameraController(
     suspend fun startCamera(
         cameraId: String,
         targets: List<Surface>,
+        isHfr: Boolean,
         dynamicRange: Long,
     ) {
         require(targets.isNotEmpty()) { " At least one target is required" }
@@ -206,7 +193,7 @@ class CameraController(
             val manager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
             camera = openCamera(manager, cameraId).also { cameraDevice ->
                 captureSession = createCaptureSession(
-                    cameraDevice, targets, dynamicRange
+                    cameraDevice, targets, isHfr, dynamicRange
                 )
             }
         }
@@ -219,8 +206,9 @@ class CameraController(
         val camera = requireNotNull(camera) { "Camera must not be null" }
         val captureSession = requireNotNull(captureSession) { "Capture session must not be null" }
 
+        val fpsRange = getClosestFpsRange(camera.id, fps)
         captureRequest = createRequestSession(
-            camera, captureSession, getClosestFpsRange(camera.id, fps), targets
+            camera, captureSession, fpsRange, targets
         )
         requestSessionSurface.addAll(targets)
     }
