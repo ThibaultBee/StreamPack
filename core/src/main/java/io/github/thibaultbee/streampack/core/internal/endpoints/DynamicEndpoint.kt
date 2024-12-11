@@ -40,7 +40,7 @@ import kotlinx.coroutines.flow.update
  *
  * @param context The application context
  */
-class DynamicEndpoint(
+open class DynamicEndpoint(
     private val context: Context
 ) : IEndpointInternal {
     // Current endpoint
