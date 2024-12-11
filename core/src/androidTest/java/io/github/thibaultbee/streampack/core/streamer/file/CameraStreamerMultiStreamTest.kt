@@ -45,7 +45,9 @@ class CameraStreamerMultiStreamTest {
 
     private val descriptors = listOf(
         UriMediaDescriptor(FileUtils.createCacheFile("video.ts").toUri()),
-        UriMediaDescriptor(FileUtils.createCacheFile("video.mp4").toUri())
+        UriMediaDescriptor(FileUtils.createCacheFile("video.mp4").toUri()),
+        UriMediaDescriptor(FileUtils.createCacheFile("video2.ts").toUri()),
+        UriMediaDescriptor(FileUtils.createCacheFile("video2.mp4").toUri()),
     )
 
     @get:Rule
