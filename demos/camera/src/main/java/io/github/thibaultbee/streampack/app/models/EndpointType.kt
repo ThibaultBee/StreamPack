@@ -15,15 +15,18 @@
  */
 package io.github.thibaultbee.streampack.app.models
 
-enum class EndpointType(val id: Int) {
-    TS_FILE(0),
-    FLV_FILE(1),
-    SRT(2),
-    RTMP(3),
-    MP4_FILE(4),
-    WEBM_FILE(5),
-    OGG_FILE(6),
-    THREEGP_FILE(7);
+import androidx.annotation.StringRes
+import io.github.thibaultbee.streampack.app.R
+
+enum class EndpointType(@StringRes val id: Int) {
+    TS_FILE(R.string.to_ts_file),
+    FLV_FILE(R.string.to_flv_file),
+    SRT(R.string.to_srt),
+    RTMP(R.string.to_rtmp),
+    MP4_FILE(R.string.to_mp4_file),
+    WEBM_FILE(R.string.to_webm_file),
+    OGG_FILE(R.string.to_ogg_file),
+    THREEGP_FILE(R.string.to_3gp_file);
 
     companion object {
         fun fromId(id: Int): EndpointType = entries.first { it.id == id }
