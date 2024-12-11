@@ -60,6 +60,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.extensions)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.preference.ktx)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.datastore)
 
     testImplementation(libs.junit)
 

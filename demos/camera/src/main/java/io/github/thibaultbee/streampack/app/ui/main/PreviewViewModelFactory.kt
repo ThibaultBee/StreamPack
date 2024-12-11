@@ -18,7 +18,6 @@ package io.github.thibaultbee.streampack.app.ui.main
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import io.github.thibaultbee.streampack.app.utils.StreamerManager
 
 class PreviewViewModelFactory(private val application: Application) :
     ViewModelProvider.Factory {

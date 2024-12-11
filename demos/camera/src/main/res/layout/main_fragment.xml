@@ -20,12 +20,12 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:enableZoomOnPinch="true"
-            app:scaleMode="fill"
-            app:position="center"
             app:layout_constraintBottom_toTopOf="@+id/liveButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:position="center"
+            app:scaleMode="fill" />
 
         <ImageButton
             android:id="@+id/switchButton"
@@ -33,6 +33,7 @@
             android:layout_height="wrap_content"
             android:contentDescription="@string/switch_camera_source"
             android:onClick="@{() -> viewmodel.toggleCamera()}"
+            android:onLongClick="@{() -> viewmodel.switchBackToFront()}"
             android:src="@drawable/ic_switch_camera_24px"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
