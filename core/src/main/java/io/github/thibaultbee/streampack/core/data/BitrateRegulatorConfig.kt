@@ -24,7 +24,7 @@ data class BitrateRegulatorConfig(
     /**
      * Video encoder bitrate ranges in bits/s.
      */
-    val videoBitrateRange: Range<Int> = Range(500, 10000),
+    val videoBitrateRange: Range<Int> = Range(500000, 10000000),
     /**
      * Audio encoder bitrate ranges in bits/s.
      */
