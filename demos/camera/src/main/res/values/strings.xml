@@ -1,34 +1,95 @@
 <resources>
     <string name="app_name">StreamPack</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="menu_actions">Menu actions</string>
+
+    <!-- Preview -->
     <string name="live">Start Live</string>
     <string name="stop">Stop</string>
 
     <string name="permission">Permission</string>
     <string name="permission_not_granted">To function properly, StreamPack needs your permission.</string>
-    <string name="action_settings">Settings</string>
-    <string name="menu_actions">Menu actions</string>
-    <string name="endpoint_type">Type</string>
-    <string name="resolution">Resolution</string>
-    <string name="video_bitrate">Video start bitrate (kb/s)</string>
-    <string name="video_resolution_key">video_resolution_key</string>
-    <string name="srt_server_ip_key">srt_server_ip_key</string>
-    <string name="server_ip">IP</string>
-    <string name="server_port">Port</string>
-    <string name="srt_server_port_key">srt_server_port_key</string>
-    <string name="srt_server">SRT Server</string>
-    <string name="endpoint">Endpoint</string>
-    <string name="video_bitrate_key">video_bitrate_key</string>
-    <string name="fps">Framerate</string>
-    <string name="video_fps_key">video_fps_key</string>
+
+    <string name="switch_camera_source">Switch camera source</string>
+    <string name="turn_on_off_torch">Turn on/off torch</string>
+    <string name="set_white_balance">Set white balance</string>
+    <string name="set_exposure_compensation">Set exposure compensation</string>
+    <string name="set_zoom_ratio">Set zoom ratio</string>
+    <string name="set_auto_focus_mode">Set auto focus mode</string>
+    <string name="mute_unmute_microphone">Mute unmute microphone</string>
+
+    <!-- Settings -->
+    <string name="settings">Settings</string>
+
+    <string name="warning">Warning</string>
+    <plurals name="camera_frame_rate_not_supported">
+        <item quantity="one">Camera %1$s does not support %2$d fps</item>
+        <item quantity="other">Cameras %1$s do not support %2$d fps</item>
+    </plurals>
+
+    <!-- Video -->
+    <string name="video">Video</string>
+
+    <string name="video_enable">Enable</string>
+    <string name="video_enable_key">video_enabled_key</string>
+
+    <string name="video_settings_key">video_settings_key</string>
+
     <string name="video_encoder">Encoder</string>
     <string name="video_encoder_key">video_encoder_key</string>
-    <string name="default_video_encoder">video/avc</string>
-    <string name="video">Video</string>
+
+    <string name="video_resolution">Resolution</string>
+    <string name="video_resolution_key">video_resolution_key</string>
+
+    <string name="video_fps">Frames per second</string>
+    <string name="video_fps_key">video_fps_key</string>
+    <string name="default_fps">30</string>
+
+    <string name="video_bitrate">Bitrate in kbps</string>
+    <string name="video_bitrate_key">live_video_bitrate_key</string>
+    <string name="default_video_bitrate">1000</string>
+
+    <string name="video_profile">Profile</string>
+    <string name="video_profile_key">video_profile_key</string>
+
+    <string name="video_level">Level</string>
+    <string name="video_level_key">video_level_key</string>
+
+    <!-- Audio -->
     <string name="audio">Audio</string>
-    <string name="audio_encoder_key">audio_encoder_key</string>
-    <string name="default_audio_encoder">audio/mp4a-latm</string>
+
+    <string name="audio_enable">Enable</string>
+    <string name="audio_enable_key">audio_enabled_key</string>
+
+    <string name="audio_settings_key">audio_settings_key</string>
+
     <string name="audio_encoder">Encoder</string>
-    <string name="endpoint_type_key">endpoint_type_key_2</string>
+    <string name="audio_encoder_key">audio_encoder_key</string>
+
+    <string name="audio_number_of_channels">Number of channels</string>
+    <string name="audio_channel_config_key">audio_channel_config_key</string>
+
+    <string name="audio_bitrate">Bitrate</string>
+    <string name="audio_bitrate_key">audio_bitrate_key</string>
+
+    <string name="audio_sample_rate">Sample rate in kHz</string>
+    <string name="audio_sample_rate_key">audio_sample_rate_key</string>
+
+    <string name="audio_byte_format">Byte format</string>
+    <string name="audio_byte_format_key">audio_byte_format_key</string>
+    <string name="audio_byte_format_8bit">8 bits</string>
+    <string name="audio_byte_format_16bit">16 bits</string>
+    <string name="audio_byte_format_float">Float</string>
+
+    <string name="audio_profile">Profile</string>
+    <string name="audio_profile_key">audio_profile_key</string>
+
+    <!-- Endpoint -->
+    <string name="endpoint">Endpoint</string>
+
+    <string name="endpoint_type">Type</string>
+    <string name="endpoint_type_key">endpoint_type_key</string>
     <string name="to_ts_file">Write to a TS file</string>
     <string name="to_flv_file">Write to a FLV file</string>
     <string name="to_srt">Stream to a remote SRT device</string>
@@ -37,34 +98,48 @@
     <string name="to_webm_file">Write to a WebM file</string>
     <string name="to_ogg_file">Write to an OGG file</string>
     <string name="to_3gp_file">Write to a 3GP file</string>
+
+    <string name="srt_server">SRT Server</string>
     <string name="srt_server_key">srt_server_key</string>
-    <string name="ts_endpoint_file_key">ts_endpoint_file_key</string>
+    <string name="server_ip">IP</string>
+    <string name="srt_server_ip_key">srt_server_ip_key</string>
+    <string name="default_srt_server_url">192.168.1.11</string>
+    <string name="server_port">Port</string>
+    <string name="srt_server_port_key">srt_server_port_key</string>
+    <string name="srt_server_stream_id_key">server_stream_id_key</string>
+    <string name="srt_server_stream_id">Stream ID</string>
+    <string name="srt_server_passphrase_key">srt_server_passphrase_key</string>
+    <string name="srt_server_passphrase">Passphrase</string>
+    <string name="default_srt_server_passphrase">""</string>
+    <string name="srt_server_enable_bitrate_regulation_key">srt_server_enable_bitrate_regulation_key</string>
+    <string name="srt_server_enable_bitrate_regulation">Enable bitrate regulation</string>
+    <string name="srt_server_video_target_bitrate_key">srt_server_video_target_bitrate_key</string>
+    <string name="srt_server_video_target_bitrate">Video target bitrate (kb/s)</string>
+    <string name="srt_server_video_min_bitrate_key">srt_server_video_min_bitrate_key</string>
+    <string name="srt_server_video_min_bitrate">Video minimum bitrate (kb/s)</string>
+
+    <string name="rtmp_server_key">rtmp_server_key</string>
+    <string name="rtmp_server">RTMP Server</string>
+    <string name="rtmp_server_url_key">rtmp_server_url_key</string>
+    <string name="default_rtmp_url">rtmp://192.168.1.192/s/streamKey</string>
+    <string name="server_url">URL</string>
+
+    <string name="file_endpoint_key">file_endpoint_key</string>
     <string name="file">File</string>
     <string name="file_name_key">file_name_key</string>
     <string name="file_name">File name</string>
-    <string name="ts_muxer">TS Muxer</string>
-    <string name="ts_muxer_service_key">ts_muxer_service_key</string>
-    <string name="default_muxer_service">StreamPackService</string>
-    <string name="ts_muxer_service">Service name</string>
-    <string name="ts_muxer_provider_key">ts_muxer_provider_key</string>
-    <string name="default_ts_muxer_provider">StreamPack Inc</string>
-    <string name="ts_muxer_provider">Provider name</string>
-    <string name="default_video_resolution">1280x720</string>
-    <string name="audio_enable_key">audio_enable_key</string>
-    <string name="audio_enable">Enable audio</string>
-    <string name="audio_settings_key">audio_settings_key</string>
-    <string name="settings">Settings</string>
-    <string name="audio_number_of_channels">Number of channels</string>
-    <string name="audio_number_of_channels_key">audio_number_of_channels_configuration_key</string>
-    <string name="audio_bitrate_key">audio_bitrate_key</string>
-    <string name="audio_bitrate">Bitrate</string>
-    <string name="audio_sample_rate_key">audio_sample_rate_key</string>
-    <string name="audio_sample_rate">Sample rate</string>
-    <string name="audio_byte_format">Byte format</string>
-    <string name="audio_byte_format_key">audio_byte_format_key</string>
 
-    <string name="audio_profile">Profile</string>
-    <string name="audio_profile_key">audio_profile_key</string>
+    <!-- Video and audio encoders -->
+    <string name="video_encoder_h264">AVC/H.264</string>
+    <string name="video_encoder_h265">HEVC/H.265</string>
+    <string name="video_encoder_vp9">VP9</string>
+    <string name="video_encoder_vp8">VP8</string>
+    <string name="video_encoder_av1">AV1</string>
+    <string name="video_encoder_h263">H.263</string>
+    <string name="audio_encoder_aac">AAC</string>
+    <string name="audio_encoder_opus">Opus</string>
+
+    <!-- Audio levels and profiles -->
     <string name="audio_profile_main">Main</string>
     <string name="audio_profile_lc">Low-Complexity</string>
     <string name="audio_profile_ssr">Scalable Sampling Rate</string>
@@ -79,49 +154,7 @@
     <string name="audio_profile_xhe">Extended High Efficiency</string>
     <string name="av_profile_unknown">Unknown</string>
 
-    <string name="video_encoder_h264">AVC/H.264</string>
-    <string name="video_encoder_h265">HEVC/H.265</string>
-    <string name="video_encoder_vp9">VP9</string>
-    <string name="video_encoder_vp8">VP8</string>
-    <string name="video_encoder_av1">AV1</string>
-    <string name="audio_encoder_aac">AAC</string>
-    <string name="ts_server_stream_id_key">server_stream_id_key</string>
-    <string name="ts_server_stream_id">Stream ID</string>
-    <string name="default_ts_server_stream_id">StreamPack</string>
-    <string name="ts_server_passphrase_key">server_passphrase_key</string>
-    <string name="server_passphrase">Passphrase</string>
-    <string name="default_server_passphrase_id">""</string>
-    <string name="switch_camera_source">Switch camera source</string>
-    <string name="turn_on_off_torch">Turn on/off torch</string>
-    <string name="server_enable_bitrate_regulation_key">server_enable_bitrate_regulation_key</string>
-    <string name="server_enable_bitrate_regulation">Enable bitrate regulation</string>
-    <string name="server_video_target_bitrate_key">server_video_target_bitrate_key</string>
-    <string name="server_video_target_bitrate">Video target bitrate (kb/s)</string>
-    <string name="server_video_min_bitrate_key">server_video_min_bitrate_key</string>
-    <string name="server_video_min_bitrate">Video minimum bitrate (kb/s)</string>
-    <string name="video_enable_key">video_enable_key</string>
-    <string name="video_enable">Enable video</string>
-    <string name="video_settings_key">video_settings_key</string>
-    <string name="warning">Warning</string>
-    <string name="set_white_balance">Set white balance</string>
-    <string name="set_exposure_compensation">Set exposure compensation</string>
-    <string name="set_zoom_ratio">Set zoom ratio</string>
-    <string name="set_auto_focus_mode">Set auto focus mode</string>
-    <string name="mute_unmute_microphone">Mute unmute microphone</string>
-    <string name="ts_muxer_key">ts_muxer_key</string>
-    <string name="rtmp_server_key">rtmp_server_key</string>
-    <string name="rtmp_server">RTMP Server</string>
-    <string name="rtmp_server_url_key">rtmp_server_url_key</string>
-    <string name="server_url">URL</string>
-    <string name="default_rtmp_url">rtmp://192.168.1.192/s/streamKey</string>
-    <string name="video_encoder_h263">H.263</string>
-    <string name="audio_encoder_opus">Opus</string>
-    <string name="audio_byte_format_8bit">8 bits</string>
-    <string name="audio_byte_format_16bit">16 bits</string>
-    <string name="audio_byte_format_float">Float</string>
-
-    <string name="video_profile">Profile</string>
-    <string name="video_profile_key">video_profile_key</string>
+    <!-- Video levels and profiles -->
     <string name="video_profile_baseline">Baseline</string>
     <string name="video_profile_extended">Extended</string>
     <string name="video_profile_main">Main</string>
@@ -143,8 +176,6 @@
     <string name="video_profile_vp9_profile3_hdr10">Profile 3 HDR10</string>
     <string name="video_profile_vp9_profile3_hdr10plus">Profile 3 HDR10Plus</string>
 
-    <string name="video_level">Level</string>
-    <string name="video_level_key">video_level_key</string>
     <string name="video_level_1">Level1</string>
     <string name="video_level_1b">Level1b</string>
     <string name="video_level_10">Level10</string>
@@ -216,8 +247,4 @@
     <string name="video_level_high_level62">HighLevel62</string>
     <string name="av_level_unknown">Unknown level</string>
 
-    <plurals name="camera_frame_rate_not_supported">
-        <item quantity="one">Camera %1$s does not support %2$d fps</item>
-        <item quantity="other">Cameras %1$s do not support %2$d fps</item>
-    </plurals>
 </resources>
