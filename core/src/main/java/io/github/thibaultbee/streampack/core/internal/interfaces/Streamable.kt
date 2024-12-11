@@ -60,7 +60,7 @@ interface Configurable<T> {
     fun configure(config: T)
 }
 
-interface Releaseable {
+interface Releasable {
     /**
      * Closes and releases resources
      */

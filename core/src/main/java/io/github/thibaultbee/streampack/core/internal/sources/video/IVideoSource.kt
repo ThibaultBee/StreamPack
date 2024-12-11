@@ -17,14 +17,14 @@ package io.github.thibaultbee.streampack.core.internal.sources.video
 
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.internal.interfaces.Configurable
-import io.github.thibaultbee.streampack.core.internal.interfaces.Releaseable
+import io.github.thibaultbee.streampack.core.internal.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.internal.interfaces.SuspendStreamable
 import io.github.thibaultbee.streampack.core.internal.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.internal.sources.IFrameSource
 import io.github.thibaultbee.streampack.core.internal.sources.ISurfaceSource
 
 interface IVideoSourceInternal : IFrameSource<VideoConfig>, ISurfaceSource, IVideoSource,
-    SuspendStreamable, Configurable<VideoConfig>, Releaseable {
+    SuspendStreamable, Configurable<VideoConfig>, Releasable {
     /**
      * Set to [Boolean.true] to use video source as a Surface renderer (see [ISurfaceSource]). For example, this is useful
      * for camera and screen recording. If set to [Boolean.false], the encoder will use source as a

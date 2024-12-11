@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.internal.encoders
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.data.Config
 import io.github.thibaultbee.streampack.core.internal.data.Frame
-import io.github.thibaultbee.streampack.core.internal.interfaces.Releaseable
+import io.github.thibaultbee.streampack.core.internal.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.internal.interfaces.SuspendStreamable
 import java.nio.ByteBuffer
 import java.util.concurrent.Executor
@@ -61,7 +61,7 @@ interface IEncoder {
     fun requestKeyFrame()
 }
 
-interface IEncoderInternal : SuspendStreamable, Releaseable,
+interface IEncoderInternal : SuspendStreamable, Releasable,
     IEncoder {
 
     /**

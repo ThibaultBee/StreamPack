@@ -17,12 +17,12 @@ package io.github.thibaultbee.streampack.core.internal.sources.audio
 
 import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.internal.interfaces.Configurable
-import io.github.thibaultbee.streampack.core.internal.interfaces.Releaseable
+import io.github.thibaultbee.streampack.core.internal.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.internal.interfaces.Streamable
 import io.github.thibaultbee.streampack.core.internal.sources.IFrameSource
 
 interface IAudioSourceInternal : IAudioSource, IFrameSource<AudioConfig>, Streamable,
-    Configurable<AudioConfig>, Releaseable
+    Configurable<AudioConfig>, Releasable
 
 interface IAudioSource {
     /**
