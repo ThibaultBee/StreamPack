@@ -35,3 +35,9 @@ enum class MediaSinkType(val schemes: Set<String>) {
     }
 }
 
+/**
+ * Whether the sink is local (ie. a local file) or not.
+ */
+val MediaSinkType.isLocal: Boolean
+    get() = this == MediaSinkType.FILE || this == MediaSinkType.CONTENT
+
