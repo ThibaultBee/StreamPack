@@ -16,9 +16,6 @@
 package io.github.thibaultbee.streampack.core.internal.sources
 
 import io.github.thibaultbee.streampack.core.internal.data.Frame
-import io.github.thibaultbee.streampack.core.internal.interfaces.Configurable
-import io.github.thibaultbee.streampack.core.internal.interfaces.Releaseable
-import io.github.thibaultbee.streampack.core.internal.interfaces.Streamable
 import java.nio.ByteBuffer
 
 interface IFrameSource<T> {

@@ -19,14 +19,14 @@ import io.github.thibaultbee.streampack.core.data.Config
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.FileSink
-import io.github.thibaultbee.streampack.core.internal.interfaces.Releaseable
+import io.github.thibaultbee.streampack.core.internal.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.internal.interfaces.SuspendCloseable
 import io.github.thibaultbee.streampack.core.internal.interfaces.SuspendStreamable
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 
 interface IEndpointInternal : IEndpoint, SuspendStreamable,
-    SuspendCloseable, Releaseable {
+    SuspendCloseable, Releasable {
     /**
      * Opens the endpoint.
      * The endpoint must check if the [MediaDescriptor] is supported and if it is not already opened.

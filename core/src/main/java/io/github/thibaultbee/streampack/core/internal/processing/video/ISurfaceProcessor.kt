@@ -17,12 +17,12 @@ package io.github.thibaultbee.streampack.core.internal.processing.video
 
 import android.util.Size
 import android.view.Surface
-import io.github.thibaultbee.streampack.core.internal.interfaces.Releaseable
+import io.github.thibaultbee.streampack.core.internal.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.internal.processing.video.outputs.AbstractSurfaceOutput
 
 interface ISurfaceProcessor
 
-interface ISurfaceProcessorInternal : ISurfaceProcessor, Releaseable {
+interface ISurfaceProcessorInternal : ISurfaceProcessor, Releasable {
     fun createInputSurface(surfaceSize: Size): Surface?
 
     fun removeInputSurface(surface: Surface)

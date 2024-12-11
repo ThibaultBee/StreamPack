@@ -16,10 +16,6 @@
 package io.github.thibaultbee.streampack.core.internal.sources
 
 import android.view.Surface
-import io.github.thibaultbee.streampack.core.data.VideoConfig
-import io.github.thibaultbee.streampack.core.internal.interfaces.Configurable
-import io.github.thibaultbee.streampack.core.internal.interfaces.Releaseable
-import io.github.thibaultbee.streampack.core.internal.interfaces.Streamable
 
 interface ISurfaceSource {
     /**
