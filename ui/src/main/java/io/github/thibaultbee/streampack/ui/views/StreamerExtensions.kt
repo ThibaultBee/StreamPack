@@ -4,12 +4,12 @@ import android.content.Context
 import android.hardware.camera2.CameraCharacteristics
 import android.util.Size
 import android.view.Surface
-import androidx.camera.impl.utils.futures.FutureCallback
-import androidx.camera.impl.utils.futures.Futures
 import androidx.camera.viewfinder.CameraViewfinder
 import androidx.camera.viewfinder.CameraViewfinderExt.requestSurface
-import androidx.camera.viewfinder.surface.ViewfinderSurfaceRequest
-import androidx.camera.viewfinder.surface.populateFromCharacteristics
+import androidx.camera.viewfinder.core.ViewfinderSurfaceRequest
+import androidx.camera.viewfinder.core.impl.utils.futures.FutureCallback
+import androidx.camera.viewfinder.core.impl.utils.futures.Futures
+import androidx.camera.viewfinder.core.populateFromCharacteristics
 import androidx.core.content.ContextCompat
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer

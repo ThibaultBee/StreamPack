@@ -29,7 +29,8 @@ import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.camera.viewfinder.CameraViewfinder
-import androidx.camera.viewfinder.surface.ViewfinderSurfaceRequest
+import androidx.camera.viewfinder.core.ScaleType
+import androidx.camera.viewfinder.core.ViewfinderSurfaceRequest
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.core.internal.utils.OrientationUtils
@@ -365,50 +366,50 @@ class PreviewView @JvmOverloads constructor(
             }
         }
 
-        private fun getPosition(scaleType: CameraViewfinder.ScaleType): Position {
+        private fun getPosition(scaleType: ScaleType): Position {
             return when (scaleType) {
-                CameraViewfinder.ScaleType.FILL_START -> Position.START
-                CameraViewfinder.ScaleType.FILL_CENTER -> Position.CENTER
-                CameraViewfinder.ScaleType.FILL_END -> Position.END
-                CameraViewfinder.ScaleType.FIT_START -> Position.START
-                CameraViewfinder.ScaleType.FIT_CENTER -> Position.CENTER
-                CameraViewfinder.ScaleType.FIT_END -> Position.END
+                ScaleType.FILL_START -> Position.START
+                ScaleType.FILL_CENTER -> Position.CENTER
+                ScaleType.FILL_END -> Position.END
+                ScaleType.FIT_START -> Position.START
+                ScaleType.FIT_CENTER -> Position.CENTER
+                ScaleType.FIT_END -> Position.END
             }
         }
 
-        private fun getScaleMode(scaleType: CameraViewfinder.ScaleType): ScaleMode {
+        private fun getScaleMode(scaleType: ScaleType): ScaleMode {
             return when (scaleType) {
-                CameraViewfinder.ScaleType.FILL_START -> ScaleMode.FILL
-                CameraViewfinder.ScaleType.FILL_CENTER -> ScaleMode.FILL
-                CameraViewfinder.ScaleType.FILL_END -> ScaleMode.FILL
-                CameraViewfinder.ScaleType.FIT_START -> ScaleMode.FIT
-                CameraViewfinder.ScaleType.FIT_CENTER -> ScaleMode.FIT
-                CameraViewfinder.ScaleType.FIT_END -> ScaleMode.FIT
+                ScaleType.FILL_START -> ScaleMode.FILL
+                ScaleType.FILL_CENTER -> ScaleMode.FILL
+                ScaleType.FILL_END -> ScaleMode.FILL
+                ScaleType.FIT_START -> ScaleMode.FIT
+                ScaleType.FIT_CENTER -> ScaleMode.FIT
+                ScaleType.FIT_END -> ScaleMode.FIT
             }
         }
 
         private fun getScaleType(
             scaleMode: ScaleMode, position: Position
-        ): CameraViewfinder.ScaleType {
+        ): ScaleType {
             when (position) {
                 Position.START -> {
                     return when (scaleMode) {
-                        ScaleMode.FILL -> CameraViewfinder.ScaleType.FILL_START
-                        ScaleMode.FIT -> CameraViewfinder.ScaleType.FIT_START
+                        ScaleMode.FILL -> ScaleType.FILL_START
+                        ScaleMode.FIT -> ScaleType.FIT_START
                     }
                 }
 
                 Position.CENTER -> {
                     return when (scaleMode) {
-                        ScaleMode.FILL -> CameraViewfinder.ScaleType.FILL_CENTER
-                        ScaleMode.FIT -> CameraViewfinder.ScaleType.FIT_CENTER
+                        ScaleMode.FILL -> ScaleType.FILL_CENTER
+                        ScaleMode.FIT -> ScaleType.FIT_CENTER
                     }
                 }
 
                 Position.END -> {
                     return when (scaleMode) {
-                        ScaleMode.FILL -> CameraViewfinder.ScaleType.FILL_END
-                        ScaleMode.FIT -> CameraViewfinder.ScaleType.FIT_END
+                        ScaleMode.FILL -> ScaleType.FILL_END
+                        ScaleMode.FIT -> ScaleType.FIT_END
                     }
                 }
             }
