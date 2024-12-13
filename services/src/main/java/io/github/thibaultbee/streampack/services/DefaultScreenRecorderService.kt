@@ -37,7 +37,7 @@ import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.rootCause
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.streamers.DefaultScreenRecorderStreamer
-import io.github.thibaultbee.streampack.core.streamers.orientation.DeviceRotationProvider
+import io.github.thibaultbee.streampack.core.streamers.orientation.SensorRotationProvider
 import io.github.thibaultbee.streampack.core.streamers.orientation.IRotationProvider
 import io.github.thibaultbee.streampack.services.utils.NotificationUtils
 import kotlinx.coroutines.flow.filterNotNull
@@ -78,7 +78,7 @@ abstract class DefaultScreenRecorderService(
     protected var streamer: DefaultScreenRecorderStreamer? = null
         private set
 
-    protected open val rotationProvider: IRotationProvider by lazy { DeviceRotationProvider(this) }
+    protected open val rotationProvider: IRotationProvider by lazy { SensorRotationProvider(this) }
 
     private val binder = ScreenRecorderServiceBinder()
     private val notificationUtils: NotificationUtils by lazy {

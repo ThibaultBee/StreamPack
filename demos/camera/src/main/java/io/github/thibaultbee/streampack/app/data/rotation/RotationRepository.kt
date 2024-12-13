@@ -1,11 +1,9 @@
 package io.github.thibaultbee.streampack.app.data.rotation
 
 import android.content.Context
-import io.github.thibaultbee.streampack.core.streamers.orientation.DeviceRotationProvider
-import io.github.thibaultbee.streampack.core.streamers.orientation.IRotationProvider
-import kotlinx.coroutines.channels.awaitClose
+import io.github.thibaultbee.streampack.core.streamers.orientation.SensorRotationProvider
+import io.github.thibaultbee.streampack.core.streamers.orientation.asFlowProvider
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 
 
 /**
@@ -14,16 +12,14 @@ import kotlinx.coroutines.flow.callbackFlow
 class RotationRepository(
     context: Context,
 ) {
-    private val rotationProvider = DeviceRotationProvider(context)
-    val rotationFlow: Flow<Int> = callbackFlow {
-        val listener = object : IRotationProvider.Listener {
-            override fun onOrientationChanged(rotation: Int) {
-                trySend(rotation)
-            }
-        }
-        rotationProvider.addListener(listener)
-        awaitClose { rotationProvider.removeListener(listener) }
-    }
+    /**
+     * A flow of device rotation.
+     * `SensorRotationProvider` follows the orientation of the sensor, so it will change when the
+     * device is rotated.
+     * If the application orientation is locked, you should use `DisplayRotationProvider` instead.
+     */
+    private val rotationProvider = SensorRotationProvider(context).asFlowProvider()
+    val rotationFlow: Flow<Int> = rotationProvider.rotationFlow
 
     companion object {
         @Volatile

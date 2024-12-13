@@ -3,6 +3,7 @@ package io.github.thibaultbee.streampack.core.streamers.orientation
 import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.rotationToDegrees
+import kotlinx.coroutines.flow.Flow
 
 val IRotationProvider.rotationDegrees: Int
     @IntRange(from = 0, to = 359)
@@ -36,4 +37,14 @@ abstract class RotationProvider : IRotationProvider {
     override fun removeListener(listener: IRotationProvider.Listener) {
         listeners.remove(listener)
     }
+}
+
+fun RotationProvider.asFlowProvider(): IRotationFlowProvider = RotationFlowProvider(this)
+
+interface IRotationFlowProvider {
+    /**
+     * The rotation in one the [Surface] rotations from the device natural orientation.
+     */
+    @get:RotationValue
+    val rotationFlow: Flow<Int>
 }

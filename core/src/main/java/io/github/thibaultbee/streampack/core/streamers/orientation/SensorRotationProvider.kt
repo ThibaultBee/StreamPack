@@ -22,7 +22,16 @@ import io.github.thibaultbee.streampack.core.internal.utils.extensions.displayRo
 import io.github.thibaultbee.streampack.core.utils.extensions.clamp90
 
 
-class DeviceRotationProvider(val context: Context) : RotationProvider() {
+/**
+ * A [RotationProvider] that provides device rotation.
+ * It uses [OrientationEventListener] to get device orientation.
+ * It follows the orientation of the sensor, so it will change when the device is rotated.
+ *
+ * It will notify listeners when the device orientation changes.
+ *
+ * @param context The application context
+ */
+class SensorRotationProvider(val context: Context) : RotationProvider() {
     private val lock = Any()
     private var _rotation = context.displayRotation
 
@@ -69,7 +78,7 @@ class DeviceRotationProvider(val context: Context) : RotationProvider() {
         /**
          * Converts orientation degrees to [Surface] rotation.
          */
-        fun orientationToSurfaceRotation(rotationDegrees: Int): Int {
+        private fun orientationToSurfaceRotation(rotationDegrees: Int): Int {
             return if (rotationDegrees >= 315 || rotationDegrees < 45) {
                 Surface.ROTATION_0
             } else if (rotationDegrees >= 225) {
