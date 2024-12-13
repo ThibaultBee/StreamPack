@@ -290,13 +290,22 @@ streamer.targetRotation =
     Surface.ROTATION_90 // Or Surface.ROTATION_0, Surface.ROTATION_180, Surface.ROTATION_270
 ```
 
-StreamPack comes with a `RotationProvider` that fetches and listens the device rotation: the
-`DeviceRotationProvider`. The `DeviceRotationProvider` is backed by the `OrientationEventListener`.
+StreamPack comes with 2 `RotationProvider` that fetches and listens the device rotation:
+
+- the `SensorRotationProvider`. The `SensorRotationProvider` is backed by the
+  `OrientationEventListener`
+  and it follows the device orientation.
+- the `DisplayRotationProvider`. The `DisplayRotationProvider` is backed by the `DisplayManager` and
+  if orientation is locked, it will return the last known orientation.
+
+You can transform the `RotationProvider` into a `Flow` provider through the `asFlowProvider`
+extension.
 
 ```kotlin
 // Already instantiated streamer
 val streamer = DefaultCameraStreamer(context = requireContext())
 
+// For callback based
 val listener = object : IRotationProvider.Listener {
     override fun onOrientationChanged(rotation: Int) {
         streamer.targetRotation = rotation
@@ -306,12 +315,18 @@ rotationProvider.addListener(listener)
 
 // Don't forget to remove the listener when you don't need it anymore
 rotationProvider.removeListener(listener)
+
+// For coroutine based
+val rotationFlowProvider = rotationProvider.asFlowProvider()
+// Then in a coroutine suspend function
+rotationFlowProvider.rotationFlow.collect { it ->
+    streamer.targetRotation = it
+}
 ```
 
 See the `demos/camera` for a complete example.
 
-To only get the device supported orientations, you can use the `DisplayManager.DisplayListener` or
-create your own `targetRotation` provider.
+You can also create your own `targetRotation` provider.
 
 ## Tips
 
