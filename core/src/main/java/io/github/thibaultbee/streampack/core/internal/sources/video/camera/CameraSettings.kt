@@ -213,6 +213,15 @@ class WhiteBalance(private val context: Context, private val cameraController: C
                 value.toTypedArray()
             )
         }
+
+    /**
+     * Get or set auto white balance lock.
+     */
+    var lock: Boolean
+        get() = cameraController.getSetting(CaptureRequest.CONTROL_AWB_LOCK) ?: false
+        set(value) {
+            cameraController.setRepeatingSetting(CaptureRequest.CONTROL_AWB_LOCK, value)
+        }
 }
 
 
