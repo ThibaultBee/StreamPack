@@ -27,10 +27,9 @@ import java.io.OutputStream
  * Sink to write data to an [ChunkedFileOutputStream]
  */
 class ChunkedFileOutputStreamSink(private val chunkSize: Int) : OutputStreamSink() {
+    override val supportedSinkTypes: List<MediaSinkType> = listOf(MediaSinkType.FILE)
+    
     private val listeners = mutableListOf<ChunkedFileOutputStream.Listener>()
-
-    override val metrics: Any
-        get() = TODO("Not yet implemented")
 
     init {
         require(chunkSize > 0) { "Chunk size must be greater than 0" }
@@ -40,7 +39,6 @@ class ChunkedFileOutputStreamSink(private val chunkSize: Int) : OutputStreamSink
      * Open an [OutputStream] to write data
      */
     override suspend fun openOutputStream(mediaDescriptor: MediaDescriptor): OutputStream {
-        require(mediaDescriptor.type.sinkType == MediaSinkType.FILE) { "MediaDescriptor must be a file" }
         val file = mediaDescriptor.uri.toFile()
         file.deleteRecursively() // Clean
         val filesDir = if (file.isDirectory) {

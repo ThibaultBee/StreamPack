@@ -20,4 +20,4 @@ import io.github.thibaultbee.streampack.core.data.Config
 /**
  * Internal class to configure [ISinkInternal].
  */
-data class EndpointConfiguration(val streamConfigs: List<Config>)
+data class SinkConfiguration(val streamConfigs: List<Config>)

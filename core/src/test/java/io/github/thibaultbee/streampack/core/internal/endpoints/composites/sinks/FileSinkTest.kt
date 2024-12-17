@@ -21,7 +21,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.fail
 import org.junit.Test
 
-class FileSinkTest : AbstractFileSinkTest(FileSink()) {
+class FileSinkTest : AbstractLocalSinkTest(FileSink()) {
     @Test
     fun `open not a file test`() = runTest {
         try {

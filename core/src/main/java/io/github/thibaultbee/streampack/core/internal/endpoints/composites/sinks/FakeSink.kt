@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.core.internal.endpoints.composites.sink
 
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Packet
+import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,25 +25,17 @@ import kotlinx.coroutines.flow.StateFlow
 /**
  * A fake endpoint for test purpose.
  */
-class FakeSink : ISinkInternal {
+class FakeSink(override val supportedSinkTypes: List<MediaSinkType> = MediaSinkType.entries) :
+    AbstractSink() {
     private val _isOpen = MutableStateFlow(false)
     override val isOpen: StateFlow<Boolean> = _isOpen
 
-    override val metrics: Any
-        get() = TODO("Not yet implemented")
-
-
-    override suspend fun open(mediaDescriptor: MediaDescriptor) {
-        if (isOpen.value) {
-            Logger.w(TAG, "FileSink is already opened")
-            return
-        }
-
+    override suspend fun openImpl(mediaDescriptor: MediaDescriptor) {
         Logger.d(TAG, "open called: $mediaDescriptor")
         _isOpen.emit(true)
     }
 
-    override fun configure(config: EndpointConfiguration) {
+    override fun configure(config: SinkConfiguration) {
         Logger.d(TAG, "configure called")
     }
 

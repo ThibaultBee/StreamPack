@@ -25,12 +25,9 @@ import java.io.OutputStream
  * An [OutputStreamSink] to write data to a content://.
  */
 class ContentSink(private val context: Context) : OutputStreamSink() {
-    override val metrics: Any
-        get() = TODO("Not yet implemented")
+    override val supportedSinkTypes: List<MediaSinkType> = listOf(MediaSinkType.CONTENT)
 
     override suspend fun openOutputStream(mediaDescriptor: MediaDescriptor): OutputStream {
-        require(mediaDescriptor.type.sinkType == MediaSinkType.CONTENT) { "MediaDescriptor must be a content" }
-
         return openContent(context, mediaDescriptor.uri)
     }
 

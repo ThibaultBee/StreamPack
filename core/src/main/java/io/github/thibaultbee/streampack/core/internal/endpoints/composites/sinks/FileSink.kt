@@ -20,7 +20,6 @@ import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescripto
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.toByteArray
-import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,28 +27,20 @@ import kotlinx.coroutines.withContext
 import java.io.RandomAccessFile
 import kotlin.coroutines.CoroutineContext
 
-class FileSink(private val coroutineContext: CoroutineContext = Dispatchers.IO) : ISinkInternal {
+class FileSink(private val coroutineContext: CoroutineContext = Dispatchers.IO) : AbstractSink() {
+    override val supportedSinkTypes: List<MediaSinkType> = listOf(MediaSinkType.FILE)
+
     private var file: RandomAccessFile? = null
 
     private val _isOpen = MutableStateFlow(false)
     override val isOpen: StateFlow<Boolean> = _isOpen
 
-    override val metrics: Any
-        get() = TODO("Not yet implemented")
-
-    override suspend fun open(mediaDescriptor: MediaDescriptor) {
-        if (isOpen.value) {
-            Logger.w(TAG, "FileSink is already opened")
-            return
-        }
-
-        require(mediaDescriptor.type.sinkType == MediaSinkType.FILE) { "MediaDescriptor must be a file" }
-
+    override suspend fun openImpl(mediaDescriptor: MediaDescriptor) {
         file = openLocalFile(mediaDescriptor.uri)
         _isOpen.emit(true)
     }
 
-    override fun configure(config: EndpointConfiguration) {} // Nothing to configure
+    override fun configure(config: SinkConfiguration) {} // Nothing to configure
 
     override suspend fun startStream() {
         requireNotNull(file) { "Set a file before trying to write it" }
