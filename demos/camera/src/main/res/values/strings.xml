@@ -38,9 +38,11 @@
 
     <string name="video_encoder">Encoder</string>
     <string name="video_encoder_key">video_encoder_key</string>
+    <string name="default_video_encoder">video/avc</string>
 
     <string name="video_resolution">Resolution</string>
     <string name="video_resolution_key">video_resolution_key</string>
+    <string name="default_video_resolution">1280x720</string>
 
     <string name="video_fps">Frames per second</string>
     <string name="video_fps_key">video_fps_key</string>
@@ -66,6 +68,7 @@
 
     <string name="audio_encoder">Encoder</string>
     <string name="audio_encoder_key">audio_encoder_key</string>
+    <string name="default_audio_encoder">audio/mp4a-latm</string>
 
     <string name="audio_number_of_channels">Number of channels</string>
     <string name="audio_channel_config_key">audio_channel_config_key</string>
@@ -106,10 +109,13 @@
     <string name="default_srt_server_url">192.168.1.11</string>
     <string name="server_port">Port</string>
     <string name="srt_server_port_key">srt_server_port_key</string>
+    <string name="default_srt_server_port">9998</string>
     <string name="srt_server_stream_id_key">server_stream_id_key</string>
     <string name="srt_server_stream_id">Stream ID</string>
+    <string name="default_srt_server_stream_id" />
     <string name="srt_server_passphrase_key">srt_server_passphrase_key</string>
     <string name="srt_server_passphrase">Passphrase</string>
+    <string name="default_srt_server_stream_passphrase" />
     <string name="default_srt_server_passphrase">""</string>
     <string name="srt_server_enable_bitrate_regulation_key">srt_server_enable_bitrate_regulation_key</string>
     <string name="srt_server_enable_bitrate_regulation">Enable bitrate regulation</string>
@@ -128,6 +134,7 @@
     <string name="file">File</string>
     <string name="file_name_key">file_name_key</string>
     <string name="file_name">File name</string>
+    <string name="default_file_name">StreamPackFile</string>
 
     <!-- Video and audio encoders -->
     <string name="video_encoder_h264">AVC/H.264</string>

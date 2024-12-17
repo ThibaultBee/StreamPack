@@ -12,16 +12,19 @@
             app:title="@string/settings">
 
             <ListPreference
+                app:defaultValue="@string/default_video_encoder"
                 app:key="@string/video_encoder_key"
                 app:title="@string/video_encoder"
                 app:useSimpleSummaryProvider="true" />
 
             <ListPreference
+                app:defaultValue="@string/default_video_resolution"
                 app:key="@string/video_resolution_key"
                 app:title="@string/video_resolution"
                 app:useSimpleSummaryProvider="true" />
 
             <ListPreference
+                app:defaultValue="@string/default_fps"
                 app:entries="@array/FpsEntries"
                 app:entryValues="@array/FpsEntries"
                 app:key="@string/video_fps_key"
@@ -30,6 +33,7 @@
 
             <SeekBarPreference
                 android:max="10000"
+                app:defaultValue="@string/default_video_bitrate"
                 app:key="@string/video_bitrate_key"
                 app:min="500"
                 app:showSeekBarValue="true"
@@ -61,11 +65,13 @@
             app:title="@string/settings">
 
             <ListPreference
+                app:defaultValue="@string/default_audio_encoder"
                 app:key="@string/audio_encoder_key"
                 app:title="@string/audio_encoder"
                 app:useSimpleSummaryProvider="true" />
 
             <ListPreference
+                app:defaultValue="12"
                 app:entries="@array/AudioChannelConfigEntries"
                 app:entryValues="@array/AudioChannelConfigEntryValues"
                 app:key="@string/audio_channel_config_key"
@@ -73,22 +79,26 @@
                 app:useSimpleSummaryProvider="true" />
 
             <ListPreference
+                app:defaultValue="128000"
                 app:entryValues="@array/AudioBitrateEntryValues"
                 app:key="@string/audio_bitrate_key"
                 app:title="@string/audio_bitrate"
                 app:useSimpleSummaryProvider="true" />
 
             <ListPreference
+                app:defaultValue="44100"
                 app:key="@string/audio_sample_rate_key"
                 app:title="@string/audio_sample_rate"
                 app:useSimpleSummaryProvider="true" />
 
             <ListPreference
+                app:defaultValue="2"
                 app:key="@string/audio_byte_format_key"
                 app:title="@string/audio_byte_format"
                 app:useSimpleSummaryProvider="true" />
 
             <ListPreference
+                app:defaultValue="2"
                 app:key="@string/audio_profile_key"
                 app:title="@string/audio_profile"
                 app:useSimpleSummaryProvider="true" />
@@ -99,6 +109,7 @@
 
     <PreferenceCategory app:title="@string/endpoint">
         <ListPreference
+            app:defaultValue="2"
             app:key="@string/endpoint_type_key"
             app:title="@string/endpoint_type"
             app:useSimpleSummaryProvider="true" />
@@ -114,12 +125,13 @@
                 app:useSimpleSummaryProvider="true" />
 
             <EditTextPreference
-                app:defaultValue="9998"
+                app:defaultValue="@string/default_srt_server_port"
                 app:key="@string/srt_server_port_key"
                 app:title="@string/server_port"
                 app:useSimpleSummaryProvider="true" />
 
             <EditTextPreference
+                app:defaultValue="@string/default_srt_server_stream_id"
                 app:key="@string/srt_server_stream_id_key"
                 app:title="@string/srt_server_stream_id"
                 app:useSimpleSummaryProvider="true" />
@@ -172,7 +184,7 @@
             app:title="@string/file">
 
             <EditTextPreference
-                app:defaultValue="StreamPackTest"
+                app:defaultValue="@string/default_file_name"
                 app:key="@string/file_name_key"
                 app:title="@string/file_name"
                 app:useSimpleSummaryProvider="true" />

@@ -188,7 +188,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
             else -> supportedVideoEncoder.first()
         }
 
-        videoEncoderListPreference.setDefaultValue(defaultVideoEncoder)
         videoEncoderListPreference.entryValues = supportedVideoEncoder.toTypedArray()
         videoEncoderListPreference.entries =
             supportedVideoEncoder.map { supportedVideoEncoderName[it] }.toTypedArray()
@@ -234,7 +233,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
             videoFpsListPreference.entries = this
             videoFpsListPreference.entryValues = this
         }
-        videoFpsListPreference.setDefaultValue(ApplicationConstants.Video.defaultFps.toString())
         videoFpsListPreference.setOnPreferenceChangeListener { _, newValue ->
             val fps = (newValue as String).toInt()
             val unsupportedCameras = requireContext().cameras.filter {
@@ -312,7 +310,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
             } else {
                 supportedAudioEncoder.first()
             }
-        audioEncoderListPreference.setDefaultValue(defaultAudioEncoder)
         audioEncoderListPreference.entryValues = supportedAudioEncoder.toTypedArray()
         audioEncoderListPreference.entries =
             supportedAudioEncoder.map { supportedAudioEncoderName[it] }.toTypedArray()
@@ -353,7 +350,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 this.map { "${it.toString().toInt() / 1000} Kbps" }.toTypedArray()
             audioBitrateListPreference.entryValues = this
         }
-        audioBitrateListPreference.setDefaultValue(ApplicationConstants.Audio.defaultBitrateInBps.toString())
         if (audioBitrateListPreference.entry == null) {
             audioBitrateListPreference.value = "128000"
         }
@@ -364,7 +360,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
             sampleRates.map { "${"%.1f".format(it.toString().toFloat() / 1000)} kHz" }
                 .toTypedArray()
         audioSampleRateListPreference.entryValues = sampleRates.map { "$it" }.toTypedArray()
-        audioSampleRateListPreference.setDefaultValue(ApplicationConstants.Audio.defaultSampleRate.toString())
         if (audioSampleRateListPreference.entry == null) {
             audioSampleRateListPreference.value = when {
                 sampleRates.contains(44100) -> "44100"
@@ -383,7 +378,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         audioByteFormatListPreference.entries =
             byteFormats.map { supportedByteFormatName[it] }.toTypedArray()
         audioByteFormatListPreference.entryValues = byteFormats.map { "$it" }.toTypedArray()
-        audioByteFormatListPreference.setDefaultValue(ApplicationConstants.Audio.defaultByteFormat)
         if (audioByteFormatListPreference.entry == null) {
             audioByteFormatListPreference.value = "${AudioFormat.ENCODING_PCM_16BIT}"
         }
@@ -412,7 +406,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private fun loadEndpoint() {
         // Inflates endpoint
         val supportedEndpoint = EndpointType.entries.map { "${it.id}" }.toTypedArray()
-        endpointTypePreference.setDefaultValue(EndpointType.SRT.id)
         endpointTypePreference.entryValues = supportedEndpoint
         endpointTypePreference.entries =
             supportedEndpoint.map { getString(it.toInt()) }
