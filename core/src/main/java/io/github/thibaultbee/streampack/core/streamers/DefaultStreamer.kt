@@ -376,27 +376,38 @@ open class DefaultStreamer(
     private fun buildOrUpdateSurfaceProcessor(
         videoConfig: VideoConfig, videoSource: IVideoSourceInternal
     ): SurfaceProcessor {
-        val surfaceProcessorLocal = surfaceProcessor
-        return if (surfaceProcessorLocal == null) {
-            SurfaceProcessor(videoConfig.dynamicRangeProfile)
-        } else {
-            videoSource.outputSurface?.let {
-                surfaceProcessorLocal.removeInputSurface(it)
-            }
-            if (surfaceProcessorLocal.dynamicRangeProfile.isHdr != videoConfig.isHdr) {
-                surfaceProcessorLocal.removeAllOutputSurfaces()
-                surfaceProcessorLocal.release()
+        if (!videoSource.hasOutputSurface) {
+            throw IllegalStateException("Video source must have an output surface")
+        }
+        val previousSurfaceProcessor = surfaceProcessor
+        val newSurfaceProcessor = when {
+            previousSurfaceProcessor == null -> SurfaceProcessor(videoConfig.dynamicRangeProfile)
+            previousSurfaceProcessor.dynamicRangeProfile != videoConfig.dynamicRangeProfile -> {
+                videoSource.outputSurface?.let {
+                    previousSurfaceProcessor.removeInputSurface(it)
+                }
+                previousSurfaceProcessor.removeAllOutputSurfaces()
+                previousSurfaceProcessor.release()
                 SurfaceProcessor(videoConfig.dynamicRangeProfile)
-            } else {
-                surfaceProcessorLocal
             }
-        }.apply {
-            videoSource.outputSurface = createInputSurface(
+
+            else -> previousSurfaceProcessor
+        }
+
+        if (newSurfaceProcessor != previousSurfaceProcessor) {
+            videoSource.outputSurface = newSurfaceProcessor.createInputSurface(
                 videoSource.infoProvider.getSurfaceSize(
                     videoConfig.resolution, targetRotation
                 )
             )
+        } else {
+            newSurfaceProcessor.updateInputSurface(
+                videoSource.outputSurface!!,
+                videoSource.infoProvider.getSurfaceSize(videoConfig.resolution, targetRotation)
+            )
         }
+
+        return newSurfaceProcessor
     }
 
     private fun buildAndConfigureVideoEncoder(
@@ -418,6 +429,8 @@ open class DefaultStreamer(
                             val surfaceProcessor = requireNotNull(surfaceProcessor) {
                                 "Surface processor must not be null"
                             }
+                            // TODO: only remove previous encoder surface
+                            surfaceProcessor.removeAllOutputSurfaces()
                             Logger.d(TAG, "Updating with new encoder surface input")
                             surfaceProcessor.addOutputSurface(
                                 buildSurfaceOutput(
@@ -452,7 +465,8 @@ open class DefaultStreamer(
         videoSource: IVideoSourceInternal,
         @RotationValue targetRotation: Int
     ): IEncoderInternal {
-        val rotatedVideoConfig = videoConfig.rotateFromNaturalOrientation(context, targetRotation)
+        val rotatedVideoConfig =
+            videoConfig.rotateFromNaturalOrientation(context, targetRotation)
 
         // Release codec instance
         videoEncoderInternal?.let { encoder ->
@@ -602,18 +616,6 @@ open class DefaultStreamer(
 
         // Only reset if the encoder is the same. Otherwise, it is already configured.
         if (previousVideoEncoder == videoEncoderInternal) {
-            /**
-             * Workaround to avoid spurious frame from the SurfaceTexture on the new stream when
-             * SurfaceTexture is not changed.
-             */
-            surfaceProcessor?.let { processor ->
-                videoSourceInternal?.let { source ->
-                    val surface = source.outputSurface
-                    if (surface == null) {
-                        Logger.w(TAG, "Surface is null")
-                    }
-                }
-            }
             videoEncoderInternal?.reset()
         }
     }
@@ -695,12 +697,16 @@ open class DefaultStreamer(
      */
     override fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) {
         bitrateRegulatorController?.stop()
-        bitrateRegulatorController = controllerFactory.newBitrateRegulatorController(this).apply {
-            if (isStreaming.value) {
-                this.start()
+        bitrateRegulatorController =
+            controllerFactory.newBitrateRegulatorController(this).apply {
+                if (isStreaming.value) {
+                    this.start()
+                }
+                Logger.d(
+                    TAG,
+                    "Bitrate regulator controller added: ${this.javaClass.simpleName}"
+                )
             }
-            Logger.d(TAG, "Bitrate regulator controller added: ${this.javaClass.simpleName}")
-        }
 
     }
 

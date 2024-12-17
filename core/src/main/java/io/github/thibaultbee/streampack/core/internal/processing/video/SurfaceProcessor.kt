@@ -62,6 +62,20 @@ class SurfaceProcessor(
         return surfaceInput.surface
     }
 
+    override fun updateInputSurface(surface: Surface, surfaceSize: Size) {
+        executeSafely {
+            val surfaceInput = surfaceInputs.find { it.surface == surface }
+            if (surfaceInput != null) {
+                surfaceInput.surfaceTexture.setDefaultBufferSize(
+                    surfaceSize.width,
+                    surfaceSize.height
+                )
+            } else {
+                Logger.w(TAG, "Surface not found")
+            }
+        }
+    }
+
     override fun removeInputSurface(surface: Surface) {
         executeSafely {
             val surfaceInput = surfaceInputs.find { it.surface == surface }
