@@ -38,9 +38,10 @@ val MediaFormat.extra: List<ByteBuffer>?
              */
             if (getString(MediaFormat.KEY_MIME) == MediaFormat.MIMETYPE_VIDEO_HEVC) {
                 val parameterSets = it.slices(byteArrayOf(0x00, 0x00, 0x00, 0x01))
+                // see@https://developer.android.com/reference/android/media/MediaCodec
+                extra.add(parameterSets[0]) // VPS
                 extra.add(parameterSets[1]) // SPS
-                extra.add(parameterSets[0]) // PPS
-                extra.add(parameterSets[2]) // VPS
+                extra.add(parameterSets[2]) // PPS
             } else {
                 extra.add(it.duplicate())
             }
