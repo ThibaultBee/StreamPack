@@ -27,15 +27,17 @@ import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescripto
 import io.github.thibaultbee.streampack.core.error.ClosedException
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.data.SrtPacket
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.EndpointConfiguration
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ISinkInternal
-import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.AbstractSink
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.SinkConfiguration
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 
-class SrtSink : ISinkInternal {
+class SrtSink : AbstractSink() {
+    override val supportedSinkTypes: List<MediaSinkType> = listOf(MediaSinkType.SRT)
+
     private var socket: CoroutineSrtSocket? = null
     private var completionException: Throwable? = null
     private var isOnError: Boolean = false
@@ -52,20 +54,14 @@ class SrtSink : ISinkInternal {
     private val _isOpen = MutableStateFlow(false)
     override val isOpen: StateFlow<Boolean> = _isOpen
 
-    override fun configure(config: EndpointConfiguration) {
+    override fun configure(config: SinkConfiguration) {
         bitrate = config.streamConfigs.sumOf { it.startBitrate.toLong() }
     }
 
-    override suspend fun open(
-        mediaDescriptor: MediaDescriptor
-    ) = open(SrtMediaDescriptor(mediaDescriptor))
+    override suspend fun openImpl(mediaDescriptor: MediaDescriptor) =
+        open(SrtMediaDescriptor(mediaDescriptor))
 
     private suspend fun open(mediaDescriptor: SrtMediaDescriptor) {
-        if (isOpen.value) {
-            Logger.w(TAG, "SrtSink is already opened")
-            return
-        }
-
         if (mediaDescriptor.srtUrl.mode != null) {
             require(mediaDescriptor.srtUrl.mode == Mode.CALLER) { "Invalid mode: ${mediaDescriptor.srtUrl.mode}. Only caller supported." }
         }

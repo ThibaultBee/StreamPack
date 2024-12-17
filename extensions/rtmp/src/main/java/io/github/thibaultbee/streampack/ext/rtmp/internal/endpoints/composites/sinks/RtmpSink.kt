@@ -20,8 +20,8 @@ import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescripto
 import io.github.thibaultbee.streampack.core.error.ClosedException
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.EndpointConfiguration
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ISinkInternal
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.AbstractSink
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.SinkConfiguration
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -34,7 +34,9 @@ import java.util.concurrent.Executors
 class RtmpSink(
     private val dispatcher: CoroutineDispatcher = Executors.newSingleThreadExecutor()
         .asCoroutineDispatcher()
-) : ISinkInternal {
+) : AbstractSink() {
+    override val supportedSinkTypes: List<MediaSinkType> = listOf(MediaSinkType.RTMP)
+
     private var socket: Rtmp? = null
     private var isOnError = false
 
@@ -43,25 +45,15 @@ class RtmpSink(
     private val _isOpen = MutableStateFlow(false)
     override val isOpen: StateFlow<Boolean> = _isOpen
 
-    override val metrics: Any
-        get() = TODO("Not yet implemented")
-
-    override fun configure(config: EndpointConfiguration) {
+    override fun configure(config: SinkConfiguration) {
         val videoConfig = config.streamConfigs.firstOrNull { it is VideoConfig }
         if (videoConfig != null) {
             supportedVideoCodecs.clear()
             supportedVideoCodecs += listOf(videoConfig.mimeType)
         }
     }
-
-    override suspend fun open(mediaDescriptor: MediaDescriptor) {
-        if (isOpen.value) {
-            Logger.w(TAG, "RtmpSink is already opened")
-            return
-        }
-
-        require(mediaDescriptor.type.sinkType == MediaSinkType.RTMP) { "MediaDescriptor must be a rtmp Uri" }
-
+    
+    override suspend fun openImpl(mediaDescriptor: MediaDescriptor) {
         withContext(dispatcher) {
             isOnError = false
             socket = Rtmp().apply {

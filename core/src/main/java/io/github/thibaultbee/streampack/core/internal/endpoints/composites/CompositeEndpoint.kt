@@ -23,7 +23,7 @@ import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInterna
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.EndpointConfiguration
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.SinkConfiguration
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ISinkInternal
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
@@ -85,7 +85,7 @@ open class CompositeEndpoint(final override val muxer: IMuxerInternal, override 
     }
 
     override suspend fun startStream() {
-        sink.configure(EndpointConfiguration(configurations))
+        sink.configure(SinkConfiguration(configurations))
         sink.startStream()
         muxer.startStream()
     }

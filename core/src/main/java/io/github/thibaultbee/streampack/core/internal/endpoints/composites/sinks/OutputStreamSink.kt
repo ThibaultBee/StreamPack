@@ -18,7 +18,6 @@ package io.github.thibaultbee.streampack.core.internal.endpoints.composites.sink
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.toByteArray
-import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +29,7 @@ import kotlin.coroutines.CoroutineContext
  * Sink to write data to an [OutputStream]
  */
 abstract class OutputStreamSink(private val coroutineContext: CoroutineContext = Dispatchers.IO) :
-    ISinkInternal {
+    AbstractSink() {
     protected var outputStream: OutputStream? = null
 
     private val _isOpen = MutableStateFlow(false)
@@ -41,17 +40,12 @@ abstract class OutputStreamSink(private val coroutineContext: CoroutineContext =
      */
     abstract suspend fun openOutputStream(mediaDescriptor: MediaDescriptor): OutputStream
 
-    override suspend fun open(mediaDescriptor: MediaDescriptor) {
-        if (isOpen.value) {
-            Logger.w(TAG, "OutputStreamSink is already opened")
-            return
-        }
-
+    override suspend fun openImpl(mediaDescriptor: MediaDescriptor) {
         outputStream = openOutputStream(mediaDescriptor)
         _isOpen.emit(true)
     }
 
-    override fun configure(config: EndpointConfiguration) {} // Nothing to configure
+    override fun configure(config: SinkConfiguration) {} // Nothing to configure
 
     override suspend fun startStream() {
         requireNotNull(outputStream) { "Open the sink before starting the stream" }

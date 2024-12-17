@@ -22,7 +22,7 @@ import io.github.thibaultbee.streampack.core.internal.interfaces.SuspendCloseabl
 import io.github.thibaultbee.streampack.core.internal.interfaces.SuspendStreamable
 import kotlinx.coroutines.flow.StateFlow
 
-interface ISinkInternal : ISink, Configurable<EndpointConfiguration>, SuspendStreamable,
+interface ISinkInternal : ISink, Configurable<SinkConfiguration>, SuspendStreamable,
     SuspendCloseable {
     /**
      * Opens the endpoint.

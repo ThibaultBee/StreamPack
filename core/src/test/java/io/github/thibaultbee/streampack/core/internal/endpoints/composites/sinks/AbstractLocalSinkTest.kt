@@ -32,7 +32,7 @@ import org.robolectric.RobolectricTestRunner
 import java.nio.ByteBuffer
 
 @RunWith(RobolectricTestRunner::class)
-abstract class AbstractFileSinkTest(val sink: ISinkInternal) {
+abstract class AbstractLocalSinkTest(val sink: ISinkInternal) {
     init {
         Logger.logger = FakeLogger()
     }
