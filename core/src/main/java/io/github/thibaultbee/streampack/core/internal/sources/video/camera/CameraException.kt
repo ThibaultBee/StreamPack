@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Thibault B.
+ * Copyright (C) 2021 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.error
+package io.github.thibaultbee.streampack.core.internal.sources.video.camera
 
 /**
- * Class that encapsulates closed errors
+ * Class that encapsulates camera errors
+ *
+ * @param message the error message
  */
-class ClosedException(cause: Throwable) : Exception(cause) {
-    /**
-     * @param message the error message
-     * @param cause the error cause
-     */
-    constructor(message: String, cause: Throwable) : this(Exception(message, cause))
-
-    /**
-     * @param message the error message
-     */
-    constructor(message: String) : this(Exception(message))
-}
+class CameraException(message: String) :
+    Exception(message)

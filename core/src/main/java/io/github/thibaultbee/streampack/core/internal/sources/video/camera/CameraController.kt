@@ -30,7 +30,6 @@ import android.os.Build
 import android.util.Range
 import android.view.Surface
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.core.error.CameraException
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.dispatchers.CameraDispatchers
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.resumeIfActive
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.resumeWithExceptionIfActive

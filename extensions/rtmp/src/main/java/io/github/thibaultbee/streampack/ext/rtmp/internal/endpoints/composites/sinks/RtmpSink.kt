@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.composites.
 
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.error.ClosedException
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ClosedException
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.AbstractSink
@@ -52,7 +52,7 @@ class RtmpSink(
             supportedVideoCodecs += listOf(videoConfig.mimeType)
         }
     }
-    
+
     override suspend fun openImpl(mediaDescriptor: MediaDescriptor) {
         withContext(dispatcher) {
             isOnError = false
