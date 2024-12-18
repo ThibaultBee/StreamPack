@@ -28,7 +28,7 @@ import android.util.Size
 import androidx.annotation.RequiresApi
 
 /**
- * Get camera characteristics.
+ * Gets camera characteristics.
  *
  * @param cameraId camera id
  * @return camera characteristics
@@ -39,7 +39,7 @@ fun Context.getCameraCharacteristics(cameraId: String): CameraCharacteristics {
 }
 
 /**
- * Get default camera id.
+ * Gets default camera id.
  *
  * If a back camera is available, returns the first back camera id.
  * If no back camera is available, returns the first camera id.
@@ -102,7 +102,7 @@ val Context.externalCameras: List<String>
         }
 
 /**
- * Check if string is a back camera id
+ * Whether the [cameraId] is a back camera id
  *
  * @return true if string is a back camera id, otherwise false
  */
@@ -110,7 +110,7 @@ fun Context.isBackCamera(cameraId: String) =
     getFacingDirection(cameraId) == CameraCharacteristics.LENS_FACING_BACK
 
 /**
- * Check if string is a front camera id
+ * Whether the [cameraId] is a front camera id
  *
  * @return true if string is a front camera id, otherwise false
  */
@@ -118,7 +118,7 @@ fun Context.isFrontCamera(cameraId: String) =
     getFacingDirection(cameraId) == CameraCharacteristics.LENS_FACING_FRONT
 
 /**
- * Check if string is an external camera id
+ * Whether the [cameraId] is an external camera id
  *
  * @return true if string is a external camera id, otherwise false
  */
@@ -153,7 +153,7 @@ fun <T : Any> Context.getCameraOutputSizes(klass: Class<T>, cameraId: String): L
 }
 
 /**
- * Checks if the camera supports a frame rate
+ * Whether the camera supports a frame rate
  *
  * @param cameraId camera id
  * @param fps frame rate
@@ -163,7 +163,7 @@ fun Context.isFrameRateSupported(cameraId: String, fps: Int) =
     getCameraFps(cameraId).any { it.contains(fps) }
 
 /**
- * Checks if the camera has a flash device.
+ * Whether the camera has a flash device.
  *
  * @param cameraId camera id
  * @return [Boolean.true] if camera has a flash device, [Boolean.false] otherwise.
@@ -183,7 +183,7 @@ fun Context.getAutoWhiteBalanceModes(cameraId: String) =
         ?.toList() ?: emptyList()
 
 /**
- *  Get supported iso range
+ * Gets supported iso range
  *
  * @param cameraId camera id
  * @return the iso range
@@ -192,7 +192,7 @@ fun Context.getSensitivityRange(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE)
 
 /**
- * Get if camera supports white balance metering regions.
+ * Gets the number of camera supported white balance metering regions.
  *
  * @param cameraId camera id
  * @return true if camera supports metering regions, false otherwise
@@ -201,7 +201,7 @@ fun Context.getWhiteBalanceMeteringRegionsSupported(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_MAX_REGIONS_AWB)
 
 /**
- * Get supported auto exposure modes.
+ * Gets supported auto exposure modes.
  *
  * @param cameraId camera id
  * @return list of supported auto focus modes
@@ -220,7 +220,7 @@ fun Context.getExposureRange(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE)
 
 /**
- * Get exposure compensation step.
+ * Gets exposure compensation step.
  *
  * This is the unit for [getExposureRange]. For example, if this key has a value of 1/2, then a
  * setting of -2 for  [getExposureRange] means that the target EV offset for the auto-exposure
@@ -233,7 +233,7 @@ fun Context.getExposureStep(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP)
 
 /**
- * Get if camera supports exposure metering regions.
+ * Gets the number of camera supported exposure metering regions.
  *
  * @param cameraId camera id
  * @return true if camera supports metering regions, false otherwise
@@ -264,7 +264,7 @@ fun Context.getScalerMaxZoom(cameraId: String): Float {
 }
 
 /**
- * Get supported auto focus modes.
+ * Gets supported auto focus modes.
  *
  * @param cameraId camera id
  * @return list of supported auto focus modes
@@ -274,7 +274,7 @@ fun Context.getAutoFocusModes(cameraId: String) =
         ?.toList() ?: emptyList()
 
 /**
- * Get supported lens distance range.
+ * Gets supported lens distance range.
  *
  * @param cameraId camera id
  * @return lens distance range
@@ -287,7 +287,7 @@ fun Context.getLensDistanceRange(cameraId: String) =
     )
 
 /**
- * Get if camera supports focus metering regions.
+ * Gets if camera supports focus metering regions.
  *
  * @param cameraId camera id
  * @return true if camera supports metering regions, false otherwise
@@ -296,7 +296,7 @@ fun Context.getFocusMaxMeteringRegionsSupported(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF)
 
 /**
- * Checks if the camera supports optical stabilization.
+ * Whether the camera supports optical stabilization.
  *
  * @param cameraId camera id
  * @return [Boolean.true] if camera supports optical stabilization, [Boolean.false] otherwise.
@@ -339,7 +339,7 @@ fun Context.getCameraOutputStreamSizes(
 }
 
 /**
- * Get list of framerate for a camera.
+ * Gets list of framerate for a camera.
  *
  * @param cameraId camera id
  * @return List of fps supported by a camera
@@ -379,7 +379,7 @@ fun Context.is10BitProfileSupported(cameraId: String): Boolean {
 }
 
 /**
- * Get list of 10-bit dynamic range output profiles.
+ * Gets list of 10-bit dynamic range output profiles.
  *
  * @param cameraId camera id
  * @return List of 10-bit dynamic range output profiles
