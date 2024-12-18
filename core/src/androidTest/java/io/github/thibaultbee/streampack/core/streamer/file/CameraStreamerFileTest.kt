@@ -31,6 +31,10 @@ import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.CompositeEndpoint
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.MP4Muxer
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.FileSink
 import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.test.runTest
@@ -43,9 +47,17 @@ import kotlin.time.Duration.Companion.seconds
 
 @LargeTest
 @RunWith(Parameterized::class)
-class CameraStreamerFileTest(private val descriptor: MediaDescriptor, private val verify: Boolean) {
+class CameraStreamerFileTest(
+    private val descriptor: MediaDescriptor,
+    private val verify: Boolean,
+    endpoint: IEndpointInternal?
+) {
     private val context: Context = InstrumentationRegistry.getInstrumentation().context
-    private val streamer = DefaultCameraStreamer(context)
+    private val streamer = if (endpoint != null) {
+        DefaultCameraStreamer(context, internalEndpoint = endpoint)
+    } else {
+        DefaultCameraStreamer(context)
+    }
     private val info = streamer.getInfo(descriptor)
 
     private val videoCodec =
@@ -119,14 +131,35 @@ class CameraStreamerFileTest(private val descriptor: MediaDescriptor, private va
 
         @JvmStatic
         @Parameterized.Parameters(
-            name = "MediaDescriptor: {0} - Verify: {1}"
+            name = "MediaDescriptor: {0} - Verify: {1} - Endpoint: {2}"
         )
-        fun getMediaDescriptor(): Iterable<Array<Any>> {
+        fun getMediaDescriptor(): Iterable<Array<Any?>> {
             return arrayListOf(
-                arrayOf(UriMediaDescriptor(FileUtils.createCacheFile("video.ts").toUri()), true),
-                arrayOf(UriMediaDescriptor(FileUtils.createCacheFile("video.mp4").toUri()), true),
-                arrayOf(UriMediaDescriptor(FileUtils.createCacheFile("video.flv").toUri()), false),
-                arrayOf(UriMediaDescriptor(FileUtils.createCacheFile("video.webm").toUri()), true)
+                arrayOf(
+                    UriMediaDescriptor(FileUtils.createCacheFile("video.ts").toUri()),
+                    true,
+                    null
+                ),
+                arrayOf(
+                    UriMediaDescriptor(FileUtils.createCacheFile("video.mp4").toUri()),
+                    true,
+                    null
+                ),
+                arrayOf(
+                    UriMediaDescriptor(FileUtils.createCacheFile("video.flv").toUri()),
+                    false,
+                    null
+                ),
+                arrayOf(
+                    UriMediaDescriptor(FileUtils.createCacheFile("video.webm").toUri()),
+                    true,
+                    null
+                ),
+                arrayOf(
+                    UriMediaDescriptor(FileUtils.createCacheFile("video.mp4").toUri()),
+                    true,
+                    CompositeEndpoint(MP4Muxer(), FileSink())
+                ),
             )
         }
     }
