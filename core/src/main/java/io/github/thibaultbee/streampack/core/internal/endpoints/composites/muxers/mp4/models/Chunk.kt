@@ -61,7 +61,7 @@ class Chunk(val id: Int) {
             it.frame.dts ?: it.frame.pts
         }
 
-    fun add(id: Int, frame: io.github.thibaultbee.streampack.core.internal.data.Frame) {
+    fun add(id: Int, frame: Frame) {
         samples.add(IndexedFrame(id, frame))
     }
 
@@ -73,7 +73,7 @@ class Chunk(val id: Int) {
         return samples.map { process(it.frame.buffer) }
     }
 
-    fun writeTo(action: (io.github.thibaultbee.streampack.core.internal.data.Frame) -> Unit) {
+    fun writeTo(action: (Frame) -> Unit) {
         samples.forEach { action(it.frame) }
     }
 
@@ -81,5 +81,8 @@ class Chunk(val id: Int) {
         samples.forEach { output.put(it.frame.buffer) }
     }
 
-    class IndexedFrame(val id: Int, val frame: io.github.thibaultbee.streampack.core.internal.data.Frame)
+    class IndexedFrame(
+        val id: Int,
+        val frame: Frame
+    )
 }
