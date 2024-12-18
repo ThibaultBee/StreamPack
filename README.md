@@ -11,11 +11,15 @@ Get StreamPack core latest artifacts on mavenCentral:
 
 ```groovy
 dependencies {
-    implementation 'io.github.thibaultbee:streampack:2.6.1'
+    implementation 'io.github.thibaultbee.streampack:streampack-core:2.6.1'
+    // For UI (incl. PreviewView)
+    implementation 'io.github.thibaultbee.streampack:streampack-ui:2.6.1'
+    // For ScreenRecorder service
+    implementation 'io.github.thibaultbee.streampack:streampack-services:2.6.1'
     // For RTMP
-    implementation 'io.github.thibaultbee:streampack-extension-rtmp:2.6.1'
+    implementation 'io.github.thibaultbee.streampack:streampack-extension-rtmp:2.6.1'
     // For SRT
-    implementation 'io.github.thibaultbee:streampack-extension-srt:2.6.1'
+    implementation 'io.github.thibaultbee.streampack:streampack-extension-srt:2.6.1'
 }
 ```
 
@@ -48,7 +52,7 @@ android {
     * Processing: Noise suppressor or echo cancellation
     * Audio only mode
     * Device audio capabilities
-* File: TS or FLV or Fragmented MP4
+* File: TS, FLV, MP4, WebM and Fragmented MP4
     * Write to a single file or multiple chunk files
 * Streaming: RTMP/RTMPS or SRT
     * Support for enhanced RTMP
@@ -106,10 +110,9 @@ If you want to create a new application, you should use the
 template [StreamPack boilerplate](https://github.com/ThibaultBee/StreamPack-boilerplate). In 5
 minutes, you will be able to stream live video to your server.
 
-1. Add [permissions](#permissions) to your `AndroidManifest.xml` and request them in your
-   Activity/Fragment.
+1. Request the required permissions in your Activity/Fragment.
 
-2. Create a `SurfaceView` to display camera preview in your layout
+2. Creates a `SurfaceView` to display camera preview in your layout
 
 As a camera preview, you can use a `SurfaceView`, a `TextureView` or any
 `View` where that can provide a `Surface`.
@@ -127,15 +130,26 @@ To simplify integration, StreamPack provides an `PreviewView`.
 
 `app:enableZoomOnPinch` is a boolean to enable zoom on pinch gesture.
 
-3. Instantiate the streamer (main live streaming class)
+3. Instantiates the streamer (main live streaming class)
+
+There are 2 types of streamers:
+
+- Kotlin Coroutine based: streamer APIs use `suspend` functions and `Flow`
+- callback based: streamer APIs use callbacks
 
 ```kotlin
-val streamer = CameraSrtLiveStreamer(context = requireContext())
+// For coroutine based
+val streamer = DefaultCameraStreamer(context = requireContext())
+// For callback based
+// val streamer = DefaultCameraCallbackStreamer(context = requireContext())
 ```
 
-4. Configure audio and video settings
+4. Configures audio and video settings
 
 ```kotlin
+// Already instantiated streamer
+val streamer = DefaultCameraStreamer(context = requireContext())
+
 val audioConfig = AudioConfig(
     startBitrate = 128000,
     sampleRate = 44100,
@@ -151,30 +165,48 @@ val videoConfig = VideoConfig(
 streamer.configure(audioConfig, videoConfig)
 ```
 
-5. Inflate the camera preview with the streamer
+5. Inflates the camera preview with the streamer
 
 ```kotlin
+// Already instantiated streamer
+val streamer = DefaultCameraStreamer(context = requireContext())
+
 /**
- * If the preview is in a PreviewView
+ * If the preview is a [PreviewView]
  */
 preview.streamer = streamer
 /**
- * If the preview is in a SurfaceView, a TextureView, or any View that can provide a Surface
+ * If the preview is in a SurfaceView, a TextureView, a Surface,... you can use:
  */
 streamer.startPreview(preview)
 ```
 
-6. Start the live streaming
+6. Starts the live streaming
 
 ```kotlin
-streamer.startStream(ip, port)
+// Already instantiated streamer
+val streamer = DefaultCameraStreamer(context = requireContext())
+
+
+val descriptor =
+    UriMediaDescriptor("rtmps://serverip:1935/s/streamKey") // For RTMP/RTMPS. Uri also supports SRT url, file, content path,...
+/**
+ * Alternatively, you can use object syntax:
+ * - RtmpConnectionDescriptor("rtmps", "serverip", 1935, "s", "streamKey") // For RTMP/RTMPS
+ * - SrtConnectionDescriptor("serverip", 1234) // For SRT
+ */
+
+streamer.startStream() 
 ```
 
-7. Stop and release the streamer
+7. Stops and releases the streamer
 
 ```kotlin
+// Already instantiated streamer
+val streamer = DefaultCameraStreamer(context = requireContext())
+
 streamer.stopStream()
-streamer.disconnect()
+streamer.close() // Disconnect from server or close the file
 streamer.stopPreview() // The StreamerSurfaceView will be automatically stop the preview
 streamer.release()
 ```
@@ -240,89 +272,148 @@ You will also have to declare the `Service`,
 ```xml
 
 <application>
-    <!-- YourScreenRecorderService extends ScreenRecorderRtmpLiveService or ScreenRecorderSrtLiveService -->
+    <!-- YourScreenRecorderService extends DefaultScreenRecorderService -->
     <service android:name=".services.YourScreenRecorderService" android:exported="false"
         android:foregroundServiceType="mediaProjection" />
 </application>
 ```
 
+## Rotations
+
+To set the `Streamer` orientation, you can use the `targetRotation` setter:
+
+```kotlin
+// Already instantiated streamer
+val streamer = DefaultCameraStreamer(context = requireContext())
+
+streamer.targetRotation =
+    Surface.ROTATION_90 // Or Surface.ROTATION_0, Surface.ROTATION_180, Surface.ROTATION_270
+```
+
+StreamPack comes with 2 `RotationProvider` that fetches and listens the device rotation:
+
+- the `SensorRotationProvider`. The `SensorRotationProvider` is backed by the
+  `OrientationEventListener`
+  and it follows the device orientation.
+- the `DisplayRotationProvider`. The `DisplayRotationProvider` is backed by the `DisplayManager` and
+  if orientation is locked, it will return the last known orientation.
+
+You can transform the `RotationProvider` into a `Flow` provider through the `asFlowProvider`
+extension.
+
+```kotlin
+// Already instantiated streamer
+val streamer = DefaultCameraStreamer(context = requireContext())
+
+// For callback based
+val listener = object : IRotationProvider.Listener {
+    override fun onOrientationChanged(rotation: Int) {
+        streamer.targetRotation = rotation
+    }
+}
+rotationProvider.addListener(listener)
+
+// Don't forget to remove the listener when you don't need it anymore
+rotationProvider.removeListener(listener)
+
+// For coroutine based
+val rotationFlowProvider = rotationProvider.asFlowProvider()
+// Then in a coroutine suspend function
+rotationFlowProvider.rotationFlow.collect { it ->
+    streamer.targetRotation = it
+}
+```
+
+See the `demos/camera` for a complete example.
+
+You can also create your own `targetRotation` provider.
+
 ## Tips
 
 ### RTMP or SRT
 
-RTMP and SRT are both live streaming protocols. SRT is a UDP-based modern protocol, it is reliable
-and ultra low latency. RTMP is a TCP-based protocol, it is also reliable but it is only low latency.
+RTMP and SRT are both live streaming protocols . SRT is a UDP - based modern protocol, it is
+reliable
+and ultra low latency . RTMP is a TCP - based protocol, it is also reliable but it is only low
+latency .
 There are already a lot of comparison over the Internet, so here is a summary:
 SRT:
 
-- Ultra low latency (< 1s)
-- HEVC support through MPEG-TS RTMP:
-- Low latency (2-3s)
-- HEVC not officially support (specification has been aban by its creator)
+-Ultra low latency(< 1 s)
+-HEVC support through MPEG -TS RTMP :
+-Low latency (2 - 3 s)
+-HEVC not officially support (specification has been aban by its creator)
 
-So, the main question is: "which protocol to use?"
+So, the main question is : "which protocol to use?"
 It is easy: if your server has SRT support, use SRT otherwise use RTMP.
 
 ### Streamers
 
-Let's start with some definitions! `Streamers` are classes that represent a live streaming pipeline:
-capture, encode, mux and send. They comes in multiple flavours: with different audio and video
-source, with different endpoints and functionalities... 3 types of base streamers are available:
+Let's start with some definitions! `Streamers` are classes that represent a streaming pipeline:
+capture, encode, mux and send.They comes in multiple flavours: with different audio and video
+source . 3 types of base streamers
+are available :
 
-- `CameraStreamers`: for streaming from camera
-- `ScreenRecorderStreamers`: for streaming from screen
-- `AudioOnlyStreamers`: for streaming audio only
+-`DefaultCameraStreamer`: for streaming from camera
+-`DefaultScreenRecorderStreamer`: for streaming from screen
+-`DefaultAudioOnlyStreamer`: for streaming audio only
 
-You can find specific streamers for File or for Live. Currently, there are 2 main endpoints:
-
-- `FileStreamer`: for streaming to file
-- `LiveStreamer`: for streaming to a RTMP or a SRT live streaming server
-
-For example, you can use `AudioOnlyFlvFileStreamer` to stream from microphone only to a FLV file.
-Another example, you can use `CameraRtmpLiveStreamer` to stream from camera to a RTMP server.
-
-If a streamer is missing, of course, you can also create your own. You should definitely submit it
-in a [pull request](https://github.com/ThibaultBee/StreamPack/pulls).
+Since 3.0.0, the endpoint of a `Streamer` is inferred from the `MediaDescriptor` object passed to
+the `open` or `startStream` methods.It is possible to limit the possibility of the endpoint by
+implementing your own `DynamicEndpoint.Factory` or passing a endpoint as the `Streamer` `endpoint`
+parameter.To create a `Streamer` for a new source, you have to create a new `Streamer` class that
+inherits
+from `DefaultStreamer` .
 
 ### Get device capabilities
 
-Have you ever wonder: "What are the supported resolution of my cameras?" or "What is the supported
-sample rate of my audio codecs?"? `Helpers` classes are made for this. All `Streamer` comes with a
-specific `Helper` object (I am starting to have the feeling I repeat myself):
+Have you ever wonder : "What are the supported resolution of my cameras?" or "What is the supported
+sample rate of my audio codecs ?"? `Info` classes are made for this. All `Streamer` comes with a
+specific `Info` object :
+
+    ```kotlin
+
+val info = streamer.getInfo(MediaDescriptor("rtmps://serverip:1935/s/streamKey"))
+
+```
+
+For static endpoint or an opened dynamic endpoint, you can directly get the info:
 
 ```kotlin
-val helper = streamer.helper
+val info = streamer.info
 ```
 
 ### Get extended settings
 
 If you are looking for more settings on streamer, like the exposure compensation of your camera, you
-must have a look on `Settings` class. All together: "All `Streamer` comes with a specific `Settings`
-object":
+must have a look on `Settings` class. Each `Streamer` elements (such
+as `VideoSource`, `AudioSource`,...)
+comes with a public interface that allows to have access to specific information or configuration.
 
 ```kotlin
-streamer.settings
+ (streamer.videoSource as IPublicCameraSource).settings
 ```
 
 For example, if you want to change the exposure compensation of your camera, on a `CameraStreamers`
 you can do it like this:
 
 ```kotlin
-streamer.settings.camera.exposure.compensation = value
+ (streamer.videoSource as IPublicCameraSource).settings.exposure.compensation = value
 ```
 
 Moreover you can check exposure range and step with:
 
 ```kotlin
-streamer.settings.camera.exposure.availableCompensationRange
-streamer.settings.camera.exposure.availableCompensationStep
+ (streamer.videoSource as IPublicCameraSource).settings.exposure.availableCompensationRange
+(streamer.videoSource as IPublicCameraSource).settings.exposure.availableCompensationStep
 ```
 
 ### Screen recorder Service
 
-To record the screen, you have to use one of the `ScreenRecorderStreamers` inside
+To record the screen, you have to use the `DefaultScreenRecorderStreamer` inside
 an [Android Service](https://developer.android.com/guide/components/services). To simplify this
-integration, StreamPack provides several `ScreenRecorderService` classes. Extends one of these class
+integration, StreamPack provides the `DefaultScreenRecorderService` classes. Extends one of these
+class
 and overrides `onNotification` to customise the notification.
 
 ### Android SDK version

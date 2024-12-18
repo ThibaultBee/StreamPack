@@ -19,7 +19,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Resources
 import android.media.MediaFormat
-import android.util.Range
 import android.util.Size
 import androidx.preference.PreferenceManager
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
@@ -84,18 +83,6 @@ class Configuration(context: Context) {
                 resources.getString(R.string.audio_byte_format_key),
                 field.toString()
             )!!.toInt()
-
-        var enableEchoCanceler: Boolean = false
-            get() = sharedPref.getBoolean(
-                resources.getString(R.string.audio_enable_echo_canceler_key),
-                field
-            )
-
-        var enableNoiseSuppressor: Boolean = false
-            get() = sharedPref.getBoolean(
-                resources.getString(R.string.audio_enable_noise_suppressor_key),
-                field
-            )
     }
 
     class Muxer(private val sharedPref: SharedPreferences, private val resources: Resources) {
@@ -150,24 +137,6 @@ class Configuration(context: Context) {
                     resources.getString(R.string.server_passphrase_key),
                     field
                 )!!
-
-            var enableBitrateRegulation: Boolean = false
-                get() = sharedPref.getBoolean(
-                    resources.getString(R.string.server_enable_bitrate_regulation_key),
-                    field
-                )
-
-            var videoBitrateRange: Range<Int> = Range(300, 5000000)
-                get() = Range(
-                    sharedPref.getInt(
-                        resources.getString(R.string.server_video_min_bitrate_key),
-                        field.lower
-                    ) * 1000,  // to b/s
-                    sharedPref.getInt(
-                        resources.getString(R.string.server_video_target_bitrate_key),
-                        field.upper
-                    ) * 1000,  // to b/s
-                )
         }
 
         class RtmpConnection(

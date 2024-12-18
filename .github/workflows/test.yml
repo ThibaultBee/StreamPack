@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'adopt'
@@ -29,7 +29,7 @@ jobs:
     timeout-minutes: 55
     strategy:
       matrix:
-        api-level: [ 26, 34 ]
+        api-level: [ 34 ]
     steps:
       - name: Enable KVM group perms
         run: |
@@ -51,10 +51,20 @@ jobs:
           arch: x86_64
           disable-animations: true
           emulator-options: -no-snapshot -no-window -no-boot-anim -camera-back emulated -camera-front emulated -gpu swiftshader_indirect
-          script: ./gradlew connectedCheck
+          script: |
+            adb root
+            adb logcat -c
+            touch emulator.log
+            chmod 777 emulator.log
+            adb logcat >> emulator.log &
+            ./gradlew -Pandroid.testInstrumentationRunnerArguments.INTEGRATION_TESTS_API_KEY=$INTEGRATION_TESTS_API_KEY connectedCheck
+        env:
+          INTEGRATION_TESTS_API_KEY: ${{ secrets.INTEGRATION_TESTS_API_KEY }}
       - name: Upload test reports
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: test-reports-${{ matrix.api-level }}
-          path: '**/build/reports/androidTests'
+          path: |
+            '**/build/reports/androidTests'
+            emulator.log

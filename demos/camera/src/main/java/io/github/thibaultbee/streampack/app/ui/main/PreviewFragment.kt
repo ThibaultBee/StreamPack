@@ -19,115 +19,120 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ToggleButton
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import io.github.thibaultbee.streampack.app.configuration.Configuration
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import io.github.thibaultbee.streampack.app.ApplicationConstants
+import io.github.thibaultbee.streampack.app.R
 import io.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import io.github.thibaultbee.streampack.app.utils.DialogUtils
 import io.github.thibaultbee.streampack.app.utils.PermissionManager
-import io.github.thibaultbee.streampack.app.utils.StreamerManager
-import io.github.thibaultbee.streampack.views.PreviewView
+import io.github.thibaultbee.streampack.ui.views.PreviewView
+import kotlinx.coroutines.launch
 
-class PreviewFragment : Fragment() {
+class PreviewFragment : Fragment(R.layout.main_fragment) {
     private lateinit var binding: MainFragmentBinding
 
-    private val viewModel: PreviewViewModel by lazy {
-        ViewModelProvider(
-            this,
-            PreviewViewModelFactory(
-                StreamerManager(
-                    requireContext(),
-                    Configuration(requireContext())
-                )
-            )
-        )[PreviewViewModel::class.java]
+    private val previewViewModel: PreviewViewModel by viewModels {
+        PreviewViewModelFactory(requireActivity().application)
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = MainFragmentBinding.inflate(inflater, container, false)
         binding.lifecycleOwner = this
-        binding.viewmodel = viewModel
+        binding.viewmodel = previewViewModel
+
         bindProperties()
         return binding.root
     }
 
     @SuppressLint("MissingPermission")
     private fun bindProperties() {
-        binding.liveButton.setOnClickListener {
-            requestStreamerPermissions(viewModel.requiredPermissions)
+        lifecycle.addObserver(previewViewModel.streamerLifeCycleObserver)
+
+        binding.liveButton.setOnClickListener { view ->
+            view as ToggleButton
+            if (view.isPressed) {
+                if (view.isChecked) {
+                    startStreamIfPermissions(previewViewModel.requiredPermissions)
+                } else {
+                    stopStream()
+                }
+            }
         }
 
-        viewModel.streamerError.observe(viewLifecycleOwner) {
+        previewViewModel.streamerError.observe(viewLifecycleOwner) {
             showError("Oops", it)
         }
-    }
 
-    private fun startStopLive() {
-        if (binding.liveButton.isChecked) {
-            startStream()
-        } else {
-            stopStream()
+        previewViewModel.endpointError.observe(viewLifecycleOwner) {
+            showError("Endpoint error", it)
+        }
+
+        previewViewModel.isStreaming.observe(viewLifecycleOwner) { isStreaming ->
+            if (isStreaming) {
+                lockOrientation()
+            } else {
+                unlockOrientation()
+            }
+            if (isStreaming) {
+                binding.liveButton.isChecked = true
+            } else if (previewViewModel.isTryingConnection.value == true) {
+                binding.liveButton.isChecked = true
+            } else {
+                binding.liveButton.isChecked = false
+            }
+        }
+
+        previewViewModel.isTryingConnection.observe(viewLifecycleOwner) { isWaitingForConnection ->
+            if (isWaitingForConnection) {
+                binding.liveButton.isChecked = true
+            } else if (previewViewModel.isStreaming.value == true) {
+                binding.liveButton.isChecked = true
+            } else {
+                binding.liveButton.isChecked = false
+            }
         }
     }
 
-    private fun requestStreamerPermissions(permissions: List<String>) {
-        when {
-            PermissionManager.hasPermissions(
-                requireContext(),
-                *permissions.toTypedArray()
-            ) -> {
-                startStopLive()
-            }
-            else -> {
-                requestStreamerPermissionsLauncher.launch(
-                    permissions.toTypedArray()
-                )
-            }
-        }
-    }
-
-    private fun startStream() {
+    private fun lockOrientation() {
         /**
          * Lock orientation while stream is running to avoid stream interruption if
          * user turns the device.
          * For landscape only mode, set [requireActivity().requestedOrientation] to
-         * [ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE] in [onCreate] or [onResume].
+         * [ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE].
          */
         requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
-        viewModel.startStream()
     }
 
-    private fun unLockScreen() {
-        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+    private fun unlockOrientation() {
+        requireActivity().requestedOrientation = ApplicationConstants.supportedOrientation
+    }
+
+    private fun startStream() {
+        previewViewModel.startStream()
     }
 
     private fun stopStream() {
-        viewModel.stopStream()
-        unLockScreen()
+        previewViewModel.stopStream()
     }
 
-    private fun showPermissionError() {
-        binding.liveButton.isChecked = false
-        unLockScreen()
+    private fun showPermissionError(vararg permissions: String) {
+        Log.e(TAG, "Permission not granted: ${permissions.joinToString { ", " }}")
         DialogUtils.showPermissionAlertDialog(requireContext())
     }
 
-    private fun showPermissionErrorAndFinish() {
-        binding.liveButton.isChecked = false
-        DialogUtils.showPermissionAlertDialog(requireContext()) { requireActivity().finish() }
-    }
-
     private fun showError(title: String, message: String) {
-        binding.liveButton.isChecked = false
-        unLockScreen()
+        Log.e(TAG, "Error: $title, $message")
         DialogUtils.showAlertDialog(requireContext(), "Error: $title", message)
     }
 
@@ -137,88 +142,127 @@ class PreviewFragment : Fragment() {
         requestCameraAndMicrophonePermissions()
     }
 
+    override fun onPause() {
+        super.onPause()
+        stopStream()
+    }
+
+    @RequiresPermission(Manifest.permission.CAMERA)
+    private fun inflateStreamerPreview() {
+        val preview = binding.preview
+        // Set camera settings button when camera is started
+        preview.listener = object : PreviewView.Listener {
+            override fun onPreviewStarted() {
+                previewViewModel.onPreviewStarted()
+            }
+
+            override fun onZoomRationOnPinchChanged(zoomRatio: Float) {
+                previewViewModel.onZoomRationOnPinchChanged()
+            }
+        }
+
+        // Wait till streamer exists to set it to the SurfaceView.
+        previewViewModel.setStreamerView(preview)
+        if (PermissionManager.hasPermissions(requireContext(), Manifest.permission.CAMERA)) {
+            lifecycleScope.launch {
+                try {
+                    preview.startPreview()
+                } catch (t: Throwable) {
+                    Log.e(TAG, "Error starting preview", t)
+                }
+            }
+        } else {
+            Log.e(TAG, "Camera permission not granted. Preview will not start.")
+        }
+    }
+
+    private fun startStreamIfPermissions(permissions: List<String>) {
+        when {
+            PermissionManager.hasPermissions(
+                requireContext(), *permissions.toTypedArray()
+            ) -> {
+                startStream()
+            }
+
+            else -> {
+                requestLiveStreamPermissionsLauncher.launch(
+                    permissions.toTypedArray()
+                )
+            }
+        }
+    }
+
     @SuppressLint("MissingPermission")
     private fun requestCameraAndMicrophonePermissions() {
         when {
             PermissionManager.hasPermissions(
-                requireContext(),
-                Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO
+                requireContext(), Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO
             ) -> {
-                createStreamer()
+                inflateStreamerPreview()
+                previewViewModel.configureAudio()
             }
+
             shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO) -> {
-                showPermissionError()
+                showPermissionError(Manifest.permission.RECORD_AUDIO)
                 requestCameraAndMicrophonePermissionsLauncher.launch(
                     arrayOf(
                         Manifest.permission.RECORD_AUDIO
                     )
                 )
             }
+
             shouldShowRequestPermissionRationale(Manifest.permission.CAMERA) -> {
-                showPermissionError()
+                showPermissionError(Manifest.permission.CAMERA)
                 requestCameraAndMicrophonePermissionsLauncher.launch(
                     arrayOf(
                         Manifest.permission.CAMERA
                     )
                 )
             }
+
             else -> {
                 requestCameraAndMicrophonePermissionsLauncher.launch(
                     arrayOf(
-                        Manifest.permission.RECORD_AUDIO,
-                        Manifest.permission.CAMERA
+                        Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA
                     )
                 )
             }
         }
     }
 
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    private fun createStreamer() {
-        viewModel.createStreamer()
+    private val requestLiveStreamPermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val missingPermissions = permissions.toList().filter {
+            !it.second
+        }.map { it.first }
 
-        // Set camera settings button when camera is started
-        binding.preview.listener = object : PreviewView.Listener {
-            override fun onPreviewStarted() {
-                viewModel.onPreviewStarted()
-            }
-
-            override fun onZoomRationOnPinchChanged(zoomRatio: Float) {
-                viewModel.onZoomRationOnPinchChanged()
-            }
+        if (missingPermissions.isEmpty()) {
+            startStream()
+        } else {
+            showPermissionError(*missingPermissions.toTypedArray())
         }
-
-        // Wait till streamer exists to set it to the SurfaceView.
-        viewModel.inflateStreamerView(binding.preview)
-
-        // Wait till streamer exists
-        lifecycle.addObserver(viewModel.streamerLifeCycleObserver)
     }
 
     @SuppressLint("MissingPermission")
-    private val requestCameraAndMicrophonePermissionsLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissions ->
-            if (permissions.toList().all {
-                    it.second
-                }) {
-                createStreamer()
-            } else {
-                showPermissionErrorAndFinish()
-            }
-        }
+    private val requestCameraAndMicrophonePermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val missingPermissions = permissions.toList().filter {
+            !it.second
+        }.map { it.first }
 
-    private val requestStreamerPermissionsLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissions ->
-            if (permissions.toList().all {
-                    it.second
-                }) {
-                startStopLive()
-            } else {
-                showPermissionError()
-            }
+        if (permissions[Manifest.permission.CAMERA] == true) {
+            inflateStreamerPreview()
+        } else if (permissions[Manifest.permission.RECORD_AUDIO] == true) {
+            previewViewModel.configureAudio()
         }
+        if (missingPermissions.isNotEmpty()) {
+            showPermissionError(*missingPermissions.toTypedArray())
+        }
+    }
+
+    companion object {
+        private const val TAG = "PreviewFragment"
+    }
 }

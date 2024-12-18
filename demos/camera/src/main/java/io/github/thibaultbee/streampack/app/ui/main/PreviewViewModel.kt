@@ -16,59 +16,160 @@
 package io.github.thibaultbee.streampack.app.ui.main
 
 import android.Manifest
+import android.app.Application
 import android.content.Context
+import android.content.pm.PackageManager
 import android.hardware.camera2.CaptureResult
 import android.util.Log
 import android.util.Range
 import android.util.Rational
 import androidx.annotation.RequiresPermission
+import androidx.core.app.ActivityCompat
 import androidx.databinding.Bindable
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import io.github.thibaultbee.streampack.app.BR
+import io.github.thibaultbee.streampack.app.data.rotation.RotationRepository
+import io.github.thibaultbee.streampack.app.data.storage.DataStoreRepository
+import io.github.thibaultbee.streampack.app.ui.main.usecases.BuildStreamerUseCase
 import io.github.thibaultbee.streampack.app.utils.ObservableViewModel
-import io.github.thibaultbee.streampack.app.utils.StreamerManager
+import io.github.thibaultbee.streampack.app.utils.dataStore
 import io.github.thibaultbee.streampack.app.utils.isEmpty
-import io.github.thibaultbee.streampack.error.StreamPackError
-import io.github.thibaultbee.streampack.listeners.OnConnectionListener
-import io.github.thibaultbee.streampack.listeners.OnErrorListener
-import io.github.thibaultbee.streampack.streamers.StreamerLifeCycleObserver
-import io.github.thibaultbee.streampack.utils.isFrameRateSupported
-import io.github.thibaultbee.streampack.views.PreviewView
+import io.github.thibaultbee.streampack.app.utils.switchBackToFront
+import io.github.thibaultbee.streampack.app.utils.toggleCamera
+import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
+import io.github.thibaultbee.streampack.core.internal.sources.video.camera.CameraSettings
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.startStream
+import io.github.thibaultbee.streampack.core.streamers.observers.StreamerLifeCycleObserver
+import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
+import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
+import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrtBitrateRegulatorController
+import io.github.thibaultbee.streampack.ui.views.PreviewView
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-class PreviewViewModel(private val streamerManager: StreamerManager) : ObservableViewModel() {
-    val streamerLifeCycleObserver: StreamerLifeCycleObserver
-        get() = streamerManager.streamerLifeCycleObserver
+class PreviewViewModel(private val application: Application) : ObservableViewModel() {
+    private val storageRepository = DataStoreRepository(application, application.dataStore)
+    private val rotationRepository = RotationRepository.getInstance(application)
 
-    val streamerError = MutableLiveData<String>()
+    private val buildStreamerUseCase = BuildStreamerUseCase(application, storageRepository)
+
+    private var streamer = buildStreamerUseCase()
+    val streamerLifeCycleObserver: StreamerLifeCycleObserver
+        get() = ViewModelStreamerLifeCycleObserver(streamer)
+    private val cameraSettings: CameraSettings?
+        get() = (streamer as? ICameraStreamer)?.videoSource?.settings
 
     val requiredPermissions: List<String>
-        get() = streamerManager.requiredPermissions
+        get() {
+            val permissions = mutableListOf<String>()
+            if (streamer is ICameraStreamer) {
+                permissions.add(Manifest.permission.CAMERA)
+            }
+            if (streamer.audioSource != null) {
+                permissions.add(Manifest.permission.RECORD_AUDIO)
+            }
+            storageRepository.endpointDescriptorFlow.asLiveData().value?.let {
+                if (it is UriMediaDescriptor) {
+                    permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                }
+            }
 
-    private val onErrorListener = object : OnErrorListener {
-        override fun onError(error: StreamPackError) {
-            Log.e(TAG, "onError", error)
-            streamerError.postValue("${error.javaClass.simpleName}: ${error.message}")
+            return permissions
+        }
+
+    // Streamer errors
+    private val _streamerError: MutableLiveData<String> = MutableLiveData()
+    val streamerError: LiveData<String> = _streamerError
+    private val _endpointError: MutableLiveData<String> = MutableLiveData()
+    val endpointError: LiveData<String> = _endpointError
+
+    // Streamer states
+    val isStreaming: LiveData<Boolean>
+        get() = streamer.isStreaming.asLiveData()
+    private val _isTryingConnection = MutableLiveData<Boolean>()
+    val isTryingConnection: LiveData<Boolean> = _isTryingConnection
+
+    init {
+        viewModelScope.launch {
+            streamer.throwable.filterNotNull().filter { !it.isClosedException }
+                .map { "${it.javaClass.simpleName}: ${it.message}" }.collect {
+                    _streamerError.postValue(it)
+                }
+        }
+        viewModelScope.launch {
+            streamer.throwable.filterNotNull().filter { it.isClosedException }
+                .map { "Connection lost: ${it.message}" }.collect {
+                    _endpointError.postValue(it)
+                }
+        }
+        viewModelScope.launch {
+            streamer.isOpen
+                .collect {
+                    Log.i(TAG, "Streamer is opened: $it")
+                }
+        }
+        viewModelScope.launch {
+            streamer.isStreaming
+                .collect {
+                    Log.i(TAG, "Streamer is streaming: $it")
+                }
+        }
+        viewModelScope.launch {
+            rotationRepository.rotationFlow
+                .collect {
+                    streamer.targetRotation = it
+                }
+        }
+        viewModelScope.launch {
+            storageRepository.isAudioEnableFlow.combine(storageRepository.isVideoEnableFlow) { isAudioEnable, isVideoEnable ->
+                Pair(isAudioEnable, isVideoEnable)
+            }.collect { (_, _) ->
+                val previousStreamer = streamer
+                streamer = buildStreamerUseCase(previousStreamer)
+                if (previousStreamer != streamer) {
+                    previousStreamer.release()
+                }
+            }
+        }
+        viewModelScope.launch {
+            storageRepository.audioConfigFlow
+                .collect { config ->
+                    if (ActivityCompat.checkSelfPermission(
+                            application,
+                            Manifest.permission.RECORD_AUDIO
+                        ) == PackageManager.PERMISSION_GRANTED
+                    ) {
+                        config?.let {
+                            streamer.configure(it)
+                        } ?: Log.i(TAG, "Audio is disabled")
+                    }
+                }
+        }
+        viewModelScope.launch {
+            storageRepository.videoConfigFlow
+                .collect { config ->
+                    config?.let {
+                        streamer.configure(it)
+                    } ?: Log.i(TAG, "Video is disabled")
+                }
         }
     }
 
-    private val onConnectionListener = object : OnConnectionListener {
-        override fun onLost(message: String) {
-            streamerError.postValue("Connection lost: $message")
+    fun setStreamerView(view: PreviewView) {
+        if (streamer is ICameraStreamer) {
+            view.streamer = streamer as ICameraStreamer
         }
-
-        override fun onFailed(message: String) {
-            // Not needed as we catch startStream
-        }
-
-        override fun onSuccess() {
-            Log.i(TAG, "Connection succeeded")
-        }
-    }
-
-    fun inflateStreamerView(view: PreviewView) {
-        streamerManager.inflateStreamerView(view)
     }
 
     fun onPreviewStarted() {
@@ -80,27 +181,44 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
     }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    fun createStreamer() {
+    fun configureAudio() {
         viewModelScope.launch {
             try {
-                streamerManager.rebuildStreamer()
-                streamerManager.onErrorListener = onErrorListener
-                streamerManager.onConnectionListener = onConnectionListener
-                Log.d(TAG, "Streamer is created")
-            } catch (e: Throwable) {
-                Log.e(TAG, "createStreamer failed", e)
-                streamerError.postValue("createStreamer: ${e.message ?: "Unknown error"}")
+                storageRepository.audioConfigFlow.first()?.let { streamer.configure(it) } ?: Log.i(
+                    TAG,
+                    "Audio is disabled"
+                )
+            } catch (t: Throwable) {
+                Log.e(TAG, "configureAudio failed", t)
+                _streamerError.postValue("configureAudio: ${t.message ?: "Unknown error"}")
             }
         }
     }
 
     fun startStream() {
         viewModelScope.launch {
+            _isTryingConnection.postValue(true)
             try {
-                streamerManager.startStream()
+                val descriptor = storageRepository.endpointDescriptorFlow.first()
+                streamer.startStream(descriptor)
+
+                if (descriptor.type.sinkType == MediaSinkType.SRT) {
+                    val bitrateRegulatorConfig =
+                        storageRepository.bitrateRegulatorConfigFlow.first()
+                    if (bitrateRegulatorConfig != null) {
+                        Log.i(TAG, "Add bitrate regulator controller")
+                        streamer.addBitrateRegulatorController(
+                            DefaultSrtBitrateRegulatorController.Factory(
+                                bitrateRegulatorConfig = bitrateRegulatorConfig
+                            )
+                        )
+                    }
+                }
             } catch (e: Throwable) {
                 Log.e(TAG, "startStream failed", e)
-                streamerError.postValue("startStream: ${e.message ?: "Unknown error"}")
+                _streamerError.postValue("startStream: ${e.message ?: "Unknown error"}")
+            } finally {
+                _isTryingConnection.postValue(false)
             }
         }
     }
@@ -108,7 +226,9 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
     fun stopStream() {
         viewModelScope.launch {
             try {
-                streamerManager.stopStream()
+                streamer.stopStream()
+                streamer.close()
+                streamer.removeBitrateRegulatorController()
             } catch (e: Throwable) {
                 Log.e(TAG, "stopStream failed", e)
             }
@@ -116,7 +236,22 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
     }
 
     fun setMute(isMuted: Boolean) {
-        streamerManager.isMuted = isMuted
+        streamer.audioSource?.isMuted = isMuted
+    }
+
+    @RequiresPermission(Manifest.permission.CAMERA)
+    fun switchBackToFront(): Boolean {
+        /**
+         * If video frame rate is not supported by the new camera, streamer will throw an
+         * exception instead of crashing. You can either catch the exception or check if the
+         * configuration is valid for the new camera with [Context.isFrameRateSupported].
+         */
+        val streamer = streamer
+        if (streamer is ICameraStreamer) {
+            streamer.switchBackToFront(application)
+            notifyCameraChanged()
+        }
+        return true
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
@@ -126,25 +261,23 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
          * exception instead of crashing. You can either catch the exception or check if the
          * configuration is valid for the new camera with [Context.isFrameRateSupported].
          */
-        try {
-            streamerManager.toggleCamera()
+        val streamer = streamer
+        if (streamer is ICameraStreamer) {
+            streamer.toggleCamera(application)
             notifyCameraChanged()
-        } catch (e: Exception) {
-            Log.e(TAG, "toggleCamera failed", e)
-            streamerError.postValue("toggleCamera: ${e.message ?: "Unknown error"}")
         }
     }
 
     val isFlashAvailable = MutableLiveData(false)
     fun toggleFlash() {
-        streamerManager.cameraSettings?.let {
+        cameraSettings?.let {
             it.flash.enable = !it.flash.enable
         }
     }
 
     val isAutoWhiteBalanceAvailable = MutableLiveData(false)
     fun toggleAutoWhiteBalanceMode() {
-        streamerManager.cameraSettings?.let {
+        cameraSettings?.let {
             val awbModes = it.whiteBalance.availableAutoModes
             val index = awbModes.indexOf(it.whiteBalance.autoMode)
             it.whiteBalance.autoMode = awbModes[(index + 1) % awbModes.size]
@@ -160,10 +293,11 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
     val exposureCompensationRange = MutableLiveData<Range<Int>>()
     val exposureCompensationStep = MutableLiveData<Rational>()
     var exposureCompensation: Float
-        @Bindable get() = streamerManager.cameraSettings?.exposure?.let { it.compensation * it.availableCompensationStep.toFloat() }
-            ?: 0f
+        @Bindable get() =
+            cameraSettings?.exposure?.let { it.compensation * it.availableCompensationStep.toFloat() }
+                ?: 0f
         set(value) {
-            streamerManager.cameraSettings?.exposure?.let {
+            cameraSettings?.exposure?.let {
                 it.compensation = (value / it.availableCompensationStep.toFloat()).toInt()
                 notifyPropertyChanged(BR.exposureCompensation)
             }
@@ -177,10 +311,10 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
     val isZoomAvailable = MutableLiveData(false)
     val zoomRatioRange = MutableLiveData<Range<Float>>()
     var zoomRatio: Float
-        @Bindable get() = streamerManager.cameraSettings?.zoom?.zoomRatio
+        @Bindable get() = cameraSettings?.zoom?.zoomRatio
             ?: 1f
         set(value) {
-            streamerManager.cameraSettings?.zoom?.let {
+            cameraSettings?.zoom?.let {
                 it.zoomRatio = value
                 notifyPropertyChanged(BR.zoomRatio)
             }
@@ -188,7 +322,7 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
 
     val isAutoFocusModeAvailable = MutableLiveData(false)
     fun toggleAutoFocusMode() {
-        streamerManager.cameraSettings?.let {
+        cameraSettings?.let {
             val afModes = it.focus.availableAutoModes
             val index = afModes.indexOf(it.focus.autoMode)
             it.focus.autoMode = afModes[(index + 1) % afModes.size]
@@ -203,17 +337,17 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
     val showLensDistanceSlider = MutableLiveData(false)
     val lensDistanceRange = MutableLiveData<Range<Float>>()
     var lensDistance: Float
-        @Bindable get() = streamerManager.cameraSettings?.focus?.lensDistance
+        @Bindable get() = cameraSettings?.focus?.lensDistance
             ?: 0f
         set(value) {
-            streamerManager.cameraSettings?.focus?.let {
+            cameraSettings?.focus?.let {
                 it.lensDistance = value
                 notifyPropertyChanged(BR.lensDistance)
             }
         }
 
     private fun notifyCameraChanged() {
-        streamerManager.cameraSettings?.let {
+        cameraSettings?.let {
             // Set optical stabilization first
             // Do not set both video and optical stabilization at the same time
             if (it.stabilization.availableOptical) {
@@ -263,13 +397,21 @@ class PreviewViewModel(private val streamerManager: StreamerManager) : Observabl
     override fun onCleared() {
         super.onCleared()
         try {
-            streamerManager.release()
-        } catch (e: Exception) {
-            Log.e(TAG, "streamer.release failed", e)
+            streamer.release()
+        } catch (t: Throwable) {
+            Log.e(TAG, "Streamer release failed", t)
         }
     }
 
     companion object {
         private const val TAG = "PreviewViewModel"
+    }
+
+    class ViewModelStreamerLifeCycleObserver(streamer: ICoroutineStreamer) :
+        StreamerLifeCycleObserver(streamer) {
+        override fun onDestroy(owner: LifecycleOwner) {
+            // Do nothing
+            // The ViewModel onCleared() method will call release() method
+        }
     }
 }

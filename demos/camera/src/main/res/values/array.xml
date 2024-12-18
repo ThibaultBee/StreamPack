@@ -7,14 +7,16 @@
         <item>60</item>
     </string-array>
 
-    <string-array name="AudioNumberOfChannelsEntries">
+    <string-array name="AudioChannelConfigEntries">
         <item>Mono</item>
         <item>Stereo</item>
     </string-array>
 
-    <string-array name="AudioNumberOfChannelsEntryValues">
-        <item>1</item>
-        <item>2</item>
+    <string-array name="AudioChannelConfigEntryValues">
+        <!-- CHANNEL_IN_MONO = 16 -->
+        <item>16</item>
+        <!-- CHANNEL_IN_STEREO = 12 -->
+        <item>12</item>
     </string-array>
 
     <string-array name="AudioBitrateEntryValues">
