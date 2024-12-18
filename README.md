@@ -1,6 +1,6 @@
 # StreamPack: RTMP and [SRT](https://github.com/Haivision/srt) live streaming SDK for Android
 
-StreamPack is a modular live streaming library for Android made for both demanding video
+StreamPack is a flexible live streaming library for Android made for both demanding video
 broadcasters and new video enthusiasts.
 
 It is designed to be used in live streaming and gaming apps.
