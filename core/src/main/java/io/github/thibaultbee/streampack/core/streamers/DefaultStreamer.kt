@@ -557,11 +557,7 @@ open class DefaultStreamer(
                  * If sourceOrientationProvider is not null, we need to get oriented size.
                  * For example, the [FlvMuxer] `onMetaData` event needs to know the oriented size.
                  */
-                if (sourceInfoProvider != null) {
-                    videoConfig.rotateFromNaturalOrientation(context, targetRotation)
-                } else {
-                    videoConfig
-                }
+                videoConfig.rotateFromNaturalOrientation(context, targetRotation)
             } else {
                 null
             }
