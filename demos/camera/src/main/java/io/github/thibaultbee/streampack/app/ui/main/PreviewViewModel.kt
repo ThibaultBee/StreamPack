@@ -26,7 +26,7 @@ import android.util.Rational
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import androidx.databinding.Bindable
-import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
@@ -44,9 +44,8 @@ import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescri
 import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.startStream
-import io.github.thibaultbee.streampack.core.streamers.observers.StreamerLifeCycleObserver
+import io.github.thibaultbee.streampack.core.streamers.observers.StreamerViewModelLifeCycleObserver
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrtBitrateRegulatorController
@@ -65,8 +64,8 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     private val buildStreamerUseCase = BuildStreamerUseCase(application, storageRepository)
 
     private var streamer = buildStreamerUseCase()
-    val streamerLifeCycleObserver: StreamerLifeCycleObserver
-        get() = ViewModelStreamerLifeCycleObserver(streamer)
+    val streamerLifeCycleObserver: DefaultLifecycleObserver
+        get() = StreamerViewModelLifeCycleObserver(streamer)
     private val cameraSettings: CameraSettings?
         get() = (streamer as? ICameraStreamer)?.videoSource?.settings
 
@@ -405,13 +404,5 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
 
     companion object {
         private const val TAG = "PreviewViewModel"
-    }
-
-    class ViewModelStreamerLifeCycleObserver(streamer: ICoroutineStreamer) :
-        StreamerLifeCycleObserver(streamer) {
-        override fun onDestroy(owner: LifecycleOwner) {
-            // Do nothing
-            // The ViewModel onCleared() method will call release() method
-        }
     }
 }
