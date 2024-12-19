@@ -98,7 +98,7 @@ interface IStreamer {
      *
      * @param audioConfig Audio configuration to set
      *
-     * @throws [StreamPackError] if configuration can not be applied.
+     * @throws [Throwable] if configuration can not be applied.
      * @see [release]
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
