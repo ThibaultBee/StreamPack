@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Thibault B.
+ * Copyright (C) 2024 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,17 +22,16 @@ import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStre
 import kotlinx.coroutines.runBlocking
 
 /**
- * Add [DefaultLifecycleObserver] to a streamer.
+ * A [DefaultLifecycleObserver] to control a streamer on [Activity] lifecycle in a ViewModel.
  *
- * You will not have to call [ICoroutineStreamer.release] when application is destroyed nor to to call
- * [ICoroutineStreamer.stopStream] when application goes to background.
+ * It stops streamer when application goes to background.
  *
  * To use it, call:
- *  - `lifeCycle.addObserver(StreamerLifeCycleObserver(streamer))`
+ *  - `lifeCycle.addObserver(StreamerActivityLifeCycleObserver(streamer))`
  *
- *  @param streamer The streamer to observe
+ *  @param streamer The streamer to control
  */
-open class StreamerLifeCycleObserver(protected val streamer: ICoroutineStreamer) :
+open class StreamerViewModelLifeCycleObserver(protected val streamer: ICoroutineStreamer) :
     DefaultLifecycleObserver {
     override fun onPause(owner: LifecycleOwner) {
         if (streamer is ICameraStreamer) {
@@ -44,9 +43,5 @@ open class StreamerLifeCycleObserver(protected val streamer: ICoroutineStreamer)
                 streamer.close()
             }
         }
-    }
-
-    override fun onDestroy(owner: LifecycleOwner) {
-        streamer.release()
     }
 }
