@@ -53,11 +53,11 @@ import java.util.concurrent.CancellationException
  *
  * In the case, you are using it, do not call [ICameraCoroutineStreamer.startPreview] (or
  * [ICameraCallbackStreamer.stopPreview]) and [ICameraCoroutineStreamer.stopPreview] on application
- * side. It will be handled by the [PreviewView].
+ * side. It will be handled by the [CameraPreviewView].
  *
  * The [Manifest.permission.CAMERA] permission must be granted before using this view.
  */
-class PreviewView @JvmOverloads constructor(
+class CameraPreviewView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
 ) : FrameLayout(context, attrs, defStyle) {
     private val cameraViewfinder = CameraViewfinder(context, attrs, defStyle)
@@ -103,7 +103,7 @@ class PreviewView @JvmOverloads constructor(
         }
 
     /**
-     * The position of the [PreviewView] within its container.
+     * The position of the [CameraPreviewView] within its container.
      */
     var position: Position
         get() = getPosition(cameraViewfinder.scaleType)
@@ -112,7 +112,7 @@ class PreviewView @JvmOverloads constructor(
         }
 
     /**
-     * The scale mode of the [PreviewView] within its container.
+     * The scale mode of the [CameraPreviewView] within its container.
      */
     var scaleMode: ScaleMode
         get() = getScaleMode(cameraViewfinder.scaleType)
@@ -428,7 +428,7 @@ class PreviewView @JvmOverloads constructor(
 
 
     /**
-     * A listener for the [PreviewView].
+     * A listener for the [CameraPreviewView].
      */
     interface Listener {
         /**
@@ -449,21 +449,21 @@ class PreviewView @JvmOverloads constructor(
     }
 
     /**
-     * Options for the position of the [PreviewView] within its container.
+     * Options for the position of the [CameraPreviewView] within its container.
      */
     enum class Position(val value: Int) {
         /**
-         * The [PreviewView] is positioned at the top of its container.
+         * The [CameraPreviewView] is positioned at the top of its container.
          */
         START(0),
 
         /**
-         * The [PreviewView] is positioned in the center of its container.
+         * The [CameraPreviewView] is positioned in the center of its container.
          */
         CENTER(1),
 
         /**
-         * The [PreviewView] is positioned in the bottom of its container.
+         * The [CameraPreviewView] is positioned in the bottom of its container.
          */
         END(2);
 
@@ -476,24 +476,24 @@ class PreviewView @JvmOverloads constructor(
     }
 
     /**
-     * Options for scaling the [PreviewView] within its container.
+     * Options for scaling the [CameraPreviewView] within its container.
      */
     enum class ScaleMode(val value: Int) {
         /**
-         * Scale the [PreviewView], maintaining the source aspect ratio, so it fills the entire
+         * Scale the [CameraPreviewView], maintaining the source aspect ratio, so it fills the entire
          * parent.
          *
-         * This may cause the [PreviewView] to be cropped.
+         * This may cause the [CameraPreviewView] to be cropped.
          */
         FILL(0),
 
         /**
-         * Scale the [PreviewView], maintaining the source aspect ratio, so it is entirely contained
+         * Scale the [CameraPreviewView], maintaining the source aspect ratio, so it is entirely contained
          * within the parent. The background area not covered by the viewfinder stream will be black
-         * or the background of the [PreviewView].
+         * or the background of the [CameraPreviewView].
          *
          *
-         * Both dimensions of the [PreviewView] will be equal or less than the corresponding
+         * Both dimensions of the [CameraPreviewView] will be equal or less than the corresponding
          * dimensions of its parent.
          */
         FIT(1);
