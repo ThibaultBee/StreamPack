@@ -31,12 +31,11 @@ import android.media.MediaFormat
 import android.os.Build
 
 data class DynamicRangeProfile(val dynamicRange: Long, val transferFunction: Int) {
-    val isHdr: Boolean
-        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            dynamicRange != DynamicRangeProfiles.STANDARD
-        } else {
-            false
-        }
+    val isHdr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        dynamicRange != DynamicRangeProfiles.STANDARD
+    } else {
+        false
+    }
 
     companion object {
         val sdr =

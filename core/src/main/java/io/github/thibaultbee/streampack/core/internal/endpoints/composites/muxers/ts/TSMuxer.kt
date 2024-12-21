@@ -17,9 +17,9 @@ package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxe
 
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.Config
 import io.github.thibaultbee.streampack.core.internal.data.Frame
+import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.Service
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.Stream
@@ -116,11 +116,11 @@ class TSMuxer : IMuxerInternal {
                 }
             }
 
-            AudioConfig.isAacMimeType(frame.mimeType) -> {
+            AudioCodecConfig.isAacMimeType(frame.mimeType) -> {
                 frame.copy(
                     rawBuffer = if (pes.stream.config.profile == MediaCodecInfo.CodecProfileLevel.AACObjectLC) {
                         ADTSFrameWriter.fromAudioConfig(
-                            frame.buffer, pes.stream.config as AudioConfig
+                            frame.buffer, pes.stream.config as AudioCodecConfig
                         ).toByteBuffer()
                     } else {
                         LATMFrameWriter.fromDecoderSpecificInfo(frame.buffer, frame.extra!!.first())
@@ -281,13 +281,13 @@ class TSMuxer : IMuxerInternal {
      * @param streamsConfig list of config
      * @return ordered list of stream id
      */
-    override fun addStreams(streamsConfig: List<Config>) =
+    override fun addStreams(streamsConfig: List<CodecConfig>) =
         addStreams(getServices()[0], streamsConfig)
 
     /**
      * Adds a stream to the first service registered
      */
-    override fun addStream(streamConfig: Config): Int {
+    override fun addStream(streamConfig: CodecConfig): Int {
         val streamIds = addStreams(getServices()[0], listOf(streamConfig))
         return streamIds[streamConfig]!!
     }
@@ -300,7 +300,7 @@ class TSMuxer : IMuxerInternal {
      * @param streamsConfig list of config
      * @return ordered list of stream id
      */
-    fun addStreams(tsServiceInfo: TSServiceInfo, streamsConfig: List<Config>) =
+    fun addStreams(tsServiceInfo: TSServiceInfo, streamsConfig: List<CodecConfig>) =
         addStreams(getServices(tsServiceInfo), streamsConfig)
 
 
@@ -311,7 +311,10 @@ class TSMuxer : IMuxerInternal {
      * @param streamsConfig list of config
      * @return list of corresponding PES
      */
-    private fun addStreams(service: Service, streamsConfig: List<Config>): Map<Config, Int> {
+    private fun addStreams(
+        service: Service,
+        streamsConfig: List<CodecConfig>
+    ): Map<CodecConfig, Int> {
         require(tsServices.contains(service)) { "Unknown service" }
 
         val isNewService = service.pmt == null
@@ -353,7 +356,7 @@ class TSMuxer : IMuxerInternal {
             }
         }
 
-        val streamMap = mutableMapOf<Config, Int>()
+        val streamMap = mutableMapOf<CodecConfig, Int>()
         newStreams.forEach { streamMap[it.config] = it.pid.toInt() }
         return streamMap
     }

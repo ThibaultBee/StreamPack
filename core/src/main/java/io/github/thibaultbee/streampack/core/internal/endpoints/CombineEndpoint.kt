@@ -15,9 +15,9 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints
 
-import io.github.thibaultbee.streampack.core.data.Config
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Frame
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.internal.utils.combineStates
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.union
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -96,7 +96,7 @@ open class CombineEndpoint(protected val endpointInternals: List<IEndpointIntern
         return i
     }
 
-    override fun addStream(streamConfig: Config): Int {
+    override fun addStream(streamConfig: CodecConfig): Int {
         val streamId = createNewStreamId()
         endpointInternals.forEach { endpoint ->
             endpointsToStreamIdsMap[Pair(endpoint, streamId)] = endpoint.addStream(streamConfig)
@@ -104,8 +104,8 @@ open class CombineEndpoint(protected val endpointInternals: List<IEndpointIntern
         return streamId
     }
 
-    override fun addStreams(streamConfigs: List<Config>): Map<Config, Int> {
-        val streamIds = mutableMapOf<Config, Int>()
+    override fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
+        val streamIds = mutableMapOf<CodecConfig, Int>()
         streamConfigs.forEach { streamConfig ->
             val streamId = createNewStreamId()
             endpointInternals.forEach { endpoint ->

@@ -15,12 +15,12 @@
  */
 package io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.composites.sinks
 
-import io.github.thibaultbee.streampack.core.data.VideoConfig
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ClosedException
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Packet
+import io.github.thibaultbee.streampack.core.internal.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.AbstractSink
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ClosedException
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.SinkConfiguration
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
@@ -46,7 +46,7 @@ class RtmpSink(
     override val isOpen: StateFlow<Boolean> = _isOpen
 
     override fun configure(config: SinkConfiguration) {
-        val videoConfig = config.streamConfigs.firstOrNull { it is VideoConfig }
+        val videoConfig = config.streamConfigs.firstOrNull { it is VideoCodecConfig }
         if (videoConfig != null) {
             supportedVideoCodecs.clear()
             supportedVideoCodecs += listOf(videoConfig.mimeType)

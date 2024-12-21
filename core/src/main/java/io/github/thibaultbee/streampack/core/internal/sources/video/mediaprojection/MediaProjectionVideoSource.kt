@@ -24,7 +24,6 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.view.Surface
 import androidx.activity.result.ActivityResult
-import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.internal.processing.video.source.AbstractSourceInfoProvider
 import io.github.thibaultbee.streampack.core.internal.sources.IMediaProjectionSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.ISurfaceSource

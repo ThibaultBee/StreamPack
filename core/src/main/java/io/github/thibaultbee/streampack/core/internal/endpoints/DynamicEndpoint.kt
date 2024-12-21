@@ -16,10 +16,10 @@
 package io.github.thibaultbee.streampack.core.internal.endpoints
 
 import android.content.Context
-import io.github.thibaultbee.streampack.core.data.Config
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.createDefaultTsServiceInfo
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.createDefaultTsServiceInfo
 import io.github.thibaultbee.streampack.core.internal.data.Frame
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.CompositeEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.CompositeEndpoints
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.FlvMuxer
@@ -92,10 +92,10 @@ open class DynamicEndpoint(
         }
     }
 
-    override fun addStreams(streamConfigs: List<Config>) =
+    override fun addStreams(streamConfigs: List<CodecConfig>) =
         endpoint.addStreams(streamConfigs)
 
-    override fun addStream(streamConfig: Config) = endpoint.addStream(streamConfig)
+    override fun addStream(streamConfig: CodecConfig) = endpoint.addStream(streamConfig)
 
     override suspend fun write(frame: Frame, streamPid: Int) = endpoint.write(frame, streamPid)
 

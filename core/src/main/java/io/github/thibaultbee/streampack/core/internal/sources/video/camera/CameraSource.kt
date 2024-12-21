@@ -17,11 +17,11 @@ package io.github.thibaultbee.streampack.core.internal.sources.video.camera
 
 import android.Manifest
 import android.content.Context
-import android.hardware.camera2.params.DynamicRangeProfiles
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.internal.sources.video.ISurfaceSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.VideoSourceConfig
+import io.github.thibaultbee.streampack.core.internal.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.utils.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
@@ -101,7 +101,7 @@ class CameraSource(
     override val infoProvider = CameraInfoProvider(context, cameraId)
 
     private var fps: Int = 30
-    private var dynamicRangeProfile: Long = DynamicRangeProfiles.STANDARD
+    private var dynamicRangeProfile: DynamicRangeProfile = DynamicRangeProfile.sdr
 
     private val isStreaming: Boolean
         get() {
@@ -157,7 +157,7 @@ class CameraSource(
             outputSurface?.let { targets.add(it) }
 
             cameraController.startCamera(
-                cameraId, targets, dynamicRangeProfile
+                cameraId, targets, dynamicRangeProfile.dynamicRange
             )
         }
 

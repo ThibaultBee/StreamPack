@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.regulator
 
-import io.github.thibaultbee.streampack.core.data.BitrateRegulatorConfig
+import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
 
 /**
  * Abstract class for the bitrate regulation implementation.

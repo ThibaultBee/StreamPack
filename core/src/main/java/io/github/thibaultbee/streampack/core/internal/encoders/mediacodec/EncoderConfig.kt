@@ -18,11 +18,11 @@ package io.github.thibaultbee.streampack.core.internal.encoders.mediacodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.os.Build
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.Config
-import io.github.thibaultbee.streampack.core.data.VideoConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.VideoCodecConfig
 
-sealed class EncoderConfig<T : Config>(val config: T) {
+sealed class EncoderConfig<T : CodecConfig>(val config: T) {
     /**
      * True if the encoder is a video encoder, false if it's an audio encoder
      */
@@ -52,9 +52,9 @@ sealed class EncoderConfig<T : Config>(val config: T) {
 }
 
 class VideoEncoderConfig(
-    videoConfig: VideoConfig,
+    videoConfig: VideoCodecConfig,
     val useSurfaceMode: Boolean = true
-) : EncoderConfig<VideoConfig>(
+) : EncoderConfig<VideoCodecConfig>(
     videoConfig
 ) {
     override val isVideo = true
@@ -99,8 +99,8 @@ class VideoEncoderConfig(
     }
 }
 
-class AudioEncoderConfig(audioConfig: AudioConfig) :
-    EncoderConfig<AudioConfig>(
+class AudioEncoderConfig(audioConfig: AudioCodecConfig) :
+    EncoderConfig<AudioCodecConfig>(
         audioConfig
     ) {
     override val isVideo = false

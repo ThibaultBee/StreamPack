@@ -15,12 +15,12 @@
  */
 package io.github.thibaultbee.streampack.core.regulator.controllers
 
-import io.github.thibaultbee.streampack.core.data.BitrateRegulatorConfig
+import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.internal.utils.Scheduler
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.ICoroutineSingleStreamer
 
 /**
  * A [BitrateRegulatorController] implementation that triggers [IBitrateRegulator.update] every [delayTimeInMs].
@@ -85,7 +85,7 @@ open class DefaultBitrateRegulatorController(
         private val bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
         private val delayTimeInMs: Long = 500
     ) : BitrateRegulatorController.Factory() {
-        override fun newBitrateRegulatorController(streamer: ICoroutineStreamer): BitrateRegulatorController {
+        override fun newBitrateRegulatorController(streamer: ICoroutineSingleStreamer): BitrateRegulatorController {
             return DefaultBitrateRegulatorController(
                 streamer.audioEncoder,
                 streamer.videoEncoder,

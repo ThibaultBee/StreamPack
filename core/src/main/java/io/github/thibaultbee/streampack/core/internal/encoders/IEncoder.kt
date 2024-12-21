@@ -16,7 +16,6 @@
 package io.github.thibaultbee.streampack.core.internal.encoders
 
 import android.view.Surface
-import io.github.thibaultbee.streampack.core.data.Config
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.internal.interfaces.SuspendStreamable
@@ -67,7 +66,7 @@ interface IEncoderInternal : SuspendStreamable, Releasable,
     /**
      * The encoder configuration
      */
-    val config: Config
+    val config: CodecConfig
 
     interface IListener {
         /**

@@ -7,9 +7,11 @@ import android.util.Size
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.VideoConfig
-import io.github.thibaultbee.streampack.core.streamers.interfaces.startStream
+import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
+import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
+import io.github.thibaultbee.streampack.core.streamers.single.setConfig
+import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
@@ -54,8 +56,8 @@ class SrtStreamerTest {
 
         try {
             // Run live stream
-            val streamer = DefaultCameraStreamer(context)
-            streamer.configure(
+            val streamer = CameraSingleStreamer(context)
+            streamer.setConfig(
                 AudioConfig(),
                 VideoConfig(startBitrate = 500_000, resolution = Size(VIDEO_WIDTH, VIDEO_HEIGHT))
             )

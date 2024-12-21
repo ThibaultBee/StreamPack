@@ -1,10 +1,8 @@
-package io.github.thibaultbee.streampack.core.streamers.callbacks
+package io.github.thibaultbee.streampack.core.streamers.single.callbacks
 
 import android.Manifest
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.VideoConfig
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSource
@@ -12,8 +10,10 @@ import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
+import io.github.thibaultbee.streampack.core.streamers.single.ICallbackSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.ICoroutineSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,22 +25,25 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
 /**
- * Default implementation of [ICallbackStreamer] that uses [ICoroutineStreamer] to handle streamer logic.
- * It is a bridge between [ICoroutineStreamer] and [ICallbackStreamer].
+ * Default implementation of [ICallbackSingleStreamer] that uses [ICoroutineSingleStreamer] to handle streamer logic.
+ * It is a bridge between [ICoroutineSingleStreamer] and [ICallbackSingleStreamer].
  *
- * @param streamer the [ICoroutineStreamer] to use
+ * @param streamer the [ICoroutineSingleStreamer] to use
  */
-open class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallbackStreamer {
+open class CallbackSingleStreamer(val streamer: ICoroutineSingleStreamer) :
+    ICallbackSingleStreamer {
     protected val coroutineScope: CoroutineScope = CoroutineScope(
         SupervisorJob() + Dispatchers.Default
     )
 
-    protected val listeners = mutableListOf<ICallbackStreamer.Listener>()
+    protected val listeners = mutableListOf<ICallbackSingleStreamer.Listener>()
 
     override val audioConfig: AudioConfig?
         get() = streamer.audioConfig
+
     override val videoConfig: VideoConfig?
         get() = streamer.videoConfig
+
     override val audioSource: IAudioSource?
         get() = streamer.audioSource
     override val audioEncoder: IEncoder?
@@ -96,12 +99,12 @@ open class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallback
     }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    override fun configure(audioConfig: AudioConfig) {
-        streamer.configure(audioConfig)
+    override fun setAudioConfig(audioConfig: AudioConfig) {
+        streamer.setAudioConfig(audioConfig)
     }
 
-    override fun configure(videoConfig: VideoConfig) {
-        streamer.configure(videoConfig)
+    override fun setVideoConfig(videoConfig: VideoConfig) {
+        streamer.setVideoConfig(videoConfig)
     }
 
     override fun open(descriptor: MediaDescriptor) {
@@ -160,11 +163,11 @@ open class DefaultCallbackStreamer(val streamer: ICoroutineStreamer) : ICallback
         }
     }
 
-    override fun addListener(listener: ICallbackStreamer.Listener) {
+    override fun addListener(listener: ICallbackSingleStreamer.Listener) {
         listeners.add(listener)
     }
 
-    override fun removeListener(listener: ICallbackStreamer.Listener) {
+    override fun removeListener(listener: ICallbackSingleStreamer.Listener) {
         listeners.remove(listener)
     }
 

@@ -15,9 +15,9 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers
 
-import io.github.thibaultbee.streampack.core.data.Config
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.data.Packet
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.internal.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.internal.interfaces.Streamable
 
@@ -32,9 +32,9 @@ interface IMuxerInternal :
 
     fun write(frame: Frame, streamPid: Int)
 
-    fun addStreams(streamsConfig: List<Config>): Map<Config, Int>
+    fun addStreams(streamsConfig: List<CodecConfig>): Map<CodecConfig, Int>
 
-    fun addStream(streamConfig: Config): Int
+    fun addStream(streamConfig: CodecConfig): Int
 }
 
 interface IMuxer {

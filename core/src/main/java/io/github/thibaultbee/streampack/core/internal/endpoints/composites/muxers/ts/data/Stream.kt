@@ -15,12 +15,12 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data
 
-import io.github.thibaultbee.streampack.core.data.Config
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.isVideo
 
 data class Stream(
-    val config: Config,
+    val config: CodecConfig,
     val pid: Short,
     val discontinuity: Boolean = false
 ) {

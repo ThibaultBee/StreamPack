@@ -24,10 +24,11 @@ import androidx.core.net.toUri
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.VideoConfig
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
-import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
+import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
+import io.github.thibaultbee.streampack.core.streamers.single.setConfig
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
@@ -36,12 +37,12 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Test [DefaultCameraStreamer] with multiple streams.
+ * Test [CameraSingleStreamer] with multiple streams.
  */
 @LargeTest
 class CameraStreamerMultiStreamTest {
     private val context: Context = InstrumentationRegistry.getInstrumentation().context
-    private val streamer = DefaultCameraStreamer(context)
+    private val streamer = CameraSingleStreamer(context)
 
     private val descriptors = listOf(
         UriMediaDescriptor(FileUtils.createCacheFile("video.ts").toUri()),
@@ -60,7 +61,7 @@ class CameraStreamerMultiStreamTest {
         val videoConfig = VideoConfig(resolution = Size(VIDEO_WIDTH, VIDEO_HEIGHT))
 
         // Run stream
-        streamer.configure(
+        streamer.setConfig(
             audioConfig,
             videoConfig
         )

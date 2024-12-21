@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.streamers
+package io.github.thibaultbee.streampack.core.streamers.single
 
 import android.Manifest
 import android.content.Context
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.Config
-import io.github.thibaultbee.streampack.core.data.VideoConfig
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Frame
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.internal.encoders.IEncoderInternal
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.AudioEncoderConfig
@@ -51,7 +49,6 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.StreamerConfigurationInfo
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,7 +59,9 @@ import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 
 /**
- * Base class of all streamers.
+ * The single streamer implementation.
+ *
+ * A single streamer is a streamer that can handle only one stream at a time.
  *
  * @param context the application context
  * @param videoSourceInternal the video source implementation
@@ -70,13 +69,13 @@ import java.util.concurrent.Executors
  * @param endpointInternal the [IEndpointInternal] implementation
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-open class DefaultStreamer(
+open class SingleStreamer(
     protected val context: Context,
     protected val audioSourceInternal: IAudioSourceInternal?,
     protected val videoSourceInternal: IVideoSourceInternal?,
     protected val endpointInternal: IEndpointInternal = DynamicEndpoint(context),
     @RotationValue defaultRotation: Int = context.displayRotation
-) : ICoroutineStreamer {
+) : ICoroutineSingleStreamer {
     private val dispatcher: CoroutineDispatcher =
         Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 
@@ -108,7 +107,7 @@ open class DefaultStreamer(
         override fun onOutputFrame(frame: Frame) {
             audioStreamId?.let {
                 runBlocking {
-                    this@DefaultStreamer.endpointInternal.write(frame, it)
+                    this@SingleStreamer.endpointInternal.write(frame, it)
                 }
             }
         }
@@ -135,7 +134,7 @@ open class DefaultStreamer(
                     null
                 }
                 runBlocking {
-                    this@DefaultStreamer.endpointInternal.write(frame, it)
+                    this@SingleStreamer.endpointInternal.write(frame, it)
                 }
             }
         }
@@ -182,7 +181,7 @@ open class DefaultStreamer(
 
     /**
      * The audio encoder.
-     * Only valid when audio has been [configure]. It is null after [release].
+     * Only valid when audio has been [setAudioConfig]. It is null after [release].
      */
     override val audioEncoder: IEncoder?
         get() = audioEncoderInternal
@@ -191,7 +190,7 @@ open class DefaultStreamer(
 
     /**
      * The video encoder.
-     * Only valid when audio has been [configure]. It is null after [release].
+     * Only valid when audio has been [setAudioConfig]. It is null after [release].
      */
     override val videoEncoder: IEncoder?
         get() = videoEncoderInternal
@@ -277,7 +276,7 @@ open class DefaultStreamer(
 
     /**
      * Configures audio settings.
-     * It is the first method to call after a [DefaultStreamer] instantiation.
+     * It is the first method to call after a [SingleStreamer] instantiation.
      * It must be call when both stream and audio capture are not running.
      *
      * Use [IConfigurationInfo] to get value limits.
@@ -287,7 +286,7 @@ open class DefaultStreamer(
      * @throws [Throwable] if configuration can not be applied.
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    override fun configure(audioConfig: AudioConfig) {
+    override fun setAudioConfig(audioConfig: AudioConfig) {
         require(hasAudio) { "Do not need to set audio as it is a video only streamer" }
         requireNotNull(audioSourceInternal) { "Audio source must not be null" }
 
@@ -495,7 +494,7 @@ open class DefaultStreamer(
 
     /**
      * Configures video settings.
-     * It is the first method to call after a [DefaultStreamer] instantiation.
+     * It is the first method to call after a [SingleStreamer] instantiation.
      * It must be call when both stream and video capture are not running.
      *
      * Use [IConfigurationInfo] to get value limits.
@@ -507,7 +506,7 @@ open class DefaultStreamer(
      *
      * @throws [Throwable] if configuration can not be applied.
      */
-    override fun configure(videoConfig: VideoConfig) {
+    override fun setVideoConfig(videoConfig: VideoConfig) {
         require(hasVideo) { "Do not need to set video as it is a audio only streamer" }
         requireNotNull(videoSourceInternal) { "Video source must not be null" }
 
@@ -560,7 +559,7 @@ open class DefaultStreamer(
         require(!isStreaming.value) { "Stream is already running" }
 
         try {
-            val streams = mutableListOf<Config>()
+            val streams = mutableListOf<CodecConfig>()
             val orientedVideoConfig = if (hasVideo) {
                 val videoConfig = requireNotNull(_videoConfig) { "Requires video config" }
                 /**
@@ -582,7 +581,7 @@ open class DefaultStreamer(
 
             val streamsIdMap = endpointInternal.addStreams(streams)
             orientedVideoConfig?.let { videoStreamId = streamsIdMap[orientedVideoConfig] }
-            _audioConfig?.let { audioStreamId = streamsIdMap[_audioConfig as Config] }
+            _audioConfig?.let { audioStreamId = streamsIdMap[_audioConfig as CodecConfig] }
 
             endpointInternal.startStream()
 
@@ -672,7 +671,7 @@ open class DefaultStreamer(
      * Releases recorders and encoders object.
      * It also stops preview if needed
      *
-     * @see [configure]
+     * @see [setAudioConfig]
      */
     override fun release() {
         // Sources
@@ -758,6 +757,6 @@ open class DefaultStreamer(
     }
 
     companion object {
-        const val TAG = "DefaultStreamer"
+        const val TAG = "SingleStreamer"
     }
 }

@@ -40,17 +40,14 @@ import io.github.thibaultbee.streampack.core.internal.utils.av.video.DynamicRang
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.isVideo
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.rotateFromNaturalOrientation
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.rotationToDegrees
-import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 import java.security.InvalidParameterException
 import kotlin.math.roundToInt
 
 /**
  * Video configuration class.
  * If you don't know how to set class members, [Video encoding recommendations](https://developer.android.com/guide/topics/media/media-formats#video-encoding) should give you hints.
- *
- * @see [DefaultStreamer.configure]
  */
-class VideoCodecConfig(
+open class VideoCodecConfig(
     /**
      * Video encoder mime type.
      * Only [MediaFormat.MIMETYPE_VIDEO_AVC], [MediaFormat.MIMETYPE_VIDEO_HEVC],

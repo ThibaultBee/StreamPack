@@ -23,9 +23,9 @@ import android.media.MediaMuxer
 import android.media.MediaMuxer.OutputFormat
 import android.os.Build
 import android.os.ParcelFileDescriptor
-import io.github.thibaultbee.streampack.core.data.Config
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Frame
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -153,7 +153,7 @@ class MediaMuxerEndpoint(
         }
     }
 
-    override fun addStreams(streamConfigs: List<Config>): Map<Config, Int> {
+    override fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
         requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
         /**
          * We can't addTrack here because we don't have the codec specific data.
@@ -162,7 +162,7 @@ class MediaMuxerEndpoint(
         return streamConfigs.associateWith { numOfStreams++ }
     }
 
-    override fun addStream(streamConfig: Config): Int {
+    override fun addStream(streamConfig: CodecConfig): Int {
         requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
         /**
          * We can't addTrack here because we don't have the codec specific data.

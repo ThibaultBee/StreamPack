@@ -17,7 +17,8 @@ package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxe
 
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.core.data.AudioConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.ITSElement
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.Service
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.Stream
@@ -26,7 +27,7 @@ import io.github.thibaultbee.streampack.core.internal.utils.extensions.putShort
 import java.nio.ByteBuffer
 
 class Pmt(
-    listener: io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal.IMuxerListener? = null,
+    listener: IMuxerInternal.IMuxerListener? = null,
     private val service: Service,
     var streams: List<Stream>,
     pid: Short,
@@ -89,7 +90,7 @@ class Pmt(
                 buffer.put(0x7F)
                 buffer.put(0x02)
                 buffer.put(0x80.toByte())
-                buffer.put(AudioConfig.getNumberOfChannels((it.config as AudioConfig).channelConfig))
+                buffer.put(AudioCodecConfig.getNumberOfChannels((it.config as AudioCodecConfig).channelConfig))
             } else if (it.config.mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC) {
                 putRegistrationDescriptor(buffer, "HEVC")
             }

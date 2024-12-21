@@ -1,6 +1,6 @@
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks
 
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.logger.Logger
 

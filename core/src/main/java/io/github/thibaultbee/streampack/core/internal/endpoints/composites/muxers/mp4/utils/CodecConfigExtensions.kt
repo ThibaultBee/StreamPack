@@ -15,26 +15,26 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.utils
 
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.Config
-import io.github.thibaultbee.streampack.core.data.VideoConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.boxes.HandlerBox
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.boxes.SoundMediaHeaderBox
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.boxes.TypeMediaHeaderBox
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.boxes.VideoMediaHeaderBox
 
-fun Config.createTypeMediaHeaderBox(): TypeMediaHeaderBox {
+fun CodecConfig.createTypeMediaHeaderBox(): TypeMediaHeaderBox {
     return when (this) {
-        is AudioConfig -> SoundMediaHeaderBox()
-        is VideoConfig -> VideoMediaHeaderBox()
+        is AudioCodecConfig -> SoundMediaHeaderBox()
+        is VideoCodecConfig -> VideoMediaHeaderBox()
         else -> throw IllegalArgumentException("Unsupported config")
     }
 }
 
-fun Config.createHandlerBox(): HandlerBox {
+fun CodecConfig.createHandlerBox(): HandlerBox {
     return when (this) {
-        is AudioConfig -> HandlerBox(HandlerBox.HandlerType.SOUND, "SoundHandler")
-        is VideoConfig -> HandlerBox(HandlerBox.HandlerType.VIDEO, "VideoHandler")
+        is AudioCodecConfig -> HandlerBox(HandlerBox.HandlerType.SOUND, "SoundHandler")
+        is VideoCodecConfig -> HandlerBox(HandlerBox.HandlerType.VIDEO, "VideoHandler")
         else -> throw IllegalArgumentException("Unsupported config")
     }
 }

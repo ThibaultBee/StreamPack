@@ -15,10 +15,10 @@
  */
 package io.github.thibaultbee.streampack.ext.srt.regulator.controllers
 
-import io.github.thibaultbee.streampack.core.data.BitrateRegulatorConfig
+import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.core.regulator.controllers.BitrateRegulatorController
 import io.github.thibaultbee.streampack.core.regulator.controllers.DefaultBitrateRegulatorController
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.outputs.IStreamerEncodingOutput
 import io.github.thibaultbee.streampack.ext.srt.regulator.DefaultSrtBitrateRegulator
 import io.github.thibaultbee.streampack.ext.srt.regulator.SrtBitrateRegulator
 
@@ -31,7 +31,7 @@ class DefaultSrtBitrateRegulatorController {
         private val bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
         private val delayTimeInMs: Long = 500
     ) : BitrateRegulatorController.Factory() {
-        override fun newBitrateRegulatorController(streamer: ICoroutineStreamer): DefaultBitrateRegulatorController {
+        override fun newBitrateRegulatorController(streamer: IStreamerEncodingOutput): DefaultBitrateRegulatorController {
             return DefaultBitrateRegulatorController(
                 streamer.audioEncoder,
                 streamer.videoEncoder,

@@ -15,29 +15,32 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites
 
-import io.github.thibaultbee.streampack.core.data.Config
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.data.Packet
-import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal
+import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxer
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.SinkConfiguration
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ISinkInternal
+import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.SinkConfiguration
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 
 /**
  * An [IEndpointInternal] implementation that combines a [IMuxerInternal] and a [ISinkInternal].
  */
-open class CompositeEndpoint(final override val muxer: IMuxerInternal, override val sink: ISinkInternal) :
+open class CompositeEndpoint(
+    final override val muxer: IMuxerInternal,
+    override val sink: ISinkInternal
+) :
     ICompositeEndpoint {
     /**
      * The video and audio configurations.
      * It is used to configure the sink.
      */
-    private val configurations = mutableListOf<Config>()
+    private val configurations = mutableListOf<CodecConfig>()
 
     override val info by lazy { EndpointInfo(muxer.info) }
     override fun getInfo(type: MediaDescriptor.Type) = info
@@ -72,13 +75,13 @@ open class CompositeEndpoint(final override val muxer: IMuxerInternal, override 
         streamPid: Int
     ) = muxer.write(frame, streamPid)
 
-    override fun addStreams(streamConfigs: List<Config>): Map<Config, Int> {
+    override fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
         val streamIds = muxer.addStreams(streamConfigs)
         configurations.addAll(streamConfigs)
         return streamIds
     }
 
-    override fun addStream(streamConfig: Config): Int {
+    override fun addStream(streamConfig: CodecConfig): Int {
         val streamId = muxer.addStream(streamConfig)
         configurations.add(streamConfig)
         return streamId

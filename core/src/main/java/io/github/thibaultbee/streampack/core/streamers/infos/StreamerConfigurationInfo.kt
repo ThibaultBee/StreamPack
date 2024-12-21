@@ -46,11 +46,11 @@ import android.util.Range
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.MediaCodecHelper
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.internal.utils.av.video.DynamicRangeProfile
-import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import java.security.InvalidParameterException
 
 /**
- * Configuration info for [DefaultStreamer].
+ * Configuration info for [SingleStreamer].
  * It wraps supported values from MediaCodec and TS Muxer.
  *
  * @param endpointInfo the corresponding muxer info
@@ -77,7 +77,7 @@ class AudioStreamerConfigurationInfo(private val audioEndpointInfo: IEndpoint.IE
     }
 
     /**
-     * Get supported bitrate range for a [DefaultStreamer].
+     * Get supported bitrate range for a [SingleStreamer].
      *
      * @param mimeType audio encoder mime type
      * @return bitrate range
@@ -131,7 +131,7 @@ class AudioStreamerConfigurationInfo(private val audioEndpointInfo: IEndpoint.IE
     }
 
     /**
-     * Get supported profiles for a [DefaultStreamer].
+     * Get supported profiles for a [SingleStreamer].
      *
      * @param mimeType video encoder mime type
      * @return list of profile
@@ -144,7 +144,7 @@ class AudioStreamerConfigurationInfo(private val audioEndpointInfo: IEndpoint.IE
 open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IEndpoint.IEndpointInfo.IVideoEndpointInfo) :
     IVideoConfigurationInfo {
     /**
-     * Supported encoders for a [DefaultStreamer]
+     * Supported encoders for a [SingleStreamer]
      */
     override val supportedEncoders by lazy {
         MediaCodecHelper.Video.supportedEncoders.filter {
@@ -153,7 +153,7 @@ open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IEndpoi
     }
 
     /**
-     * Get supported bitrate range for a [DefaultStreamer].
+     * Get supported bitrate range for a [SingleStreamer].
      *
      * @param mimeType video encoder mime type
      * @return bitrate range
@@ -175,7 +175,7 @@ open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IEndpoi
     }
 
     /**
-     * Get supported framerate for a [DefaultStreamer].
+     * Get supported framerate for a [SingleStreamer].
      *
      * @param mimeType video encoder mime type
      * @return framerate range supported by encoder
@@ -185,7 +185,7 @@ open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IEndpoi
     ) = MediaCodecHelper.Video.getFramerateRange(mimeType)
 
     /**
-     * Get supported 8-bit and 10-bit profiles for a [DefaultStreamer].
+     * Get supported 8-bit and 10-bit profiles for a [SingleStreamer].
      * Removes profiles for 10 bits and still images.
      *
      * @param mimeType video encoder mime type
@@ -221,7 +221,7 @@ open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IEndpoi
     }
 
     /**
-     * Get supported HDR (10-bit only) profiles for a [DefaultStreamer].
+     * Get supported HDR (10-bit only) profiles for a [SingleStreamer].
      * Removes profiles for 8 bits and still images.
      *
      * @param mimeType video encoder mime type
@@ -238,7 +238,7 @@ open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IEndpoi
     }
 
     /**
-     * Get supported SDR (8-bit only) profiles for a [DefaultStreamer].
+     * Get supported SDR (8-bit only) profiles for a [SingleStreamer].
      * Removes profiles for 10 bits and still images.
      *
      * @param mimeType video encoder mime type
@@ -251,7 +251,7 @@ open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IEndpoi
     fun getSupportedProfiles(mimeType: String) = getSupportedSdrProfiles(mimeType)
 
     /**
-     * Get supported SDR (8-bit only) profiles for a [DefaultStreamer].
+     * Get supported SDR (8-bit only) profiles for a [SingleStreamer].
      * Removes profiles for 10 bits and still images.
      *
      * @param mimeType video encoder mime type

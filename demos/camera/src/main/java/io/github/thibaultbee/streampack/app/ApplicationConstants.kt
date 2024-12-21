@@ -1,8 +1,8 @@
 package io.github.thibaultbee.streampack.app
 
 import android.content.pm.ActivityInfo
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.VideoConfig
+import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
+import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 
 /**
  * Application configuration.

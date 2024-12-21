@@ -4,7 +4,7 @@ import android.content.Context
 import android.media.MediaFormat
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.utils.DescriptorUtils
 import io.github.thibaultbee.streampack.core.internal.utils.FakeFrames
 import kotlinx.coroutines.test.runTest
@@ -24,6 +24,7 @@ class DynamicEndpointTest {
         assertFalse(dynamicEndpoint.isOpen.value)
         dynamicEndpoint.open(DescriptorUtils.createFileDescriptor("dynamic.ts"))
         assertTrue(dynamicEndpoint.isOpen.value)
+        dynamicEndpoint.close()
     }
 
     @Test
@@ -31,6 +32,7 @@ class DynamicEndpointTest {
         val dynamicEndpoint = DynamicEndpoint(context)
         dynamicEndpoint.open(DescriptorUtils.createFileDescriptor("dynamic.mp4"))
         assertTrue(dynamicEndpoint.isOpen.value)
+        dynamicEndpoint.close()
     }
 
     @Test
@@ -38,6 +40,7 @@ class DynamicEndpointTest {
         val dynamicEndpoint = DynamicEndpoint(context)
         dynamicEndpoint.open(DescriptorUtils.createFileDescriptor("dynamic.ts"))
         assertTrue(dynamicEndpoint.isOpen.value)
+        dynamicEndpoint.close()
     }
 
     @Test
@@ -45,6 +48,7 @@ class DynamicEndpointTest {
         val dynamicEndpoint = DynamicEndpoint(context)
         dynamicEndpoint.open(DescriptorUtils.createFileDescriptor("dynamic.flv"))
         assertTrue(dynamicEndpoint.isOpen.value)
+        dynamicEndpoint.close()
     }
 
     @Test
@@ -55,6 +59,8 @@ class DynamicEndpointTest {
             fail("IllegalArgumentException expected")
         } catch (e: Throwable) {
             assertFalse(dynamicEndpoint.isOpen.value)
+        } finally {
+            dynamicEndpoint.close()
         }
     }
 
@@ -70,6 +76,7 @@ class DynamicEndpointTest {
             )
         )
         assertTrue(dynamicEndpoint.isOpen.value)
+        dynamicEndpoint.close()
     }
 
     @Test
@@ -80,6 +87,8 @@ class DynamicEndpointTest {
             fail("Throwable expected")
         } catch (e: Throwable) {
             assertFalse(dynamicEndpoint.isOpen.value)
+        } finally {
+            dynamicEndpoint.close()
         }
     }
 }

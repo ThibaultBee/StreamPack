@@ -1,4 +1,4 @@
-package io.github.thibaultbee.streampack.core.data.mediadescriptor
+package io.github.thibaultbee.streampack.core.configuration.mediadescriptor
 
 import android.content.Context
 import android.net.Uri

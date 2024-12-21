@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.streamers
+package io.github.thibaultbee.streampack.core.streamers.single
 
 import android.Manifest
 import android.content.Context
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import androidx.annotation.RestrictTo.*
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSourceInternal
@@ -33,21 +33,20 @@ import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfi
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
 
-
 /**
- * A [DefaultStreamer] that sends microphone and camera frames.
+ * A [SingleStreamer] that sends microphone and camera frames.
  *
  * @param context application context
  * @param enableMicrophone [Boolean.true] to capture audio
  * @param internalEndpoint the [IEndpointInternal] implementation
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-fun DefaultCameraStreamer(
+fun CameraSingleStreamer(
     context: Context,
     enableMicrophone: Boolean = true,
     internalEndpoint: IEndpointInternal = DynamicEndpoint(context),
     @RotationValue defaultRotation: Int = context.displayRotation
-) = DefaultCameraStreamer(
+) = CameraSingleStreamer(
     context,
     if (enableMicrophone) buildDefaultMicrophoneSource() else null,
     internalEndpoint,
@@ -55,19 +54,19 @@ fun DefaultCameraStreamer(
 )
 
 /**
- * A [DefaultStreamer] that sends microphone and camera frames.
+ * A [SingleStreamer] that sends from camera frames and [audioSourceInternal] audio frames.
  *
  * @param context application context
  * @param audioSourceInternal the audio source implementation
  * @param internalEndpoint the [IEndpointInternal] implementation
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-open class DefaultCameraStreamer(
+open class CameraSingleStreamer(
     context: Context,
     audioSourceInternal: IAudioSourceInternal?,
     internalEndpoint: IEndpointInternal = DynamicEndpoint(context),
     @RotationValue defaultRotation: Int = context.displayRotation
-) : DefaultStreamer(
+) : SingleStreamer(
     context = context,
     audioSourceInternal = audioSourceInternal,
     videoSourceInternal = CameraSource(context),
@@ -167,7 +166,7 @@ open class DefaultCameraStreamer(
     }
 
     /**
-     * Same as [DefaultStreamer.release] but it also calls [stopPreview].
+     * Same as [SingleStreamer.release] but it also calls [stopPreview].
      */
     override fun release() {
         stopPreview()

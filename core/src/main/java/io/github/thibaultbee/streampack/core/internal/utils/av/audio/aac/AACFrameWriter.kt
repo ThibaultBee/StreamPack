@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.internal.utils.av.audio.aac
 
-import io.github.thibaultbee.streampack.core.data.AudioConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.internal.utils.av.buffer.ByteBufferWriter
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.put
 import java.nio.ByteBuffer
@@ -31,7 +31,10 @@ class ADTSFrameWriter(private val frameBuffer: ByteBuffer, private val adts: ADT
     }
 
     companion object {
-        fun fromAudioConfig(frameBuffer: ByteBuffer, audioConfig: AudioConfig): ADTSFrameWriter {
+        fun fromAudioConfig(
+            frameBuffer: ByteBuffer,
+            audioConfig: AudioCodecConfig
+        ): ADTSFrameWriter {
             return ADTSFrameWriter(
                 frameBuffer,
                 ADTS.fromAudioConfig(audioConfig, frameBuffer.remaining())
@@ -55,7 +58,10 @@ class LATMFrameWriter(
     }
 
     companion object {
-        fun fromDecoderSpecificInfo(frameBuffer: ByteBuffer, decoderSpecificInfo: ByteBuffer): LATMFrameWriter {
+        fun fromDecoderSpecificInfo(
+            frameBuffer: ByteBuffer,
+            decoderSpecificInfo: ByteBuffer
+        ): LATMFrameWriter {
             return LATMFrameWriter(
                 AudioMuxElement.fromDecoderSpecificInfo(frameBuffer, decoderSpecificInfo)
             )

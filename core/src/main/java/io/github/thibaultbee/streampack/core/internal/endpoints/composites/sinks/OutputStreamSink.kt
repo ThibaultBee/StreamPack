@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks
 
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.toByteArray
 import kotlinx.coroutines.Dispatchers

@@ -1,39 +1,37 @@
-package io.github.thibaultbee.streampack.core.streamers.callbacks
+package io.github.thibaultbee.streampack.core.streamers.single.callbacks
 
 import android.Manifest
 import android.content.Context
 import android.view.Surface
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.ICameraSource
-import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
-import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.open
+import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.ICallbackSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.ICoroutineSingleStreamer
 import kotlinx.coroutines.launch
 
 /**
- * Default implementation of [ICallbackStreamer] that uses [ICoroutineStreamer] to handle streamer logic.
- * It is a bridge between [ICoroutineStreamer] and [ICallbackStreamer].
+ * Default implementation of [ICallbackSingleStreamer] that uses [ICoroutineSingleStreamer] to handle streamer logic.
+ * It is a bridge between [ICoroutineSingleStreamer] and [ICallbackSingleStreamer].
  *
  * @param context application context
  * @param enableMicrophone [Boolean.true] to capture audio
  * @param internalEndpoint the [IEndpointInternal] implementation
  */
-class DefaultCameraCallbackStreamer(
+class CameraCallbackSingleStreamer(
     private val context: Context,
     enableMicrophone: Boolean = true,
     internalEndpoint: IEndpointInternal = DynamicEndpoint(context)
-) : DefaultCallbackStreamer(DefaultCameraStreamer(context, enableMicrophone, internalEndpoint)),
+) : CallbackSingleStreamer(CameraSingleStreamer(context, enableMicrophone, internalEndpoint)),
     ICameraCallbackStreamer {
-    private val cameraSource = (streamer as DefaultCameraStreamer).videoSource as CameraSource
+    private val cameraSource = (streamer as CameraSingleStreamer).videoSource as CameraSource
 
     /**
      * Gets the camera source.
@@ -127,7 +125,7 @@ class DefaultCameraCallbackStreamer(
     }
 
     /**
-     * Same as [DefaultStreamer.release] but it also calls [stopPreview].
+     * Same as [CallbackSingleStreamer.release] but it also calls [stopPreview].
      */
     override fun release() {
         stopPreview()

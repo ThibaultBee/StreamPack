@@ -40,12 +40,12 @@ import io.github.thibaultbee.streampack.app.utils.dataStore
 import io.github.thibaultbee.streampack.app.utils.isEmpty
 import io.github.thibaultbee.streampack.app.utils.switchBackToFront
 import io.github.thibaultbee.streampack.app.utils.toggleCamera
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.startStream
 import io.github.thibaultbee.streampack.core.streamers.observers.StreamerViewModelLifeCycleObserver
+import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrtBitrateRegulatorController
@@ -150,7 +150,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
                         config?.let {
-                            streamer.configure(it)
+                            streamer.setAudioConfig(it)
                         } ?: Log.i(TAG, "Audio is disabled")
                     }
                 }
@@ -159,7 +159,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
             storageRepository.videoConfigFlow
                 .collect { config ->
                     config?.let {
-                        streamer.configure(it)
+                        streamer.setVideoConfig(it)
                     } ?: Log.i(TAG, "Video is disabled")
                 }
         }
@@ -183,10 +183,11 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     fun configureAudio() {
         viewModelScope.launch {
             try {
-                storageRepository.audioConfigFlow.first()?.let { streamer.configure(it) } ?: Log.i(
-                    TAG,
-                    "Audio is disabled"
-                )
+                storageRepository.audioConfigFlow.first()?.let { streamer.setAudioConfig(it) }
+                    ?: Log.i(
+                        TAG,
+                        "Audio is disabled"
+                    )
             } catch (t: Throwable) {
                 Log.e(TAG, "configureAudio failed", t)
                 _streamerError.postValue("configureAudio: ${t.message ?: "Unknown error"}")
