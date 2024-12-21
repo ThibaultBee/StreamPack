@@ -17,20 +17,19 @@ package io.github.thibaultbee.streampack.core.internal.sources.video.camera
 
 import android.Manifest
 import android.content.Context
+import android.hardware.camera2.params.DynamicRangeProfiles
 import android.view.Surface
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.core.data.VideoConfig
-import io.github.thibaultbee.streampack.core.internal.data.Frame
-import io.github.thibaultbee.streampack.core.internal.utils.av.video.DynamicRangeProfile
+import io.github.thibaultbee.streampack.core.internal.sources.video.ISurfaceSource
+import io.github.thibaultbee.streampack.core.internal.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.utils.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
 import kotlinx.coroutines.runBlocking
-import java.nio.ByteBuffer
 
 class CameraSource(
     private val context: Context,
-) : ICameraSourceInternal {
+) : ICameraSourceInternal, ISurfaceSource {
     var previewSurface: Surface? = null
         set(value) {
             if (field == value) {
@@ -99,16 +98,10 @@ class CameraSource(
     override val settings = CameraSettings(context, cameraController)
 
     override val timestampOffset = CameraHelper.getTimeOffsetToMonoClock(context, cameraId)
-    override val hasOutputSurface = true
-    override val hasFrames = false
     override val infoProvider = CameraInfoProvider(context, cameraId)
 
-    override fun getFrame(buffer: ByteBuffer): Frame {
-        throw UnsupportedOperationException("Camera expects to run in Surface mode")
-    }
-
     private var fps: Int = 30
-    private var dynamicRangeProfile: DynamicRangeProfile = DynamicRangeProfile.sdr
+    private var dynamicRangeProfile: Long = DynamicRangeProfiles.STANDARD
 
     private val isStreaming: Boolean
         get() {
@@ -122,7 +115,7 @@ class CameraSource(
             return cameraController.hasTarget(previewSurface) && cameraController.isRequestSessionRunning && cameraController.isCameraRunning
         }
 
-    override fun configure(config: VideoConfig) {
+    override fun configure(config: VideoSourceConfig) {
         if (!context.isFrameRateSupported(cameraId, config.fps)) {
             Logger.w(TAG, "Camera $cameraId does not support ${config.fps} fps")
         }
@@ -164,7 +157,7 @@ class CameraSource(
             outputSurface?.let { targets.add(it) }
 
             cameraController.startCamera(
-                cameraId, targets, dynamicRangeProfile.dynamicRange
+                cameraId, targets, dynamicRangeProfile
             )
         }
 

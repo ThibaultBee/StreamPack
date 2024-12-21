@@ -25,27 +25,21 @@ import android.os.HandlerThread
 import android.view.Surface
 import androidx.activity.result.ActivityResult
 import io.github.thibaultbee.streampack.core.data.VideoConfig
-import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.processing.video.source.AbstractSourceInfoProvider
 import io.github.thibaultbee.streampack.core.internal.sources.IMediaProjectionSource
+import io.github.thibaultbee.streampack.core.internal.sources.video.ISurfaceSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSourceInternal
+import io.github.thibaultbee.streampack.core.internal.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.densityDpi
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.screenRect
 import io.github.thibaultbee.streampack.core.logger.Logger
-import java.nio.ByteBuffer
 
 class MediaProjectionVideoSource(
     private val context: Context
-) : IVideoSourceInternal, IMediaProjectionSource {
+) : IVideoSourceInternal, ISurfaceSource, IMediaProjectionSource {
     override var outputSurface: Surface? = null
     override val timestampOffset = 0L
-    override val hasOutputSurface = true
-    override val hasFrames = false
-    override val infoProvider = ScreenSourceInfoProvider(context)
-
-    override fun getFrame(buffer: ByteBuffer): Frame {
-        throw UnsupportedOperationException("Screen source run in Surface mode")
-    }
+    override val infoProvider = ScreenSourceInfoProvider()
 
     private var mediaProjection: MediaProjection? = null
 
@@ -100,7 +94,7 @@ class MediaProjectionVideoSource(
         private const val VIRTUAL_DISPLAY_NAME = "StreamPackScreenSource"
     }
 
-    override fun configure(config: VideoConfig) = Unit
+    override fun configure(config: VideoSourceConfig) = Unit
 
     override suspend fun startStream() {
         val activityResult = requireNotNull(activityResult) {
@@ -147,7 +141,7 @@ class MediaProjectionVideoSource(
         }
     }
 
-    class ScreenSourceInfoProvider(private val context: Context) :
+    class ScreenSourceInfoProvider :
         AbstractSourceInfoProvider()
 
     interface Listener {

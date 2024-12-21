@@ -20,14 +20,14 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.media.audiofx.AudioEffect
 import android.os.Build
-import io.github.thibaultbee.streampack.core.data.AudioConfig
+import io.github.thibaultbee.streampack.core.internal.sources.audio.AudioSourceConfig
 
 /**
  * The [MicrophoneSource] class is an implementation of [AudioRecordSource] that captures audio
  * from the microphone.
  */
 class MicrophoneSource : AudioRecordSource() {
-    override fun buildAudioRecord(config: AudioConfig, bufferSize: Int): AudioRecord {
+    override fun buildAudioRecord(config: AudioSourceConfig, bufferSize: Int): AudioRecord {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val audioFormat = AudioFormat.Builder()
                 .setEncoding(config.byteFormat)
