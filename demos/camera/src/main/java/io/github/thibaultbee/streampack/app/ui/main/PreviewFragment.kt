@@ -34,7 +34,7 @@ import io.github.thibaultbee.streampack.app.R
 import io.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import io.github.thibaultbee.streampack.app.utils.DialogUtils
 import io.github.thibaultbee.streampack.app.utils.PermissionManager
-import io.github.thibaultbee.streampack.ui.views.PreviewView
+import io.github.thibaultbee.streampack.ui.views.CameraPreviewView
 import kotlinx.coroutines.launch
 
 class PreviewFragment : Fragment(R.layout.main_fragment) {
@@ -151,7 +151,7 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
     private fun inflateStreamerPreview() {
         val preview = binding.preview
         // Set camera settings button when camera is started
-        preview.listener = object : PreviewView.Listener {
+        preview.listener = object : CameraPreviewView.Listener {
             override fun onPreviewStarted() {
                 previewViewModel.onPreviewStarted()
             }
