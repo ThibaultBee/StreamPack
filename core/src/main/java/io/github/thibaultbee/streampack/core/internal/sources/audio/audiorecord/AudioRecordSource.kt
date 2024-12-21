@@ -22,8 +22,8 @@ import android.media.MediaFormat
 import android.media.audiofx.AudioEffect
 import android.os.Build
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.internal.data.Frame
+import io.github.thibaultbee.streampack.core.internal.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.internal.sources.audio.audiorecord.AudioRecordEffect.Companion.isValidUUID
 import io.github.thibaultbee.streampack.core.internal.sources.audio.audiorecord.AudioRecordEffect.Factory.Companion.getFactoryForEffectType
@@ -50,12 +50,12 @@ sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
         get() = audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING
 
     protected abstract fun buildAudioRecord(
-        config: AudioConfig,
+        config: AudioSourceConfig,
         bufferSize: Int
     ): AudioRecord
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    override fun configure(config: AudioConfig) {
+    override fun configure(config: AudioSourceConfig) {
         /**
          * [configure] might be called multiple times.
          * If audio source is already running, we need to prevent reconfiguration.

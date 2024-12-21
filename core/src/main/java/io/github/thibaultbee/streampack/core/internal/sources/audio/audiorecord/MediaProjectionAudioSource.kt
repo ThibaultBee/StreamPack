@@ -25,8 +25,8 @@ import android.media.projection.MediaProjectionManager
 import android.os.Build
 import androidx.activity.result.ActivityResult
 import androidx.annotation.RequiresApi
-import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.internal.sources.IMediaProjectionSource
+import io.github.thibaultbee.streampack.core.internal.sources.audio.AudioSourceConfig
 
 /**
  * The [MediaProjectionAudioSource] class is an implementation of [AudioRecordSource] that
@@ -58,7 +58,7 @@ class MediaProjectionAudioSource(
      */
     override var activityResult: ActivityResult? = null
 
-    override fun buildAudioRecord(config: AudioConfig, bufferSize: Int): AudioRecord {
+    override fun buildAudioRecord(config: AudioSourceConfig, bufferSize: Int): AudioRecord {
         val activityResult = requireNotNull(activityResult) {
             "MediaProjection requires an activity result to be set"
         }

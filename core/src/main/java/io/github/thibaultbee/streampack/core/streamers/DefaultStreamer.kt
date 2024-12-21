@@ -24,13 +24,13 @@ import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.data.Config
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.data.rotateFromNaturalOrientation
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.internal.encoders.IEncoderInternal
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.AudioEncoderConfig
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.MediaCodecEncoder
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.VideoEncoderConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.rotateFromNaturalOrientation
 import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
@@ -38,12 +38,15 @@ import io.github.thibaultbee.streampack.core.internal.processing.video.SurfacePr
 import io.github.thibaultbee.streampack.core.internal.processing.video.outputs.AbstractSurfaceOutput
 import io.github.thibaultbee.streampack.core.internal.processing.video.outputs.SurfaceOutput
 import io.github.thibaultbee.streampack.core.internal.processing.video.source.ISourceInfoProvider
+import io.github.thibaultbee.streampack.core.internal.sources.IFrameSource
 import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.internal.sources.video.ISurfaceSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.sourceConfig
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
@@ -118,9 +121,16 @@ open class DefaultStreamer(
 
         override fun onOutputFrame(frame: Frame) {
             videoStreamId?.let {
-                frame.pts += videoSourceInternal!!.timestampOffset
+                val videoEncoder =
+                    requireNotNull(videoEncoderInternal) { "Video encoder must not be null" }
+                val timestampOffset = if (videoEncoder is ISurfaceSource) {
+                    videoEncoder.timestampOffset
+                } else {
+                    0L
+                }
+                frame.pts += timestampOffset
                 frame.dts = if (frame.dts != null) {
-                    frame.dts!! + videoSourceInternal.timestampOffset
+                    frame.dts!! + timestampOffset
                 } else {
                     null
                 }
@@ -289,7 +299,7 @@ open class DefaultStreamer(
         this._audioConfig = audioConfig
 
         try {
-            audioSourceInternal.configure(audioConfig)
+            audioSourceInternal.configure(audioConfig.sourceConfig)
 
             audioEncoderInternal?.release()
             audioEncoderInternal = MediaCodecEncoder(
@@ -376,7 +386,7 @@ open class DefaultStreamer(
     private fun buildOrUpdateSurfaceProcessor(
         videoConfig: VideoConfig, videoSource: IVideoSourceInternal
     ): SurfaceProcessor {
-        if (!videoSource.hasOutputSurface) {
+        if (videoSource !is ISurfaceSource) {
             throw IllegalStateException("Video source must have an output surface")
         }
         val previousSurfaceProcessor = surfaceProcessor
@@ -415,7 +425,7 @@ open class DefaultStreamer(
     ): IEncoderInternal {
         val videoEncoder = MediaCodecEncoder(
             VideoEncoderConfig(
-                videoConfig, videoSource.hasOutputSurface
+                videoConfig, videoSource is ISurfaceSource
             ), listener = videoEncoderListener
         )
 
@@ -445,7 +455,7 @@ open class DefaultStreamer(
                 videoEncoder.input.listener =
                     object : IEncoderInternal.IByteBufferInput.OnFrameRequestedListener {
                         override fun onFrameRequested(buffer: ByteBuffer): Frame {
-                            return videoSource.getFrame(buffer)
+                            return (videoSource as IFrameSource).getFrame(buffer)
                         }
                     }
             }
@@ -509,7 +519,7 @@ open class DefaultStreamer(
         this._videoConfig = videoConfig
 
         try {
-            videoSourceInternal.configure(videoConfig)
+            videoSourceInternal.configure(videoConfig.sourceConfig)
 
             videoEncoderInternal = buildAndConfigureVideoEncoderIfNeeded(
                 videoConfig, videoSourceInternal, targetRotation
@@ -667,13 +677,15 @@ open class DefaultStreamer(
     override fun release() {
         // Sources
         audioSourceInternal?.release()
-        val outputSurface = videoSourceInternal?.outputSurface
-        videoSourceInternal?.release()
-        videoSourceInternal?.outputSurface = null
-        outputSurface?.let {
-            surfaceProcessor?.removeInputSurface(it)
+        val videoSource = videoSourceInternal
+        if (videoSource is ISurfaceSource) {
+            val outputSurface = videoSource.outputSurface
+            videoSourceInternal?.release()
+            videoSource.outputSurface = null
+            outputSurface?.let {
+                surfaceProcessor?.removeInputSurface(it)
+            }
         }
-
         surfaceProcessor?.release()
 
         // Encoders
@@ -725,7 +737,7 @@ open class DefaultStreamer(
         if (hasVideo) {
             val videoConfig = videoConfig
             if (videoConfig != null) {
-                videoSourceInternal?.configure(videoConfig)
+                videoSourceInternal?.configure(videoConfig.sourceConfig)
                 videoEncoderInternal = buildAndConfigureVideoEncoderIfNeeded(
                     videoConfig, requireNotNull(videoSourceInternal), targetRotation
                 )

@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.internal.sources
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import java.nio.ByteBuffer
 
-interface IFrameSource<T> {
+interface IFrameSource {
 
     /**
      * Generate a frame from capture device
