@@ -10,6 +10,7 @@ import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.core.data.AudioConfig
 import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.streamers.interfaces.startStream
+import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
@@ -54,7 +55,7 @@ class SrtStreamerTest {
 
         try {
             // Run live stream
-            val streamer = DefaultCameraStreamer(context)
+            val streamer = CameraSingleStreamer(context)
             streamer.configure(
                 AudioConfig(),
                 VideoConfig(startBitrate = 500_000, resolution = Size(VIDEO_WIDTH, VIDEO_HEIGHT))

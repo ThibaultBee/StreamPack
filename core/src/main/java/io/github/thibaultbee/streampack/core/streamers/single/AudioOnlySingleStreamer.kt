@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.streamers
+package io.github.thibaultbee.streampack.core.streamers.single
 
 import android.content.Context
 import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.internal.sources.audio.audiorecord.MicrophoneSource.Companion.buildDefaultMicrophoneSource
+import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 
 /**
  * A [DefaultStreamer] that sends only microphone frames.
@@ -27,7 +28,7 @@ import io.github.thibaultbee.streampack.core.internal.sources.audio.audiorecord.
  * @param context application context
  * @param internalEndpoint the [IEndpointInternal] implementation
  */
-open class DefaultAudioOnlyStreamer(
+open class AudioOnlySingleStreamer(
     context: Context,
     audioSourceInternal: IAudioSourceInternal? = buildDefaultMicrophoneSource(),
     internalEndpoint: IEndpointInternal = DynamicEndpoint(context)

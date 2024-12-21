@@ -22,7 +22,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
-import io.github.thibaultbee.streampack.core.streamers.DefaultAudioOnlyStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.AudioOnlySingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.startStream
 import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
 import io.github.thibaultbee.streampack.core.utils.FileUtils
@@ -36,7 +36,7 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) {
     private val context: Context = InstrumentationRegistry.getInstrumentation().context
-    private val streamer = DefaultAudioOnlyStreamer(context)
+    private val streamer = AudioOnlySingleStreamer(context)
 
     @get:Rule
     val runtimePermissionRule: GrantPermissionRule =

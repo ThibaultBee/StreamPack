@@ -9,7 +9,7 @@ import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.ICameraSource
-import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
@@ -31,9 +31,9 @@ class DefaultCameraCallbackStreamer(
     private val context: Context,
     enableMicrophone: Boolean = true,
     internalEndpoint: IEndpointInternal = DynamicEndpoint(context)
-) : DefaultCallbackStreamer(DefaultCameraStreamer(context, enableMicrophone, internalEndpoint)),
+) : DefaultCallbackStreamer(CameraSingleStreamer(context, enableMicrophone, internalEndpoint)),
     ICameraCallbackStreamer {
-    private val cameraSource = (streamer as DefaultCameraStreamer).videoSource as CameraSource
+    private val cameraSource = (streamer as CameraSingleStreamer).videoSource as CameraSource
 
     /**
      * Gets the camera source.

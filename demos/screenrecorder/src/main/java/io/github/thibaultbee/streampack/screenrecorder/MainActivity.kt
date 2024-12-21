@@ -38,7 +38,7 @@ import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.MediaCodecHelper
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
-import io.github.thibaultbee.streampack.core.streamers.DefaultScreenRecorderStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.ScreenRecorderSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.startStream
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import io.github.thibaultbee.streampack.screenrecorder.databinding.ActivityMainBinding
@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
         )
 
     private var connection: ServiceConnection? = null
-    private var streamer: DefaultScreenRecorderStreamer? = null
+    private var streamer: ScreenRecorderSingleStreamer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,7 +104,7 @@ class MainActivity : AppCompatActivity() {
                 showPermissionAlertDialog(this) { this.finish() }
             } else {
                 getContent.launch(
-                    DefaultScreenRecorderStreamer.createScreenRecorderIntent(
+                    ScreenRecorderSingleStreamer.createScreenRecorderIntent(
                         this
                     )
                 )
@@ -143,7 +143,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-    private fun configure(streamer: DefaultScreenRecorderStreamer) {
+    private fun configure(streamer: ScreenRecorderSingleStreamer) {
         val deviceRefreshRate =
             (this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager).getDisplay(
                 Display.DEFAULT_DISPLAY
@@ -186,7 +186,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun startStream(streamer: DefaultScreenRecorderStreamer) {
+    private fun startStream(streamer: ScreenRecorderSingleStreamer) {
         try {
             runBlocking {
                 val descriptor = when (configuration.endpoint.type) {

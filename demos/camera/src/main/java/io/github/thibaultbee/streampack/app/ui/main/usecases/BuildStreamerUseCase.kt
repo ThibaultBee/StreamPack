@@ -2,8 +2,8 @@ package io.github.thibaultbee.streampack.app.ui.main.usecases
 
 import android.content.Context
 import io.github.thibaultbee.streampack.app.data.storage.DataStoreRepository
-import io.github.thibaultbee.streampack.core.streamers.DefaultAudioOnlyStreamer
-import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.AudioOnlySingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -27,16 +27,16 @@ class BuildStreamerUseCase(
 
 
         if (isVideoEnable) {
-            if (previousStreamer !is DefaultCameraStreamer) {
-                return DefaultCameraStreamer(context, isAudioEnable)
+            if (previousStreamer !is CameraSingleStreamer) {
+                return CameraSingleStreamer(context, isAudioEnable)
             } else {
                 if ((previousStreamer.audioSource == null) != !isAudioEnable) {
-                    return DefaultCameraStreamer(context, isAudioEnable)
+                    return CameraSingleStreamer(context, isAudioEnable)
                 }
             }
         } else {
-            if (previousStreamer !is DefaultAudioOnlyStreamer) {
-                return DefaultAudioOnlyStreamer(context)
+            if (previousStreamer !is AudioOnlySingleStreamer) {
+                return AudioOnlySingleStreamer(context)
             }
         }
 

@@ -35,7 +35,7 @@ import io.github.thibaultbee.streampack.core.internal.utils.extensions.isNormali
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.normalize
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.rotate
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.utils.extensions.getAutoExposureModes
 import io.github.thibaultbee.streampack.core.utils.extensions.getAutoFocusModes
 import io.github.thibaultbee.streampack.core.utils.extensions.getAutoWhiteBalanceModes
@@ -58,7 +58,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Use to change camera settings.
- * This object is returned by [DefaultCameraStreamer.videoSource.settings].
+ * This object is returned by [CameraSingleStreamer.videoSource.settings].
  */
 class CameraSettings(context: Context, private val cameraController: CameraController) {
     /**

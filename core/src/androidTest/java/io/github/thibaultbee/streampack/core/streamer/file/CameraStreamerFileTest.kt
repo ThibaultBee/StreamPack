@@ -35,7 +35,7 @@ import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInterna
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.CompositeEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.MP4Muxer
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.FileSink
-import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
@@ -54,9 +54,9 @@ class CameraStreamerFileTest(
 ) {
     private val context: Context = InstrumentationRegistry.getInstrumentation().context
     private val streamer = if (endpoint != null) {
-        DefaultCameraStreamer(context, internalEndpoint = endpoint)
+        CameraSingleStreamer(context, internalEndpoint = endpoint)
     } else {
-        DefaultCameraStreamer(context)
+        CameraSingleStreamer(context)
     }
     private val info = streamer.getInfo(descriptor)
 

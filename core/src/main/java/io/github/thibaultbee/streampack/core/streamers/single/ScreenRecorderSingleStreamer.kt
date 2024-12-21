@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.streamers
+package io.github.thibaultbee.streampack.core.streamers.single
 
 import android.content.Context
 import android.content.Intent
@@ -30,6 +30,7 @@ import io.github.thibaultbee.streampack.core.internal.sources.audio.audiorecord.
 import io.github.thibaultbee.streampack.core.internal.sources.video.mediaprojection.MediaProjectionVideoSource
 import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 
 /**
  * A [DefaultStreamer] that sends microphone and screen frames.
@@ -39,12 +40,12 @@ import io.github.thibaultbee.streampack.core.internal.utils.extensions.displayRo
  * @param internalEndpoint the [IEndpointInternal] implementation
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-fun DefaultScreenRecorderStreamer(
+fun ScreenRecorderSingleStreamer(
     context: Context,
     enableMicrophone: Boolean = true,
     internalEndpoint: IEndpointInternal = DynamicEndpoint(context),
     @RotationValue defaultRotation: Int = context.displayRotation
-) = DefaultScreenRecorderStreamer(
+) = ScreenRecorderSingleStreamer(
     context,
     if (enableMicrophone) buildDefaultMicrophoneSource() else null,
     internalEndpoint,
@@ -59,7 +60,7 @@ fun DefaultScreenRecorderStreamer(
  * @param internalEndpoint the [IEndpointInternal] implementation
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-open class DefaultScreenRecorderStreamer(
+open class ScreenRecorderSingleStreamer(
     context: Context,
     audioSourceInternal: IAudioSourceInternal?,
     internalEndpoint: IEndpointInternal = DynamicEndpoint(context),

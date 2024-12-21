@@ -79,6 +79,7 @@ fun VideoCodecConfig.mergeWith(sourceConfig: VideoSourceConfig): VideoCodecConfi
  */
 val VideoCodecConfig.sourceConfig: VideoSourceConfig
     get() = VideoSourceConfig(
+        resolution = resolution,
         fps = fps,
         dynamicRangeProfile = dynamicRangeProfile.dynamicRange
     )

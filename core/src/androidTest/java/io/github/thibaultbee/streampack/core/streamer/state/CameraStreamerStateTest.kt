@@ -25,7 +25,7 @@ import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescripto
 import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.streamer.surface.SurfaceUtils
 import io.github.thibaultbee.streampack.core.streamer.surface.SurfaceViewTestActivity
-import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.startPreview
 import io.github.thibaultbee.streampack.core.streamers.interfaces.startStream
 import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
@@ -42,7 +42,7 @@ class CameraStreamerStateTest(descriptor: MediaDescriptor) :
         descriptor
     ) {
     private val context: Context = InstrumentationRegistry.getInstrumentation().context
-    override val streamer = DefaultCameraStreamer(context)
+    override val streamer = CameraSingleStreamer(context)
 
     @get:Rule
     val runtimePermissionRule: GrantPermissionRule =

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.streamers
+package io.github.thibaultbee.streampack.core.streamers.single
 
 import android.Manifest
 import android.content.Context
@@ -29,6 +29,7 @@ import io.github.thibaultbee.streampack.core.internal.sources.video.camera.Camer
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
@@ -42,12 +43,12 @@ import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCorouti
  * @param internalEndpoint the [IEndpointInternal] implementation
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-fun DefaultCameraStreamer(
+fun CameraSingleStreamer(
     context: Context,
     enableMicrophone: Boolean = true,
     internalEndpoint: IEndpointInternal = DynamicEndpoint(context),
     @RotationValue defaultRotation: Int = context.displayRotation
-) = DefaultCameraStreamer(
+) = CameraSingleStreamer(
     context,
     if (enableMicrophone) buildDefaultMicrophoneSource() else null,
     internalEndpoint,
@@ -62,7 +63,7 @@ fun DefaultCameraStreamer(
  * @param internalEndpoint the [IEndpointInternal] implementation
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-open class DefaultCameraStreamer(
+open class CameraSingleStreamer(
     context: Context,
     audioSourceInternal: IAudioSourceInternal?,
     internalEndpoint: IEndpointInternal = DynamicEndpoint(context),
