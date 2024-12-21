@@ -49,7 +49,7 @@ import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrtBitrateRegulatorController
-import io.github.thibaultbee.streampack.ui.views.PreviewView
+import io.github.thibaultbee.streampack.ui.views.CameraPreviewView
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
@@ -165,7 +165,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         }
     }
 
-    fun setStreamerView(view: PreviewView) {
+    fun setStreamerView(view: CameraPreviewView) {
         if (streamer is ICameraStreamer) {
             view.streamer = streamer as ICameraStreamer
         }

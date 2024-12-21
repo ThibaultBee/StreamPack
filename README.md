@@ -122,7 +122,7 @@ To simplify integration, StreamPack provides an `PreviewView`.
 ```xml
 
 <layout>
-    <io.github.thibaultbee.streampack.views.PreviewView android:id="@+id/preview"
+    <io.github.thibaultbee.streampack.views.CameraPreviewView android:id="@+id/preview"
         android:layout_width="match_parent" android:layout_height="match_parent"
         app:enableZoomOnPinch="true" />
 </layout>
