@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints
 
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 
 /**
  * An implementation of [CombineEndpoint] that combines two endpoints.

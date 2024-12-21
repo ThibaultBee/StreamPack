@@ -1,8 +1,8 @@
 package io.github.thibaultbee.streampack.core.streamer.file
 
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.startStream
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -12,7 +12,7 @@ import kotlin.time.Duration.Companion.seconds
 
 object StreamerUtils {
     suspend fun runStream(
-        streamer: DefaultStreamer,
+        streamer: SingleStreamer,
         descriptor: MediaDescriptor,
         duration: Duration,
         pollDuration: Duration = 1.seconds

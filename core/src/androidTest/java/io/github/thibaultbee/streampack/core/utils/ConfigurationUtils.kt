@@ -17,8 +17,8 @@ package io.github.thibaultbee.streampack.core.utils
 
 import android.media.MediaFormat
 import android.util.Size
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.VideoConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
 import kotlin.random.Random
 
@@ -38,35 +38,34 @@ object ConfigurationUtils {
     /**
      * Generates a valid audio configuration for test
      *
-     * @return a [AudioConfig] for test
+     * @return a [AudioCodecConfig] for test
      */
-    fun dummyValidAudioConfig() = AudioConfig()
+    fun dummyValidAudioConfig() = AudioCodecConfig()
 
     /**
      * Generates an invalid audio configuration for test
      *
-     * @return a [AudioConfig] for test
+     * @return a [AudioCodecConfig] for test
      */
-    fun dummyInvalidAudioConfig() = AudioConfig(
+    fun dummyInvalidAudioConfig() = AudioCodecConfig(
         mimeType = MediaFormat.MIMETYPE_VIDEO_AVC // Video instead of audio
     )
 
     /**
      * Generates a valid video configuration for test
      *
-     * @return a [VideoConfig] for test
+     * @return a [VideoCodecConfig] for test
      */
-    fun dummyValidVideoConfig() = VideoConfig(
+    fun dummyValidVideoConfig() = VideoCodecConfig(
         resolution = Size(640, 360)
     )
-
 
     /**
      * Generates an invalid video configuration for test
      *
-     * @return a [VideoConfig] for test
+     * @return a [VideoCodecConfig] for test
      */
-    fun dummyInvalidVideoConfig() = VideoConfig(
+    fun dummyInvalidVideoConfig() = VideoCodecConfig(
         mimeType = MediaFormat.MIMETYPE_AUDIO_AAC // Audio instead of video
     )
 }

@@ -1,4 +1,4 @@
-package io.github.thibaultbee.streampack.core.data.mediadescriptor
+package io.github.thibaultbee.streampack.core.configuration.mediadescriptor
 
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
 

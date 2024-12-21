@@ -50,7 +50,7 @@ val AudioCodecConfig.sourceConfig: AudioSourceConfig
  * @return `true` if [VideoCodecConfig] is compatible with [VideoCodecConfig], `false` otherwise
  */
 fun VideoCodecConfig.isCompatibleWith(sourceConfig: VideoSourceConfig): Boolean {
-    require(dynamicRangeProfile.dynamicRange == sourceConfig.dynamicRangeProfile) {
+    require(dynamicRangeProfile == sourceConfig.dynamicRangeProfile) {
         "Dynamic range profile must be the same: $dynamicRangeProfile != ${sourceConfig.dynamicRangeProfile}"
     }
     return (fps == sourceConfig.fps)
@@ -63,7 +63,7 @@ fun VideoCodecConfig.isCompatibleWith(sourceConfig: VideoSourceConfig): Boolean 
  * @return [VideoCodecConfig] merged with [VideoCodecConfig]
  */
 fun VideoCodecConfig.mergeWith(sourceConfig: VideoSourceConfig): VideoCodecConfig {
-    require(dynamicRangeProfile.dynamicRange == sourceConfig.dynamicRangeProfile) {
+    require(dynamicRangeProfile == sourceConfig.dynamicRangeProfile) {
         "Dynamic range profile must be the same: $dynamicRangeProfile != ${sourceConfig.dynamicRangeProfile}"
     }
 
@@ -81,5 +81,5 @@ val VideoCodecConfig.sourceConfig: VideoSourceConfig
     get() = VideoSourceConfig(
         resolution = resolution,
         fps = fps,
-        dynamicRangeProfile = dynamicRangeProfile.dynamicRange
+        dynamicRangeProfile = dynamicRangeProfile
     )

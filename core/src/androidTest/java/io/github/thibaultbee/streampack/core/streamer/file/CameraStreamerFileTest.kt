@@ -27,15 +27,16 @@ import androidx.core.net.toUri
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.VideoConfig
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.CompositeEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.MP4Muxer
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.FileSink
-import io.github.thibaultbee.streampack.core.streamers.DefaultCameraStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
+import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
+import io.github.thibaultbee.streampack.core.streamers.single.setConfig
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
@@ -54,9 +55,9 @@ class CameraStreamerFileTest(
 ) {
     private val context: Context = InstrumentationRegistry.getInstrumentation().context
     private val streamer = if (endpoint != null) {
-        DefaultCameraStreamer(context, internalEndpoint = endpoint)
+        CameraSingleStreamer(context, internalEndpoint = endpoint)
     } else {
-        DefaultCameraStreamer(context)
+        CameraSingleStreamer(context)
     }
     private val info = streamer.getInfo(descriptor)
 
@@ -98,7 +99,7 @@ class CameraStreamerFileTest(
             VideoConfig(mimeType = videoCodec, resolution = Size(VIDEO_WIDTH, VIDEO_HEIGHT))
 
         // Run stream
-        streamer.configure(
+        streamer.setConfig(
             audioConfig,
             videoConfig
         )

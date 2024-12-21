@@ -17,10 +17,10 @@ package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxe
 
 import android.media.MediaFormat
 import android.util.Size
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.Config
-import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.internal.data.Frame
+import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.boxes.AV1CodecConfigurationBox2
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.boxes.AV1SampleEntry
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.boxes.AVCConfigurationBox
@@ -102,7 +102,7 @@ class TrackChunks(
                 this.extra.size == 1
             }
 
-            AudioConfig.isAacMimeType(track.config.mimeType) -> {
+            AudioCodecConfig.isAacMimeType(track.config.mimeType) -> {
                 this.extra.size == 1
             }
 
@@ -236,14 +236,14 @@ class TrackChunks(
         return TrackBox(tkhd, mdia)
     }
 
-    private fun createTrackHeaderBox(config: Config, format: MediaFormat): TrackHeaderBox {
+    private fun createTrackHeaderBox(config: CodecConfig, format: MediaFormat): TrackHeaderBox {
         val resolution = when (config) {
-            is AudioConfig -> Size(0, 0)
-            is VideoConfig -> format.resolution
+            is AudioCodecConfig -> Size(0, 0)
+            is VideoCodecConfig -> format.resolution
             else -> throw IllegalArgumentException("Unsupported config")
         }
         val volume = when (config) {
-            is AudioConfig -> 1.0f
+            is AudioCodecConfig -> 1.0f
             else -> 0.0f
         }
         return TrackHeaderBox(
@@ -312,7 +312,7 @@ class TrackChunks(
                 val format = this.format.first()
                 val extra = this.extra
                 require(extra.size == 2) { "For AVC, extra must contain 2 parameter sets" }
-                (track.config as VideoConfig)
+                (track.config as VideoCodecConfig)
                 AVCSampleEntry(
                     format.resolution,
                     avcC = AVCConfigurationBox(
@@ -328,7 +328,7 @@ class TrackChunks(
                 val format = this.format.first()
                 val extra = this.extra
                 require(extra.size == 3) { "For HEVC, extra must contain 3 parameter sets" }
-                (track.config as VideoConfig)
+                (track.config as VideoCodecConfig)
                 HEVCSampleEntry(
                     format.resolution,
                     hvcC = HEVCConfigurationBox(
@@ -341,7 +341,7 @@ class TrackChunks(
 
             track.config.mimeType == MediaFormat.MIMETYPE_VIDEO_VP9 -> {
                 val format = this.format.first()
-                (track.config as VideoConfig)
+                (track.config as VideoCodecConfig)
                 VP9SampleEntry(
                     format.resolution,
                     vpcC = VPCodecConfigurationBox(
@@ -354,7 +354,7 @@ class TrackChunks(
                 val format = this.format.first()
                 val extra = this.extra
                 require(extra.size == 1) { "For AV1, extra must contain 1 extra" }
-                (track.config as VideoConfig)
+                (track.config as VideoCodecConfig)
                 AV1SampleEntry(
                     format.resolution,
                     av1C = AV1CodecConfigurationBox2(
@@ -363,11 +363,11 @@ class TrackChunks(
                 )
             }
 
-            AudioConfig.isAacMimeType(track.config.mimeType) -> {
-                (track.config as AudioConfig)
+            AudioCodecConfig.isAacMimeType(track.config.mimeType) -> {
+                (track.config as AudioCodecConfig)
                 MP4AudioSampleEntry(
-                    AudioConfig.getNumberOfChannels(track.config.channelConfig).toShort(),
-                    AudioConfig.getNumOfBytesPerSample(track.config.byteFormat).toShort(),
+                    AudioCodecConfig.getNumberOfChannels(track.config.channelConfig).toShort(),
+                    AudioCodecConfig.getNumOfBytesPerSample(track.config.byteFormat).toShort(),
                     track.config.sampleRate,
                     esds = ESDSBox(
                         ESDescriptor(
@@ -389,11 +389,11 @@ class TrackChunks(
             track.config.mimeType == MediaFormat.MIMETYPE_AUDIO_OPUS -> {
                 val extra = this.extra
                 require((this.extra.size == 3) || (this.extra.size == 1)) { "For Opus, extra must contain 1 or 3 parameter sets" }
-                (track.config as AudioConfig)
+                (track.config as AudioCodecConfig)
                 val triple = OpusCsdParser.parse(extra[0][0])
                 val identificationHeader = triple.first
                 OpusSampleEntry(
-                    AudioConfig.getNumberOfChannels(track.config.channelConfig).toShort(),
+                    AudioCodecConfig.getNumberOfChannels(track.config.channelConfig).toShort(),
                     dOps = OpusSpecificBox(
                         outputChannelCount = identificationHeader.channelCount,
                         preSkip = identificationHeader.preSkip,

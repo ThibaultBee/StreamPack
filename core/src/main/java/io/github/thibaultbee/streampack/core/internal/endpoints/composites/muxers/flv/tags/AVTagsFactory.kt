@@ -16,10 +16,10 @@
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.tags
 
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.Config
-import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.internal.data.Frame
+import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.tags.video.PacketType
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.tags.video.VideoTagFactory
 import io.github.thibaultbee.streampack.core.internal.utils.av.buffer.AVCCBufferWriter
@@ -33,14 +33,14 @@ import java.nio.ByteBuffer
 
 class AVTagsFactory(
     private val frame: Frame,
-    private val config: Config,
+    private val config: CodecConfig,
     private val sendHeader: Boolean
 ) {
     fun build(): List<FlvTag> {
         return if (frame.isVideo) {
-            createVideoTags(frame, config as VideoConfig, sendHeader)
+            createVideoTags(frame, config as VideoCodecConfig, sendHeader)
         } else if (frame.isAudio) {
-            createAudioTags(frame, config as AudioConfig, sendHeader)
+            createAudioTags(frame, config as AudioCodecConfig, sendHeader)
         } else {
             throw IOException("Frame is neither video nor audio: ${frame.mimeType}")
         }
@@ -48,7 +48,7 @@ class AVTagsFactory(
 
     private fun createAudioTags(
         frame: Frame,
-        config: AudioConfig,
+        config: AudioCodecConfig,
         sendHeader: Boolean
     ): List<FlvTag> {
         val audioTag = mutableListOf<FlvTag>()
@@ -57,7 +57,7 @@ class AVTagsFactory(
                 AudioTag(
                     frame.pts,
                     frame.extra!![0],
-                    if (AudioConfig.isAacMimeType(config.mimeType)) {
+                    if (AudioCodecConfig.isAacMimeType(config.mimeType)) {
                         AACPacketType.SEQUENCE_HEADER
                     } else {
                         null
@@ -70,7 +70,7 @@ class AVTagsFactory(
             AudioTag(
                 frame.pts,
                 frame.buffer,
-                if (AudioConfig.isAacMimeType(config.mimeType)) {
+                if (AudioCodecConfig.isAacMimeType(config.mimeType)) {
                     AACPacketType.RAW
                 } else {
                     null
@@ -83,7 +83,7 @@ class AVTagsFactory(
 
     private fun createVideoTags(
         frame: Frame,
-        config: VideoConfig,
+        config: VideoCodecConfig,
         sendHeader: Boolean
     ): List<FlvTag> {
         val videoTags = mutableListOf<FlvTag>()
@@ -114,7 +114,7 @@ class AVTagsFactory(
 
     private fun createVideoSequenceStartBufferWriter(
         frame: Frame,
-        config: VideoConfig
+        config: VideoCodecConfig
     ): ByteBufferWriter {
         return when (config.mimeType) {
             MediaFormat.MIMETYPE_VIDEO_AVC -> {

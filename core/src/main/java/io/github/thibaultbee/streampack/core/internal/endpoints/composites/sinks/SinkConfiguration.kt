@@ -15,9 +15,9 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks
 
-import io.github.thibaultbee.streampack.core.data.Config
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
 
 /**
  * Internal class to configure [ISinkInternal].
  */
-data class SinkConfiguration(val streamConfigs: List<Config>)
+data class SinkConfiguration(val streamConfigs: List<CodecConfig>)

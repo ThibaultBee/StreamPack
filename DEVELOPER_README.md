@@ -64,14 +64,14 @@ streamer.videoEncoder!!.bitrate = 2000000
 
 ## Streamers
 
-The streamer implementation is the `DefaultStreamer`. All other streamers inherit from it. Then 2
+The streamer implementation is the `SingleStreamer`. All other streamers inherit from it. Then 2
 specifics
 base streamers inherit from it:
 
-- `DefaultCameraStreamer`: A streamer that streams from a camera and microphone. It
+- `CameraSingleStreamer`: A streamer that streams from a camera and microphone. It
   adds `startPreview`
   , `stopPreview` methods to the `Streamer` object as well as a camera settings.
-- `DefaultScreenRecorderStreamer`: A streamer that streams from the phone screen and microphone. It
+- `ScreenRecorderSingleStreamer`: A streamer that streams from the phone screen and microphone. It
   adds specific methods for screen recorder as a API to set activity result.
 
 To endpoint of a `Streamer` is inferred from the `MediaDescriptor` object passed to the `Streamer`
@@ -160,7 +160,7 @@ They implement the `ISink` interface.
 The implement the `ICoroutineStreamer` interface.
 
 @startuml
-class DefaultStreamer {
+class SingleStreamer {
 
 + videoSource: IVideoSource
 + audioSource: IAudioSource
@@ -172,7 +172,7 @@ class DefaultStreamer {
   @enduml
 
 @startuml
-rectangle DefaultCameraStreamer {
+rectangle CameraSingleStreamer {
 [CameraSource] as VideoSource
 [MicrophoneSource] as AudioSource
 [Encoder] as VideoEncoder

@@ -22,16 +22,13 @@ import android.os.Build
 import io.github.thibaultbee.streampack.core.internal.utils.ByteFormatValue
 import io.github.thibaultbee.streampack.core.internal.utils.ChannelConfigValue
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.isAudio
-import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 import java.security.InvalidParameterException
 
 /**
  * Audio configuration class.
  * If you don't know how to set class members, [Video encoding recommendations](https://developer.android.com/guide/topics/media/media-formats#video-encoding) should give you hints.
- *
- * @see [DefaultStreamer.configure]
  */
-class AudioCodecConfig(
+open class AudioCodecConfig(
     /**
      * Audio encoder mime type.
      *
@@ -167,7 +164,7 @@ class AudioCodecConfig(
             else -> 0 // We suppose that profile is not needed when mimeType is an AAC extension
         }
 
-        private fun getDefaultSampleRate(mimeType: String) = when (mimeType) {
+        internal fun getDefaultSampleRate(mimeType: String) = when (mimeType) {
             MediaFormat.MIMETYPE_AUDIO_AAC -> 44_100
             MediaFormat.MIMETYPE_AUDIO_OPUS -> 48_000
             else -> throw InvalidParameterException("Mimetype not supported: $mimeType")
@@ -176,7 +173,7 @@ class AudioCodecConfig(
         /**
          * Get the default audio profile
          */
-        private fun getDefaultProfile(mimeType: String) = when {
+        internal fun getDefaultProfile(mimeType: String) = when {
             isAacMimeType(mimeType) -> getAacProfileFromMimeType(mimeType)
             mimeType == MediaFormat.MIMETYPE_AUDIO_OPUS -> 0
             else -> throw InvalidParameterException("Mimetype not supported: $mimeType")

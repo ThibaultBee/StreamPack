@@ -13,11 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.data
+package io.github.thibaultbee.streampack.core.configuration
 
-import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
+import android.util.Range
 
 /**
- * Audio configuration class.
+ * Bitrate regulator configuration. Use it to control bitrate
  */
-typealias AudioConfig = AudioCodecConfig
+data class BitrateRegulatorConfig(
+    /**
+     * Video encoder bitrate ranges in bits/s.
+     */
+    val videoBitrateRange: Range<Int> = Range(500000, 10000000),
+    /**
+     * Audio encoder bitrate ranges in bits/s.
+     */
+    val audioBitrateRange: Range<Int> = Range(128000, 128000)
+)

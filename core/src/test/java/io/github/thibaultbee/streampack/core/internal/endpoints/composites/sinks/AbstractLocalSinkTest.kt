@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks
 
 import androidx.core.net.toUri
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.utils.FakeLogger
 import io.github.thibaultbee.streampack.core.internal.utils.FileUtils

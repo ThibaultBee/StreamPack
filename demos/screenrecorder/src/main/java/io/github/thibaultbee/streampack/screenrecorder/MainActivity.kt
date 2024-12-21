@@ -33,13 +33,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.VideoConfig
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.MediaCodecHelper
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
-import io.github.thibaultbee.streampack.core.streamers.DefaultScreenRecorderStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.startStream
+import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
+import io.github.thibaultbee.streampack.core.streamers.single.ScreenRecorderSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
+import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import io.github.thibaultbee.streampack.screenrecorder.databinding.ActivityMainBinding
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
@@ -63,7 +63,8 @@ class MainActivity : AppCompatActivity() {
         )
 
     private var connection: ServiceConnection? = null
-    private var streamer: DefaultScreenRecorderStreamer? = null
+
+    private var streamer: ScreenRecorderSingleStreamer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,7 +105,7 @@ class MainActivity : AppCompatActivity() {
                 showPermissionAlertDialog(this) { this.finish() }
             } else {
                 getContent.launch(
-                    DefaultScreenRecorderStreamer.createScreenRecorderIntent(
+                    ScreenRecorderSingleStreamer.createScreenRecorderIntent(
                         this
                     )
                 )
@@ -139,11 +140,12 @@ class MainActivity : AppCompatActivity() {
                         binding.liveButton.isChecked = false
                         Log.i(TAG, "Service disconnected")
                     },
-                    enableAudio = configuration.audio.enable)
+                    enableAudio = configuration.audio.enable
+                )
             }
         }
 
-    private fun configure(streamer: DefaultScreenRecorderStreamer) {
+    private fun configure(streamer: ScreenRecorderSingleStreamer) {
         val deviceRefreshRate =
             (this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager).getDisplay(
                 Display.DEFAULT_DISPLAY
@@ -163,7 +165,7 @@ class MainActivity : AppCompatActivity() {
             resolution = configuration.video.resolution,
             fps = fps
         )
-        streamer.configure(videoConfig)
+        streamer.setVideoConfig(videoConfig)
 
         if (configuration.audio.enable) {
             val audioConfig = AudioConfig(
@@ -179,14 +181,14 @@ class MainActivity : AppCompatActivity() {
                     Manifest.permission.RECORD_AUDIO
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
-                streamer.configure(audioConfig)
+                streamer.setAudioConfig(audioConfig)
             } else {
                 throw SecurityException("Permission RECORD_AUDIO must have been granted!")
             }
         }
     }
 
-    private fun startStream(streamer: DefaultScreenRecorderStreamer) {
+    private fun startStream(streamer: ScreenRecorderSingleStreamer) {
         try {
             runBlocking {
                 val descriptor = when (configuration.endpoint.type) {
@@ -277,7 +279,10 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun showPermissionAlertDialog(context: Context, afterPositiveButton: () -> Unit = {}) =
+    private fun showPermissionAlertDialog(
+        context: Context,
+        afterPositiveButton: () -> Unit = {}
+    ) =
         showAlertDialog(
             context,
             R.string.permission,

@@ -28,7 +28,6 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SeekBarPreference
 import androidx.preference.SwitchPreference
-import io.github.thibaultbee.streampack.app.ApplicationConstants
 import io.github.thibaultbee.streampack.app.R
 import io.github.thibaultbee.streampack.app.data.storage.PreferencesDataStoreAdapter
 import io.github.thibaultbee.streampack.app.models.EndpointFactory
@@ -38,10 +37,10 @@ import io.github.thibaultbee.streampack.app.utils.DialogUtils
 import io.github.thibaultbee.streampack.app.utils.ProfileLevelDisplay
 import io.github.thibaultbee.streampack.app.utils.StreamerInfoFactory
 import io.github.thibaultbee.streampack.app.utils.dataStore
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.VideoConfig
 import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.MediaCodecHelper
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
+import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
+import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import io.github.thibaultbee.streampack.core.utils.extensions.cameras
 import io.github.thibaultbee.streampack.core.utils.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported

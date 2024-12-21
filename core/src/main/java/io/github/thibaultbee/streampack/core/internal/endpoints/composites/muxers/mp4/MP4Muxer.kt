@@ -15,9 +15,9 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4
 
-import io.github.thibaultbee.streampack.core.data.Config
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.data.Packet
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.boxes.FileTypeBox
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.boxes.MovieFragmentRandomAccessBox
@@ -63,7 +63,7 @@ class MP4Muxer(
         }
     }
 
-    override fun addStreams(streamsConfig: List<Config>): Map<Config, Int> {
+    override fun addStreams(streamsConfig: List<CodecConfig>): Map<CodecConfig, Int> {
         val newTracks = mutableListOf<Track>()
         streamsConfig.forEach { config ->
             val track = Track(getNewId(), config, timescale)
@@ -71,12 +71,12 @@ class MP4Muxer(
             tracks.add(track)
         }
 
-        val streamMap = mutableMapOf<Config, Int>()
+        val streamMap = mutableMapOf<CodecConfig, Int>()
         newTracks.forEach { streamMap[it.config] = it.id }
         return streamMap
     }
 
-    override fun addStream(streamConfig: Config): Int {
+    override fun addStream(streamConfig: CodecConfig): Int {
         val track = Track(getNewId(), streamConfig, timescale)
         tracks.add(track)
         return track.id

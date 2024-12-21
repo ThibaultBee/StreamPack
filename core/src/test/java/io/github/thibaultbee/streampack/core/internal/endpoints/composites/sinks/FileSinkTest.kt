@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks
 
 import android.net.Uri
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.fail
 import org.junit.Test

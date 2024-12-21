@@ -15,12 +15,12 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.models
 
-import io.github.thibaultbee.streampack.core.data.Config
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.internal.utils.TimeUtils
 
 class Track(
     val id: Int,
-    val config: Config,
+    val config: CodecConfig,
     val timescale: Int = TimeUtils.TIME_SCALE,
 ) {
     val syncSamples = mutableListOf<SyncSample>()

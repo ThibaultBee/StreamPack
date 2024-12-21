@@ -15,9 +15,9 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.tags
 
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.Config
-import io.github.thibaultbee.streampack.core.data.VideoConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.amf.containers.AmfContainer
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.amf.containers.AmfEcmaArray
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.tags.video.CodecID
@@ -91,7 +91,7 @@ class OnMetadata(
 
     companion object {
         fun fromConfigs(
-            configs: List<Config>
+            configs: List<CodecConfig>
         ): OnMetadata {
             return OnMetadata(configs.map { Metadata.fromConfig(it) })
         }
@@ -101,11 +101,11 @@ class OnMetadata(
 abstract class Metadata(val dataRate: Int) {
     companion object {
         fun fromConfig(
-            config: Config,
+            config: CodecConfig,
         ): Metadata {
             return when (config) {
-                is AudioConfig -> AudioMetadata.fromAudioConfig(config)
-                is VideoConfig -> VideoMetadata.fromVideoConfig(config)
+                is AudioCodecConfig -> AudioMetadata.fromAudioConfig(config)
+                is VideoCodecConfig -> VideoMetadata.fromVideoConfig(config)
                 else -> throw IOException("Not supported mime type: ${config.mimeType}")
             }
         }
@@ -120,13 +120,13 @@ class AudioMetadata(
     val isStereo: Boolean
 ) : Metadata(dataRate) {
     companion object {
-        fun fromAudioConfig(config: AudioConfig): AudioMetadata {
+        fun fromAudioConfig(config: AudioCodecConfig): AudioMetadata {
             return AudioMetadata(
                 SoundFormat.fromMimeType(config.mimeType),
                 config.startBitrate,
                 config.sampleRate,
-                AudioConfig.getNumOfBytesPerSample(config.byteFormat) * Byte.SIZE_BITS,
-                AudioConfig.getNumberOfChannels(config.channelConfig) == 2
+                AudioCodecConfig.getNumOfBytesPerSample(config.byteFormat) * Byte.SIZE_BITS,
+                AudioCodecConfig.getNumberOfChannels(config.channelConfig) == 2
             )
         }
     }
@@ -143,7 +143,7 @@ class VideoMetadata(
         private const val TAG = "VideoMetadata"
 
         fun fromVideoConfig(
-            config: VideoConfig,
+            config: VideoCodecConfig,
         ): VideoMetadata {
             val videoCodecID = if (ExtendedVideoTag.isSupportedCodec(config.mimeType)) {
                 FourCCs.fromMimeType(config.mimeType).value.code

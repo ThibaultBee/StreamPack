@@ -13,42 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.streamers.interfaces
+package io.github.thibaultbee.streampack.core.streamers.single
 
 import android.Manifest
 import android.net.Uri
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.VideoConfig
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
+import io.github.thibaultbee.streampack.core.internal.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.rotationToDegrees
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
-import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * A Streamer that is agnostic to the underlying implementation (either with coroutines or callbacks).
+ * The single streamer audio configuration.
  */
-interface IStreamer {
+typealias AudioConfig = AudioCodecConfig
+
+/**
+ * The single streamer video configuration.
+ */
+typealias VideoConfig = VideoCodecConfig
+
+/**
+ * A single Streamer that is agnostic to the underlying implementation (either with coroutines or callbacks).
+ */
+interface ISingleStreamer {
     /**
-     * Audio configuration.
-     *
-     * @see [configure]
+     * Gets the audio configuration.
      */
     val audioConfig: AudioConfig?
 
     /**
-     * Video configuration.
-     *
-     * @see [configure]
+     * Gets the video configuration.
      */
     val videoConfig: VideoConfig?
 
@@ -101,8 +106,7 @@ interface IStreamer {
      * @throws [Throwable] if configuration can not be applied.
      * @see [release]
      */
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    fun configure(audioConfig: AudioConfig)
+    fun setAudioConfig(audioConfig: AudioConfig)
 
     /**
      * Configures only video settings.
@@ -112,34 +116,10 @@ interface IStreamer {
      * @throws [Throwable] if configuration can not be applied.
      * @see [release]
      */
-    fun configure(videoConfig: VideoConfig)
-
-    /**
-     * Configures both video and audio settings.
-     * It is the first method to call after a [DefaultStreamer] instantiation.
-     * It must be call when both stream and audio and video capture are not running.
-     *
-     * Use [IConfigurationInfo] to get value limits.
-     *
-     * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
-     * to video encoder default level and default profile.
-     *
-     * @param audioConfig Audio configuration to set
-     * @param videoConfig Video configuration to set
-     *
-     * @throws [Throwable] if configuration can not be applied.
-     * @see [release]
-     */
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    fun configure(audioConfig: AudioConfig, videoConfig: VideoConfig) {
-        configure(audioConfig)
-        configure(videoConfig)
-    }
+    fun setVideoConfig(videoConfig: VideoConfig)
 
     /**
      * Clean and reset the streamer.
-     *
-     * @see [configure]
      */
     fun release()
 
@@ -157,14 +137,37 @@ interface IStreamer {
 /**
  * Returns the rotation in degrees from [Int] rotation.
  */
-val IStreamer.targetRotationDegrees: Int
+val ISingleStreamer.targetRotationDegrees: Int
     @IntRange(from = 0, to = 359)
     get() = targetRotation.rotationToDegrees
 
+
 /**
- * A Streamer based on coroutines.
+ * Configures both video and audio settings.
+ * It is the first method to call after a [SingleStreamer] instantiation.
+ * It must be call when both stream and audio and video capture are not running.
+ *
+ * Use [IConfigurationInfo] to get value limits.
+ *
+ * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
+ * to video encoder default level and default profile.
+ *
+ * @param audioConfig Audio configuration to set
+ * @param videoConfig Video configuration to set
+ *
+ * @throws [Throwable] if configuration can not be applied.
+ * @see [ISingleStreamer.release]
  */
-interface ICoroutineStreamer : IStreamer {
+@RequiresPermission(Manifest.permission.RECORD_AUDIO)
+fun ISingleStreamer.setConfig(audioConfig: AudioConfig, videoConfig: VideoConfig) {
+    setAudioConfig(audioConfig)
+    setVideoConfig(videoConfig)
+}
+
+/**
+ * A single Streamer based on coroutines.
+ */
+interface ICoroutineSingleStreamer : ISingleStreamer {
     /**
      * Returns the last throwable that occurred.
      */
@@ -213,7 +216,7 @@ interface ICoroutineStreamer : IStreamer {
  *
  * @param uri The uri to open
  */
-suspend fun ICoroutineStreamer.open(uri: Uri) =
+suspend fun ICoroutineSingleStreamer.open(uri: Uri) =
     open(UriMediaDescriptor(uri))
 
 /**
@@ -221,7 +224,7 @@ suspend fun ICoroutineStreamer.open(uri: Uri) =
  *
  * @param uriString The uri to open
  */
-suspend fun ICoroutineStreamer.open(uriString: String) =
+suspend fun ICoroutineSingleStreamer.open(uriString: String) =
     open(UriMediaDescriptor(Uri.parse(uriString)))
 
 /**
@@ -230,9 +233,9 @@ suspend fun ICoroutineStreamer.open(uriString: String) =
  * Same as doing [open] and [startStream].
  *
  * @param descriptor The media descriptor to open
- * @see [stopStream]
+ * @see [ICoroutineSingleStreamer.stopStream]
  */
-suspend fun ICoroutineStreamer.startStream(descriptor: MediaDescriptor) {
+suspend fun ICoroutineSingleStreamer.startStream(descriptor: MediaDescriptor) {
     open(descriptor)
     startStream()
 }
@@ -243,9 +246,9 @@ suspend fun ICoroutineStreamer.startStream(descriptor: MediaDescriptor) {
  * Same as doing [open] and [startStream].
  *
  * @param uri The uri to open
- * @see [stopStream]
+ * @see [ICoroutineSingleStreamer.stopStream]
  */
-suspend fun ICoroutineStreamer.startStream(uri: Uri) {
+suspend fun ICoroutineSingleStreamer.startStream(uri: Uri) {
     open(uri)
     startStream()
 }
@@ -256,14 +259,14 @@ suspend fun ICoroutineStreamer.startStream(uri: Uri) {
  * Same as doing [open] and [startStream].
  *
  * @param uriString The uri to open
- * @see [stopStream]
+ * @see [ICoroutineSingleStreamer.stopStream]
  */
-suspend fun ICoroutineStreamer.startStream(uriString: String) {
+suspend fun ICoroutineSingleStreamer.startStream(uriString: String) {
     open(uriString)
     startStream()
 }
 
-interface ICallbackStreamer : IStreamer {
+interface ICallbackSingleStreamer : ISingleStreamer {
     /**
      * Returns true if endpoint is opened.
      * For example, if the streamer is connected to a server if the endpoint is SRT or RTMP.
@@ -369,7 +372,7 @@ interface ICallbackStreamer : IStreamer {
  *
  * @param uri The uri to open
  */
-fun ICallbackStreamer.open(uri: Uri) =
+fun ICallbackSingleStreamer.open(uri: Uri) =
     open(UriMediaDescriptor(uri))
 
 /**
@@ -377,7 +380,7 @@ fun ICallbackStreamer.open(uri: Uri) =
  *
  * @param uriString The uri to open
  */
-fun ICallbackStreamer.open(uriString: String) =
+fun ICallbackSingleStreamer.open(uriString: String) =
     open(UriMediaDescriptor(Uri.parse(uriString)))
 
 /**
@@ -386,9 +389,9 @@ fun ICallbackStreamer.open(uriString: String) =
  * Same as doing [open] and [startStream].
  *
  * @param uri The uri to open
- * @see [stopStream]
+ * @see [ICallbackSingleStreamer.stopStream]
  */
-fun ICallbackStreamer.startStream(uri: Uri) = startStream(UriMediaDescriptor(uri))
+fun ICallbackSingleStreamer.startStream(uri: Uri) = startStream(UriMediaDescriptor(uri))
 
 /**
  * Starts audio/video stream.
@@ -396,6 +399,6 @@ fun ICallbackStreamer.startStream(uri: Uri) = startStream(UriMediaDescriptor(uri
  * Same as doing [open] and [startStream].
  *
  * @param uriString The uri to open
- * @see [stopStream]
+ * @see [ICallbackSingleStreamer.stopStream]
  */
-fun ICallbackStreamer.startStream(uriString: String) = startStream(Uri.parse(uriString))
+fun ICallbackSingleStreamer.startStream(uriString: String) = startStream(Uri.parse(uriString))

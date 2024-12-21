@@ -139,16 +139,16 @@ There are 2 types of streamers:
 
 ```kotlin
 // For coroutine based
-val streamer = DefaultCameraStreamer(context = requireContext())
+val streamer = CameraSingleStreamer(context = requireContext())
 // For callback based
-// val streamer = DefaultCameraCallbackStreamer(context = requireContext())
+// val streamer = CameraCallbackSingleStreamer(context = requireContext())
 ```
 
 4. Configures audio and video settings
 
 ```kotlin
 // Already instantiated streamer
-val streamer = DefaultCameraStreamer(context = requireContext())
+val streamer = CameraSingleStreamer(context = requireContext())
 
 val audioConfig = AudioConfig(
     startBitrate = 128000,
@@ -169,10 +169,10 @@ streamer.configure(audioConfig, videoConfig)
 
 ```kotlin
 // Already instantiated streamer
-val streamer = DefaultCameraStreamer(context = requireContext())
+val streamer = CameraSingleStreamer(context = requireContext())
 
 /**
- * If the preview is a [PreviewView]
+ * If the preview is a `CameraPreviewView`
  */
 preview.streamer = streamer
 /**
@@ -185,7 +185,7 @@ streamer.startPreview(preview)
 
 ```kotlin
 // Already instantiated streamer
-val streamer = DefaultCameraStreamer(context = requireContext())
+val streamer = CameraSingleStreamer(context = requireContext())
 
 
 val descriptor =
@@ -203,7 +203,7 @@ streamer.startStream()
 
 ```kotlin
 // Already instantiated streamer
-val streamer = DefaultCameraStreamer(context = requireContext())
+val streamer = CameraSingleStreamer(context = requireContext())
 
 streamer.stopStream()
 streamer.close() // Disconnect from server or close the file
@@ -284,7 +284,7 @@ To set the `Streamer` orientation, you can use the `targetRotation` setter:
 
 ```kotlin
 // Already instantiated streamer
-val streamer = DefaultCameraStreamer(context = requireContext())
+val streamer = CameraSingleStreamer(context = requireContext())
 
 streamer.targetRotation =
     Surface.ROTATION_90 // Or Surface.ROTATION_0, Surface.ROTATION_180, Surface.ROTATION_270
@@ -303,7 +303,7 @@ extension.
 
 ```kotlin
 // Already instantiated streamer
-val streamer = DefaultCameraStreamer(context = requireContext())
+val streamer = CameraSingleStreamer(context = requireContext())
 
 // For callback based
 val listener = object : IRotationProvider.Listener {
@@ -354,16 +354,16 @@ capture, encode, mux and send.They comes in multiple flavours: with different au
 source . 3 types of base streamers
 are available :
 
--`DefaultCameraStreamer`: for streaming from camera
--`DefaultScreenRecorderStreamer`: for streaming from screen
--`DefaultAudioOnlyStreamer`: for streaming audio only
+-`CameraSingleStreamer`: for streaming from camera
+-`ScreenRecorderSingleStreamer`: for streaming from screen
+-`AudioOnlySingleStreamer`: for streaming audio only
 
 Since 3.0.0, the endpoint of a `Streamer` is inferred from the `MediaDescriptor` object passed to
 the `open` or `startStream` methods.It is possible to limit the possibility of the endpoint by
 implementing your own `DynamicEndpoint.Factory` or passing a endpoint as the `Streamer` `endpoint`
 parameter.To create a `Streamer` for a new source, you have to create a new `Streamer` class that
 inherits
-from `DefaultStreamer` .
+from `SingleStreamer` .
 
 ### Get device capabilities
 

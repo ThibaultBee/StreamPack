@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.core.internal.utils.av.audio
 
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.core.data.AudioConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.internal.utils.av.audio.aac.config.ELDSpecificConfig
 import io.github.thibaultbee.streampack.core.internal.utils.av.audio.aac.config.GASpecificConfig
 import io.github.thibaultbee.streampack.core.internal.utils.av.audio.aac.config.SpecificConfig
@@ -279,7 +279,7 @@ data class AudioSpecificConfig(
         }
 
         fun fromAudioConfig(
-            config: AudioConfig,
+            config: AudioCodecConfig,
         ): AudioSpecificConfig {
             val audioObjectType = AudioObjectType.fromProfile(config.mimeType, config.profile)
             val channelConfig = ChannelConfiguration.fromChannelConfig(config.channelConfig)
@@ -302,9 +302,9 @@ data class AudioSpecificConfig(
         fun writeFromByteBuffer(
             buffer: ByteBuffer,
             decoderSpecificInfo: ByteBuffer,
-            audioConfig: AudioConfig
+            audioConfig: AudioCodecConfig
         ) {
-            if (AudioConfig.isAacMimeType(audioConfig.mimeType)) {
+            if (AudioCodecConfig.isAacMimeType(audioConfig.mimeType)) {
                 buffer.put(decoderSpecificInfo)
             } else {
                 throw NotImplementedError("No support for ${audioConfig.mimeType}")

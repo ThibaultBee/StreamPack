@@ -22,7 +22,8 @@ import android.view.SurfaceView
 import android.view.TextureView
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.ICameraSource
-import io.github.thibaultbee.streampack.core.streamers.DefaultStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 
 interface ICameraStreamer {
     /**
@@ -32,7 +33,7 @@ interface ICameraStreamer {
 
     /**
      * Gets/Sets current camera id.
-     * It is a shortcut for [videoSource.cameraId].
+     * It is a shortcut for [ICameraSource.cameraId].
      */
     var cameraId: String
 
@@ -83,12 +84,12 @@ interface ICameraCoroutineStreamer : ICameraStreamer {
 
 /**
  * Starts audio and video capture.
- * If you can prefer to call [DefaultStreamer.configure] before starting preview.
+ * If you can prefer to call [ISingleStreamer.setAudioConfig] before starting preview.
  * It is a shortcut for [setPreview] and [startPreview].
  *
  * @param previewSurface The [Surface] used for camera preview
  *
- * @see [stopPreview]
+ * @see [ICameraStreamer.stopPreview]
  */
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun ICameraCoroutineStreamer.startPreview(previewSurface: Surface) {
@@ -98,12 +99,12 @@ suspend fun ICameraCoroutineStreamer.startPreview(previewSurface: Surface) {
 
 /**
  * Starts audio and video capture.
- * If you can prefer to call [DefaultStreamer.configure] before starting preview.
+ * If you can prefer to call [SingleStreamer.setAudioConfig] before starting preview.
  * It is a shortcut for [setPreview] and [startPreview].
  *
  * @param surfaceView The [SurfaceView] used for camera preview
  *
- * @see [stopPreview]
+ * @see [ICameraStreamer.stopPreview]
  */
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun ICameraCoroutineStreamer.startPreview(surfaceView: SurfaceView) =
@@ -111,12 +112,12 @@ suspend fun ICameraCoroutineStreamer.startPreview(surfaceView: SurfaceView) =
 
 /**
  * Starts audio and video capture.
- * If you can prefer to call [DefaultStreamer.configure] before starting preview.
+ * If you can prefer to call [SingleStreamer.setAudioConfig] before starting preview.
  * It is a shortcut for [setPreview] and [startPreview].
  *
  * @param surfaceHolder The [SurfaceHolder] used for camera preview
  *
- * @see [stopPreview]
+ * @see [ICameraStreamer.stopPreview]
  */
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun ICameraCoroutineStreamer.startPreview(surfaceHolder: SurfaceHolder) =
@@ -124,12 +125,12 @@ suspend fun ICameraCoroutineStreamer.startPreview(surfaceHolder: SurfaceHolder) 
 
 /**
  * Starts audio and video capture.
- * If you can prefer to call [DefaultStreamer.configure] before starting preview.
+ * If you can prefer to call [SingleStreamer.setAudioConfig] before starting preview.
  * It is a shortcut for [setPreview] and [startPreview].
  *
  * @param textureView The [TextureView] used for camera preview
  *
- * @see [stopPreview]
+ * @see [ICameraStreamer.stopPreview]
  */
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun ICameraCoroutineStreamer.startPreview(textureView: TextureView) =
@@ -147,12 +148,12 @@ interface ICameraCallbackStreamer : ICameraStreamer {
 
 /**
  * Starts audio and video capture.
- * If you can prefer to call [DefaultStreamer.configure] before starting preview.
+ * If you can prefer to call [SingleStreamer.setAudioConfig] before starting preview.
  * It is a shortcut for [setPreview] and [startPreview].
  *
  * @param previewSurface The [Surface] used for camera preview
  *
- * @see [stopPreview]
+ * @see [ICameraStreamer.stopPreview]
  */
 @RequiresPermission(Manifest.permission.CAMERA)
 fun ICameraCallbackStreamer.startPreview(previewSurface: Surface) {
@@ -162,12 +163,12 @@ fun ICameraCallbackStreamer.startPreview(previewSurface: Surface) {
 
 /**
  * Starts audio and video capture.
- * If you can prefer to call [DefaultStreamer.configure] before starting preview.
+ * If you can prefer to call [ISingleStreamer.setAudioConfig] before starting preview.
  * It is a shortcut for [setPreview] and [startPreview].
  *
  * @param surfaceView The [SurfaceView] used for camera preview
  *
- * @see [stopPreview]
+ * @see [ICameraStreamer.stopPreview]
  */
 @RequiresPermission(Manifest.permission.CAMERA)
 fun ICameraCallbackStreamer.startPreview(surfaceView: SurfaceView) =
@@ -175,12 +176,12 @@ fun ICameraCallbackStreamer.startPreview(surfaceView: SurfaceView) =
 
 /**
  * Starts audio and video capture.
- * If you can prefer to call [DefaultStreamer.configure] before starting preview.
+ * If you can prefer to call [ISingleStreamer.setAudioConfig] before starting preview.
  * It is a shortcut for [setPreview] and [startPreview].
  *
  * @param surfaceHolder The [SurfaceHolder] used for camera preview
  *
- * @see [stopPreview]
+ * @see [ICameraStreamer.stopPreview]
  */
 @RequiresPermission(Manifest.permission.CAMERA)
 fun ICameraCallbackStreamer.startPreview(surfaceHolder: SurfaceHolder) =
@@ -188,12 +189,12 @@ fun ICameraCallbackStreamer.startPreview(surfaceHolder: SurfaceHolder) =
 
 /**
  * Starts audio and video capture.
- * If you can prefer to call [DefaultStreamer.configure] before starting preview.
+ * If you can prefer to call [ISingleStreamer.setAudioConfig] before starting preview.
  * It is a shortcut for [setPreview] and [startPreview].
  *
  * @param textureView The [TextureView] used for camera preview
  *
- * @see [stopPreview]
+ * @see [ICameraStreamer.stopPreview]
  */
 @RequiresPermission(Manifest.permission.CAMERA)
 fun ICameraCallbackStreamer.startPreview(textureView: TextureView) =

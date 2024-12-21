@@ -16,10 +16,10 @@
 package io.github.thibaultbee.streampack.core.internal.utils.av.audio.aac
 
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.internal.utils.av.buffer.ByteBufferWriter
+import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.internal.utils.av.audio.ChannelConfiguration
 import io.github.thibaultbee.streampack.core.internal.utils.av.audio.SamplingFrequencyIndex
+import io.github.thibaultbee.streampack.core.internal.utils.av.buffer.ByteBufferWriter
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.put
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.putShort
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.toInt
@@ -70,11 +70,11 @@ data class ADTS(
             )
         }
 
-        fun fromAudioConfig(config: AudioConfig, payloadLength: Int): ADTS {
+        fun fromAudioConfig(config: AudioCodecConfig, payloadLength: Int): ADTS {
             return ADTS(
                 true,
                 config.sampleRate,
-                AudioConfig.getNumberOfChannels(config.channelConfig),
+                AudioCodecConfig.getNumberOfChannels(config.channelConfig),
                 payloadLength
             )
         }

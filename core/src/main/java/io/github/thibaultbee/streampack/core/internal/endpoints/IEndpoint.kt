@@ -15,9 +15,9 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints
 
-import io.github.thibaultbee.streampack.core.data.Config
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.data.Frame
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.FileSink
 import io.github.thibaultbee.streampack.core.internal.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.internal.interfaces.SuspendCloseable
@@ -51,7 +51,7 @@ interface IEndpointInternal : IEndpoint, SuspendStreamable,
      * @param streamConfigs the list of [Config] to register
      * @return the map of [Config] to their corresponding stream id
      */
-    fun addStreams(streamConfigs: List<Config>): Map<Config, Int>
+    fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int>
 
     /**
      * Registers a new stream to the [IEndpointInternal].
@@ -59,7 +59,7 @@ interface IEndpointInternal : IEndpoint, SuspendStreamable,
      * @param streamConfig the [Config] to register
      * @return the stream id
      */
-    fun addStream(streamConfig: Config): Int
+    fun addStream(streamConfig: CodecConfig): Int
 
     /**
      * Releases an [IEndpointInternal].

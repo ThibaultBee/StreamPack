@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.regulator.controllers
 
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.ICoroutineSingleStreamer
 
 /**
  * Interface to implement a bitrate regulator controller.
@@ -36,12 +36,12 @@ interface IBitrateRegulatorController {
         /**
          * Creates a [IBitrateRegulatorController] object from given parameters
          *
-         * @param streamer the [ICoroutineStreamer] implementation.
+         * @param streamer the [ICoroutineSingleStreamer] implementation.
          *
          * @return a [IBitrateRegulatorController] object
          */
         fun newBitrateRegulatorController(
-            streamer: ICoroutineStreamer
+            streamer: ICoroutineSingleStreamer
         ): IBitrateRegulatorController
     }
 }

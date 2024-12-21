@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.core.internal.endpoints.composites.sink
 
 import android.content.Context
 import android.net.Uri
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
 import java.io.OutputStream
 

@@ -15,10 +15,10 @@
  */
 package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv
 
-import io.github.thibaultbee.streampack.core.data.Config
 import io.github.thibaultbee.streampack.core.internal.data.Frame
 import io.github.thibaultbee.streampack.core.internal.data.Packet
 import io.github.thibaultbee.streampack.core.internal.data.PacketType
+import io.github.thibaultbee.streampack.core.internal.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.tags.AVTagsFactory
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.tags.FlvHeader
@@ -84,8 +84,8 @@ class FlvMuxer(
         }
     }
 
-    override fun addStreams(streamsConfig: List<Config>): Map<Config, Int> {
-        val streamMap = mutableMapOf<Config, Int>()
+    override fun addStreams(streamsConfig: List<CodecConfig>): Map<CodecConfig, Int> {
+        val streamMap = mutableMapOf<CodecConfig, Int>()
         streams.addAll(streamsConfig.map {
             Stream(
                 it
@@ -96,7 +96,7 @@ class FlvMuxer(
         return streamMap
     }
 
-    override fun addStream(streamConfig: Config): Int {
+    override fun addStream(streamConfig: CodecConfig): Int {
         streams.add(
             Stream(
                 streamConfig
@@ -146,7 +146,7 @@ class FlvMuxer(
         require(videoStreams.size <= 1) { "Only one video stream is supported by FLV but got $videoStreams" }
     }
 
-    private data class Stream(val config: Config) {
+    private data class Stream(val config: CodecConfig) {
         var sendHeader = true
     }
 }

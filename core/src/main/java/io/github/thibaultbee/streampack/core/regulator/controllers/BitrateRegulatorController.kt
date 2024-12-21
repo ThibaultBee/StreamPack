@@ -15,11 +15,11 @@
  */
 package io.github.thibaultbee.streampack.core.regulator.controllers
 
-import io.github.thibaultbee.streampack.core.data.BitrateRegulatorConfig
+import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.ICoroutineSingleStreamer
 
 /**
  * The [BitrateRegulatorController] triggers [IBitrateRegulator.update].
@@ -41,9 +41,9 @@ abstract class BitrateRegulatorController(
         /**
          * Creates a [IBitrateRegulatorController] object from given parameters
          *
-         * @param streamer the [ICoroutineStreamer] implementation.
+         * @param streamer the [ICoroutineSingleStreamer] implementation.
          * @return a [IBitrateRegulatorController] object
          */
-        abstract override fun newBitrateRegulatorController(streamer: ICoroutineStreamer): IBitrateRegulatorController
+        abstract override fun newBitrateRegulatorController(streamer: ICoroutineSingleStreamer): IBitrateRegulatorController
     }
 }

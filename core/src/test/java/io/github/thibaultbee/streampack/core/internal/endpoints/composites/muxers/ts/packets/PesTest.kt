@@ -17,8 +17,8 @@ package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxe
 
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.VideoConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.Stream
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.utils.AssertEqualsBuffersMockMuxerListener
 import io.github.thibaultbee.streampack.core.internal.utils.FakeFrames
@@ -65,7 +65,7 @@ class PesTest {
         Pes(
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
             Stream(
-                VideoConfig(
+                VideoCodecConfig(
                     profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                     level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
                 ), 256
@@ -92,7 +92,7 @@ class PesTest {
         val expectedBuffers = readFrames(TEST_SAMPLES_DIR + "pes-audio1")
         Pes(
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
-            Stream(AudioConfig(), 256),
+            Stream(AudioCodecConfig(), 256),
             true
         ).run {
             write(frame)
@@ -115,7 +115,7 @@ class PesTest {
         val expectedBuffers = readFrames(TEST_SAMPLES_DIR + "pes-audio2")
         Pes(
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
-            Stream(AudioConfig(), 256),
+            Stream(AudioCodecConfig(), 256),
             true
         ).run {
             write(frame)

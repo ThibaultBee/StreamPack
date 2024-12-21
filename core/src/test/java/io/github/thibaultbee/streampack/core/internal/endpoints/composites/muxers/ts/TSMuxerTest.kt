@@ -17,8 +17,8 @@ package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxe
 
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.VideoConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.utils.TSConst
 import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.utils.Utils.createFakeServiceInfo
 import io.github.thibaultbee.streampack.core.internal.utils.FakeFrames
@@ -37,18 +37,18 @@ class TSMuxerTest {
     @Test
     fun `add streams test`() {
         val vStreamConfig1 =
-            VideoConfig(
+            VideoCodecConfig(
                 mimeType = MediaFormat.MIMETYPE_VIDEO_AVC,
                 profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                 level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
             )
         val vStreamConfig2 =
-            VideoConfig(
+            VideoCodecConfig(
                 mimeType = MediaFormat.MIMETYPE_VIDEO_HEVC,
                 profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                 level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
             )
-        val aStreamConfig = AudioConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
+        val aStreamConfig = AudioCodecConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
         val service = createFakeServiceInfo()
 
         val tsMux =
@@ -73,18 +73,18 @@ class TSMuxerTest {
     @Test
     fun `constructor with streams and no service test`() {
         val vStreamConfig1 =
-            VideoConfig(
+            VideoCodecConfig(
                 mimeType = MediaFormat.MIMETYPE_VIDEO_AVC,
                 profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                 level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
             )
         val vStreamConfig2 =
-            VideoConfig(
+            VideoCodecConfig(
                 mimeType = MediaFormat.MIMETYPE_VIDEO_HEVC,
                 profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                 level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
             )
-        val aStreamConfig = AudioConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
+        val aStreamConfig = AudioCodecConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
         try {
             TSMuxer().apply {
                 addStreams(
@@ -112,18 +112,18 @@ class TSMuxerTest {
     @Test
     fun `remove existing service test`() {
         val vStreamConfig1 =
-            VideoConfig(
+            VideoCodecConfig(
                 mimeType = MediaFormat.MIMETYPE_VIDEO_AVC,
                 profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                 level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
             )
         val vStreamConfig2 =
-            VideoConfig(
+            VideoCodecConfig(
                 mimeType = MediaFormat.MIMETYPE_VIDEO_HEVC,
                 profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                 level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
             )
-        val aStreamConfig = AudioConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
+        val aStreamConfig = AudioCodecConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
         val service = createFakeServiceInfo()
 
         val tsMux =
@@ -153,18 +153,18 @@ class TSMuxerTest {
     @Test
     fun `remove streams test `() {
         val vStreamConfig1 =
-            VideoConfig(
+            VideoCodecConfig(
                 mimeType = MediaFormat.MIMETYPE_VIDEO_AVC,
                 profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                 level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
             )
         val vStreamConfig2 =
-            VideoConfig(
+            VideoCodecConfig(
                 mimeType = MediaFormat.MIMETYPE_VIDEO_HEVC,
                 profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                 level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
             )
-        val aStreamConfig = AudioConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
+        val aStreamConfig = AudioCodecConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
         val service = createFakeServiceInfo()
 
         val tsMux =
@@ -208,7 +208,7 @@ class TSMuxerTest {
 
     @Test
     fun `encode h264 frame test`() {
-        val config = VideoConfig(
+        val config = VideoCodecConfig(
             mimeType = MediaFormat.MIMETYPE_VIDEO_AVC,
             profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
             level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
@@ -232,7 +232,7 @@ class TSMuxerTest {
 
     @Test
     fun `encode aac frame test`() {
-        val config = AudioConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
+        val config = AudioCodecConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
         val service = createFakeServiceInfo()
 
         val tsMux = TSMuxer().apply {

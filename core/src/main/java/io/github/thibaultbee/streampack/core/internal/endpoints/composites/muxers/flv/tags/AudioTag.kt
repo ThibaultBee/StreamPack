@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxe
 
 import android.media.AudioFormat
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.core.data.AudioConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.internal.utils.av.audio.AudioSpecificConfig
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.put
 import java.io.IOException
@@ -27,7 +27,7 @@ class AudioTag(
     pts: Long,
     private val frameBuffer: ByteBuffer,
     private val aacPacketType: AACPacketType?,
-    private val audioConfig: AudioConfig
+    private val audioConfig: AudioCodecConfig
 ) :
     FlvTag(pts, TagType.AUDIO) {
     companion object {
@@ -41,7 +41,7 @@ class AudioTag(
                     (SoundSize.fromByteFormat(audioConfig.byteFormat).value shl 1) or
                     (SoundType.fromChannelConfig(audioConfig.channelConfig).value)
         )
-        if (AudioConfig.isAacMimeType(audioConfig.mimeType)) {
+        if (AudioCodecConfig.isAacMimeType(audioConfig.mimeType)) {
             output.put(aacPacketType!!.value)
         }
     }
@@ -50,14 +50,14 @@ class AudioTag(
 
     private fun computeHeaderSize(): Int {
         var size = AUDIO_TAG_HEADER_SIZE
-        if (AudioConfig.isAacMimeType(audioConfig.mimeType)) {
+        if (AudioCodecConfig.isAacMimeType(audioConfig.mimeType)) {
             size += 1 // AACPacketType
         }
         return size
     }
 
     override fun writeBody(output: ByteBuffer) {
-        if (AudioConfig.isAacMimeType(audioConfig.mimeType)) {
+        if (AudioCodecConfig.isAacMimeType(audioConfig.mimeType)) {
             if (aacPacketType == AACPacketType.SEQUENCE_HEADER) {
                 AudioSpecificConfig.writeFromByteBuffer(output, frameBuffer, audioConfig)
             } else {
@@ -99,7 +99,7 @@ enum class SoundFormat(val value: Int) {
             mimeType == MediaFormat.MIMETYPE_AUDIO_RAW -> PCM
             mimeType == MediaFormat.MIMETYPE_AUDIO_G711_ALAW -> G711_ALAW
             mimeType == MediaFormat.MIMETYPE_AUDIO_G711_MLAW -> G711_MLAW
-            AudioConfig.isAacMimeType(mimeType) -> AAC
+            AudioCodecConfig.isAacMimeType(mimeType) -> AAC
             else -> throw IOException("MimeType is not supported: $mimeType")
         }
     }

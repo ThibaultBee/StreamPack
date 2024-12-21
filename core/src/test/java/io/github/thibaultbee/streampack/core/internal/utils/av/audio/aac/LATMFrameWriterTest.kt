@@ -18,10 +18,10 @@ package io.github.thibaultbee.streampack.core.internal.utils.av.audio.aac
 import android.media.AudioFormat
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.core.data.AudioConfig
+import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
+import io.github.thibaultbee.streampack.core.internal.utils.ResourcesUtils
 import io.github.thibaultbee.streampack.core.internal.utils.av.audio.AudioSpecificConfig
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.toByteArray
-import io.github.thibaultbee.streampack.core.internal.utils.ResourcesUtils
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 
@@ -34,7 +34,7 @@ class LATMFrameWriterTest {
         val payload =
             ResourcesUtils.readByteBuffer("test-samples/audio/latm/aac-lc-44100Hz-mono/frame.raw")
 
-        val config = AudioConfig(
+        val config = AudioCodecConfig(
             mimeType = MediaFormat.MIMETYPE_AUDIO_AAC,
             sampleRate = 44100,
             channelConfig = AudioFormat.CHANNEL_IN_MONO,

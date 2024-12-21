@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.core.internal.endpoints
 
 import android.content.Context
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 
 /**
  * A [DynamicEndpoint] for local endpoints.

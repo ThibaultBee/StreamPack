@@ -16,11 +16,11 @@ import io.github.thibaultbee.streampack.app.models.EndpointType
 import io.github.thibaultbee.streampack.app.models.FileExtension
 import io.github.thibaultbee.streampack.app.utils.appendIfNotEndsWith
 import io.github.thibaultbee.streampack.app.utils.createVideoContentUri
-import io.github.thibaultbee.streampack.core.data.AudioConfig
-import io.github.thibaultbee.streampack.core.data.BitrateRegulatorConfig
-import io.github.thibaultbee.streampack.core.data.VideoConfig
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
+import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged

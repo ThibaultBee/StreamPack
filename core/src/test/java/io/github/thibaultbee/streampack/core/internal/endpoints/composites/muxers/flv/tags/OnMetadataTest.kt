@@ -17,9 +17,9 @@ package io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxe
 
 import android.media.MediaCodecInfo
 import android.util.Size
-import io.github.thibaultbee.streampack.core.data.VideoConfig
-import io.github.thibaultbee.streampack.core.internal.utils.extensions.toByteArray
+import io.github.thibaultbee.streampack.core.internal.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.internal.utils.MockUtils
+import io.github.thibaultbee.streampack.core.internal.utils.extensions.toByteArray
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 
@@ -187,7 +187,7 @@ class OnMetadataTest {
         MockUtils.mockSizeConstructor(640, 480)
         val onMetadata = OnMetadata.fromConfigs(
             listOf(
-                VideoConfig(
+                VideoCodecConfig(
                     resolution = Size(640, 480),
                     profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                     level = MediaCodecInfo.CodecProfileLevel.AVCLevel31

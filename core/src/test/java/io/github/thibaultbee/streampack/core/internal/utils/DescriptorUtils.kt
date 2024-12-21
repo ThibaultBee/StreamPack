@@ -6,7 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import androidx.core.net.toUri
-import io.github.thibaultbee.streampack.core.data.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 
 object DescriptorUtils {
     fun createFileDescriptor(fileName: String): UriMediaDescriptor {
