@@ -20,9 +20,10 @@ import android.media.MediaFormat
 import android.os.Build
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
+import io.github.thibaultbee.streampack.core.elements.encoders.EncoderMode
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 
-sealed class EncoderConfig<T : CodecConfig>(val config: T) {
+sealed class EncoderConfig<T : CodecConfig>(val config: T, val mode: EncoderMode) {
     /**
      * True if the encoder is a video encoder, false if it's an audio encoder
      */
@@ -53,15 +54,16 @@ sealed class EncoderConfig<T : CodecConfig>(val config: T) {
 
 class VideoEncoderConfig(
     videoConfig: VideoCodecConfig,
-    val useSurfaceMode: Boolean = true
+    mode: EncoderMode = EncoderMode.SURFACE
 ) : EncoderConfig<VideoCodecConfig>(
-    videoConfig
+    videoConfig,
+    mode
 ) {
     override val isVideo = true
 
     override fun buildFormat(withProfileLevel: Boolean): MediaFormat {
         val format = config.getFormat(withProfileLevel)
-        if (useSurfaceMode) {
+        if (mode == EncoderMode.SURFACE) {
             format.setInteger(
                 MediaFormat.KEY_COLOR_FORMAT,
                 MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
@@ -86,24 +88,32 @@ class VideoEncoderConfig(
         if (other !is VideoEncoderConfig) return false
 
         if (!super.equals(other)) return false
-        if (useSurfaceMode != other.useSurfaceMode) return false
+        if (mode != other.mode) return false
 
         return true
     }
 
     override fun hashCode(): Int {
         var result = super.hashCode()
-        result = 31 * result + useSurfaceMode.hashCode()
+        result = 31 * result + mode.hashCode()
         result = 31 * result + isVideo.hashCode()
         return result
     }
 }
 
-class AudioEncoderConfig(audioConfig: AudioCodecConfig) :
+class AudioEncoderConfig(audioConfig: AudioCodecConfig, mode: EncoderMode) :
     EncoderConfig<AudioCodecConfig>(
-        audioConfig
+        audioConfig,
+        mode
     ) {
+
     override val isVideo = false
+
+    init {
+        require(mode != EncoderMode.SURFACE) {
+            "Audio encoder can't be in SURFACE mode"
+        }
+    }
 
     override fun buildFormat(withProfileLevel: Boolean) =
         config.getFormat(withProfileLevel)

@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 
 class SurfaceProcessor(
-    val dynamicRangeProfile: DynamicRangeProfile
+    private val dynamicRangeProfile: DynamicRangeProfile
 ) : ISurfaceProcessorInternal, SurfaceTexture.OnFrameAvailableListener {
     private val renderer = OpenGlRenderer()
 
@@ -178,8 +178,10 @@ class SurfaceProcessor(
 
         surfaceOutputs.forEach {
             try {
-                it.updateTransformMatrix(surfaceOutputMatrix, textureMatrix)
-                renderer.render(surfaceTexture.timestamp, surfaceOutputMatrix, it.surface)
+                if (it.isStreaming()) {
+                    it.updateTransformMatrix(surfaceOutputMatrix, textureMatrix)
+                    renderer.render(surfaceTexture.timestamp, surfaceOutputMatrix, it.surface)
+                }
             } catch (e: Exception) {
                 Logger.e(TAG, "Error while rendering frame", e)
             }

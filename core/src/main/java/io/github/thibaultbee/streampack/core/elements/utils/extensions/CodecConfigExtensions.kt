@@ -18,20 +18,6 @@ fun AudioCodecConfig.isCompatibleWith(sourceConfig: AudioSourceConfig): Boolean 
 }
 
 /**
- * Merges [AudioCodecConfig] with [AudioSourceConfig].
- *
- * @param sourceConfig [AudioSourceConfig] to merge with
- * @return [AudioCodecConfig] merged with [AudioSourceConfig]
- */
-fun AudioCodecConfig.mergeWith(sourceConfig: AudioSourceConfig): AudioCodecConfig {
-    return copy(
-        channelConfig = sourceConfig.channelConfig,
-        sampleRate = sourceConfig.sampleRate,
-        byteFormat = sourceConfig.byteFormat
-    )
-}
-
-/**
  * Converts [AudioCodecConfig] to [AudioSourceConfig].
  *
  * @return [AudioSourceConfig] from [AudioCodecConfig]
@@ -50,26 +36,7 @@ val AudioCodecConfig.sourceConfig: AudioSourceConfig
  * @return `true` if [VideoCodecConfig] is compatible with [VideoCodecConfig], `false` otherwise
  */
 fun VideoCodecConfig.isCompatibleWith(sourceConfig: VideoSourceConfig): Boolean {
-    require(dynamicRangeProfile == sourceConfig.dynamicRangeProfile) {
-        "Dynamic range profile must be the same: $dynamicRangeProfile != ${sourceConfig.dynamicRangeProfile}"
-    }
-    return (fps == sourceConfig.fps)
-}
-
-/**
- * Merges [VideoCodecConfig] with [VideoCodecConfig].
- *
- * @param sourceConfig [VideoCodecConfig] to merge with
- * @return [VideoCodecConfig] merged with [VideoCodecConfig]
- */
-fun VideoCodecConfig.mergeWith(sourceConfig: VideoSourceConfig): VideoCodecConfig {
-    require(dynamicRangeProfile == sourceConfig.dynamicRangeProfile) {
-        "Dynamic range profile must be the same: $dynamicRangeProfile != ${sourceConfig.dynamicRangeProfile}"
-    }
-
-    return copy(
-        fps = sourceConfig.fps
-    )
+    return (fps == sourceConfig.fps) && (dynamicRangeProfile == sourceConfig.dynamicRangeProfile)
 }
 
 /**

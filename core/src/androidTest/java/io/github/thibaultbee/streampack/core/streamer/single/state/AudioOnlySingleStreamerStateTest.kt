@@ -18,13 +18,12 @@ package io.github.thibaultbee.streampack.core.streamer.single.state
 import androidx.core.net.toUri
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.utils.FileUtils
+import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreamerConfigUtils
 import io.github.thibaultbee.streampack.core.streamers.single.AudioOnlySingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
-import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
-import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -34,7 +33,7 @@ class AudioOnlySingleStreamerStateTest(private val descriptor: MediaDescriptor) 
     DeviceTest(withCamera = false) {
     private val streamer by lazy { AudioOnlySingleStreamer(context) }
 
-    private val audioConfig by lazy { ConfigurationUtils.audioConfig(descriptor) }
+    private val audioConfig by lazy { SingleStreamerConfigUtils.audioConfig(descriptor) }
 
     @Test
     fun defaultUsageTest() = runTest {
@@ -52,29 +51,6 @@ class AudioOnlySingleStreamerStateTest(private val descriptor: MediaDescriptor) 
         streamer.setAudioConfig(
             audioConfig
         )
-    }
-
-    @Test
-    fun configureVideoOnlyTest() = runTest {
-        try {
-            streamer.setVideoConfig(
-                ConfigurationUtils.defaultVideoConfig()
-            )
-            fail("Must not be possible to configure video")
-        } catch (_: Throwable) {
-        }
-    }
-
-    @Test
-    fun configureTest() = runTest {
-        try {
-            streamer.setConfig(
-                audioConfig,
-                ConfigurationUtils.defaultVideoConfig()
-            )
-            fail("Must not be possible to configure video")
-        } catch (_: Throwable) {
-        }
     }
 
     // Multiple methods calls

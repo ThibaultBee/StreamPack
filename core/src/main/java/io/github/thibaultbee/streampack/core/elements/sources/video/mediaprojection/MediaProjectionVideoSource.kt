@@ -24,7 +24,7 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.view.Surface
 import androidx.activity.result.ActivityResult
-import io.github.thibaultbee.streampack.core.elements.processing.video.source.AbstractSourceInfoProvider
+import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
@@ -32,13 +32,19 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceC
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.densityDpi
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.screenRect
 import io.github.thibaultbee.streampack.core.logger.Logger
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class MediaProjectionVideoSource(
     private val context: Context
 ) : IVideoSourceInternal, ISurfaceSource, IMediaProjectionSource {
     override var outputSurface: Surface? = null
     override val timestampOffset = 0L
-    override val infoProvider = ScreenSourceInfoProvider()
+    override val infoProviderFlow = MutableStateFlow(DefaultSourceInfoProvider()).asStateFlow()
+
+    private val _isStreamingFlow = MutableStateFlow(false)
+    override val isStreamingFlow = _isStreamingFlow.asStateFlow()
 
     private var mediaProjection: MediaProjection? = null
 
@@ -46,13 +52,6 @@ class MediaProjectionVideoSource(
      * Set the activity result to get the media projection.
      */
     override var activityResult: ActivityResult? = null
-
-    var listener: Listener? = null
-
-    /**
-     *  Avoid to trigger `onError` when screen source `stopStream` has been called.
-     */
-    private var isStoppedByUser = false
 
     private val mediaProjectionManager =
         context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
@@ -70,9 +69,7 @@ class MediaProjectionVideoSource(
             super.onStopped()
             Logger.i(TAG, "onStopped")
 
-            if (!isStoppedByUser) {
-                listener?.onStop()
-            }
+            _isStreamingFlow.tryEmit(false)
         }
     }
 
@@ -81,9 +78,7 @@ class MediaProjectionVideoSource(
             super.onStop()
             Logger.i(TAG, "onStop")
 
-            if (!isStoppedByUser) {
-                listener?.onStop()
-            }
+            _isStreamingFlow.tryEmit(false)
         }
     }
 
@@ -100,7 +95,6 @@ class MediaProjectionVideoSource(
             "MediaProjection requires an activity result to be set"
         }
 
-        isStoppedByUser = false
         val screenRect = context.screenRect
 
         mediaProjection = mediaProjectionManager.getMediaProjection(
@@ -119,11 +113,10 @@ class MediaProjectionVideoSource(
                 virtualDisplayHandler
             )
         }
+        _isStreamingFlow.emit(true)
     }
 
     override suspend fun stopStream() {
-        isStoppedByUser = true
-
         virtualDisplay?.release()
         virtualDisplay = null
 
@@ -138,12 +131,5 @@ class MediaProjectionVideoSource(
         } catch (e: InterruptedException) {
             e.printStackTrace()
         }
-    }
-
-    class ScreenSourceInfoProvider :
-        AbstractSourceInfoProvider()
-
-    interface Listener {
-        fun onStop()
     }
 }

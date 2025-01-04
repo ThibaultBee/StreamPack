@@ -55,34 +55,5 @@ interface ISourceInfoProvider {
     /**
      * Gets the size of the surface to allocate to display the source.
      */
-    fun getSurfaceSize(size: Size, @RotationValue targetRotation: Int): Size = size
-
-    /**
-     * Adds a listener to be notified when the orientation changes.
-     *
-     * @param listener to add.
-     */
-    fun addListener(listener: ISourceInfoListener)
-
-    /**
-     * Removes a listener.
-     *
-     * @param listener to remove.
-     */
-    fun removeListener(listener: ISourceInfoListener)
-
-    /**
-     * Removes all registered listeners.
-     */
-    fun removeAllListeners()
-}
-
-/**
- * Interface to be notified when the orientation changes.
- */
-interface ISourceInfoListener {
-    /**
-     * Called when the orientation changes.
-     */
-    fun onInfoChanged()
+    fun getSurfaceSize(size: Size): Size = size
 }

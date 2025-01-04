@@ -21,6 +21,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * A fake endpoint for test purpose.
@@ -28,7 +29,7 @@ import kotlinx.coroutines.flow.StateFlow
 class FakeSink(override val supportedSinkTypes: List<MediaSinkType> = MediaSinkType.entries) :
     AbstractSink() {
     private val _isOpenFlow = MutableStateFlow(false)
-    override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow
+    override val isOpenFlow = _isOpenFlow.asStateFlow()
 
     override suspend fun openImpl(mediaDescriptor: MediaDescriptor) {
         Logger.d(TAG, "open called: $mediaDescriptor")

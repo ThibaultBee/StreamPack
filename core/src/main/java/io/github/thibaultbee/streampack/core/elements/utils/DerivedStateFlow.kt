@@ -55,6 +55,8 @@ inline fun <reified T, R> combineStates(
     vararg stateFlows: StateFlow<T>,
     crossinline transform: (Array<T>) -> R
 ): StateFlow<R> = stateFlow(
-    getValue = { transform(stateFlows.map { it.value }.toTypedArray()) },
+    getValue = {
+        transform(stateFlows.mapNotNull { it.value }.toTypedArray())
+    },
     flow = combine(*stateFlows) { transform(it) }
 )

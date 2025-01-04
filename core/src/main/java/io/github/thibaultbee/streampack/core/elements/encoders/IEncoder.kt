@@ -23,7 +23,6 @@ import java.nio.ByteBuffer
 import java.util.concurrent.Executor
 
 interface IEncoder {
-
     /**
      * The encoder mime type
      * @see List of audio/video mime type on <a href="https://developer.android.com/reference/android/media/MediaFormat">Android developer guide</a>
@@ -121,9 +120,9 @@ interface IEncoderInternal : SuspendStreamable, Releasable,
     }
 
     /**
-     * The [ByteBuffer] input
+     * The [IAsyncByteBufferInput] input
      */
-    interface IByteBufferInput :
+    interface IAsyncByteBufferInput :
         IEncoderInput {
         /**
          * The buffer available listener
@@ -141,6 +140,14 @@ interface IEncoderInternal : SuspendStreamable, Releasable,
     }
 
     /**
+     * The [ISyncByteBufferInput] input
+     */
+    interface ISyncByteBufferInput :
+        IEncoderInput {
+        fun queueInputFrame(frame: Frame)
+    }
+
+    /**
      * Reset the encoder
      */
     fun reset()
@@ -149,4 +156,21 @@ interface IEncoderInternal : SuspendStreamable, Releasable,
      * Configure the encoder
      */
     fun configure()
+}
+
+enum class EncoderMode {
+    /**
+     * Encoder will encode frames from a [Surface]
+     */
+    SURFACE,
+
+    /**
+     * Encoder will encode frames from a [ByteBuffer]
+     */
+    SYNC,
+
+    /**
+     * Encoder will encode frames from a [ByteBuffer] asynchronously
+     */
+    ASYNC
 }

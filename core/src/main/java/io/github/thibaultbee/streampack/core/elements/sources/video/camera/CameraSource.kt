@@ -19,10 +19,14 @@ import android.Manifest
 import android.content.Context
 import android.view.Surface
 import androidx.annotation.RequiresPermission
+import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
 
 class CameraSource(
@@ -129,7 +133,7 @@ class CameraSource(
             Logger.e(TAG, "Camera $cameraId does not support $fps fps")
         }
 
-        infoProvider.defaultCamera = cameraId
+        _infoProviderFlow.emit(CameraInfoProvider(context, cameraId))
         if (cameraController.isCameraRunning()) {
             // Restart camera with new cameraId
             restartCamera(cameraId = cameraId)
@@ -154,7 +158,13 @@ class CameraSource(
     override val settings = CameraSettings(context, cameraController)
 
     override val timestampOffset = CameraHelper.getTimeOffsetToMonoClock(context, cameraId)
-    override val infoProvider = CameraInfoProvider(context, cameraController, cameraId)
+    private val _infoProviderFlow =
+        MutableStateFlow(CameraInfoProvider(context, cameraId))
+    override val infoProviderFlow = _infoProviderFlow.asStateFlow()
+
+    private val _isStreamingFlow = MutableStateFlow(false)
+    override val isStreamingFlow = _isStreamingFlow.asStateFlow()
+
 
     private var fps: Int = 30
     private var dynamicRangeProfile: DynamicRangeProfile = DynamicRangeProfile.sdr
@@ -272,8 +282,12 @@ class CameraSource(
         val previewSurface = requireNotNull(previewSurface) {
             "Preview surface is not set"
         }
-        pendingRunningSurfaces.remove(previewSurface)
-        cameraController.removeTarget(previewSurface)
+        try {
+            pendingRunningSurfaces.remove(previewSurface)
+            cameraController.removeTarget(previewSurface)
+        } catch (e: IllegalArgumentException) {
+            Logger.w(TAG, "Failed to stop preview: $e")
+        }
     }
 
     override suspend fun startStream() {
@@ -289,6 +303,7 @@ class CameraSource(
         pendingRunningSurfaces.add(outputSurface)
 
         cameraController.muteVibrationAndSound()
+        _isStreamingFlow.emit(true)
     }
 
     override suspend fun stopStream() {
@@ -301,9 +316,15 @@ class CameraSource(
             "Output surface is not set"
         }
 
-        cameraController.unmuteVibrationAndSound()
-        pendingRunningSurfaces.remove(outputSurface)
-        cameraController.removeTarget(outputSurface)
+        try {
+            pendingRunningSurfaces.remove(outputSurface)
+            cameraController.unmuteVibrationAndSound()
+            cameraController.removeTarget(outputSurface)
+        } catch (e: IllegalArgumentException) {
+            Logger.w(TAG, "Failed to stop stream: $e")
+        } finally {
+            _isStreamingFlow.emit(false)
+        }
     }
 
     override fun release() {

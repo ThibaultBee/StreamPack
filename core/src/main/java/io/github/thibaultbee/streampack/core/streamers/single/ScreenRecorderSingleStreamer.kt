@@ -71,28 +71,7 @@ open class ScreenRecorderSingleStreamer(
     endpointInternal = internalEndpoint,
     defaultRotation = defaultRotation
 ) {
-    private val mediaProjectionVideoSource =
-        (videoSourceInternal as MediaProjectionVideoSource).apply {
-            listener = object : MediaProjectionVideoSource.Listener {
-                override fun onStop() {
-                    onStreamError(Exception("Screen source has been stopped"))
-                }
-            }
-        }
-
-    companion object {
-        /**
-         * Create a screen record intent that must be pass to [ActivityCompat.startActivityForResult].
-         * It will prompt the user whether to allow screen capture.
-         *
-         * @param context application/service context
-         * @return the intent to pass to [ActivityCompat.startActivityForResult]
-         */
-        fun createScreenRecorderIntent(context: Context): Intent =
-            (context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager).run {
-                createScreenCaptureIntent()
-            }
-    }
+    private val mediaProjectionVideoSource = (videoSourceInternal as MediaProjectionVideoSource)
 
     /**
      * Set/get activity result from [ComponentActivity.registerForActivityResult] callback.
@@ -116,4 +95,19 @@ open class ScreenRecorderSingleStreamer(
                 (audioSourceInternal as IMediaProjectionSource).activityResult = value
             }
         }
+
+
+    companion object {
+        /**
+         * Create a screen record intent that must be pass to [ActivityCompat.startActivityForResult].
+         * It will prompt the user whether to allow screen capture.
+         *
+         * @param context application/service context
+         * @return the intent to pass to [ActivityCompat.startActivityForResult]
+         */
+        fun createScreenRecorderIntent(context: Context): Intent =
+            (context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager).run {
+                createScreenCaptureIntent()
+            }
+    }
 }

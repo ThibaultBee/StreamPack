@@ -20,9 +20,7 @@ enum class MediaContainerType(val values: Set<String>) {
         }
 
         internal fun inferFromFileUri(uri: Uri): MediaContainerType {
-            val path = uri.path
-            val extension = path?.substringAfterLast('.')
-                ?: throw IllegalArgumentException("No extension found in uri: $uri")
+            val extension = uri.toString().substringAfterLast('.')
             return inferFromExtension(extension)
         }
 

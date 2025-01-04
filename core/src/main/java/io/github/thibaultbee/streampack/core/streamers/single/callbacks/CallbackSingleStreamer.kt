@@ -16,6 +16,7 @@ import io.github.thibaultbee.streampack.core.streamers.single.ICallbackAudioSing
 import io.github.thibaultbee.streampack.core.streamers.single.ICallbackSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.ICallbackVideoSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.ICoroutineSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
@@ -115,7 +116,6 @@ open class CallbackSingleStreamer(val streamer: SingleStreamer) :
         }
     }
 
-
     /**
      * Configures both video and audio settings.
      * It is the first method to call after a [SingleStreamer] instantiation.
@@ -130,6 +130,7 @@ open class CallbackSingleStreamer(val streamer: SingleStreamer) :
      * @param videoConfig Video configuration to set
      *
      * @throws [Throwable] if configuration can not be applied.
+     * @see [ISingleStreamer.release]
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun setConfig(audioConfig: AudioConfig, videoConfig: VideoConfig) {
@@ -200,7 +201,6 @@ open class CallbackSingleStreamer(val streamer: SingleStreamer) :
     override fun removeListener(listener: ICallbackSingleStreamer.Listener) {
         listeners.remove(listener)
     }
-
 
     override fun release() {
         streamer.releaseBlocking()

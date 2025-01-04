@@ -31,10 +31,9 @@ import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 /**
- * Test [CameraSingleStreamer] with multiple streams.
+ * Test [CameraSingleStreamer] with multiple endpoint.
  */
 @LargeTest
 class CameraSingleStreamerMultiEndpointTest : DeviceTest() {
@@ -48,7 +47,7 @@ class CameraSingleStreamerMultiEndpointTest : DeviceTest() {
     )
 
     @Test
-    fun writeToEndpoints() = runTest(timeout = 200.seconds) {
+    fun writeToEndpoints() = runTest(timeout = TEST_TIMEOUT_MS.milliseconds * descriptors.size) {
         val audioConfig = AudioConfig()
         val videoConfig = VideoConfig(resolution = Size(VIDEO_WIDTH, VIDEO_HEIGHT))
 
@@ -73,7 +72,7 @@ class CameraSingleStreamerMultiEndpointTest : DeviceTest() {
         videoConfig: VideoConfig
     ) {
         // Run stream
-        StreamerUtils.runStream(
+        StreamerUtils.runSingleStream(
             streamer,
             descriptor,
             STREAM_DURATION_MS.milliseconds,
@@ -95,12 +94,16 @@ class CameraSingleStreamerMultiEndpointTest : DeviceTest() {
             Log.e(TAG, "Error while verifying file 2", t)
             throw t
         }
+
+        // Delete file
+        descriptor.uri.toFile().delete()
     }
 
 
     companion object {
         private const val TAG = "MultiEndpointTest"
 
+        private const val TEST_TIMEOUT_MS = 40_000L
         private const val STREAM_DURATION_MS = 20_000L
         private const val STREAM_POLLING_MS = 1_000L
 

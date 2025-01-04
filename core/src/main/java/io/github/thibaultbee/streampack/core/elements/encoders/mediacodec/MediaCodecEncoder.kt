@@ -23,10 +23,12 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.encoders.EncoderMode
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.hasEndOfStreamFlag
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.isKeyFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.isValid
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.put
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
@@ -34,6 +36,7 @@ import kotlinx.coroutines.withContext
 import java.io.Closeable
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import kotlin.math.min
 
 /**
  * Creates a [MediaCodec] encoder with a given configuration and a listener.
@@ -63,7 +66,7 @@ internal constructor(
     private val mediaCodec: MediaCodec
     private val format: MediaFormat
     private val isVideo = encoderConfig.isVideo
-    private val tag = if (isVideo) "VideoEncoder" else "AudioEncoder"
+    private val tag = if (isVideo) "VideoEncoder" else "AudioEncoder" + "(${this.hashCode()})"
 
     private val dispatcher = encoderExecutor.asCoroutineDispatcher()
 
@@ -101,14 +104,10 @@ internal constructor(
 
     override val mimeType by lazy { format.getString(MediaFormat.KEY_MIME)!! }
 
-    override val input = if (encoderConfig is VideoEncoderConfig) {
-        if (encoderConfig.useSurfaceMode) {
-            SurfaceInput()
-        } else {
-            ByteBufferInput()
-        }
-    } else {
-        ByteBufferInput()
+    override val input = when (encoderConfig.mode) {
+        EncoderMode.SURFACE -> SurfaceInput()
+        EncoderMode.SYNC -> SyncByteBufferInput()
+        EncoderMode.ASYNC -> AsyncByteBufferInput()
     }
 
     override val info by lazy { EncoderInfo.build(mediaCodec.codecInfo, mimeType) }
@@ -130,11 +129,13 @@ internal constructor(
 
     override fun configure() {
         try {
-            /**
-             * Set encoder callback without handler.
-             * The [encoderExecutor] is used to run the encoder callbacks.
-             */
-            mediaCodec.setCallback(encoderCallback)
+            if (input !is SyncByteBufferInput) {
+                /**
+                 * Set encoder callback without handler.
+                 * The [encoderExecutor] is used to run the encoder callbacks.
+                 */
+                mediaCodec.setCallback(encoderCallback)
+            }
 
             mediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
 
@@ -332,72 +333,76 @@ internal constructor(
         this.state = state
     }
 
+    private fun processOutputFrameSync(codec: MediaCodec, index: Int, info: BufferInfo) {
+        when {
+            !state.isRunning -> {
+                Logger.w(tag, "Receives output frame after codec is not running: $state.")
+                try {
+                    codec.releaseOutputBuffer(index, false)
+                } catch (_: Throwable) {
+                    // Do nothing
+                }
+                return
+            }
+
+            info.isValid -> {
+                try {
+                    var listener: IEncoderInternal.IListener
+                    var listenerExecutor: Executor
+                    synchronized(listenerLock) {
+                        listener = this@MediaCodecEncoder.listener
+                        listenerExecutor = this@MediaCodecEncoder.listenerExecutor
+                    }
+
+                    val extractor = ClosableFrameExtractor(
+                        codec, index, info, tag
+                    )
+                    listenerExecutor.execute {
+                        try {
+                            listener.onOutputFrame(extractor.frame)
+                        } catch (t: Throwable) {
+                            if (state.isRunning) {
+                                handleError(t)
+                            } else {
+                                /**
+                                 * Next streamer element could be stopped and we are still processing.
+                                 * In that case, just log the error.
+                                 */
+                                Logger.w(
+                                    tag,
+                                    "OnOutputFrame error ${t.message} but codec is not running: $state."
+                                )
+                            }
+                        } finally {
+                            extractor.close()
+                        }
+                    }
+
+                } catch (t: Throwable) {
+                    handleError(t)
+                }
+            }
+
+            else -> {
+                try {
+                    codec.releaseOutputBuffer(index, false)
+                } catch (e: CodecException) {
+                    Log.e(tag, "Failed to release output buffer", e)
+                }
+            }
+        }
+
+        if (info.hasEndOfStreamFlag) {
+            reachEndOfStream()
+        }
+    }
+
     private inner class EncoderCallback : MediaCodec.Callback() {
         override fun onOutputBufferAvailable(
             codec: MediaCodec, index: Int, info: BufferInfo
         ) {
             encoderExecutor.execute {
-                when {
-                    !state.isRunning -> {
-                        Logger.w(tag, "Receives output frame after codec is not running: $state.")
-                        try {
-                            codec.releaseOutputBuffer(index, false)
-                        } catch (_: Throwable) {
-                            // Do nothing
-                        }
-                        return@execute
-                    }
-
-                    info.isValid -> {
-                        try {
-                            var listener: IEncoderInternal.IListener
-                            var listenerExecutor: Executor
-                            synchronized(listenerLock) {
-                                listener = this@MediaCodecEncoder.listener
-                                listenerExecutor = this@MediaCodecEncoder.listenerExecutor
-                            }
-
-                            val extractor = ClosableFrameExtractor(
-                                codec, index, info, tag
-                            )
-                            listenerExecutor.execute {
-                                try {
-                                    listener.onOutputFrame(extractor.frame)
-                                } catch (t: Throwable) {
-                                    if (state.isRunning) {
-                                        handleError(t)
-                                    } else {
-                                        /**
-                                         * Next streamer element could be stopped and we are still processing.
-                                         * In that case, just log the error.
-                                         */
-                                        Logger.w(
-                                            tag,
-                                            "OnOutputFrame error ${t.message} but codec is not running: $state."
-                                        )
-                                    }
-                                } finally {
-                                    extractor.close()
-                                }
-                            }
-
-                        } catch (t: Throwable) {
-                            handleError(t)
-                        }
-                    }
-
-                    else -> {
-                        try {
-                            codec.releaseOutputBuffer(index, false)
-                        } catch (e: CodecException) {
-                            Log.e(tag, "Failed to release output buffer", e)
-                        }
-                    }
-                }
-
-                if (info.hasEndOfStreamFlag) {
-                    reachEndOfStream()
-                }
+                processOutputFrameSync(codec, index, info)
             }
         }
 
@@ -409,17 +414,28 @@ internal constructor(
                         return@execute
                     }
 
-                    input !is IEncoderInternal.IByteBufferInput -> {
+                    input !is IEncoderInternal.IAsyncByteBufferInput -> {
                         Logger.w(tag, "Input buffer is only available for byte buffer input")
                         return@execute
                     }
 
-                    else -> try {
-                        val buffer = requireNotNull(mediaCodec.getInputBuffer(index))
-                        val frame = input.listener.onFrameRequested(buffer)
-                        queueInputFrame(index, frame)
-                    } catch (t: Throwable) {
-                        handleError(t)
+                    else -> {
+                        val frame = try {
+                            val buffer = requireNotNull(mediaCodec.getInputBuffer(index))
+                            input.listener.onFrameRequested(buffer)
+                        } catch (t: Throwable) {
+                            Logger.e(tag, "Failed to get input buffer: $t")
+                            mediaCodec.queueInputBuffer(
+                                index, 0, 0, 0, 0
+                            )
+                            return@execute
+                        }
+
+                        try {
+                            queueInputFrame(index, frame)
+                        } catch (t: Throwable) {
+                            handleError(t)
+                        }
                     }
                 }
             }
@@ -482,8 +498,69 @@ internal constructor(
         }
     }
 
-    internal inner class ByteBufferInput : IEncoderInternal.IByteBufferInput {
-        override lateinit var listener: IEncoderInternal.IByteBufferInput.OnFrameRequestedListener
+    internal inner class AsyncByteBufferInput : IEncoderInternal.IAsyncByteBufferInput {
+        override lateinit var listener: IEncoderInternal.IAsyncByteBufferInput.OnFrameRequestedListener
+    }
+
+    internal inner class SyncByteBufferInput : IEncoderInternal.ISyncByteBufferInput {
+        private fun queueInputFrameSync(frame: Frame) {
+            val inputBufferId = mediaCodec.dequeueInputBuffer(0) // Don't block
+            if (inputBufferId < 0) {
+                if (inputBufferId == MediaCodec.INFO_TRY_AGAIN_LATER) {
+                    return
+                }
+                Logger.w(tag, "Failed to dequeue input buffer: $inputBufferId")
+                return
+            }
+            val inputBuffer = requireNotNull(mediaCodec.getInputBuffer(inputBufferId))
+            val size = min(frame.buffer.remaining(), inputBuffer.remaining())
+            inputBuffer.put(frame.buffer, frame.buffer.position(), size)
+            mediaCodec.queueInputBuffer(
+                inputBufferId, 0, size, frame.pts, 0
+            )
+        }
+
+        override fun queueInputFrame(frame: Frame) {
+            encoderExecutor.execute {
+                if (!state.isRunning) {
+                    Logger.w(tag, "Receives input frame after codec is not running: $state.")
+                    return@execute
+                }
+
+                try {
+                    /**
+                     * Queue input frame until the buffer is empty.
+                     * The counter is used to avoid infinite loop in case of a buffer that is not
+                     * fully consumed because of a really slow encoder
+                     */
+                    var counter = 0
+                    while (frame.buffer.hasRemaining() && counter < 50) {
+                        queueInputFrameSync(frame)
+                        counter++
+
+                        val bufferInfo = BufferInfo()
+                        var outputBufferId: Int
+                        while (mediaCodec.dequeueOutputBuffer(bufferInfo, 0) // Don't block
+                                .also { outputBufferId = it } != MediaCodec.INFO_TRY_AGAIN_LATER
+                        ) {
+                            if (outputBufferId >= 0) {
+                                processOutputFrameSync(mediaCodec, outputBufferId, bufferInfo)
+                            } else if (outputBufferId == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                                Logger.i(tag, "Format changed: ${mediaCodec.outputFormat}")
+                            }
+                        }
+                    }
+                    if (frame.buffer.hasRemaining()) {
+                        Logger.w(
+                            tag,
+                            "Failed to queue input frame: skipping: ${frame.buffer.remaining()} bytes"
+                        )
+                    }
+                } catch (t: Throwable) {
+                    handleError(t)
+                }
+            }
+        }
     }
 
     private class ClosableFrameExtractor(

@@ -19,33 +19,29 @@ import android.content.Context
 import android.hardware.camera2.CameraCharacteristics
 import android.util.Size
 import androidx.annotation.IntRange
-import io.github.thibaultbee.streampack.core.elements.processing.video.source.AbstractSourceInfoProvider
+import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.landscapize
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotationToDegrees
 
+fun CameraInfoProvider(
+    context: Context,
+    cameraId: String
+): CameraInfoProvider {
+    val characteristics = context.getCameraCharacteristics(cameraId)
+    val rotationDegrees = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 0
+    val facingDirection = characteristics.get(CameraCharacteristics.LENS_FACING)
+    return CameraInfoProvider(rotationDegrees, facingDirection = facingDirection)
+}
+
 class CameraInfoProvider(
-    private val context: Context,
-    private val cameraController: CameraController,
-    var defaultCamera: String
+    @IntRange(from = 0, to = 359) override val rotationDegrees: Int,
+    private val facingDirection: Int?
 ) :
-    AbstractSourceInfoProvider() {
-        
-    val cameraId: String
-        get() = cameraController.cameraId ?: defaultCamera
+    ISourceInfoProvider {
 
-    override val rotationDegrees: Int
-        @IntRange(from = 0, to = 359)
-        get() {
-            val characteristics = context.getCameraCharacteristics(cameraId)
-            return characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 0
-        }
-
-    val isFrontFacing: Boolean
-        get() = context.getFacingDirection(cameraId) == CameraCharacteristics.LENS_FACING_FRONT
-
-    override val isMirror: Boolean
-        get() = isFrontFacing
+    val isFrontFacing: Boolean = facingDirection == CameraCharacteristics.LENS_FACING_FRONT
+    override val isMirror = isFrontFacing
 
     @IntRange(from = 0, to = 359)
     override fun getRelativeRotationDegrees(
@@ -61,12 +57,15 @@ class CameraInfoProvider(
         // Currently this assumes that a back-facing camera is always opposite to the screen.
         // This may not be the case for all devices, so in the future we may need to handle that
         // scenario.
-        val lensFacing = context.getFacingDirection(cameraId)
-        val isOppositeFacingScreen = CameraCharacteristics.LENS_FACING_BACK == lensFacing
+        val isOppositeFacingScreen = CameraCharacteristics.LENS_FACING_BACK == facingDirection
         return CameraOrientationUtils.getRelativeRotation(
             targetRotationDegrees, sensorOrientation, isOppositeFacingScreen
         )
     }
 
-    override fun getSurfaceSize(size: Size, targetRotation: Int) = size.landscapize
+    override fun getSurfaceSize(size: Size) = size.landscapize
+
+    override fun toString(): String {
+        return "CameraInfoProvider(rotationDegrees=$rotationDegrees, isMirror=$isMirror, facingDirection=$facingDirection, isFrontFacing=$isFrontFacing)"
+    }
 }

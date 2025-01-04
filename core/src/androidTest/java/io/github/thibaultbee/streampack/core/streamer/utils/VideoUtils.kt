@@ -9,6 +9,7 @@ import android.media.MediaMetadataRetriever.METADATA_KEY_SAMPLERATE
 import android.media.MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT
 import android.media.MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH
 import android.net.Uri
+import androidx.core.net.toFile
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isDevicePortrait
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
@@ -17,9 +18,26 @@ import org.junit.Assert.assertTrue
 import java.io.File
 
 object VideoUtils {
+
     fun verifyFile(file: File) {
-        assertTrue(file.exists())
-        assertTrue(file.length() > 0)
+        assertTrue("File $file does not exist", file.exists())
+        assertTrue("File $file is empty", file.length() > 0)
+    }
+
+    fun verifyFile(
+        context: Context,
+        uri: Uri,
+        verifyVideo: Boolean,
+        audioConfig: AudioConfig?,
+        videoConfig: VideoConfig?,
+    ) {
+        // Check files
+        verifyFile(uri.toFile())
+
+        // Check video metadata
+        if (verifyVideo) {
+            verify(context, uri, audioConfig, videoConfig)
+        }
     }
 
     fun verify(
