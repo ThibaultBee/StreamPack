@@ -25,8 +25,7 @@
   The `CompositeEndpoint` is composed of a `ISink`.
 
 * `Streamer`:
-  A class that represent a audio and/or video live streaming pipeline. It manages sources, encoders,
-  muxers, endpoints,... and have lot of tools. They are the most important class for users.
+  A class that represent a audio and/or video live streaming pipeline.
   Unless explicitly stated, the `Endpoint` is inferred from the `MediaDescriptor` object thanks to
   the `DynamicEndpoint`.
 
@@ -34,6 +33,13 @@
   Could be a `Source`, `Encoder`, `Muxer`, or `Endpoint`. They implement the `Streamable<T>` and
   they
   might have a public interface to access specific info.
+
+* `Pipeline output`:
+  An output of the `Streamer pipeline`. The `EncodingPipelineOutput` manages audio and video
+  encoders, the `Muxer` and the `Endpoint`.
+
+* `Streamer pipeline`:
+  A class that manages one audio and one video `Source` and multiple `Pipeline outputs`.
 
 * `Info`:
   A class that provides a set of methods to help to `streamer` configuration such as supported

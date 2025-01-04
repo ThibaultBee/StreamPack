@@ -99,43 +99,43 @@ class MainActivity : AppCompatActivity() {
         stopService()
     }
 
-    private val requestAudioPermissionsLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted ->
-            if (!isGranted) {
-                showPermissionAlertDialog(this) { this.finish() }
-            } else {
-                getContent.launch(
-                    ScreenRecorderSingleStreamer.createScreenRecorderIntent(
-                        this
-                    )
+    private val requestAudioPermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) {
+            showPermissionAlertDialog(this) { this.finish() }
+        } else {
+            getContent.launch(
+                ScreenRecorderSingleStreamer.createScreenRecorderIntent(
+                    this
                 )
-            }
+            )
         }
+    }
 
     private var getContent =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (streamer != null) {
-                startStream(requireNotNull(streamer))
+                lifecycleScope.launch {
+                    startStream(requireNotNull(streamer))
+                }
             } else {
-                connection = DefaultScreenRecorderService.launch(
-                    this,
+                connection = DefaultScreenRecorderService.launch(this,
                     DemoScreenRecorderService::class.java,
                     { streamer ->
                         streamer.activityResult = result
-                        try {
-                            configure(streamer)
-                        } catch (t: Throwable) {
-                            this@MainActivity.showAlertDialog(
-                                this@MainActivity,
-                                "Error",
-                                t.message ?: "Unknown error"
-                            )
-                            binding.liveButton.isChecked = false
-                            Log.e(TAG, "Error while starting streamer", t)
+                        lifecycleScope.launch {
+                            try {
+                                configure(streamer)
+                            } catch (t: Throwable) {
+                                this@MainActivity.showAlertDialog(
+                                    this@MainActivity, "Error", t.message ?: "Unknown error"
+                                )
+                                binding.liveButton.isChecked = false
+                                Log.e(TAG, "Error while starting streamer", t)
+                            }
+                            startStream(streamer)
                         }
-                        startStream(streamer)
                         this.streamer = streamer
                     },
                     {
@@ -147,19 +147,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-    private fun configure(streamer: ScreenRecorderSingleStreamer) {
+    private suspend fun configure(streamer: ScreenRecorderSingleStreamer) {
         val deviceRefreshRate =
             (this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager).getDisplay(
                 Display.DEFAULT_DISPLAY
             ).refreshRate.toInt()
-        val fps =
-            if (MediaCodecHelper.Video.getFramerateRange(configuration.video.encoder)
-                    .contains(deviceRefreshRate)
-            ) {
-                deviceRefreshRate
-            } else {
-                30
-            }
+        val fps = if (MediaCodecHelper.Video.getFramerateRange(configuration.video.encoder)
+                .contains(deviceRefreshRate)
+        ) {
+            deviceRefreshRate
+        } else {
+            30
+        }
 
         val videoConfig = VideoConfig(
             mimeType = configuration.video.encoder,
@@ -181,8 +180,7 @@ class MainActivity : AppCompatActivity() {
             )
 
             if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.RECORD_AUDIO
+                    this, Manifest.permission.RECORD_AUDIO
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 lifecycleScope.launch {
@@ -194,29 +192,25 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun startStream(streamer: ScreenRecorderSingleStreamer) {
+    private suspend fun startStream(streamer: ScreenRecorderSingleStreamer) {
         try {
-            runBlocking {
-                val descriptor = when (configuration.endpoint.type) {
-                    EndpointType.SRT -> SrtMediaDescriptor(
-                        configuration.endpoint.srt.ip,
-                        configuration.endpoint.srt.port,
-                        configuration.endpoint.srt.streamID,
-                        configuration.endpoint.srt.passPhrase,
-                        serviceInfo = tsServiceInfo
-                    )
+            val descriptor = when (configuration.endpoint.type) {
+                EndpointType.SRT -> SrtMediaDescriptor(
+                    configuration.endpoint.srt.ip,
+                    configuration.endpoint.srt.port,
+                    configuration.endpoint.srt.streamID,
+                    configuration.endpoint.srt.passPhrase,
+                    serviceInfo = tsServiceInfo
+                )
 
-                    EndpointType.RTMP -> UriMediaDescriptor(Uri.parse(configuration.endpoint.rtmp.url))
-                }
-
-                streamer.startStream(descriptor)
+                EndpointType.RTMP -> UriMediaDescriptor(Uri.parse(configuration.endpoint.rtmp.url))
             }
+
+            streamer.startStream(descriptor)
             moveTaskToBack(true)
         } catch (t: Throwable) {
             this.showAlertDialog(
-                this,
-                "Error",
-                t.message ?: "Unknown error"
+                this, "Error", t.message ?: "Unknown error"
             )
             binding.liveButton.isChecked = false
             Log.e(TAG, "Error while starting streamer", t)
@@ -254,19 +248,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showAlertDialog(
-        context: Context,
-        title: String,
-        message: String,
-        afterPositiveButton: () -> Unit = {}
+        context: Context, title: String, message: String, afterPositiveButton: () -> Unit = {}
     ) {
-        AlertDialog.Builder(context)
-            .setTitle(title)
-            .setMessage(message)
+        AlertDialog.Builder(context).setTitle(title).setMessage(message)
             .setPositiveButton(android.R.string.ok) { dialogInterface: DialogInterface, _: Int ->
                 dialogInterface.dismiss()
                 afterPositiveButton()
-            }
-            .show()
+            }.show()
     }
 
     private fun showAlertDialog(
@@ -275,26 +263,18 @@ class MainActivity : AppCompatActivity() {
         messageResourceId: Int,
         afterPositiveButton: () -> Unit = {}
     ) {
-        AlertDialog.Builder(context)
-            .setTitle(titleResourceId)
-            .setMessage(messageResourceId)
+        AlertDialog.Builder(context).setTitle(titleResourceId).setMessage(messageResourceId)
             .setPositiveButton(android.R.string.ok) { dialogInterface: DialogInterface, _: Int ->
                 dialogInterface.dismiss()
                 afterPositiveButton()
-            }
-            .show()
+            }.show()
     }
 
     private fun showPermissionAlertDialog(
-        context: Context,
-        afterPositiveButton: () -> Unit = {}
-    ) =
-        showAlertDialog(
-            context,
-            R.string.permission,
-            R.string.permission_not_granted,
-            afterPositiveButton
-        )
+        context: Context, afterPositiveButton: () -> Unit = {}
+    ) = showAlertDialog(
+        context, R.string.permission, R.string.permission_not_granted, afterPositiveButton
+    )
 
     companion object {
         private const val TAG = "MainActivity"

@@ -42,7 +42,7 @@ import kotlinx.coroutines.sync.withLock
  *
  * @param context application context
  * @param enableMicrophone [Boolean.true] to capture audio
- * @param internalEndpoint the [IEndpointInternal] implementation
+ * @param internalEndpoint the [IEndpointInternal] implementation. By default, it is a [DynamicEndpoint].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 fun CameraSingleStreamer(
@@ -62,7 +62,7 @@ fun CameraSingleStreamer(
  *
  * @param context application context
  * @param audioSourceInternal the audio source implementation
- * @param internalEndpoint the [IEndpointInternal] implementation
+ * @param internalEndpoint the [IEndpointInternal] implementation. By default, it is a [DynamicEndpoint].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 open class CameraSingleStreamer(
@@ -122,13 +122,7 @@ open class CameraSingleStreamer(
      *
      * @param cameraId The camera id to use
      */
-    override suspend fun setCameraId(cameraId: String) {
-        cameraSource.setCameraId(cameraId)
-        // If config has not been set yet, [configure] will update transformation later.
-        if (videoConfig != null) {
-            updateTransformation()
-        }
-    }
+    override suspend fun setCameraId(cameraId: String) = cameraSource.setCameraId(cameraId)
 
     /**
      * Gets configuration information.

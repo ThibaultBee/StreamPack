@@ -118,6 +118,7 @@ There are 2 types of streamers:
 val streamer = CameraSingleStreamer(context = requireContext())
 // For callback based
 // val streamer = CameraCallbackSingleStreamer(context = requireContext())
+// To have multiple independent outputs (like for live and record), use a `CameraDualStreamer` or even the `StreamerPipeline`.
 ```
 
 4. Configures audio and video settings
@@ -349,7 +350,7 @@ You can also create your own `targetRotation` provider.
 - Additional documentations are available in the `docs` directory:
     - [Live and record simultaneously](docs/LiveAndRecordSimultaneously.md)
     - [Streamers](docs/Streamers.md)
-    - [Streamer elements](docs/StreamerElements.md)
+    - [Streamer elements](docs/AdvancedStreamer)
 
 ## Demos
 
@@ -473,7 +474,7 @@ Moreover you can retrieve exposure range and step with:
 (streamer.videoSource as ICameraSource).settings.exposure.availableCompensationStep
 ```
 
-See the [docs/StreamerElements.md](docs/StreamerElements.md#element-specific-configuration) for more
+See the [docs/AdvancedStreamer.md](docs/AdvancedStreamer#element-specific-configuration) for more
 information.
 
 ### Android versions

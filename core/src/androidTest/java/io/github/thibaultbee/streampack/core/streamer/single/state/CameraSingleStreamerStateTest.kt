@@ -19,6 +19,9 @@ import androidx.core.net.toUri
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.utils.FileUtils
+import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreamerConfigUtils.audioConfig
+import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreamerConfigUtils.videoConfig
 import io.github.thibaultbee.streampack.core.streamer.surface.SurfaceUtils
 import io.github.thibaultbee.streampack.core.streamer.surface.SurfaceViewTestActivity
 import io.github.thibaultbee.streampack.core.streamers.interfaces.startPreview
@@ -26,9 +29,6 @@ import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
-import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils.audioConfig
-import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils.videoConfig
-import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.utils
+package io.github.thibaultbee.streampack.core.streamer.single.utils
 
 import android.media.MediaFormat
 import android.util.Size
@@ -24,13 +24,13 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.MediaContainerTy
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 
-object ConfigurationUtils {
+object SingleStreamerConfigUtils {
     /**
      * Creates a valid audio configuration for test
      *
-     * @return a [AudioCodecConfig] for test
+     * @return a [AudioConfig] for test
      */
-    fun defaultAudioConfig() = AudioCodecConfig()
+    fun defaultAudioConfig() = AudioConfig()
 
     /**
      * Creates an audio configuration from a [MediaDescriptor] for test
@@ -46,18 +46,18 @@ object ConfigurationUtils {
     /**
      * Creates a valid video configuration for test
      *
-     * @return a [VideoCodecConfig] for test
+     * @return a [VideoConfig] for test
      */
-    fun defaultVideoConfig() = VideoCodecConfig(
-        resolution = Size(640, 360)
+    fun defaultVideoConfig(resolution: Size = Size(640, 360)) = VideoConfig(
+        resolution = resolution
     )
 
     /**
      * Creates an video configuration from a [MediaDescriptor] for test
      */
-    fun videoConfig(descriptor: MediaDescriptor): VideoConfig {
+    fun videoConfig(descriptor: MediaDescriptor, resolution: Size = Size(640, 360)): VideoConfig {
         return if (descriptor.type.containerType == MediaContainerType.WEBM) {
-            VideoCodecConfig(mimeType = MediaFormat.MIMETYPE_VIDEO_VP9)
+            VideoCodecConfig(mimeType = MediaFormat.MIMETYPE_VIDEO_VP9, resolution = resolution)
         } else {
             defaultVideoConfig()
         }

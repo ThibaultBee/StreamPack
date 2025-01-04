@@ -4,7 +4,7 @@ Starting from version 3.0.0, you can now live stream and record at the same time
 to do it:
 
 - With the dual endpoint/single-encoder: `DualEndpoint`
-- With the dual streamer/multi-encoder (not available yet).
+- With the dual streamer/multi-encoder: `DualStreamer`
 
 ## Dual endpoint
 
@@ -14,7 +14,7 @@ recording.
 
 ### Advantages
 
-As only 2 encoders (1 for video and 1 for audio) are used, it uses less hardware resources.s
+As only 2 encoders (1 for video and 1 for audio) are used, it uses less hardware resources.
 
 ### Implementation
 
@@ -34,4 +34,21 @@ val streamer = CameraSingleStreamer(
     context,
     internalEndpoint = dualEndpoint
 )
+```
+
+## Dual streamer
+
+The `DualStreamer` is a `Streamer` that streams to 2 independent outputs.
+
+### Advantages
+
+As the 2 outputs are independent, you can use different settings for each output. Like different
+codecs, bitrate,...
+
+### Implementation
+
+Use a `DualStreamer`:
+
+```kotlin
+val streamer = DualStreamer(context)
 ```

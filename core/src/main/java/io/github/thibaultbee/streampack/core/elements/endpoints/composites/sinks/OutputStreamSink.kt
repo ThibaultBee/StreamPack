@@ -21,6 +21,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.toByteArr
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import java.io.OutputStream
 import kotlin.coroutines.CoroutineContext
@@ -33,7 +34,7 @@ abstract class OutputStreamSink(private val coroutineContext: CoroutineContext =
     protected var outputStream: OutputStream? = null
 
     private val _isOpenFlow = MutableStateFlow(false)
-    override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow
+    override val isOpenFlow = _isOpenFlow.asStateFlow()
 
     /**
      * Open an [OutputStream] to write data

@@ -19,10 +19,10 @@ import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfi
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.utils.Scheduler
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioPipelineOutput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoPipelineOutput
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
-import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.ICoroutineSingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
 
 /**
  * A [BitrateRegulatorController] implementation that triggers [IBitrateRegulator.update] every [delayTimeInMs].
@@ -83,24 +83,24 @@ open class DefaultBitrateRegulatorController(
         private val bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
         private val delayTimeInMs: Long = 500
     ) : BitrateRegulatorController.Factory() {
-        override fun newBitrateRegulatorController(streamer: ICoroutineSingleStreamer): BitrateRegulatorController {
-            val audioEncoder = if (streamer is IAudioSingleStreamer) {
-                streamer.audioEncoder
+        override fun newBitrateRegulatorController(pipelineOutput: IEncodingPipelineOutput): BitrateRegulatorController {
+            require(pipelineOutput is IConfigurableVideoPipelineOutput) {
+                "Pipeline output must be an video encoding output"
+            }
+
+            val videoEncoder = requireNotNull(pipelineOutput.videoEncoder) {
+                "Video encoder must be set"
+            }
+
+            val audioEncoder = if (pipelineOutput is IConfigurableAudioPipelineOutput) {
+                pipelineOutput.audioEncoder
             } else {
                 null
             }
-
-            require(streamer is IVideoSingleStreamer) {
-                "Streamer must be a video single streamer"
-            }
-            val videoEncoder = requireNotNull(streamer.videoEncoder) {
-                "Video encoder must not be null"
-            }
-            
             return DefaultBitrateRegulatorController(
                 audioEncoder,
                 videoEncoder,
-                streamer.endpoint,
+                pipelineOutput.endpoint,
                 bitrateRegulatorFactory,
                 bitrateRegulatorConfig,
                 delayTimeInMs

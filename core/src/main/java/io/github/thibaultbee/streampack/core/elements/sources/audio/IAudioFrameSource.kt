@@ -23,8 +23,8 @@ interface IAudioFrameSource {
     /**
      * Gets an audio frame from the source.
      *
-     * @param buffer buffer where to write data. Must be set as buffer of returned Frame
+     * @param inputBuffer the buffer where to write data. Put it in the frame when it is not null.
      * @return frame with correct infos (at least buffer, mime type and pts)
      */
-    fun getAudioFrame(buffer: ByteBuffer): Frame
+    fun getAudioFrame(inputBuffer: ByteBuffer?): Frame
 }

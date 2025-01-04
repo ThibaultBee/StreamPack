@@ -15,10 +15,6 @@
  */
 package io.github.thibaultbee.streampack.core.streamer.single.file
 
-import android.media.MediaFormat.MIMETYPE_AUDIO_AAC
-import android.media.MediaFormat.MIMETYPE_AUDIO_OPUS
-import android.media.MediaFormat.MIMETYPE_VIDEO_AVC
-import android.media.MediaFormat.MIMETYPE_VIDEO_VP9
 import android.util.Size
 import androidx.core.net.toFile
 import androidx.core.net.toUri
@@ -29,14 +25,15 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInterna
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.Mp4Muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
+import io.github.thibaultbee.streampack.core.utils.FileUtils
+import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreamerConfigUtils
 import io.github.thibaultbee.streampack.core.streamer.utils.StreamerUtils
 import io.github.thibaultbee.streampack.core.streamer.utils.VideoUtils
-import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
+import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
-import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -57,44 +54,23 @@ class CameraSingleStreamerFileTest(
             CameraSingleStreamer(context)
         }
     }
-    private val info by lazy { streamer.getInfo(descriptor) }
 
-    private val videoCodec by lazy {
-        if (info.video.supportedEncoders.contains(MIMETYPE_VIDEO_AVC)) {
-            MIMETYPE_VIDEO_AVC
-        } else if (info.video.supportedEncoders.contains(MIMETYPE_VIDEO_VP9)) {
-            MIMETYPE_VIDEO_VP9
-        } else {
-            throw IllegalArgumentException("No supported video codec")
-        }
+    private val audioConfig by lazy {
+        SingleStreamerConfigUtils.audioConfig(descriptor)
+    }
+    private val videoConfig by lazy {
+        SingleStreamerConfigUtils.videoConfig(descriptor, Size(VIDEO_WIDTH, VIDEO_HEIGHT))
     }
 
-    private val audioCodec by lazy {
-        if (info.audio.supportedEncoders.contains(MIMETYPE_AUDIO_AAC)) {
-            MIMETYPE_AUDIO_AAC
-        } else if (info.audio.supportedEncoders.contains(MIMETYPE_AUDIO_OPUS)) {
-            MIMETYPE_AUDIO_OPUS
-        } else {
-            throw IllegalArgumentException("No supported audio codec")
-        }
-    }
-
-    private val audioSampleRate by lazy {
-        if (info.audio.getSupportedSampleRates(audioCodec).contains(44_100)) {
-            44100
-        } else if (info.audio.getSupportedSampleRates(audioCodec).contains(48_000)) {
-            48_000
-        } else {
-            throw IllegalArgumentException("No supported audio sample rate for $audioCodec")
-        }
+    @After
+    fun tearDown() {
+        streamer.releaseBlocking()
+        // Delete file
+        descriptor.uri.toFile().delete()
     }
 
     @Test
-    fun writeToFile() = runTest(timeout = 200.seconds) {
-        val audioConfig = AudioConfig(mimeType = audioCodec, sampleRate = audioSampleRate)
-        val videoConfig =
-            VideoConfig(mimeType = videoCodec, resolution = Size(VIDEO_WIDTH, VIDEO_HEIGHT))
-
+    fun writeToFile() = runTest(timeout = TEST_TIMEOUT_MS.milliseconds) {
         // Run stream
         streamer.setConfig(
             audioConfig,
@@ -102,7 +78,7 @@ class CameraSingleStreamerFileTest(
         )
 
         // Run stream
-        StreamerUtils.runStream(
+        StreamerUtils.runSingleStream(
             streamer,
             descriptor,
             STREAM_DURATION_MS.milliseconds,
@@ -121,6 +97,7 @@ class CameraSingleStreamerFileTest(
     }
 
     companion object {
+        private const val TEST_TIMEOUT_MS = 60_000L
         private const val STREAM_DURATION_MS = 30_000L
         private const val STREAM_POLLING_MS = 1_000L
 

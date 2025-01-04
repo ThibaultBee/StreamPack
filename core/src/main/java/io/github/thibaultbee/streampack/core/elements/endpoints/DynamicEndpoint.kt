@@ -32,6 +32,7 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 
@@ -45,7 +46,7 @@ open class DynamicEndpoint(
 ) : IEndpointInternal {
     // Current endpoint
     private var _endpointFlow: MutableStateFlow<IEndpointInternal?> = MutableStateFlow(null)
-    private val endpointFlow: StateFlow<IEndpointInternal?> = _endpointFlow
+    private val endpointFlow = _endpointFlow.asStateFlow()
 
     private val _endpoint: IEndpointInternal?
         get() = endpointFlow.value

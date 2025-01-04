@@ -6,7 +6,8 @@ The `Streamer` is a class that streams audio and video from a source to an endpo
 responsible for controlling the audio and video sources, encoders, and endpoint.
 
 StreamPack comes with a few streamers that are ready to use and can be customized. Also, it worth
-noting that you can create your own streamer by extending the `SingleStreamer` class.
+noting that you can create your own streamer by extending the `SingleStreamer` or `DualStreamer`
+class.
 
 ## Coroutine or callback streamers
 
@@ -75,4 +76,8 @@ val streamer = CameraSingleStreamer(
 ### Implementing your own single streamer
 
 `Streamers` implement the `ICoroutineSingleStreamer` interface.
+
+## Dual streamers
+
+The `DualStreamer` is a `Streamer` that streams to 2 independent outputs.
 

@@ -19,6 +19,7 @@ import io.github.thibaultbee.streampack.core.elements.interfaces.Configurable
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamable
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
+import kotlinx.coroutines.flow.StateFlow
 
 interface IVideoSourceInternal : IVideoSource,
     SuspendStreamable, Configurable<VideoSourceConfig>, Releasable {
@@ -26,7 +27,12 @@ interface IVideoSourceInternal : IVideoSource,
      * Orientation provider of the capture source.
      * It is used to orientate the frame according to the source orientation.
      */
-    val infoProvider: ISourceInfoProvider
+    val infoProviderFlow: StateFlow<ISourceInfoProvider>
+
+    /**
+     * Flow of the last streaming state.
+     */
+    val isStreamingFlow: StateFlow<Boolean>
 }
 
 interface IVideoSource

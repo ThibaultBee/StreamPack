@@ -27,13 +27,15 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.utils.ext
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.toRectF
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
+import io.github.thibaultbee.streampack.core.logger.Logger
 
 class SurfaceOutput(
     surface: Surface,
     resolution: Size,
+    isStreaming: () -> Boolean,
     private val transformationInfo: TransformationInfo
 ) :
-    AbstractSurfaceOutput(surface, resolution) {
+    AbstractSurfaceOutput(surface, resolution, isStreaming) {
 
     private val infoProvider: ISourceInfoProvider
         get() = transformationInfo.infoProvider

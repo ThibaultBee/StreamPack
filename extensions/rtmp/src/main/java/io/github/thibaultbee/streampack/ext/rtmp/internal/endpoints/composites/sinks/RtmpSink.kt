@@ -27,6 +27,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import video.api.rtmpdroid.Rtmp
 import java.util.concurrent.Executors
@@ -43,7 +44,7 @@ class RtmpSink(
     private val supportedVideoCodecs = mutableListOf<String>()
 
     private val _isOpenFlow = MutableStateFlow(false)
-    override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow
+    override val isOpenFlow = _isOpenFlow.asStateFlow()
 
     override fun configure(config: SinkConfiguration) {
         val videoConfig = config.streamConfigs.firstOrNull { it is VideoCodecConfig }

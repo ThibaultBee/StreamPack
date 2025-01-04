@@ -18,14 +18,10 @@ package io.github.thibaultbee.streampack.core.elements.processing.video.source
 import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 
-abstract class AbstractSourceInfoProvider : ISourceInfoProvider {
-    protected val listeners = mutableSetOf<ISourceInfoListener>()
-
-    override val isMirror = false
-
-    @IntRange(from = 0, to = 359)
-    override val rotationDegrees = 0
-
+open class DefaultSourceInfoProvider(
+    override val isMirror: Boolean = false,
+    @IntRange(from = 0, to = 359) override val rotationDegrees: Int = 0
+) : ISourceInfoProvider {
     @IntRange(from = 0, to = 359)
     override fun getRelativeRotationDegrees(
         @RotationValue targetRotation: Int, requiredMirroring: Boolean
@@ -33,15 +29,7 @@ abstract class AbstractSourceInfoProvider : ISourceInfoProvider {
         return 0
     }
 
-    override fun addListener(listener: ISourceInfoListener) {
-        listeners.add(listener)
-    }
-
-    override fun removeListener(listener: ISourceInfoListener) {
-        listeners.remove(listener)
-    }
-
-    override fun removeAllListeners() {
-        listeners.clear()
+    override fun toString(): String {
+        return "DefaultSourceInfoProvider(isMirror=$isMirror, rotationDegrees=$rotationDegrees)"
     }
 }

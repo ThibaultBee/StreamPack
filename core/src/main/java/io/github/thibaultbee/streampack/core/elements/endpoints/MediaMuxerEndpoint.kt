@@ -28,7 +28,7 @@ import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.security.InvalidParameterException
@@ -62,7 +62,7 @@ class MediaMuxerEndpoint(
         get() = TODO("Not yet implemented")
 
     private val _isOpenFlow = MutableStateFlow(false)
-    override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow
+    override val isOpenFlow = _isOpenFlow.asStateFlow()
 
     override suspend fun open(descriptor: MediaDescriptor) {
         if (isOpenFlow.value) {

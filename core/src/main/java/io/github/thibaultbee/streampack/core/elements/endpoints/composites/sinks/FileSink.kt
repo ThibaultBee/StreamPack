@@ -23,6 +23,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.toByteArr
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import java.io.RandomAccessFile
 import kotlin.coroutines.CoroutineContext
@@ -33,7 +34,7 @@ class FileSink(private val coroutineContext: CoroutineContext = Dispatchers.IO) 
     private var file: RandomAccessFile? = null
 
     private val _isOpenFlow = MutableStateFlow(false)
-    override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow
+    override val isOpenFlow = _isOpenFlow.asStateFlow()
 
     override suspend fun openImpl(mediaDescriptor: MediaDescriptor) {
         file = openLocalFile(mediaDescriptor.uri)

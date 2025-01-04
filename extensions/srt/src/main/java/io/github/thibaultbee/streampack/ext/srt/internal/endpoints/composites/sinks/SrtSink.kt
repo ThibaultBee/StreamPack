@@ -33,6 +33,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
 
 class SrtSink : AbstractSink() {
@@ -52,7 +53,7 @@ class SrtSink : AbstractSink() {
             ?: throw IllegalStateException("Socket is not initialized")
 
     private val _isOpenFlow = MutableStateFlow(false)
-    override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow
+    override val isOpenFlow = _isOpenFlow.asStateFlow()
 
     override fun configure(config: SinkConfiguration) {
         bitrate = config.streamConfigs.sumOf { it.startBitrate.toLong() }

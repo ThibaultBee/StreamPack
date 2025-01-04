@@ -38,25 +38,17 @@ import io.github.thibaultbee.streampack.app.utils.ProfileLevelDisplay
 import io.github.thibaultbee.streampack.app.utils.StreamerInfoFactory
 import io.github.thibaultbee.streampack.app.utils.dataStore
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecHelper
-import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
-import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
-import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.cameras
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.defaultCameraId
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.isFrameRateSupported
+import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
+import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
+import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import java.io.IOException
 
 class SettingsFragment : PreferenceFragmentCompat() {
     private lateinit var streamerInfo: CameraStreamerConfigurationInfo
     private val profileLevelDisplay by lazy { ProfileLevelDisplay(requireContext()) }
-
-    private val videoEnablePreference: SwitchPreference by lazy {
-        this.findPreference(getString(R.string.video_enable_key))!!
-    }
-
-    private val videoSettingsCategory: PreferenceCategory by lazy {
-        this.findPreference(getString(R.string.video_settings_key))!!
-    }
 
     private val videoEncoderListPreference: ListPreference by lazy {
         this.findPreference(getString(R.string.video_encoder_key))!!
@@ -198,22 +190,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
             true
         }
 
-        if (videoEncoderListPreference.value == null) {
-            // Audio only container
-            videoSettingsCategory.isVisible = false
-            videoEnablePreference.isChecked = false
-        } else {
-            loadVideoSettings(videoEncoderListPreference.value)
-        }
+        loadVideoSettings(videoEncoderListPreference.value)
     }
 
     private fun loadVideoSettings(encoder: String) {
-        videoSettingsCategory.isVisible = videoEnablePreference.isChecked
-        videoEnablePreference.setOnPreferenceChangeListener { _, newValue ->
-            videoSettingsCategory.isVisible = newValue as Boolean
-            true
-        }
-
         // Inflates video resolutions
         streamerInfo.video.getSupportedResolutions(
             requireContext(), encoder

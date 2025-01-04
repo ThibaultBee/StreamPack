@@ -24,7 +24,8 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLU
 
 open class AbstractSurfaceOutput(
     override val surface: Surface,
-    final override val resolution: Size
+    final override val resolution: Size,
+    override val isStreaming: () -> Boolean
 ) : ISurfaceOutput {
     protected val lock = Any()
     protected var isClosed = false
@@ -51,6 +52,7 @@ interface ISurfaceOutput {
     val surface: Surface
     val cropRect: Rect
     val resolution: Size
+    val isStreaming: () -> Boolean
 
     fun updateTransformMatrix(output: FloatArray, input: FloatArray)
 

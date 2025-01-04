@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.streamer.single.state
 
+import android.util.Log
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
@@ -46,8 +47,11 @@ abstract class SingleStreamerStateTest(
             audioConfig, videoConfig
         )
         streamer.startStream(descriptor)
+        Log.e("SingleStreamerStateTest", ">>>> stopStream")
         streamer.stopStream()
+        Log.e("SingleStreamerStateTest", ">>> release")
         streamer.release()
+        Log.e("SingleStreamerStateTest", ">>>> out")
     }
 
     // Single method calls

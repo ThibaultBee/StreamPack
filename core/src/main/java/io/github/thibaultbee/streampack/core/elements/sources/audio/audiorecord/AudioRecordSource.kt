@@ -39,6 +39,7 @@ import java.util.UUID
  */
 sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
     private var audioRecord: AudioRecord? = null
+    private var bufferSize: Int? = null
 
     private var processor: EffectProcessor? = null
     private var pendingAudioEffects = mutableListOf<UUID>()
@@ -68,23 +69,15 @@ sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
             }
         }
 
-        val bufferSize = AudioRecord.getMinBufferSize(
-            config.sampleRate,
-            config.channelConfig,
-            config.byteFormat
-        )
-
-        if (bufferSize <= 0) {
-            throw IllegalArgumentException(audioRecordErrorToString(bufferSize))
-        }
+        bufferSize = getMinBufferSize(config)
 
         /**
          * Initialized mutedByteArray with bufferSize. The read buffer length may be different
          * from bufferSize. In this case, mutedByteArray will be resized.
          */
-        mutedByteArray = ByteArray(bufferSize)
+        mutedByteArray = ByteArray(bufferSize!!)
 
-        audioRecord = buildAudioRecord(config, bufferSize).also {
+        audioRecord = buildAudioRecord(config, bufferSize!!).also {
             val previousEffects = processor?.getAll() ?: emptyList()
             processor?.clear()
 
@@ -164,8 +157,11 @@ sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
         return timestamp
     }
 
-    override fun getAudioFrame(buffer: ByteBuffer): Frame {
+    override fun getAudioFrame(inputBuffer: ByteBuffer?): Frame {
         val audioRecord = requireNotNull(audioRecord)
+
+        val buffer = inputBuffer ?: ByteBuffer.allocateDirect(bufferSize!!)
+
         val length = audioRecord.read(buffer, buffer.remaining())
         if (length >= 0) {
             return if (isMuted) {
@@ -191,17 +187,10 @@ sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
         }
     }
 
-    private fun audioRecordErrorToString(audioRecordError: Int) = when (audioRecordError) {
-        AudioRecord.ERROR_INVALID_OPERATION -> "AudioRecord returns an invalid operation error"
-        AudioRecord.ERROR_BAD_VALUE -> "AudioRecord returns a bad value error"
-        AudioRecord.ERROR_DEAD_OBJECT -> "AudioRecord returns a dead object error"
-        else -> "Unknown audio record error: $audioRecordError"
-    }
-
     /**
      * Adds and enables an effect to the audio source.
      *
-     * Get supported effects with [getSupportedEffectTypes].
+     * Get supported effects with [availableEffect].
      */
     override fun addEffect(effectType: UUID): Boolean {
         require(isValidUUID(effectType)) { "Unsupported effect type: $effectType" }
@@ -243,6 +232,32 @@ sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
                 MediaFormat.MIMETYPE_AUDIO_RAW
             )
         }
+
+        /**
+         * Gets minimum buffer size for audio capture.
+         */
+        private fun getMinBufferSize(config: AudioSourceConfig): Int {
+            val bufferSize = AudioRecord.getMinBufferSize(
+                config.sampleRate,
+                config.channelConfig,
+                config.byteFormat
+            )
+            if (bufferSize <= 0) {
+                throw IllegalArgumentException(audioRecordErrorToString(bufferSize))
+            }
+            return bufferSize
+        }
+
+        /**
+         * Converts audio record error to string.
+         */
+        private fun audioRecordErrorToString(audioRecordError: Int) = when (audioRecordError) {
+            AudioRecord.ERROR_INVALID_OPERATION -> "AudioRecord returns an invalid operation error"
+            AudioRecord.ERROR_BAD_VALUE -> "AudioRecord returns a bad value error"
+            AudioRecord.ERROR_DEAD_OBJECT -> "AudioRecord returns a dead object error"
+            else -> "Unknown audio record error: $audioRecordError"
+        }
+
 
         /**
          * Get available effects.
