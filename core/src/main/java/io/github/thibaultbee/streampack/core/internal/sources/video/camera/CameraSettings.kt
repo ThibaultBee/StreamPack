@@ -954,7 +954,7 @@ class FocusMetering(
         disableAutoCancel()
 
         cancelAfAeTrigger()
-        cameraController.updateRepeatingSession()
+        cameraController.setRepeatingSession()
     }
 
     companion object {

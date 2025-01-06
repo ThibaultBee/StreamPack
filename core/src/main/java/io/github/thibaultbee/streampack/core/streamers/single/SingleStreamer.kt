@@ -474,8 +474,7 @@ open class SingleStreamer(
         videoSource: IVideoSourceInternal,
         @RotationValue targetRotation: Int
     ): IEncoderInternal {
-        val rotatedVideoConfig =
-            videoConfig.rotateFromNaturalOrientation(context, targetRotation)
+        val rotatedVideoConfig = videoConfig.rotateFromNaturalOrientation(context, targetRotation)
 
         // Release codec instance
         videoEncoderInternal?.let { encoder ->
@@ -677,14 +676,18 @@ open class SingleStreamer(
         // Sources
         audioSourceInternal?.release()
         val videoSource = videoSourceInternal
-        if (videoSource is ISurfaceSource) {
-            val outputSurface = videoSource.outputSurface
-            videoSourceInternal?.release()
+        val outputSurface = if (videoSource is ISurfaceSource) {
+            val surface = videoSource.outputSurface
             videoSource.outputSurface = null
-            outputSurface?.let {
-                surfaceProcessor?.removeInputSurface(it)
-            }
+            surface
+        } else {
+            null
         }
+        videoSourceInternal?.release()
+        outputSurface?.let {
+            surfaceProcessor?.removeInputSurface(it)
+        }
+
         surfaceProcessor?.release()
 
         // Encoders
@@ -704,16 +707,14 @@ open class SingleStreamer(
      */
     override fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) {
         bitrateRegulatorController?.stop()
-        bitrateRegulatorController =
-            controllerFactory.newBitrateRegulatorController(this).apply {
-                if (isStreaming.value) {
-                    this.start()
-                }
-                Logger.d(
-                    TAG,
-                    "Bitrate regulator controller added: ${this.javaClass.simpleName}"
-                )
+        bitrateRegulatorController = controllerFactory.newBitrateRegulatorController(this).apply {
+            if (isStreaming.value) {
+                this.start()
             }
+            Logger.d(
+                TAG, "Bitrate regulator controller added: ${this.javaClass.simpleName}"
+            )
+        }
 
     }
 

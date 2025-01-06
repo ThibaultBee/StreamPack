@@ -36,18 +36,37 @@ interface ICameraStreamer {
      * It is a shortcut for [ICameraSource.cameraId].
      */
     var cameraId: String
+}
+
+interface ICameraCoroutineStreamer : ICameraStreamer {
+    /**
+     * Sets a camera id.
+     *
+     * @param cameraId The camera id to use
+     */
+    suspend fun setCameraId(cameraId: String)
 
     /**
      * Sets a preview surface.
      *
      * @param surface The [Surface] used for camera preview
      */
-    fun setPreview(surface: Surface)
+    suspend fun setPreview(surface: Surface)
 
     /**
-     * Stops camera preview.
+     * Starts video preview.
      */
-    fun stopPreview()
+    suspend fun startPreview()
+
+    /**
+     * Starts video preview on [previewSurface].
+     */
+    suspend fun startPreview(previewSurface: Surface)
+
+    /**
+     * Stops video preview.
+     */
+    suspend fun stopPreview()
 }
 
 /**
@@ -55,47 +74,24 @@ interface ICameraStreamer {
  *
  * @param surfaceView The [SurfaceView] used for camera preview
  */
-fun ICameraStreamer.setPreview(surfaceView: SurfaceView) = setPreview(surfaceView.holder.surface)
+suspend fun ICameraCoroutineStreamer.setPreview(surfaceView: SurfaceView) =
+    setPreview(surfaceView.holder.surface)
 
 /**
  * Sets a preview surface holder.
  *
  * @param surfaceHolder The [SurfaceHolder] used for camera preview
  */
-fun ICameraStreamer.setPreview(surfaceHolder: SurfaceHolder) = setPreview(surfaceHolder.surface)
+suspend fun ICameraCoroutineStreamer.setPreview(surfaceHolder: SurfaceHolder) =
+    setPreview(surfaceHolder.surface)
 
 /**
  * Sets a preview surface.
  *
  * @param textureView The [TextureView] used for camera preview
  */
-fun ICameraStreamer.setPreview(textureView: TextureView) =
+suspend fun ICameraCoroutineStreamer.setPreview(textureView: TextureView) =
     setPreview(Surface(textureView.surfaceTexture))
-
-
-interface ICameraCoroutineStreamer : ICameraStreamer {
-    /**
-     * Starts audio and video capture.
-     */
-    @RequiresPermission(Manifest.permission.CAMERA)
-    suspend fun startPreview()
-}
-
-
-/**
- * Starts audio and video capture.
- * If you can prefer to call [ISingleStreamer.setAudioConfig] before starting preview.
- * It is a shortcut for [setPreview] and [startPreview].
- *
- * @param previewSurface The [Surface] used for camera preview
- *
- * @see [ICameraStreamer.stopPreview]
- */
-@RequiresPermission(Manifest.permission.CAMERA)
-suspend fun ICameraCoroutineStreamer.startPreview(previewSurface: Surface) {
-    setPreview(previewSurface)
-    startPreview()
-}
 
 /**
  * Starts audio and video capture.
@@ -104,7 +100,7 @@ suspend fun ICameraCoroutineStreamer.startPreview(previewSurface: Surface) {
  *
  * @param surfaceView The [SurfaceView] used for camera preview
  *
- * @see [ICameraStreamer.stopPreview]
+ * @see [ICameraCoroutineStreamer.stopPreview]
  */
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun ICameraCoroutineStreamer.startPreview(surfaceView: SurfaceView) =
@@ -117,7 +113,7 @@ suspend fun ICameraCoroutineStreamer.startPreview(surfaceView: SurfaceView) =
  *
  * @param surfaceHolder The [SurfaceHolder] used for camera preview
  *
- * @see [ICameraStreamer.stopPreview]
+ * @see [ICameraCoroutineStreamer.stopPreview]
  */
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun ICameraCoroutineStreamer.startPreview(surfaceHolder: SurfaceHolder) =
@@ -130,7 +126,7 @@ suspend fun ICameraCoroutineStreamer.startPreview(surfaceHolder: SurfaceHolder) 
  *
  * @param textureView The [TextureView] used for camera preview
  *
- * @see [ICameraStreamer.stopPreview]
+ * @see [ICameraCoroutineStreamer.stopPreview]
  */
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun ICameraCoroutineStreamer.startPreview(textureView: TextureView) =
@@ -139,26 +135,27 @@ suspend fun ICameraCoroutineStreamer.startPreview(textureView: TextureView) =
 
 interface ICameraCallbackStreamer : ICameraStreamer {
     /**
+     * Sets a preview surface.
+     *
+     * @param surface The [Surface] used for camera preview
+     */
+    fun setPreview(surface: Surface)
+
+    /**
      * Starts audio and video capture.
      */
     @RequiresPermission(Manifest.permission.CAMERA)
     fun startPreview()
-}
 
+    /**
+     * Stops video preview.
+     */
+    fun stopPreview()
 
-/**
- * Starts audio and video capture.
- * If you can prefer to call [SingleStreamer.setAudioConfig] before starting preview.
- * It is a shortcut for [setPreview] and [startPreview].
- *
- * @param previewSurface The [Surface] used for camera preview
- *
- * @see [ICameraStreamer.stopPreview]
- */
-@RequiresPermission(Manifest.permission.CAMERA)
-fun ICameraCallbackStreamer.startPreview(previewSurface: Surface) {
-    setPreview(previewSurface)
-    startPreview()
+    /**
+     * Starts video preview on [previewSurface].
+     */
+    fun startPreview(previewSurface: Surface)
 }
 
 /**
@@ -168,9 +165,8 @@ fun ICameraCallbackStreamer.startPreview(previewSurface: Surface) {
  *
  * @param surfaceView The [SurfaceView] used for camera preview
  *
- * @see [ICameraStreamer.stopPreview]
+ * @see [ICameraCallbackStreamer.stopPreview]
  */
-@RequiresPermission(Manifest.permission.CAMERA)
 fun ICameraCallbackStreamer.startPreview(surfaceView: SurfaceView) =
     startPreview(surfaceView.holder.surface)
 
@@ -181,9 +177,8 @@ fun ICameraCallbackStreamer.startPreview(surfaceView: SurfaceView) =
  *
  * @param surfaceHolder The [SurfaceHolder] used for camera preview
  *
- * @see [ICameraStreamer.stopPreview]
+ * @see [ICameraCallbackStreamer.stopPreview]
  */
-@RequiresPermission(Manifest.permission.CAMERA)
 fun ICameraCallbackStreamer.startPreview(surfaceHolder: SurfaceHolder) =
     startPreview(surfaceHolder.surface)
 
@@ -194,8 +189,7 @@ fun ICameraCallbackStreamer.startPreview(surfaceHolder: SurfaceHolder) =
  *
  * @param textureView The [TextureView] used for camera preview
  *
- * @see [ICameraStreamer.stopPreview]
+ * @see [ICameraCallbackStreamer.stopPreview]
  */
-@RequiresPermission(Manifest.permission.CAMERA)
 fun ICameraCallbackStreamer.startPreview(textureView: TextureView) =
     startPreview(Surface(textureView.surfaceTexture))

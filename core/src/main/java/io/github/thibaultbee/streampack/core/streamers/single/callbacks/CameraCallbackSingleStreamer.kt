@@ -12,10 +12,17 @@ import io.github.thibaultbee.streampack.core.internal.sources.video.camera.ICame
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.setPreview
+import io.github.thibaultbee.streampack.core.streamers.interfaces.startPreview
 import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.ICallbackSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.ICoroutineSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * Default implementation of [ICallbackSingleStreamer] that uses [ICoroutineSingleStreamer] to handle streamer logic.
@@ -32,6 +39,11 @@ class CameraCallbackSingleStreamer(
 ) : CallbackSingleStreamer(CameraSingleStreamer(context, enableMicrophone, internalEndpoint)),
     ICameraCallbackStreamer {
     private val cameraSource = (streamer as CameraSingleStreamer).videoSource as CameraSource
+
+    /**
+     * Mutex to avoid concurrent access to preview surface.
+     */
+    private val previewMutex = Mutex()
 
     /**
      * Gets the camera source.
@@ -57,7 +69,9 @@ class CameraCallbackSingleStreamer(
          */
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
-            videoSource.cameraId = value
+            runBlocking {
+                cameraSource.setCameraId(value)
+            }
         }
 
     /**
@@ -88,7 +102,9 @@ class CameraCallbackSingleStreamer(
      * Sets a preview surface.
      */
     override fun setPreview(surface: Surface) {
-        cameraSource.previewSurface = surface
+        runBlocking {
+            previewMutex.withLock { cameraSource.setPreviewSurface(surface) }
+        }
     }
 
     /**
@@ -101,15 +117,44 @@ class CameraCallbackSingleStreamer(
      * @see [stopPreview]
      * @see [setPreview]
      */
+    @RequiresPermission(Manifest.permission.CAMERA)
     override fun startPreview() {
         /**
          * Trying to set encoder surface to avoid a camera restart.
          */
         coroutineScope.launch {
-            try {
-                cameraSource.startPreview()
-            } catch (t: Throwable) {
-                listeners.forEach { it.onError(t) }
+            previewMutex.withLock {
+                try {
+                    cameraSource.startPreview()
+                } catch (t: Throwable) {
+                    listeners.forEach { it.onError(t) }
+                }
+            }
+        }
+    }
+
+    /**
+     * Starts audio and video capture.
+     * If you can prefer to call [SingleStreamer.setAudioConfig] before starting preview.
+     * It is a shortcut for [setPreview] and [startPreview].
+     *
+     * @param previewSurface The [Surface] used for camera preview
+     *
+     * @see [ICameraCoroutineStreamer.stopPreview]
+     */
+    @RequiresPermission(Manifest.permission.CAMERA)
+    override fun startPreview(previewSurface: Surface) {
+        /**
+         * Trying to set encoder surface to avoid a camera restart.
+         */
+        coroutineScope.launch {
+            previewMutex.withLock {
+                try {
+                    cameraSource.setPreviewSurface(previewSurface)
+                    cameraSource.startPreview()
+                } catch (t: Throwable) {
+                    listeners.forEach { it.onError(t) }
+                }
             }
         }
     }
@@ -121,7 +166,11 @@ class CameraCallbackSingleStreamer(
      * @see [startPreview]
      */
     override fun stopPreview() {
-        cameraSource.stopPreview()
+        runBlocking {
+            previewMutex.withLock {
+                cameraSource.stopPreview()
+            }
+        }
     }
 
     /**

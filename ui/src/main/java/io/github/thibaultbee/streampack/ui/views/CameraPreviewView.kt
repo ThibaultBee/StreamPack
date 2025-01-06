@@ -43,6 +43,7 @@ import io.github.thibaultbee.streampack.core.utils.extensions.getCameraCharacter
 import io.github.thibaultbee.streampack.ui.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.security.InvalidParameterException
 import java.util.concurrent.CancellationException
 
@@ -95,7 +96,7 @@ class CameraPreviewView @JvmOverloads constructor(
                 return
             }
             val isPreviewing = field?.videoSource?.isPreviewing
-            field?.stopPreview()
+            field?.let { runBlocking { stopPreview() } }
             field = value
             if (isPreviewing == true) {
                 startPreviewAsyncInternal(true)
@@ -163,7 +164,9 @@ class CameraPreviewView @JvmOverloads constructor(
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         if (w != oldw || h != oldh) {
             streamer?.let {
-                it.stopPreview()
+                runBlocking {
+                    stopPreview(it)
+                }
                 startPreviewAsyncInternal(true)
             }
         }
@@ -202,7 +205,7 @@ class CameraPreviewView @JvmOverloads constructor(
     override fun performClick(): Boolean {
         streamer?.let {
             if (enableTapToFocus) {
-                // mTouchUpEvent == null means it's an accessibility click. Focus at the center instead.
+                // touchUpEvent == null means it's an accessibility click. Focus at the center instead.
                 val x = touchUpEvent?.x ?: (width / 2f)
                 val y = touchUpEvent?.y ?: (height / 2f)
                 try {
@@ -229,7 +232,9 @@ class CameraPreviewView @JvmOverloads constructor(
     }
 
     private fun stopPreviewInternal() {
-        streamer?.stopPreview()
+        runBlocking {
+            streamer?.let { stopPreview(it) }
+        }
         viewfinderSurfaceRequest?.markSurfaceSafeToRelease()
         viewfinderSurfaceRequest = null
     }
@@ -281,7 +286,7 @@ class CameraPreviewView @JvmOverloads constructor(
                     listener?.onPreviewStarted()
                 } ?: throw UnsupportedOperationException("Streamer has not been set")
             } catch (e: CancellationException) {
-                Logger.w(TAG, "Preview has been cancelled", e)
+                Logger.w(TAG, "Preview has been cancelled")
             } catch (t: Throwable) {
                 listener?.onPreviewFailed(t)
                 throw t
@@ -360,6 +365,16 @@ class CameraPreviewView @JvmOverloads constructor(
             return when (streamer) {
                 is ICameraCoroutineStreamer -> streamer.setPreview(viewfinder, previewSize)
                 is ICameraCallbackStreamer -> streamer.setPreview(viewfinder, previewSize)
+                else -> {
+                    throw InvalidParameterException("Streamer is not a recognized type: ${streamer::class.java.simpleName}")
+                }
+            }
+        }
+
+        private suspend fun stopPreview(streamer: ICameraStreamer) {
+            when (streamer) {
+                is ICameraCoroutineStreamer -> streamer.stopPreview()
+                is ICameraCallbackStreamer -> streamer.stopPreview()
                 else -> {
                     throw InvalidParameterException("Streamer is not a recognized type: ${streamer::class.java.simpleName}")
                 }

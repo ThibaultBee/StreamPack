@@ -25,6 +25,8 @@ import android.util.Range
 import androidx.annotation.RequiresPermission
 import androidx.datastore.preferences.preferencesDataStore
 import io.github.thibaultbee.streampack.app.ApplicationConstants.userPrefName
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.core.utils.extensions.backCameras
 import io.github.thibaultbee.streampack.core.utils.extensions.cameras
@@ -32,24 +34,32 @@ import io.github.thibaultbee.streampack.core.utils.extensions.frontCameras
 import io.github.thibaultbee.streampack.core.utils.extensions.isBackCamera
 
 @RequiresPermission(Manifest.permission.CAMERA)
-fun ICameraStreamer.toggleCamera(context: Context) {
+suspend fun ICameraStreamer.toggleCamera(context: Context) {
     val cameras = context.cameras
 
     val currentCameraIndex = cameras.indexOf(cameraId)
     val cameraIndex = (currentCameraIndex + 1) % cameras.size
 
-    cameraId = cameras[cameraIndex]
+    if (this is ICameraCoroutineStreamer) {
+        setCameraId(cameras[cameraIndex])
+    } else if (this is ICameraCallbackStreamer) {
+        cameraId = cameras[cameraIndex]
+    }
 }
 
 @RequiresPermission(Manifest.permission.CAMERA)
-fun ICameraStreamer.switchBackToFront(context: Context) {
+suspend fun ICameraStreamer.switchBackToFront(context: Context) {
     val cameras = if (context.isBackCamera(cameraId)) {
         context.frontCameras
     } else {
         context.backCameras
     }
     if (cameras.isNotEmpty()) {
-        cameraId = cameras[0]
+        if (this is ICameraCoroutineStreamer) {
+            setCameraId(cameras[0])
+        } else if (this is ICameraCallbackStreamer) {
+            cameraId = cameras[0]
+        }
     }
 }
 
