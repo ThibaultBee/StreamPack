@@ -17,8 +17,11 @@ package io.github.thibaultbee.streampack.core.streamers.observers
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.ICallbackSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.ICoroutineSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -31,17 +34,29 @@ import kotlinx.coroutines.runBlocking
  *
  *  @param streamer The streamer to control
  */
-open class StreamerViewModelLifeCycleObserver(protected val streamer: ICoroutineSingleStreamer) :
+open class StreamerViewModelLifeCycleObserver(protected val streamer: ISingleStreamer) :
     DefaultLifecycleObserver {
     override fun onPause(owner: LifecycleOwner) {
-        if (streamer is ICameraStreamer) {
-            streamer.stopPreview()
-        }
-        runBlocking {
+        if (streamer is ICoroutineSingleStreamer) {
+            if (streamer is ICameraCoroutineStreamer) {
+                runBlocking { streamer.stopPreview() }
+            }
+            runBlocking {
+                streamer.stopStream()
+                if (streamer.endpoint.isOpen.value) {
+                    streamer.close()
+                }
+            }
+        } else if (streamer is ICallbackSingleStreamer) {
+            if (streamer is ICameraCallbackStreamer) {
+                streamer.stopPreview()
+            }
             streamer.stopStream()
             if (streamer.endpoint.isOpen.value) {
                 streamer.close()
             }
+        } else {
+            throw IllegalArgumentException("Streamer is unknown")
         }
     }
 }
