@@ -24,7 +24,7 @@ import kotlin.coroutines.suspendCoroutine
 object SurfaceUtils {
     private const val TAG = "SurfaceUtils"
 
-    private fun createSurfaceViewAsync(
+    private fun getSurfaceViewAsync(
         scenario: ActivityScenario<SurfaceViewTestActivity>,
         onSurfaceCreated: (SurfaceView) -> Unit
     ) {
@@ -54,9 +54,56 @@ object SurfaceUtils {
         }
     }
 
-    suspend fun createSurfaceView(scenario: ActivityScenario<SurfaceViewTestActivity>): SurfaceView {
+    /**
+     * Gets the [SurfaceView] from the [SurfaceViewTestActivity]
+     */
+    suspend fun getSurfaceView(scenario: ActivityScenario<SurfaceViewTestActivity>): SurfaceView {
         return suspendCoroutine {
-            createSurfaceViewAsync(scenario) { surfaceView ->
+            getSurfaceViewAsync(scenario) { surfaceView ->
+                it.resumeWith(Result.success(surfaceView))
+            }
+        }
+    }
+
+    private fun addsSurfaceViewAsync(
+        scenario: ActivityScenario<SurfaceViewTestActivity>,
+        onSurfaceCreated: (SurfaceView) -> Unit
+    ) {
+        scenario.onActivity {
+            val surfaceView = SurfaceView(it)
+            val callback =
+                object : SurfaceHolder.Callback {
+                    override fun surfaceCreated(surfaceHolder: SurfaceHolder) {
+                        Logger.i(TAG, "Surface created")
+                        onSurfaceCreated(surfaceView)
+                    }
+
+                    override fun surfaceChanged(
+                        holder: SurfaceHolder,
+                        format: Int,
+                        width: Int,
+                        height: Int
+                    ) {
+                        Logger.i(TAG, "Surface changed")
+                    }
+
+                    override fun surfaceDestroyed(holder: SurfaceHolder) {
+                        Logger.i(TAG, "Surface destroyed")
+                    }
+                }
+
+
+            surfaceView.holder.setFixedSize(10, 10)
+            it.addSurface(surfaceView, callback)
+        }
+    }
+
+    /**
+     * Adds a [SurfaceView] in the [SurfaceViewTestActivity]
+     */
+    suspend fun addSurfaceView(scenario: ActivityScenario<SurfaceViewTestActivity>): SurfaceView {
+        return suspendCoroutine {
+            addsSurfaceViewAsync(scenario) { surfaceView ->
                 it.resumeWith(Result.success(surfaceView))
             }
         }

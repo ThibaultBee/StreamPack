@@ -19,7 +19,6 @@ import android.Manifest
 import android.content.Context
 import android.view.Surface
 import androidx.annotation.RequiresPermission
-import androidx.annotation.RestrictTo.*
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
@@ -32,6 +31,11 @@ import io.github.thibaultbee.streampack.core.internal.utils.extensions.displayRo
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.setPreview
+import io.github.thibaultbee.streampack.core.streamers.interfaces.startPreview
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * A [SingleStreamer] that sends microphone and camera frames.
@@ -76,6 +80,11 @@ open class CameraSingleStreamer(
     private val cameraSource = videoSourceInternal as CameraSource
 
     /**
+     * Mutex to avoid concurrent access to preview surface.
+     */
+    private val previewMutex = Mutex()
+
+    /**
      * Gets the camera source.
      * It allows to configure camera settings and to set the camera id.
      */
@@ -96,16 +105,30 @@ open class CameraSingleStreamer(
          * Set current camera id.
          * Retrieves list of cameras from [Context.cameras]
          *
+         * It will block the current thread until the camera id is set. You can use [setCameraId] to
+         * set it in a coroutine.
+         *
          * @param value string that described the camera.
          */
         @RequiresPermission(Manifest.permission.CAMERA)
         set(value) {
-            videoSource.cameraId = value
-            // If config has not been set yet, [configure] will update transformation later.
-            if (videoConfig != null) {
-                updateTransformation()
+            runBlocking {
+                setCameraId(value)
             }
         }
+
+    /**
+     * Sets a camera id with a suspend function.
+     *
+     * @param cameraId The camera id to use
+     */
+    override suspend fun setCameraId(cameraId: String) {
+        cameraSource.setCameraId(cameraId)
+        // If config has not been set yet, [configure] will update transformation later.
+        if (videoConfig != null) {
+            updateTransformation()
+        }
+    }
 
     /**
      * Gets configuration information.
@@ -137,8 +160,10 @@ open class CameraSingleStreamer(
     /**
      * Sets a preview surface.
      */
-    override fun setPreview(surface: Surface) {
-        cameraSource.previewSurface = surface
+    override suspend fun setPreview(surface: Surface) {
+        previewMutex.withLock {
+            cameraSource.setPreviewSurface(surface)
+        }
     }
 
     /**
@@ -151,8 +176,28 @@ open class CameraSingleStreamer(
      * @see [stopPreview]
      * @see [setPreview]
      */
+    @RequiresPermission(Manifest.permission.CAMERA)
     override suspend fun startPreview() {
-        cameraSource.startPreview()
+        previewMutex.withLock {
+            cameraSource.startPreview()
+        }
+    }
+
+    /**
+     * Starts audio and video capture.
+     * If you can prefer to call [ISingleStreamer.setAudioConfig] before starting preview.
+     * It is a shortcut for [setPreview] and [startPreview].
+     *
+     * @param previewSurface The [Surface] used for camera preview
+     *
+     * @see [ICameraCoroutineStreamer.stopPreview]
+     */
+    @RequiresPermission(Manifest.permission.CAMERA)
+    override suspend fun startPreview(previewSurface: Surface) {
+        previewMutex.withLock {
+            cameraSource.setPreviewSurface(previewSurface)
+            cameraSource.startPreview()
+        }
     }
 
     /**
@@ -161,15 +206,19 @@ open class CameraSingleStreamer(
      *
      * @see [startPreview]
      */
-    override fun stopPreview() {
-        cameraSource.stopPreview()
+    override suspend fun stopPreview() {
+        previewMutex.withLock {
+            cameraSource.stopPreview()
+        }
     }
 
     /**
      * Same as [SingleStreamer.release] but it also calls [stopPreview].
      */
     override fun release() {
-        stopPreview()
+        runBlocking {
+            stopPreview()
+        }
         super.release()
     }
 }

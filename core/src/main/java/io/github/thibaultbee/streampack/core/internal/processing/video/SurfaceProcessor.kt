@@ -81,7 +81,7 @@ class SurfaceProcessor(
             val surfaceInput = surfaceInputs.find { it.surface == surface }
             if (surfaceInput != null) {
                 val surfaceTexture = surfaceInput.surfaceTexture
-                surfaceTexture.setOnFrameAvailableListener(null)
+                surfaceTexture.setOnFrameAvailableListener(null, glHandler)
                 surfaceTexture.release()
                 surface.release()
 

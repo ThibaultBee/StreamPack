@@ -248,8 +248,10 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
          */
         val streamer = streamer
         if (streamer is ICameraStreamer) {
-            streamer.switchBackToFront(application)
-            notifyCameraChanged()
+            viewModelScope.launch {
+                streamer.switchBackToFront(application)
+                notifyCameraChanged()
+            }
         }
         return true
     }
@@ -263,8 +265,10 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
          */
         val streamer = streamer
         if (streamer is ICameraStreamer) {
-            streamer.toggleCamera(application)
-            notifyCameraChanged()
+            viewModelScope.launch {
+                streamer.toggleCamera(application)
+                notifyCameraChanged()
+            }
         }
     }
 

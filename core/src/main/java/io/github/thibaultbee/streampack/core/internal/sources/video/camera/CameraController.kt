@@ -25,35 +25,44 @@ import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.TotalCaptureResult
-import android.hardware.camera2.params.OutputConfiguration
 import android.os.Build
-import android.util.Range
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.internal.sources.video.camera.dispatchers.CameraDispatchers
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.resumeIfActive
 import io.github.thibaultbee.streampack.core.internal.utils.extensions.resumeWithExceptionIfActive
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.utils.extensions.getAutoFocusModes
-import io.github.thibaultbee.streampack.core.utils.extensions.getCameraFps
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 class CameraController(
     private val context: Context,
-    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
+    private val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+
+    /**
+     * Mutex to avoid concurrent access to camera.
+     */
+    private val cameraMutex = Mutex()
+
     private var camera: CameraDevice? = null
     val cameraId: String?
         get() = camera?.id
 
     private var captureSession: CameraCaptureSession? = null
     private var captureRequest: CaptureRequest.Builder? = null
+
+    /**
+     * List of surfaces used in the current capture session.
+     */
+    private val captureSessionSurface = mutableSetOf<Surface>()
 
     /**
      * List of surfaces used in the current request session.
@@ -64,76 +73,6 @@ class CameraController(
      * Camera dispatcher to use. Either run on executor or handler.
      */
     private val cameraDispatcher = CameraDispatchers.build()
-
-    private fun getClosestFpsRange(cameraId: String, fps: Int): Range<Int> {
-        var fpsRangeList = context.getCameraFps(cameraId)
-        Logger.i(TAG, "Supported FPS range list: $fpsRangeList")
-
-        // Get range that contains FPS
-        fpsRangeList =
-            fpsRangeList.filter { it.contains(fps) or it.contains(fps * 1000) } // On Samsung S4 fps range is [4000-30000] instead of [4-30]
-        if (fpsRangeList.isEmpty()) {
-            Logger.w(
-                TAG,
-                "Failed to find a single FPS range that contains $fps. Trying with forced $fps."
-            )
-            return Range(fps, fps)
-        }
-
-        // Get smaller range
-        var selectedFpsRange = fpsRangeList[0]
-        fpsRangeList = fpsRangeList.drop(0)
-        fpsRangeList.forEach {
-            if ((it.upper - it.lower) < (selectedFpsRange.upper - selectedFpsRange.lower)) {
-                selectedFpsRange = it
-            }
-        }
-
-        Logger.d(TAG, "Selected Fps range $selectedFpsRange")
-        return selectedFpsRange
-    }
-
-    private class CameraDeviceCallback(
-        private val continuation: CancellableContinuation<CameraDevice>,
-    ) : CameraDevice.StateCallback() {
-        override fun onOpened(device: CameraDevice) = continuation.resume(device)
-
-        override fun onDisconnected(camera: CameraDevice) {
-            Logger.w(TAG, "Camera ${camera.id} has been disconnected")
-        }
-
-        override fun onError(camera: CameraDevice, error: Int) {
-            Logger.e(TAG, "Camera ${camera.id} is in error $error")
-
-            val exc = when (error) {
-                ERROR_CAMERA_IN_USE -> CameraException("Camera already in use")
-                ERROR_MAX_CAMERAS_IN_USE -> CameraException(
-                    "Max cameras in use"
-                )
-
-                ERROR_CAMERA_DISABLED -> CameraException("Camera has been disabled")
-                ERROR_CAMERA_DEVICE -> CameraException("Camera device has crashed")
-                ERROR_CAMERA_SERVICE -> CameraException("Camera service has crashed")
-                else -> CameraException("Unknown error")
-            }
-            if (continuation.isActive) continuation.resumeWithException(exc)
-        }
-    }
-
-    private class CameraCaptureSessionCallback(
-        private val continuation: CancellableContinuation<CameraCaptureSession>,
-    ) : CameraCaptureSession.StateCallback() {
-        override fun onConfigured(session: CameraCaptureSession) = continuation.resume(session)
-
-        override fun onConfigureFailed(session: CameraCaptureSession) {
-            Logger.e(TAG, "Camera Session configuration failed")
-            continuation.resumeWithException(CameraException("Camera: failed to configure the capture session"))
-        }
-
-        override fun onClosed(session: CameraCaptureSession) {
-            Logger.e(TAG, "Camera Session configuration closed")
-        }
-    }
 
     private class CameraCaptureSessionCaptureCallback(
         private val onCaptureRequestComparator: (CaptureRequest) -> Boolean,
@@ -166,135 +105,137 @@ class CameraController(
         }
     }
 
-    @RequiresPermission(Manifest.permission.CAMERA)
-    private suspend fun openCamera(
-        manager: CameraManager, cameraId: String
-    ): CameraDevice = suspendCancellableCoroutine { cont ->
-        cameraDispatcher.openCamera(
-            manager, cameraId, CameraDeviceCallback(cont)
-        )
+    suspend fun isCameraRunning(): Boolean = executeSafely {
+        camera != null
     }
-
-    private suspend fun createCaptureSession(
-        camera: CameraDevice,
-        targets: List<Surface>,
-        dynamicRange: Long,
-    ): CameraCaptureSession = suspendCancellableCoroutine { continuation ->
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val outputConfigurations = targets.map {
-                OutputConfiguration(it).apply {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        dynamicRangeProfile = dynamicRange
-                    }
-                }
-            }
-
-            cameraDispatcher.createCaptureSessionByOutputConfiguration(
-                camera, outputConfigurations, CameraCaptureSessionCallback(continuation)
-            )
-        } else {
-            cameraDispatcher.createCaptureSession(
-                camera, targets, CameraCaptureSessionCallback(continuation)
-            )
-        }
-    }
-
-    private fun createRequestSession(
-        camera: CameraDevice,
-        captureSession: CameraCaptureSession,
-        fpsRange: Range<Int>,
-        surfaces: List<Surface>
-    ): CaptureRequest.Builder {
-        return camera.createCaptureRequest(CameraDevice.TEMPLATE_RECORD).apply {
-            surfaces.forEach { addTarget(it) }
-            set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
-            if (context.getAutoFocusModes(camera.id)
-                    .contains(CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO)
-            ) {
-                set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO)
-            }
-            cameraDispatcher.setRepeatingSingleRequest(
-                captureSession, build(), captureCallback
-            )
-        }
-    }
-
-    val isCameraRunning: Boolean
-        get() = camera != null
 
     @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun startCamera(
         cameraId: String,
-        targets: List<Surface>,
-        dynamicRange: Long,
     ) {
-        require(targets.isNotEmpty()) { " At least one target is required" }
-
-        withContext(coroutineDispatcher) {
-            val manager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-            camera = openCamera(manager, cameraId).also { cameraDevice ->
-                captureSession = createCaptureSession(
-                    cameraDevice, targets, dynamicRange
-                )
-            }
+        executeSafely {
+            camera = CameraUtils.openCamera(cameraDispatcher, cameraManager, cameraId)
         }
     }
 
-    val isRequestSessionRunning: Boolean
-        get() = captureRequest != null
+    suspend fun stopCamera() {
+        executeSafely {
+            stopCaptureSessionSync()
 
-    fun startRequestSession(fps: Int, targets: List<Surface>) {
-        val camera = requireNotNull(camera) { "Camera must not be null" }
-        val captureSession = requireNotNull(captureSession) { "Capture session must not be null" }
-
-        captureRequest = createRequestSession(
-            camera, captureSession, getClosestFpsRange(camera.id, fps), targets
-        )
-        requestSessionSurface.addAll(targets)
-    }
-
-    fun stop() {
-        requestSessionSurface.clear()
-        captureRequest = null
-
-        captureSession?.close()
-        captureSession = null
-
-        camera?.close()
-        camera = null
+            camera?.close()
+            camera = null
+        }
     }
 
     /**
-     * Whether the target is in the current request session.
+     * Whether the target is in the current capture session.
      */
-    fun hasTarget(target: Surface): Boolean {
-        return requestSessionSurface.contains(target)
+    fun isSurfaceRegistered(target: Surface): Boolean {
+        return captureSessionSurface.contains(target)
     }
 
-    fun addTargets(targets: List<Surface>) {
-        val captureRequest = requireNotNull(captureRequest) { "capture request must not be null" }
+    suspend fun isCaptureSessionRunning(): Boolean = executeSafely {
+        captureSession != null
+    }
+
+    suspend fun startCaptureSession(targets: List<Surface>, dynamicRange: Long) {
+        requireNotNull(camera) { "Camera must not be null" }
         require(targets.isNotEmpty()) { " At least one target is required" }
 
-        targets.forEach {
-            if (!hasTarget(it)) {
-                captureRequest.addTarget(it)
-                requestSessionSurface.add(it)
+        executeSafely {
+            val camera = camera ?: run {
+                Logger.i(TAG, "Camera has been closed")
+                return@executeSafely
             }
+            captureSession = CameraUtils.createCaptureSession(
+                cameraDispatcher, camera, targets, dynamicRange
+            )
+            captureSessionSurface.addAll(targets)
         }
-        updateRepeatingSession()
     }
 
-    fun addTarget(target: Surface) {
+    private fun stopCaptureSessionSync() {
+        requestSessionSurface.clear()
+        captureRequest = null
+
+        captureSessionSurface.clear()
+        captureSession?.close()
+        captureSession = null
+    }
+
+    suspend fun stopCaptureSession() {
+        executeSafely {
+            stopCaptureSessionSync()
+        }
+    }
+
+    suspend fun isRequestSessionRunning(): Boolean = executeSafely {
+        captureRequest != null
+    }
+
+    fun isSurfaceRunning(surface: Surface): Boolean {
+        return requestSessionSurface.contains(surface)
+    }
+
+    suspend fun startRequestSession(fps: Int, targets: List<Surface>) {
+        requireNotNull(camera) { "Camera must not be null" }
+        requireNotNull(captureSession) { "Capture session must not be null" }
+
+        executeSafely {
+            val camera = camera ?: run {
+                Logger.i(TAG, "Camera has been closed")
+                return@executeSafely
+            }
+            val captureSession = captureSession ?: run {
+                Logger.i(TAG, "Capture session has been closed")
+                return@executeSafely
+            }
+            captureRequest = CameraUtils.createRequestSession(
+                cameraDispatcher,
+                context,
+                camera,
+                captureSession,
+                CameraUtils.getClosestFpsRange(context, camera.id, fps),
+                targets
+            )
+            requestSessionSurface.addAll(targets)
+        }
+    }
+
+    suspend fun addTargets(targets: List<Surface>) {
+        require(targets.isNotEmpty()) { " At least one target is required" }
+        require(targets.all { captureSessionSurface.contains(it) }) { "Targets must be in the current capture session" }
         val captureRequest = requireNotNull(captureRequest) { "capture request must not be null" }
 
-        if (hasTarget(target)) {
+        if (targets.all { isSurfaceRunning(it) }) {
             return
         }
 
-        captureRequest.addTarget(target)
-        requestSessionSurface.add(target)
+        executeSafely {
+            targets.forEach {
+                // Adding a target more than once has no effect.
+                captureRequest.addTarget(it)
+                requestSessionSurface.addAll(targets)
+            }
+            setRepeatingSession()
+        }
+    }
 
-        updateRepeatingSession()
+    suspend fun addTarget(target: Surface) {
+        require(captureSessionSurface.contains(target)) { "Target must be in the current capture session" }
+        val captureRequest = requireNotNull(captureRequest) { "capture request must not be null" }
+
+        if (isSurfaceRunning(target)) {
+            return
+        }
+
+        executeSafely {
+            // Adding a target more than once has no effect.
+            captureRequest.addTarget(target)
+            requestSessionSurface.add(target)
+
+            setRepeatingSession()
+        }
     }
 
     suspend fun removeTargets(targets: List<Surface>) {
@@ -308,9 +249,9 @@ class CameraController(
         if (requestSessionSurface.isNotEmpty()) {
             val tag = "removeTargets-${System.currentTimeMillis()}"
             captureRequest.setTag(tag)
-            withContext(coroutineDispatcher) {
+            executeSafely {
                 suspendCancellableCoroutine { continuation ->
-                    updateRepeatingSession(
+                    setRepeatingSession(
                         CameraCaptureSessionCaptureCallback(
                             { it.tag == tag }, continuation
                         )
@@ -318,7 +259,7 @@ class CameraController(
                 }
             }
         } else {
-            stop()
+            stopCaptureSession()
         }
     }
 
@@ -331,9 +272,9 @@ class CameraController(
         if (requestSessionSurface.isNotEmpty()) {
             val tag = "removeTarget-${System.currentTimeMillis()}"
             captureRequest.setTag(tag)
-            withContext(coroutineDispatcher) {
+            executeSafely {
                 suspendCancellableCoroutine { continuation ->
-                    updateRepeatingSession(
+                    setRepeatingSession(
                         CameraCaptureSessionCaptureCallback(
                             { it.tag == tag }, continuation
                         )
@@ -341,14 +282,23 @@ class CameraController(
                 }
             }
         } else {
-            stop()
+            stopCaptureSession()
         }
     }
 
     fun release() {
-        stop()
+        runBlocking {
+            stopCamera()
+        }
         cameraDispatcher.release()
     }
+
+    private suspend fun <T> executeSafely(block: suspend () -> T) =
+        withContext(coroutineDispatcher) {
+            cameraMutex.withLock {
+                block()
+            }
+        }
 
     fun muteVibrationAndSound() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -370,7 +320,7 @@ class CameraController(
         }
     }
 
-    fun updateRepeatingSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
+    fun setRepeatingSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
         val captureSession = requireNotNull(captureSession) { "capture session must not be null" }
         val captureRequest = requireNotNull(captureRequest) { "capture request must not be null" }
 
@@ -379,7 +329,7 @@ class CameraController(
         )
     }
 
-    private fun updateBurstSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback) {
+    private fun setBurstSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback) {
         val captureSession = requireNotNull(captureSession) { "capture session must not be null" }
         val captureRequest = requireNotNull(captureRequest) { "capture request must not be null" }
 
@@ -395,7 +345,7 @@ class CameraController(
     fun <T> setRepeatingSetting(key: CaptureRequest.Key<T>, value: T) {
         captureRequest?.let {
             it.set(key, value)
-            updateRepeatingSession()
+            setRepeatingSession()
         }
     }
 
@@ -404,7 +354,7 @@ class CameraController(
             for (item in settingsMap) {
                 it.set(item.key, item.value)
             }
-            updateRepeatingSession()
+            setRepeatingSession()
         }
     }
 
@@ -413,7 +363,7 @@ class CameraController(
             for (item in settingsMap) {
                 it.set(item.key, item.value)
             }
-            updateBurstSession(captureCallback)
+            setBurstSession(captureCallback)
         }
     }
 

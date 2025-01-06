@@ -26,16 +26,15 @@ import io.github.thibaultbee.streampack.core.internal.utils.extensions.rotationT
 import io.github.thibaultbee.streampack.core.utils.extensions.getCameraCharacteristics
 import io.github.thibaultbee.streampack.core.utils.extensions.getFacingDirection
 
-class CameraInfoProvider(private val context: Context, initialCameraId: String) :
+class CameraInfoProvider(
+    private val context: Context,
+    private val cameraController: CameraController,
+    var defaultCamera: String
+) :
     AbstractSourceInfoProvider() {
-
-    var cameraId: String = initialCameraId
-        set(value) {
-            if (field == value) {
-                return
-            }
-            field = value
-        }
+        
+    val cameraId: String
+        get() = cameraController.cameraId ?: defaultCamera
 
     override val rotationDegrees: Int
         @IntRange(from = 0, to = 359)

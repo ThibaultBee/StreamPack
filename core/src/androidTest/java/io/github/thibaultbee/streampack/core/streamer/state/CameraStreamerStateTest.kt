@@ -58,7 +58,7 @@ class CameraStreamerStateTest(descriptor: MediaDescriptor) :
             ConfigurationUtils.dummyValidAudioConfig(),
             ConfigurationUtils.dummyValidVideoConfig()
         )
-        streamer.startPreview(SurfaceUtils.createSurfaceView(activityScenarioRule.scenario))
+        streamer.startPreview(SurfaceUtils.getSurfaceView(activityScenarioRule.scenario))
         streamer.startStream(descriptor)
         streamer.stopStream()
         streamer.stopPreview()
@@ -68,17 +68,17 @@ class CameraStreamerStateTest(descriptor: MediaDescriptor) :
     // Single method calls
     @Test
     fun startPreviewTest() = runTest {
-        streamer.startPreview(SurfaceUtils.createSurfaceView(activityScenarioRule.scenario))
+        streamer.startPreview(SurfaceUtils.getSurfaceView(activityScenarioRule.scenario))
     }
 
     @Test
-    fun stopPreviewTest() {
+    fun stopPreviewTest() = runTest {
         streamer.stopPreview()
     }
 
     // Multiple methods calls
     @Test
-    fun configureStopPreviewTest() {
+    fun configureStopPreviewTest() = runTest {
         streamer.setConfig(
             ConfigurationUtils.dummyValidAudioConfig(),
             ConfigurationUtils.dummyValidVideoConfig()
@@ -92,7 +92,7 @@ class CameraStreamerStateTest(descriptor: MediaDescriptor) :
             ConfigurationUtils.dummyValidAudioConfig(),
             ConfigurationUtils.dummyValidVideoConfig()
         )
-        streamer.startPreview(SurfaceUtils.createSurfaceView(activityScenarioRule.scenario))
+        streamer.startPreview(SurfaceUtils.getSurfaceView(activityScenarioRule.scenario))
         streamer.release()
     }
 
@@ -102,7 +102,7 @@ class CameraStreamerStateTest(descriptor: MediaDescriptor) :
             ConfigurationUtils.dummyValidAudioConfig(),
             ConfigurationUtils.dummyValidVideoConfig()
         )
-        streamer.startPreview(SurfaceUtils.createSurfaceView(activityScenarioRule.scenario))
+        streamer.startPreview(SurfaceUtils.getSurfaceView(activityScenarioRule.scenario))
         streamer.stopPreview()
     }
 
@@ -112,13 +112,13 @@ class CameraStreamerStateTest(descriptor: MediaDescriptor) :
             ConfigurationUtils.dummyValidAudioConfig(),
             ConfigurationUtils.dummyValidVideoConfig()
         )
-        streamer.startPreview(SurfaceUtils.createSurfaceView(activityScenarioRule.scenario))
+        streamer.startPreview(SurfaceUtils.getSurfaceView(activityScenarioRule.scenario))
         streamer.stopStream()
     }
 
     @Test
     fun multipleStartPreviewStopPreviewTest() = runTest {
-        val surfaceView = SurfaceUtils.createSurfaceView(activityScenarioRule.scenario)
+        val surfaceView = SurfaceUtils.getSurfaceView(activityScenarioRule.scenario)
         streamer.setConfig(
             ConfigurationUtils.dummyValidAudioConfig(),
             ConfigurationUtils.dummyValidVideoConfig()

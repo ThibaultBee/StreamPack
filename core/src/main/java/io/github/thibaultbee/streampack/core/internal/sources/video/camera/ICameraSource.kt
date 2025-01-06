@@ -24,7 +24,7 @@ interface ICameraSource : IVideoSource {
     /**
      * Get/Set current camera id.
      */
-    var cameraId: String
+    val cameraId: String
 
     /**
      * Whether the camera preview is running.
@@ -35,4 +35,11 @@ interface ICameraSource : IVideoSource {
      * The camera settings (auto-exposure, auto-focus, etc.).
      */
     val settings: CameraSettings
+
+    /**
+     * Set camera id.
+     *
+     * @param cameraId The camera id to use
+     */
+    suspend fun setCameraId(cameraId: String)
 }
