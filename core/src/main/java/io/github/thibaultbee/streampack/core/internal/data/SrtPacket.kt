@@ -29,13 +29,18 @@ class SrtPacket(
     /**
      * [Boolean.true] if this is the first packet that describes a frame.
      */
-    var isFirstPacketFrame: Boolean,
+    val isFirstPacketFrame: Boolean,
     /**
      * [Boolean.true] if this is the last packet that describes a frame.
      */
-    var isLastPacketFrame: Boolean,
+    val isLastPacketFrame: Boolean,
     /**
      * Frame timestamp in µs.
      */
     ts: Long, // in µs
-) : Packet(buffer, ts)
+
+    /**
+     * Packet data type
+     */
+    type: PacketType = PacketType.UNKNOWN,
+) : Packet(buffer, ts, type)

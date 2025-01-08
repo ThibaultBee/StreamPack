@@ -25,20 +25,24 @@ open class Packet(
     /**
      * Contains data.
      */
-    var buffer: ByteBuffer,
+    val buffer: ByteBuffer,
 
     /**
      * Frame timestamp in µs.
      */
-    var ts: Long, // in µs
+    val ts: Long, // in µs
 
     /**
      * Packet data type
      */
-    var type: PacketType = PacketType.UNKNOWN,
+    val type: PacketType = PacketType.UNKNOWN,
 ) {
     val isVideo = type == PacketType.VIDEO
     val isAudio = type == PacketType.AUDIO
+
+    override fun toString(): String {
+        return "Packet(buffer=$buffer, ts=$ts, type=$type)"
+    }
 }
 
 enum class PacketType {
