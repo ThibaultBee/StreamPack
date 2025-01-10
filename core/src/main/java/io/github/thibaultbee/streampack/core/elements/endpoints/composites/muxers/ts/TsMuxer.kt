@@ -37,7 +37,7 @@ import java.nio.ByteBuffer
 import java.util.MissingFormatArgumentException
 import kotlin.random.Random
 
-class TSMuxer : IMuxerInternal {
+class TsMuxer : IMuxerInternal {
     override val info by lazy { TSMuxerInfo }
     private val tsServices = mutableListOf<Service>()
     private val tsPes = mutableListOf<Pes>()

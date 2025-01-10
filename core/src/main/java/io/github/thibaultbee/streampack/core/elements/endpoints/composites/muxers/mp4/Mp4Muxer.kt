@@ -35,7 +35,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isVideo
 import java.nio.ByteBuffer
 
-class MP4Muxer(
+class Mp4Muxer(
     override var listener: IMuxerInternal.IMuxerListener? = null,
     private val timescale: Int = DEFAULT_TIMESCALE,
     private val segmenterFactory: MP4SegmenterFactory = DefaultMP4SegmenterFactory()

@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.FlvMuxer
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TSMuxer
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TsMuxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ISinkInternal
 
@@ -31,7 +31,7 @@ object CompositeEndpoints {
      */
     internal fun createSrtEndpoint(serviceInfo: TSServiceInfo?): IEndpointInternal {
         val sink = createSrtSink()
-        val muxer = TSMuxer()
+        val muxer = TsMuxer()
         if (serviceInfo != null) {
             muxer.addService(serviceInfo)
         }

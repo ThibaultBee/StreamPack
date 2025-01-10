@@ -28,7 +28,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 
-class TSMuxerTest {
+class TsMuxerTest {
     class MockMuxerListener :
         io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal.IMuxerListener {
         override fun onOutputFrame(packet: io.github.thibaultbee.streampack.core.elements.data.Packet) {}
@@ -52,7 +52,7 @@ class TSMuxerTest {
         val service = createFakeServiceInfo()
 
         val tsMux =
-            TSMuxer().apply {
+            TsMuxer().apply {
                 addService(service)
                 addStreams(
                     service,
@@ -86,7 +86,7 @@ class TSMuxerTest {
             )
         val aStreamConfig = AudioCodecConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
         try {
-            TSMuxer().apply {
+            TsMuxer().apply {
                 addStreams(
                     listOf(vStreamConfig1, vStreamConfig2, aStreamConfig)
                 )
@@ -99,7 +99,7 @@ class TSMuxerTest {
     @Test
     fun `re-add existing service test`() {
         val service = createFakeServiceInfo()
-        val tsMux = TSMuxer().apply {
+        val tsMux = TsMuxer().apply {
             addService(service)
         }
         try {
@@ -127,7 +127,7 @@ class TSMuxerTest {
         val service = createFakeServiceInfo()
 
         val tsMux =
-            TSMuxer().apply {
+            TsMuxer().apply {
                 addService(service)
                 addStreams(
                     service,
@@ -168,7 +168,7 @@ class TSMuxerTest {
         val service = createFakeServiceInfo()
 
         val tsMux =
-            TSMuxer().apply {
+            TsMuxer().apply {
                 addService(service)
                 addStreams(
                     service,
@@ -186,7 +186,7 @@ class TSMuxerTest {
 
     @Test
     fun `encode without streams test`() {
-        val tsMux = TSMuxer()
+        val tsMux = TsMuxer()
         try {
             tsMux.write(FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), -1)
             fail()
@@ -196,7 +196,7 @@ class TSMuxerTest {
 
     @Test
     fun `encode with key frame with extra test `() {
-        val tsMux = TSMuxer()
+        val tsMux = TsMuxer()
         try {
             tsMux.write(
                 FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), -1
@@ -215,7 +215,7 @@ class TSMuxerTest {
         )
         val service = createFakeServiceInfo()
 
-        val tsMux = TSMuxer().apply {
+        val tsMux = TsMuxer().apply {
             addService(service)
         }
         val streamPid =
@@ -235,7 +235,7 @@ class TSMuxerTest {
         val config = AudioCodecConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC)
         val service = createFakeServiceInfo()
 
-        val tsMux = TSMuxer().apply {
+        val tsMux = TsMuxer().apply {
             addService(service)
         }
         val streamPid =

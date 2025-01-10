@@ -31,7 +31,7 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.Media
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.MP4Muxer
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.Mp4Muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
@@ -159,7 +159,7 @@ class CameraStreamerFileTest(
                 arrayOf(
                     UriMediaDescriptor(FileUtils.createCacheFile("video.mp4").toUri()),
                     true,
-                    CompositeEndpoint(MP4Muxer(), FileSink())
+                    CompositeEndpoint(Mp4Muxer(), FileSink())
                 ),
             )
         }

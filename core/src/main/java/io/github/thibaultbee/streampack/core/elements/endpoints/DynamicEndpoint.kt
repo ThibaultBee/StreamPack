@@ -23,7 +23,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoints
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.FlvMuxer
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TSMuxer
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TsMuxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ContentSink
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
@@ -119,7 +119,7 @@ open class DynamicEndpoint(
         val endpoint = getEndpoint(mediaDescriptor.type)
 
         if (endpoint is CompositeEndpoint) {
-            if (endpoint.muxer is TSMuxer) {
+            if (endpoint.muxer is TsMuxer) {
                 // Clean up services
                 endpoint.muxer.removeServices()
                 val serviceInfo = mediaDescriptor.getCustomData(TSServiceInfo::class.java)
@@ -183,7 +183,7 @@ open class DynamicEndpoint(
     private fun getTsFileEndpoint(): IEndpointInternal {
         if (tsFileEndpoint == null) {
             tsFileEndpoint = CompositeEndpoint(
-                TSMuxer(),
+                TsMuxer(),
                 FileSink()
             )
         }
@@ -193,7 +193,7 @@ open class DynamicEndpoint(
     private fun getTsContentEndpoint(): IEndpointInternal {
         if (tsContentEndpoint == null) {
             tsContentEndpoint = CompositeEndpoint(
-                TSMuxer(), ContentSink(context)
+                TsMuxer(), ContentSink(context)
             )
         }
         return tsContentEndpoint!!
