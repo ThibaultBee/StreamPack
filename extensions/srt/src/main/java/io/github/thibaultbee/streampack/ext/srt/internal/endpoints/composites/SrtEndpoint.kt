@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.ext.srt.internal.endpoints.composites
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.createDefaultTsServiceInfo
 import io.github.thibaultbee.streampack.ext.srt.internal.endpoints.composites.sinks.SrtSink
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TSMuxer
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TsMuxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 
 /**
@@ -30,15 +30,15 @@ fun SrtEndpoint(serviceInfo: TSServiceInfo = createDefaultTsServiceInfo()) = Srt
 
 /**
  * A SRT endpoint.
- * It encapsulates a [TSMuxer] and a [SrtSink].
+ * It encapsulates a [TsMuxer] and a [SrtSink].
  */
 class SrtEndpoint internal constructor() :
-    CompositeEndpoint(TSMuxer(), SrtSink()) {
+    CompositeEndpoint(TsMuxer(), SrtSink()) {
     fun addService(serviceInfo: TSServiceInfo = createDefaultTsServiceInfo()) {
-        (muxer as TSMuxer).addService(serviceInfo)
+        (muxer as TsMuxer).addService(serviceInfo)
     }
 
     fun removeService(serviceInfo: TSServiceInfo) {
-        (muxer as TSMuxer).removeService(serviceInfo)
+        (muxer as TsMuxer).removeService(serviceInfo)
     }
 }
