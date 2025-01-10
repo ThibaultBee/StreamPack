@@ -22,14 +22,14 @@ import android.view.Surface
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.core.app.ActivityCompat
-import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
-import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.internal.sources.IMediaProjectionSource
-import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSourceInternal
-import io.github.thibaultbee.streampack.core.internal.sources.audio.audiorecord.MicrophoneSource.Companion.buildDefaultMicrophoneSource
-import io.github.thibaultbee.streampack.core.internal.sources.video.mediaprojection.MediaProjectionVideoSource
-import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
-import io.github.thibaultbee.streampack.core.internal.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSource
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource.Companion.buildDefaultMicrophoneSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSource
+import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 
 /**
  * A [SingleStreamer] that sends microphone and screen frames.

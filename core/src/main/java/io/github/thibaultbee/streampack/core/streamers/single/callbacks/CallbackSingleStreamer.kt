@@ -3,11 +3,11 @@ package io.github.thibaultbee.streampack.core.streamers.single.callbacks
 import android.Manifest
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
-import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSource
-import io.github.thibaultbee.streampack.core.internal.sources.video.IVideoSource
-import io.github.thibaultbee.streampack.core.internal.utils.RotationValue
+import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
+import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
+import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig

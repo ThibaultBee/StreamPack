@@ -34,7 +34,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
-import io.github.thibaultbee.streampack.core.internal.utils.extensions.rootCause
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.rootCause
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.streamers.orientation.IRotationProvider
 import io.github.thibaultbee.streampack.core.streamers.orientation.SensorRotationProvider

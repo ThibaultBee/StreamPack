@@ -41,8 +41,8 @@ import io.github.thibaultbee.streampack.app.utils.isEmpty
 import io.github.thibaultbee.streampack.app.utils.switchBackToFront
 import io.github.thibaultbee.streampack.app.utils.toggleCamera
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
-import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
-import io.github.thibaultbee.streampack.core.internal.sources.video.camera.CameraSettings
+import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.core.streamers.observers.StreamerViewModelLifeCycleObserver
 import io.github.thibaultbee.streampack.core.streamers.single.startStream

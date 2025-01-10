@@ -37,7 +37,7 @@ import io.github.thibaultbee.streampack.app.utils.DialogUtils
 import io.github.thibaultbee.streampack.app.utils.ProfileLevelDisplay
 import io.github.thibaultbee.streampack.app.utils.StreamerInfoFactory
 import io.github.thibaultbee.streampack.app.utils.dataStore
-import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.MediaCodecHelper
+import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecHelper
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig

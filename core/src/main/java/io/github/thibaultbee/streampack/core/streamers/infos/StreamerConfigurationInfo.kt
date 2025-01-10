@@ -43,9 +43,9 @@ import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile2HDR10Plus
 import android.media.MediaFormat
 import android.os.Build
 import android.util.Range
-import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.MediaCodecHelper
-import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.core.internal.utils.av.video.DynamicRangeProfile
+import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecHelper
+import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import java.security.InvalidParameterException
 

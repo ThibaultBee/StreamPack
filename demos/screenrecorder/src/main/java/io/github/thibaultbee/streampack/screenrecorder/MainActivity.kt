@@ -34,8 +34,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
-import io.github.thibaultbee.streampack.core.internal.encoders.mediacodec.MediaCodecHelper
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
+import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecHelper
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.ScreenRecorderSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig

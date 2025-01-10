@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.core.streamers.orientation
 
 import android.content.Context
 import android.hardware.display.DisplayManager
-import io.github.thibaultbee.streampack.core.internal.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 
 /**
  * A [RotationProvider] that provides display rotation.

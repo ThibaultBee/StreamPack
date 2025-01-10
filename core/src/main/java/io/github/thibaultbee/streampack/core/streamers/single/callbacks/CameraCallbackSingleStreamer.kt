@@ -5,10 +5,10 @@ import android.content.Context
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
-import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.internal.sources.video.camera.CameraSource
-import io.github.thibaultbee.streampack.core.internal.sources.video.camera.ICameraSource
+import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer

@@ -2,8 +2,8 @@ package io.github.thibaultbee.streampack.core.configuration.mediadescriptor
 
 import android.content.Context
 import android.net.Uri
-import io.github.thibaultbee.streampack.core.internal.endpoints.MediaContainerType
-import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
+import io.github.thibaultbee.streampack.core.elements.endpoints.MediaContainerType
+import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 
 
 /**

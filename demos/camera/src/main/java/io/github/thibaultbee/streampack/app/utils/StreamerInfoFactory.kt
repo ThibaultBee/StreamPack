@@ -18,9 +18,9 @@ package io.github.thibaultbee.streampack.app.utils
 import android.content.Context
 import io.github.thibaultbee.streampack.app.models.EndpointType
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
-import io.github.thibaultbee.streampack.core.internal.endpoints.MediaContainerType
-import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
+import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.MediaContainerType
+import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 
 class StreamerInfoFactory(

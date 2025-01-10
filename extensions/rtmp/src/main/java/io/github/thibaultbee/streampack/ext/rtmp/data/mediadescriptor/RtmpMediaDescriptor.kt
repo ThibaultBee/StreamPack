@@ -18,8 +18,8 @@ package io.github.thibaultbee.streampack.ext.rtmp.data.mediadescriptor
 import android.net.Uri
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
-import io.github.thibaultbee.streampack.core.internal.endpoints.MediaContainerType
-import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
+import io.github.thibaultbee.streampack.core.elements.endpoints.MediaContainerType
+import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import java.security.InvalidParameterException
 
 /**

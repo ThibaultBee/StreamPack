@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.utils.extensions
 
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ClosedException
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ClosedException
 
 /**
  * Whether the [Throwable] is a [ClosedException]
