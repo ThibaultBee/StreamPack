@@ -215,7 +215,7 @@ class WhiteBalance(private val context: Context, private val cameraController: C
         }
 
     /**
-     * Get or set auto white balance lock.
+     * Gets or sets auto white balance lock.
      */
     var lock: Boolean
         get() = cameraController.getSetting(CaptureRequest.CONTROL_AWB_LOCK) ?: false
@@ -374,6 +374,18 @@ class Exposure(private val context: Context, private val cameraController: Camer
             cameraController.setRepeatingSetting(
                 CaptureRequest.CONTROL_AE_REGIONS,
                 value.toTypedArray()
+            )
+        }
+
+    /**
+     * Gets or sets auto exposure lock.
+     */
+    var lock: Boolean
+        get() = cameraController.getSetting(CaptureRequest.CONTROL_AE_LOCK) ?: false
+        set(value) {
+            cameraController.setRepeatingSetting(
+                CaptureRequest.CONTROL_AE_LOCK,
+                value
             )
         }
 
