@@ -23,18 +23,6 @@ dependencies {
 }
 ```
 
-If you use both RTMP and SRT, you might have a conflict with `libssl.so` and `libcrypto.so` because
-they
-are both includes in native dependencies. To solve this, you can add in your `build.gradle`:
-
-```groovy
-android {
-    packagingOptions {
-        pickFirst '**/*.so'
-    }
-}
-```
-
 ## Features
 
 * Video:
@@ -43,7 +31,7 @@ android {
     * Codec: HEVC/H.265, AVC/H.264, VP9 or AV1 (experimental,
       see https://github.com/ThibaultBee/StreamPack/discussions/90)
     * HDR (experimental, see https://github.com/ThibaultBee/StreamPack/discussions/91)
-    * Configurable bitrate, resolution, framerate (tested up to 60), encoder level, encoder profile
+    * Configurable bitrate, resolution, frame rate (tested up to 60), encoder level, encoder profile
     * Video only mode
     * Device video capabilities
 * Audio:
@@ -59,58 +47,18 @@ android {
     * Ultra low-latency based on [SRT](https://github.com/Haivision/srt)
     * Network adaptive bitrate mechanism for [SRT](https://github.com/Haivision/srt)
 
-## Samples
-
-### Camera and audio sample
-
-For source code example on how to use camera and audio streamers, check
-the [sample app directory](https://github.com/ThibaultBee/StreamPack/tree/master/demos/camera). On
-first launch, you will have to set RTMP url or SRT server IP in the settings menu.
-
-### Screen recorder
-
-For source code example on how to use screen recorder streamer, check
-the [sample screen recorder directory](https://github.com/ThibaultBee/StreamPack/tree/master/demos/screenrecorder)
-. On first launch, you will have to set RTMP url or SRT server IP in the settings menu.
-
-### Tests with a FFmpeg server
-
-FFmpeg has been used as an SRT server+demuxer+decoder for the tests.
-
-#### RTMP
-
-Tells FFplay to listen on IP `0.0.0.0` and port `1935`.
-
-```
-ffplay -listen 1 -i 'rtmp://0.0.0.0:1935/s/streamKey'
-```
-
-On StreamPack sample app settings, set `Endpoint` -> `Type` to `Stream to a remove RTMP device`,
-then set the server `URL` to `rtmp://serverip:1935/s/streamKey`. At this point, StreamPack sample
-app should successfully sends audio and video frames. On FFplay side, you should be able to watch
-this live stream.
-
-#### SRT
-
-Check how to build FFmpeg with libsrt
-in [SRT CookBook](https://srtlab.github.io/srt-cookbook/apps/ffmpeg/). Tells FFplay to listen on
-IP `0.0.0.0` and port `9998`:
-
-```
-ffplay -fflags nobuffer 'srt://0.0.0.0:9998?mode=listener'
-```
-
-On StreamPack sample app settings, set the server `IP` to your server IP and server `Port` to `9998`
-. At this point, StreamPack sample app should successfully sends audio and video frames. On FFplay
-side, you should be able to watch this live stream.
-
 ## Quick start
 
 If you want to create a new application, you should use the
 template [StreamPack boilerplate](https://github.com/ThibaultBee/StreamPack-boilerplate). In 5
 minutes, you will be able to stream live video to your server.
 
-1. Request the required permissions in your Activity/Fragment.
+## Getting started
+
+### Getting started for a camera stream
+
+1. Request the required permissions in your Activity/Fragment. See the
+   [Permissions](#permissions) section for more information.
 
 2. Creates a `SurfaceView` to display camera preview in your layout
 
@@ -138,7 +86,15 @@ There are 2 types of streamers:
 - callback based: streamer APIs use callbacks
 
 ```kotlin
-// For coroutine based
+/**
+ * For coroutine based.
+ * Suspend and flow have to be called from a coroutine scope.
+ * Android comes with coroutine scopes like `lifecycleScope` or `viewModelScope`.
+ * Call suspend functions from a coroutine scope:
+ *  viewModelScope.launch {
+ *    streamer.startStream(uri)
+ *  }
+ */
 val streamer = CameraSingleStreamer(context = requireContext())
 // For callback based
 // val streamer = CameraCallbackSingleStreamer(context = requireContext())
@@ -192,8 +148,8 @@ val descriptor =
     UriMediaDescriptor("rtmps://serverip:1935/s/streamKey") // For RTMP/RTMPS. Uri also supports SRT url, file, content path,...
 /**
  * Alternatively, you can use object syntax:
- * - RtmpConnectionDescriptor("rtmps", "serverip", 1935, "s", "streamKey") // For RTMP/RTMPS
- * - SrtConnectionDescriptor("serverip", 1234) // For SRT
+ * - RtmpMediaDescriptor("rtmps", "serverip", 1935, "s", "streamKey") // For RTMP/RTMPS
+ * - SrtMediaDescriptor("serverip", 1234) // For SRT
  */
 
 streamer.startStream() 
@@ -212,7 +168,41 @@ streamer.release()
 ```
 
 For more detailed explanation, check out
-the [API documentation](https://thibaultbee.github.io/StreamPack).
+the [documentation](#documentations).
+
+For a complete example, check out the [demos/camera](demos/camera) directory.
+
+### Getting started for a screen recorder stream
+
+1. Requests the required permissions in your Activity/Fragment. See the
+   [Permissions](#permissions) section for more information.
+2. Creates a `MyService` that extends `DefaultScreenRecorderService` (so you can customize
+   notifications among other things).
+3. Creates a screen record `Intent` and requests the activity result
+
+```kotlin
+ScreenRecorderSingleStreamer.createScreenRecorderIntent(context = requireContext())
+```
+
+4. Starts the service
+
+```kotlin
+DefaultScreenRecorderService.launch(
+    requireContext(),
+    MyService::class.java,
+    { streamer ->
+        streamer.activityResult = result
+        try {
+            configure(streamer)
+        } catch (t: Throwable) {
+            // Handle exception
+        }
+        startStream(streamer)
+    }
+)
+```
+
+For a complete example, check out the [demos/camera](demos/screenrecorder) directory .
 
 ## Permissions
 
@@ -230,6 +220,8 @@ You need to add the following permissions in your `AndroidManifest.xml`:
 
 For a record, you also need to request the following dangerous
 permission: `android.permission.WRITE_EXTERNAL_STORAGE`.
+
+### Permissions for a camera stream
 
 To use the camera, you need to request the following permission:
 
@@ -253,6 +245,8 @@ For the PlayStore, your application might declare this in its `AndroidManifest.x
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 </manifest>
 ```
+
+### Permissions for a screen recorder stream
 
 To use the screen recorder, you need to request the following permission:
 
@@ -328,53 +322,101 @@ See the `demos/camera` for a complete example.
 
 You can also create your own `targetRotation` provider.
 
+## Documentations
+
+[StreamPack API guide](https://thibaultbee.github.io/StreamPack)
+
+- Additional documentations are available in the `docs` directory:
+    - [Live and record simultaneously](docs/LiveAndRecordSimultaneously.md)
+    - [Streamers](docs/Streamers.md)
+    - [Streamer elements](docs/StreamerElements.md)
+
+## Demos
+
+### Camera and audio demo
+
+For source code example on how to use camera and audio streamers,
+check [demos/camera](demos/camera). On
+first launch, you will have to set RTMP url or SRT server IP in the settings menu.
+
+### Screen recorder demo
+
+For source code example on how to use screen recorder streamer, check
+the [demos/screenrecorder](demos/screenrecorder)
+. On first launch, you will have to set RTMP url or SRT server IP in the settings menu.
+
+### Tests with a FFmpeg server
+
+FFmpeg has been used as an SRT server+demuxer+decoder for the tests.
+
+#### RTMP
+
+Tells FFplay to listen on IP `0.0.0.0` and port `1935`.
+
+```
+ffplay -listen 1 -i 'rtmp://0.0.0.0:1935/s/streamKey'
+```
+
+On StreamPack sample app settings, set `Endpoint` -> `Type` to `Stream to a remove RTMP device`,
+then set the server `URL` to `rtmp://serverip:1935/s/streamKey`. At this point, StreamPack sample
+app should successfully sends audio and video frames. On FFplay side, you should be able to watch
+this live stream.
+
+#### SRT
+
+If libsrt is not already installed on your FFmpeg, you have to build FFmpeg with libsrt.
+Check how to build FFmpeg with libsrt
+in [SRT CookBook](https://srtlab.github.io/srt-cookbook/apps/ffmpeg/). Tells FFplay to listen on
+IP `0.0.0.0` and port `9998`:
+
+```
+ffplay -fflags nobuffer 'srt://0.0.0.0:9998?mode=listener'
+```
+
+On StreamPack sample app settings, set the server `IP` to your server IP and server `Port` to`9998`.
+At this point, StreamPack sample app should successfully sends audio and video frames. On FFplay
+side, you should be able to watch this live stream.
+
 ## Tips
 
 ### RTMP or SRT
 
-RTMP and SRT are both live streaming protocols . SRT is a UDP - based modern protocol, it is
-reliable
-and ultra low latency . RTMP is a TCP - based protocol, it is also reliable but it is only low
-latency .
+RTMP and SRT are both live streaming protocols. SRT is a UDP-based modern protocol, it is
+reliable and ultra low latency. RTMP is a TCP-based protocol, it is also reliable but it is only low
+latency.
 There are already a lot of comparison over the Internet, so here is a summary:
-SRT:
 
--Ultra low latency(< 1 s)
--HEVC support through MPEG -TS RTMP :
--Low latency (2 - 3 s)
--HEVC not officially support (specification has been aban by its creator)
+* SRT:
+    - Ultra low latency(< 1 s)
+* RTMP:
+    - Low latency (2 - 3 s)
 
 So, the main question is : "which protocol to use?"
 It is easy: if your server has SRT support, use SRT otherwise use RTMP.
 
 ### Streamers
 
-Let's start with some definitions! `Streamers` are classes that represent a streaming pipeline:
-capture, encode, mux and send.They comes in multiple flavours: with different audio and video
-source . 3 types of base streamers
-are available :
+Let's start with some definitions!
+`Streamers` are classes that represent a whole streaming pipeline:
+they capture, encode, mux and send.
+They comes in multiple flavours: with different audio and video
+source.
+3 main types of streamers are available :
 
 -`CameraSingleStreamer`: for streaming from camera
 -`ScreenRecorderSingleStreamer`: for streaming from screen
 -`AudioOnlySingleStreamer`: for streaming audio only
 
-Since 3.0.0, the endpoint of a `Streamer` is inferred from the `MediaDescriptor` object passed to
-the `open` or `startStream` methods.It is possible to limit the possibility of the endpoint by
-implementing your own `DynamicEndpoint.Factory` or passing a endpoint as the `Streamer` `endpoint`
-parameter.To create a `Streamer` for a new source, you have to create a new `Streamer` class that
-inherits
-from `SingleStreamer` .
+For more information, check the [Streamers](docs/Streamers.md) documentation.
 
-### Get device capabilities
+### Get device and protocol capabilities
 
 Have you ever wonder : "What are the supported resolution of my cameras?" or "What is the supported
 sample rate of my audio codecs ?"? `Info` classes are made for this. All `Streamer` comes with a
-specific `Info` object :
+specific `Info` object:
 
-    ```kotlin
-
+ ```kotlin
 val info = streamer.getInfo(MediaDescriptor("rtmps://serverip:1935/s/streamKey"))
-
 ```
 
 For static endpoint or an opened dynamic endpoint, you can directly get the info:
@@ -383,43 +425,41 @@ For static endpoint or an opened dynamic endpoint, you can directly get the info
 val info = streamer.info
 ```
 
-### Get extended settings
+### Element specific configuration
 
 If you are looking for more settings on streamer, like the exposure compensation of your camera, you
-must have a look on `Settings` class. Each `Streamer` elements (such
-as `VideoSource`, `AudioSource`,...)
+must have a look on `Settings` class. Each `Streamer` elements (such as `VideoSource`,
+`AudioSource`,...)
 comes with a public interface that allows to have access to specific information or configuration.
 
+Example: the `CameraSource` object has a `settings` property that allows to get and set the current
+camera settings:
+
 ```kotlin
- (streamer.videoSource as IPublicCameraSource).settings
+(streamer.videoSource as ICameraSource).settings
 ```
 
-For example, if you want to change the exposure compensation of your camera, on a `CameraStreamers`
+Example: you can change the exposure compensation of your camera, on a `CameraStreamers`
 you can do it like this:
 
 ```kotlin
- (streamer.videoSource as IPublicCameraSource).settings.exposure.compensation = value
+(streamer.videoSource as ICameraSource).settings.exposure.compensation = value
 ```
 
-Moreover you can check exposure range and step with:
+Moreover you can retrieve exposure range and step with:
 
 ```kotlin
- (streamer.videoSource as IPublicCameraSource).settings.exposure.availableCompensationRange
-(streamer.videoSource as IPublicCameraSource).settings.exposure.availableCompensationStep
+(streamer.videoSource as ICameraSource).settings.exposure.availableCompensationRange
+(streamer.videoSource as ICameraSource).settings.exposure.availableCompensationStep
 ```
 
-### Screen recorder Service
+See the [docs/StreamerElements.md](docs/StreamerElements.md#element-specific-configuration) for more
+information.
 
-To record the screen, you have to use the `DefaultScreenRecorderStreamer` inside
-an [Android Service](https://developer.android.com/guide/components/services). To simplify this
-integration, StreamPack provides the `DefaultScreenRecorderService` classes. Extends one of these
-class
-and overrides `onNotification` to customise the notification.
-
-### Android SDK version
+### Android versions
 
 Even if StreamPack sdk supports a `minSdkVersion` 21. I strongly recommend to set the
-`minSdkVersion` of your application to a higher version (the highest is the best!) for higher
+`minSdkVersion` of your application to a higher version (the highest is the best!) for better
 performance.
 
 ## Licence
