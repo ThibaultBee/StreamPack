@@ -29,10 +29,10 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
-import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.CompositeEndpoint
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.mp4.MP4Muxer
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.FileSink
+import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.MP4Muxer
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig

@@ -16,12 +16,12 @@
 package io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.composites.sinks
 
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.internal.data.Packet
-import io.github.thibaultbee.streampack.core.internal.encoders.VideoCodecConfig
-import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.AbstractSink
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.ClosedException
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.sinks.SinkConfiguration
+import io.github.thibaultbee.streampack.core.elements.data.Packet
+import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
+import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.AbstractSink
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ClosedException
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher

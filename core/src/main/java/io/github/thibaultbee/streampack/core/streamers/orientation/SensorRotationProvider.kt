@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.streamers.orientation
 import android.content.Context
 import android.view.OrientationEventListener
 import android.view.Surface
-import io.github.thibaultbee.streampack.core.internal.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.utils.extensions.clamp90
 
 

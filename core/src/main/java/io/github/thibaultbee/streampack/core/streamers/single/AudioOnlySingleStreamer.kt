@@ -16,10 +16,10 @@
 package io.github.thibaultbee.streampack.core.streamers.single
 
 import android.content.Context
-import io.github.thibaultbee.streampack.core.internal.endpoints.DynamicEndpoint
-import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.internal.sources.audio.IAudioSourceInternal
-import io.github.thibaultbee.streampack.core.internal.sources.audio.audiorecord.MicrophoneSource.Companion.buildDefaultMicrophoneSource
+import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource.Companion.buildDefaultMicrophoneSource
 
 /**
  * A [SingleStreamer] that sends only microphone frames.

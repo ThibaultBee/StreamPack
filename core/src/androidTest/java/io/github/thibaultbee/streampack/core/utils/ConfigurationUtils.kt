@@ -17,9 +17,9 @@ package io.github.thibaultbee.streampack.core.utils
 
 import android.media.MediaFormat
 import android.util.Size
-import io.github.thibaultbee.streampack.core.internal.encoders.AudioCodecConfig
-import io.github.thibaultbee.streampack.core.internal.encoders.VideoCodecConfig
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
+import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
+import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import kotlin.random.Random
 
 object ConfigurationUtils {

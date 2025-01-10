@@ -1,6 +1,6 @@
 package io.github.thibaultbee.streampack.core.configuration.mediadescriptor
 
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 
 /**
  * Creates a default [TSServiceInfo].

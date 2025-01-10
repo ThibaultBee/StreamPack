@@ -20,9 +20,9 @@ import io.github.thibaultbee.srtdroid.core.models.SrtUrl
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.createDefaultTsServiceInfo
-import io.github.thibaultbee.streampack.core.internal.endpoints.MediaContainerType
-import io.github.thibaultbee.streampack.core.internal.endpoints.MediaSinkType
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.data.TSServiceInfo
+import io.github.thibaultbee.streampack.core.elements.endpoints.MediaContainerType
+import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import java.security.InvalidParameterException
 
 /**

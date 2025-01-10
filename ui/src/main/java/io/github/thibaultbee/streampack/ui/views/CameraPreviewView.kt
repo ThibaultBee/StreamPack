@@ -33,7 +33,7 @@ import androidx.camera.viewfinder.core.ScaleType
 import androidx.camera.viewfinder.core.ViewfinderSurfaceRequest
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import io.github.thibaultbee.streampack.core.internal.utils.OrientationUtils
+import io.github.thibaultbee.streampack.core.elements.utils.OrientationUtils
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer

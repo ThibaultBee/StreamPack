@@ -16,9 +16,9 @@
 package io.github.thibaultbee.streampack.core.regulator.controllers
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
-import io.github.thibaultbee.streampack.core.internal.encoders.IEncoder
-import io.github.thibaultbee.streampack.core.internal.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.core.internal.utils.Scheduler
+import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
+import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.core.elements.utils.Scheduler
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
 import io.github.thibaultbee.streampack.core.streamers.single.ICoroutineSingleStreamer
 

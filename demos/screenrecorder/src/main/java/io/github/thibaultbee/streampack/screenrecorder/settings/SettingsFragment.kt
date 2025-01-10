@@ -27,9 +27,9 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SeekBarPreference
 import androidx.preference.SwitchPreference
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.CompositeEndpoint
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.flv.FlvMuxerInfo
-import io.github.thibaultbee.streampack.core.internal.endpoints.composites.muxers.ts.TSMuxerInfo
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.FlvMuxerInfo
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TSMuxerInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.StreamerConfigurationInfo
 import io.github.thibaultbee.streampack.screenrecorder.R
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointFactory

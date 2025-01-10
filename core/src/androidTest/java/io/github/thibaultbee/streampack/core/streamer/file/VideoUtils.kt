@@ -9,7 +9,7 @@ import android.media.MediaMetadataRetriever.METADATA_KEY_SAMPLERATE
 import android.media.MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT
 import android.media.MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH
 import android.net.Uri
-import io.github.thibaultbee.streampack.core.internal.utils.extensions.isDevicePortrait
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.isDevicePortrait
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import org.junit.Assert.assertEquals
