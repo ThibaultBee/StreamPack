@@ -39,7 +39,7 @@ import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbac
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.startPreview
-import io.github.thibaultbee.streampack.core.utils.extensions.getCameraCharacteristics
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.getCameraCharacteristics
 import io.github.thibaultbee.streampack.ui.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch

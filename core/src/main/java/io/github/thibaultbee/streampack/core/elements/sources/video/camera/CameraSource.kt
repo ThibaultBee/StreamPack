@@ -23,8 +23,6 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSour
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.utils.extensions.defaultCameraId
-import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
 import kotlinx.coroutines.runBlocking
 
 class CameraSource(

@@ -41,9 +41,9 @@ import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaC
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
-import io.github.thibaultbee.streampack.core.utils.extensions.cameras
-import io.github.thibaultbee.streampack.core.utils.extensions.defaultCameraId
-import io.github.thibaultbee.streampack.core.utils.extensions.isFrameRateSupported
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.cameras
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.defaultCameraId
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.isFrameRateSupported
 import java.io.IOException
 
 class SettingsFragment : PreferenceFragmentCompat() {

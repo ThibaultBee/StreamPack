@@ -26,7 +26,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.DisplayCompat
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.WindowUtils
-import io.github.thibaultbee.streampack.core.utils.extensions.is90Multiple
 
 /**
  * Returns the display orientation in degrees from the natural orientation.

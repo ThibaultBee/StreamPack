@@ -28,10 +28,10 @@ import io.github.thibaultbee.streampack.app.ApplicationConstants.userPrefName
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
-import io.github.thibaultbee.streampack.core.utils.extensions.backCameras
-import io.github.thibaultbee.streampack.core.utils.extensions.cameras
-import io.github.thibaultbee.streampack.core.utils.extensions.frontCameras
-import io.github.thibaultbee.streampack.core.utils.extensions.isBackCamera
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.backCameras
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.cameras
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.frontCameras
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.isBackCamera
 
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun ICameraStreamer.toggleCamera(context: Context) {
