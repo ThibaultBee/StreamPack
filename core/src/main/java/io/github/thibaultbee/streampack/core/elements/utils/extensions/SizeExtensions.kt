@@ -19,8 +19,6 @@ import android.content.Context
 import android.util.Size
 import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.is90or270
-import io.github.thibaultbee.streampack.core.utils.extensions.is90Multiple
-import io.github.thibaultbee.streampack.core.utils.extensions.within360
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

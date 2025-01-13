@@ -13,8 +13,7 @@ import androidx.camera.viewfinder.core.populateFromCharacteristics
 import androidx.core.content.ContextCompat
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.startPreview
-import io.github.thibaultbee.streampack.core.utils.extensions.getCameraCharacteristics
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.getCameraCharacteristics
 
 /**
  * Start preview on a [CameraViewfinder]

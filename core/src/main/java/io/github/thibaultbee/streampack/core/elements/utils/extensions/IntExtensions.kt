@@ -24,3 +24,24 @@ import io.github.thibaultbee.streampack.core.elements.utils.OrientationUtils
 internal val Int.rotationToDegrees: Int
     @IntRange(from = 0, to = 359)
     get() = OrientationUtils.getSurfaceRotationDegrees(this)
+
+/**
+ * Whether the integer is a multiple of 90.
+ */
+internal val Int.is90Multiple: Boolean
+    get() = this % 90 == 0
+
+/**
+ * Clamps the integer to the nearest multiple of 90.
+ */
+internal val Int.clamp90: Int
+    get() = (this + 45) / 90 * 90
+
+/**
+ * Converts the integer to a value within 360 degrees.
+ */
+internal val Int.within360: Int
+    get() {
+        return (this % 360 + 360) % 360
+    }
+

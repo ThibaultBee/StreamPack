@@ -16,8 +16,6 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.dispatchers.ICameraDispatcher
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.resumeWithExceptionIfActive
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.utils.extensions.getAutoFocusModes
-import io.github.thibaultbee.streampack.core.utils.extensions.getCameraFps
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 

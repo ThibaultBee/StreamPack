@@ -23,8 +23,6 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.source.Ab
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.landscapize
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotationToDegrees
-import io.github.thibaultbee.streampack.core.utils.extensions.getCameraCharacteristics
-import io.github.thibaultbee.streampack.core.utils.extensions.getFacingDirection
 
 class CameraInfoProvider(
     private val context: Context,
