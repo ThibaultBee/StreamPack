@@ -35,7 +35,7 @@ open class CompositeEndpoint(
     final override val muxer: IMuxerInternal,
     override val sink: ISinkInternal
 ) :
-    ICompositeEndpoint {
+    ICompositeEndpointInternal {
     /**
      * The video and audio configurations.
      * It is used to configure the sink.
