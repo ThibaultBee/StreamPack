@@ -19,7 +19,7 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.Media
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.utils.combineStates
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.union
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.intersect
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.StateFlow
 
@@ -70,14 +70,14 @@ open class CombineEndpoint(protected val endpointInternals: List<IEndpointIntern
      */
     override val info: IEndpoint.IEndpointInfo
         get() = endpointInternals.map { it.info }
-            .reduce { acc, iEndpointInfo -> acc union iEndpointInfo }
+            .reduce { acc, iEndpointInfo -> acc intersect iEndpointInfo }
 
     /**
      * The union of all endpoints' [IEndpoint.IEndpointInfo].
      */
     override fun getInfo(type: MediaDescriptor.Type): IEndpoint.IEndpointInfo {
         return endpointInternals.map { it.getInfo(type) }
-            .reduce { acc, iEndpointInfo -> acc union iEndpointInfo }
+            .reduce { acc, iEndpointInfo -> acc intersect iEndpointInfo }
     }
 
     /**

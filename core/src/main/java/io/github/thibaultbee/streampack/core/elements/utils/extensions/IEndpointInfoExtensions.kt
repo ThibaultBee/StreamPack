@@ -20,42 +20,42 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 /**
  * Returns the union of two [IEndpoint.IEndpointInfo]
  */
-internal infix fun IEndpoint.IEndpointInfo.union(other: IEndpoint.IEndpointInfo): IEndpoint.IEndpointInfo {
+internal infix fun IEndpoint.IEndpointInfo.intersect(other: IEndpoint.IEndpointInfo): IEndpoint.IEndpointInfo {
     return object : IEndpoint.IEndpointInfo {
         override val audio = object : IEndpoint.IEndpointInfo.IAudioEndpointInfo {
             override val supportedEncoders: List<String>
-                get() = this@union.audio.supportedEncoders.union(other.audio.supportedEncoders)
+                get() = this@intersect.audio.supportedEncoders.intersect(other.audio.supportedEncoders.toSet())
                     .toList()
 
             override val supportedSampleRates: List<Int>?
                 get() {
-                    val supportedSampleRates = this@union.audio.supportedSampleRates
+                    val supportedSampleRates = this@intersect.audio.supportedSampleRates
                     val otherSupportedSampleRates = other.audio.supportedSampleRates
                     return if (supportedSampleRates == null) {
                         otherSupportedSampleRates
                     } else if (otherSupportedSampleRates == null) {
                         supportedSampleRates
                     } else {
-                        supportedSampleRates.union(otherSupportedSampleRates).toList()
+                        supportedSampleRates.intersect(otherSupportedSampleRates).toList()
                     }
                 }
 
             override val supportedByteFormats: List<Int>?
                 get() {
-                    val supportedByteFormats = this@union.audio.supportedByteFormats
+                    val supportedByteFormats = this@intersect.audio.supportedByteFormats
                     val otherSupportedByteFormats = other.audio.supportedByteFormats
                     return if (supportedByteFormats == null) {
                         otherSupportedByteFormats
                     } else if (otherSupportedByteFormats == null) {
                         supportedByteFormats
                     } else {
-                        supportedByteFormats.union(otherSupportedByteFormats).toList()
+                        supportedByteFormats.intersect(otherSupportedByteFormats).toList()
                     }
                 }
         }
         override val video = object : IEndpoint.IEndpointInfo.IVideoEndpointInfo {
             override val supportedEncoders: List<String> =
-                this@union.video.supportedEncoders.union(other.video.supportedEncoders)
+                this@intersect.video.supportedEncoders.intersect(other.video.supportedEncoders.toSet())
                     .toList()
         }
     }
