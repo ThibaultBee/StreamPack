@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.elements.sources
+package io.github.thibaultbee.streampack.core.elements.sources.video
 
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import java.nio.ByteBuffer
 
-interface IFrameSource {
+interface IVideoFrameSource {
 
     /**
-     * Generate a frame from capture device
+     * Gets a video frame from a source.
      * @param buffer buffer where to write data. Must be set as buffer of returned Frame
      * @return frame with correct infos (at least buffer, mime type and pts)
      */
-    fun getFrame(buffer: ByteBuffer): Frame
+    fun getVideoFrame(buffer: ByteBuffer): Frame
 }

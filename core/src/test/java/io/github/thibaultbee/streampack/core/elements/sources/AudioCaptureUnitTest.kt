@@ -16,8 +16,8 @@
 package io.github.thibaultbee.streampack.core.elements.sources
 
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource
-import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.elements.utils.FakeLogger
+import io.github.thibaultbee.streampack.core.logger.Logger
 import org.junit.Assert
 import org.junit.Test
 import java.nio.ByteBuffer
@@ -36,7 +36,7 @@ class MicrophoneSourceUnitTest {
         } catch (_: Throwable) {
         }
         try {
-            microphoneSource.getFrame(ByteBuffer.allocate(10))
+            microphoneSource.getAudioFrame(ByteBuffer.allocate(10))
             Assert.fail()
         } catch (_: Throwable) {
         }
