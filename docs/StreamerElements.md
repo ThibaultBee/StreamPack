@@ -95,8 +95,8 @@ interface ISurfaceSource {
   + outputSurface: Surface?
 }
 
-interface IFrameSource {
-  + getFrame(buffer: ByteBuffer): Frame
+interface IVideoFrameSource {
+  + getVideoFrame(buffer: ByteBuffer): Frame
 }
 
 interface IVideoSource {
@@ -105,11 +105,15 @@ interface IVideoSource {
 class CameraSource {
 }
 
-CameraSource <|.. ISurfaceSource
+CameraSource <|.. IVideoFrameSource
 CameraSource <|.. IVideoSource
 
+interface IAudioFrameSource {
+  + getAudioFrame(buffer: ByteBuffer): Frame
+}
+
 interface IAudioSource
-IAudioSource <|.. IFrameSource
+IAudioSource <|.. IAudioFrameSource
 
 class MicrophoneSource {
 }
@@ -118,11 +122,11 @@ MicrophoneSource <|.. IAudioSource
 @enduml
 -->
 
-To create a new audio source, implements a `IAudioSource`. It inherits from `IFrameSource`.
+To create a new audio source, implements a `IAudioSource`. It inherits from `IAudioFrameSource`.
 
-To create a new video source, implements a `IVideoSource` and `IFrameSource`
+To create a new video source, implements a `IVideoSource` and `IVideoFrameSource`
 or `ISurfaceSource`. Always prefer to use a video source as a `Surface` source if it is possible.
-`IFrameSource` has missing features and is not be stable.
+`IVideoFrameSource` has missing features and is not be stable.
 
 ### Encoders
 

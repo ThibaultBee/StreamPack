@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Thibault B.
+ * Copyright (C) 2021 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,16 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.audio
 
-import io.github.thibaultbee.streampack.core.elements.interfaces.Configurable
-import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
-import io.github.thibaultbee.streampack.core.elements.interfaces.Streamable
+import io.github.thibaultbee.streampack.core.elements.data.Frame
+import java.nio.ByteBuffer
 
-interface IAudioSourceInternal : IAudioSource, IAudioFrameSource, Streamable,
-    Configurable<AudioSourceConfig>, Releasable
+interface IAudioFrameSource {
 
-interface IAudioSource {
     /**
-     * [Boolean.true] to mute [IAudioSourceInternal], [Boolean.false] to unmute.
+     * Gets an audio frame from the source.
+     *
+     * @param buffer buffer where to write data. Must be set as buffer of returned Frame
+     * @return frame with correct infos (at least buffer, mime type and pts)
      */
-    var isMuted: Boolean
+    fun getAudioFrame(buffer: ByteBuffer): Frame
 }

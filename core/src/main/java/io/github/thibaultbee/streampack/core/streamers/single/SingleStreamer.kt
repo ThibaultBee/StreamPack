@@ -36,10 +36,10 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.SurfacePr
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.AbstractSurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.SurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
-import io.github.thibaultbee.streampack.core.elements.sources.IFrameSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoFrameSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
@@ -310,7 +310,7 @@ open class SingleStreamer(
                     input.listener =
                         object : IEncoderInternal.IByteBufferInput.OnFrameRequestedListener {
                             override fun onFrameRequested(buffer: ByteBuffer): Frame {
-                                return audioSourceInternal.getFrame(buffer)
+                                return audioSourceInternal.getAudioFrame(buffer)
                             }
                         }
                 } else {
@@ -454,7 +454,7 @@ open class SingleStreamer(
                 videoEncoder.input.listener =
                     object : IEncoderInternal.IByteBufferInput.OnFrameRequestedListener {
                         override fun onFrameRequested(buffer: ByteBuffer): Frame {
-                            return (videoSource as IFrameSource).getFrame(buffer)
+                            return (videoSource as IVideoFrameSource).getVideoFrame(buffer)
                         }
                     }
             }

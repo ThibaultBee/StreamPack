@@ -164,7 +164,7 @@ sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
         return timestamp
     }
 
-    override fun getFrame(buffer: ByteBuffer): Frame {
+    override fun getAudioFrame(buffer: ByteBuffer): Frame {
         val audioRecord = requireNotNull(audioRecord)
         val length = audioRecord.read(buffer, buffer.remaining())
         if (length >= 0) {
