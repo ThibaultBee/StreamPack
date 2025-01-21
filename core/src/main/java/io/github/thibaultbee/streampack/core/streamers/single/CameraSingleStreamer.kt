@@ -153,10 +153,6 @@ open class CameraSingleStreamer(
         return CameraStreamerConfigurationInfo(endpointInfo)
     }
 
-    override fun isMirroringRequired(): Boolean {
-        return cameraSource.infoProvider.isFrontFacing
-    }
-
     /**
      * Sets a preview surface.
      */

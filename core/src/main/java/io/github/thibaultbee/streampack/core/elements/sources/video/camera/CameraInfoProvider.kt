@@ -44,7 +44,8 @@ class CameraInfoProvider(
     val isFrontFacing: Boolean
         get() = context.getFacingDirection(cameraId) == CameraCharacteristics.LENS_FACING_FRONT
 
-    override val isMirror = false
+    override val isMirror: Boolean
+        get() = isFrontFacing
 
     @IntRange(from = 0, to = 359)
     override fun getRelativeRotationDegrees(
