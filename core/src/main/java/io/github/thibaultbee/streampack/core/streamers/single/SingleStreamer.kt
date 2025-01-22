@@ -75,12 +75,12 @@ open class SingleStreamer(
     protected val videoSourceInternal: IVideoSourceInternal?,
     protected val endpointInternal: IEndpointInternal = DynamicEndpoint(context),
     @RotationValue defaultRotation: Int = context.displayRotation
-) : ICoroutineSingleStreamer {
+) : ICoroutineSingleStreamer, ICoroutineAudioSingleStreamer, ICoroutineVideoSingleStreamer {
     private val dispatcher: CoroutineDispatcher =
         Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 
-    private val _throwable = MutableStateFlow<Throwable?>(null)
-    override val throwable: StateFlow<Throwable?> = _throwable
+    private val _throwableFlow = MutableStateFlow<Throwable?>(null)
+    override val throwableFlow: StateFlow<Throwable?> = _throwableFlow
 
     private var audioStreamId: Int? = null
     private var videoStreamId: Int? = null
@@ -155,7 +155,7 @@ open class SingleStreamer(
             Logger.e(TAG, "onStreamError: Can't stop stream", t)
         } finally {
             Logger.e(TAG, "onStreamError: ${t.message}", t)
-            _throwable.tryEmit(t)
+            _throwableFlow.tryEmit(t)
         }
     }
 
@@ -202,12 +202,12 @@ open class SingleStreamer(
     override val endpoint: IEndpoint
         get() = endpointInternal
 
-    override val isOpen: StateFlow<Boolean>
-        get() = endpointInternal.isOpen
+    override val isOpenFlow: StateFlow<Boolean>
+        get() = endpointInternal.isOpenFlow
 
 
-    private val _isStreaming = MutableStateFlow(false)
-    override val isStreaming: StateFlow<Boolean> = _isStreaming
+    private val _isStreamingFlow = MutableStateFlow(false)
+    override val isStreamingFlow: StateFlow<Boolean> = _isStreamingFlow
 
     /**
      * Whether the streamer has audio.
@@ -248,7 +248,7 @@ open class SingleStreamer(
     override var targetRotation: Int
         @RotationValue get() = _targetRotation
         set(@RotationValue newTargetRotation) {
-            if (isStreaming.value) {
+            if (isStreamingFlow.value) {
                 Logger.w(TAG, "Can't change rotation while streaming")
                 pendingTargetRotation = newTargetRotation
                 return
@@ -286,7 +286,7 @@ open class SingleStreamer(
      * @throws [Throwable] if configuration can not be applied.
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    override fun setAudioConfig(audioConfig: AudioConfig) {
+    override suspend fun setAudioConfig(audioConfig: AudioConfig) {
         require(hasAudio) { "Do not need to set audio as it is a video only streamer" }
         requireNotNull(audioSourceInternal) { "Audio source must not be null" }
 
@@ -505,7 +505,7 @@ open class SingleStreamer(
      *
      * @throws [Throwable] if configuration can not be applied.
      */
-    override fun setVideoConfig(videoConfig: VideoConfig) {
+    override suspend fun setVideoConfig(videoConfig: VideoConfig) {
         require(hasVideo) { "Do not need to set video as it is a audio only streamer" }
         requireNotNull(videoSourceInternal) { "Video source must not be null" }
 
@@ -526,6 +526,27 @@ open class SingleStreamer(
             release()
             throw t
         }
+    }
+
+    /**
+     * Configures both video and audio settings.
+     * It is the first method to call after a [SingleStreamer] instantiation.
+     * It must be call when both stream and audio and video capture are not running.
+     *
+     * Use [IConfigurationInfo] to get value limits.
+     *
+     * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
+     * to video encoder default level and default profile.
+     *
+     * @param audioConfig Audio configuration to set
+     * @param videoConfig Video configuration to set
+     *
+     * @throws [Throwable] if configuration can not be applied.
+     */
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
+    suspend fun setConfig(audioConfig: AudioConfig, videoConfig: VideoConfig) {
+        setAudioConfig(audioConfig)
+        setVideoConfig(videoConfig)
     }
 
     /**
@@ -554,8 +575,8 @@ open class SingleStreamer(
      * @see [stopStream]
      */
     override suspend fun startStream() = withContext(dispatcher) {
-        require(isOpen.value) { "Endpoint must be opened before starting stream" }
-        require(!isStreaming.value) { "Stream is already running" }
+        require(isOpenFlow.value) { "Endpoint must be opened before starting stream" }
+        require(!isStreamingFlow.value) { "Stream is already running" }
 
         try {
             val streams = mutableListOf<CodecConfig>()
@@ -592,7 +613,7 @@ open class SingleStreamer(
 
             bitrateRegulatorController?.start()
 
-            _isStreaming.emit(true)
+            _isStreamingFlow.emit(true)
         } catch (t: Throwable) {
             stopStreamInternal()
             throw t
@@ -635,7 +656,7 @@ open class SingleStreamer(
         audioEncoderInternal?.reset()
         resetVideoEncoder()
 
-        _isStreaming.emit(false)
+        _isStreamingFlow.emit(false)
     }
 
     /**
@@ -672,7 +693,7 @@ open class SingleStreamer(
      *
      * @see [setAudioConfig]
      */
-    override fun release() {
+    override suspend fun release() {
         // Sources
         audioSourceInternal?.release()
         val videoSource = videoSourceInternal
@@ -708,7 +729,7 @@ open class SingleStreamer(
     override fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) {
         bitrateRegulatorController?.stop()
         bitrateRegulatorController = controllerFactory.newBitrateRegulatorController(this).apply {
-            if (isStreaming.value) {
+            if (isStreamingFlow.value) {
                 this.start()
             }
             Logger.d(

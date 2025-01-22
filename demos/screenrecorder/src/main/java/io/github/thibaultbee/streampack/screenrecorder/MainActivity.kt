@@ -33,6 +33,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecHelper
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
@@ -46,6 +47,7 @@ import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
 import io.github.thibaultbee.streampack.screenrecorder.services.DemoScreenRecorderService
 import io.github.thibaultbee.streampack.screenrecorder.settings.SettingsActivity
 import io.github.thibaultbee.streampack.services.DefaultScreenRecorderService
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : AppCompatActivity() {
@@ -165,7 +167,9 @@ class MainActivity : AppCompatActivity() {
             resolution = configuration.video.resolution,
             fps = fps
         )
-        streamer.setVideoConfig(videoConfig)
+        lifecycleScope.launch {
+            streamer.setVideoConfig(videoConfig)
+        }
 
         if (configuration.audio.enable) {
             val audioConfig = AudioConfig(
@@ -181,7 +185,9 @@ class MainActivity : AppCompatActivity() {
                     Manifest.permission.RECORD_AUDIO
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
-                streamer.setAudioConfig(audioConfig)
+                lifecycleScope.launch {
+                    streamer.setAudioConfig(audioConfig)
+                }
             } else {
                 throw SecurityException("Permission RECORD_AUDIO must have been granted!")
             }

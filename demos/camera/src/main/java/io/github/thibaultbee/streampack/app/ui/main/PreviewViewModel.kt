@@ -42,12 +42,14 @@ import io.github.thibaultbee.streampack.app.utils.switchBackToFront
 import io.github.thibaultbee.streampack.app.utils.toggleCamera
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.isFrameRateSupported
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
-import io.github.thibaultbee.streampack.core.streamers.observers.StreamerViewModelLifeCycleObserver
+import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
+import io.github.thibaultbee.streampack.core.streamers.lifecycle.StreamerViewModelLifeCycleObserver
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.isFrameRateSupported
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrtBitrateRegulatorController
 import io.github.thibaultbee.streampack.ui.views.CameraPreviewView
 import kotlinx.coroutines.flow.combine
@@ -75,7 +77,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
             if (streamer is ICameraStreamer) {
                 permissions.add(Manifest.permission.CAMERA)
             }
-            if (streamer.audioSource != null) {
+            if (streamer.audioSource is AudioRecordSource) {
                 permissions.add(Manifest.permission.RECORD_AUDIO)
             }
             storageRepository.endpointDescriptorFlow.asLiveData().value?.let {
@@ -95,31 +97,31 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
 
     // Streamer states
     val isStreaming: LiveData<Boolean>
-        get() = streamer.isStreaming.asLiveData()
+        get() = streamer.isStreamingFlow.asLiveData()
     private val _isTryingConnection = MutableLiveData<Boolean>()
     val isTryingConnection: LiveData<Boolean> = _isTryingConnection
 
     init {
         viewModelScope.launch {
-            streamer.throwable.filterNotNull().filter { !it.isClosedException }
+            streamer.throwableFlow.filterNotNull().filter { !it.isClosedException }
                 .map { "${it.javaClass.simpleName}: ${it.message}" }.collect {
                     _streamerError.postValue(it)
                 }
         }
         viewModelScope.launch {
-            streamer.throwable.filterNotNull().filter { it.isClosedException }
+            streamer.throwableFlow.filterNotNull().filter { it.isClosedException }
                 .map { "Connection lost: ${it.message}" }.collect {
                     _endpointError.postValue(it)
                 }
         }
         viewModelScope.launch {
-            streamer.isOpen
+            streamer.isOpenFlow
                 .collect {
                     Log.i(TAG, "Streamer is opened: $it")
                 }
         }
         viewModelScope.launch {
-            streamer.isStreaming
+            streamer.isStreamingFlow
                 .collect {
                     Log.i(TAG, "Streamer is streaming: $it")
                 }
@@ -401,7 +403,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     override fun onCleared() {
         super.onCleared()
         try {
-            streamer.release()
+            streamer.releaseBlocking()
         } catch (t: Throwable) {
             Log.e(TAG, "Streamer release failed", t)
         }

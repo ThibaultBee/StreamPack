@@ -10,9 +10,13 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
+import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
+import io.github.thibaultbee.streampack.core.streamers.single.ICallbackAudioSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.ICallbackSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.ICallbackVideoSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.ICoroutineSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import kotlinx.coroutines.CoroutineScope
@@ -30,8 +34,8 @@ import kotlinx.coroutines.launch
  *
  * @param streamer the [ICoroutineSingleStreamer] to use
  */
-open class CallbackSingleStreamer(val streamer: ICoroutineSingleStreamer) :
-    ICallbackSingleStreamer {
+open class CallbackSingleStreamer(val streamer: SingleStreamer) :
+    ICallbackSingleStreamer, ICallbackAudioSingleStreamer, ICallbackVideoSingleStreamer {
     protected val coroutineScope: CoroutineScope = CoroutineScope(
         SupervisorJob() + Dispatchers.Default
     )
@@ -59,9 +63,9 @@ open class CallbackSingleStreamer(val streamer: ICoroutineSingleStreamer) :
         get() = streamer.info
 
     override val isOpen: Boolean
-        get() = streamer.isOpen.value
+        get() = streamer.isOpenFlow.value
     override val isStreaming: Boolean
-        get() = streamer.isStreaming.value
+        get() = streamer.isStreamingFlow.value
 
     override var targetRotation: Int
         @RotationValue
@@ -72,23 +76,23 @@ open class CallbackSingleStreamer(val streamer: ICoroutineSingleStreamer) :
 
     init {
         coroutineScope.launch {
-            streamer.throwable.filterNotNull().filter { !it.isClosedException }.collect { e ->
+            streamer.throwableFlow.filterNotNull().filter { !it.isClosedException }.collect { e ->
                 listeners.forEach { it.onError(e) }
             }
         }
         coroutineScope.launch {
-            streamer.throwable.filterNotNull().filter { it.isClosedException }.collect { e ->
+            streamer.throwableFlow.filterNotNull().filter { it.isClosedException }.collect { e ->
                 listeners.forEach { it.onClose(e) }
             }
         }
         coroutineScope.launch {
             // Skip first value to avoid duplicate event
-            streamer.isOpen.drop(1).collect { isOpen ->
+            streamer.isOpenFlow.drop(1).collect { isOpen ->
                 listeners.forEach { it.onIsOpenChanged(isOpen) }
             }
         }
         coroutineScope.launch {
-            streamer.isStreaming.collect { isStreaming ->
+            streamer.isStreamingFlow.collect { isStreaming ->
                 listeners.forEach { it.onIsStreamingChanged(isStreaming) }
             }
         }
@@ -100,11 +104,37 @@ open class CallbackSingleStreamer(val streamer: ICoroutineSingleStreamer) :
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun setAudioConfig(audioConfig: AudioConfig) {
-        streamer.setAudioConfig(audioConfig)
+        coroutineScope.launch {
+            streamer.setAudioConfig(audioConfig)
+        }
     }
 
     override fun setVideoConfig(videoConfig: VideoConfig) {
-        streamer.setVideoConfig(videoConfig)
+        coroutineScope.launch {
+            streamer.setVideoConfig(videoConfig)
+        }
+    }
+
+
+    /**
+     * Configures both video and audio settings.
+     * It is the first method to call after a [SingleStreamer] instantiation.
+     * It must be call when both stream and audio and video capture are not running.
+     *
+     * Use [IConfigurationInfo] to get value limits.
+     *
+     * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
+     * to video encoder default level and default profile.
+     *
+     * @param audioConfig Audio configuration to set
+     * @param videoConfig Video configuration to set
+     *
+     * @throws [Throwable] if configuration can not be applied.
+     */
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
+    fun setConfig(audioConfig: AudioConfig, videoConfig: VideoConfig) {
+        setAudioConfig(audioConfig)
+        setVideoConfig(videoConfig)
     }
 
     override fun open(descriptor: MediaDescriptor) {
@@ -173,7 +203,7 @@ open class CallbackSingleStreamer(val streamer: ICoroutineSingleStreamer) :
 
 
     override fun release() {
-        streamer.release()
+        streamer.releaseBlocking()
         listeners.clear()
         coroutineScope.coroutineContext.cancelChildren()
     }

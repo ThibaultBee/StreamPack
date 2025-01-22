@@ -61,11 +61,11 @@ class MediaMuxerEndpoint(
     override val metrics: Any
         get() = TODO("Not yet implemented")
 
-    private val _isOpen = MutableStateFlow(false)
-    override val isOpen: StateFlow<Boolean> = _isOpen
+    private val _isOpenFlow = MutableStateFlow(false)
+    override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow
 
     override suspend fun open(descriptor: MediaDescriptor) {
-        if (isOpen.value) {
+        if (isOpenFlow.value) {
             Logger.w(TAG, "MediaMuxerEndpoint is already opened")
             return
         }
@@ -121,7 +121,7 @@ class MediaMuxerEndpoint(
             throw t
         }
 
-        _isOpen.emit(true)
+        _isOpenFlow.emit(true)
     }
 
     override suspend fun write(
@@ -209,7 +209,7 @@ class MediaMuxerEndpoint(
             numOfStreams = 0
             streamIdToTrackId.clear()
             mediaMuxer = null
-            _isOpen.emit(false)
+            _isOpenFlow.emit(false)
         }
     }
 

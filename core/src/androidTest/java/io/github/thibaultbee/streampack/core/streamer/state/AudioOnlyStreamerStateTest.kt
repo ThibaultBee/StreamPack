@@ -23,7 +23,6 @@ import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.streamers.single.AudioOnlySingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.setConfig
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
 import io.github.thibaultbee.streampack.core.utils.FileUtils
@@ -55,14 +54,14 @@ class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) {
 
     // Single method calls
     @Test
-    fun configureAudioOnlyTest() {
+    fun configureAudioOnlyTest() = runTest {
         streamer.setAudioConfig(
             ConfigurationUtils.dummyValidAudioConfig()
         )
     }
 
     @Test
-    fun configureVideoOnlyTest() {
+    fun configureVideoOnlyTest() = runTest {
         try {
             streamer.setVideoConfig(
                 ConfigurationUtils.dummyValidVideoConfig()
@@ -73,7 +72,7 @@ class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) {
     }
 
     @Test
-    fun configureTest() {
+    fun configureTest() = runTest {
         try {
             streamer.setConfig(
                 ConfigurationUtils.dummyValidAudioConfig(),
@@ -85,7 +84,7 @@ class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) {
     }
 
     @Test
-    fun configureErrorTest() {
+    fun configureErrorTest() = runTest {
         try {
             streamer.setAudioConfig(
                 ConfigurationUtils.dummyInvalidAudioConfig()
@@ -105,7 +104,7 @@ class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) {
     }
 
     @Test
-    fun configureReleaseTest() {
+    fun configureReleaseTest() = runTest {
         streamer.setAudioConfig(
             ConfigurationUtils.dummyValidAudioConfig()
         )
@@ -151,7 +150,7 @@ class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) {
     }
 
     @Test
-    fun multipleConfigureTest() {
+    fun multipleConfigureTest() = runTest {
         (0..10).forEach { _ ->
             streamer.setAudioConfig(
                 ConfigurationUtils.dummyValidAudioConfig()

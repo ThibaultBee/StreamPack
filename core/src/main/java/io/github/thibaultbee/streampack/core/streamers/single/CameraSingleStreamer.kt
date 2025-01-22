@@ -211,10 +211,8 @@ open class CameraSingleStreamer(
     /**
      * Same as [SingleStreamer.release] but it also calls [stopPreview].
      */
-    override fun release() {
-        runBlocking {
-            stopPreview()
-        }
+    override suspend fun release() {
+        stopPreview()
         super.release()
     }
 }

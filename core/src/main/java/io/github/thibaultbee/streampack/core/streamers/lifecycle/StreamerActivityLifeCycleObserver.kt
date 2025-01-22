@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.streamers.observers
+package io.github.thibaultbee.streampack.core.streamers.lifecycle
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.IStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
 
 /**
  * A [DefaultLifecycleObserver] to control a streamer on [Activity] lifecycle.
@@ -29,9 +32,14 @@ import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
  *
  *  @param streamer The streamer to control
  */
-open class StreamerActivityLifeCycleObserver(streamer: ISingleStreamer) :
+open class StreamerActivityLifeCycleObserver(streamer: IStreamer) :
     StreamerViewModelLifeCycleObserver(streamer) {
+
     override fun onDestroy(owner: LifecycleOwner) {
-        streamer.release()
+        if (streamer is ICoroutineStreamer) {
+            streamer.releaseBlocking()
+        } else if (streamer is ICallbackStreamer) {
+            streamer.release()
+        }
     }
 }

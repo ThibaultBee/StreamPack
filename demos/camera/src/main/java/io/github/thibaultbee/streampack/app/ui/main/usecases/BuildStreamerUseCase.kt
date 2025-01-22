@@ -4,7 +4,7 @@ import android.content.Context
 import io.github.thibaultbee.streampack.app.data.storage.DataStoreRepository
 import io.github.thibaultbee.streampack.core.streamers.single.AudioOnlySingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.ICoroutineSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
@@ -13,13 +13,13 @@ class BuildStreamerUseCase(
     private val dataStoreRepository: DataStoreRepository
 ) {
     /**
-     * Build a new [ICoroutineStreamer] based on audio and video preferences.
+     * Build a new [SingleStreamer] based on audio and video preferences.
      *
      * Only create a new streamer if the previous one is not the same type.
      *
      * @param previousStreamer Previous streamer to check if we need to create a new one.
      */
-    operator fun invoke(previousStreamer: ICoroutineSingleStreamer? = null): ICoroutineSingleStreamer {
+    operator fun invoke(previousStreamer: SingleStreamer? = null): SingleStreamer {
         val isAudioEnable = runBlocking {
             dataStoreRepository.isAudioEnableFlow.first()
         }

@@ -42,8 +42,8 @@ class RtmpSink(
 
     private val supportedVideoCodecs = mutableListOf<String>()
 
-    private val _isOpen = MutableStateFlow(false)
-    override val isOpen: StateFlow<Boolean> = _isOpen
+    private val _isOpenFlow = MutableStateFlow(false)
+    override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow
 
     override fun configure(config: SinkConfiguration) {
         val videoConfig = config.streamConfigs.firstOrNull { it is VideoCodecConfig }
@@ -66,7 +66,7 @@ class RtmpSink(
                 // supportedVideoCodecs = this@RtmpSink.supportedVideoCodecs
                 connect("${mediaDescriptor.uri} live=1 flashver=FMLE/3.0\\20(compatible;\\20FMSc/1.0)")
             }
-            _isOpen.emit(true)
+            _isOpenFlow.emit(true)
         }
     }
 
@@ -76,7 +76,7 @@ class RtmpSink(
                 return@withContext -1
             }
 
-            if (!(isOpen.value)) {
+            if (!(isOpenFlow.value)) {
                 Logger.w(TAG, "Socket is not connected, dropping packet")
                 return@withContext -1
             }
@@ -107,7 +107,7 @@ class RtmpSink(
     override suspend fun close() {
         withContext(dispatcher) {
             socket?.close()
-            _isOpen.emit(false)
+            _isOpenFlow.emit(false)
         }
     }
 

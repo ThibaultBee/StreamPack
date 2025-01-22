@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.streamers.observers
+package io.github.thibaultbee.streampack.core.streamers.lifecycle
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.ICallbackSingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.ICoroutineSingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.IStreamer
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -34,25 +34,26 @@ import kotlinx.coroutines.runBlocking
  *
  *  @param streamer The streamer to control
  */
-open class StreamerViewModelLifeCycleObserver(protected val streamer: ISingleStreamer) :
+open class StreamerViewModelLifeCycleObserver(protected val streamer: IStreamer) :
     DefaultLifecycleObserver {
+
     override fun onPause(owner: LifecycleOwner) {
-        if (streamer is ICoroutineSingleStreamer) {
+        if (streamer is ICoroutineStreamer) {
             if (streamer is ICameraCoroutineStreamer) {
                 runBlocking { streamer.stopPreview() }
             }
             runBlocking {
                 streamer.stopStream()
-                if (streamer.endpoint.isOpen.value) {
+                if (streamer.isOpenFlow.value) {
                     streamer.close()
                 }
             }
-        } else if (streamer is ICallbackSingleStreamer) {
+        } else if (streamer is ICallbackStreamer) {
             if (streamer is ICameraCallbackStreamer) {
                 streamer.stopPreview()
             }
             streamer.stopStream()
-            if (streamer.endpoint.isOpen.value) {
+            if (streamer.isOpen) {
                 streamer.close()
             }
         } else {

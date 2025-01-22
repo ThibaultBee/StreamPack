@@ -56,13 +56,13 @@ open class CombineEndpoint(protected val endpointInternals: List<IEndpointIntern
 
     /**
      * Whether at least one endpoint is open.
-     * This is a combination of all endpoints' [IEndpoint.isOpen].
+     * This is a combination of all endpoints' [IEndpoint.isOpenFlow].
      *
-     * To verify if a specific endpoint is open, use [IEndpoint.isOpen] of the endpoint.
+     * To verify if a specific endpoint is open, use [IEndpoint.isOpenFlow] of the endpoint.
      */
-    override val isOpen: StateFlow<Boolean> =
-        combineStates(*endpointInternals.map { it.isOpen }.toTypedArray()) { _ ->
-            endpointInternals.any { it.isOpen.value }
+    override val isOpenFlow: StateFlow<Boolean> =
+        combineStates(*endpointInternals.map { it.isOpenFlow }.toTypedArray()) { _ ->
+            endpointInternals.any { it.isOpenFlow.value }
         }
 
     /**
@@ -190,7 +190,7 @@ open class CombineEndpoint(protected val endpointInternals: List<IEndpointIntern
 
         endpointInternals.forEach { endpoint ->
             try {
-                if (endpoint.isOpen.value) {
+                if (endpoint.isOpenFlow.value) {
                     val endpointStreamId = endpointsToStreamIdsMap[Pair(endpoint, streamPid)]!!
                     endpoint.write(frame, endpointStreamId)
 

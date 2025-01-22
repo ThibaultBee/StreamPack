@@ -24,7 +24,7 @@ object StreamerUtils {
             while (i < numOfLoop) {
                 i++
                 delay(pollDuration)
-                assertTrue(streamer.isStreaming.value)
+                assertTrue(streamer.isStreamingFlow.value)
             }
         }
         streamer.stopStream()

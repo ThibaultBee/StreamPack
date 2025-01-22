@@ -28,7 +28,6 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMe
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
-import io.github.thibaultbee.streampack.core.streamers.single.setConfig
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
@@ -40,7 +39,7 @@ import kotlin.time.Duration.Companion.seconds
  * Test [CameraSingleStreamer] with multiple streams.
  */
 @LargeTest
-class CameraStreamerMultiStreamTest {
+class CameraStreamerMultiEndpointTest {
     private val context: Context = InstrumentationRegistry.getInstrumentation().context
     private val streamer = CameraSingleStreamer(context)
 
