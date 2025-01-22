@@ -121,14 +121,14 @@ abstract class DefaultScreenRecorderService(
 
             streamer = createStreamer(customBundle).apply {
                 lifecycleScope.launch {
-                    throwable.filterNotNull().collect { t ->
+                    throwableFlow.filterNotNull().collect { t ->
                         Logger.e(TAG, "An error occurred", t)
                         onErrorNotification(t)?.let { notify(it) }
                         stopSelf()
                     }
                 }
                 lifecycleScope.launch {
-                    isOpen.collect { isOpen ->
+                    isOpenFlow.collect { isOpen ->
                         if (isOpen) {
                             Logger.i(TAG, "Open succeeded")
                             onOpenNotification()?.let { notify(it) }
@@ -185,8 +185,8 @@ abstract class DefaultScreenRecorderService(
         runBlocking {
             streamer?.stopStream()
             streamer?.close()
+            streamer?.release()
         }
-        streamer?.release()
         streamer = null
         Log.i(TAG, "Service destroyed")
     }

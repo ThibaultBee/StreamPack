@@ -15,23 +15,26 @@
  */
 package io.github.thibaultbee.streampack.core.streamers.single
 
-import android.Manifest
 import android.net.Uri
 import androidx.annotation.IntRange
-import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotationToDegrees
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
-import kotlinx.coroutines.flow.StateFlow
+import io.github.thibaultbee.streampack.core.streamers.interfaces.IAudioStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackAudioStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackVideoStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineAudioStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineVideoStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
 
 /**
  * The single streamer audio configuration.
@@ -47,36 +50,6 @@ typealias VideoConfig = VideoCodecConfig
  * A single Streamer that is agnostic to the underlying implementation (either with coroutines or callbacks).
  */
 interface ISingleStreamer {
-    /**
-     * Gets the audio configuration.
-     */
-    val audioConfig: AudioConfig?
-
-    /**
-     * Gets the video configuration.
-     */
-    val videoConfig: VideoConfig?
-
-    /**
-     * Advanced settings for the audio source.
-     */
-    val audioSource: IAudioSource?
-
-    /**
-     * Advanced settings for the audio encoder.
-     */
-    val audioEncoder: IEncoder?
-
-    /**
-     * Advanced settings for the video source.
-     */
-    val videoSource: IVideoSource?
-
-    /**
-     * Advanced settings for the video encoder.
-     */
-    val videoEncoder: IEncoder?
-
     /**
      * Advanced settings for the endpoint.
      */
@@ -99,31 +72,6 @@ interface ISingleStreamer {
     fun getInfo(descriptor: MediaDescriptor): IConfigurationInfo
 
     /**
-     * Configures only audio settings.
-     *
-     * @param audioConfig Audio configuration to set
-     *
-     * @throws [Throwable] if configuration can not be applied.
-     * @see [release]
-     */
-    fun setAudioConfig(audioConfig: AudioConfig)
-
-    /**
-     * Configures only video settings.
-     *
-     * @param videoConfig Video configuration to set
-     *
-     * @throws [Throwable] if configuration can not be applied.
-     * @see [release]
-     */
-    fun setVideoConfig(videoConfig: VideoConfig)
-
-    /**
-     * Clean and reset the streamer.
-     */
-    fun release()
-
-    /**
      * Adds a bitrate regulator controller to the streamer.
      */
     fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory)
@@ -141,74 +89,50 @@ val ISingleStreamer.targetRotationDegrees: Int
     @IntRange(from = 0, to = 359)
     get() = targetRotation.rotationToDegrees
 
+/**
+ * An audio single Streamer
+ */
+interface IAudioSingleStreamer : IAudioStreamer {
+    /**
+     * Gets the audio configuration.
+     */
+    val audioConfig: AudioConfig?
+
+    /**
+     * Advanced settings for the audio encoder.
+     */
+    val audioEncoder: IEncoder?
+}
 
 /**
- * Configures both video and audio settings.
- * It is the first method to call after a [SingleStreamer] instantiation.
- * It must be call when both stream and audio and video capture are not running.
- *
- * Use [IConfigurationInfo] to get value limits.
- *
- * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
- * to video encoder default level and default profile.
- *
- * @param audioConfig Audio configuration to set
- * @param videoConfig Video configuration to set
- *
- * @throws [Throwable] if configuration can not be applied.
- * @see [ISingleStreamer.release]
+ * A video single streamer.
  */
-@RequiresPermission(Manifest.permission.RECORD_AUDIO)
-fun ISingleStreamer.setConfig(audioConfig: AudioConfig, videoConfig: VideoConfig) {
-    setAudioConfig(audioConfig)
-    setVideoConfig(videoConfig)
+interface IVideoSingleStreamer : IVideoStreamer {
+    /**
+     * Gets the video configuration.
+     */
+    val videoConfig: VideoConfig?
+
+    /**
+     * Advanced settings for the video encoder.
+     */
+    val videoEncoder: IEncoder?
 }
+
+interface ICoroutineAudioSingleStreamer : ICoroutineAudioStreamer<AudioConfig>, IAudioSingleStreamer
+
+interface ICoroutineVideoSingleStreamer : ICoroutineVideoStreamer<VideoConfig>, IVideoSingleStreamer
 
 /**
  * A single Streamer based on coroutines.
  */
-interface ICoroutineSingleStreamer : ISingleStreamer {
-    /**
-     * Returns the last throwable that occurred.
-     */
-    val throwable: StateFlow<Throwable?>
-
-    /**
-     * Returns true if endpoint is opened.
-     * For example, if the streamer is connected to a server if the endpoint is SRT or RTMP.
-     */
-    val isOpen: StateFlow<Boolean>
-
-    /**
-     * Returns true if stream is running.
-     */
-    val isStreaming: StateFlow<Boolean>
-
+interface ICoroutineSingleStreamer : ICoroutineStreamer, ISingleStreamer {
     /**
      * Opens the streamer endpoint.
      *
      * @param descriptor Media descriptor to open
      */
     suspend fun open(descriptor: MediaDescriptor)
-
-    /**
-     * Closes the streamer endpoint.
-     */
-    suspend fun close()
-
-    /**
-     * Starts audio/video stream.
-     *
-     * @see [stopStream]
-     */
-    suspend fun startStream()
-
-    /**
-     * Stops audio/video stream.
-     *
-     * @see [startStream]
-     */
-    suspend fun stopStream()
 }
 
 /**
@@ -266,18 +190,12 @@ suspend fun ICoroutineSingleStreamer.startStream(uriString: String) {
     startStream()
 }
 
-interface ICallbackSingleStreamer : ISingleStreamer {
-    /**
-     * Returns true if endpoint is opened.
-     * For example, if the streamer is connected to a server if the endpoint is SRT or RTMP.
-     */
-    val isOpen: Boolean
 
-    /**
-     * Returns true if stream is running.
-     */
-    val isStreaming: Boolean
+interface ICallbackAudioSingleStreamer : ICallbackAudioStreamer<AudioConfig>, IAudioSingleStreamer
 
+interface ICallbackVideoSingleStreamer : ICallbackVideoStreamer<VideoConfig>, IVideoSingleStreamer
+
+interface ICallbackSingleStreamer : ICallbackStreamer, ISingleStreamer {
     /**
      * Opens the streamer endpoint asynchronously.
      *
@@ -287,37 +205,6 @@ interface ICallbackSingleStreamer : ISingleStreamer {
      * @param descriptor Media descriptor to open
      */
     fun open(descriptor: MediaDescriptor)
-
-    /**
-     * Closes the streamer endpoint.
-     */
-    fun close()
-
-    /**
-     * Starts audio/video stream asynchronously.
-     *
-     * You must call [open] before calling this method.
-     * The streamer must be opened before starting the stream. You can use [Listener.onIsOpenChanged].
-     *
-     * @see [stopStream]
-     */
-    fun startStream()
-
-    /**
-     * Starts audio/video stream asynchronously.
-     *
-     * Same as doing [open] and [startStream].
-     *
-     * @see [stopStream]
-     */
-    fun startStream(descriptor: MediaDescriptor)
-
-    /**
-     * Stops audio/video stream asynchronously.
-     *
-     * @see [startStream]
-     */
-    fun stopStream()
 
     /**
      * Adds a listener to the streamer.
@@ -332,7 +219,7 @@ interface ICallbackSingleStreamer : ISingleStreamer {
     /**
      * Listener for the callback streamer.
      */
-    interface Listener {
+    interface Listener : ICallbackStreamer.Listener {
         /**
          * Called when the streamer opening failed.
          *
@@ -341,31 +228,13 @@ interface ICallbackSingleStreamer : ISingleStreamer {
         fun onOpenFailed(t: Throwable) = Unit
 
         /**
-         * Called when the streamer is opened or closed.
-         */
-        fun onIsOpenChanged(isOpen: Boolean) = Unit
-
-        /**
          * Called when the streamer was closed by an error.
          *
          * @param t The reason why the streamer was closed
          */
         fun onClose(t: Throwable) = Unit
-
-        /**
-         * Called when the stream is started or stopped.
-         */
-        fun onIsStreamingChanged(isStarted: Boolean) = Unit
-
-        /**
-         * Called when an error occurs.
-         *
-         * @param throwable The throwable that occurred
-         */
-        fun onError(throwable: Throwable) = Unit
     }
 }
-
 
 /**
  * Opens the streamer endpoint.

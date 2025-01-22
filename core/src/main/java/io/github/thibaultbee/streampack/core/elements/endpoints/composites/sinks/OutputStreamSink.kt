@@ -32,8 +32,8 @@ abstract class OutputStreamSink(private val coroutineContext: CoroutineContext =
     AbstractSink() {
     protected var outputStream: OutputStream? = null
 
-    private val _isOpen = MutableStateFlow(false)
-    override val isOpen: StateFlow<Boolean> = _isOpen
+    private val _isOpenFlow = MutableStateFlow(false)
+    override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow
 
     /**
      * Open an [OutputStream] to write data
@@ -42,7 +42,7 @@ abstract class OutputStreamSink(private val coroutineContext: CoroutineContext =
 
     override suspend fun openImpl(mediaDescriptor: MediaDescriptor) {
         outputStream = openOutputStream(mediaDescriptor)
-        _isOpen.emit(true)
+        _isOpenFlow.emit(true)
     }
 
     override fun configure(config: SinkConfiguration) {} // Nothing to configure
@@ -77,7 +77,7 @@ abstract class OutputStreamSink(private val coroutineContext: CoroutineContext =
             // Ignore
         } finally {
             outputStream = null
-            _isOpen.emit(false)
+            _isOpenFlow.emit(false)
         }
     }
 

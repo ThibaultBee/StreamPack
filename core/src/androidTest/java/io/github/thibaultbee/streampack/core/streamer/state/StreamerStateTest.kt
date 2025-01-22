@@ -16,8 +16,8 @@
 package io.github.thibaultbee.streampack.core.streamer.state
 
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.streamers.single.ICoroutineSingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.setConfig
+import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
+import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
 import kotlinx.coroutines.test.runTest
@@ -28,11 +28,11 @@ import org.junit.Test
 abstract class StreamerStateTest(
     protected val descriptor: MediaDescriptor
 ) {
-    protected abstract val streamer: ICoroutineSingleStreamer
+    protected abstract val streamer: SingleStreamer
 
     @After
     open fun tearDown() {
-        streamer.release()
+        streamer.releaseBlocking()
     }
 
     @Test
@@ -48,21 +48,21 @@ abstract class StreamerStateTest(
 
     // Single method calls
     @Test
-    open fun configureAudioOnlyTest() {
+    open fun configureAudioOnlyTest() = runTest {
         streamer.setAudioConfig(
             ConfigurationUtils.dummyValidAudioConfig()
         )
     }
 
     @Test
-    open fun configureVideoOnlyTest() {
+    open fun configureVideoOnlyTest() = runTest {
         streamer.setVideoConfig(
             ConfigurationUtils.dummyValidVideoConfig()
         )
     }
 
     @Test
-    open fun configureTest() {
+    open fun configureTest() = runTest {
         streamer.setConfig(
             ConfigurationUtils.dummyValidAudioConfig(),
             ConfigurationUtils.dummyValidVideoConfig()
@@ -70,7 +70,7 @@ abstract class StreamerStateTest(
     }
 
     @Test
-    open fun configureErrorTest() {
+    open fun configureErrorTest() = runTest {
         try {
             streamer.setConfig(
                 ConfigurationUtils.dummyInvalidAudioConfig(),
@@ -102,7 +102,7 @@ abstract class StreamerStateTest(
     }
 
     @Test
-    fun releaseTest() {
+    fun releaseTest() = runTest {
         streamer.release()
     }
 
@@ -117,7 +117,7 @@ abstract class StreamerStateTest(
     }
 
     @Test
-    open fun configureReleaseTest() {
+    open fun configureReleaseTest() = runTest {
         streamer.setConfig(
             ConfigurationUtils.dummyValidAudioConfig(),
             ConfigurationUtils.dummyValidVideoConfig()
@@ -156,7 +156,7 @@ abstract class StreamerStateTest(
 
     // Stress test
     @Test
-    open fun multipleConfigureTest() {
+    open fun multipleConfigureTest() = runTest {
         (0..10).forEach { _ ->
             streamer.setConfig(
                 ConfigurationUtils.dummyValidAudioConfig(),

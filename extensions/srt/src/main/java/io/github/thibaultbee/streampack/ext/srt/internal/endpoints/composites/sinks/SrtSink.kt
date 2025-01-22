@@ -51,8 +51,8 @@ class SrtSink : AbstractSink() {
         get() = socket?.bistats(clear = true, instantaneous = true)
             ?: throw IllegalStateException("Socket is not initialized")
 
-    private val _isOpen = MutableStateFlow(false)
-    override val isOpen: StateFlow<Boolean> = _isOpen
+    private val _isOpenFlow = MutableStateFlow(false)
+    override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow
 
     override fun configure(config: SinkConfiguration) {
         bitrate = config.streamConfigs.sumOf { it.startBitrate.toLong() }
@@ -86,7 +86,7 @@ class SrtSink : AbstractSink() {
             }
             connect(mediaDescriptor.srtUrl)
         }
-        _isOpen.emit(true)
+        _isOpenFlow.emit(true)
     }
 
     private fun buildMsgCtrl(packet: Packet): MsgCtrl {
@@ -154,7 +154,7 @@ class SrtSink : AbstractSink() {
 
     override suspend fun close() {
         socket?.close()
-        _isOpen.emit(false)
+        _isOpenFlow.emit(false)
     }
 
 

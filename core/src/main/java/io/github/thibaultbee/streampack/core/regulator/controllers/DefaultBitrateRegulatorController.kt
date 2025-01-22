@@ -20,7 +20,9 @@ import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.utils.Scheduler
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
+import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.ICoroutineSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
 
 /**
  * A [BitrateRegulatorController] implementation that triggers [IBitrateRegulator.update] every [delayTimeInMs].
@@ -34,7 +36,7 @@ import io.github.thibaultbee.streampack.core.streamers.single.ICoroutineSingleSt
  */
 open class DefaultBitrateRegulatorController(
     audioEncoder: IEncoder?,
-    videoEncoder: IEncoder?,
+    videoEncoder: IEncoder,
     endpoint: IEndpoint,
     bitrateRegulatorFactory: IBitrateRegulator.Factory,
     bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
@@ -46,17 +48,13 @@ open class DefaultBitrateRegulatorController(
     bitrateRegulatorFactory,
     bitrateRegulatorConfig
 ) {
-    init {
-        requireNotNull(videoEncoder) { "Video encoder is required" }
-    }
-
     /**
      * Bitrate regulator. Calls regularly by [scheduler]. Don't call it otherwise or you might break regulation.
      */
     private val bitrateRegulator = bitrateRegulatorFactory.newBitrateRegulator(
         bitrateRegulatorConfig,
         {
-            videoEncoder!!.bitrate = it
+            videoEncoder.bitrate = it
         },
         { /* Do nothing for audio */ }
     )
@@ -67,7 +65,7 @@ open class DefaultBitrateRegulatorController(
     private val scheduler = Scheduler(delayTimeInMs) {
         bitrateRegulator.update(
             endpoint.metrics,
-            videoEncoder?.bitrate ?: 0,
+            videoEncoder.bitrate,
             audioEncoder?.bitrate ?: 0
         )
     }
@@ -86,9 +84,22 @@ open class DefaultBitrateRegulatorController(
         private val delayTimeInMs: Long = 500
     ) : BitrateRegulatorController.Factory() {
         override fun newBitrateRegulatorController(streamer: ICoroutineSingleStreamer): BitrateRegulatorController {
+            val audioEncoder = if (streamer is IAudioSingleStreamer) {
+                streamer.audioEncoder
+            } else {
+                null
+            }
+
+            require(streamer is IVideoSingleStreamer) {
+                "Streamer must be a video single streamer"
+            }
+            val videoEncoder = requireNotNull(streamer.videoEncoder) {
+                "Video encoder must not be null"
+            }
+            
             return DefaultBitrateRegulatorController(
-                streamer.audioEncoder,
-                streamer.videoEncoder,
+                audioEncoder,
+                videoEncoder,
                 streamer.endpoint,
                 bitrateRegulatorFactory,
                 bitrateRegulatorConfig,

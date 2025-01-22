@@ -18,7 +18,9 @@ package io.github.thibaultbee.streampack.ext.srt.regulator.controllers
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.core.regulator.controllers.BitrateRegulatorController
 import io.github.thibaultbee.streampack.core.regulator.controllers.DefaultBitrateRegulatorController
+import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.ICoroutineSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
 import io.github.thibaultbee.streampack.ext.srt.regulator.DefaultSrtBitrateRegulator
 import io.github.thibaultbee.streampack.ext.srt.regulator.SrtBitrateRegulator
 
@@ -32,9 +34,22 @@ class DefaultSrtBitrateRegulatorController {
         private val delayTimeInMs: Long = 500
     ) : BitrateRegulatorController.Factory() {
         override fun newBitrateRegulatorController(streamer: ICoroutineSingleStreamer): DefaultBitrateRegulatorController {
+            val audioEncoder = if (streamer is IAudioSingleStreamer) {
+                streamer.audioEncoder
+            } else {
+                null
+            }
+
+            require(streamer is IVideoSingleStreamer) {
+                "Streamer must be a video single streamer"
+            }
+            val videoEncoder = requireNotNull(streamer.videoEncoder) {
+                "Video encoder must not be null"
+            }
+
             return DefaultBitrateRegulatorController(
-                streamer.audioEncoder,
-                streamer.videoEncoder,
+                audioEncoder,
+                videoEncoder,
                 streamer.endpoint,
                 bitrateRegulatorFactory,
                 bitrateRegulatorConfig,

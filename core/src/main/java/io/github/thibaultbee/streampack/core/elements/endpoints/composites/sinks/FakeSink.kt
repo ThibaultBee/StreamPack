@@ -27,12 +27,12 @@ import kotlinx.coroutines.flow.StateFlow
  */
 class FakeSink(override val supportedSinkTypes: List<MediaSinkType> = MediaSinkType.entries) :
     AbstractSink() {
-    private val _isOpen = MutableStateFlow(false)
-    override val isOpen: StateFlow<Boolean> = _isOpen
+    private val _isOpenFlow = MutableStateFlow(false)
+    override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow
 
     override suspend fun openImpl(mediaDescriptor: MediaDescriptor) {
         Logger.d(TAG, "open called: $mediaDescriptor")
-        _isOpen.emit(true)
+        _isOpenFlow.emit(true)
     }
 
     override fun configure(config: SinkConfiguration) {
@@ -54,7 +54,7 @@ class FakeSink(override val supportedSinkTypes: List<MediaSinkType> = MediaSinkT
 
     override suspend fun close() {
         Logger.d(TAG, "close called")
-        _isOpen.emit(false)
+        _isOpenFlow.emit(false)
     }
 
     companion object {

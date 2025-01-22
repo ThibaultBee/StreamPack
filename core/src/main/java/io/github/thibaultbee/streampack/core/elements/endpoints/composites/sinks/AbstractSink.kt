@@ -17,7 +17,7 @@ abstract class AbstractSink : ISinkInternal {
         get() = TODO("Not yet implemented")
 
     override suspend fun open(mediaDescriptor: MediaDescriptor) {
-        if (isOpen.value) {
+        if (isOpenFlow.value) {
             Logger.w(TAG, "Sink is already opened")
             return
         }
