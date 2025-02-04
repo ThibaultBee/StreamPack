@@ -1,4 +1,4 @@
-package io.github.thibaultbee.streampack.core.streamer.file
+package io.github.thibaultbee.streampack.core.streamer.utils
 
 import android.content.Context
 import android.media.MediaMetadataRetriever

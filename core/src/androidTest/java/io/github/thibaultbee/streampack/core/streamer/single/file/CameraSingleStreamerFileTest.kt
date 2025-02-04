@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.streamer.file
+package io.github.thibaultbee.streampack.core.streamer.single.file
 
 import android.media.MediaFormat.MIMETYPE_AUDIO_AAC
 import android.media.MediaFormat.MIMETYPE_AUDIO_OPUS
@@ -29,6 +29,8 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInterna
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.Mp4Muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
+import io.github.thibaultbee.streampack.core.streamer.utils.StreamerUtils
+import io.github.thibaultbee.streampack.core.streamer.utils.VideoUtils
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
@@ -43,7 +45,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @LargeTest
 @RunWith(Parameterized::class)
-class CameraStreamerFileTest(
+class CameraSingleStreamerFileTest(
     private val descriptor: MediaDescriptor,
     private val verify: Boolean,
     endpoint: IEndpointInternal?

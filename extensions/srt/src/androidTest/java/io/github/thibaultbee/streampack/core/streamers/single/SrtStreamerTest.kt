@@ -1,4 +1,4 @@
-package io.github.thibaultbee.streampack.core.streamers
+package io.github.thibaultbee.streampack.core.streamers.single
 
 import android.Manifest
 import android.content.Context
@@ -8,11 +8,6 @@ import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.cameras
-import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
-import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
-import io.github.thibaultbee.streampack.core.streamers.single.setConfig
-import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
@@ -30,7 +25,7 @@ import video.api.client.api.models.VideoStatus
 import kotlin.time.Duration.Companion.seconds
 
 @LargeTest
-class RtmpStreamerTest {
+class SrtStreamerTest {
     private val context: Context = InstrumentationRegistry.getInstrumentation().context
     private val arguments = InstrumentationRegistry.getArguments()
     private var apiKey: String? = null
@@ -46,7 +41,7 @@ class RtmpStreamerTest {
     }
 
     @Test
-    fun writetoRtmp() = runTest(timeout = 200.seconds) {
+    fun writeToSrt() = runTest(timeout = 200.seconds) {
         assumeTrue("Required API key", apiKey != null)
         assumeTrue("API key not set", apiKey != "null")
 
@@ -54,7 +49,7 @@ class RtmpStreamerTest {
         val apiClient = ApiVideoClient(requireNotNull(apiKey), Environment.SANDBOX)
         val liveStreamEndpoint = apiClient.liveStreams()
         val liveStream =
-            liveStreamEndpoint.create(LiveStreamCreationPayload().name("StreamPack RTMP test"))
+            liveStreamEndpoint.create(LiveStreamCreationPayload().name("StreamPack SRT test"))
 
         try {
             // Run live stream
@@ -63,7 +58,7 @@ class RtmpStreamerTest {
                 AudioConfig(),
                 VideoConfig(startBitrate = 500_000, resolution = Size(VIDEO_WIDTH, VIDEO_HEIGHT))
             )
-            streamer.startStream("rtmps://broadcast.api.video:1936/s/${liveStream.streamKey}")
+            streamer.startStream("srt://broadcast.api.video:6200?streamid=${liveStream.streamKey}")
             var i = 0
             val numOfLoop = LIVE_STREAM_DURATION_MS / LIVE_STREAM_POLLING_MS
             withContext(Dispatchers.Default) {
@@ -116,7 +111,7 @@ class RtmpStreamerTest {
             assertTrue(status.encoding!!.metadata!!.bitrate!!.toInt() >= 0)
             assertTrue(status.encoding!!.metadata!!.duration!!.toInt() >= 0)
         } catch (e: Exception) {
-            Log.e(TAG, " RTMP test failed due to ${e.message}", e)
+            Log.e(TAG, " SRT test failed due to ${e.message}", e)
             throw e
         } finally {
             // Delete live
@@ -125,7 +120,7 @@ class RtmpStreamerTest {
     }
 
     companion object {
-        private const val TAG = "RTMPStreamerTest"
+        private const val TAG = "SRTStreamerTest"
 
         private const val LIVE_STREAM_DURATION_MS = 30_000L
         private const val LIVE_STREAM_POLLING_MS = 1_000L
