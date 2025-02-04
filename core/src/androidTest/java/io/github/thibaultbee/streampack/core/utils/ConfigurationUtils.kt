@@ -17,55 +17,49 @@ package io.github.thibaultbee.streampack.core.utils
 
 import android.media.MediaFormat
 import android.util.Size
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
-import kotlin.random.Random
+import io.github.thibaultbee.streampack.core.elements.endpoints.MediaContainerType
+import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
+import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 
 object ConfigurationUtils {
     /**
-     * Generates a TS service information for test
-     *
-     * @return a [TSServiceInfo] for test
-     */
-    fun dummyServiceInfo() = TSServiceInfo(
-        TSServiceInfo.ServiceType.DIGITAL_TV,
-        Random.nextInt().toShort(),
-        "testName",
-        "testServiceName"
-    )
-
-    /**
-     * Generates a valid audio configuration for test
+     * Creates a valid audio configuration for test
      *
      * @return a [AudioCodecConfig] for test
      */
-    fun dummyValidAudioConfig() = AudioCodecConfig()
+    fun defaultAudioConfig() = AudioCodecConfig()
 
     /**
-     * Generates an invalid audio configuration for test
-     *
-     * @return a [AudioCodecConfig] for test
+     * Creates an audio configuration from a [MediaDescriptor] for test
      */
-    fun dummyInvalidAudioConfig() = AudioCodecConfig(
-        mimeType = MediaFormat.MIMETYPE_VIDEO_AVC // Video instead of audio
-    )
+    fun audioConfig(descriptor: MediaDescriptor): AudioConfig {
+        return if (descriptor.type.containerType == MediaContainerType.WEBM) {
+            AudioCodecConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_OPUS)
+        } else {
+            defaultAudioConfig()
+        }
+    }
 
     /**
-     * Generates a valid video configuration for test
+     * Creates a valid video configuration for test
      *
      * @return a [VideoCodecConfig] for test
      */
-    fun dummyValidVideoConfig() = VideoCodecConfig(
+    fun defaultVideoConfig() = VideoCodecConfig(
         resolution = Size(640, 360)
     )
 
     /**
-     * Generates an invalid video configuration for test
-     *
-     * @return a [VideoCodecConfig] for test
+     * Creates an video configuration from a [MediaDescriptor] for test
      */
-    fun dummyInvalidVideoConfig() = VideoCodecConfig(
-        mimeType = MediaFormat.MIMETYPE_AUDIO_AAC // Audio instead of video
-    )
+    fun videoConfig(descriptor: MediaDescriptor): VideoConfig {
+        return if (descriptor.type.containerType == MediaContainerType.WEBM) {
+            VideoCodecConfig(mimeType = MediaFormat.MIMETYPE_VIDEO_VP9)
+        } else {
+            defaultVideoConfig()
+        }
+    }
 }

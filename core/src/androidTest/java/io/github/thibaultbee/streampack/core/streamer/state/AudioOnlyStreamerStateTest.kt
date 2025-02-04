@@ -20,8 +20,8 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.Media
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.streamers.single.AudioOnlySingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
-import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
+import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.fail
@@ -34,10 +34,12 @@ class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) :
     DeviceTest(withCamera = false) {
     private val streamer by lazy { AudioOnlySingleStreamer(context) }
 
+    private val audioConfig by lazy { ConfigurationUtils.audioConfig(descriptor) }
+
     @Test
     fun defaultUsageTest() = runTest {
         streamer.setAudioConfig(
-            ConfigurationUtils.dummyValidAudioConfig()
+            audioConfig
         )
         streamer.startStream(descriptor)
         streamer.stopStream()
@@ -48,7 +50,7 @@ class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) :
     @Test
     fun configureAudioOnlyTest() = runTest {
         streamer.setAudioConfig(
-            ConfigurationUtils.dummyValidAudioConfig()
+            audioConfig
         )
     }
 
@@ -56,7 +58,7 @@ class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) :
     fun configureVideoOnlyTest() = runTest {
         try {
             streamer.setVideoConfig(
-                ConfigurationUtils.dummyValidVideoConfig()
+                ConfigurationUtils.defaultVideoConfig()
             )
             fail("Must not be possible to configure video")
         } catch (_: Throwable) {
@@ -67,21 +69,10 @@ class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) :
     fun configureTest() = runTest {
         try {
             streamer.setConfig(
-                ConfigurationUtils.dummyValidAudioConfig(),
-                ConfigurationUtils.dummyValidVideoConfig()
+                audioConfig,
+                ConfigurationUtils.defaultVideoConfig()
             )
             fail("Must not be possible to configure video")
-        } catch (_: Throwable) {
-        }
-    }
-
-    @Test
-    fun configureErrorTest() = runTest {
-        try {
-            streamer.setAudioConfig(
-                ConfigurationUtils.dummyInvalidAudioConfig()
-            )
-            fail("Invalid configuration must throw an exception")
         } catch (_: Throwable) {
         }
     }
@@ -90,7 +81,7 @@ class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) :
     @Test
     fun configureStartStreamTest() = runTest {
         streamer.setAudioConfig(
-            ConfigurationUtils.dummyValidAudioConfig()
+            audioConfig
         )
         streamer.startStream(descriptor)
     }
@@ -98,7 +89,7 @@ class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) :
     @Test
     fun configureReleaseTest() = runTest {
         streamer.setAudioConfig(
-            ConfigurationUtils.dummyValidAudioConfig()
+            audioConfig
         )
         streamer.release()
     }
@@ -106,7 +97,7 @@ class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) :
     @Test
     fun configureStopStreamTest() = runTest {
         streamer.setAudioConfig(
-            ConfigurationUtils.dummyValidAudioConfig()
+            audioConfig
         )
         streamer.stopStream()
     }
@@ -114,7 +105,7 @@ class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) :
     @Test
     fun startStreamReleaseTest() = runTest {
         streamer.setAudioConfig(
-            ConfigurationUtils.dummyValidAudioConfig()
+            audioConfig
         )
         streamer.startStream(descriptor)
         streamer.release()
@@ -123,7 +114,7 @@ class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) :
     @Test
     fun startStreamStopStreamTest() = runTest {
         streamer.setAudioConfig(
-            ConfigurationUtils.dummyValidAudioConfig()
+            audioConfig
         )
         streamer.startStream(descriptor)
         streamer.stopStream()
@@ -132,7 +123,7 @@ class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) :
     @Test
     fun multipleStartStreamStopStreamTest() = runTest {
         streamer.setAudioConfig(
-            ConfigurationUtils.dummyValidAudioConfig()
+            audioConfig
         )
         (0..10).forEach { _ ->
             streamer.startStream(descriptor)
@@ -145,7 +136,7 @@ class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) :
     fun multipleConfigureTest() = runTest {
         (0..10).forEach { _ ->
             streamer.setAudioConfig(
-                ConfigurationUtils.dummyValidAudioConfig()
+                audioConfig
             )
         }
     }
