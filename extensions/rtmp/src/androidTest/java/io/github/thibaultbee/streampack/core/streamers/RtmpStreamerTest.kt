@@ -7,6 +7,7 @@ import android.util.Size
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.cameras
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
@@ -40,6 +41,7 @@ class RtmpStreamerTest {
 
     @Before
     fun setUp() {
+        assumeTrue(context.cameras.isNotEmpty())
         apiKey = arguments.getString("INTEGRATION_TESTS_API_KEY")
     }
 

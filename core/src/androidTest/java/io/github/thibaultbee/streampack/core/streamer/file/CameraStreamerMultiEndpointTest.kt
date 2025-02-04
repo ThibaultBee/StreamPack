@@ -15,22 +15,18 @@
  */
 package io.github.thibaultbee.streampack.core.streamer.file
 
-import android.Manifest
-import android.content.Context
 import android.util.Log
 import android.util.Size
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.test.filters.LargeTest
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
+import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.test.runTest
-import org.junit.Rule
 import org.junit.Test
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -39,9 +35,8 @@ import kotlin.time.Duration.Companion.seconds
  * Test [CameraSingleStreamer] with multiple streams.
  */
 @LargeTest
-class CameraStreamerMultiEndpointTest {
-    private val context: Context = InstrumentationRegistry.getInstrumentation().context
-    private val streamer = CameraSingleStreamer(context)
+class CameraStreamerMultiEndpointTest : DeviceTest() {
+    private val streamer by lazy { CameraSingleStreamer(context) }
 
     private val descriptors = listOf(
         UriMediaDescriptor(FileUtils.createCacheFile("video.ts").toUri()),
@@ -49,10 +44,6 @@ class CameraStreamerMultiEndpointTest {
         UriMediaDescriptor(FileUtils.createCacheFile("video2.ts").toUri()),
         UriMediaDescriptor(FileUtils.createCacheFile("video2.mp4").toUri()),
     )
-
-    @get:Rule
-    val runtimePermissionRule: GrantPermissionRule =
-        GrantPermissionRule.grant(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
 
     @Test
     fun writeToEndpoints() = runTest(timeout = 200.seconds) {
