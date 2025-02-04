@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.streamer.state
+package io.github.thibaultbee.streampack.core.streamer.single.state
 
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
@@ -27,7 +27,7 @@ import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Test
 
-abstract class StreamerStateTest(
+abstract class SingleStreamerStateTest(
     protected val descriptor: MediaDescriptor
 ) : DeviceTest() {
     protected abstract val streamer: SingleStreamer

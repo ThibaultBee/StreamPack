@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.streamer.state
+package io.github.thibaultbee.streampack.core.streamer.single.state
 
 import androidx.core.net.toUri
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
@@ -30,7 +30,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
-class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) :
+class AudioOnlySingleStreamerStateTest(private val descriptor: MediaDescriptor) :
     DeviceTest(withCamera = false) {
     private val streamer by lazy { AudioOnlySingleStreamer(context) }
 

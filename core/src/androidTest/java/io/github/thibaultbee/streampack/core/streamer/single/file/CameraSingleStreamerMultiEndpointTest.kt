@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.streamer.file
+package io.github.thibaultbee.streampack.core.streamer.single.file
 
 import android.util.Log
 import android.util.Size
@@ -21,6 +21,8 @@ import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.test.filters.LargeTest
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.streamer.utils.StreamerUtils
+import io.github.thibaultbee.streampack.core.streamer.utils.VideoUtils
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
@@ -35,7 +37,7 @@ import kotlin.time.Duration.Companion.seconds
  * Test [CameraSingleStreamer] with multiple streams.
  */
 @LargeTest
-class CameraStreamerMultiEndpointTest : DeviceTest() {
+class CameraSingleStreamerMultiEndpointTest : DeviceTest() {
     private val streamer by lazy { CameraSingleStreamer(context) }
 
     private val descriptors = listOf(

@@ -1,4 +1,4 @@
-package io.github.thibaultbee.streampack.core.streamer.file
+package io.github.thibaultbee.streampack.core.streamer.utils
 
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
