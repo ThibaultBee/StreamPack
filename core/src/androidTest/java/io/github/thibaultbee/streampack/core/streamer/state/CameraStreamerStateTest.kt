@@ -15,12 +15,8 @@
  */
 package io.github.thibaultbee.streampack.core.streamer.state
 
-import android.Manifest
-import android.content.Context
 import androidx.core.net.toUri
 import androidx.test.ext.junit.rules.ActivityScenarioRule
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.streamer.surface.SurfaceUtils
@@ -41,12 +37,7 @@ class CameraStreamerStateTest(descriptor: MediaDescriptor) :
     StreamerStateTest(
         descriptor
     ) {
-    private val context: Context = InstrumentationRegistry.getInstrumentation().context
-    override val streamer = CameraSingleStreamer(context)
-
-    @get:Rule
-    val runtimePermissionRule: GrantPermissionRule =
-        GrantPermissionRule.grant(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
+    override val streamer by lazy { CameraSingleStreamer(context) }
 
     @get:Rule
     val activityScenarioRule = ActivityScenarioRule(SurfaceViewTestActivity::class.java)

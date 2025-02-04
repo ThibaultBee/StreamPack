@@ -20,6 +20,7 @@ import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlockin
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
+import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.fail
@@ -27,7 +28,7 @@ import org.junit.Test
 
 abstract class StreamerStateTest(
     protected val descriptor: MediaDescriptor
-) {
+) : DeviceTest() {
     protected abstract val streamer: SingleStreamer
 
     @After

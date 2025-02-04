@@ -15,8 +15,6 @@
  */
 package io.github.thibaultbee.streampack.core.streamer.file
 
-import android.Manifest
-import android.content.Context
 import android.media.MediaFormat.MIMETYPE_AUDIO_AAC
 import android.media.MediaFormat.MIMETYPE_AUDIO_OPUS
 import android.media.MediaFormat.MIMETYPE_VIDEO_AVC
@@ -25,8 +23,6 @@ import android.util.Size
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.test.filters.LargeTest
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
@@ -36,9 +32,9 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
+import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.test.runTest
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -51,16 +47,17 @@ class CameraStreamerFileTest(
     private val descriptor: MediaDescriptor,
     private val verify: Boolean,
     endpoint: IEndpointInternal?
-) {
-    private val context: Context = InstrumentationRegistry.getInstrumentation().context
-    private val streamer = if (endpoint != null) {
-        CameraSingleStreamer(context, internalEndpoint = endpoint)
-    } else {
-        CameraSingleStreamer(context)
+) : DeviceTest() {
+    private val streamer by lazy {
+        if (endpoint != null) {
+            CameraSingleStreamer(context, internalEndpoint = endpoint)
+        } else {
+            CameraSingleStreamer(context)
+        }
     }
-    private val info = streamer.getInfo(descriptor)
+    private val info by lazy { streamer.getInfo(descriptor) }
 
-    private val videoCodec =
+    private val videoCodec by lazy {
         if (info.video.supportedEncoders.contains(MIMETYPE_VIDEO_AVC)) {
             MIMETYPE_VIDEO_AVC
         } else if (info.video.supportedEncoders.contains(MIMETYPE_VIDEO_VP9)) {
@@ -68,8 +65,9 @@ class CameraStreamerFileTest(
         } else {
             throw IllegalArgumentException("No supported video codec")
         }
+    }
 
-    private val audioCodec =
+    private val audioCodec by lazy {
         if (info.audio.supportedEncoders.contains(MIMETYPE_AUDIO_AAC)) {
             MIMETYPE_AUDIO_AAC
         } else if (info.audio.supportedEncoders.contains(MIMETYPE_AUDIO_OPUS)) {
@@ -77,8 +75,9 @@ class CameraStreamerFileTest(
         } else {
             throw IllegalArgumentException("No supported audio codec")
         }
+    }
 
-    private val audioSampleRate =
+    private val audioSampleRate by lazy {
         if (info.audio.getSupportedSampleRates(audioCodec).contains(44_100)) {
             44100
         } else if (info.audio.getSupportedSampleRates(audioCodec).contains(48_000)) {
@@ -86,10 +85,7 @@ class CameraStreamerFileTest(
         } else {
             throw IllegalArgumentException("No supported audio sample rate for $audioCodec")
         }
-
-    @get:Rule
-    val runtimePermissionRule: GrantPermissionRule =
-        GrantPermissionRule.grant(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
+    }
 
     @Test
     fun writeToFile() = runTest(timeout = 200.seconds) {

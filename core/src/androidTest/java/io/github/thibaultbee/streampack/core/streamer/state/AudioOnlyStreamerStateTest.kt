@@ -15,32 +15,24 @@
  */
 package io.github.thibaultbee.streampack.core.streamer.state
 
-import android.Manifest
-import android.content.Context
 import androidx.core.net.toUri
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.streamers.single.AudioOnlySingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
+import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.ConfigurationUtils
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.fail
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
-class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) {
-    private val context: Context = InstrumentationRegistry.getInstrumentation().context
-    private val streamer = AudioOnlySingleStreamer(context)
-
-    @get:Rule
-    val runtimePermissionRule: GrantPermissionRule =
-        GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO)
+class AudioOnlyStreamerStateTest(private val descriptor: MediaDescriptor) :
+    DeviceTest(withCamera = false) {
+    private val streamer by lazy { AudioOnlySingleStreamer(context) }
 
     @Test
     fun defaultUsageTest() = runTest {
