@@ -33,13 +33,13 @@ import androidx.camera.viewfinder.core.ScaleType
 import androidx.camera.viewfinder.core.ViewfinderSurfaceRequest
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.getCameraCharacteristics
 import io.github.thibaultbee.streampack.core.elements.utils.OrientationUtils
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.startPreview
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.getCameraCharacteristics
 import io.github.thibaultbee.streampack.ui.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -133,20 +133,20 @@ class CameraPreviewView @JvmOverloads constructor(
     )
 
     init {
-        val a = context.obtainStyledAttributes(attrs, R.styleable.PreviewView)
+        val a = context.obtainStyledAttributes(attrs, R.styleable.CameraPreviewView)
 
         try {
-            enableZoomOnPinch = a.getBoolean(R.styleable.PreviewView_enableZoomOnPinch, true)
-            enableTapToFocus = a.getBoolean(R.styleable.PreviewView_enableTapToFocus, true)
+            enableZoomOnPinch = a.getBoolean(R.styleable.CameraPreviewView_enableZoomOnPinch, true)
+            enableTapToFocus = a.getBoolean(R.styleable.CameraPreviewView_enableTapToFocus, true)
 
             scaleMode = ScaleMode.entryOf(
                 a.getInt(
-                    R.styleable.PreviewView_scaleMode, ScaleMode.FILL.value
+                    R.styleable.CameraPreviewView_scaleMode, ScaleMode.FILL.value
                 )
             )
             position = Position.entryOf(
                 a.getInt(
-                    R.styleable.PreviewView_position, Position.CENTER.value
+                    R.styleable.CameraPreviewView_position, Position.CENTER.value
                 )
             )
 
