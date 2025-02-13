@@ -5,21 +5,41 @@ broadcasters and new video enthusiasts.
 
 It is designed to be used in live streaming and gaming apps.
 
+Version 3.X.X is a work in progress. A snapshot of the current state is available in Maven Central.
+To access 3.X.X, adds the Maven Central snapshot repository to your settings.gradle:
+
+```groovy
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        // Adds this line
+        maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
+    }
+}
+```
+
+To migrate from 2.X.X to 3.X.X, check
+the [migration guide](https://github.com/ThibaultBee/StreamPack/wiki/Migration-from-2.6.X-to-3.X.X).
+
+Previous stable version is [2.6.1](https://github.com/ThibaultBee/StreamPack/tree/2.6.1).
+
 ## Setup
 
-Get StreamPack core latest artifacts on mavenCentral:
+Get StreamPack core latest artifacts on Maven Central:
 
 ```groovy
 dependencies {
-    implementation 'io.github.thibaultbee.streampack:streampack-core:2.6.1'
+    implementation 'io.github.thibaultbee.streampack:streampack-core:3.0.0'
     // For UI (incl. PreviewView)
-    implementation 'io.github.thibaultbee.streampack:streampack-ui:2.6.1'
+    implementation 'io.github.thibaultbee.streampack:streampack-ui:3.0.0'
     // For ScreenRecorder service
-    implementation 'io.github.thibaultbee.streampack:streampack-services:2.6.1'
+    implementation 'io.github.thibaultbee.streampack:streampack-services:3.0.0'
     // For RTMP
-    implementation 'io.github.thibaultbee.streampack:streampack-extension-rtmp:2.6.1'
+    implementation 'io.github.thibaultbee.streampack:streampack-extension-rtmp:3.0.0'
     // For SRT
-    implementation 'io.github.thibaultbee.streampack:streampack-extension-srt:2.6.1'
+    implementation 'io.github.thibaultbee.streampack:streampack-extension-srt:3.0.0'
 }
 ```
 
