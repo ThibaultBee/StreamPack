@@ -199,7 +199,7 @@ class CameraPreviewView @JvmOverloads constructor(
             return true
         }
 
-        return true
+        return super.onTouchEvent(event)
     }
 
     override fun performClick(): Boolean {
