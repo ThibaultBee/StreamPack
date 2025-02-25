@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.streamers.single
 import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
-import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
@@ -32,18 +32,18 @@ import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
  *
  * @param context the application context
  * @param audioSourceInternal the audio source implementation. By default, it is the default microphone source.
- * @param internalEndpoint the [IEndpointInternal] implementation. By default, it is a [DynamicEndpoint].
+ * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  */
 open class AudioOnlySingleStreamer(
     context: Context,
     audioSourceInternal: IAudioSourceInternal? = buildDefaultMicrophoneSource(),
-    internalEndpoint: IEndpointInternal = DynamicEndpoint(context)
+    endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
 ) : ICoroutineSingleStreamer, ICoroutineAudioSingleStreamer {
     private val streamer = SingleStreamer(
         context = context,
         videoSourceInternal = null,
         audioSourceInternal = audioSourceInternal,
-        endpointInternal = internalEndpoint
+        endpointInternalFactory = endpointInternalFactory
     )
     override val throwableFlow = streamer.throwableFlow
     override val isOpenFlow = streamer.isOpenFlow

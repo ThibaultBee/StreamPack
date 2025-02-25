@@ -20,6 +20,7 @@ import android.content.Context
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
@@ -46,16 +47,16 @@ import kotlinx.coroutines.runBlocking
  * @param context the application context
  * @param videoSourceInternal the video source implementation
  * @param audioSourceInternal the audio source implementation
- * @param firstEndpointInternal the [IEndpointInternal] implementation of the first output. By default, it is a [DynamicEndpoint].
- * @param secondEndpointInternal the [IEndpointInternal] implementation of the first output. By default, it is a [DynamicEndpoint].
+ * @param firstEndpointInternalFactory the [IEndpointInternal] implementation of the first output. By default, it is a [DynamicEndpoint].
+ * @param secondEndpointInternalFactory the [IEndpointInternal] implementation of the first output. By default, it is a [DynamicEndpoint].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 open class DualStreamer(
     protected val context: Context,
     audioSourceInternal: IAudioSourceInternal?,
     videoSourceInternal: IVideoSourceInternal?,
-    firstEndpointInternal: IEndpointInternal = DynamicEndpoint(context),
-    secondEndpointInternal: IEndpointInternal = DynamicEndpoint(context),
+    firstEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    secondEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ) : ICoroutineDualStreamer, ICoroutineAudioDualStreamer, ICoroutineVideoDualStreamer {
     private val pipeline = StreamerPipeline(
@@ -66,7 +67,7 @@ open class DualStreamer(
 
     private val firstPipelineOutput: IEncodingPipelineOutputInternal = runBlocking {
         pipeline.addOutput(
-            firstEndpointInternal,
+            firstEndpointInternalFactory,
             defaultRotation
         ) as IEncodingPipelineOutputInternal
     }
@@ -78,7 +79,7 @@ open class DualStreamer(
 
     private val secondPipelineOutput: IEncodingPipelineOutputInternal = runBlocking {
         pipeline.addOutput(
-            secondEndpointInternal,
+            secondEndpointInternalFactory,
             defaultRotation
         ) as IEncodingPipelineOutputInternal
     }

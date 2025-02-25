@@ -37,3 +37,10 @@ class DynamicLocalEndpoint(
         super.open(descriptor)
     }
 }
+
+
+class DynamicLocalEndpointFactory : IEndpointInternal.Factory {
+    override fun create(context: Context): IEndpointInternal {
+        return DynamicLocalEndpoint(context)
+    }
+}

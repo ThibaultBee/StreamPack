@@ -374,15 +374,16 @@ open class StreamerPipeline(
     /**
      * Creates and adds an output to the pipeline.
      *
-     * @param endpoint the endpoint to add the output to
+     * @param endpointFactory the endpoint factory to add the output to
      * @param targetRotation the target rotation of the output
      *
      * @return the [EncodingPipelineOutput] created
      */
     suspend fun addOutput(
-        endpoint: IEndpointInternal, @RotationValue targetRotation: Int = context.displayRotation
+        endpointFactory: IEndpointInternal.Factory,
+        @RotationValue targetRotation: Int = context.displayRotation
     ): IEncodingPipelineOutput {
-        val output = EncodingPipelineOutput(context, endpoint, targetRotation)
+        val output = EncodingPipelineOutput(context, endpointFactory, targetRotation)
         return addOutput(output)
     }
 

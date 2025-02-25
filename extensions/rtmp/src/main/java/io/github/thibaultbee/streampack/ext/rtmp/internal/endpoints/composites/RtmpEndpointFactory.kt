@@ -15,16 +15,17 @@
  */
 package io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.composites
 
-import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.composites.sinks.RtmpSink
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.FlvMuxer
+import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.composites.sinks.RtmpSink
 
 /**
- * A RTMP endpoint.
- * It encapsulates a [FlvMuxer] and a [RtmpSink].
+ * The RTMP endpoint factory.
+ *
+ * It returns a [CompositeEndpointFactory] with a [FlvMuxer] and a [RtmpSink]
  */
-class RtmpEndpoint :
-    CompositeEndpoint(
+fun RtmpEndpointFactory() =
+    CompositeEndpointFactory(
         FlvMuxer(
             isForFile = false
         ), RtmpSink()

@@ -22,6 +22,7 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
@@ -48,14 +49,14 @@ import kotlinx.coroutines.runBlocking
  * @param context the application context
  * @param videoSourceInternal the video source implementation
  * @param audioSourceInternal the audio source implementation
- * @param endpointInternal the [IEndpointInternal] implementation. By default, it is a [DynamicEndpoint].
+ * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 open class SingleStreamer(
     protected val context: Context,
     audioSourceInternal: IAudioSourceInternal?,
     videoSourceInternal: IVideoSourceInternal?,
-    endpointInternal: IEndpointInternal = DynamicEndpoint(context),
+    endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ) : ICoroutineSingleStreamer, ICoroutineAudioSingleStreamer, ICoroutineVideoSingleStreamer {
     private val pipeline = StreamerPipeline(
@@ -65,7 +66,7 @@ open class SingleStreamer(
     )
     private val pipelineOutput: IEncodingPipelineOutputInternal = runBlocking {
         pipeline.addOutput(
-            endpointInternal,
+            endpointInternalFactory,
             defaultRotation
         ) as IEncodingPipelineOutputInternal
     }

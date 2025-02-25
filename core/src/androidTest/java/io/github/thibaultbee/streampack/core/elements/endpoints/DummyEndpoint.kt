@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.endpoints
 
+import android.content.Context
 import android.util.Log
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.Frame
@@ -94,5 +95,23 @@ class DummyEndpoint : IEndpointInternal {
 
     companion object {
         private const val TAG = "DummyEndpoint"
+    }
+}
+
+/**
+ * The factory to create [DummyEndpoint].
+ */
+class DummyEndpointFactory : IEndpointInternal.Factory {
+    override fun create(context: Context): IEndpointInternal {
+        return DummyEndpoint()
+    }
+}
+
+/**
+ * The factory to create [DummyEndpoint].
+ */
+class DummyEndpointDummyFactory(val dummyEndpoint: DummyEndpoint) : IEndpointInternal.Factory {
+    override fun create(context: Context): IEndpointInternal {
+        return dummyEndpoint
     }
 }
