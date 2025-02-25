@@ -22,34 +22,33 @@ import androidx.test.filters.LargeTest
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.Mp4Muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
-import io.github.thibaultbee.streampack.core.utils.FileUtils
 import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreamerConfigUtils
 import io.github.thibaultbee.streampack.core.streamer.utils.StreamerUtils
 import io.github.thibaultbee.streampack.core.streamer.utils.VideoUtils
 import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
+import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 @LargeTest
 @RunWith(Parameterized::class)
 class CameraSingleStreamerFileTest(
     private val descriptor: MediaDescriptor,
     private val verify: Boolean,
-    endpoint: IEndpointInternal?
+    endpointFactory: IEndpointInternal.Factory?
 ) : DeviceTest() {
     private val streamer by lazy {
-        if (endpoint != null) {
-            CameraSingleStreamer(context, internalEndpoint = endpoint)
+        if (endpointFactory != null) {
+            CameraSingleStreamer(context, endpointInternalFactory = endpointFactory)
         } else {
             CameraSingleStreamer(context)
         }
@@ -133,7 +132,7 @@ class CameraSingleStreamerFileTest(
                 arrayOf(
                     UriMediaDescriptor(FileUtils.createCacheFile("video.mp4").toUri()),
                     true,
-                    CompositeEndpoint(Mp4Muxer(), FileSink())
+                    CompositeEndpointFactory(Mp4Muxer(), FileSink())
                 ),
             )
         }

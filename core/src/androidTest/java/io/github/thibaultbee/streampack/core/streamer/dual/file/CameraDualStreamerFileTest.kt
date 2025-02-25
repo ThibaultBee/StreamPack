@@ -23,6 +23,7 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.Media
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.Mp4Muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
 import io.github.thibaultbee.streampack.core.streamer.dual.utils.DualStreamerConfigUtils
@@ -44,22 +45,22 @@ import kotlin.time.Duration.Companion.milliseconds
 class CameraDualStreamerFileTest(
     private val firstDescriptor: MediaDescriptor,
     private val verifyFirst: Boolean,
-    firstEndpoint: IEndpointInternal?,
+    firstEndpointFactory: IEndpointInternal.Factory?,
     private val secondDescriptor: MediaDescriptor,
     private val verifySecond: Boolean,
-    secondEndpoint: IEndpointInternal?,
+    secondEndpointFactory: IEndpointInternal.Factory?,
 ) : DeviceTest() {
     private val streamer by lazy {
-        if (firstEndpoint != null && secondEndpoint != null) {
+        if (firstEndpointFactory != null && secondEndpointFactory != null) {
             CameraDualStreamer(
                 context,
-                firstEndpointInternal = firstEndpoint,
-                secondEndpointInternal = secondEndpoint
+                firstEndpointInternalFactory = firstEndpointFactory,
+                secondEndpointInternalFactory = secondEndpointFactory
             )
-        } else if (firstEndpoint != null) {
-            CameraDualStreamer(context, firstEndpointInternal = firstEndpoint)
-        } else if (secondEndpoint != null) {
-            CameraDualStreamer(context, secondEndpointInternal = secondEndpoint)
+        } else if (firstEndpointFactory != null) {
+            CameraDualStreamer(context, firstEndpointInternalFactory = firstEndpointFactory)
+        } else if (secondEndpointFactory != null) {
+            CameraDualStreamer(context, secondEndpointInternalFactory = secondEndpointFactory)
         } else {
             CameraDualStreamer(context)
         }
@@ -155,7 +156,7 @@ class CameraDualStreamerFileTest(
                     null,
                     UriMediaDescriptor(FileUtils.createCacheFile("video.mp4").toUri()),
                     true,
-                    CompositeEndpoint(Mp4Muxer(), FileSink())
+                    CompositeEndpointFactory(Mp4Muxer(), FileSink())
                 ),
             )
         }

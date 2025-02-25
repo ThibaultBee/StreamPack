@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.endpoints
 
+import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 
 /**
@@ -74,4 +75,31 @@ open class DualEndpoint(
 suspend fun DualEndpoint.startStreamSecond(descriptor: MediaDescriptor) {
     openSecond(descriptor)
     startStreamSecond()
+}
+
+/**
+ * A factory to build a [DualEndpoint].
+ */
+fun DualEndpointFactory(
+    context: Context,
+    mainEndpointFactory: IEndpointInternal.Factory,
+    secondEndpointFactory: IEndpointInternal.Factory
+) = DualEndpointFactory(
+    mainEndpointFactory.create(context),
+    secondEndpointFactory.create(context)
+)
+
+/**
+ * A factory to build a [DualEndpoint].
+ */
+class DualEndpointFactory(
+    private val mainEndpoint: IEndpointInternal,
+    private val secondEndpoint: IEndpointInternal
+) : IEndpointInternal.Factory {
+    override fun create(context: Context): IEndpointInternal {
+        return DualEndpoint(
+            mainEndpoint,
+            secondEndpoint
+        )
+    }
 }

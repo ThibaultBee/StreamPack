@@ -21,6 +21,7 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
@@ -46,13 +47,13 @@ import kotlinx.coroutines.sync.withLock
  *
  * @param context application context
  * @param enableMicrophone [Boolean.true] to capture audio
- * @param internalEndpoint the [IEndpointInternal] implementation
+ * @param internalEndpointFactory the [IEndpointInternal.Factory] implementation
  */
 class CameraCallbackSingleStreamer(
     private val context: Context,
     enableMicrophone: Boolean = true,
-    internalEndpoint: IEndpointInternal = DynamicEndpoint(context)
-) : CallbackSingleStreamer(CameraSingleStreamer(context, enableMicrophone, internalEndpoint)),
+    internalEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
+) : CallbackSingleStreamer(CameraSingleStreamer(context, enableMicrophone, internalEndpointFactory)),
     ICameraCallbackStreamer {
     private val cameraSource = (streamer as CameraSingleStreamer).videoSource as CameraSource
 

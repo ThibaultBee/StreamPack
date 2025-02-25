@@ -29,7 +29,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.AudioE
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecEncoder
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.VideoEncoderConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.rotateFromNaturalOrientation
-import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
@@ -55,13 +55,13 @@ import kotlinx.coroutines.withContext
  * An implementation of [IEncodingPipelineOutputInternal] that manages encoding and endpoint.
  *
  * @param context The application context
- * @param endpointInternal The endpoint implementation
+ * @param endpointInternalFactory The endpoint factory implementation
  * @param defaultRotation The default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param coroutineDispatcher The coroutine dispatcher to use. By default, it is [Dispatchers.Default]
  */
 internal class EncodingPipelineOutput(
     private val context: Context,
-    private val endpointInternal: IEndpointInternal = DynamicEndpoint(context),
+    endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : IEncodingPipelineOutputInternal, IVideoSurfacePipelineOutputInternal,
@@ -124,6 +124,7 @@ internal class EncodingPipelineOutput(
         get() = videoEncoderInternal
 
     // ENDPOINT
+    private val endpointInternal: IEndpointInternal = endpointInternalFactory.create(context)
     override val endpoint: IEndpoint
         get() = endpointInternal
 

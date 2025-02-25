@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.endpoints
 
+import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
@@ -224,5 +225,37 @@ open class CombineEndpoint(protected val endpointInternals: List<IEndpointIntern
          * The URI of the first descriptor.
          */
         override val uri = descriptors.first().uri
+    }
+}
+
+/**
+ * A factory to build a [CombineEndpoint] from a varargs of [IEndpointInternal.Factory].
+ */
+fun CombineEndpointFactory(context: Context, vararg endpointFactory: IEndpointInternal.Factory) =
+    CombineEndpointFactory(context, endpointFactory.toList())
+
+/**
+ * A factory to build a [CombineEndpoint] from a list of [IEndpointInternal.Factory].
+ */
+fun CombineEndpointFactory(context: Context, endpointFactory: List<IEndpointInternal.Factory>) =
+    CombineEndpointFactory(
+        endpointFactory.map { it.create(context) }
+    )
+
+/**
+ * A factory to build a [CombineEndpoint] from a vararg of [IEndpointInternal].
+ */
+fun CombineEndpointFactory(vararg endpoints: IEndpointInternal) =
+    CombineEndpointFactory(
+        endpoints.toList()
+    )
+
+/**
+ * A factory to build a [CombineEndpoint].
+ */
+class CombineEndpointFactory(val endpointInternals: List<IEndpointInternal>) :
+    IEndpointInternal.Factory {
+    override fun create(context: Context): IEndpointInternal {
+        return CombineEndpoint()
     }
 }

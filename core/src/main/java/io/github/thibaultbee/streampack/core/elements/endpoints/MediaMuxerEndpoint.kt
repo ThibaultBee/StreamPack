@@ -377,3 +377,12 @@ class MediaMuxerEndpoint(
             }
     }
 }
+
+/**
+ * Factory for [MediaMuxerEndpoint].
+ */
+class MediaMuxerEndpointFactory : IEndpointInternal.Factory {
+    override fun create(context: Context): IEndpointInternal {
+        return MediaMuxerEndpoint(context)
+    }
+}

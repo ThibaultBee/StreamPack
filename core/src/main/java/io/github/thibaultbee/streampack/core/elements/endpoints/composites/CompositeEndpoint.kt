@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites
 
+import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.data.Packet
@@ -32,7 +33,7 @@ import kotlinx.coroutines.runBlocking
  * An [IEndpointInternal] implementation that combines a [IMuxerInternal] and a [ISinkInternal].
  */
 open class CompositeEndpoint(
-    final override val muxer: IMuxerInternal,
+    override val muxer: IMuxerInternal,
     override val sink: ISinkInternal
 ) :
     ICompositeEndpointInternal {
@@ -120,5 +121,17 @@ open class CompositeEndpoint(
                 override val supportedEncoders by lazy { muxerInfo.video.supportedEncoders }
             }
         }
+    }
+}
+
+/**
+ * A factory to build a [CompositeEndpoint].
+ */
+class CompositeEndpointFactory(
+    val muxer: IMuxerInternal,
+    val sink: ISinkInternal
+) : IEndpointInternal.Factory {
+    override fun create(context: Context): IEndpointInternal {
+        return CompositeEndpoint(muxer, sink)
     }
 }

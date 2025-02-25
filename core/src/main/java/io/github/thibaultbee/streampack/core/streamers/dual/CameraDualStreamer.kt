@@ -19,7 +19,7 @@ import android.Manifest
 import android.content.Context
 import android.view.Surface
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource.Companion.buildDefaultMicrophoneSource
@@ -40,21 +40,21 @@ import kotlinx.coroutines.sync.withLock
  *
  * @param context application context
  * @param enableMicrophone [Boolean.true] to capture audio
- * @param firstEndpointInternal the [IEndpointInternal] implementation of the first output. By default, it is a [DynamicEndpoint].
- * @param secondEndpointInternal the [IEndpointInternal] implementation of the first output. By default, it is a [DynamicEndpoint].
+ * @param firstEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
+ * @param secondEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 fun CameraDualStreamer(
     context: Context,
     enableMicrophone: Boolean = true,
-    firstEndpointInternal: IEndpointInternal = DynamicEndpoint(context),
-    secondEndpointInternal: IEndpointInternal = DynamicEndpoint(context),
+    firstEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    secondEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ) = CameraDualStreamer(
     context,
     if (enableMicrophone) buildDefaultMicrophoneSource() else null,
-    firstEndpointInternal,
-    secondEndpointInternal,
+    firstEndpointInternalFactory,
+    secondEndpointInternalFactory,
     defaultRotation
 )
 
@@ -63,22 +63,22 @@ fun CameraDualStreamer(
  *
  * @param context application context
  * @param audioSourceInternal the audio source implementation
- * @param firstEndpointInternal the [IEndpointInternal] implementation of the first output. By default, it is a [DynamicEndpoint].
- * @param secondEndpointInternal the [IEndpointInternal] implementation of the first output. By default, it is a [DynamicEndpoint].
+ * @param firstEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
+ * @param secondEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 open class CameraDualStreamer(
     context: Context,
     audioSourceInternal: IAudioSourceInternal?,
-    firstEndpointInternal: IEndpointInternal = DynamicEndpoint(context),
-    secondEndpointInternal: IEndpointInternal = DynamicEndpoint(context),
+    firstEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    secondEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ) : DualStreamer(
     context = context,
     audioSourceInternal = audioSourceInternal,
     videoSourceInternal = CameraSource(context),
-    firstEndpointInternal = firstEndpointInternal,
-    secondEndpointInternal = secondEndpointInternal,
+    firstEndpointInternalFactory = firstEndpointInternalFactory,
+    secondEndpointInternalFactory = secondEndpointInternalFactory,
     defaultRotation = defaultRotation
 ), ICameraCoroutineStreamer {
     private val cameraSource = videoSourceInternal as CameraSource

@@ -122,10 +122,10 @@ open class DynamicEndpoint(
         if (endpoint is CompositeEndpoint) {
             if (endpoint.muxer is TsMuxer) {
                 // Clean up services
-                endpoint.muxer.removeServices()
+                (endpoint.muxer as TsMuxer).removeServices()
                 val serviceInfo = mediaDescriptor.getCustomData(TSServiceInfo::class.java)
                     ?: createDefaultTsServiceInfo()
-                endpoint.muxer.addService(serviceInfo)
+                (endpoint.muxer as TsMuxer).addService(serviceInfo)
             }
         }
 
@@ -217,4 +217,11 @@ open class DynamicEndpoint(
     companion object {
         private const val TAG = "DynamicEndpoint"
     }
+}
+
+/**
+ * A factory to build a [DynamicEndpoint].
+ */
+class DynamicEndpointFactory : IEndpointInternal.Factory {
+    override fun create(context: Context): IEndpointInternal = DynamicEndpoint(context)
 }

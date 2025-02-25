@@ -24,6 +24,8 @@ import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpointDummyFactory
+import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpointFactory
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.pipelines.outputs.releaseBlocking
@@ -62,7 +64,7 @@ class EncodingPipelineOutputTest {
 
     @Test
     fun testOpenClose() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternal = DummyEndpoint())
+        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
 
         output.open(descriptor)
         assertTrue(output.isOpenFlow.value)
@@ -72,7 +74,7 @@ class EncodingPipelineOutputTest {
 
     @Test
     fun testSetAudioCodecConfig() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternal = DummyEndpoint())
+        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
         assertNull(output.audioCodecConfigFlow.value)
 
         suspendCoroutine { continuation ->
@@ -92,7 +94,7 @@ class EncodingPipelineOutputTest {
 
     @Test
     fun testSetAudioCodecConfigAndReject() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternal = DummyEndpoint())
+        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
         output.audioConfigEventListener =
             object : IConfigurableAudioPipelineOutputInternal.Listener {
                 override suspend fun onSetAudioCodecConfig(newAudioCodecConfig: AudioCodecConfig) {
@@ -109,7 +111,7 @@ class EncodingPipelineOutputTest {
 
     @Test
     fun testSetVideoCodecConfig() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternal = DummyEndpoint())
+        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
         assertNull(output.videoCodecConfigFlow.value)
 
         suspendCoroutine { continuation ->
@@ -129,7 +131,7 @@ class EncodingPipelineOutputTest {
 
     @Test
     fun testSetVideoCodecConfigAndReject() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternal = DummyEndpoint())
+        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
         output.videoConfigEventListener =
             object : IConfigurableVideoPipelineOutputInternal.Listener {
                 override suspend fun onSetVideoCodecConfig(newVideoCodecConfig: VideoCodecConfig) {
@@ -146,7 +148,7 @@ class EncodingPipelineOutputTest {
 
     @Test
     fun testStartStreamWithoutConfig() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternal = DummyEndpoint())
+        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
 
         try {
             output.startStream(descriptor)
@@ -158,7 +160,7 @@ class EncodingPipelineOutputTest {
 
     @Test
     fun testStartStreamWithAudioConfig() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternal = DummyEndpoint())
+        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
 
         output.setAudioCodecConfig(AudioCodecConfig())
         output.startStream(descriptor)
@@ -166,7 +168,7 @@ class EncodingPipelineOutputTest {
 
     @Test
     fun testStartStreamWithVideoConfig() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternal = DummyEndpoint())
+        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
 
         output.setVideoCodecConfig(VideoCodecConfig())
         output.startStream(descriptor)
@@ -174,7 +176,7 @@ class EncodingPipelineOutputTest {
 
     @Test
     fun testStartStream() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternal = DummyEndpoint())
+        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
 
         output.setVideoCodecConfig(VideoCodecConfig()) // at least one config is needed
 
@@ -202,7 +204,7 @@ class EncodingPipelineOutputTest {
 
     @Test
     fun testStartStreamAndReject() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternal = DummyEndpoint())
+        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
 
         output.setVideoCodecConfig(VideoCodecConfig()) // at least one config is needed
 
@@ -223,7 +225,7 @@ class EncodingPipelineOutputTest {
 
     @Test
     fun testStartStreamVideoCodecSurface() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternal = DummyEndpoint())
+        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
         assertNull(output.surfaceFlow.value)
 
         output.setVideoCodecConfig(VideoCodecConfig())
@@ -244,19 +246,19 @@ class EncodingPipelineOutputTest {
 
     @Test
     fun testClose() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternal = DummyEndpoint())
+        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
         output.close()
     }
 
     @Test
     fun testStopStreamOnly() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternal = DummyEndpoint())
+        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
         output.stopStream()
     }
 
     @Test
     fun testReleaseOnly() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternal = DummyEndpoint())
+        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
         output.release()
     }
 
@@ -264,7 +266,7 @@ class EncodingPipelineOutputTest {
 
     @Test
     fun testSetVideoCodecSurface() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternal = DummyEndpoint())
+        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
         assertNull(output.surfaceFlow.value)
 
         output.setVideoCodecConfig(VideoCodecConfig())
@@ -285,7 +287,10 @@ class EncodingPipelineOutputTest {
     @Test
     fun testQueueAudioFrame() = runTest {
         val dummyEndpoint = DummyEndpoint()
-        output = EncodingPipelineOutput(context, endpointInternal = dummyEndpoint)
+        output = EncodingPipelineOutput(
+            context,
+            endpointInternalFactory = DummyEndpointDummyFactory(dummyEndpoint)
+        )
 
         try {
             output.queueAudioFrame(

@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.endpoints
 
+import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
@@ -69,6 +70,19 @@ interface IEndpointInternal : IEndpoint, SuspendStreamable,
             stopStream()
             close()
         }
+    }
+
+    /**
+     * A factory to build an [IEndpointInternal].
+     */
+    interface Factory {
+        /**
+         * Builds an [IEndpointInternal].
+         *
+         * @param context the application context
+         * @return an [IEndpointInternal]
+         */
+        fun create(context: Context): IEndpointInternal
     }
 }
 
