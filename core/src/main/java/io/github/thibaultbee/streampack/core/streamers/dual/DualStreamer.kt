@@ -22,6 +22,7 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
@@ -133,6 +134,10 @@ open class DualStreamer(
         get() = pipeline.audioSource
     override val videoSource: IVideoSource?
         get() = pipeline.videoSource
+
+    // PROCESSORS
+    override val audioProcessor: IAudioFrameProcessor
+        get() = pipeline.audioProcessor
 
     // INTERNAL
     protected val videoSourceInternal = pipeline.videoSource as IVideoSourceInternal?

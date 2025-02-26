@@ -9,10 +9,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.nio.ByteBuffer
 
 class StubAudioSource : IAudioSourceInternal {
-    override var isMuted: Boolean
-        get() = TODO("Not yet implemented")
-        set(value) {}
-
     private val _isStreamingFlow = MutableStateFlow(false)
     val isStreamingFlow = _isStreamingFlow.asStateFlow()
 

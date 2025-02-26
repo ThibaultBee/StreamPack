@@ -93,6 +93,7 @@ open class SingleStreamer(
      */
     override val audioSource: IAudioSource?
         get() = pipeline.audioSource
+    override val audioProcessor = pipeline.audioProcessor
     override val audioEncoder: IEncoder?
         get() = pipelineOutput.audioEncoder
 

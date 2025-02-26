@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.core.streamers.interfaces
 
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.streamers.single.open
@@ -111,6 +112,11 @@ interface IAudioStreamer {
      * Advanced settings for the audio source.
      */
     val audioSource: IAudioSource?
+
+    /**
+     * Advanced settings for the audio processor.
+     */
+    val audioProcessor: IAudioFrameProcessor
 }
 
 /**

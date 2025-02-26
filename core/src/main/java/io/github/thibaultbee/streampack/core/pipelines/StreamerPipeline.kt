@@ -23,7 +23,8 @@ import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.elements.processing.audio.FrameProcessor
+import io.github.thibaultbee.streampack.core.elements.processing.audio.AudioFrameProcessor
+import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
 import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal
 import io.github.thibaultbee.streampack.core.elements.processing.video.SurfaceProcessor
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.AbstractSurfaceOutput
@@ -84,7 +85,10 @@ open class StreamerPipeline(
     protected val coroutineScope: CoroutineScope = CoroutineScope(coroutineDispatcher)
 
     private var surfaceProcessor: ISurfaceProcessorInternal? = null
-    private val audioProcessor = FrameProcessor(::queueAudioFrame)
+    private val audioProcessorInternal = AudioFrameProcessor(::queueAudioFrame)
+
+    val audioProcessor: IAudioFrameProcessor
+        get() = audioProcessorInternal
 
     private val _throwableFlow = MutableStateFlow<Throwable?>(null)
     val throwableFlow = _throwableFlow.asStateFlow()
@@ -368,7 +372,7 @@ open class StreamerPipeline(
                 }
             }
         }
-        audioSourceInternal?.let { audioProcessor.setInput(it::getAudioFrame) }
+        audioSourceInternal?.let { audioProcessorInternal.setInput(it::getAudioFrame) }
     }
 
     /**
@@ -700,7 +704,7 @@ open class StreamerPipeline(
             // Sources
             audioSourceInternal?.let {
                 it.startStream()
-                audioProcessor.startStream()
+                audioProcessorInternal.startStream()
             }
 
             videoSourceInternal?.startStream()
@@ -753,7 +757,7 @@ open class StreamerPipeline(
         try {
             // Sources
             try {
-                audioProcessor.stopStream()
+                audioProcessorInternal.stopStream()
             } catch (t: Throwable) {
                 Logger.w(TAG, "stopStream: Can't stop audio processor: ${t.message}")
             }
@@ -789,8 +793,8 @@ open class StreamerPipeline(
 
     private suspend fun releaseSources() {
         audioSourceMutex.withLock {
-            audioProcessor.removeInput()
-            audioProcessor.release()
+            audioProcessorInternal.removeInput()
+            audioProcessorInternal.release()
             audioSourceInternal?.release()
         }
         videoSourceMutex.withLock {

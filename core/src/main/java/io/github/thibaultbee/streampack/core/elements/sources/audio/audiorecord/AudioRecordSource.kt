@@ -44,9 +44,6 @@ sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
     private var processor: EffectProcessor? = null
     private var pendingAudioEffects = mutableListOf<UUID>()
 
-    private var mutedByteArray: ByteArray? = null
-    override var isMuted: Boolean = false
-
     private val isRunning: Boolean
         get() = audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING
 
@@ -70,12 +67,6 @@ sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
         }
 
         bufferSize = getMinBufferSize(config)
-
-        /**
-         * Initialized mutedByteArray with bufferSize. The read buffer length may be different
-         * from bufferSize. In this case, mutedByteArray will be resized.
-         */
-        mutedByteArray = ByteArray(bufferSize!!)
 
         audioRecord = buildAudioRecord(config, bufferSize!!).also {
             val previousEffects = processor?.getAll() ?: emptyList()
@@ -124,8 +115,6 @@ sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
     }
 
     override fun release() {
-        mutedByteArray = null
-
         processor?.clear()
         processor = null
 
@@ -164,24 +153,11 @@ sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
 
         val length = audioRecord.read(buffer, buffer.remaining())
         if (length >= 0) {
-            return if (isMuted) {
-                if (length != mutedByteArray?.size) {
-                    mutedByteArray = ByteArray(length)
-                }
-                buffer.put(mutedByteArray!!, 0, length)
-                buffer.clear()
-                Frame(
-                    buffer,
-                    getTimestamp(audioRecord),
-                    format = rawFormat
-                )
-            } else {
-                Frame(
-                    buffer,
-                    getTimestamp(audioRecord),
-                    format = rawFormat
-                )
-            }
+            return Frame(
+                buffer,
+                getTimestamp(audioRecord),
+                format = rawFormat
+            )
         } else {
             throw IllegalArgumentException(audioRecordErrorToString(length))
         }

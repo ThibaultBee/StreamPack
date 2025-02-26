@@ -51,6 +51,7 @@ open class CallbackSingleStreamer(val streamer: SingleStreamer) :
 
     override val audioSource: IAudioSource?
         get() = streamer.audioSource
+    override val audioProcessor = streamer.audioProcessor
     override val audioEncoder: IEncoder?
         get() = streamer.audioEncoder
     override val videoSource: IVideoSource?
