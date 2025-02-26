@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Thibault B.
+ * Copyright (C) 2025 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.elements.sources.audio
+package io.github.thibaultbee.streampack.core.elements.processing.audio
 
-import io.github.thibaultbee.streampack.core.elements.interfaces.Configurable
-import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
-import io.github.thibaultbee.streampack.core.elements.interfaces.Streamable
-
-interface IAudioSourceInternal : IAudioSource, IAudioFrameSource, Streamable,
-    Configurable<AudioSourceConfig>, Releasable
-
-interface IAudioSource
+/**
+ * Public interface for audio frame processor.
+ */
+interface IAudioFrameProcessor {
+    /**
+     * Mute audio.
+     */
+    var isMuted: Boolean
+}

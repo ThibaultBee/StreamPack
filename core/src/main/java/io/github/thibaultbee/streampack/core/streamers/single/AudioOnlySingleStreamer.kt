@@ -62,6 +62,7 @@ open class AudioOnlySingleStreamer(
         get() = streamer.audioConfig
     override val audioSource: IAudioSource?
         get() = streamer.audioSource
+    override val audioProcessor = streamer.audioProcessor
     override val audioEncoder: IEncoder?
         get() = streamer.audioEncoder
 
