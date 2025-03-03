@@ -10,7 +10,7 @@ import java.nio.ByteBuffer
 
 class StubAudioSource : IAudioSourceInternal {
     private val _isStreamingFlow = MutableStateFlow(false)
-    val isStreamingFlow = _isStreamingFlow.asStateFlow()
+    override val isStreamingFlow = _isStreamingFlow.asStateFlow()
 
     private val _configurationFlow = MutableStateFlow<AudioSourceConfig?>(null)
     val configurationFlow = _configurationFlow.asStateFlow()

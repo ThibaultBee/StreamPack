@@ -18,8 +18,14 @@ package io.github.thibaultbee.streampack.core.elements.sources.audio
 import io.github.thibaultbee.streampack.core.elements.interfaces.Configurable
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.interfaces.Streamable
+import kotlinx.coroutines.flow.StateFlow
 
 interface IAudioSourceInternal : IAudioSource, IAudioFrameSource, Streamable,
-    Configurable<AudioSourceConfig>, Releasable
+    Configurable<AudioSourceConfig>, Releasable {
+    /**
+     * Flow of the last streaming state.
+     */
+    val isStreamingFlow: StateFlow<Boolean>
+}
 
 interface IAudioSource

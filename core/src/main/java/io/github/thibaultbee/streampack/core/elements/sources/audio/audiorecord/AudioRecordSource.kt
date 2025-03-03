@@ -30,6 +30,8 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.
 import io.github.thibaultbee.streampack.core.elements.utils.TimeUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.type
 import io.github.thibaultbee.streampack.core.logger.Logger
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.nio.ByteBuffer
 import java.util.UUID
 
@@ -46,6 +48,9 @@ sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
 
     private val isRunning: Boolean
         get() = audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING
+
+    private val _isStreamingFlow = MutableStateFlow(false)
+    override val isStreamingFlow = _isStreamingFlow.asStateFlow()
 
     protected abstract fun buildAudioRecord(
         config: AudioSourceConfig,
@@ -100,6 +105,7 @@ sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
         processor?.setEnabled(true)
 
         audioRecord.startRecording()
+        _isStreamingFlow.tryEmit(true)
     }
 
     override fun stopStream() {
@@ -112,9 +118,11 @@ sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
         audioRecord?.stop()
 
         processor?.setEnabled(false)
+        _isStreamingFlow.tryEmit(false)
     }
 
     override fun release() {
+        _isStreamingFlow.tryEmit(false)
         processor?.clear()
         processor = null
 
