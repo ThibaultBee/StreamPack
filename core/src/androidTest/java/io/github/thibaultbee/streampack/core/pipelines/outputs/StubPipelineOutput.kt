@@ -20,11 +20,15 @@ import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
+import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.sourceConfig
+import io.github.thibaultbee.streampack.core.elements.utils.mapState
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioPipelineOutputInternal
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoPipelineOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioEncodingPipelineOutput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.utils.SurfaceUtils
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 open class StubAudioAsyncPipelineOutput :
@@ -52,7 +56,6 @@ open class StubVideoSurfacePipelineOutput(resolution: Size) :
             )
         )
     override val surfaceFlow = _surfaceFlow.asStateFlow()
-    override var videoSourceTimestampOffset: Long = 0L
 }
 
 class StubAudioSyncVideoSurfacePipelineOutput(resolution: Size) :
@@ -68,7 +71,6 @@ class StubAudioSyncVideoSurfacePipelineOutput(resolution: Size) :
             )
         )
     override val surfaceFlow = _surfaceFlow.asStateFlow()
-    override var videoSourceTimestampOffset: Long = 0L
 
     private val _audioFrameFlow = MutableStateFlow<Frame?>(null)
     val audioFrameFlow = _audioFrameFlow.asStateFlow()
@@ -127,7 +129,6 @@ class StubAudioSyncVideoSurfacePipelineOutputInternal(resolution: Size) :
             )
         )
     override val surfaceFlow = _surfaceFlow.asStateFlow()
-    override var videoSourceTimestampOffset: Long = 0L
 
     private val _audioFrameFlow = MutableStateFlow<Frame?>(null)
     val audioFrameFlow = _audioFrameFlow.asStateFlow()
@@ -150,7 +151,6 @@ class StubVideoSurfacePipelineOutputInternal(resolution: Size) :
             )
         )
     override val surfaceFlow = _surfaceFlow.asStateFlow()
-    override var videoSourceTimestampOffset: Long = 0L
 }
 
 abstract class StubPipelineOutputInternal(hasAudio: Boolean, hasVideo: Boolean) :
@@ -172,34 +172,38 @@ abstract class StubPipelineOutputInternal(hasAudio: Boolean, hasVideo: Boolean) 
 
 internal class StubAudioSyncConfigurableEncodingPipelineOutputInternal :
     StubAudioAsyncPipelineOutput(),
+    IConfigurableAudioEncodingPipelineOutput,
     IConfigurableAudioPipelineOutputInternal {
     override var audioConfigEventListener: IConfigurableAudioPipelineOutputInternal.Listener? = null
 
     private val _audioCodecConfigFlow = MutableStateFlow<AudioCodecConfig?>(null)
     override val audioCodecConfigFlow = _audioCodecConfigFlow.asStateFlow()
+    override val audioSourceConfigFlow = audioCodecConfigFlow.mapState { it?.sourceConfig }
 
     override val audioEncoder: IEncoder? = null
 
     override suspend fun setAudioCodecConfig(audioCodecConfig: AudioCodecConfig) {
-        audioConfigEventListener?.onSetAudioCodecConfig(audioCodecConfig)
+        audioConfigEventListener?.onSetAudioSourceConfig(audioCodecConfig.sourceConfig)
         _audioCodecConfigFlow.emit(audioCodecConfig)
     }
-
 }
 
 internal class StubVideoSurfaceConfigurableEncodingPipelineOutputInternal :
     StubVideoSurfacePipelineOutput(resolution = Size(1280, 720)),
+    IConfigurableVideoEncodingPipelineOutput,
     IConfigurableVideoPipelineOutputInternal {
 
     override var videoConfigEventListener: IConfigurableVideoPipelineOutputInternal.Listener? = null
 
     private val _videoCodecConfigFlow = MutableStateFlow<VideoCodecConfig?>(null)
     override val videoCodecConfigFlow = _videoCodecConfigFlow.asStateFlow()
+    override val videoSourceConfigFlow: StateFlow<VideoSourceConfig?> =
+        videoCodecConfigFlow.mapState { it?.sourceConfig }
 
     override val videoEncoder: IEncoder? = null
 
     override suspend fun setVideoCodecConfig(videoCodecConfig: VideoCodecConfig) {
-        videoConfigEventListener?.onSetVideoCodecConfig(videoCodecConfig)
+        videoConfigEventListener?.onSetVideoSourceConfig(videoCodecConfig.sourceConfig)
         _videoCodecConfigFlow.emit(videoCodecConfig)
     }
 }

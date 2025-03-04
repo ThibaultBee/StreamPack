@@ -19,6 +19,8 @@ import android.util.Size
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal.IAsyncByteBufferInput.OnFrameRequestedListener
+import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
+import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import kotlinx.coroutines.flow.StateFlow
@@ -111,6 +113,69 @@ fun IPipelineOutput.releaseBlocking() = runBlocking {
     release()
 }
 
+interface IConfigurableAudioPipelineOutput {
+    /**
+     * The audio configuration flow.
+     */
+    val audioSourceConfigFlow: StateFlow<AudioSourceConfig?>
+}
+
+/**
+ * A configurable audio internal output component for a pipeline.
+ */
+interface IConfigurableAudioPipelineOutputInternal : IConfigurableAudioPipelineOutput {
+    /**
+     * Audio configuration listener.
+     */
+    var audioConfigEventListener: Listener?
+
+    /**
+     * Audio configuration listener interface.
+     */
+    interface Listener {
+        /**
+         * It is called when audio configuration is set.
+         * The listener can reject the configuration by throwing an exception.
+         * It is used to validate and apply audio configuration to the source.
+         */
+        suspend fun onSetAudioSourceConfig(newAudioSourceConfig: AudioSourceConfig)
+    }
+}
+
+/**
+ * A configurable video output component for a pipeline.
+ */
+interface IConfigurableVideoPipelineOutput {
+    /**
+     * The video configuration flow.
+     */
+    val videoSourceConfigFlow: StateFlow<VideoSourceConfig?>
+}
+
+/**
+ * A configurable video internal output component for a pipeline.
+ */
+interface IConfigurableVideoPipelineOutputInternal: IConfigurableVideoPipelineOutput {
+    /**
+     * Video configuration listener.
+     */
+    var videoConfigEventListener: Listener?
+
+    /**
+     * Video configuration listener interface.
+     */
+    interface Listener {
+        /**
+         * It is called when video configuration is set.
+         * The listener can reject the configuration by throwing an exception.
+         * It is used to validate and apply video configuration to the source.
+         */
+        suspend fun onSetVideoSourceConfig(newVideoSourceConfig: VideoSourceConfig)
+    }
+}
+
+// Pipeline outputs inputs interfaces
+
 /**
  * A [Surface] with its resolution.
  *
@@ -141,12 +206,6 @@ interface IVideoSurfacePipelineOutputInternal : IVideoPipelineOutputInternal {
      * For surface mode video encoder.
      */
     val surfaceFlow: StateFlow<SurfaceWithSize?>
-
-    /**
-     * The video source timestamp offset.
-     * Used to synchronize video and audio when video comes from the [surfaceFlow].s
-     */
-    var videoSourceTimestampOffset: Long
 }
 
 /**

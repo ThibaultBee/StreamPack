@@ -32,10 +32,15 @@ import io.github.thibaultbee.streampack.core.elements.encoders.rotateFromNatural
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.sourceConfig
+import io.github.thibaultbee.streampack.core.elements.utils.mapState
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IAudioSyncPipelineOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableAudioPipelineOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoSurfacePipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceWithSize
@@ -64,8 +69,8 @@ internal class EncodingPipelineOutput(
     endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
-) : IEncodingPipelineOutputInternal, IVideoSurfacePipelineOutputInternal,
-    IAudioSyncPipelineOutputInternal {
+) : IConfigurableEncodingPipelineOutput, IEncodingPipelineOutputInternal,
+    IVideoSurfacePipelineOutputInternal, IAudioSyncPipelineOutputInternal {
     /**
      * Mutex to avoid concurrent start/stop operations.
      */
@@ -107,12 +112,6 @@ internal class EncodingPipelineOutput(
      * It is emitted when the video configuration changed and after a [stopStream] (async).
      */
     override val surfaceFlow = _surfaceFlow.asStateFlow()
-
-    /**
-     * The video source.
-     * We need to know the timestamp offset to synchronize audio and video.
-     */
-    override var videoSourceTimestampOffset = 0L
 
     // ENCODERS
     private var audioEncoderInternal: IEncoderInternal? = null
@@ -222,12 +221,6 @@ internal class EncodingPipelineOutput(
 
         override fun onOutputFrame(frame: Frame) {
             videoStreamId?.let {
-                frame.pts += videoSourceTimestampOffset
-                frame.dts = if (frame.dts != null) {
-                    frame.dts!! + videoSourceTimestampOffset
-                } else {
-                    null
-                }
                 runBlocking {
                     this@EncodingPipelineOutput.endpointInternal.write(frame, it)
                 }
@@ -237,6 +230,7 @@ internal class EncodingPipelineOutput(
 
     private val _audioCodecConfigFlow = MutableStateFlow<AudioCodecConfig?>(null)
     override val audioCodecConfigFlow = _audioCodecConfigFlow.asStateFlow()
+    override val audioSourceConfigFlow = audioCodecConfigFlow.mapState { it?.sourceConfig }
 
     private val audioCodecConfig: AudioCodecConfig?
         get() = _audioCodecConfigFlow.value
@@ -264,7 +258,7 @@ internal class EncodingPipelineOutput(
             return
         }
 
-        audioConfigEventListener?.onSetAudioCodecConfig(audioCodecConfig)
+        audioConfigEventListener?.onSetAudioSourceConfig(audioCodecConfig.sourceConfig)
 
         applyAudioCodecConfig(audioCodecConfig)
         _audioCodecConfigFlow.emit(audioCodecConfig)
@@ -290,6 +284,8 @@ internal class EncodingPipelineOutput(
 
     private val _videoCodecConfigFlow = MutableStateFlow<VideoCodecConfig?>(null)
     override val videoCodecConfigFlow = _videoCodecConfigFlow.asStateFlow()
+    override val videoSourceConfigFlow: StateFlow<VideoSourceConfig?> =
+        videoCodecConfigFlow.mapState { it?.sourceConfig }
 
     private val videoCodecConfig: VideoCodecConfig?
         get() = _videoCodecConfigFlow.value
@@ -309,7 +305,7 @@ internal class EncodingPipelineOutput(
             return
         }
 
-        videoConfigEventListener?.onSetVideoCodecConfig(videoCodecConfig)
+        videoConfigEventListener?.onSetVideoSourceConfig(videoCodecConfig.sourceConfig)
 
         applyVideoCodecConfig(videoCodecConfig)
 

@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.nio.ByteBuffer
 
-class StubVideoSurfaceSource(override val timestampOffset: Long = 0) : StubVideoSource(),
+class StubVideoSurfaceSource(override val timestampOffsetInNs: Long = 0) : StubVideoSource(),
     ISurfaceSource {
     override var outputSurface: Surface? = null
 }

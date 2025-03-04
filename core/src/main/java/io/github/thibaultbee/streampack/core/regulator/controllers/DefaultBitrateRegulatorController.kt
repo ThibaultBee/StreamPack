@@ -19,9 +19,9 @@ import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfi
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.utils.Scheduler
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioPipelineOutput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoPipelineOutput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
 
 /**
@@ -84,7 +84,7 @@ open class DefaultBitrateRegulatorController(
         private val delayTimeInMs: Long = 500
     ) : BitrateRegulatorController.Factory() {
         override fun newBitrateRegulatorController(pipelineOutput: IEncodingPipelineOutput): BitrateRegulatorController {
-            require(pipelineOutput is IConfigurableVideoPipelineOutput) {
+            require(pipelineOutput is IConfigurableVideoEncodingPipelineOutput) {
                 "Pipeline output must be an video encoding output"
             }
 
@@ -92,7 +92,7 @@ open class DefaultBitrateRegulatorController(
                 "Video encoder must be set"
             }
 
-            val audioEncoder = if (pipelineOutput is IConfigurableAudioPipelineOutput) {
+            val audioEncoder = if (pipelineOutput is IConfigurableAudioEncodingPipelineOutput) {
                 pipelineOutput.audioEncoder
             } else {
                 null

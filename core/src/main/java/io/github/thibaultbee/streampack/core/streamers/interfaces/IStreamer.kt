@@ -116,7 +116,7 @@ interface IAudioStreamer {
     /**
      * Advanced settings for the audio processor.
      */
-    val audioProcessor: IAudioFrameProcessor
+    val audioProcessor: IAudioFrameProcessor?
 }
 
 /**

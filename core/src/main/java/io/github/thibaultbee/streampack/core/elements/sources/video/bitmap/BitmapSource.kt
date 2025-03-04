@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit
  */
 class BitmapSource : IVideoSourceInternal, ISurfaceSource, IBitmapSource {
     override var outputSurface: Surface? = null
-    override val timestampOffset = 0L
+    override val timestampOffsetInNs = 0L
     override val infoProviderFlow = MutableStateFlow(DefaultSourceInfoProvider()).asStateFlow()
 
     private val _isStreamingFlow = MutableStateFlow(false)

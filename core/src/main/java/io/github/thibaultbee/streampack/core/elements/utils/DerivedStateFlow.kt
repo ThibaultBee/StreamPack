@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 class DerivedStateFlow<T>(
@@ -47,6 +48,14 @@ fun <T> stateFlow(
     getValue: () -> T,
     flow: Flow<T>
 ): StateFlow<T> = DerivedStateFlow(getValue, flow)
+
+
+fun <T1, R> StateFlow<T1>.mapState(transform: (a: T1) -> R): StateFlow<R> {
+    return DerivedStateFlow(
+        getValue = { transform(this.value) },
+        flow = this.map { a -> transform(a) }
+    )
+}
 
 /**
  * Combines all [stateFlows] and transforms them into another [StateFlow] with [transform]

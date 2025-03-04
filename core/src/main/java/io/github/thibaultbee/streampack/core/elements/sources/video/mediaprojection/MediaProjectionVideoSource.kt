@@ -33,14 +33,13 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.densityDp
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.screenRect
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class MediaProjectionVideoSource(
     private val context: Context
 ) : IVideoSourceInternal, ISurfaceSource, IMediaProjectionSource {
     override var outputSurface: Surface? = null
-    override val timestampOffset = 0L
+    override val timestampOffsetInNs = 0L
     override val infoProviderFlow = MutableStateFlow(DefaultSourceInfoProvider()).asStateFlow()
 
     private val _isStreamingFlow = MutableStateFlow(false)
@@ -80,12 +79,6 @@ class MediaProjectionVideoSource(
 
             _isStreamingFlow.tryEmit(false)
         }
-    }
-
-    companion object {
-        private const val TAG = "ScreenSource"
-
-        private const val VIRTUAL_DISPLAY_NAME = "StreamPackScreenSource"
     }
 
     override fun configure(config: VideoSourceConfig) = Unit
@@ -131,5 +124,11 @@ class MediaProjectionVideoSource(
         } catch (e: InterruptedException) {
             e.printStackTrace()
         }
+    }
+
+    companion object {
+        private const val TAG = "ScreenSource"
+
+        private const val VIRTUAL_DISPLAY_NAME = "StreamPackScreenSource"
     }
 }

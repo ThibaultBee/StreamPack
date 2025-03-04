@@ -73,8 +73,6 @@ open class CameraSingleStreamer(
     @RotationValue defaultRotation: Int = context.displayRotation
 ) : SingleStreamer(
     context = context,
-    audioSourceInternal = audioSourceInternal,
-    videoSourceInternal = CameraSource(context),
     endpointInternalFactory = endpointInternalFactory,
     defaultRotation = defaultRotation
 ), ICameraCoroutineStreamer {
@@ -111,7 +109,8 @@ open class CameraSingleStreamer(
          *
          * @param value string that described the camera.
          */
-        @RequiresPermission(Manifest.permission.CAMERA) set(value) {
+        @RequiresPermission(Manifest.permission.CAMERA)
+        set(value) {
             runBlocking {
                 setCameraId(value)
             }

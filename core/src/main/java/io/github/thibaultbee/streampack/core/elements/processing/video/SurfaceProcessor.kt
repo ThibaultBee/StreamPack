@@ -26,6 +26,7 @@ class SurfaceProcessor(
 
     private val surfaceOutputs: MutableList<AbstractSurfaceOutput> = mutableListOf()
     private val surfaceInputs: MutableList<SurfaceInput> = mutableListOf()
+    private val surfaceInputsTimestampMap: MutableMap<SurfaceTexture, Long> = hashMapOf()
 
     private val glThread = HandlerThread("GL Thread").apply {
         start()
@@ -45,7 +46,7 @@ class SurfaceProcessor(
         }
     }
 
-    override fun createInputSurface(surfaceSize: Size): Surface? {
+    override fun createInputSurface(surfaceSize: Size, timestampOffsetInNs: Long): Surface? {
         if (isReleaseRequested.get()) {
             return null
         }
@@ -54,6 +55,9 @@ class SurfaceProcessor(
             val surfaceTexture = SurfaceTexture(renderer.textureName)
             surfaceTexture.setDefaultBufferSize(surfaceSize.width, surfaceSize.height)
             surfaceTexture.setOnFrameAvailableListener(this, glHandler)
+
+            surfaceInputsTimestampMap[surfaceTexture] = timestampOffsetInNs
+
             SurfaceInput(Surface(surfaceTexture), surfaceTexture)
         }
 
@@ -76,6 +80,30 @@ class SurfaceProcessor(
         }
     }
 
+    override fun pauseInputSurface(surface: Surface) {
+        executeSafely {
+            val surfaceInput = surfaceInputs.find { it.surface == surface }
+            if (surfaceInput != null) {
+                val surfaceTexture = surfaceInput.surfaceTexture
+                surfaceTexture.setOnFrameAvailableListener(null, glHandler)
+            } else {
+                Logger.w(TAG, "Surface not found")
+            }
+        }
+    }
+
+    override fun resumeInputSurface(surface: Surface) {
+        executeSafely {
+            val surfaceInput = surfaceInputs.find { it.surface == surface }
+            if (surfaceInput != null) {
+                val surfaceTexture = surfaceInput.surfaceTexture
+                surfaceTexture.setOnFrameAvailableListener(this, glHandler)
+            } else {
+                Logger.w(TAG, "Surface not found")
+            }
+        }
+    }
+
     override fun removeInputSurface(surface: Surface) {
         executeSafely {
             val surfaceInput = surfaceInputs.find { it.surface == surface }
@@ -85,6 +113,7 @@ class SurfaceProcessor(
                 surfaceTexture.release()
                 surface.release()
 
+                surfaceInputsTimestampMap.remove(surfaceTexture)
                 surfaceInputs.remove(surfaceInput)
 
                 checkReadyToRelease()
@@ -176,11 +205,12 @@ class SurfaceProcessor(
         surfaceTexture.updateTexImage()
         surfaceTexture.getTransformMatrix(textureMatrix)
 
+        val timestamp = surfaceTexture.timestamp + (surfaceInputsTimestampMap[surfaceTexture] ?: 0L)
         surfaceOutputs.forEach {
             try {
                 if (it.isStreaming()) {
                     it.updateTransformMatrix(surfaceOutputMatrix, textureMatrix)
-                    renderer.render(surfaceTexture.timestamp, surfaceOutputMatrix, it.surface)
+                    renderer.render(timestamp, surfaceOutputMatrix, it.surface)
                 }
             } catch (e: Exception) {
                 Logger.e(TAG, "Error while rendering frame", e)

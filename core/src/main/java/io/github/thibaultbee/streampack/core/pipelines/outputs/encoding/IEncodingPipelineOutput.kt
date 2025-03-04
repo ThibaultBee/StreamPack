@@ -22,12 +22,17 @@ import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableAudioPipelineOutput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableAudioPipelineOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVideoPipelineOutput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.single.open
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import kotlinx.coroutines.flow.StateFlow
+import androidx.core.net.toUri
 
 /**
  * An output component for a streamer.
@@ -80,7 +85,7 @@ suspend fun IEncodingPipelineOutput.open(uri: Uri) = open(UriMediaDescriptor(uri
  * @param uriString The uri to open
  */
 suspend fun IEncodingPipelineOutput.open(uriString: String) =
-    open(UriMediaDescriptor(Uri.parse(uriString)))
+    open(UriMediaDescriptor(uriString.toUri()))
 
 
 /**
@@ -138,9 +143,9 @@ suspend fun IEncodingPipelineOutput.startStream(uriString: String) {
 }
 
 /**
- * An audio encoding output component for a pipeline.
+ * A configurable audio output component for a pipeline.
  */
-interface IConfigurableAudioPipelineOutput {
+interface IConfigurableAudioEncodingPipelineOutput : IConfigurableAudioPipelineOutput {
     /**
      * The audio configuration flow.
      */
@@ -162,9 +167,9 @@ interface IConfigurableAudioPipelineOutput {
 }
 
 /**
- * An video encoding output component for a pipeline.
+ * A configurable video output component for a pipeline.
  */
-interface IConfigurableVideoPipelineOutput {
+interface IConfigurableVideoEncodingPipelineOutput : IConfigurableVideoPipelineOutput {
     /**
      * The video configuration flow.
      */
@@ -186,52 +191,9 @@ interface IConfigurableVideoPipelineOutput {
 }
 
 interface IConfigurableEncodingPipelineOutput : IEncodingPipelineOutput,
-    IConfigurableAudioPipelineOutput, IConfigurableVideoPipelineOutput
-
-/**
- * An internal output component for a streamer.
- */
-internal interface IConfigurableAudioPipelineOutputInternal : IConfigurableAudioPipelineOutput {
-    /**
-     * Audio configuration listener.
-     */
-    var audioConfigEventListener: Listener?
-
-    /**
-     * Audio configuration listener interface.
-     */
-    interface Listener {
-        /**
-         * It is called when audio configuration is set.
-         * The listener can reject the configuration by throwing an exception.
-         * It is used to validate and apply audio configuration to the source.
-         */
-        suspend fun onSetAudioCodecConfig(newAudioCodecConfig: AudioCodecConfig)
-    }
-}
-
-/**
- * An internal output component for a streamer.
- */
-internal interface IConfigurableVideoPipelineOutputInternal : IConfigurableVideoPipelineOutput {
-    /**
-     * Video configuration listener.
-     */
-    var videoConfigEventListener: Listener?
-
-    /**
-     * Video configuration listener interface.
-     */
-    interface Listener {
-        /**
-         * It is called when video configuration is set.
-         * The listener can reject the configuration by throwing an exception.
-         * It is used to validate and apply video configuration to the source.
-         */
-        suspend fun onSetVideoCodecConfig(newVideoCodecConfig: VideoCodecConfig)
-    }
-}
+    IConfigurableAudioEncodingPipelineOutput, IConfigurableVideoEncodingPipelineOutput
 
 internal interface IEncodingPipelineOutputInternal : IConfigurableEncodingPipelineOutput,
     IConfigurableAudioPipelineOutputInternal,
-    IConfigurableVideoPipelineOutputInternal, IPipelineOutputInternal
+    IConfigurableVideoPipelineOutputInternal,
+    IPipelineOutputInternal

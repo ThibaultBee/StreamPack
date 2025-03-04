@@ -54,15 +54,11 @@ import kotlinx.coroutines.runBlocking
  */
 open class SingleStreamer(
     protected val context: Context,
-    audioSourceInternal: IAudioSourceInternal?,
-    videoSourceInternal: IVideoSourceInternal?,
     endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ) : ICoroutineSingleStreamer, ICoroutineAudioSingleStreamer, ICoroutineVideoSingleStreamer {
     private val pipeline = StreamerPipeline(
-        context,
-        audioSourceInternal,
-        videoSourceInternal
+        context
     )
     private val pipelineOutput: IEncodingPipelineOutputInternal = runBlocking {
         pipeline.addOutput(
@@ -92,10 +88,14 @@ open class SingleStreamer(
      * It allows advanced audio source settings.
      */
     override val audioSource: IAudioSource?
-        get() = pipeline.audioSource
+        get() = pipeline.audioSourceFlow.value
     override val audioProcessor = pipeline.audioProcessor
     override val audioEncoder: IEncoder?
         get() = pipelineOutput.audioEncoder
+
+    suspend fun setAudioSource(audioSource: IAudioSourceInternal) {
+        pipeline.setAudioSource(audioSource)
+    }
 
     // VIDEO
     /**
@@ -103,13 +103,17 @@ open class SingleStreamer(
      * It allows advanced video source settings.
      */
     override val videoSource: IVideoSource?
-        get() = pipeline.videoSource
+        get() = pipeline.videoSourceFlow.value
     override val videoEncoder: IEncoder?
         get() = pipelineOutput.videoEncoder
 
+    suspend fun setVideoSource(videoSource: IVideoSourceInternal) {
+        pipeline.setVideoSource(videoSource)
+    }
+
     // INTERNAL
-    protected val videoSourceInternal = pipeline.videoSource as IVideoSourceInternal?
-    protected val audioSourceInternal = pipeline.audioSource as IAudioSourceInternal?
+    protected val videoSourceInternal = pipeline.videoSourceFlow.value as IVideoSourceInternal?
+    protected val audioSourceInternal = pipeline.audioSourceFlow.value as IAudioSourceInternal?
 
     // ENDPOINT
     override val endpoint: IEndpoint
@@ -161,12 +165,6 @@ open class SingleStreamer(
             endpoint.getInfo(descriptor)
         }
         return StreamerConfigurationInfo(endpointInfo)
-    }
-
-    init {
-        require(!(audioSourceInternal == null && videoSourceInternal == null)) {
-            "At least one source must be provided"
-        }
     }
 
     // CONFIGURATION
