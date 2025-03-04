@@ -66,8 +66,6 @@ open class ScreenRecorderSingleStreamer(
     @RotationValue defaultRotation: Int = context.displayRotation
 ) : SingleStreamer(
     context = context,
-    audioSourceInternal = audioSourceInternal,
-    videoSourceInternal = MediaProjectionVideoSource(context),
     endpointInternalFactory = endpointInternalFactory,
     defaultRotation = defaultRotation
 ) {

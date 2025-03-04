@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.pipelines
 
+import android.content.Context
 import android.media.MediaFormat
 import android.util.Size
 import androidx.test.platform.app.InstrumentationRegistry
@@ -22,6 +23,8 @@ import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.sources.StubAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.StubVideoSurfaceSource
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.StubAudioSyncConfigurableEncodingPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.StubAudioSyncVideoSurfacePipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.StubAudioSyncVideoSurfacePipelineOutputInternal
@@ -29,7 +32,6 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.StubVideoSurfaceC
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -47,23 +49,33 @@ class StreamerPipelineTest {
         }
     }
 
+    private suspend fun buildStreamerPipeline(
+        context: Context,
+        audioSource: IAudioSourceInternal?,
+        videoSource: IVideoSourceInternal?
+    ): StreamerPipeline {
+        val pipeline = StreamerPipeline(
+            context,
+            hasAudio = audioSource != null,
+            hasVideo = videoSource != null
+        )
+        audioSource?.let { pipeline.setAudioSource(it) }
+        videoSource?.let { pipeline.setVideoSource(it) }
+        return pipeline
+    }
+
     // Test on source
     @Test
     fun testStartStreamSources() = runTest {
         val timestampOffset = 1234L
 
         val audioSource = StubAudioSource()
-        val videoSource = StubVideoSurfaceSource(timestampOffset = timestampOffset)
+        val videoSource = StubVideoSurfaceSource(timestampOffsetInNs = timestampOffset)
 
         val output = StubAudioSyncVideoSurfacePipelineOutputInternal(resolution = Size(640, 480))
 
-        streamerPipeline = StreamerPipeline(
-            context,
-            audioSourceInternal = audioSource,
-            videoSourceInternal = videoSource
-        )
+        streamerPipeline = buildStreamerPipeline(context, audioSource, videoSource)
         streamerPipeline.addOutput(output)
-        assertEquals(timestampOffset, output.videoSourceTimestampOffset)
 
         streamerPipeline.startStream()
         assertTrue(streamerPipeline.isStreamingFlow.first { it })
@@ -81,10 +93,10 @@ class StreamerPipelineTest {
     fun testRemoveOutput() = runTest {
         val output = StubAudioSyncVideoSurfacePipelineOutputInternal(resolution = Size(640, 480))
 
-        streamerPipeline = StreamerPipeline(
+        streamerPipeline = buildStreamerPipeline(
             context,
-            audioSourceInternal = StubAudioSource(),
-            videoSourceInternal = StubVideoSurfaceSource()
+            StubAudioSource(),
+            StubVideoSurfaceSource()
         )
         streamerPipeline.addOutput(output)
 
@@ -109,10 +121,10 @@ class StreamerPipelineTest {
         val firstOutput = StubAudioSyncConfigurableEncodingPipelineOutputInternal()
         val secondOutput = StubAudioSyncConfigurableEncodingPipelineOutputInternal()
 
-        streamerPipeline = StreamerPipeline(
+        streamerPipeline = buildStreamerPipeline(
             context,
-            audioSourceInternal = StubAudioSource(),
-            videoSourceInternal = StubVideoSurfaceSource()
+            StubAudioSource(),
+            StubVideoSurfaceSource()
         )
         streamerPipeline.addOutput(firstOutput)
         streamerPipeline.addOutput(secondOutput)
@@ -129,10 +141,10 @@ class StreamerPipelineTest {
         val firstOutput = StubAudioSyncConfigurableEncodingPipelineOutputInternal()
         val secondOutput = StubAudioSyncConfigurableEncodingPipelineOutputInternal()
 
-        streamerPipeline = StreamerPipeline(
+        streamerPipeline = buildStreamerPipeline(
             context,
-            audioSourceInternal = StubAudioSource(),
-            videoSourceInternal = StubVideoSurfaceSource()
+            StubAudioSource(),
+            StubVideoSurfaceSource()
         )
         streamerPipeline.addOutput(firstOutput)
         streamerPipeline.addOutput(secondOutput)
@@ -153,10 +165,10 @@ class StreamerPipelineTest {
         val firstOutput = StubVideoSurfaceConfigurableEncodingPipelineOutputInternal()
         val secondOutput = StubVideoSurfaceConfigurableEncodingPipelineOutputInternal()
 
-        streamerPipeline = StreamerPipeline(
+        streamerPipeline = buildStreamerPipeline(
             context,
-            audioSourceInternal = StubAudioSource(),
-            videoSourceInternal = StubVideoSurfaceSource()
+            StubAudioSource(),
+            StubVideoSurfaceSource()
         )
         streamerPipeline.addOutput(firstOutput)
         streamerPipeline.addOutput(secondOutput)
@@ -173,10 +185,10 @@ class StreamerPipelineTest {
         val firstOutput = StubVideoSurfaceConfigurableEncodingPipelineOutputInternal()
         val secondOutput = StubVideoSurfaceConfigurableEncodingPipelineOutputInternal()
 
-        streamerPipeline = StreamerPipeline(
+        streamerPipeline = buildStreamerPipeline(
             context,
-            audioSourceInternal = StubAudioSource(),
-            videoSourceInternal = StubVideoSurfaceSource()
+            StubAudioSource(),
+            StubVideoSurfaceSource()
         )
         streamerPipeline.addOutput(firstOutput)
         streamerPipeline.addOutput(secondOutput)
@@ -196,10 +208,10 @@ class StreamerPipelineTest {
     // No output
     @Test
     fun testWithoutOutput() = runTest {
-        streamerPipeline = StreamerPipeline(
+        streamerPipeline = buildStreamerPipeline(
             context,
-            audioSourceInternal = StubAudioSource(),
-            videoSourceInternal = StubVideoSurfaceSource()
+            StubAudioSource(),
+            StubVideoSurfaceSource()
         )
 
         try {
@@ -214,17 +226,17 @@ class StreamerPipelineTest {
     fun testStartStreamSingleIsStreamingOutput() = runTest {
         val output = StubAudioSyncVideoSurfacePipelineOutput(resolution = Size(640, 480))
 
-        streamerPipeline = StreamerPipeline(
+        streamerPipeline = buildStreamerPipeline(
             context,
-            audioSourceInternal = StubAudioSource(),
-            videoSourceInternal = StubVideoSurfaceSource()
+            StubAudioSource(),
+            StubVideoSurfaceSource()
         )
         streamerPipeline.addOutput(output)
 
         output.startStream()
         /**
          * In case the [output] is not a [ISyncStartStreamPipelineOutputInternal], the
-         * [streamerPipeline] is started asynchonously by a collector on [output.isStreamingFlow].
+         * [streamerPipeline] is started asynchronously by a collector on [output.isStreamingFlow].
          */
         assertTrue(streamerPipeline.isStreamingFlow.first { it })
         assertTrue(output.isStreamingFlow.value)
@@ -238,10 +250,10 @@ class StreamerPipelineTest {
     fun testStartStreamSingleStartStreamListenerOutput() = runTest {
         val output = StubAudioSyncVideoSurfacePipelineOutputInternal(resolution = Size(640, 480))
 
-        streamerPipeline = StreamerPipeline(
+        streamerPipeline = buildStreamerPipeline(
             context,
-            audioSourceInternal = StubAudioSource(),
-            videoSourceInternal = StubVideoSurfaceSource()
+            StubAudioSource(),
+            StubVideoSurfaceSource()
         )
         streamerPipeline.addOutput(output)
 
@@ -261,10 +273,10 @@ class StreamerPipelineTest {
         val firstOutput = StubAudioSyncVideoSurfacePipelineOutput(resolution = Size(640, 480))
         val secondOutput = StubAudioSyncVideoSurfacePipelineOutput(resolution = Size(640, 480))
 
-        streamerPipeline = StreamerPipeline(
+        streamerPipeline = buildStreamerPipeline(
             context,
-            audioSourceInternal = StubAudioSource(),
-            videoSourceInternal = StubVideoSurfaceSource()
+            StubAudioSource(),
+            StubVideoSurfaceSource()
         )
         streamerPipeline.addOutput(firstOutput)
         streamerPipeline.addOutput(secondOutput)
@@ -285,10 +297,10 @@ class StreamerPipelineTest {
         val firstOutput = StubAudioSyncVideoSurfacePipelineOutput(resolution = Size(640, 480))
         val secondOutput = StubAudioSyncVideoSurfacePipelineOutput(resolution = Size(640, 480))
 
-        streamerPipeline = StreamerPipeline(
+        streamerPipeline = buildStreamerPipeline(
             context,
-            audioSourceInternal = StubAudioSource(),
-            videoSourceInternal = StubVideoSurfaceSource()
+            StubAudioSource(),
+            StubVideoSurfaceSource()
         )
         streamerPipeline.addOutput(firstOutput)
         streamerPipeline.addOutput(secondOutput)
@@ -311,10 +323,10 @@ class StreamerPipelineTest {
         val firstOutput = StubAudioSyncVideoSurfacePipelineOutput(resolution = Size(640, 480))
         val secondOutput = StubAudioSyncVideoSurfacePipelineOutput(resolution = Size(640, 480))
 
-        streamerPipeline = StreamerPipeline(
+        streamerPipeline = buildStreamerPipeline(
             context,
-            audioSourceInternal = StubAudioSource(),
-            videoSourceInternal = StubVideoSurfaceSource()
+            StubAudioSource(),
+            StubVideoSurfaceSource()
         )
         streamerPipeline.addOutput(firstOutput)
         streamerPipeline.addOutput(secondOutput)
@@ -333,20 +345,20 @@ class StreamerPipelineTest {
     // Test on destructive methods
     @Test
     fun testStopStream() = runTest {
-        streamerPipeline = StreamerPipeline(
+        streamerPipeline = buildStreamerPipeline(
             context,
-            audioSourceInternal = StubAudioSource(),
-            videoSourceInternal = StubVideoSurfaceSource()
+            StubAudioSource(),
+            StubVideoSurfaceSource()
         )
         streamerPipeline.stopStream()
     }
 
     @Test
     fun testRelease() = runTest {
-        streamerPipeline = StreamerPipeline(
+        streamerPipeline = buildStreamerPipeline(
             context,
-            audioSourceInternal = StubAudioSource(),
-            videoSourceInternal = StubVideoSurfaceSource()
+            StubAudioSource(),
+            StubVideoSurfaceSource()
         )
         streamerPipeline.release()
     }

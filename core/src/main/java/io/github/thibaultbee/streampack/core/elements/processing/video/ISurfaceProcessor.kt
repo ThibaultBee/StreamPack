@@ -23,9 +23,13 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.A
 interface ISurfaceProcessor
 
 interface ISurfaceProcessorInternal : ISurfaceProcessor, Releasable {
-    fun createInputSurface(surfaceSize: Size): Surface?
+    fun createInputSurface(surfaceSize: Size, timestampOffsetInNs: Long): Surface?
 
     fun updateInputSurface(surface: Surface, surfaceSize: Size)
+
+    fun pauseInputSurface(surface: Surface)
+
+    fun resumeInputSurface(surface: Surface)
 
     fun removeInputSurface(surface: Surface)
 

@@ -26,6 +26,10 @@ import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpointDummyFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpointFactory
+import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
+import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableAudioPipelineOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.pipelines.outputs.releaseBlocking
@@ -75,12 +79,12 @@ class EncodingPipelineOutputTest {
     @Test
     fun testSetAudioCodecConfig() = runTest {
         output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
-        assertNull(output.audioCodecConfigFlow.value)
+        assertNull(output.audioSourceConfigFlow.value)
 
         suspendCoroutine { continuation ->
             val listener = object : IConfigurableAudioPipelineOutputInternal.Listener {
-                override suspend fun onSetAudioCodecConfig(newAudioCodecConfig: AudioCodecConfig) {
-                    continuation.resume(Unit)
+                override suspend fun onSetAudioSourceConfig(newAudioSourceConfig: AudioSourceConfig) {
+                    continuation.resume(newAudioSourceConfig)
                 }
             }
             output.audioConfigEventListener = listener
@@ -89,7 +93,7 @@ class EncodingPipelineOutputTest {
                 output.setAudioCodecConfig(AudioCodecConfig())
             }
         }
-        assertNotNull(output.audioCodecConfigFlow.value)
+        assertNotNull(output.audioSourceConfigFlow.value)
     }
 
     @Test
@@ -97,7 +101,7 @@ class EncodingPipelineOutputTest {
         output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
         output.audioConfigEventListener =
             object : IConfigurableAudioPipelineOutputInternal.Listener {
-                override suspend fun onSetAudioCodecConfig(newAudioCodecConfig: AudioCodecConfig) {
+                override suspend fun onSetAudioSourceConfig(newAudioSourceConfig: AudioSourceConfig) {
                     throw Exception()
                 }
             }
@@ -105,7 +109,7 @@ class EncodingPipelineOutputTest {
             output.setAudioCodecConfig(AudioCodecConfig())
             fail("Should throw an exception")
         } catch (_: Throwable) {
-            assertNull(output.audioCodecConfigFlow.value)
+            assertNull(output.audioSourceConfigFlow.value)
         }
     }
 
@@ -116,8 +120,8 @@ class EncodingPipelineOutputTest {
 
         suspendCoroutine { continuation ->
             val listener = object : IConfigurableVideoPipelineOutputInternal.Listener {
-                override suspend fun onSetVideoCodecConfig(newVideoCodecConfig: VideoCodecConfig) {
-                    continuation.resume(Unit)
+                override suspend fun onSetVideoSourceConfig(newVideoSourceConfig: VideoSourceConfig) {
+                    continuation.resume(newVideoSourceConfig)
                 }
             }
             output.videoConfigEventListener = listener
@@ -134,7 +138,7 @@ class EncodingPipelineOutputTest {
         output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
         output.videoConfigEventListener =
             object : IConfigurableVideoPipelineOutputInternal.Listener {
-                override suspend fun onSetVideoCodecConfig(newVideoCodecConfig: VideoCodecConfig) {
+                override suspend fun onSetVideoSourceConfig(newVideoSourceConfig: VideoSourceConfig) {
                     throw Exception()
                 }
             }
@@ -142,7 +146,7 @@ class EncodingPipelineOutputTest {
             output.setVideoCodecConfig(VideoCodecConfig())
             fail("Should throw an exception")
         } catch (_: Throwable) {
-            assertNull(output.audioCodecConfigFlow.value)
+            assertNull(output.audioSourceConfigFlow.value)
         }
     }
 

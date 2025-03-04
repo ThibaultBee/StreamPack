@@ -106,7 +106,7 @@ open class VideoCodecConfig(
         /**
          * Video output resolution in pixel.
          */
-        resolution: Size = Size(1280, 720),
+        resolution: Size = DEFAULT_RESOLUTION,
         /**
          * Video encoder bitrate in bits/s.
          */
@@ -115,7 +115,7 @@ open class VideoCodecConfig(
          * Video framerate.
          * This is a best effort as few camera can not generate a fixed framerate.
          */
-        fps: Int = 30,
+        fps: Int = DEFAULT_FPS,
         /**
          * Video encoder profile/level. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile.
          * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
@@ -244,6 +244,9 @@ open class VideoCodecConfig(
     }
 
     companion object {
+        internal val DEFAULT_RESOLUTION = Size(1280, 720)
+        internal const val DEFAULT_FPS = 30
+
         /**
          * Return the best bitrate according to resolution
          *

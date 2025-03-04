@@ -238,7 +238,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     }
 
     fun setMute(isMuted: Boolean) {
-        streamer.audioProcessor.isMuted = isMuted
+        streamer.audioProcessor?.isMuted = isMuted
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)

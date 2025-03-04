@@ -15,29 +15,26 @@
  */
 package io.github.thibaultbee.streampack.core.pipelines.utils
 
-import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
-import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isCompatibleWith
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.sourceConfig
 
 object SourceConfigUtils {
-    fun buildAudioSourceConfig(audioCodecConfigs: Set<AudioCodecConfig>): AudioSourceConfig {
-        require(audioCodecConfigs.isNotEmpty()) { "No audio codec config provided" }
-        val firstSourceConfig = audioCodecConfigs.first().sourceConfig
-        require(audioCodecConfigs.all { it.isCompatibleWith(firstSourceConfig) }) { "All audio codec configs must be compatible to $firstSourceConfig" }
+    fun buildAudioSourceConfig(audioSourceConfigs: Set<AudioSourceConfig>): AudioSourceConfig {
+        require(audioSourceConfigs.isNotEmpty()) { "No audio source config provided" }
+        val firstSourceConfig = audioSourceConfigs.first()
+        require(audioSourceConfigs.all { it.isCompatibleWith(firstSourceConfig) }) { "All audio source configs must be compatible to $firstSourceConfig" }
         return firstSourceConfig
     }
 
-    fun buildVideoSourceConfig(videoCodecConfigs: Set<VideoCodecConfig>): VideoSourceConfig {
-        require(videoCodecConfigs.isNotEmpty()) { "No video codec config provided" }
+    fun buildVideoSourceConfig(videoSourceConfigs: Set<VideoSourceConfig>): VideoSourceConfig {
+        require(videoSourceConfigs.isNotEmpty()) { "No video source config provided" }
         val maxResolution =
-            videoCodecConfigs.map { it.resolution }.maxWith(compareBy({ it.width }, { it.height }))
-        val fps = videoCodecConfigs.first().fps
-        require(videoCodecConfigs.all { it.fps == fps }) { "All video codec configs must have the same fps" }
-        val dynamicRangeProfile = videoCodecConfigs.first().dynamicRangeProfile
-        require(videoCodecConfigs.all { it.dynamicRangeProfile == dynamicRangeProfile }) { "All video codec configs must have the same dynamic range profile" }
+            videoSourceConfigs.map { it.resolution }.maxWith(compareBy({ it.width }, { it.height }))
+        val fps = videoSourceConfigs.first().fps
+        require(videoSourceConfigs.all { it.fps == fps }) { "All video source configs must have the same fps" }
+        val dynamicRangeProfile = videoSourceConfigs.first().dynamicRangeProfile
+        require(videoSourceConfigs.all { it.dynamicRangeProfile == dynamicRangeProfile }) { "All video source configs must have the same dynamic range profile" }
         return VideoSourceConfig(maxResolution, fps, dynamicRangeProfile)
     }
 }

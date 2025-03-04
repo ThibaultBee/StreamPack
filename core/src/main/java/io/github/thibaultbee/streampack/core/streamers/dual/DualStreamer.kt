@@ -61,10 +61,19 @@ open class DualStreamer(
     @RotationValue defaultRotation: Int = context.displayRotation
 ) : ICoroutineDualStreamer, ICoroutineAudioDualStreamer, ICoroutineVideoDualStreamer {
     private val pipeline = StreamerPipeline(
-        context,
-        audioSourceInternal,
-        videoSourceInternal
-    )
+        context
+    ).apply {
+        audioSourceInternal?.let {
+            runBlocking {
+                setAudioSource(it)
+            }
+        }
+        videoSourceInternal?.let {
+            runBlocking {
+                setVideoSource(it)
+            }
+        }
+    }
 
     private val firstPipelineOutput: IEncodingPipelineOutputInternal = runBlocking {
         pipeline.addOutput(
@@ -131,17 +140,17 @@ open class DualStreamer(
 
     // SOURCES
     override val audioSource: IAudioSource?
-        get() = pipeline.audioSource
+        get() = pipeline.audioSourceFlow.value
     override val videoSource: IVideoSource?
-        get() = pipeline.videoSource
+        get() = pipeline.videoSourceFlow.value
 
     // PROCESSORS
-    override val audioProcessor: IAudioFrameProcessor
+    override val audioProcessor: IAudioFrameProcessor?
         get() = pipeline.audioProcessor
 
     // INTERNAL
-    protected val videoSourceInternal = pipeline.videoSource as IVideoSourceInternal?
-    protected val audioSourceInternal = pipeline.audioSource as IAudioSourceInternal?
+    protected val audioSourceInternal = pipeline.audioSourceFlow.value as IAudioSourceInternal?
+    protected val videoSourceInternal = pipeline.videoSourceFlow.value as IVideoSourceInternal?
 
     /**
      * Whether the streamer has audio.

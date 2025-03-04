@@ -15,9 +15,8 @@
  */
 package io.github.thibaultbee.streampack.core.pipelines.utils
 
-import android.media.MediaFormat
 import android.util.Size
-import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
+import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
@@ -28,7 +27,7 @@ class SourceConfigUtilsTest {
     fun videoSourceConfigFromEmpty() {
         try {
             SourceConfigUtils.buildVideoSourceConfig(emptySet())
-            fail("Video codec configs must not be empty")
+            fail("Video source configs must not be empty")
         } catch (_: Throwable) {
         }
     }
@@ -36,17 +35,16 @@ class SourceConfigUtilsTest {
     @Test
     fun buildVideoSourceConfigWithSimple() {
         // Given
-        val videoCodecConfigs = setOf(
-            VideoCodecConfig(
-                MediaFormat.MIMETYPE_VIDEO_AVC,
+        val videoSourceConfigs = setOf(
+            VideoSourceConfig(
                 resolution = Size(1280, 720),
                 fps = 30
             ),
-            VideoCodecConfig(MediaFormat.MIMETYPE_VIDEO_AVC, resolution = Size(1280, 720), fps = 30)
+            VideoSourceConfig(resolution = Size(1280, 720), fps = 30)
         )
 
         // When
-        val videoSourceConfig = SourceConfigUtils.buildVideoSourceConfig(videoCodecConfigs)
+        val videoSourceConfig = SourceConfigUtils.buildVideoSourceConfig(videoSourceConfigs)
 
         // Then
         assertEquals(1280, videoSourceConfig.resolution.width)
@@ -57,13 +55,13 @@ class SourceConfigUtilsTest {
     @Test
     fun buildVideoSourceConfigWithDifferentResolution() {
         // Given
-        val videoCodecConfigs = setOf(
-            VideoCodecConfig(MediaFormat.MIMETYPE_VIDEO_AVC, resolution = Size(1280, 720)),
-            VideoCodecConfig(MediaFormat.MIMETYPE_VIDEO_AVC, resolution = Size(1920, 1080))
+        val videoSourceConfigs = setOf(
+            VideoSourceConfig(resolution = Size(1280, 720)),
+            VideoSourceConfig(resolution = Size(1920, 1080))
         )
 
         // When
-        val videoSourceConfig = SourceConfigUtils.buildVideoSourceConfig(videoCodecConfigs)
+        val videoSourceConfig = SourceConfigUtils.buildVideoSourceConfig(videoSourceConfigs)
 
         // Then
         assertEquals(1920, videoSourceConfig.resolution.width)
@@ -73,17 +71,17 @@ class SourceConfigUtilsTest {
     @Test
     fun videoSourceConfigWithDifferentFps() {
         // Given
-        val videoCodecConfigs = setOf(
-            VideoCodecConfig(MediaFormat.MIMETYPE_VIDEO_AVC, fps = 30),
-            VideoCodecConfig(MediaFormat.MIMETYPE_VIDEO_AVC, fps = 25)
+        val videoSourceConfigs = setOf(
+            VideoSourceConfig(fps = 30),
+            VideoSourceConfig(fps = 25)
         )
 
         // When
         try {
-            SourceConfigUtils.buildVideoSourceConfig(videoCodecConfigs)
-            fail("All video codec configs must have the same fps")
+            SourceConfigUtils.buildVideoSourceConfig(videoSourceConfigs)
+            fail("All video source configs must have the same fps")
         } catch (e: IllegalArgumentException) {
-            assertEquals("All video codec configs must have the same fps", e.message)
+            assertEquals("All video source configs must have the same fps", e.message)
         }
     }
 }

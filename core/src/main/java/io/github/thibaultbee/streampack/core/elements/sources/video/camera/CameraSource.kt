@@ -19,13 +19,11 @@ import android.Manifest
 import android.content.Context
 import android.view.Surface
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
 
@@ -157,7 +155,7 @@ class CameraSource(
     private val cameraController = CameraController(context)
     override val settings = CameraSettings(context, cameraController)
 
-    override val timestampOffset = CameraHelper.getTimeOffsetToMonoClock(context, cameraId)
+    override val timestampOffsetInNs = CameraHelper.getTimeOffsetInNsToMonoClock(context, cameraId)
     private val _infoProviderFlow =
         MutableStateFlow(CameraInfoProvider(context, cameraId))
     override val infoProviderFlow = _infoProviderFlow.asStateFlow()

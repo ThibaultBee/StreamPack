@@ -19,10 +19,10 @@ import android.view.Surface
 
 interface ISurfaceSource {
     /**
-     * The offset between source capture time and MONOTONIC clock. It is used to synchronize video
+     * The offset between source capture time and MONOTONIC clock in nanoseconds. It is used to synchronize video
      * with audio. It is only useful for camera source.
      */
-    val timestampOffset: Long
+    val timestampOffsetInNs: Long
 
     /**
      * Set surface where capture source will render its frame.

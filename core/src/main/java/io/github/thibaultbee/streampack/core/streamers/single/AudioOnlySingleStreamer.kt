@@ -41,8 +41,6 @@ open class AudioOnlySingleStreamer(
 ) : ICoroutineSingleStreamer, ICoroutineAudioSingleStreamer {
     private val streamer = SingleStreamer(
         context = context,
-        videoSourceInternal = null,
-        audioSourceInternal = audioSourceInternal,
         endpointInternalFactory = endpointInternalFactory
     )
     override val throwableFlow = streamer.throwableFlow
