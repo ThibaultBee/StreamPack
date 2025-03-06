@@ -18,11 +18,10 @@ package io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord
 import android.Manifest
 import android.media.AudioRecord
 import android.media.AudioTimestamp
-import android.media.MediaFormat
 import android.media.audiofx.AudioEffect
 import android.os.Build
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordEffect.Companion.isValidUUID
@@ -154,17 +153,16 @@ sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
         return timestamp
     }
 
-    override fun getAudioFrame(inputBuffer: ByteBuffer?): Frame {
+    override fun getAudioFrame(inputBuffer: ByteBuffer?): RawFrame {
         val audioRecord = requireNotNull(audioRecord)
 
         val buffer = inputBuffer ?: ByteBuffer.allocateDirect(bufferSize!!)
 
         val length = audioRecord.read(buffer, buffer.remaining())
         if (length >= 0) {
-            return Frame(
+            return RawFrame(
                 buffer,
-                getTimestamp(audioRecord),
-                format = rawFormat
+                getTimestamp(audioRecord)
             )
         } else {
             throw IllegalArgumentException(audioRecordErrorToString(length))
@@ -208,14 +206,7 @@ sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
     }
 
     companion object {
-        private const val TAG = "AudioSource"
-
-        private val rawFormat = MediaFormat().apply {
-            setString(
-                MediaFormat.KEY_MIME,
-                MediaFormat.MIMETYPE_AUDIO_RAW
-            )
-        }
+        private const val TAG = "AudioRecordSource"
 
         /**
          * Gets minimum buffer size for audio capture.

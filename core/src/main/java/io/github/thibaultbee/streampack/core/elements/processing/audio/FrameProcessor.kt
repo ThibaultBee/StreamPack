@@ -15,22 +15,22 @@
  */
 package io.github.thibaultbee.streampack.core.elements.processing.audio
 
-import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.logger.Logger
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
-open class FrameProcessor(val onFrame: (Frame) -> Unit) {
+open class FrameProcessor(val onFrame: (RawFrame) -> Unit) {
     private val processExecutor = Executors.newSingleThreadExecutor()
     private val listenerExecutor = Executors.newSingleThreadExecutor()
     private val frameExecutor = Executors.newSingleThreadExecutor()
 
-    private var getFrame: ((inputBuffer: ByteBuffer?) -> Frame)? = null
+    private var getFrame: ((inputBuffer: ByteBuffer?) -> RawFrame)? = null
 
     private val isRunning = AtomicBoolean(false)
 
-    fun setInput(getFrame: (inputBuffer: ByteBuffer?) -> Frame) {
+    fun setInput(getFrame: (inputBuffer: ByteBuffer?) -> RawFrame) {
         listenerExecutor.execute {
             this.getFrame = getFrame
         }
@@ -45,7 +45,7 @@ open class FrameProcessor(val onFrame: (Frame) -> Unit) {
     /**
      * Process frame.
      */
-    open fun processFrame(frame: Frame) = frame
+    open fun processFrame(frame: RawFrame): RawFrame = frame
 
     fun startStream() {
         if (isRunning.getAndSet(true)) {
@@ -54,7 +54,7 @@ open class FrameProcessor(val onFrame: (Frame) -> Unit) {
         }
         processExecutor.execute {
             while (isRunning.get()) {
-                val frameFuture = listenerExecutor.submit<Frame?> {
+                val frameFuture = listenerExecutor.submit<RawFrame?> {
                     val listener = getFrame ?: return@submit null
                     try {
                         listener(null)

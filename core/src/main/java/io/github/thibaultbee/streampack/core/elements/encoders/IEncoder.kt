@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.core.elements.encoders
 
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamable
 import java.nio.ByteBuffer
@@ -135,7 +136,7 @@ interface IEncoderInternal : SuspendStreamable, Releasable,
              *
              * @param buffer the buffer where to write the frame
              */
-            fun onFrameRequested(buffer: ByteBuffer): Frame
+            fun onFrameRequested(buffer: ByteBuffer): RawFrame
         }
     }
 
@@ -144,7 +145,7 @@ interface IEncoderInternal : SuspendStreamable, Releasable,
      */
     interface ISyncByteBufferInput :
         IEncoderInput {
-        fun queueInputFrame(frame: Frame)
+        fun queueInputFrame(frame: RawFrame)
     }
 
     /**

@@ -19,6 +19,7 @@ import android.content.Context
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.EncoderMode
@@ -242,7 +243,7 @@ internal class EncodingPipelineOutput(
             }
         }
 
-    override fun queueAudioFrame(frame: Frame) {
+    override fun queueAudioFrame(frame: RawFrame) {
         val encoder = requireNotNull(audioEncoderInternal) { "Audio is not configured" }
         val input = encoder.input as IEncoderInternal.ISyncByteBufferInput
         input.queueInputFrame(

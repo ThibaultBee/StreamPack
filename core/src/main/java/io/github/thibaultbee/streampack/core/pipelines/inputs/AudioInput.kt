@@ -15,21 +15,19 @@
  */
 package io.github.thibaultbee.streampack.core.pipelines.inputs
 
-import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.processing.audio.AudioFrameProcessor
 import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.pipelines.inputs.VideoInput.Companion
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -38,7 +36,7 @@ import kotlinx.coroutines.withContext
  * A internal class that manages an audio source and an audio processor.
  */
 internal class AudioInput(
-    onFrame: (Frame) -> Unit,
+    onFrame: (RawFrame) -> Unit,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
     private val audioSourceMutex = Mutex()
@@ -104,7 +102,7 @@ internal class AudioInput(
                     newAudioSource.startStream()
                 }
                 audioProcessorInternal.setInput(newAudioSource::getAudioFrame)
-                
+
                 // Replace audio source
                 audioSourceInternalFlow.emit(newAudioSource)
 

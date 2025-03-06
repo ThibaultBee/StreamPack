@@ -19,6 +19,7 @@ import android.content.Context
 import android.util.Size
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.AbstractSurfaceOutput
@@ -168,12 +169,12 @@ open class StreamerPipeline(
         input.setAudioSourceConfig(value)
     }
 
-    private fun queueAudioFrame(frame: Frame) {
+    private fun queueAudioFrame(frame: RawFrame) {
         val streamingOutputs = runBlocking {
             getStreamingOutputs()
         }
         streamingOutputs.filterIsInstance<IAudioSyncPipelineOutputInternal>().forEach {
-            it.queueAudioFrame(frame.copy(rawBuffer = frame.rawBuffer.duplicate()))
+            it.queueAudioFrame(frame.copy(buffer = frame.buffer.duplicate()))
         }
     }
 
