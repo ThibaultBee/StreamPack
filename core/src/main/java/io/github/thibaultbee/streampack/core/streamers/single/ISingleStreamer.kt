@@ -61,12 +61,6 @@ interface ISingleStreamer {
     val info: IConfigurationInfo
 
     /**
-     * The rotation in one the [Surface] rotations from the device natural orientation.
-     */
-    @RotationValue
-    var targetRotation: Int
-
-    /**
      * Gets configuration information
      */
     fun getInfo(descriptor: MediaDescriptor): IConfigurationInfo
@@ -81,13 +75,6 @@ interface ISingleStreamer {
      */
     fun removeBitrateRegulatorController()
 }
-
-/**
- * Returns the rotation in degrees from [Int] rotation.
- */
-val ISingleStreamer.targetRotationDegrees: Int
-    @IntRange(from = 0, to = 359)
-    get() = targetRotation.rotationToDegrees
 
 /**
  * An audio single Streamer
@@ -109,6 +96,12 @@ interface IAudioSingleStreamer : IAudioStreamer {
  */
 interface IVideoSingleStreamer : IVideoStreamer {
     /**
+     * The rotation in one the [Surface] rotations from the device natural orientation.
+     */
+    @RotationValue
+    var targetRotation: Int
+
+    /**
      * Gets the video configuration.
      */
     val videoConfig: VideoConfig?
@@ -118,6 +111,13 @@ interface IVideoSingleStreamer : IVideoStreamer {
      */
     val videoEncoder: IEncoder?
 }
+
+/**
+ * Returns the rotation in degrees from [Int] rotation.
+ */
+val IVideoSingleStreamer.targetRotationDegrees: Int
+    @IntRange(from = 0, to = 359)
+    get() = targetRotation.rotationToDegrees
 
 interface ICoroutineAudioSingleStreamer : ICoroutineAudioStreamer<AudioConfig>, IAudioSingleStreamer
 

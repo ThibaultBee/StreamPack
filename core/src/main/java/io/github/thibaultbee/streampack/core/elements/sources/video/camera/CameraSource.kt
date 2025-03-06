@@ -26,17 +26,24 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class CameraSource(
     private val context: Context
 ) : ICameraSourceInternal, ISurfaceSource {
     private val pendingRunningSurfaces = mutableSetOf<Surface>()
 
+    /**
+     * Mutex to avoid concurrent access to preview surface.
+     */
+    private val previewMutex = Mutex()
+
     private var _previewSurface: Surface? = null
     val previewSurface: Surface?
         get() = _previewSurface
 
-    suspend fun setPreviewSurface(surface: Surface) {
+    private suspend fun setPreviewInternal(surface: Surface) {
         if (surface == previewSurface) {
             Logger.w(TAG, "Preview surface is already set to $surface")
             return
@@ -61,6 +68,10 @@ class CameraSource(
             // Wait for camera to be started
             _previewSurface = surface
         }
+    }
+
+    override suspend fun setPreview(surface: Surface) = previewMutex.withLock {
+        setPreviewInternal(surface)
     }
 
     suspend fun resetPreviewSurface() {
@@ -258,7 +269,7 @@ class CameraSource(
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    suspend fun startPreview() {
+    private suspend fun startPreviewInternal() {
         if (isPreviewing) {
             Logger.w(TAG, "Camera is already previewing")
             return
@@ -271,13 +282,18 @@ class CameraSource(
         startCameraIfNeeded(listOf(previewSurface), cameraId)
     }
 
-    suspend fun stopPreview() {
+
+    override suspend fun startPreview() = previewMutex.withLock {
+        startPreviewInternal()
+    }
+
+    private suspend fun stopPreviewInternal() {
         if (!isPreviewing) {
             Logger.w(TAG, "Camera is not previewing")
             return
         }
 
-        val previewSurface = requireNotNull(previewSurface) {
+        val previewSurface = requireNotNull(_previewSurface) {
             "Preview surface is not set"
         }
         try {
@@ -286,6 +302,18 @@ class CameraSource(
         } catch (e: IllegalArgumentException) {
             Logger.w(TAG, "Failed to stop preview: $e")
         }
+    }
+
+    override suspend fun stopPreview() = previewMutex.withLock {
+        stopPreviewInternal()
+    }
+
+    /**
+     * Starts video preview on [previewSurface].
+     */
+    override suspend fun startPreview(previewSurface: Surface) = previewMutex.withLock {
+        setPreviewInternal(previewSurface)
+        startPreviewInternal()
     }
 
     override suspend fun startStream() {

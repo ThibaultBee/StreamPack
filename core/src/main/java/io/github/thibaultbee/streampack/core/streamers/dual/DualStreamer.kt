@@ -40,40 +40,30 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 
 /**
- * Base class of all dual streamers.
+ * A class that handles 2 audio and video output.
  *
- * A single streamer is a streamer that can handle only two audio and video stream independently.
  * For example, you can use it to live stream and record simultaneously.
  *
  * @param context the application context
- * @param videoSourceInternal the video source implementation
- * @param audioSourceInternal the audio source implementation
+ * @param hasAudio [Boolean.true] to capture audio. It can't be changed after instantiation.
+ * @param hasVideo [Boolean.true] to capture video. It can't be changed after instantiation.
  * @param firstEndpointInternalFactory the [IEndpointInternal] implementation of the first output. By default, it is a [DynamicEndpoint].
- * @param secondEndpointInternalFactory the [IEndpointInternal] implementation of the first output. By default, it is a [DynamicEndpoint].
+ * @param secondEndpointInternalFactory the [IEndpointInternal] implementation of the second output. By default, it is a [DynamicEndpoint].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 open class DualStreamer(
     protected val context: Context,
-    audioSourceInternal: IAudioSourceInternal?,
-    videoSourceInternal: IVideoSourceInternal?,
+    val hasAudio: Boolean = true,
+    val hasVideo: Boolean = true,
     firstEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ) : ICoroutineDualStreamer, ICoroutineAudioDualStreamer, ICoroutineVideoDualStreamer {
     private val pipeline = StreamerPipeline(
-        context
-    ).apply {
-        audioSourceInternal?.let {
-            runBlocking {
-                setAudioSource(it)
-            }
-        }
-        videoSourceInternal?.let {
-            runBlocking {
-                setVideoSource(it)
-            }
-        }
-    }
+        context,
+        hasAudio,
+        hasVideo
+    )
 
     private val firstPipelineOutput: IEncodingPipelineOutputInternal = runBlocking {
         pipeline.addOutput(
@@ -141,28 +131,21 @@ open class DualStreamer(
     // SOURCES
     override val audioSource: IAudioSource?
         get() = pipeline.audioSourceFlow.value
+
+    open suspend fun setAudioSource(audioSource: IAudioSourceInternal) {
+        pipeline.setAudioSource(audioSource)
+    }
+    
     override val videoSource: IVideoSource?
         get() = pipeline.videoSourceFlow.value
+
+    open suspend fun setVideoSource(videoSource: IVideoSourceInternal) {
+        pipeline.setVideoSource(videoSource)
+    }
 
     // PROCESSORS
     override val audioProcessor: IAudioFrameProcessor?
         get() = pipeline.audioProcessor
-
-    // INTERNAL
-    protected val audioSourceInternal = pipeline.audioSourceFlow.value as IAudioSourceInternal?
-    protected val videoSourceInternal = pipeline.videoSourceFlow.value as IVideoSourceInternal?
-
-    /**
-     * Whether the streamer has audio.
-     */
-    val hasAudio: Boolean
-        get() = pipeline.hasAudio
-
-    /**
-     * Whether the streamer has video.
-     */
-    val hasVideo: Boolean
-        get() = pipeline.hasVideo
 
     /**
      * The target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
@@ -172,12 +155,6 @@ open class DualStreamer(
         set(@RotationValue newTargetRotation) {
             pipeline.targetRotation = newTargetRotation
         }
-
-    init {
-        require(audioSourceInternal != null || videoSourceInternal != null) {
-            "At least one audio or video source must be provided"
-        }
-    }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override suspend fun setAudioConfig(audioConfig: DualStreamerAudioConfig) {

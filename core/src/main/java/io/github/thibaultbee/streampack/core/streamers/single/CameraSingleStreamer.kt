@@ -19,75 +19,92 @@ import android.Manifest
 import android.content.Context
 import android.view.Surface
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource.Companion.buildDefaultMicrophoneSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
-import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
-import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.setPreview
 import io.github.thibaultbee.streampack.core.streamers.interfaces.startPreview
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 /**
- * A [SingleStreamer] that sends microphone and camera frames.
+ * Creates a [CameraSingleStreamer] with a default audio source.
  *
- * @param context application context
- * @param enableMicrophone [Boolean.true] to capture audio
- * @param internalEndpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param context the application context
+ * @param audioSourceInternal the audio source implementation. By default, it is the default microphone source.
+ * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-fun CameraSingleStreamer(
+suspend fun CameraSingleStreamer(
     context: Context,
-    enableMicrophone: Boolean = true,
+    audioSourceInternal: IAudioSourceInternal = buildDefaultMicrophoneSource(),
     endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
-) = CameraSingleStreamer(
-    context,
-    if (enableMicrophone) buildDefaultMicrophoneSource() else null,
-    endpointInternalFactory,
-    defaultRotation
-)
+): CameraSingleStreamer {
+    val streamer = CameraSingleStreamer(
+        context, true, endpointInternalFactory, defaultRotation
+    )
+    streamer.setAudioSource(audioSourceInternal)
+    return streamer
+}
 
 /**
- * A [SingleStreamer] that sends from camera frames and [audioSourceInternal] audio frames.
+ * Creates a [CameraSingleStreamer].
  *
- * @param context application context
- * @param audioSourceInternal the audio source implementation
- * @param internalEndpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param context the application context
+ * @param hasAudio [Boolean.true] if the streamer will capture audio.
+ * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-open class CameraSingleStreamer(
+suspend fun CameraSingleStreamer(
     context: Context,
-    audioSourceInternal: IAudioSourceInternal?,
+    hasAudio: Boolean,
+    endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    @RotationValue defaultRotation: Int = context.displayRotation
+): CameraSingleStreamer {
+    val source = CameraSource(context)
+    val streamer = CameraSingleStreamer(
+        context, source, hasAudio, endpointInternalFactory, defaultRotation
+    )
+    streamer.setVideoSource(source)
+    return streamer
+}
+
+/**
+ * A [SingleStreamer] with specific device camera methods.
+ *
+ * The [CameraSingleStreamer.videoSource] is a [CameraSource] and can't be changed.
+ *
+ * @param context the application context
+ * @param cameraSource the camera source implementation.
+ * @param hasAudio [Boolean.true] to capture audio
+ * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ */
+open class CameraSingleStreamer internal constructor(
+    context: Context,
+    private val cameraSource: CameraSource,
+    hasAudio: Boolean = true,
     endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ) : SingleStreamer(
     context = context,
+    hasAudio = hasAudio,
+    hasVideo = true,
     endpointInternalFactory = endpointInternalFactory,
     defaultRotation = defaultRotation
 ), ICameraCoroutineStreamer {
-    private val cameraSource = videoSourceInternal as CameraSource
-
-    /**
-     * Mutex to avoid concurrent access to preview surface.
-     */
-    private val previewMutex = Mutex()
-
     /**
      * Gets the camera source.
      * It allows to configure camera settings and to set the camera id.
      */
-    override val videoSource = cameraSource as ICameraSource
+    override val videoSource: ICameraSource by lazy { cameraSource }
 
     /**
      * Get/Set current camera id.
@@ -109,8 +126,7 @@ open class CameraSingleStreamer(
          *
          * @param value string that described the camera.
          */
-        @RequiresPermission(Manifest.permission.CAMERA)
-        set(value) {
+        @RequiresPermission(Manifest.permission.CAMERA) set(value) {
             runBlocking {
                 setCameraId(value)
             }
@@ -124,36 +140,10 @@ open class CameraSingleStreamer(
     override suspend fun setCameraId(cameraId: String) = cameraSource.setCameraId(cameraId)
 
     /**
-     * Gets configuration information.
-     *
-     * When using the [DynamicEndpoint], the endpoint type is unknown until [open] is called.
-     * In this case, prefer using [getInfo] with the [MediaDescriptor] used in [open].
-     */
-    override val info: IConfigurationInfo
-        get() = CameraStreamerConfigurationInfo(endpoint.info)
-
-    /**
-     * Gets configuration information from [MediaDescriptor].
-     *
-     * @param descriptor the media descriptor
-     */
-    override fun getInfo(descriptor: MediaDescriptor): IConfigurationInfo {
-        val endpointInfo = if (endpoint is DynamicEndpoint) {
-            (endpoint as DynamicEndpoint).getInfo(descriptor)
-        } else {
-            endpoint.info
-        }
-        return CameraStreamerConfigurationInfo(endpointInfo)
-    }
-
-    /**
      * Sets a preview surface.
      */
-    override suspend fun setPreview(surface: Surface) {
-        previewMutex.withLock {
-            cameraSource.setPreviewSurface(surface)
-        }
-    }
+    override suspend fun setPreview(surface: Surface) =
+        cameraSource.setPreview(surface)
 
     /**
      * Starts video preview.
@@ -166,11 +156,8 @@ open class CameraSingleStreamer(
      * @see [setPreview]
      */
     @RequiresPermission(Manifest.permission.CAMERA)
-    override suspend fun startPreview() {
-        previewMutex.withLock {
-            cameraSource.startPreview()
-        }
-    }
+    override suspend fun startPreview() =
+        cameraSource.startPreview()
 
     /**
      * Starts audio and video capture.
@@ -182,12 +169,8 @@ open class CameraSingleStreamer(
      * @see [ICameraCoroutineStreamer.stopPreview]
      */
     @RequiresPermission(Manifest.permission.CAMERA)
-    override suspend fun startPreview(previewSurface: Surface) {
-        previewMutex.withLock {
-            cameraSource.setPreviewSurface(previewSurface)
-            cameraSource.startPreview()
-        }
-    }
+    override suspend fun startPreview(previewSurface: Surface) =
+        cameraSource.startPreview(previewSurface)
 
     /**
      * Stops capture.
@@ -195,11 +178,8 @@ open class CameraSingleStreamer(
      *
      * @see [startPreview]
      */
-    override suspend fun stopPreview() {
-        previewMutex.withLock {
-            cameraSource.stopPreview()
-        }
-    }
+    override suspend fun stopPreview() =
+        cameraSource.stopPreview()
 
     /**
      * Same as [SingleStreamer.release] but it also calls [stopPreview].
@@ -207,5 +187,10 @@ open class CameraSingleStreamer(
     override suspend fun release() {
         stopPreview()
         super.release()
+    }
+
+    override suspend fun setVideoSource(videoSource: IVideoSourceInternal) {
+        require(videoSource is CameraSource) { "videoSource must be a CameraSource" }
+        super.setVideoSource(videoSource)
     }
 }

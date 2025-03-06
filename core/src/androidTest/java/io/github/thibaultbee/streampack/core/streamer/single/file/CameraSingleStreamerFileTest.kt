@@ -32,6 +32,7 @@ import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlockin
 import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Test
@@ -47,10 +48,12 @@ class CameraSingleStreamerFileTest(
     endpointFactory: IEndpointInternal.Factory?
 ) : DeviceTest() {
     private val streamer by lazy {
-        if (endpointFactory != null) {
-            CameraSingleStreamer(context, endpointInternalFactory = endpointFactory)
-        } else {
-            CameraSingleStreamer(context)
+        runBlocking {
+            if (endpointFactory != null) {
+                CameraSingleStreamer(context, endpointInternalFactory = endpointFactory)
+            } else {
+                CameraSingleStreamer(context)
+            }
         }
     }
 

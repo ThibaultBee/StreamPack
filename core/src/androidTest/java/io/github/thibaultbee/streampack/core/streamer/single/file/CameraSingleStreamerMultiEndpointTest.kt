@@ -28,6 +28,7 @@ import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStream
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import kotlin.time.Duration.Companion.milliseconds
@@ -37,7 +38,7 @@ import kotlin.time.Duration.Companion.milliseconds
  */
 @LargeTest
 class CameraSingleStreamerMultiEndpointTest : DeviceTest() {
-    private val streamer by lazy { CameraSingleStreamer(context) }
+    private val streamer by lazy { runBlocking { CameraSingleStreamer(context) } }
 
     private val descriptors = listOf(
         UriMediaDescriptor(FileUtils.createCacheFile("video.ts").toUri()),

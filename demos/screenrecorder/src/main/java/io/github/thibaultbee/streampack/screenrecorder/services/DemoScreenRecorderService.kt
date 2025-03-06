@@ -52,7 +52,7 @@ class DemoScreenRecorderService : DefaultScreenRecorderService(
     /**
      * Create a [ScreenRecorderSingleStreamer] with the custom [Bundle].
      */
-    override fun createStreamer(customBundle: Bundle): ScreenRecorderSingleStreamer {
+    override suspend fun createStreamer(customBundle: Bundle): ScreenRecorderSingleStreamer {
         val streamer = super.createStreamer(customBundle)
         // You can create your custom streamer here instead of calling super.createStreamer(customBundle)
         return streamer

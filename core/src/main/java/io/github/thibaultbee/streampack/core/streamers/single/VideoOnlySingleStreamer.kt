@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Thibault B.
+ * Copyright (C) 2025 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,71 +21,76 @@ import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
-import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
-import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource.Companion.buildDefaultMicrophoneSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 
 /**
- * Creates a [AudioOnlySingleStreamer] with a default audio source.
+ * Creates a [VideoOnlySingleStreamer] with a default video source.
  *
  * @param context the application context
- * @param audioSourceInternal the audio source implementation. By default, it is the default microphone source. If member is set to null, no audio source are set. It can be set later with [AudioOnlySingleStreamer.setAudioSource].
+ * @param videoSourceInternal the video source implementation. If member is set to null, no audio source are set. It can be set later with [VideoOnlySingleStreamer.setVideoSource].
  * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  */
-suspend fun AudioOnlySingleStreamer(
+suspend fun VideoOnlySingleStreamer(
     context: Context,
-    audioSourceInternal: IAudioSourceInternal? = buildDefaultMicrophoneSource(),
+    videoSourceInternal: IVideoSourceInternal?,
     endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
-): AudioOnlySingleStreamer {
-    val streamer = AudioOnlySingleStreamer(
+): VideoOnlySingleStreamer {
+    val streamer = VideoOnlySingleStreamer(
         context = context,
-        endpointInternalFactory = endpointInternalFactory,
+        endpointInternalFactory = endpointInternalFactory
     )
-    audioSourceInternal?.let { streamer.setAudioSource(it) }
+    videoSourceInternal?.let { streamer.setVideoSource(it) }
     return streamer
 }
 
 /**
- * A [ICoroutineSingleStreamer] for audio only (without video).
+ * A [ICoroutineSingleStreamer] for video only (without audio).
  *
  * @param context the application context
  * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  */
-class AudioOnlySingleStreamer internal constructor(
+class VideoOnlySingleStreamer internal constructor(
     context: Context,
     endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
-) : ICoroutineSingleStreamer, ICoroutineAudioSingleStreamer {
+) : ICoroutineSingleStreamer, ICoroutineVideoSingleStreamer {
     private val streamer = SingleStreamer(
         context = context,
         endpointInternalFactory = endpointInternalFactory,
-        hasAudio = true,
-        hasVideo = false
+        hasAudio = false,
+        hasVideo = true
     )
     override val throwableFlow = streamer.throwableFlow
     override val isOpenFlow = streamer.isOpenFlow
     override val isStreamingFlow = streamer.isStreamingFlow
+
     override val endpoint: IEndpoint
         get() = streamer.endpoint
     override val info: IConfigurationInfo
         get() = streamer.info
 
-    override val audioConfig: AudioConfig
-        get() = streamer.audioConfig
-    override val audioSource: IAudioSource?
-        get() = streamer.audioSource
-    override val audioProcessor = streamer.audioProcessor
-    override val audioEncoder: IEncoder?
-        get() = streamer.audioEncoder
+    override var targetRotation: Int
+        get() = streamer.targetRotation
+        set(value) {
+            streamer.targetRotation = value
+        }
+
+    override suspend fun setVideoConfig(videoConfig: VideoConfig) =
+        streamer.setVideoConfig(videoConfig)
+
+    override val videoConfig: VideoConfig
+        get() = streamer.videoConfig
+    override val videoEncoder: IEncoder?
+        get() = streamer.videoEncoder
+    override val videoSource: IVideoSource?
+        get() = streamer.videoSource
+
+    suspend fun setVideoSource(videoSource: IVideoSourceInternal) =
+        streamer.setVideoSource(videoSource)
 
     override fun getInfo(descriptor: MediaDescriptor) = streamer.getInfo(descriptor)
-
-    override suspend fun setAudioConfig(audioConfig: AudioConfig) =
-        streamer.setAudioConfig(audioConfig)
-
-    suspend fun setAudioSource(audioSource: IAudioSourceInternal) =
-        streamer.setAudioSource(audioSource)
 
     override suspend fun open(descriptor: MediaDescriptor) = streamer.open(descriptor)
 
@@ -97,11 +102,8 @@ class AudioOnlySingleStreamer internal constructor(
 
     override suspend fun release() = streamer.release()
 
-    override fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) {
-        throw UnsupportedOperationException("Audio single streamer does not support bitrate regulator controller")
-    }
+    override fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) =
+        streamer.addBitrateRegulatorController(controllerFactory)
 
-    override fun removeBitrateRegulatorController() {
-        // Do nothing
-    }
+    override fun removeBitrateRegulatorController() = streamer.removeBitrateRegulatorController()
 }

@@ -40,6 +40,7 @@ import io.github.thibaultbee.streampack.core.streamers.orientation.IRotationProv
 import io.github.thibaultbee.streampack.core.streamers.orientation.SensorRotationProvider
 import io.github.thibaultbee.streampack.core.streamers.single.ScreenRecorderSingleStreamer
 import io.github.thibaultbee.streampack.services.utils.NotificationUtils
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -118,8 +119,8 @@ abstract class DefaultScreenRecorderService(
         try {
             val customBundle = intent.extras?.getBundle(CUSTOM_BUNDLE_KEY)
                 ?: throw IllegalStateException("Config bundle must be pass to the service")
-
-            streamer = createStreamer(customBundle).apply {
+            
+            streamer = runBlocking { createStreamer(customBundle) }.apply {
                 lifecycleScope.launch {
                     throwableFlow.filterNotNull().collect { t ->
                         Logger.e(TAG, "An error occurred", t)
@@ -154,7 +155,7 @@ abstract class DefaultScreenRecorderService(
      * @param customBundle the custom bundle passed as [launch] parameter.
      * @return the streamer to use.
      */
-    open fun createStreamer(customBundle: Bundle): ScreenRecorderSingleStreamer {
+    open suspend fun createStreamer(customBundle: Bundle): ScreenRecorderSingleStreamer {
         val enableMicrophone = customBundle.getBoolean(ENABLE_MICROPHONE_KEY, false)
         if (enableMicrophone) {
             if (ActivityCompat.checkSelfPermission(
@@ -166,10 +167,16 @@ abstract class DefaultScreenRecorderService(
             }
         }
 
-        return ScreenRecorderSingleStreamer(
-            applicationContext,
-            enableMicrophone = enableMicrophone,
-        )
+        return if (enableMicrophone) {
+            ScreenRecorderSingleStreamer(
+                applicationContext,
+            )
+        } else {
+            ScreenRecorderSingleStreamer(
+                applicationContext,
+                hasAudio = false
+            )
+        }
     }
 
     override fun onOrientationChanged(rotation: Int) {

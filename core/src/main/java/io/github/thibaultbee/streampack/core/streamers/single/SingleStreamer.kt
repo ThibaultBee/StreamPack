@@ -29,12 +29,14 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.combineStates
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
+import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.StreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
@@ -42,23 +44,25 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 
 /**
- * Base class of all single streamer.
- *
- * A single streamer is a streamer that can handle only one audio and video stream at a time.
+ * A class that handles one audio and video output.
  *
  * @param context the application context
- * @param videoSourceInternal the video source implementation
- * @param audioSourceInternal the audio source implementation
+ * @param hasAudio [Boolean.true] to capture audio. It can't be changed after instantiation.
+ * @param hasVideo [Boolean.true] to capture video. It can't be changed after instantiation.
  * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 open class SingleStreamer(
     protected val context: Context,
+    val hasAudio: Boolean = true,
+    val hasVideo: Boolean = true,
     endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ) : ICoroutineSingleStreamer, ICoroutineAudioSingleStreamer, ICoroutineVideoSingleStreamer {
     private val pipeline = StreamerPipeline(
-        context
+        context,
+        hasAudio,
+        hasVideo
     )
     private val pipelineOutput: IEncodingPipelineOutputInternal = runBlocking {
         pipeline.addOutput(
@@ -93,7 +97,7 @@ open class SingleStreamer(
     override val audioEncoder: IEncoder?
         get() = pipelineOutput.audioEncoder
 
-    suspend fun setAudioSource(audioSource: IAudioSourceInternal) {
+    open suspend fun setAudioSource(audioSource: IAudioSourceInternal) {
         pipeline.setAudioSource(audioSource)
     }
 
@@ -107,29 +111,13 @@ open class SingleStreamer(
     override val videoEncoder: IEncoder?
         get() = pipelineOutput.videoEncoder
 
-    suspend fun setVideoSource(videoSource: IVideoSourceInternal) {
+    open suspend fun setVideoSource(videoSource: IVideoSourceInternal) {
         pipeline.setVideoSource(videoSource)
     }
-
-    // INTERNAL
-    protected val videoSourceInternal = pipeline.videoSourceFlow.value as IVideoSourceInternal?
-    protected val audioSourceInternal = pipeline.audioSourceFlow.value as IAudioSourceInternal?
 
     // ENDPOINT
     override val endpoint: IEndpoint
         get() = pipelineOutput.endpoint
-
-    /**
-     * Whether the streamer has audio.
-     */
-    val hasAudio: Boolean
-        get() = pipeline.hasAudio
-
-    /**
-     * Whether the streamer has video.
-     */
-    val hasVideo: Boolean
-        get() = pipeline.hasVideo
 
     /**
      * The target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
@@ -148,7 +136,11 @@ open class SingleStreamer(
      * In this case, prefer using [getInfo] with the [MediaDescriptor] used in [open].
      */
     override val info: IConfigurationInfo
-        get() = StreamerConfigurationInfo(endpoint.info)
+        get() = if (videoSource is CameraSource) {
+            CameraStreamerConfigurationInfo(endpoint.info)
+        } else {
+            StreamerConfigurationInfo(endpoint.info)
+        }
 
     /**
      * Gets configuration information from [MediaDescriptor].
@@ -164,7 +156,11 @@ open class SingleStreamer(
         } catch (_: Throwable) {
             endpoint.getInfo(descriptor)
         }
-        return StreamerConfigurationInfo(endpointInfo)
+        return if (videoSource is CameraSource) {
+            CameraStreamerConfigurationInfo(endpointInfo)
+        } else {
+            StreamerConfigurationInfo(endpointInfo)
+        }
     }
 
     // CONFIGURATION

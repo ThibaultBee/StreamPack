@@ -18,7 +18,6 @@ package io.github.thibaultbee.streampack.core.pipelines
 import android.content.Context
 import android.util.Size
 import android.view.Surface
-import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
@@ -312,12 +311,6 @@ open class StreamerPipeline(
     }
 
     private suspend fun addOutputImpl(output: IPipelineOutput, scope: CoroutineScope) {
-        if (output.isStreaming) {
-            // Start stream if it is not already started
-            if (!this@StreamerPipeline.isStreamingFlow.value) {
-                startInputStream()
-            }
-        }
         if (output is IPipelineOutputInternal) {
             require(output.streamEventListener == null) { "Output $output already have a listener" }
             output.streamEventListener = object : IPipelineOutputInternal.Listener {
@@ -330,6 +323,7 @@ open class StreamerPipeline(
                      * Another output could have changed the source configuration in the meantime.
                      */
                     if (output.hasAudio) {
+                        require(hasAudio) { "Do not need to set audio as it is a video only streamer" }
                         if (output is IConfigurableAudioPipelineOutput) {
                             val input = requireNotNull(audioInput) { "Audio input is not set" }
                             val inputSourceConfig =
@@ -342,6 +336,7 @@ open class StreamerPipeline(
                         }
                     }
                     if (output.hasVideo) {
+                        require(hasVideo) { "Do not need to set video as it is an audio only streamer" }
                         if (output is IConfigurableVideoPipelineOutput) {
                             val input = requireNotNull(videoInput) { "Video input is not set" }
                             val inputSourceConfig =
@@ -386,6 +381,7 @@ open class StreamerPipeline(
         }
 
         if (output is IAudioPipelineOutputInternal) {
+            require(hasAudio) { "Trying to use audio in a pipeline without audio" }
             if ((output !is IAudioSyncPipelineOutputInternal) && (output is IAudioAsyncPipelineOutputInternal)) {
                 addAudioAsyncOutputIfNeeded(output)
             }
@@ -395,9 +391,17 @@ open class StreamerPipeline(
         }
 
         if (output is IVideoPipelineOutputInternal) {
+            require(hasVideo) { "Trying to use video in a pipeline without video" }
             addVideoOutputIfNeeded(output, scope)
             if (output is IConfigurableVideoPipelineOutputInternal) {
                 addEncodingVideoOutput(output)
+            }
+        }
+
+        if (output.isStreaming) {
+            // Start stream if it is not already started
+            if (!this@StreamerPipeline.isStreamingFlow.value) {
+                startInputStream()
             }
         }
     }

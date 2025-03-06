@@ -107,7 +107,6 @@ interface ICoroutineVideoStreamer<T> {
  * An audio single Streamer
  */
 interface IAudioStreamer {
-
     /**
      * Advanced settings for the audio source.
      */
