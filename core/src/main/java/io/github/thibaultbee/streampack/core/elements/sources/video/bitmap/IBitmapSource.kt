@@ -21,5 +21,5 @@ interface IBitmapSource {
     /**
      * Set a bitmap to be displayed.
      */
-    var bitmap: Bitmap?
+    var bitmap: Bitmap
 }

@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.core.elements.sources.video.bitmap
 
 import android.graphics.Bitmap
 import android.view.Surface
+import androidx.core.graphics.scale
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
@@ -41,20 +42,36 @@ class BitmapSource : IVideoSourceInternal, ISurfaceSource, IBitmapSource {
     override val isStreamingFlow = _isStreamingFlow.asStateFlow()
 
     private var videoSourceConfig: VideoSourceConfig? = null
-    override var bitmap: Bitmap? = null
+
+    private var scaledBitmap: Bitmap? = null
+    private var originalBitmap: Bitmap? = null
+    override var bitmap: Bitmap
+        get() = originalBitmap
+            ?: throw IllegalStateException("Bitmap not set")
+        set(value) {
+            originalBitmap = value
+            videoSourceConfig?.let {
+                scaledBitmap =
+                    value.scale(it.resolution.width, it.resolution.height)
+            }
+        }
+
 
     private val executor = Executors.newSingleThreadScheduledExecutor()
     private var scheduler: Future<*>? = null
 
     override fun configure(config: VideoSourceConfig) {
         videoSourceConfig = config
+        originalBitmap?.let {
+            scaledBitmap = it.scale(config.resolution.width, config.resolution.height)
+        }
     }
 
     override suspend fun startStream() {
         val sourceConfig =
             requireNotNull(videoSourceConfig) { "Video source must be configured before starting stream" }
         requireNotNull(outputSurface) { "Output surface must be set before starting stream" }
-        requireNotNull(bitmap) { "Bitmap must be set before starting stream" }
+        requireNotNull(originalBitmap) { "Bitmap must be set before starting stream" }
 
         _isStreamingFlow.emit(true)
         scheduler = executor.scheduleWithFixedDelay(
@@ -76,7 +93,7 @@ class BitmapSource : IVideoSourceInternal, ISurfaceSource, IBitmapSource {
 
     private fun drawBitmap() {
         outputSurface?.let {
-            bitmap?.let { bitmap ->
+            scaledBitmap?.let { bitmap ->
                 val canvas = it.lockCanvas(null)
                 canvas.drawBitmap(bitmap, 0f, 0f, null)
                 it.unlockCanvasAndPost(canvas)
