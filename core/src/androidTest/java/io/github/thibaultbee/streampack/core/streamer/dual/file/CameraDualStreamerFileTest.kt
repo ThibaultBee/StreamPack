@@ -22,10 +22,10 @@ import androidx.test.filters.LargeTest
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.Mp4Muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource
 import io.github.thibaultbee.streampack.core.streamer.dual.utils.DualStreamerConfigUtils
 import io.github.thibaultbee.streampack.core.streamer.utils.StreamerUtils
 import io.github.thibaultbee.streampack.core.streamer.utils.VideoUtils
@@ -33,6 +33,7 @@ import io.github.thibaultbee.streampack.core.streamers.dual.CameraDualStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Test
@@ -51,18 +52,21 @@ class CameraDualStreamerFileTest(
     secondEndpointFactory: IEndpointInternal.Factory?,
 ) : DeviceTest() {
     private val streamer by lazy {
-        if (firstEndpointFactory != null && secondEndpointFactory != null) {
-            CameraDualStreamer(
-                context,
-                firstEndpointInternalFactory = firstEndpointFactory,
-                secondEndpointInternalFactory = secondEndpointFactory
-            )
-        } else if (firstEndpointFactory != null) {
-            CameraDualStreamer(context, firstEndpointInternalFactory = firstEndpointFactory)
-        } else if (secondEndpointFactory != null) {
-            CameraDualStreamer(context, secondEndpointInternalFactory = secondEndpointFactory)
-        } else {
-            CameraDualStreamer(context)
+        runBlocking {
+            if (firstEndpointFactory != null && secondEndpointFactory != null) {
+                CameraDualStreamer(
+                    context,
+                    audioSourceInternal = MicrophoneSource.buildDefaultMicrophoneSource(),
+                    firstEndpointInternalFactory = firstEndpointFactory,
+                    secondEndpointInternalFactory = secondEndpointFactory
+                )
+            } else if (firstEndpointFactory != null) {
+                CameraDualStreamer(context, firstEndpointInternalFactory = firstEndpointFactory)
+            } else if (secondEndpointFactory != null) {
+                CameraDualStreamer(context, secondEndpointInternalFactory = secondEndpointFactory)
+            } else {
+                CameraDualStreamer(context)
+            }
         }
     }
 

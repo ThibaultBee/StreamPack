@@ -23,6 +23,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointF
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource.Companion.buildDefaultMicrophoneSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
@@ -32,62 +33,86 @@ import io.github.thibaultbee.streampack.core.streamers.interfaces.setPreview
 import io.github.thibaultbee.streampack.core.streamers.interfaces.startPreview
 import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 /**
- * A [DualStreamer] that sends microphone and camera frames.
+ * Creates a [CameraDualStreamer] with a default audio source.
  *
- * @param context application context
- * @param enableMicrophone [Boolean.true] to capture audio
+ * @param context the application context
+ * @param audioSourceInternal the audio source implementation. By default, it is the default microphone source.
  * @param firstEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
- * @param secondEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
+ * @param secondEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-fun CameraDualStreamer(
+suspend fun CameraDualStreamer(
     context: Context,
-    enableMicrophone: Boolean = true,
+    audioSourceInternal: IAudioSourceInternal = buildDefaultMicrophoneSource(),
     firstEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
-) = CameraDualStreamer(
-    context,
-    if (enableMicrophone) buildDefaultMicrophoneSource() else null,
-    firstEndpointInternalFactory,
-    secondEndpointInternalFactory,
-    defaultRotation
-)
+): CameraDualStreamer {
+    val streamer = CameraDualStreamer(
+        context, true, firstEndpointInternalFactory, secondEndpointInternalFactory, defaultRotation
+    )
+    streamer.setAudioSource(audioSourceInternal)
+    return streamer
+}
 
 /**
- * A [DualStreamer] that sends from camera frames and [audioSourceInternal] audio frames.
+ * Creates a [CameraDualStreamer].
  *
- * @param context application context
- * @param audioSourceInternal the audio source implementation
+ * @param context the application context
+ * @param hasAudio [Boolean.true] if the streamer will capture audio.
  * @param firstEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
- * @param secondEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
+ * @param secondEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-open class CameraDualStreamer(
+suspend fun CameraDualStreamer(
     context: Context,
-    audioSourceInternal: IAudioSourceInternal?,
+    hasAudio: Boolean,
+    firstEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    secondEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    @RotationValue defaultRotation: Int = context.displayRotation
+): CameraDualStreamer {
+    val source = CameraSource(context)
+    val streamer = CameraDualStreamer(
+        context,
+        source,
+        hasAudio,
+        firstEndpointInternalFactory,
+        secondEndpointInternalFactory,
+        defaultRotation
+    )
+    streamer.setVideoSource(source)
+    return streamer
+}
+
+/**
+ * A [DualStreamer] with specific device camera methods.
+ *
+ * The [CameraDualStreamer.videoSource] is a [CameraSource] and can't be changed.
+ *
+ * @param context application context
+ * @param hasAudio [Boolean.true] to capture audio
+ * @param cameraSource the camera source implementation.
+ * @param firstEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
+ * @param secondEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ */
+open class CameraDualStreamer internal constructor(
+    context: Context,
+    private val cameraSource: CameraSource,
+    hasAudio: Boolean = true,
     firstEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ) : DualStreamer(
     context = context,
-    audioSourceInternal = audioSourceInternal,
-    videoSourceInternal = CameraSource(context),
+    hasAudio = hasAudio,
+    hasVideo = true,
     firstEndpointInternalFactory = firstEndpointInternalFactory,
     secondEndpointInternalFactory = secondEndpointInternalFactory,
     defaultRotation = defaultRotation
 ), ICameraCoroutineStreamer {
-    private val cameraSource = videoSourceInternal as CameraSource
-
-    /**
-     * Mutex to avoid concurrent access to preview surface.
-     */
-    private val previewMutex = Mutex()
-
     /**
      * Gets the camera source.
      * It allows to configure camera settings and to set the camera id.
@@ -133,11 +158,8 @@ open class CameraDualStreamer(
     /**
      * Sets a preview surface.
      */
-    override suspend fun setPreview(surface: Surface) {
-        previewMutex.withLock {
-            cameraSource.setPreviewSurface(surface)
-        }
-    }
+    override suspend fun setPreview(surface: Surface) =
+        cameraSource.setPreview(surface)
 
     /**
      * Starts video preview.
@@ -150,11 +172,8 @@ open class CameraDualStreamer(
      * @see [setPreview]
      */
     @RequiresPermission(Manifest.permission.CAMERA)
-    override suspend fun startPreview() {
-        previewMutex.withLock {
-            cameraSource.startPreview()
-        }
-    }
+    override suspend fun startPreview() =
+        cameraSource.startPreview()
 
     /**
      * Starts audio and video capture.
@@ -166,12 +185,8 @@ open class CameraDualStreamer(
      * @see [ICameraCoroutineStreamer.stopPreview]
      */
     @RequiresPermission(Manifest.permission.CAMERA)
-    override suspend fun startPreview(previewSurface: Surface) {
-        previewMutex.withLock {
-            cameraSource.setPreviewSurface(previewSurface)
-            cameraSource.startPreview()
-        }
-    }
+    override suspend fun startPreview(previewSurface: Surface) =
+        cameraSource.setPreview(previewSurface)
 
     /**
      * Stops capture.
@@ -179,11 +194,8 @@ open class CameraDualStreamer(
      *
      * @see [startPreview]
      */
-    override suspend fun stopPreview() {
-        previewMutex.withLock {
-            cameraSource.stopPreview()
-        }
-    }
+    override suspend fun stopPreview() =
+        cameraSource.stopPreview()
 
     /**
      * Same as [DualStreamer.release] but it also calls [stopPreview].
@@ -191,5 +203,10 @@ open class CameraDualStreamer(
     override suspend fun release() {
         stopPreview()
         super.release()
+    }
+
+    override suspend fun setVideoSource(videoSource: IVideoSourceInternal) {
+        require(videoSource is CameraSource) { "videoSource must be a CameraSource" }
+        super.setVideoSource(videoSource)
     }
 }

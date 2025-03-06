@@ -2,7 +2,6 @@ package io.github.thibaultbee.streampack.app.ui.main.usecases
 
 import android.content.Context
 import io.github.thibaultbee.streampack.app.data.storage.DataStoreRepository
-import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -12,7 +11,7 @@ class BuildStreamerUseCase(
     private val dataStoreRepository: DataStoreRepository
 ) {
     /**
-     * Build a new [CameraSingleStreamer] based on audio and video preferences.
+     * Build a new [SingleStreamer] based on audio and video preferences.
      *
      * Only create a new streamer if the previous one is not the same type.
      *
@@ -24,9 +23,9 @@ class BuildStreamerUseCase(
         }
 
         if (previousStreamer == null) {
-            return CameraSingleStreamer(context, isAudioEnable)
+            return SingleStreamer(context, isAudioEnable)
         } else if ((previousStreamer.audioSource == null) != !isAudioEnable) {
-            return CameraSingleStreamer(context, isAudioEnable)
+            return SingleStreamer(context, isAudioEnable)
         }
         return previousStreamer
     }

@@ -43,7 +43,10 @@ import io.github.thibaultbee.streampack.app.utils.toggleCamera
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordSource
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.isFrameRateSupported
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
@@ -102,6 +105,11 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     val isTryingConnection: LiveData<Boolean> = _isTryingConnection
 
     init {
+        viewModelScope.launch {
+            // Set video source and audio source
+            streamer.setVideoSource(CameraSource(application))
+            streamer.setAudioSource(MicrophoneSource.buildDefaultMicrophoneSource())
+        }
         viewModelScope.launch {
             streamer.throwableFlow.filterNotNull().filter { !it.isClosedException }
                 .map { "${it.javaClass.simpleName}: ${it.message}" }.collect {
@@ -168,7 +176,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     }
 
     fun setStreamerView(view: CameraPreviewView) {
-        if (streamer is ICameraStreamer) {
+        if (streamer.videoSource is ICameraSource) {
             view.streamer = streamer as ICameraStreamer
         }
     }

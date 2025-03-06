@@ -19,7 +19,6 @@ import androidx.core.net.toUri
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
-import io.github.thibaultbee.streampack.core.utils.FileUtils
 import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreamerConfigUtils.audioConfig
 import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreamerConfigUtils.videoConfig
 import io.github.thibaultbee.streampack.core.streamer.surface.SurfaceUtils
@@ -29,6 +28,8 @@ import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
+import io.github.thibaultbee.streampack.core.utils.FileUtils
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -40,7 +41,7 @@ class CameraSingleStreamerStateTest(descriptor: MediaDescriptor) :
     SingleStreamerStateTest(
         descriptor
     ) {
-    override val streamer by lazy { CameraSingleStreamer(context) }
+    override val streamer by lazy { runBlocking { CameraSingleStreamer(context) } }
 
     override val audioConfig: AudioConfig by lazy { audioConfig(descriptor) }
     override val videoConfig: VideoConfig by lazy { videoConfig(descriptor) }

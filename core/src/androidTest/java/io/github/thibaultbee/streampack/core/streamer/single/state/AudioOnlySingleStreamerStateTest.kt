@@ -18,11 +18,13 @@ package io.github.thibaultbee.streampack.core.streamer.single.state
 import androidx.core.net.toUri
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
-import io.github.thibaultbee.streampack.core.utils.FileUtils
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource
 import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreamerConfigUtils
 import io.github.thibaultbee.streampack.core.streamers.single.AudioOnlySingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
+import io.github.thibaultbee.streampack.core.utils.FileUtils
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,7 +33,11 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 class AudioOnlySingleStreamerStateTest(private val descriptor: MediaDescriptor) :
     DeviceTest(withCamera = false) {
-    private val streamer by lazy { AudioOnlySingleStreamer(context) }
+    private val streamer by lazy {
+        runBlocking {
+            AudioOnlySingleStreamer(context).apply { setAudioSource(MicrophoneSource.buildDefaultMicrophoneSource()) }
+        }
+    }
 
     private val audioConfig by lazy { SingleStreamerConfigUtils.audioConfig(descriptor) }
 
