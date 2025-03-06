@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.audio
 
-import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import java.nio.ByteBuffer
 
 interface IAudioFrameSource {
@@ -24,7 +24,7 @@ interface IAudioFrameSource {
      * Gets an audio frame from the source.
      *
      * @param inputBuffer the buffer where to write data. Put it in the frame when it is not null.
-     * @return frame with correct infos (at least buffer, mime type and pts)
+     * @return a [RawFrame] containing audio data.
      */
-    fun getAudioFrame(inputBuffer: ByteBuffer?): Frame
+    fun getAudioFrame(inputBuffer: ByteBuffer?): RawFrame
 }

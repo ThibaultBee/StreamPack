@@ -23,6 +23,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.EncoderMode
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.hasEndOfStreamFlag
@@ -450,10 +451,10 @@ internal constructor(
         }
 
         private fun queueInputFrame(
-            index: Int, frame: Frame
+            index: Int, frame: RawFrame
         ) {
             mediaCodec.queueInputBuffer(
-                index, frame.buffer.position(), frame.buffer.limit(), frame.pts /* in us */, 0
+                index, frame.buffer.position(), frame.buffer.limit(), frame.timestamp /* in us */, 0
             )
         }
     }
@@ -503,7 +504,7 @@ internal constructor(
     }
 
     internal inner class SyncByteBufferInput : IEncoderInternal.ISyncByteBufferInput {
-        private fun queueInputFrameSync(frame: Frame) {
+        private fun queueInputFrameSync(frame: RawFrame) {
             val inputBufferId = mediaCodec.dequeueInputBuffer(0) // Don't block
             if (inputBufferId < 0) {
                 if (inputBufferId == MediaCodec.INFO_TRY_AGAIN_LATER) {
@@ -516,11 +517,11 @@ internal constructor(
             val size = min(frame.buffer.remaining(), inputBuffer.remaining())
             inputBuffer.put(frame.buffer, frame.buffer.position(), size)
             mediaCodec.queueInputBuffer(
-                inputBufferId, 0, size, frame.pts, 0
+                inputBufferId, 0, size, frame.timestamp, 0
             )
         }
 
-        override fun queueInputFrame(frame: Frame) {
+        override fun queueInputFrame(frame: RawFrame) {
             encoderExecutor.execute {
                 if (!state.isRunning) {
                     Logger.w(tag, "Receives input frame after codec is not running: $state.")

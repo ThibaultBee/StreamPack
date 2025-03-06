@@ -15,14 +15,14 @@
  */
 package io.github.thibaultbee.streampack.core.elements.processing.audio
 
-import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 
-open class AudioFrameProcessor(onFrame: (Frame) -> Unit) : FrameProcessor(onFrame),
+open class AudioFrameProcessor(onFrame: (RawFrame) -> Unit) : FrameProcessor(onFrame),
     IAudioFrameProcessor {
     override var isMuted = false
     private var mutedByteArray: ByteArray? = null
 
-    override fun processFrame(frame: Frame): Frame {
+    override fun processFrame(frame: RawFrame): RawFrame {
         if (isMuted) {
             val remaining = frame.buffer.remaining()
             val position = frame.buffer.position()

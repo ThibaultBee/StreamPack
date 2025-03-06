@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.core.pipelines.outputs
 import android.util.Size
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal.IAsyncByteBufferInput.OnFrameRequestedListener
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
@@ -229,7 +230,7 @@ interface IVideoSyncPipelineOutputInternal : IVideoPipelineOutputInternal {
      *
      * @param frame The video [Frame] to queue.
      */
-    fun queueVideoFrame(frame: Frame)
+    fun queueVideoFrame(frame: RawFrame)
 }
 
 /**
@@ -247,7 +248,7 @@ interface IAudioSyncPipelineOutputInternal : IAudioPipelineOutputInternal {
      *
      * @param frame The audio [Frame] to queue.
      */
-    fun queueAudioFrame(frame: Frame)
+    fun queueAudioFrame(frame: RawFrame)
 }
 
 /**

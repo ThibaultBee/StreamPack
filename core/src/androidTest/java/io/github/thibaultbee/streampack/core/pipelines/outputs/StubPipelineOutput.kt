@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.core.pipelines.outputs
 
 import android.util.Size
-import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
@@ -35,10 +35,10 @@ open class StubAudioAsyncPipelineOutput :
     StubPipelineOutput(hasAudio = true, hasVideo = false),
     IAudioSyncPipelineOutputInternal {
 
-    private val _audioFrameFlow = MutableStateFlow<Frame?>(null)
+    private val _audioFrameFlow = MutableStateFlow<RawFrame?>(null)
     val audioFrameFlow = _audioFrameFlow.asStateFlow()
 
-    override fun queueAudioFrame(frame: Frame) {
+    override fun queueAudioFrame(frame: RawFrame) {
         _audioFrameFlow.value = frame
     }
 }
@@ -72,10 +72,10 @@ class StubAudioSyncVideoSurfacePipelineOutput(resolution: Size) :
         )
     override val surfaceFlow = _surfaceFlow.asStateFlow()
 
-    private val _audioFrameFlow = MutableStateFlow<Frame?>(null)
+    private val _audioFrameFlow = MutableStateFlow<RawFrame?>(null)
     val audioFrameFlow = _audioFrameFlow.asStateFlow()
 
-    override fun queueAudioFrame(frame: Frame) {
+    override fun queueAudioFrame(frame: RawFrame) {
         _audioFrameFlow.value = frame
     }
 }
@@ -130,10 +130,10 @@ class StubAudioSyncVideoSurfacePipelineOutputInternal(resolution: Size) :
         )
     override val surfaceFlow = _surfaceFlow.asStateFlow()
 
-    private val _audioFrameFlow = MutableStateFlow<Frame?>(null)
+    private val _audioFrameFlow = MutableStateFlow<RawFrame?>(null)
     val audioFrameFlow = _audioFrameFlow.asStateFlow()
 
-    override fun queueAudioFrame(frame: Frame) {
+    override fun queueAudioFrame(frame: RawFrame) {
         _audioFrameFlow.value = frame
     }
 }

@@ -1,8 +1,7 @@
 package io.github.thibaultbee.streampack.core.elements.sources
 
-import android.media.MediaFormat
 import android.view.Surface
-import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSource
@@ -20,16 +19,11 @@ class StubVideoSurfaceSource(override val timestampOffsetInNs: Long = 0) : StubV
 }
 
 class StubVideoFrameSource : StubVideoSource(), IVideoFrameSource {
-    override fun getVideoFrame(buffer: ByteBuffer): Frame {
-        return Frame(
+    override fun getVideoFrame(buffer: ByteBuffer): RawFrame {
+        return RawFrame(
             buffer,
-            0L,
-            format = MediaFormat().apply {
-                setString(
-                    MediaFormat.KEY_MIME,
-                    MediaFormat.MIMETYPE_VIDEO_RAW
-                )
-            })
+            0L
+        )
     }
 }
 

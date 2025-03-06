@@ -23,6 +23,21 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.removePre
 import java.nio.ByteBuffer
 
 /**
+ * A raw frame internal representation.
+ */
+data class RawFrame(
+    /**
+     * Contains an audio or video frame data.
+     */
+    val buffer: ByteBuffer,
+
+    /**
+     * Presentation timestamp in µs
+     */
+    var timestamp: Long,
+)
+
+/**
  * Frame internal representation.
  */
 data class Frame(

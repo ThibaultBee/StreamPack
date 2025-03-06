@@ -16,11 +16,10 @@
 package io.github.thibaultbee.streampack.core.pipelines.outputs.encoding
 
 import android.content.Context
-import android.media.MediaFormat
 import androidx.core.net.toFile
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
-import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpoint
@@ -298,15 +297,9 @@ class EncodingPipelineOutputTest {
 
         try {
             output.queueAudioFrame(
-                Frame(
+                RawFrame(
                     ByteBuffer.allocateDirect(16384),
-                    pts = Random.nextLong(),
-                    format = MediaFormat().apply {
-                        setString(
-                            MediaFormat.KEY_MIME,
-                            MediaFormat.MIMETYPE_AUDIO_RAW
-                        )
-                    }
+                    Random.nextLong()
                 )
             )
             fail("Should throw an exception")
@@ -317,15 +310,9 @@ class EncodingPipelineOutputTest {
         output.startStream(descriptor)
 
         output.queueAudioFrame(
-            Frame(
+            RawFrame(
                 ByteBuffer.allocateDirect(16384),
-                pts = Random.nextLong(),
-                format = MediaFormat().apply {
-                    setString(
-                        MediaFormat.KEY_MIME,
-                        MediaFormat.MIMETYPE_AUDIO_RAW
-                    )
-                }
+                Random.nextLong()
             )
         )
 

@@ -1,7 +1,6 @@
 package io.github.thibaultbee.streampack.core.elements.sources
 
-import android.media.MediaFormat
-import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,16 +14,11 @@ class StubAudioSource : IAudioSourceInternal {
     private val _configurationFlow = MutableStateFlow<AudioSourceConfig?>(null)
     val configurationFlow = _configurationFlow.asStateFlow()
 
-    override fun getAudioFrame(inputBuffer: ByteBuffer?): Frame {
-        return Frame(
+    override fun getAudioFrame(inputBuffer: ByteBuffer?): RawFrame {
+        return RawFrame(
             inputBuffer ?: ByteBuffer.allocate(8192),
-            0,
-            format = MediaFormat().apply {
-                setString(
-                    MediaFormat.KEY_MIME,
-                    MediaFormat.MIMETYPE_AUDIO_RAW
-                )
-            })
+            0
+        )
     }
 
     override fun startStream() {
