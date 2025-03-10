@@ -110,7 +110,7 @@ interface IAudioStreamer {
     /**
      * Advanced settings for the audio source.
      */
-    val audioSource: IAudioSource?
+    val audioSourceFlow: StateFlow<IAudioSource?>
 
     /**
      * Advanced settings for the audio processor.
@@ -125,7 +125,7 @@ interface IVideoStreamer {
     /**
      * Advanced settings for the video source.
      */
-    val videoSource: IVideoSource?
+    val videoSourceFlow: StateFlow<IVideoSource?>
 }
 
 

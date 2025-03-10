@@ -29,7 +29,7 @@ interface ICameraStreamer {
     /**
      * The camera source settings.
      */
-    val videoSource: ICameraSource
+    val cameraSource: ICameraSource
 
     /**
      * Gets/Sets current camera id.

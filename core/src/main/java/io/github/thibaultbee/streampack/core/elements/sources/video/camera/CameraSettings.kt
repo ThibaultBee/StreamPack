@@ -43,7 +43,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Use to change camera settings.
- * This object is returned by [CameraSingleStreamer.videoSource.settings].
+ * This object is returned by [CameraSingleStreamer.cameraSource.settings].
  */
 class CameraSettings(context: Context, private val cameraController: CameraController) {
     /**

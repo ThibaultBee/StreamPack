@@ -15,7 +15,7 @@
         android:layout_height="match_parent"
         android:keepScreenOn="true">
 
-        <io.github.thibaultbee.streampack.ui.views.CameraPreviewView
+        <io.github.thibaultbee.streampack.ui.views.PreviewView
             android:id="@+id/preview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -27,17 +27,34 @@
             app:position="center"
             app:scaleMode="fill" />
 
-        <ImageButton
-            android:id="@+id/switchButton"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/switch_camera_source"
-            android:onClick="@{() -> viewmodel.toggleCamera()}"
-            android:onLongClick="@{() -> viewmodel.switchBackToFront()}"
-            android:src="@drawable/ic_switch_camera_24px"
+            android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:tint="@android:color/white" />
+            app:layout_constraintStart_toStartOf="parent">
+
+            <ImageButton
+                android:id="@+id/switchCameraButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/switch_camera_source"
+                android:onClick="@{() -> viewmodel.toggleCamera()}"
+                android:onLongClick="@{() -> viewmodel.switchBackToFront()}"
+                android:src="@drawable/ic_baseline_cameraswitch_24"
+                app:goneUnless="@{viewmodel.isCameraSource}"
+                app:tint="@android:color/white" />
+
+            <ImageButton
+                android:id="@+id/switchSourceButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/switch_camera_source"
+                android:onClick="@{() -> viewmodel.toggleVideoSource()}"
+                android:src="@drawable/ic_switch_camera_24px"
+                app:tint="@android:color/white" />
+
+        </LinearLayout>
 
         <ToggleButton
             android:id="@+id/liveButton"

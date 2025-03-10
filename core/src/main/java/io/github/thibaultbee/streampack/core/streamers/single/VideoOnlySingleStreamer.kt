@@ -21,7 +21,6 @@ import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
@@ -84,8 +83,7 @@ class VideoOnlySingleStreamer internal constructor(
         get() = streamer.videoConfig
     override val videoEncoder: IEncoder?
         get() = streamer.videoEncoder
-    override val videoSource: IVideoSource?
-        get() = streamer.videoSource
+    override val videoSourceFlow = streamer.videoSourceFlow
 
     suspend fun setVideoSource(videoSource: IVideoSourceInternal) =
         streamer.setVideoSource(videoSource)

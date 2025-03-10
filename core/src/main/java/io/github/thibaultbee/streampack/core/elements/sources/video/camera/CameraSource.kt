@@ -31,7 +31,7 @@ import kotlinx.coroutines.sync.withLock
 
 class CameraSource(
     private val context: Context
-) : ICameraSourceInternal, ISurfaceSource {
+) : ICameraSourceInternal, ICameraSource, ISurfaceSource {
     private val pendingRunningSurfaces = mutableSetOf<Surface>()
 
     /**
@@ -174,6 +174,8 @@ class CameraSource(
     private val _isStreamingFlow = MutableStateFlow(false)
     override val isStreamingFlow = _isStreamingFlow.asStateFlow()
 
+    private val _isPreviewingFlow = MutableStateFlow(false)
+    override val isPreviewingFlow = _isPreviewingFlow.asStateFlow()
 
     private var fps: Int = 30
     private var dynamicRangeProfile: DynamicRangeProfile = DynamicRangeProfile.sdr
@@ -186,7 +188,7 @@ class CameraSource(
             )
         }
 
-    override val isPreviewing: Boolean
+    private val isPreviewing: Boolean
         get() {
             val previewSurface = _previewSurface ?: return false
             return cameraController.isSurfaceRunning(previewSurface) || pendingRunningSurfaces.contains(
@@ -280,6 +282,7 @@ class CameraSource(
         }
         pendingRunningSurfaces.add(previewSurface)
         startCameraIfNeeded(listOf(previewSurface), cameraId)
+        _isPreviewingFlow.emit(true)
     }
 
 
@@ -292,6 +295,7 @@ class CameraSource(
             Logger.w(TAG, "Camera is not previewing")
             return
         }
+        _isPreviewingFlow.emit(false)
 
         val previewSurface = requireNotNull(_previewSurface) {
             "Preview surface is not set"
@@ -338,6 +342,8 @@ class CameraSource(
             return
         }
 
+        _isStreamingFlow.emit(false)
+
         val outputSurface = requireNotNull(outputSurface) {
             "Output surface is not set"
         }
@@ -348,13 +354,15 @@ class CameraSource(
             cameraController.removeTarget(outputSurface)
         } catch (e: IllegalArgumentException) {
             Logger.w(TAG, "Failed to stop stream: $e")
-        } finally {
-            _isStreamingFlow.emit(false)
         }
     }
 
     override fun release() {
         cameraController.release()
+        runBlocking {
+            _isStreamingFlow.emit(false)
+            _isPreviewingFlow.emit(false)
+        }
     }
 
     companion object {
