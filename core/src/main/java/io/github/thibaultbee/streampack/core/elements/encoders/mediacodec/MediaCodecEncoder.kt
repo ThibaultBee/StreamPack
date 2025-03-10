@@ -504,14 +504,20 @@ internal constructor(
     }
 
     internal inner class SyncByteBufferInput : IEncoderInternal.ISyncByteBufferInput {
-        private fun queueInputFrameSync(frame: RawFrame) {
+        /**
+         * Process output frame synchronously
+         *
+         * @param frame the frame to process
+         * @return [Boolean.true] if the frame is processed, [Boolean.false] otherwise
+         */
+        private fun queueInputFrameSync(frame: RawFrame): Boolean {
             val inputBufferId = mediaCodec.dequeueInputBuffer(0) // Don't block
             if (inputBufferId < 0) {
                 if (inputBufferId == MediaCodec.INFO_TRY_AGAIN_LATER) {
-                    return
+                    return false
                 }
                 Logger.w(tag, "Failed to dequeue input buffer: $inputBufferId")
-                return
+                return false
             }
             val inputBuffer = requireNotNull(mediaCodec.getInputBuffer(inputBufferId))
             val size = min(frame.buffer.remaining(), inputBuffer.remaining())
@@ -519,6 +525,7 @@ internal constructor(
             mediaCodec.queueInputBuffer(
                 inputBufferId, 0, size, frame.timestamp, 0
             )
+            return true
         }
 
         override fun queueInputFrame(frame: RawFrame) {
@@ -535,9 +542,12 @@ internal constructor(
                      * fully consumed because of a really slow encoder
                      */
                     var counter = 0
-                    while (frame.buffer.hasRemaining() && counter < 50) {
-                        queueInputFrameSync(frame)
-                        counter++
+                    while (frame.buffer.hasRemaining() && counter < 10) {
+                        if (queueInputFrameSync(frame)) {
+                            counter = 0
+                        } else {
+                            counter++
+                        }
 
                         val bufferInfo = BufferInfo()
                         var outputBufferId: Int
