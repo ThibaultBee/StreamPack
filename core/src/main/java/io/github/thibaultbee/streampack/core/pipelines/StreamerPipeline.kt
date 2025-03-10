@@ -54,6 +54,8 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.Encoding
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.pipelines.utils.SourceConfigUtils
+import io.github.thibaultbee.streampack.core.streamers.interfaces.IAudioStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -80,7 +82,7 @@ open class StreamerPipeline(
     val hasAudio: Boolean = true,
     val hasVideo: Boolean = true,
     protected val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
-) {
+) : IVideoStreamer, IAudioStreamer {
     protected val coroutineScope: CoroutineScope = CoroutineScope(coroutineDispatcher)
 
     private val _throwableFlow = MutableStateFlow<Throwable?>(null)
@@ -97,14 +99,14 @@ open class StreamerPipeline(
      * The audio source.
      * It allows access to advanced audio source settings.
      */
-    val audioSourceFlow: StateFlow<IAudioSource?> =
+    override val audioSourceFlow: StateFlow<IAudioSource?> =
         audioInput?.audioSourceFlow ?: MutableStateFlow(null)
 
     /**
      * The audio processor.
      * It allows access to advanced audio settings.
      */
-    val audioProcessor: IAudioFrameProcessor? = audioInput?.audioProcessor
+    override val audioProcessor: IAudioFrameProcessor? = audioInput?.audioProcessor
 
     private val videoInput = if (hasVideo) {
         VideoInput()
@@ -116,7 +118,7 @@ open class StreamerPipeline(
      * The video source.
      * It allows access to advanced video source settings.
      */
-    val videoSourceFlow: StateFlow<IVideoSource?> =
+    override val videoSourceFlow: StateFlow<IVideoSource?> =
         videoInput?.videoSourceFlow ?: MutableStateFlow(null)
 
     /**

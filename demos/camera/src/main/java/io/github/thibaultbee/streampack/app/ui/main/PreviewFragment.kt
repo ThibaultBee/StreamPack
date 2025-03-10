@@ -34,7 +34,7 @@ import io.github.thibaultbee.streampack.app.R
 import io.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import io.github.thibaultbee.streampack.app.utils.DialogUtils
 import io.github.thibaultbee.streampack.app.utils.PermissionManager
-import io.github.thibaultbee.streampack.ui.views.CameraPreviewView
+import io.github.thibaultbee.streampack.ui.views.PreviewView
 import kotlinx.coroutines.launch
 
 class PreviewFragment : Fragment(R.layout.main_fragment) {
@@ -151,9 +151,9 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
     private fun inflateStreamerPreview() {
         val preview = binding.preview
         // Set camera settings button when camera is started
-        preview.listener = object : CameraPreviewView.Listener {
+        preview.listener = object : PreviewView.Listener {
             override fun onPreviewStarted() {
-                previewViewModel.onPreviewStarted()
+                Log.i(TAG, "Preview started")
             }
 
             override fun onZoomRationOnPinchChanged(zoomRatio: Float) {
@@ -162,7 +162,7 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
         }
 
         // Wait till streamer exists to set it to the SurfaceView.
-        previewViewModel.setStreamerView(preview)
+        preview.streamer = previewViewModel.streamer
         if (PermissionManager.hasPermissions(requireContext(), Manifest.permission.CAMERA)) {
             lifecycleScope.launch {
                 try {

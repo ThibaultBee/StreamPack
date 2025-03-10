@@ -13,7 +13,7 @@
         <enum name="end" value="2"/>
     </attr>
 
-    <declare-styleable name="CameraPreviewView">
+    <declare-styleable name="PreviewView">
         <attr name="enableZoomOnPinch" format="boolean" />
         <attr name="enableTapToFocus" format="boolean" />
         <attr name="scaleMode"  />

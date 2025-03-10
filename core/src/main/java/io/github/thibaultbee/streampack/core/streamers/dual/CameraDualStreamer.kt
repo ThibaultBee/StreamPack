@@ -89,18 +89,18 @@ suspend fun CameraDualStreamer(
 /**
  * A [DualStreamer] with specific device camera methods.
  *
- * The [CameraDualStreamer.videoSource] is a [CameraSource] and can't be changed.
+ * The [CameraDualStreamer.videoSourceFlow] is a [ICameraSource] and can't be changed.
  *
  * @param context application context
  * @param hasAudio [Boolean.true] to capture audio
- * @param cameraSource the camera source implementation.
+ * @param cameraSource the camera source interface.
  * @param firstEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
  * @param secondEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 open class CameraDualStreamer internal constructor(
     context: Context,
-    private val cameraSource: CameraSource,
+    override val cameraSource: ICameraSource,
     hasAudio: Boolean = true,
     firstEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
@@ -114,12 +114,6 @@ open class CameraDualStreamer internal constructor(
     defaultRotation = defaultRotation
 ), ICameraCoroutineStreamer {
     /**
-     * Gets the camera source.
-     * It allows to configure camera settings and to set the camera id.
-     */
-    override val videoSource = cameraSource as ICameraSource
-
-    /**
      * Get/Set current camera id.
      * It is a shortcut for [CameraSource.cameraId]
      */
@@ -129,7 +123,7 @@ open class CameraDualStreamer internal constructor(
          *
          * @return a string that described current camera
          */
-        get() = videoSource.cameraId
+        get() = cameraSource.cameraId
         /**
          * Set current camera id.
          * Retrieves list of cameras from [Context.cameras]

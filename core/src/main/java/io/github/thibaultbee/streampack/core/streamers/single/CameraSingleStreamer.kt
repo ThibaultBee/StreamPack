@@ -79,17 +79,17 @@ suspend fun CameraSingleStreamer(
 /**
  * A [SingleStreamer] with specific device camera methods.
  *
- * The [CameraSingleStreamer.videoSource] is a [CameraSource] and can't be changed.
+ * The [CameraSingleStreamer.videoSourceFlow] is a [ICameraSource] and can't be changed.
  *
  * @param context the application context
- * @param cameraSource the camera source implementation.
+ * @param cameraSource the camera source public interface
  * @param hasAudio [Boolean.true] to capture audio
  * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 open class CameraSingleStreamer internal constructor(
     context: Context,
-    private val cameraSource: CameraSource,
+    override val cameraSource: ICameraSource,
     hasAudio: Boolean = true,
     endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
@@ -101,12 +101,6 @@ open class CameraSingleStreamer internal constructor(
     defaultRotation = defaultRotation
 ), ICameraCoroutineStreamer {
     /**
-     * Gets the camera source.
-     * It allows to configure camera settings and to set the camera id.
-     */
-    override val videoSource: ICameraSource by lazy { cameraSource }
-
-    /**
      * Get/Set current camera id.
      * It is a shortcut for [CameraSource.cameraId]
      */
@@ -116,7 +110,7 @@ open class CameraSingleStreamer internal constructor(
          *
          * @return a string that described current camera
          */
-        get() = videoSource.cameraId
+        get() = cameraSource.cameraId
         /**
          * Set current camera id.
          * Retrieves list of cameras from [Context.cameras]
@@ -137,7 +131,7 @@ open class CameraSingleStreamer internal constructor(
      *
      * @param cameraId The camera id to use
      */
-    override suspend fun setCameraId(cameraId: String) = cameraSource.setCameraId(cameraId)
+    override suspend fun setCameraId(cameraId: String) = this.cameraSource.setCameraId(cameraId)
 
     /**
      * Sets a preview surface.

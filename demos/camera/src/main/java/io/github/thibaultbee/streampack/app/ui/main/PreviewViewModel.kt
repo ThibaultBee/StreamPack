@@ -19,6 +19,7 @@ import android.Manifest
 import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.hardware.camera2.CaptureResult
 import android.util.Log
 import android.util.Range
@@ -32,6 +33,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import io.github.thibaultbee.streampack.app.BR
+import io.github.thibaultbee.streampack.app.R
 import io.github.thibaultbee.streampack.app.data.rotation.RotationRepository
 import io.github.thibaultbee.streampack.app.data.storage.DataStoreRepository
 import io.github.thibaultbee.streampack.app.ui.main.usecases.BuildStreamerUseCase
@@ -44,17 +46,18 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMe
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.BitmapSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.isFrameRateSupported
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.streamers.lifecycle.StreamerViewModelLifeCycleObserver
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrtBitrateRegulatorController
-import io.github.thibaultbee.streampack.ui.views.CameraPreviewView
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
@@ -68,11 +71,25 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
 
     private val buildStreamerUseCase = BuildStreamerUseCase(application, storageRepository)
 
-    private var streamer = buildStreamerUseCase()
+    var streamer = buildStreamerUseCase()
+        private set
     val streamerLifeCycleObserver: DefaultLifecycleObserver
         get() = StreamerViewModelLifeCycleObserver(streamer)
+
+    /**
+     * Test bitmap for [BitmapSource].
+     */
+    private val testBitmap =
+        BitmapFactory.decodeResource(application.resources, R.drawable.img_test)
+
+    /**
+     * Camera settings.
+     */
     private val cameraSettings: CameraSettings?
-        get() = (streamer as? ICameraStreamer)?.videoSource?.settings
+        get() {
+            val videoSource = (streamer as? IVideoStreamer)?.videoSourceFlow?.value
+            return (videoSource as? CameraSource)?.settings
+        }
 
     val requiredPermissions: List<String>
         get() {
@@ -80,7 +97,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
             if (streamer is ICameraStreamer) {
                 permissions.add(Manifest.permission.CAMERA)
             }
-            if (streamer.audioSource is AudioRecordSource) {
+            if (streamer.audioSourceFlow.value is AudioRecordSource) {
                 permissions.add(Manifest.permission.RECORD_AUDIO)
             }
             storageRepository.endpointDescriptorFlow.asLiveData().value?.let {
@@ -109,6 +126,11 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
             // Set video source and audio source
             streamer.setVideoSource(CameraSource(application))
             streamer.setAudioSource(MicrophoneSource.buildDefaultMicrophoneSource())
+        }
+        viewModelScope.launch {
+            streamer.videoSourceFlow.collect {
+                notifySourceChanged()
+            }
         }
         viewModelScope.launch {
             streamer.throwableFlow.filterNotNull().filter { !it.isClosedException }
@@ -173,16 +195,6 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                     } ?: Log.i(TAG, "Video is disabled")
                 }
         }
-    }
-
-    fun setStreamerView(view: CameraPreviewView) {
-        if (streamer.videoSource is ICameraSource) {
-            view.streamer = streamer as ICameraStreamer
-        }
-    }
-
-    fun onPreviewStarted() {
-        notifyCameraChanged()
     }
 
     fun onZoomRationOnPinchChanged() {
@@ -256,11 +268,11 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
          * exception instead of crashing. You can either catch the exception or check if the
          * configuration is valid for the new camera with [Context.isFrameRateSupported].
          */
-        val streamer = streamer
-        if (streamer is ICameraStreamer) {
+        val videoSource = streamer.videoSourceFlow.value
+        if (videoSource is ICameraSource) {
             viewModelScope.launch {
-                streamer.switchBackToFront(application)
-                notifyCameraChanged()
+                videoSource.switchBackToFront(application)
+                notifySourceChanged()
             }
         }
         return true
@@ -273,14 +285,39 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
          * exception instead of crashing. You can either catch the exception or check if the
          * configuration is valid for the new camera with [Context.isFrameRateSupported].
          */
-        val streamer = streamer
-        if (streamer is ICameraStreamer) {
+        val videoSource = streamer.videoSourceFlow.value
+        if (videoSource is ICameraSource) {
             viewModelScope.launch {
-                streamer.toggleCamera(application)
-                notifyCameraChanged()
+                videoSource.toggleCamera(application)
+                notifySourceChanged()
             }
         }
     }
+
+    fun toggleVideoSource() {
+        val videoSource = streamer.videoSourceFlow.value
+        val nextSource = when (videoSource) {
+            is CameraSource -> {
+                BitmapSource().apply {
+                    bitmap = testBitmap
+                }
+            }
+
+            is BitmapSource -> {
+                CameraSource(application)
+            }
+
+            else -> {
+                Log.i(TAG, "Unknown video source. Fallback to camera sources")
+                CameraSource(application)
+            }
+        }
+        viewModelScope.launch {
+            streamer.setVideoSource(nextSource)
+        }
+    }
+
+    val isCameraSource = streamer.videoSourceFlow.map { it is ICameraSource }.asLiveData()
 
     val isFlashAvailable = MutableLiveData(false)
     fun toggleFlash() {
@@ -360,7 +397,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
             }
         }
 
-    private fun notifyCameraChanged() {
+    private fun notifySourceChanged() {
         cameraSettings?.let {
             // Set optical stabilization first
             // Do not set both video and optical stabilization at the same time

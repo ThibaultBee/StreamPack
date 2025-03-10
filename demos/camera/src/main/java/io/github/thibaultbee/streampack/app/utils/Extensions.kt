@@ -25,41 +25,33 @@ import android.util.Range
 import androidx.annotation.RequiresPermission
 import androidx.datastore.preferences.preferencesDataStore
 import io.github.thibaultbee.streampack.app.ApplicationConstants.userPrefName
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.backCameras
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.cameras
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.frontCameras
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.isBackCamera
 
 @RequiresPermission(Manifest.permission.CAMERA)
-suspend fun ICameraStreamer.toggleCamera(context: Context) {
+suspend fun ICameraSource.toggleCamera(context: Context) {
     val cameras = context.cameras
 
     val currentCameraIndex = cameras.indexOf(cameraId)
     val cameraIndex = (currentCameraIndex + 1) % cameras.size
 
-    if (this is ICameraCoroutineStreamer) {
-        setCameraId(cameras[cameraIndex])
-    } else if (this is ICameraCallbackStreamer) {
-        cameraId = cameras[cameraIndex]
-    }
+    setCameraId(cameras[cameraIndex])
 }
 
 @RequiresPermission(Manifest.permission.CAMERA)
-suspend fun ICameraStreamer.switchBackToFront(context: Context) {
+suspend fun ICameraSource.switchBackToFront(context: Context) {
     val cameras = if (context.isBackCamera(cameraId)) {
         context.frontCameras
     } else {
         context.backCameras
     }
     if (cameras.isNotEmpty()) {
-        if (this is ICameraCoroutineStreamer) {
-            setCameraId(cameras[0])
-        } else if (this is ICameraCallbackStreamer) {
-            cameraId = cameras[0]
-        }
+        setCameraId(cameras[0])
+    } else {
+        throw Exception("No camera available")
     }
 }
 

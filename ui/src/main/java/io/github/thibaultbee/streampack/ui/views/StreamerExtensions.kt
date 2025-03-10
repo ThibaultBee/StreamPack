@@ -5,15 +5,14 @@ import android.hardware.camera2.CameraCharacteristics
 import android.util.Size
 import android.view.Surface
 import androidx.camera.viewfinder.CameraViewfinder
-import androidx.camera.viewfinder.CameraViewfinderExt.requestSurface
 import androidx.camera.viewfinder.core.ViewfinderSurfaceRequest
 import androidx.camera.viewfinder.core.impl.utils.futures.FutureCallback
 import androidx.camera.viewfinder.core.impl.utils.futures.Futures
 import androidx.camera.viewfinder.core.populateFromCharacteristics
 import androidx.core.content.ContextCompat
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.getCameraCharacteristics
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.getCameraCharacteristics
 
 /**
  * Start preview on a [CameraViewfinder]
@@ -25,11 +24,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.getCa
 suspend fun ICameraCoroutineStreamer.startPreview(
     viewfinder: CameraViewfinder,
     previewSize: Size
-): ViewfinderSurfaceRequest {
-    val request = setPreview(viewfinder, previewSize)
-    startPreview()
-    return request
-}
+): ViewfinderSurfaceRequest = cameraSource.startPreview(viewfinder, previewSize)
 
 /**
  * Set preview on a [CameraViewfinder]
@@ -41,13 +36,7 @@ suspend fun ICameraCoroutineStreamer.startPreview(
 suspend fun ICameraCoroutineStreamer.setPreview(
     viewfinder: CameraViewfinder,
     previewSize: Size
-): ViewfinderSurfaceRequest {
-    val builder = ViewfinderSurfaceRequest.Builder(previewSize)
-    val cameraCharacteristics = viewfinder.context.getCameraCharacteristics(cameraId)
-    val request = builder.populateFromCharacteristics(cameraCharacteristics).build()
-    setPreview(viewfinder.requestSurface(request))
-    return request
-}
+) = cameraSource.setPreview(viewfinder, previewSize)
 
 /**
  * Start preview on a [CameraViewfinder]

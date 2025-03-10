@@ -73,8 +73,7 @@ class AudioOnlySingleStreamer internal constructor(
 
     override val audioConfig: AudioConfig
         get() = streamer.audioConfig
-    override val audioSource: IAudioSource?
-        get() = streamer.audioSource
+    override val audioSourceFlow = streamer.audioSourceFlow
     override val audioProcessor = streamer.audioProcessor
     override val audioEncoder: IEncoder?
         get() = streamer.audioEncoder

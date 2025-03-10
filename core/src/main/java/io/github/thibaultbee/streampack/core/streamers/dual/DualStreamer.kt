@@ -129,15 +129,13 @@ open class DualStreamer(
     }
 
     // SOURCES
-    override val audioSource: IAudioSource?
-        get() = pipeline.audioSourceFlow.value
+    override val audioSourceFlow = pipeline.audioSourceFlow
 
     open suspend fun setAudioSource(audioSource: IAudioSourceInternal) {
         pipeline.setAudioSource(audioSource)
     }
-    
-    override val videoSource: IVideoSource?
-        get() = pipeline.videoSourceFlow.value
+
+    override val videoSourceFlow = pipeline.videoSourceFlow
 
     open suspend fun setVideoSource(videoSource: IVideoSourceInternal) {
         pipeline.setVideoSource(videoSource)

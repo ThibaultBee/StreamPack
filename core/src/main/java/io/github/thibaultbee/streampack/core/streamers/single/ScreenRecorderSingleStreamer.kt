@@ -120,8 +120,8 @@ open class ScreenRecorderSingleStreamer(
          */
         set(value) {
             mediaProjectionVideoSource.activityResult = value
-            if (audioSource is IMediaProjectionSource) {
-                (audioSource as IMediaProjectionSource).activityResult = value
+            if (audioSourceFlow.value is IMediaProjectionSource) {
+                (audioSourceFlow.value as IMediaProjectionSource).activityResult = value
             }
         }
 
