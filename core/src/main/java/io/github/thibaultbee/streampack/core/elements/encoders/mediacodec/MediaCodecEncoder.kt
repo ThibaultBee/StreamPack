@@ -36,6 +36,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.Closeable
 import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.math.min
 
@@ -45,7 +46,7 @@ import kotlin.math.min
 internal fun MediaCodecEncoder(
     encoderConfig: EncoderConfig<*>,
     listener: IEncoderInternal.IListener,
-    encoderExecutor: Executor = Executors.newSingleThreadExecutor(),
+    encoderExecutor: ExecutorService = Executors.newSingleThreadExecutor(),
     listenerExecutor: Executor = Executors.newSingleThreadExecutor(),
 ): MediaCodecEncoder {
     return MediaCodecEncoder(
@@ -62,7 +63,7 @@ internal fun MediaCodecEncoder(
 class MediaCodecEncoder
 internal constructor(
     private val encoderConfig: EncoderConfig<*>,
-    private val encoderExecutor: Executor = Executors.newSingleThreadExecutor()
+    private val encoderExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 ) : IEncoderInternal {
     private val mediaCodec: MediaCodec
     private val format: MediaFormat
@@ -128,7 +129,7 @@ internal constructor(
         }
     }
 
-    override fun configure() {
+    private fun configureSync() {
         try {
             if (input !is SyncByteBufferInput) {
                 /**
@@ -146,9 +147,15 @@ internal constructor(
             setState(State.CONFIGURED)
         } catch (t: Throwable) {
             Logger.e(tag, "Failed to configure for format: $format", t)
-            release()
+            releaseSync()
             throw t
         }
+    }
+
+    override fun configure() {
+        encoderExecutor.submit {
+            configureSync()
+        }.get()
     }
 
     private fun resetSync() {
