@@ -163,6 +163,9 @@ class SurfaceProcessor(
     }
 
     override fun removeAllOutputSurfaces() {
+        val surfaceOutputs = submitSafely {
+            surfaceOutputs.toList()
+        }.get()
         surfaceOutputs.forEach {
             try {
                 removeOutputSurface(it)
