@@ -21,6 +21,7 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMe
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaContainerType
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import java.security.InvalidParameterException
+import androidx.core.net.toUri
 
 /**
  * Creates a RTMP connection descriptor from an [descriptor].
@@ -53,21 +54,23 @@ fun RtmpMediaDescriptor(uri: Uri) = RtmpMediaDescriptor.fromUri(uri)
  * @param streamKey the stream key
  */
 class RtmpMediaDescriptor(
-    val scheme: String, val host: String, val port: Int, val app: String, val streamKey: String
+    val scheme: String, val host: String, val port: Int, val app: String?, val streamKey: String
 ) : MediaDescriptor(Type(MediaContainerType.FLV, MediaSinkType.RTMP)) {
     init {
         require(scheme == RTMP_SCHEME || scheme == RTMPS_SCHEME || scheme == RTMPT_SCHEME || scheme == RTMPE_SCHEME || scheme == RTMFP_SCHEME || scheme == RTMPTE_SCHEME || scheme == RTMPTS_SCHEME) { "Invalid scheme $scheme" }
         require(host.isNotBlank()) { "Invalid host $host" }
         require(port > 0) { "Invalid port $port" }
         require(port < 65536) { "Invalid port $port" }
-        require(app.isNotBlank()) { "Invalid app $app" }
+        app?.let { require(it.isNotBlank()) { "Invalid app $app" } }
         require(streamKey.isNotBlank()) { "Invalid streamKey $streamKey" }
     }
 
     override val uri = Uri.Builder()
         .scheme(scheme)
         .encodedAuthority("$host:$port")
-        .appendEncodedPath(app)
+        .apply {
+            app?.let { appendEncodedPath(app) }
+        }
         .appendEncodedPath(streamKey)
         .build()
 
@@ -91,7 +94,7 @@ class RtmpMediaDescriptor(
          * @return RTMP connection descriptor
          */
         fun fromUrl(url: String) =
-            fromUri(Uri.parse(url))
+            fromUri(url.toUri())
 
         /**
          * Creates a RTMP connection descriptor from an Uri
@@ -114,13 +117,18 @@ class RtmpMediaDescriptor(
                     DEFAULT_PORT
                 }
             }
-            if (uri.pathSegments.size < 2) {
-                throw InvalidParameterException("Invalid path ${uri.path} expected /app/streamKey")
+            if (uri.pathSegments.isEmpty()) {
+                throw InvalidParameterException("Invalid path ${uri.path} expected /app/streamKey or /streamKey")
+            } else {
+                val streamKey = uri.lastPathSegment
+                    ?: throw InvalidParameterException("Invalid streamKey ${uri.lastPathSegment}")
+                if (uri.pathSegments.size == 1) {
+                    return RtmpMediaDescriptor(scheme, host, port, null, streamKey)
+                } else {
+                    val app = uri.pathSegments.minus(uri.lastPathSegment).joinToString("/")
+                    return RtmpMediaDescriptor(scheme, host, port, app, streamKey)
+                }
             }
-            val app = uri.pathSegments.minus(uri.lastPathSegment).joinToString("/")
-            val streamKey = uri.lastPathSegment
-                ?: throw InvalidParameterException("Invalid streamKey ${uri.lastPathSegment}")
-            return RtmpMediaDescriptor(scheme, host, port, app, streamKey)
         }
     }
 }
