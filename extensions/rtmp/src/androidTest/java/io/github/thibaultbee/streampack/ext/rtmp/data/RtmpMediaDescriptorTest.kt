@@ -66,6 +66,17 @@ class RtmpMediaDescriptorTest {
     }
 
     @Test
+    fun fromUrlWithoutApp() {
+        val url = "rtmp://broadcast.host.com:1234/streamKey"
+        val connection = RtmpMediaDescriptor.fromUrl(url)
+        assertEquals("rtmp", connection.scheme)
+        assertEquals("broadcast.host.com", connection.host)
+        assertEquals(1234, connection.port)
+        assertEquals(null, connection.app)
+        assertEquals("streamKey", connection.streamKey)
+    }
+
+    @Test
     fun fromUrlWithBadScheme() {
         val url = "rtp://broadcast.host.com:1234/app/streamKey"
         try {
