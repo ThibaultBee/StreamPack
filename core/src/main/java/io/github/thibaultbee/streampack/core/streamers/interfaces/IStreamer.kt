@@ -15,11 +15,18 @@
  */
 package io.github.thibaultbee.streampack.core.streamers.interfaces
 
-import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
+import android.Manifest
+import android.view.Surface
+import android.view.SurfaceHolder
+import android.view.SurfaceView
+import android.view.TextureView
+import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
-import io.github.thibaultbee.streampack.core.streamers.single.open
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
@@ -108,7 +115,7 @@ interface ICoroutineVideoStreamer<T> {
  */
 interface IAudioStreamer {
     /**
-     * Advanced settings for the audio source.
+     * An audio source flow to access to advanced settings.
      */
     val audioSourceFlow: StateFlow<IAudioSource?>
 
@@ -116,6 +123,13 @@ interface IAudioStreamer {
      * Advanced settings for the audio processor.
      */
     val audioProcessor: IAudioFrameProcessor?
+
+    /**
+     * Sets the audio source.
+     *
+     * @param audioSource The audio source to set
+     */
+    suspend fun setAudioSource(audioSource: IAudioSourceInternal)
 }
 
 /**
@@ -123,101 +137,127 @@ interface IAudioStreamer {
  */
 interface IVideoStreamer {
     /**
-     * Advanced settings for the video source.
+     * A video source flow to access to advanced settings.
      */
     val videoSourceFlow: StateFlow<IVideoSource?>
+
+    /**
+     * Sets the video source.
+     *
+     * @param videoSource The video source to set
+     */
+    suspend fun setVideoSource(videoSource: IVideoSourceInternal)
+
+    /**
+     * Sets the video sources to camera source with the corresponding camera id.
+     *
+     * @param cameraId The camera id to set
+     */
+    suspend fun setCameraId(cameraId: String)
 }
 
+/**
+ * Whether the video source has a preview.
+ */
+val IVideoStreamer.isPreviewable: Boolean
+    get() = videoSourceFlow.value is IPreviewableSource
 
-interface ICallbackAudioStreamer<T> {
-    /**
-     * Configures only audio settings.
-     *
-     * @param audioConfig Audio configuration to set
-     *
-     * @throws [Throwable] if configuration can not be applied.
-     */
-    fun setAudioConfig(audioConfig: T)
+/**
+ * Sets the preview surface.
+ *
+ * @param surface The [Surface] used for the source preview
+ * @throws [IllegalStateException] if the video source is not previewable
+ */
+suspend fun IVideoStreamer.setPreview(surface: Surface) {
+    (videoSourceFlow.value as? IPreviewableSource)?.setPreview(surface)
+        ?: throw IllegalStateException("Video source is not previewable")
 }
 
-interface ICallbackVideoStreamer<T> {
-    /**
-     * Configures only video settings.
-     *
-     * @param videoConfig Video configuration to set
-     *
-     * @throws [Throwable] if configuration can not be applied.
-     */
-    fun setVideoConfig(videoConfig: T)
+/**
+ * Sets a preview surface.
+ *
+ * @param surfaceView The [SurfaceView] used for the source preview
+ * @throws [IllegalStateException] if the video source is not previewable
+ */
+suspend fun IVideoStreamer.setPreview(surfaceView: SurfaceView) =
+    setPreview(surfaceView.holder.surface)
+
+/**
+ * Sets a preview surface holder.
+ *
+ * @param surfaceHolder The [SurfaceHolder] used the source preview
+ * @throws [IllegalStateException] if the video source is not previewable
+ */
+suspend fun IVideoStreamer.setPreview(surfaceHolder: SurfaceHolder) =
+    setPreview(surfaceHolder.surface)
+
+/**
+ * Sets a preview surface.
+ *
+ * @param textureView The [TextureView] used for the source preview
+ * @throws [IllegalStateException] if the video source is not previewable
+ */
+suspend fun IVideoStreamer.setPreview(textureView: TextureView) =
+    setPreview(Surface(textureView.surfaceTexture))
+
+/**
+ * Starts video preview.
+ *
+ * @throws [IllegalStateException] if the video source is not previewable
+ */
+suspend fun IVideoStreamer.startPreview() {
+    (videoSourceFlow.value as? IPreviewableSource)?.startPreview()
+        ?: throw IllegalStateException("Video source is not previewable")
 }
 
-interface ICallbackStreamer : IStreamer {
-    /**
-     * Returns true if streamer is opened.
-     * For example, if the streamer is connected to a server if the endpoint is SRT or RTMP.
-     */
-    val isOpen: Boolean
+/**
+ * Sets preview surface and start video preview.
+ *
+ * @param surface The [Surface] used for the source preview
+ * @throws [IllegalStateException] if the video source is not previewable
+ * @see [IVideoStreamer.stopPreview]
+ */
+suspend fun IVideoStreamer.startPreview(surface: Surface) {
+    (videoSourceFlow.value as? IPreviewableSource)?.startPreview(surface)
+        ?: throw IllegalStateException("Video source is not previewable")
+}
 
-    /**
-     * Closes the streamer.
-     */
-    fun close()
+/**
+ * Sets preview surface and start video preview.
+ *
+ * @param surfaceView The [SurfaceView] used for the source preview
+ * @throws [IllegalStateException] if the video source is not previewable
+ * @see [IVideoStreamer.stopPreview]
+ */
+@RequiresPermission(Manifest.permission.CAMERA)
+suspend fun IVideoStreamer.startPreview(surfaceView: SurfaceView) =
+    startPreview(surfaceView.holder.surface)
 
-    /**
-     * Returns true if stream is running.
-     */
-    val isStreaming: Boolean
+/**
+ * Sets preview surface and start video preview.
+ *
+ * @param surfaceHolder The [SurfaceHolder] used for camera preview
+ * @throws [IllegalStateException] if the video source is not previewable
+ * @see [IVideoStreamer.stopPreview]
+ */
+@RequiresPermission(Manifest.permission.CAMERA)
+suspend fun IVideoStreamer.startPreview(surfaceHolder: SurfaceHolder) =
+    startPreview(surfaceHolder.surface)
 
-    /**
-     * Starts audio/video stream asynchronously.
-     *
-     * You must call [open] before calling this method.
-     * The streamer must be opened before starting the stream. You can use [Listener.onIsOpenChanged].
-     *
-     * @see [stopStream]
-     */
-    fun startStream()
+/**
+ * Sets preview surface and start video preview.
+ *
+ * @param textureView The [TextureView] used for camera preview
+ * @throws [IllegalStateException] if the video source is not previewable
+ * @see [IVideoStreamer.stopPreview]
+ */
+@RequiresPermission(Manifest.permission.CAMERA)
+suspend fun IVideoStreamer.startPreview(textureView: TextureView) =
+    startPreview(Surface(textureView.surfaceTexture))
 
-    /**
-     * Starts audio/video stream asynchronously.
-     *
-     * Same as doing [open] and [startStream].
-     *
-     * @see [stopStream]
-     */
-    fun startStream(descriptor: MediaDescriptor)
-
-    /**
-     * Stops audio/video stream asynchronously.
-     *
-     * @see [startStream]
-     */
-    fun stopStream()
-
-    /**
-     * Clean and reset the streamer.
-     */
-    fun release()
-
-    /**
-     * Listener for the callback streamer.
-     */
-    interface Listener {
-        /**
-         * Called when the streamer is opened or closed.
-         */
-        fun onIsOpenChanged(isOpen: Boolean) = Unit
-
-        /**
-         * Called when the stream is started or stopped.
-         */
-        fun onIsStreamingChanged(isStarted: Boolean) = Unit
-
-        /**
-         * Called when an error occurs.
-         *
-         * @param throwable The throwable that occurred
-         */
-        fun onError(throwable: Throwable) = Unit
-    }
+/**
+ * Stops video preview.
+ */
+suspend fun IVideoStreamer.stopPreview() {
+    (videoSourceFlow.value as? IPreviewableSource)?.stopPreview()
 }

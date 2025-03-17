@@ -168,7 +168,7 @@ internal constructor(
         } catch (e: IllegalStateException) {
             Logger.d(tag, "Failed to reset")
         } finally {
-            configure()
+            configureSync()
         }
     }
 

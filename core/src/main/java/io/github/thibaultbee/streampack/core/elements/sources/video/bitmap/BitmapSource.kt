@@ -16,10 +16,12 @@
 package io.github.thibaultbee.streampack.core.elements.sources.video.bitmap
 
 import android.graphics.Bitmap
+import android.util.Size
 import android.view.Surface
 import androidx.core.graphics.scale
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
-import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.AbstractPreviewableSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,49 +35,97 @@ import java.util.concurrent.TimeUnit
  *
  * Only for testing purpose.
  */
-class BitmapSource : IVideoSourceInternal, ISurfaceSource, IBitmapSource {
-    override var outputSurface: Surface? = null
+class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSource(), IVideoSourceInternal,
+    ISurfaceSourceInternal,
+    IBitmapSource {
     override val timestampOffsetInNs = 0L
     override val infoProviderFlow = MutableStateFlow(DefaultSourceInfoProvider()).asStateFlow()
+
+    private var videoSourceConfig: VideoSourceConfig? = null
+
+    private var outputSurface: Surface? = null
+    private var previewSurface: Surface? = null
+
+    private val outputExecutor = Executors.newSingleThreadScheduledExecutor()
+    private var outputScheduler: Future<*>? = null
+
+    private val previewExecutor = Executors.newSingleThreadScheduledExecutor()
+    private var previewScheduler: Future<*>? = null
 
     private val _isStreamingFlow = MutableStateFlow(false)
     override val isStreamingFlow = _isStreamingFlow.asStateFlow()
 
-    private var videoSourceConfig: VideoSourceConfig? = null
+    private val _isPreviewingFlow = MutableStateFlow(false)
+    override val isPreviewingFlow = _isPreviewingFlow.asStateFlow()
 
     private var scaledBitmap: Bitmap? = null
-    private var originalBitmap: Bitmap? = null
-    override var bitmap: Bitmap
-        get() = originalBitmap
-            ?: throw IllegalStateException("Bitmap not set")
-        set(value) {
-            originalBitmap = value
-            videoSourceConfig?.let {
-                scaledBitmap =
-                    value.scale(it.resolution.width, it.resolution.height)
-            }
-        }
 
+    /**
+     * Gets the size of the bitmap.
+     */
+    override fun <T> getPreviewSize(targetSize: Size, targetClass: Class<T>): Size {
+        return Size(bitmap.width, bitmap.height)
+    }
 
-    private val executor = Executors.newSingleThreadScheduledExecutor()
-    private var scheduler: Future<*>? = null
+    override suspend fun hasPreview() = previewSurface != null
+
+    override suspend fun setPreview(surface: Surface) {
+        previewSurface = surface
+    }
+
+    override suspend fun startPreview() {
+        requireNotNull(previewSurface) { "Preview surface must be set before starting preview" }
+
+        _isPreviewingFlow.emit(true)
+        previewScheduler = previewExecutor.scheduleWithFixedDelay(
+            ::drawPreview,
+            0,
+            1000, // 1 frame per second. We don't need more for preview.
+            TimeUnit.MILLISECONDS
+        )
+    }
+
+    override suspend fun startPreview(previewSurface: Surface) {
+        setPreview(previewSurface)
+        startPreview()
+    }
+
+    override suspend fun stopPreview() {
+        previewScheduler?.cancel(true)
+        _isPreviewingFlow.emit(false)
+    }
+
+    override suspend fun resetPreviewImpl() {
+        stopPreview()
+        previewSurface = null
+    }
+
+    override suspend fun getOutput(): Surface? = outputSurface
+    override suspend fun setOutput(surface: Surface) {
+        outputSurface = surface
+    }
+
+    override suspend fun resetOutputImpl() {
+        stopStream()
+        outputSurface = null
+    }
 
     override fun configure(config: VideoSourceConfig) {
         videoSourceConfig = config
-        originalBitmap?.let {
-            scaledBitmap = it.scale(config.resolution.width, config.resolution.height)
-        }
+
+        scaledBitmap?.recycle()
+        scaledBitmap = bitmap.scale(config.resolution.width, config.resolution.height)
     }
 
     override suspend fun startStream() {
         val sourceConfig =
             requireNotNull(videoSourceConfig) { "Video source must be configured before starting stream" }
         requireNotNull(outputSurface) { "Output surface must be set before starting stream" }
-        requireNotNull(originalBitmap) { "Bitmap must be set before starting stream" }
+        requireNotNull(scaledBitmap) { "Bitmap must be set before starting stream" }
 
         _isStreamingFlow.emit(true)
-        scheduler = executor.scheduleWithFixedDelay(
-            ::drawBitmap,
+        outputScheduler = outputExecutor.scheduleWithFixedDelay(
+            ::drawOutput,
             0,
             1000 / sourceConfig.fps.toLong(),
             TimeUnit.MILLISECONDS
@@ -83,21 +133,31 @@ class BitmapSource : IVideoSourceInternal, ISurfaceSource, IBitmapSource {
     }
 
     override suspend fun stopStream() {
-        scheduler?.cancel(true)
+        outputScheduler?.cancel(true)
         _isStreamingFlow.emit(false)
     }
 
     override fun release() {
-        executor.shutdown()
+        scaledBitmap?.recycle()
+        outputExecutor.shutdown()
+        previewExecutor.shutdown()
     }
 
-    private fun drawBitmap() {
+    private fun drawOutput() {
         outputSurface?.let {
             scaledBitmap?.let { bitmap ->
                 val canvas = it.lockCanvas(null)
                 canvas.drawBitmap(bitmap, 0f, 0f, null)
                 it.unlockCanvasAndPost(canvas)
             }
+        }
+    }
+
+    private fun drawPreview() {
+        previewSurface?.let {
+            val canvas = it.lockCanvas(null)
+            canvas.drawBitmap(bitmap, 0f, 0f, null)
+            it.unlockCanvasAndPost(canvas)
         }
     }
 }

@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.elements.sources.video
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import java.nio.ByteBuffer
 
-interface IVideoFrameSource {
+interface IVideoFrameSourceInternal {
 
     /**
      * Gets a video frame from a source.

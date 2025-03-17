@@ -46,9 +46,9 @@ class SurfaceProcessor(
         }
     }
 
-    override fun createInputSurface(surfaceSize: Size, timestampOffsetInNs: Long): Surface? {
+    override fun createInputSurface(surfaceSize: Size, timestampOffsetInNs: Long): Surface {
         if (isReleaseRequested.get()) {
-            return null
+            throw IllegalStateException("SurfaceProcessor is released")
         }
 
         val future = submitSafely {
@@ -74,30 +74,6 @@ class SurfaceProcessor(
                     surfaceSize.width,
                     surfaceSize.height
                 )
-            } else {
-                Logger.w(TAG, "Surface not found")
-            }
-        }
-    }
-
-    override fun pauseInputSurface(surface: Surface) {
-        executeSafely {
-            val surfaceInput = surfaceInputs.find { it.surface == surface }
-            if (surfaceInput != null) {
-                val surfaceTexture = surfaceInput.surfaceTexture
-                surfaceTexture.setOnFrameAvailableListener(null, glHandler)
-            } else {
-                Logger.w(TAG, "Surface not found")
-            }
-        }
-    }
-
-    override fun resumeInputSurface(surface: Surface) {
-        executeSafely {
-            val surfaceInput = surfaceInputs.find { it.surface == surface }
-            if (surfaceInput != null) {
-                val surfaceTexture = surfaceInput.surfaceTexture
-                surfaceTexture.setOnFrameAvailableListener(this, glHandler)
             } else {
                 Logger.w(TAG, "Surface not found")
             }
@@ -163,6 +139,10 @@ class SurfaceProcessor(
     }
 
     override fun removeAllOutputSurfaces() {
+        if (isReleaseRequested.get()) {
+            return
+        }
+
         val surfaceOutputs = submitSafely {
             surfaceOutputs.toList()
         }.get()

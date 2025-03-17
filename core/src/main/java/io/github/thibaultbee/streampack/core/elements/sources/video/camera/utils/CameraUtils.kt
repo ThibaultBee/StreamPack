@@ -1,33 +1,37 @@
-package io.github.thibaultbee.streampack.core.elements.sources.video.camera
+package io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils
 
 import android.Manifest
-import android.content.Context
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
-import android.hardware.camera2.CaptureFailure
-import android.hardware.camera2.CaptureRequest
-import android.hardware.camera2.TotalCaptureResult
 import android.hardware.camera2.params.OutputConfiguration
 import android.os.Build
 import android.util.Range
 import android.view.Surface
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.dispatchers.ICameraDispatcher
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraException
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraFps
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.ICameraCaptureSessionCompat
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.resumeIfActive
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.resumeWithExceptionIfActive
 import io.github.thibaultbee.streampack.core.logger.Logger
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 internal object CameraUtils {
     private const val TAG = "CameraUtils"
 
     @RequiresPermission(Manifest.permission.CAMERA)
     internal suspend fun openCamera(
-        cameraDispatcher: ICameraDispatcher, manager: CameraManager, cameraId: String
+        sessionCompat: ICameraCaptureSessionCompat,
+        manager: CameraManager,
+        cameraId: String,
+        isClosedFlow: MutableStateFlow<Boolean>
     ): CameraDevice = suspendCancellableCoroutine { continuation ->
         val callbacks = object : CameraDevice.StateCallback() {
-            override fun onOpened(device: CameraDevice) = continuation.resume(device)
+            override fun onOpened(device: CameraDevice) = continuation.resumeIfActive(device)
 
             override fun onDisconnected(camera: CameraDevice) {
                 Logger.w(TAG, "Camera ${camera.id} has been disconnected")
@@ -37,7 +41,7 @@ internal object CameraUtils {
             override fun onError(camera: CameraDevice, error: Int) {
                 Logger.e(TAG, "Camera ${camera.id} is in error $error")
 
-                val exc = when (error) {
+                val exception = when (error) {
                     ERROR_CAMERA_IN_USE -> CameraException("Camera already in use")
                     ERROR_MAX_CAMERAS_IN_USE -> CameraException("Max cameras in use")
 
@@ -46,33 +50,45 @@ internal object CameraUtils {
                     ERROR_CAMERA_SERVICE -> CameraException("Camera service has crashed")
                     else -> CameraException("Unknown error")
                 }
-                continuation.resumeWithExceptionIfActive(exc)
+                continuation.resumeWithException(exception)
+            }
+
+            override fun onClosed(camera: CameraDevice) {
+                Logger.i(TAG, "Camera ${camera.id} has been closed")
+                isClosedFlow.tryEmit(true)
             }
         }
-        cameraDispatcher.openCamera(manager, cameraId, callbacks)
+        sessionCompat.openCamera(manager, cameraId, callbacks)
     }
 
     internal suspend fun createCaptureSession(
-        cameraDispatcher: ICameraDispatcher,
+        sessionCompat: ICameraCaptureSessionCompat,
         camera: CameraDevice,
-        targets: List<Surface>,
+        outputs: List<Surface>,
         dynamicRange: Long,
+        isClosedFlow: MutableStateFlow<Boolean>
     ): CameraCaptureSession = suspendCancellableCoroutine { continuation ->
+        continuation.invokeOnCancellation {
+            camera.close()
+        }
+
         val callbacks = object : CameraCaptureSession.StateCallback() {
-            override fun onConfigured(session: CameraCaptureSession) = continuation.resume(session)
+            override fun onConfigured(session: CameraCaptureSession) =
+                continuation.resume(session)
 
             override fun onConfigureFailed(session: CameraCaptureSession) {
                 Logger.e(TAG, "Camera session configuration failed")
-                continuation.resumeWithExceptionIfActive(CameraException("Camera: failed to configure the capture session"))
+                continuation.resumeWithExceptionIfActive(CameraException("Camera: failed to configure the capture session for camera ${camera.id} and outputs $outputs"))
             }
 
             override fun onClosed(session: CameraCaptureSession) {
                 Logger.e(TAG, "Camera capture session closed")
+                isClosedFlow.tryEmit(true)
             }
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val outputConfigurations = targets.map {
+            val outputConfigurations = outputs.map {
                 OutputConfiguration(it).apply {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         dynamicRangeProfile = dynamicRange
@@ -80,58 +96,22 @@ internal object CameraUtils {
                 }
             }
 
-            cameraDispatcher.createCaptureSessionByOutputConfiguration(
+            sessionCompat.createCaptureSessionByOutputConfiguration(
                 camera, outputConfigurations, callbacks
             )
         } else {
-            cameraDispatcher.createCaptureSession(
-                camera, targets, callbacks
+            sessionCompat.createCaptureSession(
+                camera, outputs, callbacks
             )
         }
     }
 
-    internal suspend fun createRequestSession(
-        cameraDispatcher: ICameraDispatcher,
-        context: Context,
-        camera: CameraDevice,
-        captureSession: CameraCaptureSession,
-        fpsRange: Range<Int>,
-        surfaces: List<Surface>
-    ): CaptureRequest.Builder = suspendCancellableCoroutine { continuation ->
-        val callbacks = object : CameraCaptureSession.CaptureCallback() {
-            override fun onCaptureCompleted(
-                session: CameraCaptureSession,
-                request: CaptureRequest,
-                result: TotalCaptureResult
-            ) {
-
-            }
-
-            override fun onCaptureFailed(
-                session: CameraCaptureSession,
-                request: CaptureRequest,
-                failure: CaptureFailure
-            ) {
-                continuation.resumeWithExceptionIfActive(RuntimeException("capture failed"))
-            }
-        }
-        camera.createCaptureRequest(CameraDevice.TEMPLATE_RECORD).apply {
-            surfaces.forEach { addTarget(it) }
-            set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
-            if (context.getAutoFocusModes(camera.id)
-                    .contains(CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO)
-            ) {
-                set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO)
-            }
-            cameraDispatcher.setRepeatingSingleRequest(
-                captureSession, build(), callbacks
-            )
-            continuation.resume(this)
-        }
-    }
-
-    internal fun getClosestFpsRange(context: Context, cameraId: String, fps: Int): Range<Int> {
-        var fpsRangeList = context.getCameraFps(cameraId)
+    internal fun getClosestFpsRange(
+        cameraManager: CameraManager,
+        cameraId: String,
+        fps: Int
+    ): Range<Int> {
+        var fpsRangeList = cameraManager.getCameraFps(cameraId)
         Logger.i(TAG, "Supported FPS range list: $fpsRangeList")
 
         // Get range that contains FPS

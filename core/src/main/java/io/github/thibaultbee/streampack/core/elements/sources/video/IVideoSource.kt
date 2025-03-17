@@ -21,6 +21,16 @@ import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamab
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * Interface for video sources.
+ *
+ * A class implementing this interface must also implement [IVideoSourceInternal].
+ */
+interface IVideoSource
+
+/**
+ * Internal interface for video sources.
+ */
 interface IVideoSourceInternal : IVideoSource,
     SuspendStreamable, Configurable<VideoSourceConfig>, Releasable {
     /**
@@ -35,4 +45,3 @@ interface IVideoSourceInternal : IVideoSource,
     val isStreamingFlow: StateFlow<Boolean>
 }
 
-interface IVideoSource

@@ -15,13 +15,11 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera
 
-import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoPreviewableSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 
-interface ICameraSourceInternal : IVideoSourceInternal
-
-interface ICameraSource : IVideoSource, IVideoPreviewableSource {
+interface ICameraSource : IVideoSource, IPreviewableSource {
     /**
      * Get/Set current camera id.
      */
@@ -31,11 +29,6 @@ interface ICameraSource : IVideoSource, IVideoPreviewableSource {
      * The camera settings (auto-exposure, auto-focus, etc.).
      */
     val settings: CameraSettings
-
-    /**
-     * Set camera id.
-     *
-     * @param cameraId The camera id to use
-     */
-    suspend fun setCameraId(cameraId: String)
 }
+
+interface ICameraSourceInternal : IVideoSourceInternal

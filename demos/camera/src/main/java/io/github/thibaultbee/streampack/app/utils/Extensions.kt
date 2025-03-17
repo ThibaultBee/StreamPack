@@ -26,28 +26,40 @@ import androidx.annotation.RequiresPermission
 import androidx.datastore.preferences.preferencesDataStore
 import io.github.thibaultbee.streampack.app.ApplicationConstants.userPrefName
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.backCameras
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.cameras
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.frontCameras
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.isBackCamera
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.backCameras
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameras
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.frontCameras
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isBackCamera
+import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
 
 @RequiresPermission(Manifest.permission.CAMERA)
-suspend fun ICameraSource.toggleCamera(context: Context) {
+suspend fun IVideoStreamer.toggleCamera(context: Context) {
     val cameras = context.cameras
+    val videoSource = videoSourceFlow.value
 
-    val currentCameraIndex = cameras.indexOf(cameraId)
-    val cameraIndex = (currentCameraIndex + 1) % cameras.size
+    val newCameraId = if (videoSource is ICameraSource) {
+        val currentCameraIndex = cameras.indexOf(videoSource.cameraId)
+        (currentCameraIndex + 1) % cameras.size
+    } else {
+        0
+    }
 
-    setCameraId(cameras[cameraIndex])
+    setCameraId(cameras[newCameraId])
 }
 
 @RequiresPermission(Manifest.permission.CAMERA)
-suspend fun ICameraSource.switchBackToFront(context: Context) {
-    val cameras = if (context.isBackCamera(cameraId)) {
-        context.frontCameras
+suspend fun IVideoStreamer.switchBackToFront(context: Context) {
+    val videoSource = videoSourceFlow.value
+    val cameras = if (videoSource is ICameraSource) {
+        if (context.isBackCamera(videoSource.cameraId)) {
+            context.frontCameras
+        } else {
+            context.backCameras
+        }
     } else {
-        context.backCameras
+        context.frontCameras
     }
+
     if (cameras.isNotEmpty()) {
         setCameraId(cameras[0])
     } else {

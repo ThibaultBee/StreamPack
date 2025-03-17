@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.elements.sources.audio
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import java.nio.ByteBuffer
 
-interface IAudioFrameSource {
+interface IAudioFrameSourceInternal {
 
     /**
      * Gets an audio frame from the source.

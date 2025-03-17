@@ -20,16 +20,17 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceP
 import io.github.thibaultbee.streampack.core.elements.processing.video.SurfaceProcessor
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.AbstractSurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
-import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
+import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,8 +48,8 @@ internal class VideoInput(
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
     private val coroutineScope = CoroutineScope(coroutineDispatcher)
-    private var isStreamingJob: Job? = null
-    private var infoProviderJob: Job? = null
+    private var isStreamingJob = ConflatedJob()
+    private var infoProviderJob = ConflatedJob()
 
     private val mutex = Mutex()
 
@@ -107,56 +108,46 @@ internal class VideoInput(
                 // Prepare new video source
                 val previousVideoSource = videoSourceInternalFlow.value
                 val isStreaming = previousVideoSource?.isStreamingFlow?.value ?: false
-                videoSourceConfig?.let { newVideoSource.configure(it) } ?: Logger.w(
-                    TAG, "Video source configuration is not set"
-                )
-                videoSourceConfig?.let { config ->
+                videoSourceConfig?.let {
+                    newVideoSource.configure(it)
                     addSourceSurface(
-                        config,
+                        it,
                         surfaceProcessor,
                         newVideoSource
                     )
-                } ?: Logger.w(TAG, "Video source config is not set")
+                } ?: Logger.w(
+                    TAG, "Video source configuration is not set"
+                )
 
-                if (previousVideoSource is ISurfaceSource) {
-                    previousVideoSource.outputSurface?.let { surfaceProcessor.pauseInputSurface(it) }
-                }
-
-                infoProviderJob?.cancel()
-                infoProviderJob = coroutineScope.launch {
+                infoProviderJob += coroutineScope.launch {
                     newVideoSource.infoProviderFlow.collect {
                         _infoProviderFlow.value = it
                     }
                 }
+
+                // Start new video source
                 if (isStreaming) {
+                    try {
+                        previousVideoSource?.stopStream()
+                    } catch (t: Throwable) {
+                        Logger.w(
+                            TAG,
+                            "setVideoSource: Can't stop previous video source: ${t.message}"
+                        )
+                    }
+
                     try {
                         newVideoSource.startStream()
                     } catch (t: Throwable) {
                         Logger.w(
                             TAG,
-                            "setVideoSource: Can't start new video source: ${t.message}. Fallback to previous."
+                            "setVideoSource: Can't start new video source: ${t.message}."
                         )
-                        if (previousVideoSource != null) {
-                            infoProviderJob?.cancel()
-                            infoProviderJob = coroutineScope.launch {
-                                previousVideoSource.infoProviderFlow.collect {
-                                    _infoProviderFlow.value = it
-                                }
-                            }
-                            if (previousVideoSource is ISurfaceSource) {
-                                previousVideoSource.outputSurface?.let {
-                                    surfaceProcessor.resumeInputSurface(
-                                        it
-                                    )
-                                }
-                            }
-                        }
                         throw t
                     }
                 }
 
-                isStreamingJob?.cancel()
-                isStreamingJob = coroutineScope.launch {
+                isStreamingJob += coroutineScope.launch {
                     newVideoSource.isStreamingFlow.collect { isStreaming ->
                         if ((!isStreaming) && isStreamingFlow.value) {
                             Logger.i(TAG, "Video source has been stopped.")
@@ -165,16 +156,33 @@ internal class VideoInput(
                     }
                 }
 
+                // Gets and resets output surface from previous video source.
+                if (previousVideoSource is ISurfaceSourceInternal) {
+                    val surface = previousVideoSource.getOutput()
+                    previousVideoSource.resetOutput()
+                    surface?.let { surfaceProcessor.removeInputSurface(surface) }
+                }
+
+                val isPreviewing =
+                    (previousVideoSource as? IPreviewableSource)?.isPreviewingFlow?.value
+                        ?: false
+                /**
+                 * Release previous video source only if it's not previewing.
+                 * If it's previewing, it will be released when preview is stopped.
+                 */
+                if (!isPreviewing) {
+                    try {
+                        previousVideoSource?.release()
+                    } catch (t: Throwable) {
+                        Logger.w(
+                            TAG,
+                            "setVideoSource: Can't release previous video source: ${t.message}"
+                        )
+                    }
+                }
+
                 // Replace video source
                 videoSourceInternalFlow.emit(newVideoSource)
-
-                // Stop previous video source
-                previousVideoSource?.stopStream()
-                if (previousVideoSource is ISurfaceSource) {
-                    previousVideoSource.outputSurface?.let { surfaceProcessor.removeInputSurface(it) }
-                    previousVideoSource.outputSurface = null
-                }
-                previousVideoSource?.release()
             }
         }
 
@@ -205,7 +213,7 @@ internal class VideoInput(
         val videoSourceInternal = videoSourceInternalFlow.value
         videoSourceInternal?.configure(videoConfig)
         val outputSurface =
-            if (videoSourceInternal is ISurfaceSource) videoSourceInternal.outputSurface else null
+            if (videoSourceInternal is ISurfaceSourceInternal) videoSourceInternal.getOutput() else null
 
         val currentSurfaceProcessor = surfaceProcessor
         if (previousVideoConfig?.dynamicRangeProfile != videoConfig.dynamicRangeProfile) {
@@ -221,17 +229,19 @@ internal class VideoInput(
         }
     }
 
-    private fun addSourceSurface(
+    private suspend fun addSourceSurface(
         videoSourceConfig: VideoSourceConfig,
         surfaceProcessor: ISurfaceProcessorInternal,
         videoSource: IVideoSourceInternal? = videoSourceInternalFlow.value,
     ) {
         // Adds surface processor input
-        if (videoSource is ISurfaceSource) {
-            videoSource.outputSurface = surfaceProcessor.createInputSurface(
-                videoSource.infoProviderFlow.value.getSurfaceSize(
-                    videoSourceConfig.resolution
-                ), videoSource.timestampOffsetInNs
+        if (videoSource is ISurfaceSourceInternal) {
+            videoSource.setOutput(
+                surfaceProcessor.createInputSurface(
+                    videoSource.infoProviderFlow.value.getSurfaceSize(
+                        videoSourceConfig.resolution
+                    ), videoSource.timestampOffsetInNs
+                )
             )
         } else {
             Logger.w(TAG, "Video source is not a surface source")
@@ -297,8 +307,8 @@ internal class VideoInput(
 
     private suspend fun releaseSurfaceProcessor() {
         val videoSource = videoSourceInternalFlow.value
-        if (videoSource is ISurfaceSource) {
-            videoSource.outputSurface?.let {
+        if (videoSource is ISurfaceSourceInternal) {
+            videoSource.getOutput()?.let {
                 surfaceProcessor.removeInputSurface(it)
             }
         }
@@ -319,9 +329,9 @@ internal class VideoInput(
                 Logger.w(TAG, "release: Can't release surface processor: ${t.message}")
             }
             val videoSource = videoSourceInternalFlow.value
-            if (videoSource is ISurfaceSource) {
+            if (videoSource is ISurfaceSourceInternal) {
                 try {
-                    videoSource.outputSurface = null
+                    videoSource.resetOutput()
                 } catch (t: Throwable) {
                     Logger.w(
                         TAG,

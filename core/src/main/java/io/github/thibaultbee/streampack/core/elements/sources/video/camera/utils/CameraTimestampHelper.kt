@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.elements.sources.video.camera
+package io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils
 
-import android.content.Context
 import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CameraMetadata
 import android.os.SystemClock
 
 
-object CameraHelper {
+internal object CameraTimestampHelper {
     // Number of attempts for calculating the offset between the camera's clock and MONOTONIC clock.
     private const val CLOCK_OFFSET_CALIBRATION_ATTEMPTS = 3
 
@@ -31,8 +31,11 @@ object CameraHelper {
     // source is aligned to CLOCK_MONOTONIC. This is useful when the camera is being used
     // synchronously with other sensors that yield timestamps in the MONOTONIC timebase, such as
     // AudioRecord for audio data. The offset is returned in milliseconds.
-    fun getTimeOffsetInNsToMonoClock(context: Context, cameraId: String): Long {
-        return if (context.getCameraCharacteristics(cameraId)
+    internal fun getTimeOffsetInNsToMonoClock(
+        cameraManager: CameraManager,
+        cameraId: String
+    ): Long {
+        return if (cameraManager.getCameraCharacteristics(cameraId)
                 .get(CameraCharacteristics.SENSOR_INFO_TIMESTAMP_SOURCE) == CameraMetadata.SENSOR_INFO_TIMESTAMP_SOURCE_REALTIME
         ) {
             // This clock shares the same timebase as SystemClock.elapsedRealtimeNanos(), see

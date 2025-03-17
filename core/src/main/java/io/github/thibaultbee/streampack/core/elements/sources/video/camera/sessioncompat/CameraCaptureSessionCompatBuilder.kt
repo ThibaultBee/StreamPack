@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.elements.sources.video.camera.dispatchers
+package io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat
 
 import android.os.Build
 
 
-class CameraDispatchers {
+class CameraCaptureSessionCompatBuilder {
     companion object {
         /**
-         * Get the appropriate [ICameraDispatcher] for the device.
+         * Get the appropriate [ICameraCaptureSessionCompat] for the device.
          *
-         * @return [ICameraDispatcher]
+         * @return [ICameraCaptureSessionCompat]
          */
-        fun build(): ICameraDispatcher {
+        internal fun build(): ICameraCaptureSessionCompat {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                CameraExecutorDispatcher()
+                CameraExecutorCaptureSessionCompat()
             } else {
-                CameraHandlerDispatcher()
+                CameraHandlerCaptureSessionCompat()
             }
         }
     }

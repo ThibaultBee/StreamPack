@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.elements.sources.video.camera
+package io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions
 
 import android.content.Context
 import android.graphics.ImageFormat
@@ -28,17 +28,6 @@ import android.util.Size
 import androidx.annotation.RequiresApi
 
 /**
- * Gets camera characteristics.
- *
- * @param cameraId camera id
- * @return camera characteristics
- */
-fun Context.getCameraCharacteristics(cameraId: String): CameraCharacteristics {
-    val cameraManager = this.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-    return cameraManager.getCameraCharacteristics(cameraId)
-}
-
-/**
  * Gets default camera id.
  *
  * If a back camera is available, returns the first back camera id.
@@ -46,7 +35,7 @@ fun Context.getCameraCharacteristics(cameraId: String): CameraCharacteristics {
  *
  * @return default camera id
  */
-val Context.defaultCameraId: String
+val CameraManager.defaultCameraId: String
     get() {
         val cameraList = this.cameras
         if (cameraList.isEmpty()) {
@@ -65,11 +54,8 @@ val Context.defaultCameraId: String
  *
  * @return List of camera ids
  */
-val Context.cameras: List<String>
-    get() {
-        val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        return cameraManager.cameraIdList.toList()
-    }
+val CameraManager.cameras: List<String>
+    get() = cameraIdList.toList()
 
 
 /**
@@ -77,7 +63,7 @@ val Context.cameras: List<String>
  *
  * @return List of back camera ids
  */
-val Context.backCameras: List<String>
+val CameraManager.backCameras: List<String>
     get() = cameras.filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_BACK }
 
 /**
@@ -85,7 +71,7 @@ val Context.backCameras: List<String>
  *
  * @return List of front camera ids
  */
-val Context.frontCameras: List<String>
+val CameraManager.frontCameras: List<String>
     get() = cameras.filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_FRONT }
 
 /**
@@ -93,7 +79,7 @@ val Context.frontCameras: List<String>
  *
  * @return List of front camera ids
  */
-val Context.externalCameras: List<String>
+val CameraManager.externalCameras: List<String>
     get() =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             cameras.filter { getFacingDirection(it) == CameraCharacteristics.LENS_FACING_EXTERNAL }
@@ -106,7 +92,7 @@ val Context.externalCameras: List<String>
  *
  * @return true if string is a back camera id, otherwise false
  */
-fun Context.isBackCamera(cameraId: String) =
+fun CameraManager.isBackCamera(cameraId: String) =
     getFacingDirection(cameraId) == CameraCharacteristics.LENS_FACING_BACK
 
 /**
@@ -114,7 +100,7 @@ fun Context.isBackCamera(cameraId: String) =
  *
  * @return true if string is a front camera id, otherwise false
  */
-fun Context.isFrontCamera(cameraId: String) =
+fun CameraManager.isFrontCamera(cameraId: String) =
     getFacingDirection(cameraId) == CameraCharacteristics.LENS_FACING_FRONT
 
 /**
@@ -122,7 +108,7 @@ fun Context.isFrontCamera(cameraId: String) =
  *
  * @return true if string is a external camera id, otherwise false
  */
-fun Context.isExternalCamera(cameraId: String) =
+fun CameraManager.isExternalCamera(cameraId: String) =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         getFacingDirection(cameraId) == CameraCharacteristics.LENS_FACING_EXTERNAL
     } else {
@@ -135,7 +121,7 @@ fun Context.isExternalCamera(cameraId: String) =
  * @param cameraId camera id
  * @return camera facing direction, either [CameraCharacteristics.LENS_FACING_BACK], [CameraCharacteristics.LENS_FACING_FRONT] or [CameraCharacteristics.LENS_FACING_EXTERNAL]
  */
-fun Context.getFacingDirection(cameraId: String) =
+fun CameraManager.getFacingDirection(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.LENS_FACING)
 
 /**
@@ -146,7 +132,7 @@ fun Context.getFacingDirection(cameraId: String) =
  * @param cameraId camera id
  * @return List of resolutions supported by a camera for the [klass]
  */
-fun <T : Any> Context.getCameraOutputSizes(klass: Class<T>, cameraId: String): List<Size> {
+fun <T : Any> CameraManager.getCameraOutputSizes(klass: Class<T>, cameraId: String): List<Size> {
     return getCameraCharacteristics(cameraId)[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]?.getOutputSizes(
         klass
     )?.toList() ?: emptyList()
@@ -159,7 +145,7 @@ fun <T : Any> Context.getCameraOutputSizes(klass: Class<T>, cameraId: String): L
  * @param fps frame rate
  * @return [Boolean.true] if camera supports fps, [Boolean.false] otherwise.
  */
-fun Context.isFrameRateSupported(cameraId: String, fps: Int) =
+fun CameraManager.isFrameRateSupported(cameraId: String, fps: Int) =
     getCameraFps(cameraId).any { it.contains(fps) }
 
 /**
@@ -168,7 +154,7 @@ fun Context.isFrameRateSupported(cameraId: String, fps: Int) =
  * @param cameraId camera id
  * @return [Boolean.true] if camera has a flash device, [Boolean.false] otherwise.
  */
-fun Context.isFlashAvailable(cameraId: String) =
+fun CameraManager.isFlashAvailable(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.FLASH_INFO_AVAILABLE)
         ?: false
 
@@ -178,7 +164,7 @@ fun Context.isFlashAvailable(cameraId: String) =
  * @param cameraId camera id
  * @return list of supported white balance modes.
  */
-fun Context.getAutoWhiteBalanceModes(cameraId: String) =
+fun CameraManager.getAutoWhiteBalanceModes(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES)
         ?.toList() ?: emptyList()
 
@@ -188,7 +174,7 @@ fun Context.getAutoWhiteBalanceModes(cameraId: String) =
  * @param cameraId camera id
  * @return the iso range
  */
-fun Context.getSensitivityRange(cameraId: String) =
+fun CameraManager.getSensitivityRange(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE)
 
 /**
@@ -197,7 +183,7 @@ fun Context.getSensitivityRange(cameraId: String) =
  * @param cameraId camera id
  * @return true if camera supports metering regions, false otherwise
  */
-fun Context.getWhiteBalanceMeteringRegionsSupported(cameraId: String) =
+fun CameraManager.getWhiteBalanceMeteringRegionsSupported(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_MAX_REGIONS_AWB)
 
 /**
@@ -206,7 +192,7 @@ fun Context.getWhiteBalanceMeteringRegionsSupported(cameraId: String) =
  * @param cameraId camera id
  * @return list of supported auto focus modes
  */
-fun Context.getAutoExposureModes(cameraId: String) =
+fun CameraManager.getAutoExposureModes(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_AVAILABLE_MODES)
         ?.toList() ?: emptyList()
 
@@ -216,7 +202,7 @@ fun Context.getAutoExposureModes(cameraId: String) =
  * @param cameraId camera id
  * @return exposure range.
  */
-fun Context.getExposureRange(cameraId: String) =
+fun CameraManager.getExposureRange(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE)
 
 /**
@@ -229,7 +215,7 @@ fun Context.getExposureRange(cameraId: String) =
  * @param cameraId camera id
  * @return exposure range.
  */
-fun Context.getExposureStep(cameraId: String) =
+fun CameraManager.getExposureStep(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP)
 
 /**
@@ -238,7 +224,7 @@ fun Context.getExposureStep(cameraId: String) =
  * @param cameraId camera id
  * @return true if camera supports metering regions, false otherwise
  */
-fun Context.getExposureMaxMeteringRegionsSupported(cameraId: String) =
+fun CameraManager.getExposureMaxMeteringRegionsSupported(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_MAX_REGIONS_AE)
 
 /**
@@ -248,7 +234,7 @@ fun Context.getExposureMaxMeteringRegionsSupported(cameraId: String) =
  * @return zoom ratio range.
  */
 @RequiresApi(Build.VERSION_CODES.R)
-fun Context.getZoomRatioRange(cameraId: String): Range<Float>? {
+fun CameraManager.getZoomRatioRange(cameraId: String): Range<Float>? {
     return getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE)
 }
 
@@ -258,7 +244,7 @@ fun Context.getZoomRatioRange(cameraId: String): Range<Float>? {
  * @param cameraId camera id
  * @return max scaler zoom.
  */
-fun Context.getScalerMaxZoom(cameraId: String): Float {
+fun CameraManager.getScalerMaxZoom(cameraId: String): Float {
     return getCameraCharacteristics(cameraId).get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM)
         ?: 1.0f
 }
@@ -269,7 +255,7 @@ fun Context.getScalerMaxZoom(cameraId: String): Float {
  * @param cameraId camera id
  * @return list of supported auto focus modes
  */
-fun Context.getAutoFocusModes(cameraId: String) =
+fun CameraManager.getAutoFocusModes(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES)
         ?.toList() ?: emptyList()
 
@@ -279,7 +265,7 @@ fun Context.getAutoFocusModes(cameraId: String) =
  * @param cameraId camera id
  * @return lens distance range
  */
-fun Context.getLensDistanceRange(cameraId: String) =
+fun CameraManager.getLensDistanceRange(cameraId: String) =
     Range(
         0f,
         getCameraCharacteristics(cameraId).get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE)
@@ -292,7 +278,7 @@ fun Context.getLensDistanceRange(cameraId: String) =
  * @param cameraId camera id
  * @return true if camera supports metering regions, false otherwise
  */
-fun Context.getFocusMaxMeteringRegionsSupported(cameraId: String) =
+fun CameraManager.getFocusMaxMeteringRegionsSupported(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF)
 
 /**
@@ -301,7 +287,7 @@ fun Context.getFocusMaxMeteringRegionsSupported(cameraId: String) =
  * @param cameraId camera id
  * @return [Boolean.true] if camera supports optical stabilization, [Boolean.false] otherwise.
  */
-fun Context.isOpticalStabilizationAvailable(cameraId: String) =
+fun CameraManager.isOpticalStabilizationAvailable(cameraId: String) =
     getCameraCharacteristics(cameraId).get(CameraCharacteristics.LENS_INFO_AVAILABLE_OPTICAL_STABILIZATION)
         ?.contains(
             CaptureResult.LENS_OPTICAL_STABILIZATION_MODE_ON
@@ -313,7 +299,7 @@ fun Context.isOpticalStabilizationAvailable(cameraId: String) =
  *
  * @return List of resolutions supported by all camera
  */
-fun Context.getCameraOutputStreamSizes(): List<Size> {
+fun CameraManager.getCameraOutputStreamSizes(): List<Size> {
     val cameraIdList = cameras
     val resolutionSet = mutableSetOf<Size>()
     cameraIdList.forEach { cameraId ->
@@ -329,7 +315,7 @@ fun Context.getCameraOutputStreamSizes(): List<Size> {
  * @return List of resolutions supported by a camera
  * @see [Context.getCameraOutputStreamSizes]
  */
-fun Context.getCameraOutputStreamSizes(
+fun CameraManager.getCameraOutputStreamSizes(
     cameraId: String,
     imageFormat: Int = ImageFormat.YUV_420_888
 ): List<Size> {
@@ -344,7 +330,7 @@ fun Context.getCameraOutputStreamSizes(
  * @param cameraId camera id
  * @return List of fps supported by a camera
  */
-fun Context.getCameraFps(cameraId: String): List<Range<Int>> {
+fun CameraManager.getCameraFps(cameraId: String): List<Range<Int>> {
     return this.getCameraCharacteristics(cameraId)[CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES]?.toList()
         ?: emptyList()
 }
@@ -355,7 +341,7 @@ fun Context.getCameraFps(cameraId: String): List<Range<Int>> {
  * @param cameraId camera id
  * @return true if the camera supports the capability, false otherwise
  */
-private fun Context.isCapabilitiesSupported(cameraId: String, capability: Int): Boolean {
+private fun CameraManager.isCapabilitiesSupported(cameraId: String, capability: Int): Boolean {
     val availableCapabilities = this.getCameraCharacteristics(cameraId)
         .get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)
     return availableCapabilities?.contains(capability) ?: false
@@ -367,7 +353,7 @@ private fun Context.isCapabilitiesSupported(cameraId: String, capability: Int): 
  * @param cameraId camera id
  * @return true if the camera supports 10-bit dynamic range output, false otherwise
  */
-fun Context.is10BitProfileSupported(cameraId: String): Boolean {
+fun CameraManager.is10BitProfileSupported(cameraId: String): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         isCapabilitiesSupported(
             cameraId,
@@ -384,7 +370,7 @@ fun Context.is10BitProfileSupported(cameraId: String): Boolean {
  * @param cameraId camera id
  * @return List of 10-bit dynamic range output profiles
  */
-fun Context.get10BitSupportedProfiles(cameraId: String): Set<Long> {
+fun CameraManager.get10BitSupportedProfiles(cameraId: String): Set<Long> {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         this.getCameraCharacteristics(cameraId)
             .get(CameraCharacteristics.REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES)?.supportedProfiles

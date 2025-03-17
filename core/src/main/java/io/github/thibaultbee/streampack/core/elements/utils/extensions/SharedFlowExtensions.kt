@@ -22,8 +22,11 @@ import kotlinx.coroutines.flow.runningFold
 
 data class History<T>(val previous: T?, val current: T)
 
-fun <T> SharedFlow<T>.runningHistory(): Flow<History<T>> =
+fun <T> SharedFlow<T>.runningHistoryNotNull(): Flow<History<T>> =
+    runningHistory().filterNotNull()
+
+fun <T> SharedFlow<T>.runningHistory(): Flow<History<T>?> =
     runningFold(
         initial = null as (History<T>?),
         operation = { accumulator, new -> History(accumulator?.current, new) }
-    ).filterNotNull()
+    )

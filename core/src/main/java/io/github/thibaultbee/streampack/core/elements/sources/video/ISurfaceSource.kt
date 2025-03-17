@@ -17,15 +17,38 @@ package io.github.thibaultbee.streampack.core.elements.sources.video
 
 import android.view.Surface
 
-interface ISurfaceSource {
+/**
+ * Interface for video source that provides a [Surface] for video stream.
+ */
+interface ISurfaceSourceInternal {
     /**
-     * The offset between source capture time and MONOTONIC clock in nanoseconds. It is used to synchronize video
-     * with audio. It is only useful for camera source.
+     * The offset between source capture time and MONOTONIC clock in nanoseconds. It is used to
+     * synchronize video with audio. It is only useful for camera source.
      */
     val timestampOffsetInNs: Long
 
     /**
-     * Set surface where capture source will render its frame.
+     * Gets the output surface for the video stream.
+     *
+     * @return The [Surface] used for video capture
      */
-    var outputSurface: Surface?
+    suspend fun getOutput(): Surface?
+
+    /**
+     * Sets the output surface for the video stream.
+     *
+     * It is called by the [ISurfaceSourceInternal] user.
+     *
+     * @param surface The [Surface] used for video capture
+     */
+    suspend fun setOutput(surface: Surface)
+
+    /**
+     * Resets the output surface for the video stream.
+     *
+     * When the output is reset, the [ISurfaceSourceInternal] should stop sending frames to the surface set
+     * by [setOutput]. The implementation must forget the previous surface.
+     * [getOutput] should return null until a new surface is set.
+     */
+    suspend fun resetOutput()
 }

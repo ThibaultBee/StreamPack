@@ -4,8 +4,8 @@ import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
-import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoFrameSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoFrameSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,11 +14,20 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.nio.ByteBuffer
 
 class StubVideoSurfaceSource(override val timestampOffsetInNs: Long = 0) : StubVideoSource(),
-    ISurfaceSource {
-    override var outputSurface: Surface? = null
+    ISurfaceSourceInternal {
+    private var outputSurface: Surface? = null
+    override suspend fun getOutput() = outputSurface
+
+    override suspend fun setOutput(surface: Surface) {
+        outputSurface = surface
+    }
+
+    override suspend fun resetOutput() {
+        outputSurface = null
+    }
 }
 
-class StubVideoFrameSource : StubVideoSource(), IVideoFrameSource {
+class StubVideoFrameSource : StubVideoSource(), IVideoFrameSourceInternal {
     override fun getVideoFrame(buffer: ByteBuffer): RawFrame {
         return RawFrame(
             buffer,

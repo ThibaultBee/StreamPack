@@ -20,7 +20,7 @@ import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.interfaces.Streamable
 import kotlinx.coroutines.flow.StateFlow
 
-interface IAudioSourceInternal : IAudioSource, IAudioFrameSource, Streamable,
+interface IAudioSourceInternal : IAudioSource, IAudioFrameSourceInternal, Streamable,
     Configurable<AudioSourceConfig>, Releasable {
     /**
      * Flow of the last streaming state.

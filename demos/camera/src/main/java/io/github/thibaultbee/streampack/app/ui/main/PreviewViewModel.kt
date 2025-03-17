@@ -50,8 +50,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.Bitma
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.isFrameRateSupported
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFrameRateSupported
 import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.streamers.lifecycle.StreamerViewModelLifeCycleObserver
@@ -88,13 +87,13 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     private val cameraSettings: CameraSettings?
         get() {
             val videoSource = (streamer as? IVideoStreamer)?.videoSourceFlow?.value
-            return (videoSource as? CameraSource)?.settings
+            return (videoSource as? ICameraSource)?.settings
         }
 
     val requiredPermissions: List<String>
         get() {
             val permissions = mutableListOf<String>()
-            if (streamer is ICameraStreamer) {
+            if (streamer.videoSourceFlow is ICameraSource) {
                 permissions.add(Manifest.permission.CAMERA)
             }
             if (streamer.audioSourceFlow.value is AudioRecordSource) {
@@ -123,9 +122,9 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
 
     init {
         viewModelScope.launch {
-            // Set video source and audio source
-            streamer.setVideoSource(CameraSource(application))
+            // Set audio source and video source
             streamer.setAudioSource(MicrophoneSource.buildDefaultMicrophoneSource())
+            streamer.setVideoSource(CameraSource(application))
         }
         viewModelScope.launch {
             streamer.videoSourceFlow.collect {
@@ -271,7 +270,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         val videoSource = streamer.videoSourceFlow.value
         if (videoSource is ICameraSource) {
             viewModelScope.launch {
-                videoSource.switchBackToFront(application)
+                streamer.switchBackToFront(application)
                 notifySourceChanged()
             }
         }
@@ -288,31 +287,31 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         val videoSource = streamer.videoSourceFlow.value
         if (videoSource is ICameraSource) {
             viewModelScope.launch {
-                videoSource.toggleCamera(application)
+                streamer.toggleCamera(application)
                 notifySourceChanged()
             }
         }
     }
 
+    @RequiresPermission(Manifest.permission.CAMERA)
     fun toggleVideoSource() {
         val videoSource = streamer.videoSourceFlow.value
-        val nextSource = when (videoSource) {
-            is CameraSource -> {
-                BitmapSource().apply {
-                    bitmap = testBitmap
+        viewModelScope.launch {
+            val nextSource = when (videoSource) {
+                is CameraSource -> {
+                    BitmapSource(testBitmap)
+                }
+
+                is BitmapSource -> {
+                    CameraSource(application)
+                }
+
+                else -> {
+                    Log.i(TAG, "Unknown video source. Fallback to camera sources")
+                    CameraSource(application)
                 }
             }
-
-            is BitmapSource -> {
-                CameraSource(application)
-            }
-
-            else -> {
-                Log.i(TAG, "Unknown video source. Fallback to camera sources")
-                CameraSource(application)
-            }
-        }
-        viewModelScope.launch {
+            Log.i(TAG, "Switch video source to $nextSource")
             streamer.setVideoSource(nextSource)
         }
     }
@@ -323,7 +322,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     fun toggleFlash() {
         cameraSettings?.let {
             it.flash.enable = !it.flash.enable
-        }
+        } ?: Log.e(TAG, "Camera settings is not accessible")
     }
 
     val isAutoWhiteBalanceAvailable = MutableLiveData(false)
@@ -332,7 +331,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
             val awbModes = it.whiteBalance.availableAutoModes
             val index = awbModes.indexOf(it.whiteBalance.autoMode)
             it.whiteBalance.autoMode = awbModes[(index + 1) % awbModes.size]
-        }
+        } ?: Log.e(TAG, "Camera settings is not accessible")
     }
 
     val showExposureSlider = MutableLiveData(false)
@@ -351,7 +350,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
             cameraSettings?.exposure?.let {
                 it.compensation = (value / it.availableCompensationStep.toFloat()).toInt()
                 notifyPropertyChanged(BR.exposureCompensation)
-            }
+            } ?: Log.e(TAG, "Camera settings is not accessible")
         }
 
     val showZoomSlider = MutableLiveData(false)
@@ -368,7 +367,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
             cameraSettings?.zoom?.let {
                 it.zoomRatio = value
                 notifyPropertyChanged(BR.zoomRatio)
-            }
+            } ?: Log.e(TAG, "Camera settings is not accessible")
         }
 
     val isAutoFocusModeAvailable = MutableLiveData(false)
@@ -382,7 +381,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
             } else {
                 showLensDistanceSlider.postValue(false)
             }
-        }
+        } ?: Log.e(TAG, "Camera settings is not accessible")
     }
 
     val showLensDistanceSlider = MutableLiveData(false)
@@ -394,11 +393,16 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
             cameraSettings?.focus?.let {
                 it.lensDistance = value
                 notifyPropertyChanged(BR.lensDistance)
-            }
+            } ?: Log.e(TAG, "Camera settings is not accessible")
         }
 
     private fun notifySourceChanged() {
         cameraSettings?.let {
+            if (!it.isAvailable) {
+                Log.e(TAG, "Camera settings are not available")
+                return
+            }
+
             // Set optical stabilization first
             // Do not set both video and optical stabilization at the same time
             if (it.stabilization.availableOptical) {
@@ -442,7 +446,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                 lensDistanceRange.postValue(focus.availableLensDistanceRange)
                 lensDistance = focus.lensDistance
             }
-        }
+        } ?: Log.e(TAG, "Camera settings is not accessible")
     }
 
     override fun onCleared() {

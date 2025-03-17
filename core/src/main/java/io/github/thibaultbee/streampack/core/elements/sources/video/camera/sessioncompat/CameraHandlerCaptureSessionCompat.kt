@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.elements.sources.video.camera.dispatchers
+package io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat
 
 import android.Manifest
 import android.hardware.camera2.CameraCaptureSession
@@ -30,9 +30,9 @@ import androidx.annotation.RequiresPermission
 
 /**
  * As camera API that support a [Handler] are deprecated since API >= 30.
- * Is is a [ICameraDispatcher] that manages camera API < 30.
+ * Is is a [ICameraCaptureSessionCompat] that manages camera API < 30.
  */
-class CameraHandlerDispatcher : ICameraDispatcher {
+internal class CameraHandlerCaptureSessionCompat : ICameraCaptureSessionCompat {
     private var cameraThread = HandlerThread("CameraThread").apply { start() }
     private var cameraHandler = Handler(cameraThread.looper)
 

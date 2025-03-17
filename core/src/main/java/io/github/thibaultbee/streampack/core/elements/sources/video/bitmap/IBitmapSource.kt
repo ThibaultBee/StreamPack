@@ -16,10 +16,11 @@
 package io.github.thibaultbee.streampack.core.elements.sources.video.bitmap
 
 import android.graphics.Bitmap
+import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 
-interface IBitmapSource {
+interface IBitmapSource : IPreviewableSource {
     /**
-     * Set a bitmap to be displayed.
+     * Gets a bitmap to be displayed.
      */
-    var bitmap: Bitmap
+    val bitmap: Bitmap
 }

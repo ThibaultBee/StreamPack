@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.elements.sources.video.camera.dispatchers
+package io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat
 
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraDevice
@@ -25,7 +25,7 @@ import android.view.Surface
 /**
  * Encapsulates camera2 API changes and deprecation.
  */
-interface ICameraDispatcher {
+internal interface ICameraCaptureSessionCompat {
 
     /**
      * Opens camera device.

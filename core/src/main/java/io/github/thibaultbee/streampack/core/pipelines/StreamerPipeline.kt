@@ -15,9 +15,11 @@
  */
 package io.github.thibaultbee.streampack.core.pipelines
 
+import android.Manifest
 import android.content.Context
 import android.util.Size
 import android.view.Surface
+import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
@@ -31,10 +33,11 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isCompatibleWith
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.runningHistory
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.runningHistoryNotNull
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.inputs.AudioInput
 import io.github.thibaultbee.streampack.core.pipelines.inputs.VideoInput
@@ -83,7 +86,7 @@ open class StreamerPipeline(
     val hasVideo: Boolean = true,
     protected val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : IVideoStreamer, IAudioStreamer {
-    protected val coroutineScope: CoroutineScope = CoroutineScope(coroutineDispatcher)
+    private val coroutineScope: CoroutineScope = CoroutineScope(coroutineDispatcher)
 
     private val _throwableFlow = MutableStateFlow<Throwable?>(null)
     val throwableFlow = _throwableFlow.asStateFlow()
@@ -158,10 +161,10 @@ open class StreamerPipeline(
         }
     }
 
-    suspend fun setAudioSource(newAudioSource: IAudioSourceInternal) {
+    override suspend fun setAudioSource(audioSource: IAudioSourceInternal) {
         require(hasAudio) { "Do not need to set audio as it is a video only streamer" }
         val input = requireNotNull(audioInput) { "Audio input is not set" }
-        input.setAudioSource(newAudioSource)
+        input.setAudioSource(audioSource)
     }
 
     private suspend fun setAudioSourceConfig(value: AudioSourceConfig) {
@@ -179,11 +182,27 @@ open class StreamerPipeline(
         }
     }
 
-    suspend fun setVideoSource(newVideoSource: IVideoSourceInternal) {
+    /**
+     * Sets the video source.
+     *
+     * The previous video source will be released unless its preview is still running.
+     */
+    override suspend fun setVideoSource(videoSource: IVideoSourceInternal) {
         require(hasVideo) { "Do not need to set video as it is an audio only streamer" }
         val input = requireNotNull(videoInput) { "Video input is not set" }
-        input.setVideoSource(newVideoSource)
+        input.setVideoSource(videoSource)
     }
+
+    /**
+     * Sets the camera id.
+     *
+     * Same as [setVideoSource] with a [CameraSource].
+     *
+     * @param cameraId the camera id
+     */
+    @RequiresPermission(Manifest.permission.CAMERA)
+    override suspend fun setCameraId(cameraId: String) =
+        setVideoSource(CameraSource(context, cameraId))
 
     private suspend fun setVideoSourceConfig(value: VideoSourceConfig) {
         require(hasVideo) { "Do not need to set video as it is an audio only streamer" }
@@ -383,20 +402,26 @@ open class StreamerPipeline(
         }
 
         if (output is IAudioPipelineOutputInternal) {
-            require(hasAudio) { "Trying to use audio in a pipeline without audio" }
-            if ((output !is IAudioSyncPipelineOutputInternal) && (output is IAudioAsyncPipelineOutputInternal)) {
-                addAudioAsyncOutputIfNeeded(output)
-            }
-            if (output is IConfigurableAudioPipelineOutputInternal) {
-                addEncodingAudioOutput(output)
+            if (hasAudio) {
+                if ((output !is IAudioSyncPipelineOutputInternal) && (output is IAudioAsyncPipelineOutputInternal)) {
+                    addAudioAsyncOutputIfNeeded(output)
+                }
+                if (output is IConfigurableAudioPipelineOutputInternal) {
+                    addEncodingAudioOutput(output)
+                }
+            } else {
+                Logger.w(TAG, "Pipeline has no audio")
             }
         }
 
         if (output is IVideoPipelineOutputInternal) {
-            require(hasVideo) { "Trying to use video in a pipeline without video" }
-            addVideoOutputIfNeeded(output, scope)
-            if (output is IConfigurableVideoPipelineOutputInternal) {
-                addEncodingVideoOutput(output)
+            if (hasVideo) {
+                addVideoOutputIfNeeded(output, scope)
+                if (output is IConfigurableVideoPipelineOutputInternal) {
+                    addEncodingVideoOutput(output)
+                }
+            } else {
+                Logger.w(TAG, "Pipeline has no video")
             }
         }
 
@@ -447,7 +472,7 @@ open class StreamerPipeline(
         output: IVideoSurfacePipelineOutputInternal, scope: CoroutineScope
     ) {
         scope.launch {
-            output.surfaceFlow.runningHistory().collect { (previousSurface, newSurface) ->
+            output.surfaceFlow.runningHistoryNotNull().collect { (previousSurface, newSurface) ->
                 Logger.i(TAG, "Surface changed")
                 if (previousSurface?.surface == newSurface?.surface) {
                     return@collect
