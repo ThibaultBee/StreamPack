@@ -28,9 +28,6 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotationT
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.IAudioStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackAudioStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackVideoStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineAudioStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineVideoStreamer
@@ -189,85 +186,3 @@ suspend fun ICoroutineSingleStreamer.startStream(uriString: String) {
     open(uriString)
     startStream()
 }
-
-
-interface ICallbackAudioSingleStreamer : ICallbackAudioStreamer<AudioConfig>, IAudioSingleStreamer
-
-interface ICallbackVideoSingleStreamer : ICallbackVideoStreamer<VideoConfig>, IVideoSingleStreamer
-
-interface ICallbackSingleStreamer : ICallbackStreamer, ISingleStreamer {
-    /**
-     * Opens the streamer endpoint asynchronously.
-     *
-     * The open error is returned through [Listener.onOpenFailed].
-     * Also, you can use [Listener.onIsOpenChanged] to know when the endpoint is opened.
-     *
-     * @param descriptor Media descriptor to open
-     */
-    fun open(descriptor: MediaDescriptor)
-
-    /**
-     * Adds a listener to the streamer.
-     */
-    fun addListener(listener: Listener)
-
-    /**
-     * Removes a listener from the streamer.
-     */
-    fun removeListener(listener: Listener)
-
-    /**
-     * Listener for the callback streamer.
-     */
-    interface Listener : ICallbackStreamer.Listener {
-        /**
-         * Called when the streamer opening failed.
-         *
-         * @param t The throwable that occurred
-         */
-        fun onOpenFailed(t: Throwable) = Unit
-
-        /**
-         * Called when the streamer was closed by an error.
-         *
-         * @param t The reason why the streamer was closed
-         */
-        fun onClose(t: Throwable) = Unit
-    }
-}
-
-/**
- * Opens the streamer endpoint.
- *
- * @param uri The uri to open
- */
-fun ICallbackSingleStreamer.open(uri: Uri) =
-    open(UriMediaDescriptor(uri))
-
-/**
- * Opens the streamer endpoint.
- *
- * @param uriString The uri to open
- */
-fun ICallbackSingleStreamer.open(uriString: String) =
-    open(UriMediaDescriptor(Uri.parse(uriString)))
-
-/**
- * Starts audio/video stream.
- *
- * Same as doing [open] and [startStream].
- *
- * @param uri The uri to open
- * @see [ICallbackSingleStreamer.stopStream]
- */
-fun ICallbackSingleStreamer.startStream(uri: Uri) = startStream(UriMediaDescriptor(uri))
-
-/**
- * Starts audio/video stream.
- *
- * Same as doing [open] and [startStream].
- *
- * @param uriString The uri to open
- * @see [ICallbackSingleStreamer.stopStream]
- */
-fun ICallbackSingleStreamer.startStream(uriString: String) = startStream(Uri.parse(uriString))

@@ -26,7 +26,7 @@ import android.view.Surface
 import androidx.activity.result.ActivityResult
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.densityDpi
@@ -37,13 +37,14 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class MediaProjectionVideoSource(
     private val context: Context
-) : IVideoSourceInternal, ISurfaceSource, IMediaProjectionSource {
-    override var outputSurface: Surface? = null
+) : IVideoSourceInternal, ISurfaceSourceInternal, IMediaProjectionSource {
     override val timestampOffsetInNs = 0L
     override val infoProviderFlow = MutableStateFlow(DefaultSourceInfoProvider()).asStateFlow()
 
     private val _isStreamingFlow = MutableStateFlow(false)
     override val isStreamingFlow = _isStreamingFlow.asStateFlow()
+
+    private var outputSurface: Surface? = null
 
     private var mediaProjection: MediaProjection? = null
 
@@ -79,6 +80,16 @@ class MediaProjectionVideoSource(
 
             _isStreamingFlow.tryEmit(false)
         }
+    }
+
+    override suspend fun getOutput() = outputSurface
+    override suspend fun setOutput(surface: Surface) {
+        outputSurface = surface
+    }
+
+    override suspend fun resetOutput() {
+        stopStream()
+        outputSurface = null
     }
 
     override fun configure(config: VideoSourceConfig) = Unit

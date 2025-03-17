@@ -24,65 +24,66 @@ import android.util.Size
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
+import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.camera.viewfinder.CameraViewfinder
+import androidx.camera.viewfinder.CameraViewfinderExt.requestSurface
 import androidx.camera.viewfinder.core.ScaleType
 import androidx.camera.viewfinder.core.ViewfinderSurfaceRequest
+import androidx.camera.viewfinder.core.populateFromCharacteristics
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoPreviewableSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.getCameraCharacteristics
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraCharacteristics
+import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
 import io.github.thibaultbee.streampack.core.elements.utils.OrientationUtils
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.runningHistory
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.runningHistoryNotNull
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.startPreview
 import io.github.thibaultbee.streampack.ui.R
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import java.security.InvalidParameterException
-import java.util.concurrent.CancellationException
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 /**
- * A [FrameLayout] containing a preview for the [ICameraStreamer].
+ * A [FrameLayout] containing a preview for [IPreviewableSource] sources.
+ *
+ * [PreviewView] displays the preview of a [IPreviewableSource] source when a streamer previewable
+ * video source is set.
  *
  * It handles the display, the aspect ratio and the scaling of the preview.
  *
- * In the case, you are using it, do not call [ICameraCoroutineStreamer.startPreview] (or
- * [ICameraCallbackStreamer.stopPreview]) and [ICameraCoroutineStreamer.stopPreview] on application
- * side. It will be handled by the [PreviewView].
+ * In the case, you are using it, do not call [IPreviewableSource.startPreview] (or
+ * [IPreviewableSource.stopPreview]) on your side. It will be handled by the [PreviewView].
  *
  * The [Manifest.permission.CAMERA] permission must be granted before using this view.
  */
 class PreviewView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
 ) : FrameLayout(context, attrs, defStyle) {
-    private val cameraViewfinder = CameraViewfinder(context, attrs, defStyle)
+    private val viewfinder = CameraViewfinder(context, attrs, defStyle)
 
     private var viewfinderSurfaceRequest: ViewfinderSurfaceRequest? = null
 
-    private val lifecycleScope: CoroutineScope?
-        get() = findViewTreeLifecycleOwner()?.lifecycleScope
-    private var sourceFlowJob: Job? = null
+    private val _isPreviewingFlow = MutableStateFlow(false)
 
     /**
-     * Whether the preview is running.
+     * Whether the preview is running in case the source has been set to a non previewable source.
      */
-    val isPreviewing: Boolean
-        get() {
-            val videoSource = streamer?.videoSourceFlow?.value
-            return videoSource is IVideoPreviewableSource && videoSource.isPreviewingFlow.value
-        }
+    private val isPreviewingFlow = _isPreviewingFlow.asStateFlow()
 
     /**
      * Enables zoom on pinch gesture.
@@ -95,8 +96,48 @@ class PreviewView @JvmOverloads constructor(
     var enableTapToFocus: Boolean
 
     /**
+     * The position of the [PreviewView] within its container.
+     */
+    var position: Position
+        get() = getPosition(viewfinder.scaleType)
+        set(value) {
+            viewfinder.scaleType = getScaleType(scaleMode, value)
+        }
+
+    /**
+     * The scale mode of the [PreviewView] within its container.
+     */
+    var scaleMode: ScaleMode
+        get() = getScaleMode(viewfinder.scaleType)
+        set(value) {
+            viewfinder.scaleType = getScaleType(value, position)
+        }
+
+    /**
+     * The [Listener] to listen to specific view events.
+     */
+    var listener: Listener? = null
+
+    private var touchUpEvent: MotionEvent? = null
+
+    private val pinchGesture = ScaleGestureDetector(
+        context, PinchToZoomOnScaleGestureListener()
+    )
+
+    private val lifecycleScope: CoroutineScope?
+        get() = findViewTreeLifecycleOwner()?.lifecycleScope
+    private val supervisorJob = SupervisorJob()
+
+    private var coroutineScope: CoroutineScope? = null
+
+    private val surfaceConflatedJob = ConflatedJob()
+    private val surfaceFlow = MutableStateFlow<Surface?>(null)
+
+    private var sourceJob: Job? = null
+
+    /**
      * Sets the [IVideoStreamer] to preview.
-     * To force the preview to start, use [startPreviewAsync] or [startPreview].
+     * To force the preview to start, use [startPreview].
      */
     var streamer: IVideoStreamer? = null
         /**
@@ -113,80 +154,30 @@ class PreviewView @JvmOverloads constructor(
                 Logger.w(TAG, "No need to set the same video streamer")
                 return
             }
-            val newSource = newStreamer?.videoSourceFlow?.value as? IVideoPreviewableSource
+            val newSource = newStreamer?.videoSourceFlow?.value as? IPreviewableSource
             if (newSource != null) {
                 require(!newSource.isPreviewingFlow.value) { "Cannot set streamer while it is already previewing. Stop preview before." }
             }
 
-            val previousSource = field?.videoSourceFlow?.value as? IVideoPreviewableSource
+            val previousSource = field?.videoSourceFlow?.value as? IPreviewableSource
             val isPreviousSourcePreviewing = previousSource?.isPreviewingFlow?.value ?: false
 
-            sourceFlowJob?.cancel()
-            sourceFlowJob = null
-            lifecycleScope?.let {
+            sourceJob?.cancel()
+            sourceJob = null
+            coroutineScope?.let { scope ->
                 if (isPreviousSourcePreviewing) {
-                    it.launch {
+                    scope.launch {
                         stopPreviewInternal()
                     }
                 }
 
                 newStreamer?.let { streamer ->
-                    registerStreamer(streamer)
+                    collectSource(scope, streamer)
                 }
             } ?: Logger.e(TAG, "Trying to set streamer but lifecycleScope is not available")
 
             field = newStreamer
         }
-
-    /**
-     * The position of the [PreviewView] within its container.
-     */
-    var position: Position
-        get() = getPosition(cameraViewfinder.scaleType)
-        set(value) {
-            cameraViewfinder.scaleType = getScaleType(scaleMode, value)
-        }
-
-    /**
-     * The scale mode of the [PreviewView] within its container.
-     */
-    var scaleMode: ScaleMode
-        get() = getScaleMode(cameraViewfinder.scaleType)
-        set(value) {
-            cameraViewfinder.scaleType = getScaleType(value, position)
-        }
-
-    /**
-     * The [Listener] to listen to specific view events.
-     */
-    var listener: Listener? = null
-
-    private var touchUpEvent: MotionEvent? = null
-
-    private val pinchGesture = ScaleGestureDetector(
-        context, PinchToZoomOnScaleGestureListener()
-    )
-
-    private fun registerStreamer(streamer: IVideoStreamer) {
-        val lifecycleScope = requireNotNull(lifecycleScope) { "LifecycleScope is not available" }
-        sourceFlowJob = lifecycleScope.launch {
-            streamer.videoSourceFlow.runningHistory()
-                .collect { (previousVideoSource, newVideoSource) ->
-                    var isPreviewing = false
-                    if (previousVideoSource is IVideoPreviewableSource) {
-                        isPreviewing = previousVideoSource.isPreviewingFlow.value
-                        if (isPreviewing) {
-                            Logger.i(TAG, "Stopping preview")
-                            previousVideoSource.stopPreview()
-                        }
-                    }
-                    if (isPreviewing && newVideoSource is IVideoPreviewableSource) {
-                        Logger.i(TAG, "Restarting preview")
-                        newVideoSource.startPreview()
-                    }
-                }
-        }
-    }
 
     init {
         val a = context.obtainStyledAttributes(attrs, R.styleable.PreviewView)
@@ -211,24 +202,117 @@ class PreviewView @JvmOverloads constructor(
         }
 
         addView(
-            cameraViewfinder, ViewGroup.LayoutParams(
+            viewfinder, ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
             )
         )
     }
 
+    private suspend fun setPreview(videoSource: IPreviewableSource, surface: Surface) {
+        Logger.d(TAG, "Setting preview surface: $surface")
+        try {
+            videoSource.setPreview(surface)
+        } catch (t: IllegalStateException) {
+            Logger.e(TAG, "Failed to set preview surface: $t")
+        }
+    }
+
+    private suspend fun startPreviewIfNeeded(
+        videoSource: IPreviewableSource,
+        surface: Surface
+    ) {
+        setPreview(videoSource, surface)
+        if (isPreviewingFlow.value) {
+            Logger.i(TAG, "Starting preview")
+            try {
+                videoSource.startPreview()
+                listener?.onPreviewStarted()
+            } catch (t: Throwable) {
+                if (surface.isValid) {
+                    listener?.onPreviewFailed(t)
+                } else {
+                    // Happens when set video source is called repeatedly
+                    Logger.w(TAG, "Surface is not valid: $t")
+                }
+            }
+        }
+    }
+
+    private fun collectSource(
+        coroutineScope: CoroutineScope,
+        streamer: IVideoStreamer
+    ) {
+        sourceJob = coroutineScope.launch {
+            streamer.videoSourceFlow.runningHistoryNotNull()
+                .collect { (previousVideoSource, newVideoSource) ->
+                    if (previousVideoSource == newVideoSource) {
+                        Logger.w(TAG, "No change in video source")
+                    } else {
+                        if (previousVideoSource is IPreviewableSource) {
+                            val isPreviewing = previousVideoSource.isPreviewingFlow.value
+                            if (isPreviewing) {
+                                Logger.d(TAG, "Stopping preview")
+                                previousVideoSource.stopPreview()
+                            }
+                            previousVideoSource.resetPreview()
+                            previousVideoSource.requestRelease()
+
+                        }
+                        if (newVideoSource is IPreviewableSource) {
+                            Logger.d(TAG, "Requesting for source $newVideoSource")
+                            requestSurface(size, newVideoSource)
+                        }
+                    }
+                }
+        }
+    }
+
+    private fun collectState(coroutineScope: CoroutineScope) {
+        surfaceConflatedJob += coroutineScope.launch {
+            surfaceFlow.filterNotNull().collect { surface ->
+                Logger.i(TAG, "New surface collected")
+                val previewableSource =
+                    streamer?.videoSourceFlow?.value as? IPreviewableSource
+                previewableSource?.let {
+                    startPreviewIfNeeded(it, surface)
+                }
+            }
+        }
+
+        if ((sourceJob == null) || (sourceJob?.isActive == false)) {
+            streamer?.let { collectSource(coroutineScope, it) }
+        }
+    }
+
+    private fun cancelState() {
+        surfaceConflatedJob.cancel()
+        sourceJob?.cancel()
+        sourceJob = null
+    }
+
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         if (w != oldw || h != oldh) {
-            streamer?.let {
-                stopPreviewAsyncInternal(true)
-                startPreviewAsyncInternal(true)
-            }
+            requestSurface(Size(w, h))
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+
+        coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default).apply {
+            collectState(this)
         }
     }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        stopPreviewAsyncInternal(true)
+        lifecycleScope?.launch {
+            stopPreview()
+        } ?: Logger.e(TAG, "LifecycleScope is not available")
+
+        cancelState()
+        coroutineScope?.cancel()
+        coroutineScope = null
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -264,6 +348,7 @@ class PreviewView @JvmOverloads constructor(
             val y = touchUpEvent?.y ?: (height / 2f)
             try {
                 cameraSource.settings.focusMetering.onTap(
+                    context,
                     PointF(x, y),
                     Rect(this.x.toInt(), this.y.toInt(), width, height),
                     OrientationUtils.getSurfaceRotationDegrees(display.rotation)
@@ -283,6 +368,56 @@ class PreviewView @JvmOverloads constructor(
         return super.performClick()
     }
 
+    private fun requestSurface(size: Size) {
+        val lifecycleScope = requireNotNull(lifecycleScope) { "LifecycleScope is not available" }
+        lifecycleScope.launch {
+            requestSurface(lifecycleScope.coroutineContext, size)
+        }
+    }
+
+    private fun requestSurface(size: Size, videoSource: IPreviewableSource) {
+        val lifecycleScope = requireNotNull(lifecycleScope) { "LifecycleScope is not available" }
+        lifecycleScope.launch {
+            requestSurface(lifecycleScope.coroutineContext, size, videoSource)
+        }
+    }
+
+    /**
+     * Use [requestSurface] instead.
+     */
+    private suspend fun requestSurface(coroutineContext: CoroutineContext, size: Size) {
+        val videoSource = streamer?.videoSourceFlow?.value
+        if (videoSource is IPreviewableSource) {
+            requestSurface(coroutineContext, size, videoSource)
+        } else {
+            Logger.w(TAG, "Video source is not previewable")
+        }
+    }
+
+    /**
+     * Use [requestSurface] instead.
+     */
+    private suspend fun requestSurface(
+        coroutineContext: CoroutineContext,
+        size: Size,
+        videoSource: IPreviewableSource
+    ) {
+        val previewSize = getPreviewSize(videoSource, size)
+        val builder = ViewfinderSurfaceRequest.Builder(previewSize)
+        viewfinderSurfaceRequest = if (videoSource is ICameraSource) {
+            val cameraCharacteristics =
+                context.getCameraCharacteristics(videoSource.cameraId)
+            builder.populateFromCharacteristics(cameraCharacteristics).build()
+        } else {
+            builder.build()
+        }.also { request ->
+            val surface = withContext(coroutineContext + supervisorJob) {
+                viewfinder.requestSurface(request)
+            }
+            surfaceFlow.emit(surface)
+        }
+    }
+
     /**
      * Stops the preview.
      */
@@ -290,30 +425,14 @@ class PreviewView @JvmOverloads constructor(
         stopPreviewInternal()
     }
 
-    fun stopPreviewAsync() {
-        stopPreviewAsyncInternal(false)
-    }
-
-    /**
-     * Starts the preview.
-     */
-    private fun stopPreviewAsyncInternal(shouldFailSilently: Boolean) {
-        try {
-            lifecycleScope?.launch {
-                stopPreviewInternal()
-            } ?: throw IllegalStateException("LifecycleScope is not available")
-        } catch (t: Throwable) {
-            if (shouldFailSilently) {
-                Logger.w(TAG, t.toString(), t)
-            } else {
-                throw t
+    private suspend fun stopPreviewInternal() {
+        _isPreviewingFlow.emit(false)
+        streamer?.let {
+            val source = it.videoSourceFlow.value
+            if (source is IPreviewableSource) {
+                source.stopPreview()
             }
         }
-    }
-
-
-    private suspend fun stopPreviewInternal() {
-        streamer?.let { stopPreview(it) }
         viewfinderSurfaceRequest?.markSurfaceSafeToRelease()
         viewfinderSurfaceRequest = null
     }
@@ -328,100 +447,44 @@ class PreviewView @JvmOverloads constructor(
     /**
      * Starts the preview.
      */
-    private fun startPreviewAsyncInternal(shouldFailSilently: Boolean) {
-        try {
-            lifecycleScope?.launch {
-                startPreviewInternal(true)
-            } ?: throw IllegalStateException("LifecycleScope is not available")
-        } catch (t: Throwable) {
-            if (shouldFailSilently) {
-                Logger.w(TAG, t.toString(), t)
-            } else {
-                throw t
-            }
-        }
-    }
-
-    /**
-     * Starts the preview asynchronously.
-     */
-    fun startPreviewAsync() {
-        startPreviewAsyncInternal(false)
-    }
-
-    /**
-     * Starts the preview.
-     */
     private suspend fun startPreviewInternal(shouldFailSilently: Boolean) {
         try {
-            if (size.width == 0 || size.height == 0) {
+            val streamer = requireNotNull(streamer) { "Streamer is not set" }
+            _isPreviewingFlow.emit(true)
+            val videoSource = streamer.videoSourceFlow.value
+            if (videoSource !is IPreviewableSource) {
+                Logger.e(
+                    TAG,
+                    "Video source is not previewable. Preview will start when the source is previewable"
+                )
                 return
             }
 
-            try {
-                streamer?.let {
-                    setPreview(it, size)
-                    startPreview(it)
-                    listener?.onPreviewStarted()
-                } ?: throw UnsupportedOperationException("Streamer has not been set")
-            } catch (e: CancellationException) {
-                Logger.w(TAG, "Preview has been cancelled")
-            } catch (t: Throwable) {
-                listener?.onPreviewFailed(t)
-                throw t
-            }
+            lifecycleScope?.launch {
+                surfaceFlow.value?.let { surface ->
+                    startPreviewIfNeeded(videoSource, surface)
+                } ?: Logger.w(
+                    TAG,
+                    "Surface is not set. Preview will start when the surface is set"
+                )
+            } ?: Logger.e(
+                TAG,
+                "LifecycleScope is not available"
+            )
         } catch (t: Throwable) {
             if (shouldFailSilently) {
                 Logger.w(TAG, t.toString(), t)
             } else {
                 throw t
             }
-        }
-    }
-
-    /**
-     * Sets the preview if the view size is ready.
-     *
-     * @param streamer the camera streamer
-     * @param targetViewSize the view size
-     */
-    private suspend fun setPreview(
-        streamer: IVideoStreamer, targetViewSize: Size
-    ) {
-        val videoSource = streamer.videoSourceFlow.value
-            ?: throw InvalidParameterException("Can't set preview: video source is null")
-
-        Logger.d(TAG, "Target view size: $targetViewSize")
-
-        val previewSize = getPreviewSize(videoSource, targetViewSize)
-
-        try {
-            // Request a new preview
-            viewfinderSurfaceRequest = setPreview(streamer, cameraViewfinder, previewSize)
-        } catch (t: Throwable) {
-            viewfinderSurfaceRequest?.markSurfaceSafeToRelease()
-            viewfinderSurfaceRequest = null
-            Logger.w(TAG, "Failed to get a Surface: $t", t)
-            throw t
         }
     }
 
     private fun getPreviewSize(
-        videoSource: IVideoSource,
+        videoSource: IPreviewableSource,
         targetViewSize: Size
     ): Size {
-        val previewSize = if (videoSource is ICameraSource) {
-            /**
-             * Get the closest available preview size to the view size.
-             */
-            getPreviewOutputSize(
-                context.getCameraCharacteristics(videoSource.cameraId),
-                targetViewSize,
-                SurfaceHolder::class.java
-            )
-        } else {
-            targetViewSize
-        }
+        val previewSize = videoSource.getPreviewSize(targetViewSize, SurfaceHolder::class.java)
 
         Logger.d(TAG, "Selected preview size: $previewSize")
 
@@ -430,47 +493,6 @@ class PreviewView @JvmOverloads constructor(
 
     companion object {
         private const val TAG = "PreviewView"
-
-        private suspend fun setPreview(
-            streamer: IVideoStreamer, viewfinder: CameraViewfinder, previewSize: Size
-        ): ViewfinderSurfaceRequest {
-            val videoSource = streamer.videoSourceFlow.value
-            if (videoSource is IVideoPreviewableSource) {
-                return videoSource.setPreview(viewfinder, previewSize)
-            } else {
-                if (videoSource == null) {
-                    throw InvalidParameterException("Can't set preview: video source is null")
-                } else {
-                    throw InvalidParameterException("Can't set preview: video source is not previewable: ${videoSource::class.java.simpleName}")
-                }
-            }
-        }
-
-        private suspend fun startPreview(streamer: IVideoStreamer) {
-            val videoSource = streamer.videoSourceFlow.value
-            if (videoSource is IVideoPreviewableSource) {
-                videoSource.startPreview()
-            } else {
-                if (videoSource == null) {
-                    throw InvalidParameterException("Can't start preview: video source is null")
-                } else {
-                    throw InvalidParameterException("Can't start preview: video source is not previewable: ${videoSource::class.java.simpleName}")
-                }
-            }
-        }
-
-        private suspend fun stopPreview(streamer: IVideoStreamer) {
-            val videoSource = streamer.videoSourceFlow.value
-            if (videoSource is IVideoPreviewableSource) {
-                videoSource.stopPreview()
-            } else {
-                if (videoSource == null) {
-                    throw InvalidParameterException("Can't stop preview: video source is null")
-                } else {
-                    throw InvalidParameterException("Can't stop preview: video source is not previewable: ${videoSource::class.java.simpleName}")
-                }
-            }
-        }
 
         private fun getPosition(scaleType: ScaleType): Position {
             return when (scaleType) {
@@ -581,7 +603,7 @@ class PreviewView @JvmOverloads constructor(
             /**
              * Returns the [Position] from the given id.
              */
-            internal fun entryOf(value: Int) = entries.first { it.value == value }
+            fun entryOf(value: Int) = entries.first { it.value == value }
         }
     }
 
@@ -612,7 +634,7 @@ class PreviewView @JvmOverloads constructor(
             /**
              * Returns the [ScaleMode] from the given id.
              */
-            internal fun entryOf(value: Int) = entries.first { it.value == value }
+            fun entryOf(value: Int) = entries.first { it.value == value }
         }
     }
 

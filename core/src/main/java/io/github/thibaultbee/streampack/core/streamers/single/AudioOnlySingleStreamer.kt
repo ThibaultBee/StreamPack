@@ -21,7 +21,6 @@ import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource.Companion.buildDefaultMicrophoneSource
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
@@ -83,7 +82,7 @@ class AudioOnlySingleStreamer internal constructor(
     override suspend fun setAudioConfig(audioConfig: AudioConfig) =
         streamer.setAudioConfig(audioConfig)
 
-    suspend fun setAudioSource(audioSource: IAudioSourceInternal) =
+    override suspend fun setAudioSource(audioSource: IAudioSourceInternal) =
         streamer.setAudioSource(audioSource)
 
     override suspend fun open(descriptor: MediaDescriptor) = streamer.open(descriptor)

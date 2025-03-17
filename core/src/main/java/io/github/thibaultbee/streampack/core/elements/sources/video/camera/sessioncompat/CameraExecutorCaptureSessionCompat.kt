@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.elements.sources.video.camera.dispatchers
+package io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat
 
 import android.Manifest
 import android.hardware.camera2.CameraCaptureSession
@@ -29,9 +29,9 @@ import androidx.annotation.RequiresPermission
 import java.util.concurrent.Executors
 
 /**
- * A [ICameraDispatcher] that manages camera API >= 28.
+ * A [ICameraCaptureSessionCompat] that manages camera API >= 28.
  */
-class CameraExecutorDispatcher : ICameraDispatcher {
+internal class CameraExecutorCaptureSessionCompat : ICameraCaptureSessionCompat {
     private val cameraExecutor = Executors.newSingleThreadExecutor()
 
     @RequiresApi(Build.VERSION_CODES.P)
@@ -89,5 +89,7 @@ class CameraExecutorDispatcher : ICameraDispatcher {
     }
 
     override fun release() {
+        // Potential source of java.util.concurrent.RejectedExecutionException
+        //cameraExecutor.shutdown()
     }
 }

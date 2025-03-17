@@ -76,7 +76,6 @@ Video sources implement the `IVideoSource` interface and `IFrameSource` or `ISur
 
 * Video sources:
     - `CameraSource`: A source that captures frames from a camera.
-    - `MicrophoneSource`: A source that captures frames from a microphone.
     - `MediaProjectionVideoSource`: A source that captures frames from the screen.
 
 * Audio sources:
@@ -90,19 +89,22 @@ Sources are a parameter of `Streamer` constructors.
 There are 2 types of sources:
 
 - frames are captured in a `ByteBuffer`: such as a microphone. `ByteBuffer` sources
-  implement `IFrameSource` (such as `MicrophoneSource`).
+  implement `IAudioFrameSource` (for audio) (such as `MicrophoneSource`) and `IVideoFrameSource` (
+  for video) (not usable).
 - frames are passed to the encoder surface (video only): when the video source can write to
   a `Surface`. Its purpose is to improve encoder performance. For example, it suits camera and
-  screen recorder. `Surface` sources implement `ISurfaceSource` (such as `CameraSource`).
+  screen recorder. `Surface` sources implement `ISurfaceSourceInternal` (such as `CameraSource`).
 
 <!--
 @startuml
-interface ISurfaceSource {
-  + outputSurface: Surface?
+interface ISurfaceSourceInternal {
+  + setOutput(surface: Surface)
+  + getOutput(): Surface?
+  + resetOutput()
 }
 
-interface IVideoFrameSource {
-  + getVideoFrame(buffer: ByteBuffer): Frame
+interface IVideoFrameSourceInternal {
+  + getVideoFrame(buffer: ByteBuffer): RawFrame
 }
 
 interface IVideoSource {
@@ -111,15 +113,15 @@ interface IVideoSource {
 class CameraSource {
 }
 
-CameraSource <|.. IVideoFrameSource
+CameraSource <|.. IVideoFrameSourceInternal
 CameraSource <|.. IVideoSource
 
-interface IAudioFrameSource {
+interface IAudioFrameSourceInternal {
   + getAudioFrame(buffer: ByteBuffer): Frame
 }
 
 interface IAudioSource
-IAudioSource <|.. IAudioFrameSource
+IAudioSource <|.. IAudioFrameSourceInternal
 
 class MicrophoneSource {
 }
@@ -128,11 +130,16 @@ MicrophoneSource <|.. IAudioSource
 @enduml
 -->
 
-To create a new audio source, implements a `IAudioSource`. It inherits from `IAudioFrameSource`.
+To create a new audio source, implements a `IAudioSource` and `IAudioSourceInternal`. It inherits
+from `IAudioFrameSource`.
 
-To create a new video source, implements a `IVideoSource` and `IVideoFrameSource`
-or `ISurfaceSource`. Always prefer to use a video source as a `Surface` source if it is possible.
-`IVideoFrameSource` has missing features and is not be stable.
+To create a new video source, implements a `IVideoSource`, `IVideoSourceInternal` and
+`IVideoFrameSourceInternal`
+or `ISurfaceSourceInternal`. Always prefer to use a video source as a `Surface` source if it is
+possible.
+`IVideoFrameSourceInternal` is not usable in a streamer.
+If the video source is previewable, it must implements `IPreviewableSource`. You can use the `AbstractPreviewableSource` class to simplify the
+work.
 
 ### Encoders
 

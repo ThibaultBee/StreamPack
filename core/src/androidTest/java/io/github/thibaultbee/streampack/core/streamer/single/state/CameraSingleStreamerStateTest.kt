@@ -24,6 +24,7 @@ import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreame
 import io.github.thibaultbee.streampack.core.streamer.surface.SurfaceUtils
 import io.github.thibaultbee.streampack.core.streamer.surface.SurfaceViewTestActivity
 import io.github.thibaultbee.streampack.core.streamers.interfaces.startPreview
+import io.github.thibaultbee.streampack.core.streamers.interfaces.stopPreview
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig

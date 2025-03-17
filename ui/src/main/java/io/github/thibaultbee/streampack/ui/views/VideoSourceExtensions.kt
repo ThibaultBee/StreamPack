@@ -20,9 +20,9 @@ import androidx.camera.viewfinder.CameraViewfinder
 import androidx.camera.viewfinder.CameraViewfinderExt.requestSurface
 import androidx.camera.viewfinder.core.ViewfinderSurfaceRequest
 import androidx.camera.viewfinder.core.populateFromCharacteristics
-import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoPreviewableSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.getCameraCharacteristics
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraCharacteristics
 
 /**
  * Start preview on a [CameraViewfinder]
@@ -31,7 +31,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.getCa
  * @param previewSize The size of the preview
  * @return The [ViewfinderSurfaceRequest] used to set the preview. Use it to call [ViewfinderSurfaceRequest.markSurfaceSafeToRelease] after [stopPreview].
  */
-suspend fun IVideoPreviewableSource.startPreview(
+suspend fun IPreviewableSource.startPreview(
     viewfinder: CameraViewfinder,
     previewSize: Size
 ): ViewfinderSurfaceRequest {
@@ -47,7 +47,7 @@ suspend fun IVideoPreviewableSource.startPreview(
  * @param previewSize The size of the preview
  * @return The [ViewfinderSurfaceRequest] used to set the preview. Use it to call [ViewfinderSurfaceRequest.markSurfaceSafeToRelease].
  */
-suspend fun IVideoPreviewableSource.setPreview(
+suspend fun IPreviewableSource.setPreview(
     viewfinder: CameraViewfinder,
     previewSize: Size
 ): ViewfinderSurfaceRequest {

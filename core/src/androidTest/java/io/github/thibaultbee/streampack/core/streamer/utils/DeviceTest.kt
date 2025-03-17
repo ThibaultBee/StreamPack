@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.utils
 import android.Manifest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.cameras
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameras
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Rule

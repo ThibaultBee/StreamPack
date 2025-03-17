@@ -85,8 +85,10 @@ class VideoOnlySingleStreamer internal constructor(
         get() = streamer.videoEncoder
     override val videoSourceFlow = streamer.videoSourceFlow
 
-    suspend fun setVideoSource(videoSource: IVideoSourceInternal) =
+    override suspend fun setVideoSource(videoSource: IVideoSourceInternal) =
         streamer.setVideoSource(videoSource)
+
+    override suspend fun setCameraId(cameraId: String) = streamer.setCameraId(cameraId)
 
     override fun getInfo(descriptor: MediaDescriptor) = streamer.getInfo(descriptor)
 

@@ -38,9 +38,9 @@ import io.github.thibaultbee.streampack.app.utils.ProfileLevelDisplay
 import io.github.thibaultbee.streampack.app.utils.StreamerInfoFactory
 import io.github.thibaultbee.streampack.app.utils.dataStore
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecHelper
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.cameras
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.defaultCameraId
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.isFrameRateSupported
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameras
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFrameRateSupported
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig

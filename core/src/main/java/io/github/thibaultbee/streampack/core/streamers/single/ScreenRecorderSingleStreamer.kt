@@ -130,6 +130,10 @@ open class ScreenRecorderSingleStreamer(
         super.setVideoSource(videoSource)
     }
 
+    override suspend fun setCameraId(cameraId: String) {
+        throw UnsupportedOperationException("ScreenRecorderSingleStreamer does not support cameraId")
+    }
+
     companion object {
         /**
          * Create a screen record intent that must be pass to [ActivityCompat.startActivityForResult].

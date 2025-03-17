@@ -23,9 +23,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
-import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
-import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.combineStates
@@ -131,15 +129,15 @@ open class DualStreamer(
     // SOURCES
     override val audioSourceFlow = pipeline.audioSourceFlow
 
-    open suspend fun setAudioSource(audioSource: IAudioSourceInternal) {
+    override suspend fun setAudioSource(audioSource: IAudioSourceInternal) =
         pipeline.setAudioSource(audioSource)
-    }
 
     override val videoSourceFlow = pipeline.videoSourceFlow
 
-    open suspend fun setVideoSource(videoSource: IVideoSourceInternal) {
+    override suspend fun setVideoSource(videoSource: IVideoSourceInternal) =
         pipeline.setVideoSource(videoSource)
-    }
+
+    override suspend fun setCameraId(cameraId: String) = pipeline.setCameraId(cameraId)
 
     // PROCESSORS
     override val audioProcessor: IAudioFrameProcessor?

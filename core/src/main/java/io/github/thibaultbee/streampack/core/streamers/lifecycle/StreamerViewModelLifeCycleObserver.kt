@@ -17,11 +17,9 @@ package io.github.thibaultbee.streampack.core.streamers.lifecycle
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICallbackStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCallbackStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.IStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.stopPreview
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -34,30 +32,18 @@ import kotlinx.coroutines.runBlocking
  *
  *  @param streamer The streamer to control
  */
-open class StreamerViewModelLifeCycleObserver(protected val streamer: IStreamer) :
+open class StreamerViewModelLifeCycleObserver(protected val streamer: ICoroutineStreamer) :
     DefaultLifecycleObserver {
 
     override fun onPause(owner: LifecycleOwner) {
-        if (streamer is ICoroutineStreamer) {
-            if (streamer is ICameraCoroutineStreamer) {
-                runBlocking { streamer.stopPreview() }
-            }
-            runBlocking {
-                streamer.stopStream()
-                if (streamer.isOpenFlow.value) {
-                    streamer.close()
-                }
-            }
-        } else if (streamer is ICallbackStreamer) {
-            if (streamer is ICameraCallbackStreamer) {
+        runBlocking {
+            if (streamer is IVideoStreamer) {
                 streamer.stopPreview()
             }
             streamer.stopStream()
-            if (streamer.isOpen) {
+            if (streamer.isOpenFlow.value) {
                 streamer.close()
             }
-        } else {
-            throw IllegalArgumentException("Streamer is unknown")
         }
     }
 }

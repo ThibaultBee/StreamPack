@@ -15,21 +15,31 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.video
 
+import android.util.Size
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.TextureView
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICameraCoroutineStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.setPreview
 import io.github.thibaultbee.streampack.core.streamers.interfaces.startPreview
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import kotlinx.coroutines.flow.StateFlow
 
-interface IVideoPreviewableSource {
+/**
+ * Interface for video sources that can be previewed.
+ */
+interface IPreviewableSource {
     /**
      * Flow of the last previewing state.
      */
     val isPreviewingFlow: StateFlow<Boolean>
+
+    /**
+     * Whether the video source has a preview.
+     *
+     * @return [Boolean.true] if the video source has a preview, [Boolean.false]
+     */
+    suspend fun hasPreview(): Boolean
 
     /**
      * Sets preview surface.
@@ -54,6 +64,36 @@ interface IVideoPreviewableSource {
      * Stops video preview.
      */
     suspend fun stopPreview()
+
+    /**
+     * Resets preview.
+     *
+     * When the preview is reset, the [IPreviewableSource] should stop sending frames to the surface set
+     * by [setPreview]. The implementation must forget the previous surface.
+     */
+    suspend fun resetPreview()
+
+    /**
+     * Requests to release the video source.
+     *
+     * When set a new video source, if the preview is in progress, the video source is not released.
+     * In that case, [requestRelease] is called and the video source is released when the preview
+     * and the output are reset.
+     *
+     * The implementation must keep the request release state until all surfaces are reset.
+     *
+     * To be called by the user.
+     */
+    suspend fun requestRelease()
+
+    /**
+     * Gets the preview size from the target size.
+     *
+     * @param targetSize the target size
+     * @param targetClass the output target class. Only used for [CameraSource].
+     * @return the preview size
+     */
+    fun <T> getPreviewSize(targetSize: Size, targetClass: Class<T>): Size
 }
 
 /**
@@ -61,7 +101,7 @@ interface IVideoPreviewableSource {
  *
  * @param surfaceView The [SurfaceView] used for camera preview
  */
-suspend fun IVideoPreviewableSource.setPreview(surfaceView: SurfaceView) =
+suspend fun IPreviewableSource.setPreview(surfaceView: SurfaceView) =
     setPreview(surfaceView.holder.surface)
 
 /**
@@ -69,7 +109,7 @@ suspend fun IVideoPreviewableSource.setPreview(surfaceView: SurfaceView) =
  *
  * @param surfaceHolder The [SurfaceHolder] used for camera preview
  */
-suspend fun IVideoPreviewableSource.setPreview(surfaceHolder: SurfaceHolder) =
+suspend fun IPreviewableSource.setPreview(surfaceHolder: SurfaceHolder) =
     setPreview(surfaceHolder.surface)
 
 /**
@@ -77,7 +117,7 @@ suspend fun IVideoPreviewableSource.setPreview(surfaceHolder: SurfaceHolder) =
  *
  * @param textureView The [TextureView] used for camera preview
  */
-suspend fun IVideoPreviewableSource.setPreview(textureView: TextureView) =
+suspend fun IPreviewableSource.setPreview(textureView: TextureView) =
     setPreview(Surface(textureView.surfaceTexture))
 
 /**
@@ -87,9 +127,9 @@ suspend fun IVideoPreviewableSource.setPreview(textureView: TextureView) =
  *
  * @param surfaceView The [SurfaceView] used for camera preview
  *
- * @see [ICameraCoroutineStreamer.stopPreview]
+ * @see [IPreviewableSource.stopPreview]
  */
-suspend fun IVideoPreviewableSource.startPreview(surfaceView: SurfaceView) =
+suspend fun IPreviewableSource.startPreview(surfaceView: SurfaceView) =
     startPreview(surfaceView.holder.surface)
 
 /**
@@ -99,9 +139,9 @@ suspend fun IVideoPreviewableSource.startPreview(surfaceView: SurfaceView) =
  *
  * @param surfaceHolder The [SurfaceHolder] used for camera preview
  *
- * @see [ICameraCoroutineStreamer.stopPreview]
+ * @see [IPreviewableSource.stopPreview]
  */
-suspend fun IVideoPreviewableSource.startPreview(surfaceHolder: SurfaceHolder) =
+suspend fun IPreviewableSource.startPreview(surfaceHolder: SurfaceHolder) =
     startPreview(surfaceHolder.surface)
 
 /**
@@ -111,7 +151,7 @@ suspend fun IVideoPreviewableSource.startPreview(surfaceHolder: SurfaceHolder) =
  *
  * @param textureView The [TextureView] used for camera preview
  *
- * @see [ICameraCoroutineStreamer.stopPreview]
+ * @see [IPreviewableSource.stopPreview]
  */
-suspend fun IVideoPreviewableSource.startPreview(textureView: TextureView) =
+suspend fun IPreviewableSource.startPreview(textureView: TextureView) =
     startPreview(Surface(textureView.surfaceTexture))
