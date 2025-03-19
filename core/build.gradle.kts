@@ -11,7 +11,7 @@ configurePublication()
 android {
     namespace = "io.github.thibaultbee.streampack.core"
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
 }
 
