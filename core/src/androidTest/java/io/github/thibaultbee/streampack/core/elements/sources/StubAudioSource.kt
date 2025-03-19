@@ -1,5 +1,6 @@
 package io.github.thibaultbee.streampack.core.elements.sources
 
+import android.content.Context
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
@@ -36,5 +37,15 @@ class StubAudioSource : IAudioSourceInternal {
 
     override fun release() {
 
+    }
+
+    class Factory : IAudioSourceInternal.Factory {
+        override suspend fun create(context: Context): IAudioSourceInternal {
+            return StubAudioSource()
+        }
+
+        override fun isSourceEquals(source: IAudioSourceInternal?): Boolean {
+            return source is StubAudioSource
+        }
     }
 }

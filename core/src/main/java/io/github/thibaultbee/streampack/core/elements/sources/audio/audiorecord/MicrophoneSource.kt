@@ -15,18 +15,21 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord
 
+import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.media.audiofx.AudioEffect
 import android.os.Build
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import java.util.UUID
 
 /**
  * The [MicrophoneSource] class is an implementation of [AudioRecordSource] that captures audio
  * from the microphone.
  */
-class MicrophoneSource : AudioRecordSource() {
+internal class MicrophoneSource : AudioRecordSource() {
     override fun buildAudioRecord(config: AudioSourceConfig, bufferSize: Int): AudioRecord {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val audioFormat = AudioFormat.Builder()
@@ -50,20 +53,23 @@ class MicrophoneSource : AudioRecordSource() {
             )
         }
     }
+}
 
-    companion object {
-        /**
-         * Build a [MicrophoneSource] with default effects.
-         */
-        fun buildDefaultMicrophoneSource(): MicrophoneSource {
-            return MicrophoneSource().apply {
-                if (isEffectAvailable(AudioEffect.EFFECT_TYPE_AEC)) {
-                    addEffect(AudioEffect.EFFECT_TYPE_AEC)
-                }
-                if (isEffectAvailable(AudioEffect.EFFECT_TYPE_NS)) {
-                    addEffect(AudioEffect.EFFECT_TYPE_NS)
-                }
-            }
-        }
+/**
+ * A factory to create a [MicrophoneSource].
+ *
+ * @param effects a set of audio effects to apply to the audio source
+ */
+class MicrophoneSourceFactory(
+    effects: Set<UUID> = setOf(
+        AudioEffect.EFFECT_TYPE_AEC,
+        AudioEffect.EFFECT_TYPE_NS
+    )
+) :
+    AudioRecordSourceFactory(effects) {
+    override suspend fun createImpl(context: Context) = MicrophoneSource()
+
+    override fun isSourceEquals(source: IAudioSourceInternal?): Boolean {
+        return source is MicrophoneSource
     }
 }

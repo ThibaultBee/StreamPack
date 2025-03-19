@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.pipelines.inputs
 
+import android.content.Context
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal
 import io.github.thibaultbee.streampack.core.elements.processing.video.SurfaceProcessor
@@ -25,6 +26,8 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSour
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -44,6 +47,7 @@ import kotlinx.coroutines.withContext
  * A internal class that manages a video source and a video processor.
  */
 internal class VideoInput(
+    private val context: Context,
     dynamicRangeProfileHint: DynamicRangeProfile = DynamicRangeProfile.sdr,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
@@ -102,12 +106,38 @@ internal class VideoInput(
     private val outputMutex = Mutex()
     private val surfaceOutput = mutableListOf<AbstractSurfaceOutput>()
 
-    suspend fun setVideoSource(newVideoSource: IVideoSourceInternal) =
+    suspend fun setVideoSource(videoSourceFactory: IVideoSourceInternal.Factory) =
         withContext(coroutineDispatcher) {
             mutex.withLock {
-                // Prepare new video source
                 val previousVideoSource = videoSourceInternalFlow.value
                 val isStreaming = previousVideoSource?.isStreamingFlow?.value ?: false
+
+                if (videoSourceFactory.isSourceEquals(previousVideoSource)) {
+                    Logger.i(TAG, "Video source is already set, skipping")
+                    return@withContext
+                }
+
+                if ((previousVideoSource is CameraSource) && (videoSourceFactory is CameraSourceFactory)) {
+                    if (previousVideoSource.cameraId == videoSourceFactory.cameraId) {
+                        Logger.i(
+                            TAG,
+                            "Camera id ${previousVideoSource.cameraId} is already set, skipping"
+                        )
+                        return@withContext
+                    }
+
+                    /**
+                     * It is not possible to have 2 camera sources at the same time because of
+                     * camera2 API. If the new video source is a camera source and the current one
+                     * is a camera source, we release the current one ASAP.
+                     */
+                    previousVideoSource.stopStream()
+                    previousVideoSource.release()
+                }
+
+                // Prepare new video source
+                val newVideoSource = videoSourceFactory.create(context)
+
                 videoSourceConfig?.let {
                     newVideoSource.configure(it)
                     addSourceSurface(

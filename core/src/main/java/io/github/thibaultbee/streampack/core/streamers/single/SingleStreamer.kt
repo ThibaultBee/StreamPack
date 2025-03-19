@@ -94,8 +94,8 @@ open class SingleStreamer(
     override val audioEncoder: IEncoder?
         get() = pipelineOutput.audioEncoder
 
-    override suspend fun setAudioSource(audioSource: IAudioSourceInternal) =
-        pipeline.setAudioSource(audioSource)
+    override suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory) =
+        pipeline.setAudioSource(audioSourceFactory)
 
     // VIDEO
     /**
@@ -106,11 +106,8 @@ open class SingleStreamer(
     override val videoEncoder: IEncoder?
         get() = pipelineOutput.videoEncoder
 
-    override suspend fun setVideoSource(videoSource: IVideoSourceInternal) =
-        pipeline.setVideoSource(videoSource)
-
-    @RequiresPermission(Manifest.permission.CAMERA)
-    override suspend fun setCameraId(cameraId: String) = pipeline.setCameraId(cameraId)
+    override suspend fun setVideoSource(videoSourceFactory: IVideoSourceInternal.Factory) =
+        pipeline.setVideoSource(videoSourceFactory)
 
     // ENDPOINT
     override val endpoint: IEndpoint

@@ -51,8 +51,8 @@ class StreamerPipelineTest {
 
     private suspend fun buildStreamerPipeline(
         context: Context,
-        audioSource: IAudioSourceInternal?,
-        videoSource: IVideoSourceInternal?
+        audioSource: IAudioSourceInternal.Factory?,
+        videoSource: IVideoSourceInternal.Factory?
     ): StreamerPipeline {
         val pipeline = StreamerPipeline(
             context,
@@ -69,13 +69,17 @@ class StreamerPipelineTest {
     fun testStartStreamSources() = runTest {
         val timestampOffset = 1234L
 
-        val audioSource = StubAudioSource()
-        val videoSource = StubVideoSurfaceSource(timestampOffsetInNs = timestampOffset)
-
         val output = StubAudioSyncVideoSurfacePipelineOutputInternal(resolution = Size(640, 480))
 
-        streamerPipeline = buildStreamerPipeline(context, audioSource, videoSource)
+        streamerPipeline = buildStreamerPipeline(
+            context,
+            StubAudioSource.Factory(),
+            StubVideoSurfaceSource.Factory(timestampOffsetInNs = timestampOffset)
+        )
         streamerPipeline.addOutput(output)
+
+        val audioSource = streamerPipeline.audioSourceFlow.value as IAudioSourceInternal
+        val videoSource = streamerPipeline.videoSourceFlow.value as IVideoSourceInternal
 
         streamerPipeline.startStream()
         assertTrue(streamerPipeline.isStreamingFlow.first { it })
@@ -95,8 +99,8 @@ class StreamerPipelineTest {
 
         streamerPipeline = buildStreamerPipeline(
             context,
-            StubAudioSource(),
-            StubVideoSurfaceSource()
+            StubAudioSource.Factory(),
+            StubVideoSurfaceSource.Factory()
         )
         streamerPipeline.addOutput(output)
 
@@ -123,8 +127,8 @@ class StreamerPipelineTest {
 
         streamerPipeline = buildStreamerPipeline(
             context,
-            StubAudioSource(),
-            StubVideoSurfaceSource()
+            StubAudioSource.Factory(),
+            StubVideoSurfaceSource.Factory()
         )
         streamerPipeline.addOutput(firstOutput)
         streamerPipeline.addOutput(secondOutput)
@@ -143,8 +147,8 @@ class StreamerPipelineTest {
 
         streamerPipeline = buildStreamerPipeline(
             context,
-            StubAudioSource(),
-            StubVideoSurfaceSource()
+            StubAudioSource.Factory(),
+            StubVideoSurfaceSource.Factory()
         )
         streamerPipeline.addOutput(firstOutput)
         streamerPipeline.addOutput(secondOutput)
@@ -167,8 +171,8 @@ class StreamerPipelineTest {
 
         streamerPipeline = buildStreamerPipeline(
             context,
-            StubAudioSource(),
-            StubVideoSurfaceSource()
+            StubAudioSource.Factory(),
+            StubVideoSurfaceSource.Factory()
         )
         streamerPipeline.addOutput(firstOutput)
         streamerPipeline.addOutput(secondOutput)
@@ -187,8 +191,8 @@ class StreamerPipelineTest {
 
         streamerPipeline = buildStreamerPipeline(
             context,
-            StubAudioSource(),
-            StubVideoSurfaceSource()
+            StubAudioSource.Factory(),
+            StubVideoSurfaceSource.Factory()
         )
         streamerPipeline.addOutput(firstOutput)
         streamerPipeline.addOutput(secondOutput)
@@ -210,8 +214,8 @@ class StreamerPipelineTest {
     fun testWithoutOutput() = runTest {
         streamerPipeline = buildStreamerPipeline(
             context,
-            StubAudioSource(),
-            StubVideoSurfaceSource()
+            StubAudioSource.Factory(),
+            StubVideoSurfaceSource.Factory()
         )
 
         try {
@@ -228,8 +232,8 @@ class StreamerPipelineTest {
 
         streamerPipeline = buildStreamerPipeline(
             context,
-            StubAudioSource(),
-            StubVideoSurfaceSource()
+            StubAudioSource.Factory(),
+            StubVideoSurfaceSource.Factory()
         )
         streamerPipeline.addOutput(output)
 
@@ -252,8 +256,8 @@ class StreamerPipelineTest {
 
         streamerPipeline = buildStreamerPipeline(
             context,
-            StubAudioSource(),
-            StubVideoSurfaceSource()
+            StubAudioSource.Factory(),
+            StubVideoSurfaceSource.Factory()
         )
         streamerPipeline.addOutput(output)
 
@@ -275,8 +279,8 @@ class StreamerPipelineTest {
 
         streamerPipeline = buildStreamerPipeline(
             context,
-            StubAudioSource(),
-            StubVideoSurfaceSource()
+            StubAudioSource.Factory(),
+            StubVideoSurfaceSource.Factory()
         )
         streamerPipeline.addOutput(firstOutput)
         streamerPipeline.addOutput(secondOutput)
@@ -299,8 +303,8 @@ class StreamerPipelineTest {
 
         streamerPipeline = buildStreamerPipeline(
             context,
-            StubAudioSource(),
-            StubVideoSurfaceSource()
+            StubAudioSource.Factory(),
+            StubVideoSurfaceSource.Factory()
         )
         streamerPipeline.addOutput(firstOutput)
         streamerPipeline.addOutput(secondOutput)
@@ -325,8 +329,8 @@ class StreamerPipelineTest {
 
         streamerPipeline = buildStreamerPipeline(
             context,
-            StubAudioSource(),
-            StubVideoSurfaceSource()
+            StubAudioSource.Factory(),
+            StubVideoSurfaceSource.Factory()
         )
         streamerPipeline.addOutput(firstOutput)
         streamerPipeline.addOutput(secondOutput)
@@ -347,8 +351,8 @@ class StreamerPipelineTest {
     fun testStopStream() = runTest {
         streamerPipeline = buildStreamerPipeline(
             context,
-            StubAudioSource(),
-            StubVideoSurfaceSource()
+            StubAudioSource.Factory(),
+            StubVideoSurfaceSource.Factory()
         )
         streamerPipeline.stopStream()
     }
@@ -357,8 +361,8 @@ class StreamerPipelineTest {
     fun testRelease() = runTest {
         streamerPipeline = buildStreamerPipeline(
             context,
-            StubAudioSource(),
-            StubVideoSurfaceSource()
+            StubAudioSource.Factory(),
+            StubVideoSurfaceSource.Factory()
         )
         streamerPipeline.release()
     }

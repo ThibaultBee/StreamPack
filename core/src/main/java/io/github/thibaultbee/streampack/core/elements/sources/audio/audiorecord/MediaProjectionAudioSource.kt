@@ -20,6 +20,7 @@ import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioPlaybackCaptureConfiguration
 import android.media.AudioRecord
+import android.media.audiofx.AudioEffect
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
@@ -27,6 +28,8 @@ import androidx.activity.result.ActivityResult
 import androidx.annotation.RequiresApi
 import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import java.util.UUID
 
 /**
  * The [MediaProjectionAudioSource] class is an implementation of [AudioRecordSource] that
@@ -35,7 +38,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceC
  * @param context The application context
  */
 @RequiresApi(Build.VERSION_CODES.Q)
-fun MediaProjectionAudioSource(
+internal fun MediaProjectionAudioSource(
     context: Context,
 ) = MediaProjectionAudioSource(
     context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager,
@@ -48,7 +51,7 @@ fun MediaProjectionAudioSource(
  * @param mediaProjectionManager The media projection manager
  */
 @RequiresApi(Build.VERSION_CODES.Q)
-class MediaProjectionAudioSource(
+internal class MediaProjectionAudioSource(
     private val mediaProjectionManager: MediaProjectionManager,
 ) : AudioRecordSource(), IMediaProjectionSource {
     private var mediaProjection: MediaProjection? = null
@@ -90,5 +93,20 @@ class MediaProjectionAudioSource(
 
         mediaProjection?.stop()
         mediaProjection = null
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.Q)
+class MediaProjectionAudioSourceFactory(
+    effects: Set<UUID> = setOf(
+        AudioEffect.EFFECT_TYPE_AEC,
+        AudioEffect.EFFECT_TYPE_NS
+    )
+) : AudioRecordSourceFactory(effects) {
+    override suspend fun createImpl(context: Context) =
+        MediaProjectionAudioSource(context)
+
+    override fun isSourceEquals(source: IAudioSourceInternal?): Boolean {
+        return source is MediaProjectionAudioSource
     }
 }

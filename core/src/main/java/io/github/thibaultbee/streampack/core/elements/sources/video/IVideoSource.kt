@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.video
 
+import android.content.Context
 import io.github.thibaultbee.streampack.core.elements.interfaces.Configurable
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamable
@@ -43,5 +44,23 @@ interface IVideoSourceInternal : IVideoSource,
      * Flow of the last streaming state.
      */
     val isStreamingFlow: StateFlow<Boolean>
+
+    /**
+     * A factory to build an [IVideoSourceInternal].
+     */
+    interface Factory {
+        /**
+         * Creates an [IVideoSourceInternal] instance.
+         *
+         * @param context the application context
+         * @return an [IVideoSourceInternal]
+         */
+        suspend fun create(context: Context): IVideoSourceInternal
+
+        /**
+         * Whether the source that will be created by [create] is equal to another source.
+         */
+        fun isSourceEquals(source: IVideoSourceInternal?): Boolean
+    }
 }
 

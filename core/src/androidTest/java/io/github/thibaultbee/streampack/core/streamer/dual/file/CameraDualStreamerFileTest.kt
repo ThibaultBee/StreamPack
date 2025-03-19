@@ -56,7 +56,6 @@ class CameraDualStreamerFileTest(
             if (firstEndpointFactory != null && secondEndpointFactory != null) {
                 CameraDualStreamer(
                     context,
-                    audioSourceInternal = MicrophoneSource.buildDefaultMicrophoneSource(),
                     firstEndpointInternalFactory = firstEndpointFactory,
                     secondEndpointInternalFactory = secondEndpointFactory
                 )

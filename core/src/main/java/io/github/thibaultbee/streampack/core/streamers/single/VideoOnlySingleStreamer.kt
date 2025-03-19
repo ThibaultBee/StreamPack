@@ -29,19 +29,19 @@ import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
  * Creates a [VideoOnlySingleStreamer] with a default video source.
  *
  * @param context the application context
- * @param videoSourceInternal the video source implementation. If member is set to null, no audio source are set. It can be set later with [VideoOnlySingleStreamer.setVideoSource].
+ * @param videoSourceInternalFactory the video source factory. If parameter is null, no audio source are set. It can be set later with [VideoOnlySingleStreamer.setVideoSource].
  * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  */
 suspend fun VideoOnlySingleStreamer(
     context: Context,
-    videoSourceInternal: IVideoSourceInternal?,
+    videoSourceInternalFactory: IVideoSourceInternal.Factory?,
     endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
 ): VideoOnlySingleStreamer {
     val streamer = VideoOnlySingleStreamer(
         context = context,
         endpointInternalFactory = endpointInternalFactory
     )
-    videoSourceInternal?.let { streamer.setVideoSource(it) }
+    videoSourceInternalFactory?.let { streamer.setVideoSource(it) }
     return streamer
 }
 
@@ -85,10 +85,8 @@ class VideoOnlySingleStreamer internal constructor(
         get() = streamer.videoEncoder
     override val videoSourceFlow = streamer.videoSourceFlow
 
-    override suspend fun setVideoSource(videoSource: IVideoSourceInternal) =
-        streamer.setVideoSource(videoSource)
-
-    override suspend fun setCameraId(cameraId: String) = streamer.setCameraId(cameraId)
+    override suspend fun setVideoSource(videoSourceFactory: IVideoSourceInternal.Factory) =
+        streamer.setVideoSource(videoSourceFactory)
 
     override fun getInfo(descriptor: MediaDescriptor) = streamer.getInfo(descriptor)
 

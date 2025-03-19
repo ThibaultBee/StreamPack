@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.audio
 
+import android.content.Context
 import io.github.thibaultbee.streampack.core.elements.interfaces.Configurable
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.interfaces.Streamable
@@ -26,6 +27,23 @@ interface IAudioSourceInternal : IAudioSource, IAudioFrameSourceInternal, Stream
      * Flow of the last streaming state.
      */
     val isStreamingFlow: StateFlow<Boolean>
+
+    /**
+     * A factory to build an [IAudioSourceInternal].
+     */
+    interface Factory {
+        /**
+         * Creates an [IAudioSourceInternal] instance.
+         *
+         * @return an [IAudioSourceInternal]
+         */
+        suspend fun create(context: Context): IAudioSourceInternal
+
+        /**
+         * Whether the source that will be created by [create] is equal to another source.
+         */
+        fun isSourceEquals(source: IAudioSourceInternal?): Boolean
+    }
 }
 
 interface IAudioSource

@@ -39,8 +39,8 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.streamers.orientation.IRotationProvider
 import io.github.thibaultbee.streampack.core.streamers.orientation.SensorRotationProvider
 import io.github.thibaultbee.streampack.core.streamers.single.ScreenRecorderSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.services.utils.NotificationUtils
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -76,7 +76,7 @@ abstract class DefaultScreenRecorderService(
     @StringRes protected val channelDescriptionResourceId: Int = 0,
     @DrawableRes protected val notificationIconResourceId: Int = R.drawable.ic_baseline_linked_camera_24
 ) : LifecycleService(), IRotationProvider.Listener {
-    protected var streamer: ScreenRecorderSingleStreamer? = null
+    protected var streamer: SingleStreamer? = null
         private set
 
     protected open val rotationProvider: IRotationProvider by lazy { SensorRotationProvider(this) }
@@ -119,7 +119,7 @@ abstract class DefaultScreenRecorderService(
         try {
             val customBundle = intent.extras?.getBundle(CUSTOM_BUNDLE_KEY)
                 ?: throw IllegalStateException("Config bundle must be pass to the service")
-            
+
             streamer = runBlocking { createStreamer(customBundle) }.apply {
                 lifecycleScope.launch {
                     throwableFlow.filterNotNull().collect { t ->
@@ -155,7 +155,7 @@ abstract class DefaultScreenRecorderService(
      * @param customBundle the custom bundle passed as [launch] parameter.
      * @return the streamer to use.
      */
-    open suspend fun createStreamer(customBundle: Bundle): ScreenRecorderSingleStreamer {
+    open suspend fun createStreamer(customBundle: Bundle): SingleStreamer {
         val enableMicrophone = customBundle.getBoolean(ENABLE_MICROPHONE_KEY, false)
         if (enableMicrophone) {
             if (ActivityCompat.checkSelfPermission(
@@ -262,7 +262,7 @@ abstract class DefaultScreenRecorderService(
     }
 
     protected inner class ScreenRecorderServiceBinder : Binder() {
-        val streamer: ScreenRecorderSingleStreamer?
+        val streamer: SingleStreamer?
             get() = this@DefaultScreenRecorderService.streamer
     }
 
@@ -291,7 +291,7 @@ abstract class DefaultScreenRecorderService(
         fun launch(
             context: Context,
             serviceClass: Class<out DefaultScreenRecorderService>,
-            onServiceCreated: (ScreenRecorderSingleStreamer) -> Unit,
+            onServiceCreated: (SingleStreamer) -> Unit,
             onServiceDisconnected: (name: ComponentName?) -> Unit = {},
             customBundle: Bundle = Bundle(),
             enableAudio: Boolean = false

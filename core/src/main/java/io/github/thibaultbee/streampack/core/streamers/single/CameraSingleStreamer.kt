@@ -20,29 +20,32 @@ import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
-import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource.Companion.buildDefaultMicrophoneSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.streamers.interfaces.setCameraId
 
 /**
  * Creates a [CameraSingleStreamer] with a default audio source.
  *
  * @param context the application context
- * @param audioSourceInternal the audio source implementation. By default, it is the default microphone source.
+ * @param cameraId the camera id to use. By default, it is the default camera.
+ * @param audioSourceInternalFactory the audio source factory. By default, it is the default microphone source factory.
  * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 suspend fun CameraSingleStreamer(
     context: Context,
-    audioSourceInternal: IAudioSourceInternal = buildDefaultMicrophoneSource(),
+    cameraId: String = context.defaultCameraId,
+    audioSourceInternalFactory: IAudioSourceInternal.Factory = MicrophoneSourceFactory(),
     endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ): SingleStreamer {
     val streamer = CameraSingleStreamer(
-        context, true, endpointInternalFactory, defaultRotation
+        context, true, cameraId, endpointInternalFactory, defaultRotation
     )
-    streamer.setAudioSource(audioSourceInternal)
+    streamer.setAudioSource(audioSourceInternalFactory)
     return streamer
 }
 
@@ -51,19 +54,20 @@ suspend fun CameraSingleStreamer(
  *
  * @param context the application context
  * @param hasAudio [Boolean.true] if the streamer will capture audio.
+ * @param cameraId the camera id to use. By default, it is the default camera.
  * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 suspend fun CameraSingleStreamer(
     context: Context,
     hasAudio: Boolean,
+    cameraId: String = context.defaultCameraId,
     endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ): SingleStreamer {
-    val source = CameraSource(context)
     val streamer = SingleStreamer(
         context, hasAudio, hasVideo = true, endpointInternalFactory, defaultRotation
     )
-    streamer.setVideoSource(source)
+    streamer.setCameraId(cameraId)
     return streamer
 }

@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.pipelines.inputs
 
+import android.content.Context
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.processing.audio.AudioFrameProcessor
 import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
@@ -24,7 +25,6 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,11 +36,11 @@ import kotlinx.coroutines.withContext
  * A internal class that manages an audio source and an audio processor.
  */
 internal class AudioInput(
+    private val context: Context,
     onFrame: (RawFrame) -> Unit,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
     private val audioSourceMutex = Mutex()
-    private var isStreamingJob: Job? = null
 
     // SOURCE
     private var audioSourceInternalFlow = MutableStateFlow<IAudioSourceInternal?>(null)
@@ -89,14 +89,22 @@ internal class AudioInput(
     /**
      * Sets a new audio source.
      *
-     * @param newAudioSource The new audio source.
+     * @param audioSourceFactory The new audio source factory.
      */
-    suspend fun setAudioSource(newAudioSource: IAudioSourceInternal) =
+    suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory) =
         withContext(coroutineDispatcher) {
             audioSourceMutex.withLock {
-                // Set new audio source
                 val previousAudioSource = audioSourceInternalFlow.value
                 val isStreaming = previousAudioSource?.isStreamingFlow?.value ?: false
+
+                if (audioSourceFactory.isSourceEquals(previousAudioSource)) {
+                    Logger.i(TAG, "Audio source is already set, skipping")
+                    return@withContext
+                }
+
+                // Prepare new video source
+                val newAudioSource = audioSourceFactory.create(context)
+
                 audioSourceConfig?.let { newAudioSource.configure(it) }
                 if (isStreaming) {
                     newAudioSource.startStream()

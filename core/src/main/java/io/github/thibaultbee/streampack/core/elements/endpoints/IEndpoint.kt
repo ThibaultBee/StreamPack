@@ -77,7 +77,7 @@ interface IEndpointInternal : IEndpoint, SuspendStreamable,
      */
     interface Factory {
         /**
-         * Builds an [IEndpointInternal].
+         * Creates an [IEndpointInternal] instance.
          *
          * @param context the application context
          * @return an [IEndpointInternal]

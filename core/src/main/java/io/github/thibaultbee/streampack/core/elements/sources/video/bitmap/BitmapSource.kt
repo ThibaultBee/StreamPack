@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.video.bitmap
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.util.Size
 import android.view.Surface
@@ -35,7 +36,8 @@ import java.util.concurrent.TimeUnit
  *
  * Only for testing purpose.
  */
-class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSource(), IVideoSourceInternal,
+internal class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSource(),
+    IVideoSourceInternal,
     ISurfaceSourceInternal,
     IBitmapSource {
     override val timestampOffsetInNs = 0L
@@ -159,5 +161,20 @@ class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSource(), I
             canvas.drawBitmap(bitmap, 0f, 0f, null)
             it.unlockCanvasAndPost(canvas)
         }
+    }
+}
+
+/**
+ * A factory to create a [BitmapSource].
+ *
+ * @param bitmap the [Bitmap] to stream.
+ */
+class BitmapSourceFactory(private val bitmap: Bitmap) : IVideoSourceInternal.Factory {
+    override suspend fun create(context: Context): IVideoSourceInternal {
+        return BitmapSource(bitmap)
+    }
+
+    override fun isSourceEquals(source: IVideoSourceInternal?): Boolean {
+        return source is BitmapSource && source.bitmap == bitmap
     }
 }

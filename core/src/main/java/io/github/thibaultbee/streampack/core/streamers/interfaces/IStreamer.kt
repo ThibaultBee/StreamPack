@@ -27,6 +27,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSourceFactory
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
@@ -127,9 +128,9 @@ interface IAudioStreamer {
     /**
      * Sets the audio source.
      *
-     * @param audioSource The audio source to set
+     * @param audioSourceFactory The audio source factory to set
      */
-    suspend fun setAudioSource(audioSource: IAudioSourceInternal)
+    suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory)
 }
 
 /**
@@ -144,17 +145,21 @@ interface IVideoStreamer {
     /**
      * Sets the video source.
      *
-     * @param videoSource The video source to set
+     * @param videoSourceFactory The video source factory to set
      */
-    suspend fun setVideoSource(videoSource: IVideoSourceInternal)
-
-    /**
-     * Sets the video sources to camera source with the corresponding camera id.
-     *
-     * @param cameraId The camera id to set
-     */
-    suspend fun setCameraId(cameraId: String)
+    suspend fun setVideoSource(videoSourceFactory: IVideoSourceInternal.Factory)
 }
+
+/**
+ * Sets the camera id.
+ *
+ * Same as [setVideoSource] with a [CameraSourceFactory].
+ *
+ * @param cameraId the camera id
+ */
+@RequiresPermission(Manifest.permission.CAMERA)
+suspend fun IVideoStreamer.setCameraId(cameraId: String) =
+    setVideoSource(CameraSourceFactory(cameraId))
 
 /**
  * Whether the video source has a preview.
