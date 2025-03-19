@@ -15,11 +15,9 @@
  */
 package io.github.thibaultbee.streampack.core.pipelines
 
-import android.Manifest
 import android.content.Context
 import android.util.Size
 import android.view.Surface
-import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
@@ -33,7 +31,6 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isCompatibleWith
@@ -93,7 +90,7 @@ open class StreamerPipeline(
 
     // INPUTS
     private val audioInput = if (hasAudio) {
-        AudioInput(::queueAudioFrame)
+        AudioInput(context, ::queueAudioFrame)
     } else {
         null
     }
@@ -112,7 +109,7 @@ open class StreamerPipeline(
     override val audioProcessor: IAudioFrameProcessor? = audioInput?.audioProcessor
 
     private val videoInput = if (hasVideo) {
-        VideoInput()
+        VideoInput(context)
     } else {
         null
     }
@@ -161,10 +158,10 @@ open class StreamerPipeline(
         }
     }
 
-    override suspend fun setAudioSource(audioSource: IAudioSourceInternal) {
+    override suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory) {
         require(hasAudio) { "Do not need to set audio as it is a video only streamer" }
         val input = requireNotNull(audioInput) { "Audio input is not set" }
-        input.setAudioSource(audioSource)
+        input.setAudioSource(audioSourceFactory)
     }
 
     private suspend fun setAudioSourceConfig(value: AudioSourceConfig) {
@@ -187,22 +184,11 @@ open class StreamerPipeline(
      *
      * The previous video source will be released unless its preview is still running.
      */
-    override suspend fun setVideoSource(videoSource: IVideoSourceInternal) {
+    override suspend fun setVideoSource(videoSourceFactory: IVideoSourceInternal.Factory) {
         require(hasVideo) { "Do not need to set video as it is an audio only streamer" }
         val input = requireNotNull(videoInput) { "Video input is not set" }
-        input.setVideoSource(videoSource)
+        input.setVideoSource(videoSourceFactory)
     }
-
-    /**
-     * Sets the camera id.
-     *
-     * Same as [setVideoSource] with a [CameraSource].
-     *
-     * @param cameraId the camera id
-     */
-    @RequiresPermission(Manifest.permission.CAMERA)
-    override suspend fun setCameraId(cameraId: String) =
-        setVideoSource(CameraSource(context, cameraId))
 
     private suspend fun setVideoSourceConfig(value: VideoSourceConfig) {
         require(hasVideo) { "Do not need to set video as it is an audio only streamer" }

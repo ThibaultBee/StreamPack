@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord
 
 import android.Manifest
+import android.content.Context
 import android.media.AudioRecord
 import android.media.AudioTimestamp
 import android.media.audiofx.AudioEffect
@@ -26,6 +27,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceC
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordEffect.Companion.isValidUUID
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordEffect.Factory.Companion.getFactoryForEffectType
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordSource.Companion.isEffectAvailable
 import io.github.thibaultbee.streampack.core.elements.utils.TimeUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.type
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -38,7 +40,7 @@ import java.util.UUID
  * The [AudioRecordSource] class is an implementation of [IAudioSourceInternal] that captures audio
  * from [AudioRecord].
  */
-sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
+internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
     private var audioRecord: AudioRecord? = null
     private var bufferSize: Int? = null
 
@@ -307,6 +309,26 @@ sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
 
         companion object {
             private const val TAG = "EffectProcessor"
+        }
+    }
+}
+
+
+abstract class AudioRecordSourceFactory(
+    private val effects: Set<UUID>
+) : IAudioSourceInternal.Factory {
+    /**
+     * Create an [AudioRecordSource] implementation.
+     */
+    internal abstract suspend fun createImpl(context: Context): AudioRecordSource
+
+    override suspend fun create(context: Context): IAudioSourceInternal {
+        return createImpl(context).apply {
+            effects.forEach { effect ->
+                if (isEffectAvailable(effect)) {
+                    addEffect(effect)
+                }
+            }
         }
     }
 }

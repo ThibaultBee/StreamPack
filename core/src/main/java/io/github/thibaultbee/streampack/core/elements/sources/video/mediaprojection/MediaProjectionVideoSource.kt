@@ -35,7 +35,7 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class MediaProjectionVideoSource(
+internal class MediaProjectionVideoSource(
     private val context: Context
 ) : IVideoSourceInternal, ISurfaceSourceInternal, IMediaProjectionSource {
     override val timestampOffsetInNs = 0L
@@ -141,5 +141,17 @@ class MediaProjectionVideoSource(
         private const val TAG = "ScreenSource"
 
         private const val VIRTUAL_DISPLAY_NAME = "StreamPackScreenSource"
+    }
+}
+
+/**
+ * A factory to create a [MediaProjectionVideoSource].
+ */
+class MediaProjectionVideoSourceFactory : IVideoSourceInternal.Factory {
+    override suspend fun create(context: Context): IVideoSourceInternal =
+        MediaProjectionVideoSource(context)
+
+    override fun isSourceEquals(source: IVideoSourceInternal?): Boolean {
+        return source is MediaProjectionVideoSource
     }
 }

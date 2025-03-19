@@ -40,15 +40,16 @@ import io.github.thibaultbee.streampack.app.ui.main.usecases.BuildStreamerUseCas
 import io.github.thibaultbee.streampack.app.utils.ObservableViewModel
 import io.github.thibaultbee.streampack.app.utils.dataStore
 import io.github.thibaultbee.streampack.app.utils.isEmpty
-import io.github.thibaultbee.streampack.app.utils.switchBackToFront
-import io.github.thibaultbee.streampack.app.utils.toggleCamera
+import io.github.thibaultbee.streampack.app.utils.toggleBackToFront
+import io.github.thibaultbee.streampack.app.utils.setNextCameraId
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
-import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordSource
-import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.BitmapSource
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.IAudioRecordSource
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
+import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.BitmapSourceFactory
+import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.IBitmapSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFrameRateSupported
 import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
@@ -96,7 +97,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
             if (streamer.videoSourceFlow is ICameraSource) {
                 permissions.add(Manifest.permission.CAMERA)
             }
-            if (streamer.audioSourceFlow.value is AudioRecordSource) {
+            if (streamer.audioSourceFlow.value is IAudioRecordSource) {
                 permissions.add(Manifest.permission.RECORD_AUDIO)
             }
             storageRepository.endpointDescriptorFlow.asLiveData().value?.let {
@@ -123,8 +124,8 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     init {
         viewModelScope.launch {
             // Set audio source and video source
-            streamer.setAudioSource(MicrophoneSource.buildDefaultMicrophoneSource())
-            streamer.setVideoSource(CameraSource(application))
+            streamer.setAudioSource(MicrophoneSourceFactory())
+            streamer.setVideoSource(CameraSourceFactory())
         }
         viewModelScope.launch {
             streamer.videoSourceFlow.collect {
@@ -270,7 +271,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         val videoSource = streamer.videoSourceFlow.value
         if (videoSource is ICameraSource) {
             viewModelScope.launch {
-                streamer.switchBackToFront(application)
+                streamer.toggleBackToFront(application)
                 notifySourceChanged()
             }
         }
@@ -287,7 +288,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         val videoSource = streamer.videoSourceFlow.value
         if (videoSource is ICameraSource) {
             viewModelScope.launch {
-                streamer.toggleCamera(application)
+                streamer.setNextCameraId(application)
                 notifySourceChanged()
             }
         }
@@ -298,17 +299,17 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         val videoSource = streamer.videoSourceFlow.value
         viewModelScope.launch {
             val nextSource = when (videoSource) {
-                is CameraSource -> {
-                    BitmapSource(testBitmap)
+                is ICameraSource -> {
+                    BitmapSourceFactory(testBitmap)
                 }
 
-                is BitmapSource -> {
-                    CameraSource(application)
+                is IBitmapSource -> {
+                    CameraSourceFactory()
                 }
 
                 else -> {
                     Log.i(TAG, "Unknown video source. Fallback to camera sources")
-                    CameraSource(application)
+                    CameraSourceFactory()
                 }
             }
             Log.i(TAG, "Switch video source to $nextSource")

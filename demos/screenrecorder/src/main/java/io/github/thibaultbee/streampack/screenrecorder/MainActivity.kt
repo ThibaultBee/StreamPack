@@ -38,8 +38,10 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMe
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecHelper
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
-import io.github.thibaultbee.streampack.core.streamers.single.ScreenRecorderSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
+import io.github.thibaultbee.streampack.core.streamers.single.createScreenRecorderIntent
+import io.github.thibaultbee.streampack.core.streamers.single.setActivityResult
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import io.github.thibaultbee.streampack.screenrecorder.databinding.ActivityMainBinding
@@ -66,7 +68,7 @@ class MainActivity : AppCompatActivity() {
 
     private var connection: ServiceConnection? = null
 
-    private var streamer: ScreenRecorderSingleStreamer? = null
+    private var streamer: SingleStreamer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,7 +108,7 @@ class MainActivity : AppCompatActivity() {
             showPermissionAlertDialog(this) { this.finish() }
         } else {
             getContent.launch(
-                ScreenRecorderSingleStreamer.createScreenRecorderIntent(
+                createScreenRecorderIntent(
                     this
                 )
             )
@@ -120,10 +122,11 @@ class MainActivity : AppCompatActivity() {
                     startStream(requireNotNull(streamer))
                 }
             } else {
-                connection = DefaultScreenRecorderService.launch(this,
+                connection = DefaultScreenRecorderService.launch(
+                    this,
                     DemoScreenRecorderService::class.java,
                     { streamer ->
-                        streamer.activityResult = result
+                        streamer.setActivityResult(result)
                         lifecycleScope.launch {
                             try {
                                 configure(streamer)
@@ -147,7 +150,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-    private suspend fun configure(streamer: ScreenRecorderSingleStreamer) {
+    private fun configure(streamer: SingleStreamer) {
         val deviceRefreshRate =
             (this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager).getDisplay(
                 Display.DEFAULT_DISPLAY
@@ -192,7 +195,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun startStream(streamer: ScreenRecorderSingleStreamer) {
+    private suspend fun startStream(streamer: SingleStreamer) {
         try {
             val descriptor = when (configuration.endpoint.type) {
                 EndpointType.SRT -> SrtMediaDescriptor(

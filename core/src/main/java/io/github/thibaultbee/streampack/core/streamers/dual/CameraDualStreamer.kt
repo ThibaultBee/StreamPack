@@ -20,31 +20,39 @@ import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
-import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource.Companion.buildDefaultMicrophoneSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.streamers.interfaces.setCameraId
 
 /**
  * Creates a [CameraDualStreamer] with a default audio source.
  *
  * @param context the application context
- * @param audioSourceInternal the audio source implementation. By default, it is the default microphone source.
+ * @param cameraId the camera id to use. By default, it is the default camera.
+ * @param audioSourceInternalFactory the audio source factory. By default, it is the default microphone source factory.
  * @param firstEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
  * @param secondEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 suspend fun CameraDualStreamer(
     context: Context,
-    audioSourceInternal: IAudioSourceInternal = buildDefaultMicrophoneSource(),
+    cameraId: String = context.defaultCameraId,
+    audioSourceInternalFactory: IAudioSourceInternal.Factory = MicrophoneSourceFactory(),
     firstEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ): DualStreamer {
     val streamer = CameraDualStreamer(
-        context, true, firstEndpointInternalFactory, secondEndpointInternalFactory, defaultRotation
+        context,
+        true,
+        cameraId,
+        firstEndpointInternalFactory,
+        secondEndpointInternalFactory,
+        defaultRotation
     )
-    streamer.setAudioSource(audioSourceInternal)
+    streamer.setAudioSource(audioSourceInternalFactory)
     return streamer
 }
 
@@ -53,6 +61,7 @@ suspend fun CameraDualStreamer(
  *
  * @param context the application context
  * @param hasAudio [Boolean.true] if the streamer will capture audio.
+ * @param cameraId the camera id to use. By default, it is the default camera.
  * @param firstEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
  * @param secondEndpointInternalFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
@@ -60,11 +69,11 @@ suspend fun CameraDualStreamer(
 suspend fun CameraDualStreamer(
     context: Context,
     hasAudio: Boolean,
+    cameraId: String = context.defaultCameraId,
     firstEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ): DualStreamer {
-    val source = CameraSource(context)
     val streamer = DualStreamer(
         context,
         hasAudio,
@@ -73,6 +82,6 @@ suspend fun CameraDualStreamer(
         secondEndpointInternalFactory,
         defaultRotation
     )
-    streamer.setVideoSource(source)
+    streamer.setCameraId(cameraId)
     return streamer
 }

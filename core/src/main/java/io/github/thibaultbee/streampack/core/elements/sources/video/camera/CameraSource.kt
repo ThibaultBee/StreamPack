@@ -44,7 +44,7 @@ import kotlinx.coroutines.sync.withLock
  * Creates a [CameraSource] from a [Context].
  */
 @RequiresPermission(Manifest.permission.CAMERA)
-suspend fun CameraSource(context: Context, cameraId: String = context.defaultCameraId) =
+internal suspend fun CameraSource(context: Context, cameraId: String) =
     CameraSource(context.getSystemService(Context.CAMERA_SERVICE) as CameraManager, cameraId)
 
 
@@ -52,8 +52,8 @@ suspend fun CameraSource(context: Context, cameraId: String = context.defaultCam
  * Creates a [CameraSource] from a [CameraManager].
  */
 @RequiresPermission(Manifest.permission.CAMERA)
-suspend fun CameraSource(
-    manager: CameraManager, cameraId: String = manager.defaultCameraId
+internal suspend fun CameraSource(
+    manager: CameraManager, cameraId: String
 ): CameraSource {
     require(manager.cameras.contains(cameraId)) {
         "Camera $cameraId is not available"
@@ -67,7 +67,7 @@ suspend fun CameraSource(
  *
  * Based on Camera2 API.
  */
-class CameraSource internal constructor(
+internal class CameraSource(
     private val manager: CameraManager, private val controller: CameraController
 ) : ICameraSourceInternal, ICameraSource, AbstractPreviewableSource() {
     override val settings by lazy { CameraSettings(manager, controller) }

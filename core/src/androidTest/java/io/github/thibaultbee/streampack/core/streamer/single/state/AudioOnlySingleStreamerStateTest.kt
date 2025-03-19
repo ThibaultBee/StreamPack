@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.streamer.single.state
 import androidx.core.net.toUri
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
-import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreamerConfigUtils
 import io.github.thibaultbee.streampack.core.streamers.single.AudioOnlySingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
@@ -35,7 +35,7 @@ class AudioOnlySingleStreamerStateTest(private val descriptor: MediaDescriptor) 
     DeviceTest(withCamera = false) {
     private val streamer by lazy {
         runBlocking {
-            AudioOnlySingleStreamer(context).apply { setAudioSource(MicrophoneSource.buildDefaultMicrophoneSource()) }
+            AudioOnlySingleStreamer(context, MicrophoneSourceFactory())
         }
     }
 

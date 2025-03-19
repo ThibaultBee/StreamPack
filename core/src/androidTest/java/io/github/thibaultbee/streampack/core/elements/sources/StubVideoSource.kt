@@ -1,5 +1,6 @@
 package io.github.thibaultbee.streampack.core.elements.sources
 
+import android.content.Context
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
@@ -25,6 +26,16 @@ class StubVideoSurfaceSource(override val timestampOffsetInNs: Long = 0) : StubV
     override suspend fun resetOutput() {
         outputSurface = null
     }
+
+    class Factory(val timestampOffsetInNs: Long = 0) : IVideoSourceInternal.Factory {
+        override suspend fun create(context: Context): IVideoSourceInternal {
+            return StubVideoSurfaceSource(timestampOffsetInNs)
+        }
+
+        override fun isSourceEquals(source: IVideoSourceInternal?): Boolean {
+            return source is StubVideoSurfaceSource
+        }
+    }
 }
 
 class StubVideoFrameSource : StubVideoSource(), IVideoFrameSourceInternal {
@@ -33,6 +44,16 @@ class StubVideoFrameSource : StubVideoSource(), IVideoFrameSourceInternal {
             buffer,
             0L
         )
+    }
+
+    class Factory : IVideoSourceInternal.Factory {
+        override suspend fun create(context: Context): IVideoSourceInternal {
+            return StubVideoFrameSource()
+        }
+
+        override fun isSourceEquals(source: IVideoSourceInternal?): Boolean {
+            return source is StubVideoFrameSource
+        }
     }
 }
 

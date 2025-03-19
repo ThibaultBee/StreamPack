@@ -22,7 +22,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointF
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
-import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource.Companion.buildDefaultMicrophoneSource
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 
@@ -30,19 +30,19 @@ import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
  * Creates a [AudioOnlySingleStreamer] with a default audio source.
  *
  * @param context the application context
- * @param audioSourceInternal the audio source implementation. By default, it is the default microphone source. If member is set to null, no audio source are set. It can be set later with [AudioOnlySingleStreamer.setAudioSource].
+ * @param audioSourceInternalFactory the audio source factory. By default, it is the default microphone source factory. If parameter is null, no audio source are set. It can be set later with [AudioOnlySingleStreamer.setAudioSource].
  * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  */
 suspend fun AudioOnlySingleStreamer(
     context: Context,
-    audioSourceInternal: IAudioSourceInternal? = buildDefaultMicrophoneSource(),
+    audioSourceInternalFactory: IAudioSourceInternal.Factory? = MicrophoneSourceFactory(),
     endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
 ): AudioOnlySingleStreamer {
     val streamer = AudioOnlySingleStreamer(
         context = context,
         endpointInternalFactory = endpointInternalFactory,
     )
-    audioSourceInternal?.let { streamer.setAudioSource(it) }
+    audioSourceInternalFactory?.let { streamer.setAudioSource(it) }
     return streamer
 }
 
@@ -82,8 +82,8 @@ class AudioOnlySingleStreamer internal constructor(
     override suspend fun setAudioConfig(audioConfig: AudioConfig) =
         streamer.setAudioConfig(audioConfig)
 
-    override suspend fun setAudioSource(audioSource: IAudioSourceInternal) =
-        streamer.setAudioSource(audioSource)
+    override suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory) =
+        streamer.setAudioSource(audioSourceFactory)
 
     override suspend fun open(descriptor: MediaDescriptor) = streamer.open(descriptor)
 
