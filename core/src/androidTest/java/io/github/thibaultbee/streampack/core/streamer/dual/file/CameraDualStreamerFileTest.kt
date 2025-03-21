@@ -25,7 +25,6 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInterna
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.Mp4Muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
-import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource
 import io.github.thibaultbee.streampack.core.streamer.dual.utils.DualStreamerConfigUtils
 import io.github.thibaultbee.streampack.core.streamer.utils.StreamerUtils
 import io.github.thibaultbee.streampack.core.streamer.utils.VideoUtils
@@ -56,13 +55,13 @@ class CameraDualStreamerFileTest(
             if (firstEndpointFactory != null && secondEndpointFactory != null) {
                 CameraDualStreamer(
                     context,
-                    firstEndpointInternalFactory = firstEndpointFactory,
-                    secondEndpointInternalFactory = secondEndpointFactory
+                    firstEndpointFactory = firstEndpointFactory,
+                    secondEndpointFactory = secondEndpointFactory
                 )
             } else if (firstEndpointFactory != null) {
-                CameraDualStreamer(context, firstEndpointInternalFactory = firstEndpointFactory)
+                CameraDualStreamer(context, firstEndpointFactory = firstEndpointFactory)
             } else if (secondEndpointFactory != null) {
-                CameraDualStreamer(context, secondEndpointInternalFactory = secondEndpointFactory)
+                CameraDualStreamer(context, secondEndpointFactory = secondEndpointFactory)
             } else {
                 CameraDualStreamer(context)
             }

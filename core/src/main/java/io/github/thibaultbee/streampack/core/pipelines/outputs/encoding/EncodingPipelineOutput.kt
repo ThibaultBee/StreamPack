@@ -63,7 +63,7 @@ import kotlinx.coroutines.withContext
  * @param context The application context
  * @param hasAudio whether the output has audio.
  * @param hasVideo whether the output has video.
- * @param endpointInternalFactory The endpoint factory implementation
+ * @param endpointFactory The endpoint factory implementation
  * @param defaultRotation The default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param coroutineDispatcher The coroutine dispatcher to use. By default, it is [Dispatchers.Default]
  */
@@ -71,7 +71,7 @@ internal class EncodingPipelineOutput(
     private val context: Context,
     override val hasAudio: Boolean = true,
     override val hasVideo: Boolean = true,
-    endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : IConfigurableEncodingPipelineOutput, IEncodingPipelineOutputInternal,
@@ -116,7 +116,7 @@ internal class EncodingPipelineOutput(
         get() = videoEncoderInternal
 
     // ENDPOINT
-    private val endpointInternal: IEndpointInternal = endpointInternalFactory.create(context)
+    private val endpointInternal: IEndpointInternal = endpointFactory.create(context)
     override val endpoint: IEndpoint
         get() = endpointInternal
 

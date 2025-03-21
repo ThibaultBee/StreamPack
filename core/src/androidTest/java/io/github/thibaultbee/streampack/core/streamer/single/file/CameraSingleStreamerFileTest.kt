@@ -50,7 +50,7 @@ class CameraSingleStreamerFileTest(
     private val streamer by lazy {
         runBlocking {
             if (endpointFactory != null) {
-                CameraSingleStreamer(context, endpointInternalFactory = endpointFactory)
+                CameraSingleStreamer(context, endpointFactory = endpointFactory)
             } else {
                 CameraSingleStreamer(context)
             }

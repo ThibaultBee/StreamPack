@@ -39,7 +39,6 @@ import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.StreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.runBlocking
 
 /**
  * A class that handles one audio and video output.
@@ -47,14 +46,14 @@ import kotlinx.coroutines.runBlocking
  * @param context the application context
  * @param hasAudio [Boolean.true] to capture audio. It can't be changed after instantiation.
  * @param hasVideo [Boolean.true] to capture video. It can't be changed after instantiation.
- * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 open class SingleStreamer(
     protected val context: Context,
     val hasAudio: Boolean = true,
     val hasVideo: Boolean = true,
-    endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ) : ICoroutineSingleStreamer, ICoroutineAudioSingleStreamer, ICoroutineVideoSingleStreamer {
     private val pipeline = StreamerPipeline(
@@ -62,12 +61,11 @@ open class SingleStreamer(
         hasAudio,
         hasVideo
     )
-    private val pipelineOutput: IEncodingPipelineOutputInternal = runBlocking {
+    private val pipelineOutput: IEncodingPipelineOutputInternal =
         pipeline.addOutput(
-            endpointInternalFactory,
+            endpointFactory,
             defaultRotation
         ) as IEncodingPipelineOutputInternal
-    }
 
     override val throwableFlow: StateFlow<Throwable?> =
         combineStates(pipeline.throwableFlow, pipelineOutput.throwableFlow) { throwableArray ->

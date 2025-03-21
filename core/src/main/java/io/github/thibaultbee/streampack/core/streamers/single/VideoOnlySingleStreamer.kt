@@ -29,19 +29,19 @@ import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
  * Creates a [VideoOnlySingleStreamer] with a default video source.
  *
  * @param context the application context
- * @param videoSourceInternalFactory the video source factory. If parameter is null, no audio source are set. It can be set later with [VideoOnlySingleStreamer.setVideoSource].
- * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param videoSourceFactory the video source factory. If parameter is null, no audio source are set. It can be set later with [VideoOnlySingleStreamer.setVideoSource].
+ * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  */
 suspend fun VideoOnlySingleStreamer(
     context: Context,
-    videoSourceInternalFactory: IVideoSourceInternal.Factory?,
-    endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
+    videoSourceFactory: IVideoSourceInternal.Factory?,
+    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
 ): VideoOnlySingleStreamer {
     val streamer = VideoOnlySingleStreamer(
         context = context,
-        endpointInternalFactory = endpointInternalFactory
+        endpointFactory = endpointFactory
     )
-    videoSourceInternalFactory?.let { streamer.setVideoSource(it) }
+    videoSourceFactory?.let { streamer.setVideoSource(it) }
     return streamer
 }
 
@@ -49,15 +49,15 @@ suspend fun VideoOnlySingleStreamer(
  * A [ICoroutineSingleStreamer] for video only (without audio).
  *
  * @param context the application context
- * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  */
 class VideoOnlySingleStreamer internal constructor(
     context: Context,
-    endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
+    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
 ) : ICoroutineSingleStreamer, ICoroutineVideoSingleStreamer {
     private val streamer = SingleStreamer(
         context = context,
-        endpointInternalFactory = endpointInternalFactory,
+        endpointFactory = endpointFactory,
         hasAudio = false,
         hasVideo = true
     )
