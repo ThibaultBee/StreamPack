@@ -143,14 +143,10 @@ class SurfaceProcessor(
             return
         }
 
-        val surfaceOutputs = submitSafely {
-            surfaceOutputs.toList()
-        }.get()
-        surfaceOutputs.forEach {
-            try {
-                removeOutputSurface(it)
-            } catch (e: Exception) {
-                Logger.w(TAG, "Error while removing output surface", e)
+        executeSafely {
+            surfaceOutputs.forEach { surfaceOutput ->
+                renderer.unregisterOutputSurface(surfaceOutput.surface)
+                surfaceOutputs.remove(surfaceOutput)
             }
         }
     }

@@ -27,7 +27,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableAudi
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVideoPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutput
-import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineEventOutputInternal
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.single.open
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
@@ -196,4 +196,4 @@ interface IConfigurableEncodingPipelineOutput : IEncodingPipelineOutput,
 internal interface IEncodingPipelineOutputInternal : IConfigurableEncodingPipelineOutput,
     IConfigurableAudioPipelineOutputInternal,
     IConfigurableVideoPipelineOutputInternal,
-    IPipelineOutputInternal
+    IPipelineEventOutputInternal
