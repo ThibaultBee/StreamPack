@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.streamer.single.file
 
+import android.util.Log
 import android.util.Size
 import androidx.core.net.toFile
 import androidx.core.net.toUri
@@ -66,7 +67,12 @@ class CameraSingleStreamerFileTest(
 
     @After
     fun tearDown() {
-        streamer.releaseBlocking()
+        try {
+            Log.e(TAG, "Release")
+            streamer.releaseBlocking()
+        } catch (t: Throwable) {
+            Log.e(TAG, "Release failed with $t", t)
+        }
         // Delete file
         descriptor.uri.toFile().delete()
     }
@@ -99,6 +105,8 @@ class CameraSingleStreamerFileTest(
     }
 
     companion object {
+        private const val TAG = "CameraSinStrFileTest"
+
         private const val TEST_TIMEOUT_MS = 60_000L
         private const val STREAM_DURATION_MS = 30_000L
         private const val STREAM_POLLING_MS = 1_000L

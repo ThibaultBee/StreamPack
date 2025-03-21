@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.core.pipelines.outputs.encoding
 
 import android.content.Context
+import android.util.Log
 import androidx.core.net.toFile
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
@@ -59,8 +60,10 @@ class EncodingPipelineOutputTest {
     @After
     fun tearDown() {
         try {
+            Log.e(TAG, "Release")
             output.releaseBlocking()
-        } catch (_: Throwable) {
+        } catch (t: Throwable) {
+            Log.e(TAG, "Release failed with $t", t)
         }
         descriptor.uri.toFile().delete()
     }
@@ -334,5 +337,9 @@ class EncodingPipelineOutputTest {
         )
 
         assertTrue(dummyEndpoint.frameFlow.filterNotNull().first().isAudio)
+    }
+
+    companion object {
+        private const val TAG = "EncodingPipelineOutputTest"
     }
 }

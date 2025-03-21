@@ -37,8 +37,13 @@ abstract class SingleStreamerStateTest(
     protected abstract val videoConfig: VideoConfig
 
     @After
-    open fun tearDown() {
-        streamer.releaseBlocking()
+    fun tearDown() {
+        try {
+            Log.e(TAG, "Release")
+            streamer.releaseBlocking()
+        } catch (t: Throwable) {
+            Log.e(TAG, "Release failed with $t", t)
+        }
     }
 
     @Test
@@ -161,5 +166,9 @@ abstract class SingleStreamerStateTest(
             streamer.stopStream()
             streamer.close()
         }
+    }
+
+    companion object {
+        const val TAG = "SingleStreamerStateTest"
     }
 }
