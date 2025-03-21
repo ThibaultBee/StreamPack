@@ -23,6 +23,7 @@ import androidx.test.filters.LargeTest
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.streamer.utils.StreamerUtils
 import io.github.thibaultbee.streampack.core.streamer.utils.VideoUtils
+import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
@@ -30,6 +31,7 @@ import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Test
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -46,6 +48,16 @@ class CameraSingleStreamerMultiEndpointTest : DeviceTest() {
         UriMediaDescriptor(FileUtils.createCacheFile("video2.ts").toUri()),
         UriMediaDescriptor(FileUtils.createCacheFile("video2.mp4").toUri()),
     )
+
+    @After
+    fun tearDown() {
+        try {
+            Log.e(TAG, "Release")
+            streamer.releaseBlocking()
+        } catch (t: Throwable) {
+            Log.e(TAG, "Release failed with $t", t)
+        }
+    }
 
     @Test
     fun writeToEndpoints() = runTest(timeout = TEST_TIMEOUT_MS.milliseconds * descriptors.size) {

@@ -16,16 +16,19 @@
 package io.github.thibaultbee.streampack.core.streamer.single.state
 
 import androidx.core.net.toUri
+import android.util.Log
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreamerConfigUtils
+import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.streamers.single.AudioOnlySingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -40,6 +43,16 @@ class AudioOnlySingleStreamerStateTest(private val descriptor: MediaDescriptor) 
     }
 
     private val audioConfig by lazy { SingleStreamerConfigUtils.audioConfig(descriptor) }
+
+    @After
+    fun tearDown() {
+        try {
+            Log.e(TAG, "Release")
+            streamer.releaseBlocking()
+        } catch (t: Throwable) {
+            Log.e(TAG, "Release failed with $t", t)
+        }
+    }
 
     @Test
     fun defaultUsageTest() = runTest {
@@ -124,6 +137,8 @@ class AudioOnlySingleStreamerStateTest(private val descriptor: MediaDescriptor) 
     }
 
     companion object {
+        private const val TAG = "AudSingleStrStateTest"
+
         @JvmStatic
         @Parameterized.Parameters(
             name = "MediaDescriptor: {0}"

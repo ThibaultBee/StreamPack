@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.streamer.dual.file
 
+import android.util.Log
 import android.util.Size
 import androidx.core.net.toFile
 import androidx.core.net.toUri
@@ -82,7 +83,12 @@ class CameraDualStreamerFileTest(
 
     @After
     fun tearDown() {
-        streamer.releaseBlocking()
+        try {
+            Log.e(TAG, "Release")
+            streamer.releaseBlocking()
+        } catch (t: Throwable) {
+            Log.e(TAG, "Release failed with $t", t)
+        }
         // Delete files
         firstDescriptor.uri.toFile().delete()
         secondDescriptor.uri.toFile().delete()
@@ -123,6 +129,8 @@ class CameraDualStreamerFileTest(
     }
 
     companion object {
+        private const val TAG = "CameraDualStrFileTest"
+
         private const val TEST_TIMEOUT_MS = 60_000L
         private const val STREAM_DURATION_MS = 30_000L
         private const val STREAM_POLLING_MS = 1_000L
