@@ -84,12 +84,12 @@ open class VideoCodecConfig(
     val level: Int = getBestLevel(mimeType, profile),
     /**
      * Video encoder I-frame interval in seconds.
-     * This is a best effort as few camera can not generate a fixed framerate.
+     * This is a best effort as few camera can not generate a fixed frame rate.
      * For live streaming, I-frame interval should be really low. For recording, I-frame interval should be higher.
      * A value of 0 means that each frame is an I-frame.
      * On device with API < 25, this value will be rounded to an integer. So don't expect a precise value and any value < 0.5 will be considered as 0.
      */
-    val gopDuration: Float = 1f  // 1s between I frames
+    val gopDurationInS: Float = 1f  // 1s between I frames
 ) : CodecConfig(mimeType, startBitrate, profile) {
     init {
         require(mimeType.isVideo) { "MimeType must be video" }
@@ -126,7 +126,7 @@ open class VideoCodecConfig(
          * This is a best effort as few camera can not generate a fixed framerate.
          * For live streaming, I-frame interval should be really low. For recording, I-frame interval should be higher.
          */
-        gopDuration: Float = 1f  // 1s between I frames
+        gopDurationInS: Float = 1f  // 1s between I frames
     ) : this(
         mimeType,
         startBitrate,
@@ -134,7 +134,7 @@ open class VideoCodecConfig(
         fps,
         profileLevel.profile,
         profileLevel.level,
-        gopDuration
+        gopDurationInS
     )
 
     /**
@@ -167,9 +167,9 @@ open class VideoCodecConfig(
         format.setInteger(MediaFormat.KEY_BIT_RATE, startBitrate)
         format.setInteger(MediaFormat.KEY_FRAME_RATE, fps)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-            format.setFloat(MediaFormat.KEY_I_FRAME_INTERVAL, gopDuration)
+            format.setFloat(MediaFormat.KEY_I_FRAME_INTERVAL, gopDurationInS)
         } else {
-            format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, gopDuration.roundToInt())
+            format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, gopDurationInS.roundToInt())
         }
 
         if (withProfileLevel) {
@@ -213,7 +213,7 @@ open class VideoCodecConfig(
         fps: Int = this.fps,
         profile: Int = this.profile,
         level: Int = this.level,
-        gopDuration: Float = this.gopDuration
+        gopDuration: Float = this.gopDurationInS
     ) = VideoCodecConfig(mimeType, startBitrate, resolution, fps, profile, level, gopDuration)
 
     override fun toString() =
@@ -227,7 +227,7 @@ open class VideoCodecConfig(
         if (resolution != other.resolution) return false
         if (fps != other.fps) return false
         if (level != other.level) return false
-        if (gopDuration != other.gopDuration) return false
+        if (gopDurationInS != other.gopDurationInS) return false
 
         return true
     }
@@ -239,7 +239,7 @@ open class VideoCodecConfig(
         result = 31 * result + fps
         result = 31 * result + profile
         result = 31 * result + level
-        result = 31 * result + gopDuration.hashCode()
+        result = 31 * result + gopDurationInS.hashCode()
         return result
     }
 
