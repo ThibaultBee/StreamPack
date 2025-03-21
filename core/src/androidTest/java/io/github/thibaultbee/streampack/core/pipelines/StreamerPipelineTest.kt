@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.core.pipelines
 
 import android.content.Context
 import android.media.MediaFormat
+import android.util.Log
 import android.util.Size
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
@@ -25,10 +26,12 @@ import io.github.thibaultbee.streampack.core.elements.sources.StubAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.StubVideoSurfaceSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
+import io.github.thibaultbee.streampack.core.pipelines.outputs.StubAudioAsyncPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.StubAudioSyncConfigurableEncodingPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.StubAudioSyncVideoSurfacePipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.StubAudioSyncVideoSurfacePipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.StubVideoSurfaceConfigurableEncodingPipelineOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.outputs.StubVideoSurfacePipelineOutput
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -45,6 +48,7 @@ class StreamerPipelineTest {
     fun tearDown() {
         try {
             streamerPipeline.releaseBlocking()
+            Log.d(TAG, "StreamerPipeline released")
         } catch (_: Throwable) {
         }
     }
@@ -346,6 +350,37 @@ class StreamerPipelineTest {
         assertTrue(secondOutput.isStreamingFlow.value)
     }
 
+    @Test
+    fun testStopAudioAndVideoOnlyOutputs() = runTest {
+        val firstOutput = StubAudioAsyncPipelineOutput()
+        val secondOutput = StubVideoSurfacePipelineOutput(resolution = Size(640, 480))
+
+        streamerPipeline = buildStreamerPipeline(
+            context,
+            StubAudioSource.Factory(),
+            StubVideoSurfaceSource.Factory()
+        )
+        streamerPipeline.addOutput(firstOutput)
+        streamerPipeline.addOutput(secondOutput)
+
+        streamerPipeline.startStream()
+        assertTrue(streamerPipeline.isStreamingFlow.first { it })
+        assertTrue(firstOutput.isStreamingFlow.value)
+        assertTrue(secondOutput.isStreamingFlow.value)
+
+        // Stops only audio output
+        firstOutput.stopStream()
+        assertTrue(streamerPipeline.isStreamingFlow.first { it })
+        assertFalse(firstOutput.isStreamingFlow.value)
+        assertTrue(secondOutput.isStreamingFlow.value)
+
+        // Stops only video output
+        secondOutput.stopStream()
+        assertFalse(streamerPipeline.isStreamingFlow.first { !it })
+        assertFalse(firstOutput.isStreamingFlow.value)
+        assertFalse(secondOutput.isStreamingFlow.value)
+    }
+
     // Test on destructive methods
     @Test
     fun testStopStream() = runTest {
@@ -365,5 +400,9 @@ class StreamerPipelineTest {
             StubVideoSurfaceSource.Factory()
         )
         streamerPipeline.release()
+    }
+
+    companion object {
+        private const val TAG = "StreamerPipelineTest"
     }
 }

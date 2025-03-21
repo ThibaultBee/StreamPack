@@ -155,9 +155,9 @@ class StubVideoSurfacePipelineOutputInternal(resolution: Size) :
 
 abstract class StubPipelineOutputInternal(hasAudio: Boolean, hasVideo: Boolean) :
     StubPipelineOutput(hasAudio, hasVideo),
-    IPipelineOutputInternal {
+    IPipelineEventOutputInternal {
 
-    override var streamEventListener: IPipelineOutputInternal.Listener? = null
+    override var streamEventListener: IPipelineEventOutputInternal.Listener? = null
 
     override suspend fun startStream() {
         streamEventListener?.onStartStream()

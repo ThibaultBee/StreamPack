@@ -29,7 +29,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceC
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableAudioPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVideoPipelineOutputInternal
-import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineEventOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.pipelines.outputs.releaseBlocking
 import junit.framework.TestCase.assertTrue
@@ -163,7 +163,11 @@ class EncodingPipelineOutputTest {
 
     @Test
     fun testStartStreamWithAudioConfig() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
+        output = EncodingPipelineOutput(
+            context,
+            hasVideo = false,
+            endpointInternalFactory = DummyEndpointFactory()
+        )
 
         output.setAudioCodecConfig(AudioCodecConfig())
         output.startStream(descriptor)
@@ -171,7 +175,11 @@ class EncodingPipelineOutputTest {
 
     @Test
     fun testStartStreamWithVideoConfig() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
+        output = EncodingPipelineOutput(
+            context,
+            hasAudio = false,
+            endpointInternalFactory = DummyEndpointFactory()
+        )
 
         output.setVideoCodecConfig(VideoCodecConfig())
         output.startStream(descriptor)
@@ -179,14 +187,18 @@ class EncodingPipelineOutputTest {
 
     @Test
     fun testStartStream() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
+        output = EncodingPipelineOutput(
+            context,
+            hasAudio = false,
+            endpointInternalFactory = DummyEndpointFactory()
+        )
 
         output.setVideoCodecConfig(VideoCodecConfig()) // at least one config is needed
 
         assertFalse(output.isStreaming)
 
         suspendCoroutine { continuation ->
-            val listener = object : IPipelineOutputInternal.Listener {
+            val listener = object : IPipelineEventOutputInternal.Listener {
                 override suspend fun onStartStream() {
                     continuation.resume(Unit)
                 }
@@ -212,7 +224,7 @@ class EncodingPipelineOutputTest {
         output.setVideoCodecConfig(VideoCodecConfig()) // at least one config is needed
 
         assertFalse(output.isStreaming)
-        output.streamEventListener = object : IPipelineOutputInternal.Listener {
+        output.streamEventListener = object : IPipelineEventOutputInternal.Listener {
             override suspend fun onStartStream() {
                 throw Exception()
             }
@@ -228,7 +240,11 @@ class EncodingPipelineOutputTest {
 
     @Test
     fun testStartStreamVideoCodecSurface() = runTest {
-        output = EncodingPipelineOutput(context, endpointInternalFactory = DummyEndpointFactory())
+        output = EncodingPipelineOutput(
+            context,
+            hasAudio = false,
+            endpointInternalFactory = DummyEndpointFactory()
+        )
         assertNull(output.surfaceFlow.value)
 
         output.setVideoCodecConfig(VideoCodecConfig())
@@ -292,6 +308,7 @@ class EncodingPipelineOutputTest {
         val dummyEndpoint = DummyEndpoint()
         output = EncodingPipelineOutput(
             context,
+            hasVideo = false,
             endpointInternalFactory = DummyEndpointDummyFactory(dummyEndpoint)
         )
 

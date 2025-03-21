@@ -42,7 +42,7 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IAudioSyncPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableAudioPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVideoPipelineOutputInternal
-import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineEventOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoSurfacePipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceWithSize
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
@@ -61,12 +61,16 @@ import kotlinx.coroutines.withContext
  * An implementation of [IEncodingPipelineOutputInternal] that manages encoding and endpoint.
  *
  * @param context The application context
+ * @param hasAudio whether the output has audio.
+ * @param hasVideo whether the output has video.
  * @param endpointInternalFactory The endpoint factory implementation
  * @param defaultRotation The default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param coroutineDispatcher The coroutine dispatcher to use. By default, it is [Dispatchers.Default]
  */
 internal class EncodingPipelineOutput(
     private val context: Context,
+    override val hasAudio: Boolean = true,
+    override val hasVideo: Boolean = true,
     endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
@@ -91,18 +95,6 @@ internal class EncodingPipelineOutput(
 
     private var audioStreamId: Int? = null
     private var videoStreamId: Int? = null
-
-    /**
-     * Whether the output has audio.
-     */
-    override val hasAudio: Boolean
-        get() = audioEncoderInternal != null
-
-    /**
-     * Whether the output has video.
-     */
-    override val hasVideo: Boolean
-        get() = videoEncoderInternal != null
 
     // INPUTS
     private val _surfaceFlow = MutableStateFlow<SurfaceWithSize?>(null)
@@ -144,6 +136,10 @@ internal class EncodingPipelineOutput(
     override var targetRotation: Int
         @RotationValue get() = _targetRotation
         set(@RotationValue value) {
+            if (!hasVideo) {
+                Logger.w(TAG, "Video is not enabled")
+                return
+            }
             if (isStreaming) {
                 Logger.w(TAG, "Can't change rotation to $value while streaming")
                 pendingTargetRotation = value
@@ -178,7 +174,7 @@ internal class EncodingPipelineOutput(
      * It is called after the endpoint is started.
      * The purpose is to start any other required components.
      */
-    override var streamEventListener: IPipelineOutputInternal.Listener? = null
+    override var streamEventListener: IPipelineEventOutputInternal.Listener? = null
 
     /**
      * Manages error on stream.
@@ -236,12 +232,14 @@ internal class EncodingPipelineOutput(
     private val audioCodecConfig: AudioCodecConfig?
         get() = _audioCodecConfigFlow.value
 
-    override suspend fun setAudioCodecConfig(audioCodecConfig: AudioCodecConfig) =
+    override suspend fun setAudioCodecConfig(audioCodecConfig: AudioCodecConfig) {
+        require(hasAudio) { "Audio is not enabled" }
         withContext(coroutineDispatcher) {
             audioConfigurationMutex.withLock {
                 setAudioCodecConfigInternal(audioCodecConfig)
             }
         }
+    }
 
     override fun queueAudioFrame(frame: RawFrame) {
         val encoder = requireNotNull(audioEncoderInternal) { "Audio is not configured" }
@@ -291,12 +289,14 @@ internal class EncodingPipelineOutput(
     private val videoCodecConfig: VideoCodecConfig?
         get() = _videoCodecConfigFlow.value
 
-    override suspend fun setVideoCodecConfig(videoCodecConfig: VideoCodecConfig) =
+    override suspend fun setVideoCodecConfig(videoCodecConfig: VideoCodecConfig) {
+        require(hasVideo) { "Video is not enabled" }
         withContext(coroutineDispatcher) {
             videoConfigurationMutex.withLock {
                 setVideoCodecConfigInternal(videoCodecConfig)
             }
         }
+    }
 
     private suspend fun setVideoCodecConfigInternal(videoCodecConfig: VideoCodecConfig) {
         require(!isStreaming) { "Can't change video configuration while streaming" }
@@ -639,13 +639,11 @@ internal class EncodingPipelineOutput(
     }
 
     private fun updateVideoEncoderForTransformation() {
-        if (hasVideo) {
-            val videoConfig = videoCodecConfig
-            if (videoConfig != null) {
-                runBlocking {
-                    videoConfigurationMutex.withLock {
-                        applyVideoCodecConfig(videoConfig)
-                    }
+        val videoConfig = videoCodecConfig
+        if (videoConfig != null) {
+            runBlocking {
+                videoConfigurationMutex.withLock {
+                    applyVideoCodecConfig(videoConfig)
                 }
             }
         }

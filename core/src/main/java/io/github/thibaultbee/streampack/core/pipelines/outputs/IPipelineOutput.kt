@@ -80,7 +80,7 @@ val IPipelineOutput.isStreaming: Boolean
 /**
  * An internal output component for a pipeline.
  */
-interface IPipelineOutputInternal : IPipelineOutput {
+interface IPipelineEventOutputInternal : IPipelineOutput {
     /**
      * A listener for audio/video stream events.
      */

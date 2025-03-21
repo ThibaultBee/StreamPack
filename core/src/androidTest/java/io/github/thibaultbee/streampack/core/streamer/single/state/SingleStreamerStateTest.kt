@@ -47,11 +47,8 @@ abstract class SingleStreamerStateTest(
             audioConfig, videoConfig
         )
         streamer.startStream(descriptor)
-        Log.e("SingleStreamerStateTest", ">>>> stopStream")
         streamer.stopStream()
-        Log.e("SingleStreamerStateTest", ">>> release")
         streamer.release()
-        Log.e("SingleStreamerStateTest", ">>>> out")
     }
 
     // Single method calls
