@@ -35,20 +35,20 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRo
  * Creates a [ScreenRecorderSingleStreamer] with a default audio source.
  *
  * @param context the application context
- * @param audioSourceInternalFactory the audio source factory. By default, it is the default microphone source factory.
- * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory.
+ * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 suspend fun ScreenRecorderSingleStreamer(
     context: Context,
-    audioSourceFactoryInternal: IAudioSourceInternal.Factory = MicrophoneSourceFactory(),
-    endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    audioSourceFactory: IAudioSourceInternal.Factory = MicrophoneSourceFactory(),
+    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ): SingleStreamer {
     val streamer = ScreenRecorderSingleStreamer(
-        context, true, endpointInternalFactory, defaultRotation
+        context, true, endpointFactory, defaultRotation
     )
-    streamer.setAudioSource(audioSourceFactoryInternal)
+    streamer.setAudioSource(audioSourceFactory)
     return streamer
 }
 
@@ -57,18 +57,18 @@ suspend fun ScreenRecorderSingleStreamer(
  *
  * @param context the application context
  * @param hasAudio [Boolean.true] if the streamer will capture audio.
- * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation
+ * @param endpointFactory the [IEndpointInternal.Factory] implementation
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 suspend fun ScreenRecorderSingleStreamer(
     context: Context,
     hasAudio: Boolean,
-    endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ): SingleStreamer {
     val streamer = SingleStreamer(
         context = context,
-        endpointInternalFactory = endpointInternalFactory,
+        endpointFactory = endpointFactory,
         hasAudio = hasAudio,
         defaultRotation = defaultRotation
     )

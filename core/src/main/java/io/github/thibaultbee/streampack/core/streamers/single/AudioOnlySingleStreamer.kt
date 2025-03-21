@@ -30,19 +30,19 @@ import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
  * Creates a [AudioOnlySingleStreamer] with a default audio source.
  *
  * @param context the application context
- * @param audioSourceInternalFactory the audio source factory. By default, it is the default microphone source factory. If parameter is null, no audio source are set. It can be set later with [AudioOnlySingleStreamer.setAudioSource].
- * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory. If parameter is null, no audio source are set. It can be set later with [AudioOnlySingleStreamer.setAudioSource].
+ * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  */
 suspend fun AudioOnlySingleStreamer(
     context: Context,
-    audioSourceInternalFactory: IAudioSourceInternal.Factory? = MicrophoneSourceFactory(),
-    endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
+    audioSourceFactory: IAudioSourceInternal.Factory? = MicrophoneSourceFactory(),
+    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
 ): AudioOnlySingleStreamer {
     val streamer = AudioOnlySingleStreamer(
         context = context,
-        endpointInternalFactory = endpointInternalFactory,
+        endpointFactory = endpointFactory,
     )
-    audioSourceInternalFactory?.let { streamer.setAudioSource(it) }
+    audioSourceFactory?.let { streamer.setAudioSource(it) }
     return streamer
 }
 
@@ -50,15 +50,15 @@ suspend fun AudioOnlySingleStreamer(
  * A [ICoroutineSingleStreamer] for audio only (without video).
  *
  * @param context the application context
- * @param endpointInternalFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  */
 class AudioOnlySingleStreamer internal constructor(
     context: Context,
-    endpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
+    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
 ) : ICoroutineSingleStreamer, ICoroutineAudioSingleStreamer {
     private val streamer = SingleStreamer(
         context = context,
-        endpointInternalFactory = endpointInternalFactory,
+        endpointFactory = endpointFactory,
         hasAudio = true,
         hasVideo = false
     )

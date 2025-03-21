@@ -30,12 +30,9 @@ import io.github.thibaultbee.streampack.core.elements.utils.combineStates
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableEncodingPipelineOutput
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
-import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.runBlocking
 
 /**
  * A class that handles 2 audio and video output.
@@ -45,16 +42,16 @@ import kotlinx.coroutines.runBlocking
  * @param context the application context
  * @param hasAudio [Boolean.true] to capture audio. It can't be changed after instantiation.
  * @param hasVideo [Boolean.true] to capture video. It can't be changed after instantiation.
- * @param firstEndpointInternalFactory the [IEndpointInternal] implementation of the first output. By default, it is a [DynamicEndpoint].
- * @param secondEndpointInternalFactory the [IEndpointInternal] implementation of the second output. By default, it is a [DynamicEndpoint].
+ * @param firstEndpointFactory the [IEndpointInternal] implementation of the first output. By default, it is a [DynamicEndpoint].
+ * @param secondEndpointFactory the [IEndpointInternal] implementation of the second output. By default, it is a [DynamicEndpoint].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 open class DualStreamer(
     protected val context: Context,
     val hasAudio: Boolean = true,
     val hasVideo: Boolean = true,
-    firstEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
-    secondEndpointInternalFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ) : ICoroutineDualStreamer, ICoroutineAudioDualStreamer, ICoroutineVideoDualStreamer {
     private val pipeline = StreamerPipeline(
@@ -63,24 +60,22 @@ open class DualStreamer(
         hasVideo
     )
 
-    private val firstPipelineOutput: IEncodingPipelineOutputInternal = runBlocking {
+    private val firstPipelineOutput: IEncodingPipelineOutputInternal =
         pipeline.addOutput(
-            firstEndpointInternalFactory,
+            firstEndpointFactory,
             defaultRotation
         ) as IEncodingPipelineOutputInternal
-    }
 
     /**
      * First output of the streamer.
      */
     val first = firstPipelineOutput as IConfigurableEncodingPipelineOutput
 
-    private val secondPipelineOutput: IEncodingPipelineOutputInternal = runBlocking {
+    private val secondPipelineOutput: IEncodingPipelineOutputInternal =
         pipeline.addOutput(
-            secondEndpointInternalFactory,
+            secondEndpointFactory,
             defaultRotation
         ) as IEncodingPipelineOutputInternal
-    }
 
     /**
      * Second output of the streamer.
@@ -150,6 +145,13 @@ open class DualStreamer(
             pipeline.targetRotation = newTargetRotation
         }
 
+    /**
+     * Sets audio configuration.
+     *
+     * It is a shortcut for [IConfigurableEncodingPipelineOutput.setAudioCodecConfig].
+     *
+     * @param audioConfig the audio configuration to set
+     */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override suspend fun setAudioConfig(audioConfig: DualStreamerAudioConfig) {
         var throwable: Throwable? = null
@@ -170,7 +172,7 @@ open class DualStreamer(
     /**
      * Sets video configuration.
      *
-     * It is a shortcut for [IEncodingPipelineOutput.setVideoCodecConfig].
+     * It is a shortcut for [IConfigurableEncodingPipelineOutput.setVideoCodecConfig].
      * To only set video configuration for a specific output, use [first.setVideoCodecConfig] or
      * [second.setVideoCodecConfig] outputs.
      * In that case, you call [first.setVideoCodecConfig] or [second.setVideoCodecConfig] explicitly,
@@ -207,7 +209,7 @@ open class DualStreamer(
      * @param videoConfig Video configuration to set
      *
      * @throws [Throwable] if configuration can not be applied.
-     * @see [ISingleStreamer.release]
+     * @see [DualStreamer.release]
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     suspend fun setConfig(

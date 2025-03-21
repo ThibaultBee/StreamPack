@@ -198,7 +198,7 @@ open class StreamerPipeline(
         input.setVideoSourceConfig(value)
     }
 
-// VIDEO PROCESSING
+    // VIDEO PROCESSING
     /**
      * Updates the transformation of the surface output.
      * To be called when the source info provider or [isMirroringRequired] is updated.
@@ -301,7 +301,7 @@ open class StreamerPipeline(
      *
      * @return the [EncodingPipelineOutput] created
      */
-    suspend fun addOutput(
+    fun addOutput(
         endpointFactory: IEndpointInternal.Factory,
         @RotationValue targetRotation: Int = context.displayRotation
     ): IEncodingPipelineOutput {
@@ -313,10 +313,12 @@ open class StreamerPipeline(
     /**
      * Adds an output.
      *
+     * The output must not be already streaming. Also, audio and video source needs to be null.
+     *
      * @param output the output to add
      * @return the [output] added (same as input)
      */
-    suspend fun <T : IPipelineOutput> addOutput(output: T): T {
+    fun <T : IPipelineOutput> addOutput(output: T): T {
         require((output is IVideoPipelineOutputInternal) || (output is IAudioPipelineOutputInternal)) {
             "Output must be an audio or video output"
         }
@@ -324,22 +326,23 @@ open class StreamerPipeline(
             Logger.w(TAG, "Output $output already added")
             return output
         }
+        require(!output.isStreaming) { "Output $output is already streaming" }
 
         val scope = CoroutineScope(Dispatchers.Default)
-        safeOutputCall { outputs ->
-            outputs[output] = scope
-        }
+        outputs[output] = scope
 
         try {
             addOutputImpl(output, scope)
         } catch (t: Throwable) {
-            removeOutput(output)
+            runBlocking {
+                removeOutput(output)
+            }
             throw t
         }
         return output
     }
 
-    private suspend fun addOutputImpl(output: IPipelineOutput, scope: CoroutineScope) {
+    private fun addOutputImpl(output: IPipelineOutput, scope: CoroutineScope) {
         if (output is IPipelineEventOutputInternal) {
             require(output.streamEventListener == null) { "Output $output already have a listener" }
             output.streamEventListener = object : IPipelineEventOutputInternal.Listener {
@@ -423,11 +426,6 @@ open class StreamerPipeline(
                 Logger.w(TAG, "Pipeline has no video")
             }
         }
-
-        if (output.isStreaming) {
-            // Start stream if it is not already started
-            startInputStreams(output)
-        }
     }
 
     private suspend fun buildAudioSourceConfig(newAudioSourceConfig: AudioSourceConfig? = null): AudioSourceConfig {
@@ -447,13 +445,10 @@ open class StreamerPipeline(
         throw NotImplementedError("Audio async output not supported yet")
     }
 
-    private suspend fun addEncodingAudioOutput(
+    private fun addEncodingAudioOutput(
         output: IConfigurableAudioPipelineOutputInternal
     ) {
-        // Apply already set audio source config
-        output.audioSourceConfigFlow.value?.let { _ ->
-            setAudioSourceConfig(buildAudioSourceConfig())
-        }
+        require(output.audioSourceConfigFlow.value == null) { "Output $output already have an audio source config" }
 
         // Apply future audio source config
         require(output.audioConfigEventListener == null) { "Output $output already have an audio listener" }
@@ -521,13 +516,10 @@ open class StreamerPipeline(
         return SourceConfigUtils.buildVideoSourceConfig(videoSourceConfigs)
     }
 
-    private suspend fun addEncodingVideoOutput(
+    private fun addEncodingVideoOutput(
         output: IConfigurableVideoPipelineOutputInternal
     ) {
-        // Apply already set video source config
-        output.videoSourceConfigFlow.value?.let { _ ->
-            setVideoSourceConfig(buildVideoSourceConfig())
-        }
+        require(output.videoSourceConfigFlow.value == null) { "Output $output already have a video source config" }
 
         // Apply future video source config
         require(output.videoConfigEventListener == null) { "Output $output already have a video listener" }
