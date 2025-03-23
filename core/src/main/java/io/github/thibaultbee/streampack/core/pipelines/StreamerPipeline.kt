@@ -301,7 +301,7 @@ open class StreamerPipeline(
      *
      * @return the [EncodingPipelineOutput] created
      */
-    fun addOutput(
+    fun createOutput(
         endpointFactory: IEndpointInternal.Factory,
         @RotationValue targetRotation: Int = context.displayRotation
     ): IEncodingPipelineOutput {

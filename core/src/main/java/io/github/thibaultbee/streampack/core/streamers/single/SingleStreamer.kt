@@ -62,7 +62,7 @@ open class SingleStreamer(
         hasVideo
     )
     private val pipelineOutput: IEncodingPipelineOutputInternal =
-        pipeline.addOutput(
+        pipeline.createOutput(
             endpointFactory,
             defaultRotation
         ) as IEncodingPipelineOutputInternal

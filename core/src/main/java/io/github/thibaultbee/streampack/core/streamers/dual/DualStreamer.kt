@@ -61,7 +61,7 @@ open class DualStreamer(
     )
 
     private val firstPipelineOutput: IEncodingPipelineOutputInternal =
-        pipeline.addOutput(
+        pipeline.createOutput(
             firstEndpointFactory,
             defaultRotation
         ) as IEncodingPipelineOutputInternal
@@ -72,7 +72,7 @@ open class DualStreamer(
     val first = firstPipelineOutput as IConfigurableEncodingPipelineOutput
 
     private val secondPipelineOutput: IEncodingPipelineOutputInternal =
-        pipeline.addOutput(
+        pipeline.createOutput(
             secondEndpointFactory,
             defaultRotation
         ) as IEncodingPipelineOutputInternal
