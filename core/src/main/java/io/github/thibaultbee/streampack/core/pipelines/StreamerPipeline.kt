@@ -173,11 +173,12 @@ open class StreamerPipeline(
     }
 
     private fun queueAudioFrame(frame: RawFrame) {
-        val streamingOutputs = runBlocking {
-            getStreamingOutputs()
-        }
-        streamingOutputs.filterIsInstance<IAudioSyncPipelineOutputInternal>().forEach {
-            it.queueAudioFrame(frame.copy(buffer = frame.buffer.duplicate()))
+        runBlocking {
+            safeStreamingOutputCall { streamingOutputs ->
+                streamingOutputs.filterIsInstance<IAudioSyncPipelineOutputInternal>().forEach {
+                    it.queueAudioFrame(frame.copy(buffer = frame.buffer.duplicate()))
+                }
+            }
         }
     }
 
@@ -259,7 +260,9 @@ open class StreamerPipeline(
     ): AbstractSurfaceOutput {
         return SurfaceOutput(
             surface, resolution, isStreaming, SurfaceOutput.TransformationInfo(
-                targetRotation, isMirroringRequired(), infoProvider ?: DefaultSourceInfoProvider()
+                targetRotation,
+                isMirroringRequired(),
+                infoProvider ?: DefaultSourceInfoProvider()
             )
         )
     }
@@ -271,24 +274,17 @@ open class StreamerPipeline(
         return false
     }
 
-    private fun getNumOfAudioStreamingOutput(output: IPipelineOutput?) =
-        outputs.keys.minus(output).filterIsInstance<IAudioPipelineOutputInternal>()
-            .count { it.isStreaming && it.hasAudio }
-
-
     private suspend fun getNumOfAudioStreamingOutputSafe(output: IPipelineOutput?): Int {
         return safeOutputCall {
-            getNumOfAudioStreamingOutput(output)
+            outputs.keys.minus(output).filterIsInstance<IAudioPipelineOutputInternal>()
+                .count { it.isStreaming && it.hasAudio }
         }
     }
 
-    private fun getNumOfVideoStreamingOutput(output: IPipelineOutput?) =
-        outputs.keys.minus(output).filterIsInstance<IVideoPipelineOutputInternal>()
-            .count { it.isStreaming && it.hasVideo }
-
     private suspend fun getNumOfVideoStreamingOutputSafe(output: IPipelineOutput?): Int {
         return safeOutputCall {
-            getNumOfVideoStreamingOutput(output)
+            outputs.keys.minus(output).filterIsInstance<IVideoPipelineOutputInternal>()
+                .count { it.isStreaming && it.hasVideo }
         }
     }
 
@@ -429,10 +425,11 @@ open class StreamerPipeline(
     }
 
     private suspend fun buildAudioSourceConfig(newAudioSourceConfig: AudioSourceConfig? = null): AudioSourceConfig {
-        val audioSourceConfigs =
-            getStreamingOutputs().filterIsInstance<IAudioPipelineOutputInternal>().mapNotNull {
+        val audioSourceConfigs = safeStreamingOutputCall { streamingOutputs ->
+            streamingOutputs.filterIsInstance<IAudioPipelineOutputInternal>().mapNotNull {
                 (it as? IConfigurableAudioPipelineOutputInternal)?.audioSourceConfigFlow?.value
             }.toMutableSet()
+        }
         newAudioSourceConfig?.let { audioSourceConfigs.add(it) }
         return SourceConfigUtils.buildAudioSourceConfig(audioSourceConfigs)
     }
@@ -464,30 +461,31 @@ open class StreamerPipeline(
         output: IVideoSurfacePipelineOutputInternal, scope: CoroutineScope
     ) {
         scope.launch {
-            output.surfaceFlow.runningHistoryNotNull().collect { (previousSurface, newSurface) ->
-                Logger.i(TAG, "Surface changed")
-                if (previousSurface?.surface == newSurface?.surface) {
-                    return@collect
-                }
+            output.surfaceFlow.runningHistoryNotNull()
+                .collect { (previousSurface, newSurface) ->
+                    Logger.i(TAG, "Surface changed")
+                    if (previousSurface?.surface == newSurface?.surface) {
+                        return@collect
+                    }
 
-                val input = requireNotNull(videoInput) { "Video input is not set" }
+                    val input = requireNotNull(videoInput) { "Video input is not set" }
 
-                previousSurface?.let {
-                    Logger.i(TAG, "Removing previous surface: $previousSurface")
-                    input.removeOutputSurface(it.surface)
-                }
-                newSurface?.let {
-                    Logger.i(TAG, "Adding new surface: $newSurface")
-                    input.addOutputSurface(
-                        buildSurfaceOutput(
-                            it.surface,
-                            it.resolution,
-                            output::isStreaming,
-                            input.infoProviderFlow.value
+                    previousSurface?.let {
+                        Logger.i(TAG, "Removing previous surface: $previousSurface")
+                        input.removeOutputSurface(it.surface)
+                    }
+                    newSurface?.let {
+                        Logger.i(TAG, "Adding new surface: $newSurface")
+                        input.addOutputSurface(
+                            buildSurfaceOutput(
+                                it.surface,
+                                it.resolution,
+                                output::isStreaming,
+                                input.infoProviderFlow.value
+                            )
                         )
-                    )
+                    }
                 }
-            }
         }
     }
 
@@ -509,9 +507,11 @@ open class StreamerPipeline(
 
     private suspend fun buildVideoSourceConfig(newVideoSourceConfig: VideoSourceConfig? = null): VideoSourceConfig {
         val videoSourceConfigs =
-            getStreamingOutputs().filterIsInstance<IVideoPipelineOutputInternal>()
-                .filterIsInstance<IConfigurableVideoPipelineOutputInternal>()
-                .mapNotNull { it.videoSourceConfigFlow.value }.toMutableSet()
+            safeStreamingOutputCall { streamingOutputs ->
+                streamingOutputs.filterIsInstance<IVideoPipelineOutputInternal>()
+                    .filterIsInstance<IConfigurableVideoPipelineOutputInternal>()
+                    .mapNotNull { it.videoSourceConfigFlow.value }.toMutableSet()
+            }
         newVideoSourceConfig?.let { videoSourceConfigs.add(it) }
         return SourceConfigUtils.buildVideoSourceConfig(videoSourceConfigs)
     }
@@ -619,14 +619,13 @@ open class StreamerPipeline(
      * If an [IEncodingPipelineOutput] is not opened, it won't start the stream.
      */
     suspend fun startStream() = withContext(coroutineDispatcher) {
-        val streamingOutput = safeOutputCall {
-            outputs.keys
-        }
-        streamingOutput.forEach {
-            try {
-                it.startStream()
-            } catch (t: Throwable) {
-                Logger.w(TAG, "startStream: Can't start output $it: ${t.message}")
+        safeOutputCall {
+            outputs.keys.forEach {
+                try {
+                    it.startStream()
+                } catch (t: Throwable) {
+                    Logger.w(TAG, "startStream: Can't start output $it: ${t.message}")
+                }
             }
         }
     }
@@ -695,11 +694,13 @@ open class StreamerPipeline(
         /**
          *  [stopInputStreams] is called when all outputs are stopped.
          */
-        getStreamingOutputs().forEach {
-            try {
-                it.stopStream()
-            } catch (t: Throwable) {
-                Logger.w(TAG, "stopStream: Can't stop output $it: ${t.message}")
+        safeStreamingOutputCall {
+            it.forEach {
+                try {
+                    it.stopStream()
+                } catch (t: Throwable) {
+                    Logger.w(TAG, "stopStream: Can't stop output $it: ${t.message}")
+                }
             }
         }
     }
@@ -771,9 +772,11 @@ open class StreamerPipeline(
             }
         }
 
-    private suspend fun getStreamingOutputs() = safeOutputCall { outputs ->
-        outputs.keys.filter { it.isStreamingFlow.value }
-    }
+    private suspend fun <T> safeStreamingOutputCall(block: suspend (List<IPipelineOutput>) -> T) =
+        safeOutputCall { outputs ->
+            val streamingOutputs = outputs.keys.filter { it.isStreamingFlow.value }
+            block(streamingOutputs)
+        }
 
     companion object {
         private const val TAG = "StreamerPipeline"
