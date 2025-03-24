@@ -55,7 +55,7 @@ class AVTagsFactory(
         if (sendHeader) {
             audioTag.add(
                 AudioTag(
-                    frame.pts,
+                    frame.ptsInUs,
                     frame.extra!![0],
                     if (AudioCodecConfig.isAacMimeType(config.mimeType)) {
                         AACPacketType.SEQUENCE_HEADER
@@ -68,7 +68,7 @@ class AVTagsFactory(
         }
         audioTag.add(
             AudioTag(
-                frame.pts,
+                frame.ptsInUs,
                 frame.buffer,
                 if (AudioCodecConfig.isAacMimeType(config.mimeType)) {
                     AACPacketType.RAW
@@ -90,7 +90,7 @@ class AVTagsFactory(
         if (frame.isKeyFrame && sendHeader) {
             videoTags.add(
                 VideoTagFactory(
-                    frame.pts,
+                    frame.ptsInUs,
                     createVideoSequenceStartBufferWriter(frame, config),
                     true,
                     PacketType.SEQUENCE_START,
@@ -101,7 +101,7 @@ class AVTagsFactory(
 
         videoTags.add(
             VideoTagFactory(
-                frame.pts,
+                frame.ptsInUs,
                 createVideoBufferWriter(frame.buffer),
                 frame.isKeyFrame,
                 PacketType.CODED_FRAMES_X, // For extended codec only.

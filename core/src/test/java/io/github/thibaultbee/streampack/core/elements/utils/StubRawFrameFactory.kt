@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Thibault B.
+ * Copyright (C) 2025 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.elements.sources.audio
+package io.github.thibaultbee.streampack.core.elements.utils
 
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
-import io.github.thibaultbee.streampack.core.elements.utils.pool.IRawFrameFactory
+import io.github.thibaultbee.streampack.core.elements.utils.pool.IGetOnlyBufferPool
 import io.github.thibaultbee.streampack.core.elements.utils.pool.IReadOnlyRawFrameFactory
+import java.nio.ByteBuffer
 
-interface IAudioFrameSourceInternal {
-
-    /**
-     * Gets an audio frame from the source.
-     *
-     * @param frameFactory a [IRawFrameFactory] to create [RawFrame].
-     * @return a [RawFrame] containing audio data.
-     */
-    fun getAudioFrame(frameFactory: IReadOnlyRawFrameFactory): RawFrame
+/**
+ * Stub buffer pool for testing.
+ *
+ * It always returns a new allocated buffer.
+ */
+class StubRawFrameFactory(private val bufferPool: IGetOnlyBufferPool<ByteBuffer> = StubBufferPool()) :
+    IReadOnlyRawFrameFactory {
+    override fun create(bufferSize: Int, timestampInUs: Long): RawFrame {
+        return RawFrame(bufferPool.get(bufferSize), timestampInUs) { rawFrame ->
+            // Do nothing
+        }
+    }
 }

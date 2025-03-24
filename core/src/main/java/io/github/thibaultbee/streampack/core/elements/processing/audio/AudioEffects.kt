@@ -17,21 +17,32 @@ package io.github.thibaultbee.streampack.core.elements.processing.audio
 
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.processing.IFrameProcessor
+import java.io.Closeable
 
 /**
- * Audio frame processor.
- *
- * Only supports mute effect for now.
+ * The base audio effect.
  */
-class AudioFrameProcessor : IFrameProcessor<RawFrame>,
-    IAudioFrameProcessor {
-    override var isMuted = false
-    private val muteEffect = MuteEffect()
+interface IAudioEffect : IFrameProcessor<RawFrame>, Closeable
+
+/**
+ * Mute audio effect.
+ */
+class MuteEffect : IAudioEffect {
+    private var mutedByteArray: ByteArray? = null
 
     override fun processFrame(frame: RawFrame): RawFrame {
-        if (isMuted) {
-            return muteEffect.processFrame(frame)
+        val remaining = frame.rawBuffer.remaining()
+        val position = frame.rawBuffer.position()
+        if (remaining != mutedByteArray?.size) {
+            mutedByteArray = ByteArray(remaining)
         }
+        frame.rawBuffer.put(mutedByteArray!!)
+        frame.rawBuffer.position(position)
+
         return frame
+    }
+
+    override fun close() {
+        mutedByteArray = null
     }
 }
