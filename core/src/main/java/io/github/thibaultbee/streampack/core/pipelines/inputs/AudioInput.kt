@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.core.pipelines.inputs
 
 import android.content.Context
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
+import io.github.thibaultbee.streampack.core.elements.processing.RawFramePullPush
 import io.github.thibaultbee.streampack.core.elements.processing.audio.AudioFrameProcessor
 import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
@@ -58,12 +59,12 @@ internal class AudioInput(
     val audioSourceFlow: StateFlow<IAudioSource?> = audioSourceInternalFlow.asStateFlow()
 
     // PROCESSOR
-    private val audioProcessorInternal = AudioFrameProcessor(onFrame)
-
     /**
      * The audio processor.
      */
-    val audioProcessor: IAudioFrameProcessor = audioProcessorInternal
+    private val audioFrameProcessorInternal = AudioFrameProcessor()
+    val audioProcessor: IAudioFrameProcessor = audioFrameProcessorInternal
+    private val audioPullPush = RawFramePullPush(audioFrameProcessorInternal, onFrame)
 
     // CONFIG
     private val _audioSourceConfigFlow = MutableStateFlow<AudioSourceConfig?>(null)
@@ -109,7 +110,7 @@ internal class AudioInput(
                 if (isStreaming) {
                     newAudioSource.startStream()
                 }
-                audioProcessorInternal.setInput(newAudioSource::getAudioFrame)
+                audioPullPush.setInput(newAudioSource::getAudioFrame)
 
                 // Replace audio source
                 audioSourceInternalFlow.emit(newAudioSource)
@@ -173,7 +174,7 @@ internal class AudioInput(
             }
             source.startStream()
             try {
-                audioProcessorInternal.startStream()
+                audioPullPush.startStream()
             } catch (t: Throwable) {
                 Logger.w(TAG, "startStream: Can't start audio processor: ${t.message}")
                 source.stopStream()
@@ -187,7 +188,7 @@ internal class AudioInput(
         audioSourceMutex.withLock {
             _isStreamingFlow.emit(false)
             try {
-                audioProcessorInternal.stopStream()
+                audioPullPush.stopStream()
             } catch (t: Throwable) {
                 Logger.w(TAG, "stopStream: Can't stop audio processor: ${t.message}")
             }
@@ -203,12 +204,12 @@ internal class AudioInput(
         audioSourceMutex.withLock {
             _isStreamingFlow.emit(false)
             try {
-                audioProcessorInternal.removeInput()
+                audioPullPush.removeInput()
             } catch (t: Throwable) {
                 Logger.w(TAG, "release: Can't remove audio processor input: ${t.message}")
             }
             try {
-                audioProcessorInternal.release()
+                audioPullPush.release()
             } catch (t: Throwable) {
                 Logger.w(TAG, "release: Can't release audio processor: ${t.message}")
             }

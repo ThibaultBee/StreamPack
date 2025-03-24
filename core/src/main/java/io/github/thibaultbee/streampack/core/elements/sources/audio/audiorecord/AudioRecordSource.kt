@@ -30,10 +30,10 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordSource.Companion.isEffectAvailable
 import io.github.thibaultbee.streampack.core.elements.utils.TimeUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.type
+import io.github.thibaultbee.streampack.core.elements.utils.pool.IReadOnlyRawFrameFactory
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.nio.ByteBuffer
 import java.util.UUID
 
 /**
@@ -52,6 +52,8 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
 
     private val _isStreamingFlow = MutableStateFlow(false)
     override val isStreamingFlow = _isStreamingFlow.asStateFlow()
+
+    private val audioTimestamp = AudioTimestamp()
 
     protected abstract fun buildAudioRecord(
         config: AudioSourceConfig,
@@ -132,18 +134,17 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
         audioRecord = null
     }
 
-    private fun getTimestamp(audioRecord: AudioRecord): Long {
+    private fun getTimestampInUs(audioRecord: AudioRecord): Long {
         // Get timestamp from AudioRecord
         // If we can not get timestamp through getTimestamp, we timestamp audio sample.
-        val timestampOut = AudioTimestamp()
         var timestamp: Long = -1
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             if (audioRecord.getTimestamp(
-                    timestampOut,
+                    audioTimestamp,
                     AudioTimestamp.TIMEBASE_MONOTONIC
                 ) == AudioRecord.SUCCESS
             ) {
-                timestamp = timestampOut.nanoTime / 1000 // to us
+                timestamp = audioTimestamp.nanoTime / 1000 // to us
             }
         }
 
@@ -155,18 +156,19 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
         return timestamp
     }
 
-    override fun getAudioFrame(inputBuffer: ByteBuffer?): RawFrame {
-        val audioRecord = requireNotNull(audioRecord)
 
-        val buffer = inputBuffer ?: ByteBuffer.allocateDirect(bufferSize!!)
+    override fun getAudioFrame(frameFactory: IReadOnlyRawFrameFactory): RawFrame {
+        val audioRecord = requireNotNull(audioRecord) { "Audio source is not initialized" }
+        val bufferSize = requireNotNull(bufferSize) { "Buffer size is not initialized" }
 
+        val frame = frameFactory.create(bufferSize, 0)
+        val buffer = frame.rawBuffer
         val length = audioRecord.read(buffer, buffer.remaining())
         if (length >= 0) {
-            return RawFrame(
-                buffer,
-                getTimestamp(audioRecord)
-            )
+            frame.timestampInUs = getTimestampInUs(audioRecord)
+            return frame
         } else {
+            frame.close()
             throw IllegalArgumentException(audioRecordErrorToString(length))
         }
     }

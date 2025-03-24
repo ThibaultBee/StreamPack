@@ -33,10 +33,10 @@ class Chunk(val id: Int) {
         get() = samples.sumOf { it.frame.buffer.remaining() }
 
     val firstTimestamp: Long
-        get() = samples.minOf { it.frame.pts }
+        get() = samples.minOf { it.frame.ptsInUs }
 
     private val lastTimestamp: Long
-        get() = samples.maxOf { it.frame.pts }
+        get() = samples.maxOf { it.frame.ptsInUs }
 
     val duration: Long
         get() = lastTimestamp - firstTimestamp
@@ -58,7 +58,7 @@ class Chunk(val id: Int) {
 
     val sampleDts: List<Long>
         get() = samples.map {
-            it.frame.dts ?: it.frame.pts
+            it.frame.dtsInUs ?: it.frame.ptsInUs
         }
 
     fun add(id: Int, frame: Frame) {

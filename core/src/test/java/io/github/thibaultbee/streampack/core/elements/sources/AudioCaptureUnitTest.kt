@@ -16,15 +16,15 @@
 package io.github.thibaultbee.streampack.core.elements.sources
 
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource
-import io.github.thibaultbee.streampack.core.elements.utils.FakeLogger
+import io.github.thibaultbee.streampack.core.elements.utils.StubLogger
+import io.github.thibaultbee.streampack.core.elements.utils.StubRawFrameFactory
 import io.github.thibaultbee.streampack.core.logger.Logger
 import org.junit.Assert
 import org.junit.Test
-import java.nio.ByteBuffer
 
 class MicrophoneSourceUnitTest {
     init {
-        Logger.logger = FakeLogger()
+        Logger.logger = StubLogger()
     }
 
     @Test
@@ -36,7 +36,7 @@ class MicrophoneSourceUnitTest {
         } catch (_: Throwable) {
         }
         try {
-            microphoneSource.getAudioFrame(ByteBuffer.allocate(10))
+            microphoneSource.getAudioFrame(StubRawFrameFactory())
             Assert.fail()
         } catch (_: Throwable) {
         }

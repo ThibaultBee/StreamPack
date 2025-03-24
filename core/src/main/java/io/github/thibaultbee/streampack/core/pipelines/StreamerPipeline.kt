@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.core.pipelines
 import android.content.Context
 import android.util.Size
 import android.view.Surface
+import io.github.thibaultbee.streampack.core.elements.data.ICloseableFrame
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
@@ -173,10 +174,40 @@ open class StreamerPipeline(
     }
 
     private fun queueAudioFrame(frame: RawFrame) {
+        /**
+         *  Using `runBlocking` to avoid to dispatch the frame to another thread.
+         *  It is possible because the [RawFramePullPush] has an output thread.
+         */
         runBlocking {
             safeStreamingOutputCall { streamingOutputs ->
-                streamingOutputs.filterIsInstance<IAudioSyncPipelineOutputInternal>().forEach {
-                    it.queueAudioFrame(frame.copy(buffer = frame.buffer.duplicate()))
+                val audioStreamingOutput =
+                    streamingOutputs.filterIsInstance<IAudioSyncPipelineOutputInternal>()
+                if (audioStreamingOutput.isEmpty()) {
+                    Logger.w(TAG, "No audio streaming output to process the frame")
+                    frame.close()
+                } else if (audioStreamingOutput.size == 1) {
+                    audioStreamingOutput.first().queueAudioFrame(frame)
+                } else {
+                    // Hook to close frame when all outputs have processed it
+                    var numOfClosed = 0
+                    val onClosed = { frame: ICloseableFrame ->
+                        numOfClosed++
+                        if (numOfClosed == audioStreamingOutput.size) {
+                            frame.close()
+                        }
+                    }
+                    audioStreamingOutput.forEachIndexed { index, output ->
+                        output.queueAudioFrame(
+                            frame.copy(
+                                rawBuffer = if (index == audioStreamingOutput.lastIndex) {
+                                    frame.rawBuffer
+                                } else {
+                                    frame.rawBuffer.duplicate()
+                                },
+                                onClosed = onClosed
+                            )
+                        )
+                    }
                 }
             }
         }
@@ -199,7 +230,7 @@ open class StreamerPipeline(
         input.setVideoSourceConfig(value)
     }
 
-    // VIDEO PROCESSING
+// VIDEO PROCESSING
     /**
      * Updates the transformation of the surface output.
      * To be called when the source info provider or [isMirroringRequired] is updated.

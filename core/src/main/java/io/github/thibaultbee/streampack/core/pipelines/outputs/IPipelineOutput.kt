@@ -156,7 +156,7 @@ interface IConfigurableVideoPipelineOutput {
 /**
  * A configurable video internal output component for a pipeline.
  */
-interface IConfigurableVideoPipelineOutputInternal: IConfigurableVideoPipelineOutput {
+interface IConfigurableVideoPipelineOutputInternal : IConfigurableVideoPipelineOutput {
     /**
      * Video configuration listener.
      */
@@ -222,13 +222,18 @@ interface IVideoAsyncPipelineOutputInternal : IVideoPipelineOutputInternal {
 
 /**
  * An internal video output component for a pipeline.
- * The provider is responsible for pushing video [Frame] to the pipeline.
+ * The provider is responsible for pushing video [RawFrame] to the pipeline.
  */
 interface IVideoSyncPipelineOutputInternal : IVideoPipelineOutputInternal {
     /**
-     * Queue an video [Frame] to be encoded.
+     * Queues a video [RawFrame] to be encoded.
      *
-     * @param frame The video [Frame] to queue.
+     * The [RawFrame.rawBuffer] is a duplicate of the original frame. If you need to modify the
+     * frame, you should create a new [ByteBuffer] and copy the data from the original frame. Do not
+     * modify the original [RawFrame.rawBuffer].
+     *
+     * You should call [RawFrame.close] when you are done with the frame to release resources.
+     * @param frame The video [RawFrame] to queue.
      */
     fun queueVideoFrame(frame: RawFrame)
 }
@@ -240,13 +245,19 @@ sealed interface IAudioPipelineOutputInternal : IPipelineOutput
 
 /**
  * An internal audio output component for a pipeline.
- * The provider is responsible for pushing audio [Frame] to the pipeline.
+ * The provider is responsible for pushing audio [RawFrame] to the pipeline.
  */
 interface IAudioSyncPipelineOutputInternal : IAudioPipelineOutputInternal {
     /**
-     * Queue an audio [Frame] to be encoded.
+     * Queues an audio [RawFrame] to be encoded.
      *
-     * @param frame The audio [Frame] to queue.
+     * The [RawFrame.rawBuffer] is a duplicate of the original frame. If you need to modify the
+     * frame, you should create a new [ByteBuffer] and copy the data from the original frame. Do not
+     * modify the original [RawFrame.rawBuffer].
+     *
+     * You should call [RawFrame.close] when you are done with the frame to release resources.
+     *
+     * @param frame The audio [RawFrame] to queue.
      */
     fun queueAudioFrame(frame: RawFrame)
 }

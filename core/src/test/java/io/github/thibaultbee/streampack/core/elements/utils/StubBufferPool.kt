@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Thibault B.
+ * Copyright (C) 2025 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,16 @@
  */
 package io.github.thibaultbee.streampack.core.elements.utils
 
-import io.github.thibaultbee.streampack.core.logger.ILogger
+import io.github.thibaultbee.streampack.core.elements.utils.pool.IGetOnlyBufferPool
+import java.nio.ByteBuffer
 
-class FakeLogger : ILogger {
-    override fun e(tag: String, message: String, tr: Throwable?) = println("E:$tag:$message")
-    override fun w(tag: String, message: String, tr: Throwable?) = println("W:$tag:$message")
-    override fun i(tag: String, message: String, tr: Throwable?) = println("I:$tag:$message")
-    override fun v(tag: String, message: String, tr: Throwable?) = println("V:$tag:$message")
-    override fun d(tag: String, message: String, tr: Throwable?) = println("D:$tag:$message")
+/**
+ * Stub buffer pool for testing.
+ *
+ * It always returns a new allocated buffer.
+ */
+class StubBufferPool : IGetOnlyBufferPool<ByteBuffer> {
+    override fun get(capacity: Int): ByteBuffer {
+        return ByteBuffer.allocate(capacity)
+    }
 }

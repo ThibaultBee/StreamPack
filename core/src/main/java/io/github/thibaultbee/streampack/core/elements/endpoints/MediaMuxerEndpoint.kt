@@ -144,7 +144,7 @@ class MediaMuxerEndpoint(
                     set(
                         0,
                         frame.buffer.remaining(),
-                        frame.pts,
+                        frame.ptsInUs,
                         if (frame.isKeyFrame) BUFFER_FLAG_KEY_FRAME else 0
                     )
                 }

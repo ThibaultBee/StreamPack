@@ -230,7 +230,7 @@ internal class EncodingPipelineOutput(
     override val audioSourceConfigFlow = audioCodecConfigFlow.mapState { it?.sourceConfig }
 
     private val audioCodecConfig: AudioCodecConfig?
-        get() = _audioCodecConfigFlow.value
+        get() = audioCodecConfigFlow.value
 
     override suspend fun setAudioCodecConfig(audioCodecConfig: AudioCodecConfig) {
         require(hasAudio) { "Audio is not enabled" }
@@ -287,7 +287,7 @@ internal class EncodingPipelineOutput(
         videoCodecConfigFlow.mapState { it?.sourceConfig }
 
     private val videoCodecConfig: VideoCodecConfig?
-        get() = _videoCodecConfigFlow.value
+        get() = videoCodecConfigFlow.value
 
     override suspend fun setVideoCodecConfig(videoCodecConfig: VideoCodecConfig) {
         require(hasVideo) { "Video is not enabled" }

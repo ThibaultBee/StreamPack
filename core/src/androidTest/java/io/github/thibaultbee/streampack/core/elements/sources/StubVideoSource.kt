@@ -2,17 +2,16 @@ package io.github.thibaultbee.streampack.core.elements.sources
 
 import android.content.Context
 import android.view.Surface
-import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoFrameSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
+import io.github.thibaultbee.streampack.core.elements.utils.pool.IReadOnlyRawFrameFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.nio.ByteBuffer
 
 class StubVideoSurfaceSource(override val timestampOffsetInNs: Long = 0) : StubVideoSource(),
     ISurfaceSourceInternal {
@@ -39,12 +38,8 @@ class StubVideoSurfaceSource(override val timestampOffsetInNs: Long = 0) : StubV
 }
 
 class StubVideoFrameSource : StubVideoSource(), IVideoFrameSourceInternal {
-    override fun getVideoFrame(buffer: ByteBuffer): RawFrame {
-        return RawFrame(
-            buffer,
-            0L
-        )
-    }
+    override fun getVideoFrame(frameFactory: IReadOnlyRawFrameFactory) =
+        frameFactory.create(8192, 0L)
 
     class Factory : IVideoSourceInternal.Factory {
         override suspend fun create(context: Context): IVideoSourceInternal {
@@ -56,7 +51,6 @@ class StubVideoFrameSource : StubVideoSource(), IVideoFrameSourceInternal {
         }
     }
 }
-
 
 abstract class StubVideoSource : IVideoSourceInternal {
     override val infoProviderFlow: StateFlow<ISourceInfoProvider> =

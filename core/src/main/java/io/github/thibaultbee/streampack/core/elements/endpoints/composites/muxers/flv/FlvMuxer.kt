@@ -48,7 +48,7 @@ class FlvMuxer(
                 if (hasVideo) {
                     // Expected first video key frame
                     if (frame.isVideo && frame.isKeyFrame) {
-                        startUpTime = frame.pts
+                        startUpTime = frame.ptsInUs
                         hasFirstFrame = true
                     } else {
                         // Drop
@@ -56,17 +56,17 @@ class FlvMuxer(
                     }
                 } else {
                     // Audio only
-                    startUpTime = frame.pts
+                    startUpTime = frame.ptsInUs
                     hasFirstFrame = true
                 }
             }
         }
 
-        if (frame.pts < startUpTime!!) {
+        if (frame.ptsInUs < startUpTime!!) {
             return
         }
 
-        frame.pts -= startUpTime!!
+        frame.ptsInUs -= startUpTime!!
         val stream = streams[streamPid]
         val sendHeader = stream.sendHeader
         stream.sendHeader = false
@@ -74,7 +74,7 @@ class FlvMuxer(
         flvTags.forEach {
             listener?.onOutputFrame(
                 Packet(
-                    it.write(), frame.pts, if (frame.isVideo) {
+                    it.write(), frame.ptsInUs, if (frame.isVideo) {
                         PacketType.VIDEO
                     } else {
                         PacketType.AUDIO

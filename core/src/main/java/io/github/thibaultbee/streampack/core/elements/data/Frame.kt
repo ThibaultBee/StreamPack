@@ -20,22 +20,45 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.extra
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isVideo
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.removePrefixes
+import java.io.Closeable
 import java.nio.ByteBuffer
+
+interface ICloseableFrame : Closeable {
+    /**
+     * Contains an audio or video frame data.
+     */
+    val rawBuffer: ByteBuffer
+
+    /**
+     * A callback to call when frame is closed.
+     */
+    val onClosed: (ICloseableFrame) -> Unit
+
+    override fun close() {
+        onClosed(this)
+    }
+}
 
 /**
  * A raw frame internal representation.
  */
 data class RawFrame(
+
     /**
      * Contains an audio or video frame data.
      */
-    val buffer: ByteBuffer,
+    override val rawBuffer: ByteBuffer,
 
     /**
      * Presentation timestamp in µs
      */
-    var timestamp: Long,
-)
+    var timestampInUs: Long,
+
+    /**
+     * A callback to call when frame is closed.
+     */
+    override val onClosed: (ICloseableFrame) -> Unit = {}
+) : ICloseableFrame
 
 /**
  * Frame internal representation.
@@ -44,17 +67,17 @@ data class Frame(
     /**
      * Contains an audio or video frame data.
      */
-    val rawBuffer: ByteBuffer,
+    override val rawBuffer: ByteBuffer,
 
     /**
      * Presentation timestamp in µs
      */
-    var pts: Long,
+    var ptsInUs: Long,
 
     /**
      * Decoded timestamp in µs (not used).
      */
-    var dts: Long? = null,
+    var dtsInUs: Long? = null,
 
     /**
      * [Boolean.true] if frame is a key frame (I-frame for AVC/HEVC and audio frames)
@@ -64,8 +87,13 @@ data class Frame(
     /**
      * Contains frame format..
      */
-    val format: MediaFormat
-) {
+    val format: MediaFormat,
+
+    /**
+     * A callback to call when frame is closed.
+     */
+    override val onClosed: (ICloseableFrame) -> Unit = {}
+) : ICloseableFrame {
     /**
      * Frame mime type
      */

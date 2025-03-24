@@ -44,11 +44,11 @@ class Pes(
         val header = PesHeader(
             streamId = fromMimeType(stream.config.mimeType).value,
             payloadLength = frame.buffer.remaining(),
-            pts = frame.pts,
-            dts = frame.dts
+            pts = frame.ptsInUs,
+            dts = frame.dtsInUs
         )
 
-        write(frame.buffer, adaptationField.toByteBuffer(), header.toByteBuffer(), true, frame.pts)
+        write(frame.buffer, adaptationField.toByteBuffer(), header.toByteBuffer(), true, frame.ptsInUs)
     }
 
     enum class StreamId(val value: Short) {

@@ -34,7 +34,6 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import java.io.Closeable
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -362,12 +361,12 @@ internal constructor(
                         listenerExecutor = this@MediaCodecEncoder.listenerExecutor
                     }
 
-                    val extractor = ClosableFrameExtractor(
+                    val frame = Frame(
                         codec, index, info, tag
                     )
                     listenerExecutor.execute {
                         try {
-                            listener.onOutputFrame(extractor.frame)
+                            listener.onOutputFrame(frame)
                         } catch (t: Throwable) {
                             if (state.isRunning) {
                                 handleError(t)
@@ -382,7 +381,7 @@ internal constructor(
                                 )
                             }
                         } finally {
-                            extractor.close()
+                            frame.close()
                         }
                     }
 
@@ -461,7 +460,11 @@ internal constructor(
             index: Int, frame: RawFrame
         ) {
             mediaCodec.queueInputBuffer(
-                index, frame.buffer.position(), frame.buffer.limit(), frame.timestamp /* in us */, 0
+                index,
+                frame.rawBuffer.position(),
+                frame.rawBuffer.limit(),
+                frame.timestampInUs /* in us */,
+                0
             )
         }
     }
@@ -527,10 +530,10 @@ internal constructor(
                 return false
             }
             val inputBuffer = requireNotNull(mediaCodec.getInputBuffer(inputBufferId))
-            val size = min(frame.buffer.remaining(), inputBuffer.remaining())
-            inputBuffer.put(frame.buffer, frame.buffer.position(), size)
+            val size = min(frame.rawBuffer.remaining(), inputBuffer.remaining())
+            inputBuffer.put(frame.rawBuffer, frame.rawBuffer.position(), size)
             mediaCodec.queueInputBuffer(
-                inputBufferId, 0, size, frame.timestamp, 0
+                inputBufferId, 0, size, frame.timestampInUs, 0
             )
             return true
         }
@@ -549,7 +552,7 @@ internal constructor(
                      * fully consumed because of a really slow encoder
                      */
                     var counter = 0
-                    while (frame.buffer.hasRemaining() && counter < 10) {
+                    while (frame.rawBuffer.hasRemaining() && counter < 10) {
                         if (queueInputFrameSync(frame)) {
                             counter = 0
                         } else {
@@ -568,54 +571,48 @@ internal constructor(
                             }
                         }
                     }
-                    if (frame.buffer.hasRemaining()) {
+                    if (frame.rawBuffer.hasRemaining()) {
                         Logger.w(
                             tag,
-                            "Failed to queue input frame: skipping: ${frame.buffer.remaining()} bytes"
+                            "Failed to queue input frame: skipping: ${frame.rawBuffer.remaining()} bytes"
                         )
                     }
                 } catch (t: Throwable) {
                     handleError(t)
+                } finally {
+                    // Release frame resources
+                    frame.close()
                 }
             }
         }
     }
 
-    private class ClosableFrameExtractor(
-        private val codec: MediaCodec,
-        private val index: Int,
-        info: BufferInfo,
-        private val tag: String
-    ) : Closeable {
-
-        val frame = Frame(codec, index, info)
-
-        override fun close() {
-            try {
-                codec.releaseOutputBuffer(index, false)
-            } catch (e: IllegalStateException) {
-                Logger.w(tag, "Failed to release output buffer for code: ${e.message}")
-            }
-        }
-
-        companion object {
-            /**
-             * Create a [Frame] from a [MediaCodec] output buffer
-             *
-             * @param mediaCodec the [MediaCodec] instance
-             * @param index the buffer index
-             * @param info the buffer info
-             */
-            private fun Frame(
-                mediaCodec: MediaCodec, index: Int, info: BufferInfo
-            ): Frame {
-                val buffer = requireNotNull(mediaCodec.getOutputBuffer(index))
-                return Frame(
-                    buffer, info.presentationTimeUs, // pts
-                    null, // dts
-                    info.isKeyFrame, mediaCodec.outputFormat
-                )
-            }
+    companion object {
+        /**
+         * Create a [Frame] from a [MediaCodec] output buffer
+         *
+         * @param codec the [MediaCodec] instance
+         * @param index the buffer index
+         * @param info the buffer info
+         */
+        private fun Frame(
+            codec: MediaCodec, index: Int, info: BufferInfo, tag: String
+        ): Frame {
+            val buffer = requireNotNull(codec.getOutputBuffer(index))
+            return Frame(
+                buffer,
+                info.presentationTimeUs, // pts
+                null, // dts
+                info.isKeyFrame,
+                codec.outputFormat,
+                onClosed = {
+                    try {
+                        codec.releaseOutputBuffer(index, false)
+                    } catch (t: Throwable) {
+                        Logger.w(tag, "Failed to release output buffer for code: ${t.message}")
+                    }
+                }
+            )
         }
     }
 
