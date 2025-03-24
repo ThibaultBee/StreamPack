@@ -114,27 +114,37 @@ class SurfaceProcessor(
         }
     }
 
+    private fun removeOutputSurfaceInternal(surfaceOutput: AbstractSurfaceOutput) {
+        if (surfaceOutputs.contains(surfaceOutput)) {
+            renderer.unregisterOutputSurface(surfaceOutput.surface)
+            surfaceOutputs.remove(surfaceOutput)
+        } else {
+            Logger.w(TAG, "Surface not found")
+        }
+    }
+
     override fun removeOutputSurface(surfaceOutput: AbstractSurfaceOutput) {
         if (isReleaseRequested.get()) {
             return
         }
 
         executeSafely {
-            if (surfaceOutputs.contains(surfaceOutput)) {
-                renderer.unregisterOutputSurface(surfaceOutput.surface)
-                surfaceOutputs.remove(surfaceOutput)
-            } else {
-                Logger.w(TAG, "Surface not found")
-            }
+            removeOutputSurfaceInternal(surfaceOutput)
         }
     }
 
     override fun removeOutputSurface(surface: Surface) {
-        val surfaceOutput = surfaceOutputs.firstOrNull { it.surface == surface }
-        if (surfaceOutput != null) {
-            removeOutputSurface(surfaceOutput)
-        } else {
-            Logger.w(TAG, "Surface not found")
+        if (isReleaseRequested.get()) {
+            return
+        }
+
+        executeSafely {
+            val surfaceOutput = surfaceOutputs.firstOrNull { it.surface == surface }
+            if (surfaceOutput != null) {
+                removeOutputSurfaceInternal(surfaceOutput)
+            } else {
+                Logger.w(TAG, "Surface not found")
+            }
         }
     }
 
