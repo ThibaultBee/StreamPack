@@ -34,6 +34,10 @@ import io.github.thibaultbee.streampack.app.R
 import io.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import io.github.thibaultbee.streampack.app.utils.DialogUtils
 import io.github.thibaultbee.streampack.app.utils.PermissionManager
+import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
+import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
+import io.github.thibaultbee.streampack.core.streamers.lifecycle.StreamerViewModelLifeCycleObserver
+import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.ui.views.PreviewView
 import kotlinx.coroutines.launch
 
@@ -57,8 +61,6 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
 
     @SuppressLint("MissingPermission")
     private fun bindProperties() {
-        lifecycle.addObserver(previewViewModel.streamerLifeCycleObserver)
-
         binding.liveButton.setOnClickListener { view ->
             view as ToggleButton
             if (view.isPressed) {
@@ -70,15 +72,15 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
             }
         }
 
-        previewViewModel.streamerError.observe(viewLifecycleOwner) {
+        previewViewModel.streamerErrorLiveData.observe(viewLifecycleOwner) {
             showError("Oops", it)
         }
 
-        previewViewModel.endpointError.observe(viewLifecycleOwner) {
+        previewViewModel.endpointErrorLiveData.observe(viewLifecycleOwner) {
             showError("Endpoint error", it)
         }
 
-        previewViewModel.isStreaming.observe(viewLifecycleOwner) { isStreaming ->
+        previewViewModel.isStreamingLiveData.observe(viewLifecycleOwner) { isStreaming ->
             if (isStreaming) {
                 lockOrientation()
             } else {
@@ -86,20 +88,34 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
             }
             if (isStreaming) {
                 binding.liveButton.isChecked = true
-            } else if (previewViewModel.isTryingConnection.value == true) {
+            } else if (previewViewModel.isTryingConnectionLiveData.value == true) {
                 binding.liveButton.isChecked = true
             } else {
                 binding.liveButton.isChecked = false
             }
         }
 
-        previewViewModel.isTryingConnection.observe(viewLifecycleOwner) { isWaitingForConnection ->
+        previewViewModel.isTryingConnectionLiveData.observe(viewLifecycleOwner) { isWaitingForConnection ->
             if (isWaitingForConnection) {
                 binding.liveButton.isChecked = true
-            } else if (previewViewModel.isStreaming.value == true) {
+            } else if (previewViewModel.isStreamingLiveData.value == true) {
                 binding.liveButton.isChecked = true
             } else {
                 binding.liveButton.isChecked = false
+            }
+        }
+
+        previewViewModel.streamerLiveData.observe(viewLifecycleOwner) { streamer ->
+            if (streamer is ICoroutineStreamer) {
+                // TODO: Remove this observer when streamer is released
+                lifecycle.addObserver(StreamerViewModelLifeCycleObserver(streamer))
+            } else {
+                Log.e(TAG, "Streamer is not a ICoroutineStreamer")
+            }
+            if (streamer is IVideoStreamer) {
+                inflateStreamerPreview(streamer)
+            } else {
+                Log.e(TAG, "Can't start preview, streamer is not a IVideoStreamer")
             }
         }
     }
@@ -149,6 +165,16 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
 
     @RequiresPermission(Manifest.permission.CAMERA)
     private fun inflateStreamerPreview() {
+        val streamer = previewViewModel.streamerLiveData.value
+        if (streamer is SingleStreamer) {
+            inflateStreamerPreview(streamer)
+        } else {
+            Log.e(TAG, "Can't start preview, streamer is not a SingleStreamer")
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.CAMERA)
+    private fun inflateStreamerPreview(streamer: SingleStreamer) {
         val preview = binding.preview
         // Set camera settings button when camera is started
         preview.listener = object : PreviewView.Listener {
@@ -162,7 +188,7 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
         }
 
         // Wait till streamer exists to set it to the SurfaceView.
-        preview.streamer = previewViewModel.streamer
+        preview.streamer = streamer
         if (PermissionManager.hasPermissions(requireContext(), Manifest.permission.CAMERA)) {
             lifecycleScope.launch {
                 try {

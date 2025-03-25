@@ -306,6 +306,7 @@ class PreviewView @JvmOverloads constructor(
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
+
         lifecycleScope?.launch {
             stopPreview()
         } ?: Logger.e(TAG, "LifecycleScope is not available")
@@ -402,6 +403,10 @@ class PreviewView @JvmOverloads constructor(
         size: Size,
         videoSource: IPreviewableSource
     ) {
+        if (size.height == 0 || size.width == 0) {
+            Logger.w(TAG, "Invalid size: $size")
+            return
+        }
         val previewSize = getPreviewSize(videoSource, size)
         val builder = ViewfinderSurfaceRequest.Builder(previewSize)
         viewfinderSurfaceRequest = if (videoSource is ICameraSource) {
@@ -460,17 +465,25 @@ class PreviewView @JvmOverloads constructor(
                 return
             }
 
-            lifecycleScope?.launch {
-                surfaceFlow.value?.let { surface ->
-                    startPreviewIfNeeded(videoSource, surface)
-                } ?: Logger.w(
+            val surface = surfaceFlow.value ?: run {
+                Logger.w(
                     TAG,
                     "Surface is not set. Preview will start when the surface is set"
                 )
-            } ?: Logger.e(
-                TAG,
-                "LifecycleScope is not available"
-            )
+                return
+            }
+
+            if (surface.isValid) {
+                lifecycleScope?.launch {
+                    startPreviewIfNeeded(videoSource, surface)
+                } ?: Logger.e(
+                    TAG,
+                    "LifecycleScope is not available"
+                )
+
+            } else {
+                requestSurface(size)
+            }
         } catch (t: Throwable) {
             if (shouldFailSilently) {
                 Logger.w(TAG, t.toString(), t)
@@ -486,7 +499,7 @@ class PreviewView @JvmOverloads constructor(
     ): Size {
         val previewSize = videoSource.getPreviewSize(targetViewSize, SurfaceHolder::class.java)
 
-        Logger.d(TAG, "Selected preview size: $previewSize")
+        Logger.d(TAG, "Selected preview size: $previewSize for target view size: $targetViewSize")
 
         return previewSize
     }

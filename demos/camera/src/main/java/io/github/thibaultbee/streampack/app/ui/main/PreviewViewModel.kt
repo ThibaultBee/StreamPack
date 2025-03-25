@@ -27,7 +27,6 @@ import android.util.Rational
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import androidx.databinding.Bindable
-import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
@@ -40,8 +39,8 @@ import io.github.thibaultbee.streampack.app.ui.main.usecases.BuildStreamerUseCas
 import io.github.thibaultbee.streampack.app.utils.ObservableViewModel
 import io.github.thibaultbee.streampack.app.utils.dataStore
 import io.github.thibaultbee.streampack.app.utils.isEmpty
-import io.github.thibaultbee.streampack.app.utils.toggleBackToFront
 import io.github.thibaultbee.streampack.app.utils.setNextCameraId
+import io.github.thibaultbee.streampack.app.utils.toggleBackToFront
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.IAudioRecordSource
@@ -54,11 +53,13 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICame
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFrameRateSupported
 import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
-import io.github.thibaultbee.streampack.core.streamers.lifecycle.StreamerViewModelLifeCycleObserver
+import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrtBitrateRegulatorController
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -71,10 +72,10 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
 
     private val buildStreamerUseCase = BuildStreamerUseCase(application, storageRepository)
 
-    var streamer = buildStreamerUseCase()
-        private set
-    val streamerLifeCycleObserver: DefaultLifecycleObserver
-        get() = StreamerViewModelLifeCycleObserver(streamer)
+    private val streamerFlow = MutableStateFlow(buildStreamerUseCase())
+    private val streamer: SingleStreamer
+        get() = streamerFlow.value
+    val streamerLiveData = streamerFlow.asLiveData()
 
     /**
      * Test bitmap for [BitmapSource].
@@ -110,22 +111,24 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         }
 
     // Streamer errors
-    private val _streamerError: MutableLiveData<String> = MutableLiveData()
-    val streamerError: LiveData<String> = _streamerError
-    private val _endpointError: MutableLiveData<String> = MutableLiveData()
-    val endpointError: LiveData<String> = _endpointError
+    private val _streamerErrorLiveData: MutableLiveData<String> = MutableLiveData()
+    val streamerErrorLiveData: LiveData<String> = _streamerErrorLiveData
+    private val _endpointErrorLiveData: MutableLiveData<String> = MutableLiveData()
+    val endpointErrorLiveData: LiveData<String> = _endpointErrorLiveData
 
     // Streamer states
-    val isStreaming: LiveData<Boolean>
+    val isStreamingLiveData: LiveData<Boolean>
         get() = streamer.isStreamingFlow.asLiveData()
-    private val _isTryingConnection = MutableLiveData<Boolean>()
-    val isTryingConnection: LiveData<Boolean> = _isTryingConnection
+    private val _isTryingConnectionLiveData = MutableLiveData<Boolean>()
+    val isTryingConnectionLiveData: LiveData<Boolean> = _isTryingConnectionLiveData
 
     init {
         viewModelScope.launch {
-            // Set audio source and video source
-            streamer.setAudioSource(MicrophoneSourceFactory())
-            streamer.setVideoSource(CameraSourceFactory())
+            streamerFlow.collect {
+                // Set audio source and video source
+                streamer.setAudioSource(MicrophoneSourceFactory())
+                streamer.setVideoSource(CameraSourceFactory())
+            }
         }
         viewModelScope.launch {
             streamer.videoSourceFlow.collect {
@@ -135,13 +138,13 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         viewModelScope.launch {
             streamer.throwableFlow.filterNotNull().filter { !it.isClosedException }
                 .map { "${it.javaClass.simpleName}: ${it.message}" }.collect {
-                    _streamerError.postValue(it)
+                    _streamerErrorLiveData.postValue(it)
                 }
         }
         viewModelScope.launch {
             streamer.throwableFlow.filterNotNull().filter { it.isClosedException }
                 .map { "Connection lost: ${it.message}" }.collect {
-                    _endpointError.postValue(it)
+                    _endpointErrorLiveData.postValue(it)
                 }
         }
         viewModelScope.launch {
@@ -165,9 +168,9 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         viewModelScope.launch {
             storageRepository.isAudioEnableFlow.combine(storageRepository.isVideoEnableFlow) { isAudioEnable, isVideoEnable ->
                 Pair(isAudioEnable, isVideoEnable)
-            }.collect { (_, _) ->
+            }.drop(1).collect { (_, _) ->
                 val previousStreamer = streamer
-                streamer = buildStreamerUseCase(previousStreamer)
+                streamerFlow.emit(buildStreamerUseCase(previousStreamer))
                 if (previousStreamer != streamer) {
                     previousStreamer.release()
                 }
@@ -212,14 +215,14 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                     )
             } catch (t: Throwable) {
                 Log.e(TAG, "configureAudio failed", t)
-                _streamerError.postValue("configureAudio: ${t.message ?: "Unknown error"}")
+                _streamerErrorLiveData.postValue("configureAudio: ${t.message ?: "Unknown error"}")
             }
         }
     }
 
     fun startStream() {
         viewModelScope.launch {
-            _isTryingConnection.postValue(true)
+            _isTryingConnectionLiveData.postValue(true)
             try {
                 val descriptor = storageRepository.endpointDescriptorFlow.first()
                 streamer.startStream(descriptor)
@@ -238,9 +241,9 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, "startStream failed", e)
-                _streamerError.postValue("startStream: ${e.message ?: "Unknown error"}")
+                _streamerErrorLiveData.postValue("startStream: ${e.message ?: "Unknown error"}")
             } finally {
-                _isTryingConnection.postValue(false)
+                _isTryingConnectionLiveData.postValue(false)
             }
         }
     }
