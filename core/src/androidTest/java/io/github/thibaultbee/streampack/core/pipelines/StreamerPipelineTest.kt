@@ -60,8 +60,8 @@ class StreamerPipelineTest {
     ): StreamerPipeline {
         val pipeline = StreamerPipeline(
             context,
-            hasAudio = audioSource != null,
-            hasVideo = videoSource != null
+            withAudio = audioSource != null,
+            withVideo = videoSource != null
         )
         audioSource?.let { pipeline.setAudioSource(it) }
         videoSource?.let { pipeline.setVideoSource(it) }

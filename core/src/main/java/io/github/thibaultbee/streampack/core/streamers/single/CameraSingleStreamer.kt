@@ -53,20 +53,20 @@ suspend fun CameraSingleStreamer(
  * Creates a [CameraSingleStreamer].
  *
  * @param context the application context
- * @param hasAudio [Boolean.true] if the streamer will capture audio.
+ * @param withAudio [Boolean.true] if the streamer will capture audio.
  * @param cameraId the camera id to use. By default, it is the default camera.
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 suspend fun CameraSingleStreamer(
     context: Context,
-    hasAudio: Boolean,
+    withAudio: Boolean,
     cameraId: String = context.defaultCameraId,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ): SingleStreamer {
     val streamer = SingleStreamer(
-        context, hasAudio, hasVideo = true, endpointFactory, defaultRotation
+        context, withAudio, withVideo = true, endpointFactory, defaultRotation
     )
     streamer.setCameraId(cameraId)
     return streamer

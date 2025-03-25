@@ -168,7 +168,7 @@ class EncodingPipelineOutputTest {
     fun testStartStreamWithAudioConfig() = runTest {
         output = EncodingPipelineOutput(
             context,
-            hasVideo = false,
+            withVideo = false,
             endpointFactory = DummyEndpointFactory()
         )
 
@@ -180,7 +180,7 @@ class EncodingPipelineOutputTest {
     fun testStartStreamWithVideoConfig() = runTest {
         output = EncodingPipelineOutput(
             context,
-            hasAudio = false,
+            withAudio = false,
             endpointFactory = DummyEndpointFactory()
         )
 
@@ -192,7 +192,7 @@ class EncodingPipelineOutputTest {
     fun testStartStream() = runTest {
         output = EncodingPipelineOutput(
             context,
-            hasAudio = false,
+            withAudio = false,
             endpointFactory = DummyEndpointFactory()
         )
 
@@ -245,7 +245,7 @@ class EncodingPipelineOutputTest {
     fun testStartStreamVideoCodecSurface() = runTest {
         output = EncodingPipelineOutput(
             context,
-            hasAudio = false,
+            withAudio = false,
             endpointFactory = DummyEndpointFactory()
         )
         assertNull(output.surfaceFlow.value)
@@ -311,7 +311,7 @@ class EncodingPipelineOutputTest {
         val dummyEndpoint = DummyEndpoint()
         output = EncodingPipelineOutput(
             context,
-            hasVideo = false,
+            withVideo = false,
             endpointFactory = DummyEndpointDummyFactory(dummyEndpoint)
         )
 

@@ -58,8 +58,8 @@ class VideoOnlySingleStreamer internal constructor(
     private val streamer = SingleStreamer(
         context = context,
         endpointFactory = endpointFactory,
-        hasAudio = false,
-        hasVideo = true
+        withAudio = false,
+        withVideo = true
     )
     override val throwableFlow = streamer.throwableFlow
     override val isOpenFlow = streamer.isOpenFlow
