@@ -55,8 +55,8 @@ suspend fun DualStreamer(
 ): DualStreamer {
     val streamer = DualStreamer(
         context = context,
-        hasAudio = true,
-        hasVideo = true,
+        withAudio = true,
+        withVideo = true,
         firstEndpointFactory = firstEndpointFactory,
         secondEndpointFactory = secondEndpointFactory,
         defaultRotation = defaultRotation
@@ -72,24 +72,24 @@ suspend fun DualStreamer(
  * For example, you can use it to live stream and record simultaneously.
  *
  * @param context the application context
- * @param hasAudio [Boolean.true] to capture audio. It can't be changed after instantiation.
- * @param hasVideo [Boolean.true] to capture video. It can't be changed after instantiation.
+ * @param withAudio [Boolean.true] to capture audio. It can't be changed after instantiation.
+ * @param withVideo [Boolean.true] to capture video. It can't be changed after instantiation.
  * @param firstEndpointFactory the [IEndpointInternal] implementation of the first output. By default, it is a [DynamicEndpoint].
  * @param secondEndpointFactory the [IEndpointInternal] implementation of the second output. By default, it is a [DynamicEndpoint].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 open class DualStreamer(
     protected val context: Context,
-    val hasAudio: Boolean = true,
-    val hasVideo: Boolean = true,
+    val withAudio: Boolean = true,
+    val withVideo: Boolean = true,
     firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ) : ICoroutineDualStreamer, ICoroutineAudioDualStreamer, ICoroutineVideoDualStreamer {
     private val pipeline = StreamerPipeline(
         context,
-        hasAudio,
-        hasVideo
+        withAudio,
+        withVideo
     )
 
     private val firstPipelineOutput: IEncodingPipelineOutputInternal =

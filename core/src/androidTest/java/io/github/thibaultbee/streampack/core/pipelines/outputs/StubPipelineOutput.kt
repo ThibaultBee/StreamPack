@@ -32,7 +32,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 open class StubAudioAsyncPipelineOutput :
-    StubPipelineOutput(hasAudio = true, hasVideo = false),
+    StubPipelineOutput(withAudio = true, withVideo = false),
     IAudioSyncPipelineOutputInternal {
 
     private val _audioFrameFlow = MutableStateFlow<RawFrame?>(null)
@@ -44,7 +44,7 @@ open class StubAudioAsyncPipelineOutput :
 }
 
 open class StubVideoSurfacePipelineOutput(resolution: Size) :
-    StubPipelineOutput(hasAudio = false, hasVideo = true),
+    StubPipelineOutput(withAudio = false, withVideo = true),
     IVideoSurfacePipelineOutputInternal {
 
     override var targetRotation: Int = 0
@@ -59,7 +59,7 @@ open class StubVideoSurfacePipelineOutput(resolution: Size) :
 }
 
 class StubAudioSyncVideoSurfacePipelineOutput(resolution: Size) :
-    StubPipelineOutput(hasAudio = true, hasVideo = true),
+    StubPipelineOutput(withAudio = true, withVideo = true),
     IAudioSyncPipelineOutputInternal, IVideoSurfacePipelineOutputInternal {
 
     override var targetRotation: Int = 0
@@ -80,7 +80,7 @@ class StubAudioSyncVideoSurfacePipelineOutput(resolution: Size) :
     }
 }
 
-abstract class StubPipelineOutput(override val hasAudio: Boolean, override val hasVideo: Boolean) :
+abstract class StubPipelineOutput(override val withAudio: Boolean, override val withVideo: Boolean) :
     IPipelineOutput {
 
     private val _throwableFlow = MutableStateFlow<Throwable?>(null)

@@ -34,12 +34,12 @@ interface IPipelineOutput {
     /**
      * Whether the output has audio.
      */
-    val hasAudio: Boolean
+    val withAudio: Boolean
 
     /**
      * Whether the output has video.
      */
-    val hasVideo: Boolean
+    val withVideo: Boolean
 
     /**
      * Returns the last throwable that occurred.

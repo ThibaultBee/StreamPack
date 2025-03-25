@@ -56,20 +56,20 @@ suspend fun ScreenRecorderSingleStreamer(
  * Creates a [ScreenRecorderSingleStreamer].
  *
  * @param context the application context
- * @param hasAudio [Boolean.true] if the streamer will capture audio.
+ * @param withAudio [Boolean.true] if the streamer will capture audio.
  * @param endpointFactory the [IEndpointInternal.Factory] implementation
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 suspend fun ScreenRecorderSingleStreamer(
     context: Context,
-    hasAudio: Boolean,
+    withAudio: Boolean,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ): SingleStreamer {
     val streamer = SingleStreamer(
         context = context,
         endpointFactory = endpointFactory,
-        hasAudio = hasAudio,
+        withAudio = withAudio,
         defaultRotation = defaultRotation
     )
     streamer.setVideoSource(MediaProjectionVideoSourceFactory())

@@ -60,7 +60,7 @@ suspend fun CameraDualStreamer(
  * Creates a [CameraDualStreamer].
  *
  * @param context the application context
- * @param hasAudio [Boolean.true] if the streamer will capture audio.
+ * @param withAudio [Boolean.true] if the streamer will capture audio.
  * @param cameraId the camera id to use. By default, it is the default camera.
  * @param firstEndpointFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
  * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
@@ -68,7 +68,7 @@ suspend fun CameraDualStreamer(
  */
 suspend fun CameraDualStreamer(
     context: Context,
-    hasAudio: Boolean,
+    withAudio: Boolean,
     cameraId: String = context.defaultCameraId,
     firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
@@ -76,8 +76,8 @@ suspend fun CameraDualStreamer(
 ): DualStreamer {
     val streamer = DualStreamer(
         context,
-        hasAudio,
-        hasVideo = true,
+        withAudio,
+        withVideo = true,
         firstEndpointFactory,
         secondEndpointFactory,
         defaultRotation

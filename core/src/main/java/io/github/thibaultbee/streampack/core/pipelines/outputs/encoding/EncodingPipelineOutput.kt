@@ -61,16 +61,16 @@ import kotlinx.coroutines.withContext
  * An implementation of [IEncodingPipelineOutputInternal] that manages encoding and endpoint.
  *
  * @param context The application context
- * @param hasAudio whether the output has audio.
- * @param hasVideo whether the output has video.
+ * @param withAudio whether the output has audio.
+ * @param withVideo whether the output has video.
  * @param endpointFactory The endpoint factory implementation
  * @param defaultRotation The default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param coroutineDispatcher The coroutine dispatcher to use. By default, it is [Dispatchers.Default]
  */
 internal class EncodingPipelineOutput(
     private val context: Context,
-    override val hasAudio: Boolean = true,
-    override val hasVideo: Boolean = true,
+    override val withAudio: Boolean = true,
+    override val withVideo: Boolean = true,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
@@ -136,7 +136,7 @@ internal class EncodingPipelineOutput(
     override var targetRotation: Int
         @RotationValue get() = _targetRotation
         set(@RotationValue value) {
-            if (!hasVideo) {
+            if (!withVideo) {
                 Logger.w(TAG, "Video is not enabled")
                 return
             }
@@ -233,7 +233,7 @@ internal class EncodingPipelineOutput(
         get() = audioCodecConfigFlow.value
 
     override suspend fun setAudioCodecConfig(audioCodecConfig: AudioCodecConfig) {
-        require(hasAudio) { "Audio is not enabled" }
+        require(withAudio) { "Audio is not enabled" }
         withContext(coroutineDispatcher) {
             audioConfigurationMutex.withLock {
                 setAudioCodecConfigInternal(audioCodecConfig)
@@ -290,7 +290,7 @@ internal class EncodingPipelineOutput(
         get() = videoCodecConfigFlow.value
 
     override suspend fun setVideoCodecConfig(videoCodecConfig: VideoCodecConfig) {
-        require(hasVideo) { "Video is not enabled" }
+        require(withVideo) { "Video is not enabled" }
         withContext(coroutineDispatcher) {
             videoConfigurationMutex.withLock {
                 setVideoCodecConfigInternal(videoCodecConfig)
@@ -404,11 +404,11 @@ internal class EncodingPipelineOutput(
             return
         }
         require(isOpenFlow.value) { "Endpoint must be opened before starting stream" }
-        require(hasAudio || hasVideo) { "At least one of audio or video must be set" }
-        if (hasAudio) {
+        require(withAudio || withVideo) { "At least one of audio or video must be set" }
+        if (withAudio) {
             requireNotNull(audioCodecConfig) { "Audio configuration must be set" }
         }
-        if (hasVideo) {
+        if (withVideo) {
             requireNotNull(videoCodecConfig) { "Video configuration must be set" }
         }
 

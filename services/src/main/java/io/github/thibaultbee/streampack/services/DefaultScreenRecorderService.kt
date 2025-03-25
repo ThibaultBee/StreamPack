@@ -174,7 +174,7 @@ abstract class DefaultScreenRecorderService(
         } else {
             ScreenRecorderSingleStreamer(
                 applicationContext,
-                hasAudio = false
+                withAudio = false
             )
         }
     }

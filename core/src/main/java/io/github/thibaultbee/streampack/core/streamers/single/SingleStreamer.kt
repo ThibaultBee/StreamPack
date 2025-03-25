@@ -58,8 +58,8 @@ suspend fun SingleStreamer(
 ): SingleStreamer {
     val streamer = SingleStreamer(
         context = context,
-        hasAudio = true,
-        hasVideo = true,
+        withAudio = true,
+        withVideo = true,
         endpointFactory = endpointFactory,
         defaultRotation = defaultRotation
     )
@@ -72,22 +72,22 @@ suspend fun SingleStreamer(
  * A class that handles one audio and video output.
  *
  * @param context the application context
- * @param hasAudio [Boolean.true] to capture audio. It can't be changed after instantiation.
- * @param hasVideo [Boolean.true] to capture video. It can't be changed after instantiation.
+ * @param withAudio [Boolean.true] to capture audio. It can't be changed after instantiation.
+ * @param withVideo [Boolean.true] to capture video. It can't be changed after instantiation.
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 open class SingleStreamer(
     protected val context: Context,
-    val hasAudio: Boolean = true,
-    val hasVideo: Boolean = true,
+    val withAudio: Boolean = true,
+    val withVideo: Boolean = true,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ) : ICoroutineSingleStreamer, ICoroutineAudioSingleStreamer, ICoroutineVideoSingleStreamer {
     private val pipeline = StreamerPipeline(
         context,
-        hasAudio,
-        hasVideo
+        withAudio,
+        withVideo
     )
     private val pipelineOutput: IEncodingPipelineOutputInternal =
         pipeline.createOutput(

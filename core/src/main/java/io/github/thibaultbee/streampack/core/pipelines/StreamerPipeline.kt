@@ -74,14 +74,14 @@ import kotlinx.coroutines.withContext
  * Base class of all streamers.
  *
  * @param context the application context
- * @param hasAudio whether the streamer has audio. It will create necessary audio components.
- * @param hasVideo whether the streamer has video. It will create necessary video components.
+ * @param withAudio whether the streamer has audio. It will create necessary audio components.
+ * @param withVideo whether the streamer has video. It will create necessary video components.
  * @param coroutineDispatcher the coroutine dispatcher
  */
 open class StreamerPipeline(
     protected val context: Context,
-    val hasAudio: Boolean = true,
-    val hasVideo: Boolean = true,
+    val withAudio: Boolean = true,
+    val withVideo: Boolean = true,
     protected val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : IVideoStreamer, IAudioStreamer {
     private val coroutineScope: CoroutineScope = CoroutineScope(coroutineDispatcher)
@@ -90,7 +90,7 @@ open class StreamerPipeline(
     val throwableFlow = _throwableFlow.asStateFlow()
 
     // INPUTS
-    private val audioInput = if (hasAudio) {
+    private val audioInput = if (withAudio) {
         AudioInput(context, ::queueAudioFrame)
     } else {
         null
@@ -109,7 +109,7 @@ open class StreamerPipeline(
      */
     override val audioProcessor: IAudioFrameProcessor? = audioInput?.audioProcessor
 
-    private val videoInput = if (hasVideo) {
+    private val videoInput = if (withVideo) {
         VideoInput(context)
     } else {
         null
@@ -141,7 +141,7 @@ open class StreamerPipeline(
      */
     var targetRotation: Int = context.displayRotation
         set(@RotationValue value) {
-            require(hasVideo) { "Do not need to set video rotation as it is an audio only streamer" }
+            require(withVideo) { "Do not need to set video rotation as it is an audio only streamer" }
             coroutineScope.launch {
                 safeOutputCall { outputs ->
                     outputs.keys.filterIsInstance<IVideoSurfacePipelineOutputInternal>()
@@ -162,13 +162,13 @@ open class StreamerPipeline(
     }
 
     override suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory) {
-        require(hasAudio) { "Do not need to set audio as it is a video only streamer" }
+        require(withAudio) { "Do not need to set audio as it is a video only streamer" }
         val input = requireNotNull(audioInput) { "Audio input is not set" }
         input.setAudioSource(audioSourceFactory)
     }
 
     private suspend fun setAudioSourceConfig(value: AudioSourceConfig) {
-        require(hasAudio) { "Do not need to set audio as it is a video only streamer" }
+        require(withAudio) { "Do not need to set audio as it is a video only streamer" }
         val input = requireNotNull(audioInput) { "Audio input is not set" }
         input.setAudioSourceConfig(value)
     }
@@ -219,13 +219,13 @@ open class StreamerPipeline(
      * The previous video source will be released unless its preview is still running.
      */
     override suspend fun setVideoSource(videoSourceFactory: IVideoSourceInternal.Factory) {
-        require(hasVideo) { "Do not need to set video as it is an audio only streamer" }
+        require(withVideo) { "Do not need to set video as it is an audio only streamer" }
         val input = requireNotNull(videoInput) { "Video input is not set" }
         input.setVideoSource(videoSourceFactory)
     }
 
     private suspend fun setVideoSourceConfig(value: VideoSourceConfig) {
-        require(hasVideo) { "Do not need to set video as it is an audio only streamer" }
+        require(withVideo) { "Do not need to set video as it is an audio only streamer" }
         val input = requireNotNull(videoInput) { "Video input is not set" }
         input.setVideoSourceConfig(value)
     }
@@ -308,14 +308,14 @@ open class StreamerPipeline(
     private suspend fun getNumOfAudioStreamingOutputSafe(output: IPipelineOutput?): Int {
         return safeOutputCall {
             outputs.keys.minus(output).filterIsInstance<IAudioPipelineOutputInternal>()
-                .count { it.isStreaming && it.hasAudio }
+                .count { it.isStreaming && it.withAudio }
         }
     }
 
     private suspend fun getNumOfVideoStreamingOutputSafe(output: IPipelineOutput?): Int {
         return safeOutputCall {
             outputs.keys.minus(output).filterIsInstance<IVideoPipelineOutputInternal>()
-                .count { it.isStreaming && it.hasVideo }
+                .count { it.isStreaming && it.withVideo }
         }
     }
 
@@ -333,7 +333,7 @@ open class StreamerPipeline(
         @RotationValue targetRotation: Int = context.displayRotation
     ): IEncodingPipelineOutput {
         val output =
-            EncodingPipelineOutput(context, hasAudio, hasVideo, endpointFactory, targetRotation)
+            EncodingPipelineOutput(context, withAudio, withVideo, endpointFactory, targetRotation)
         return addOutput(output)
     }
 
@@ -381,8 +381,8 @@ open class StreamerPipeline(
                      * Verify if the source configuration is still valid with the output configuration.
                      * Another output could have changed the source configuration in the meantime.
                      */
-                    if (output.hasAudio) {
-                        require(hasAudio) { "Do not need to set audio as it is a video only streamer" }
+                    if (output.withAudio) {
+                        require(withAudio) { "Do not need to set audio as it is a video only streamer" }
                         if (output is IConfigurableAudioPipelineOutput) {
                             val input = requireNotNull(audioInput) { "Audio input is not set" }
                             val inputSourceConfig =
@@ -394,8 +394,8 @@ open class StreamerPipeline(
                             require(outputSourceConfig.isCompatibleWith(inputSourceConfig)) { "Output audio source config is not compatible with input audio source config" }
                         }
                     }
-                    if (output.hasVideo) {
-                        require(hasVideo) { "Do not need to set video as it is an audio only streamer" }
+                    if (output.withVideo) {
+                        require(withVideo) { "Do not need to set video as it is an audio only streamer" }
                         if (output is IConfigurableVideoPipelineOutput) {
                             val input = requireNotNull(videoInput) { "Video input is not set" }
                             val inputSourceConfig =
@@ -431,7 +431,7 @@ open class StreamerPipeline(
         }
 
         if (output is IAudioPipelineOutputInternal) {
-            if (hasAudio) {
+            if (withAudio) {
                 if ((output !is IAudioSyncPipelineOutputInternal) && (output is IAudioAsyncPipelineOutputInternal)) {
                     addAudioAsyncOutputIfNeeded(output)
                 }
@@ -444,7 +444,7 @@ open class StreamerPipeline(
         }
 
         if (output is IVideoPipelineOutputInternal) {
-            if (hasVideo) {
+            if (withVideo) {
                 addVideoOutputIfNeeded(output, scope)
                 if (output is IConfigurableVideoPipelineOutputInternal) {
                     addEncodingVideoOutput(output)
@@ -523,7 +523,7 @@ open class StreamerPipeline(
     private fun addVideoOutputIfNeeded(
         output: IVideoPipelineOutputInternal, scope: CoroutineScope
     ) {
-        if (hasVideo) {
+        if (withVideo) {
             when {
                 output is IVideoSurfacePipelineOutputInternal -> {
                     addVideoSurfaceOutputIfNeeded(output, scope)
@@ -615,13 +615,13 @@ open class StreamerPipeline(
 
     private suspend fun startInputStreams(output: IPipelineOutput) =
         withContext(coroutineDispatcher) {
-            if (output.hasAudio) {
+            if (output.withAudio) {
                 require(audioSourceFlow.value != null) { "At least one audio source must be provided" }
             }
-            if (output.hasVideo) {
+            if (output.withVideo) {
                 require(videoSourceFlow.value != null) { "At least one video source must be provided" }
             }
-            val isAudioSourceStreaming = if (output.hasAudio) {
+            val isAudioSourceStreaming = if (output.withAudio) {
                 val input = requireNotNull(audioInput)
                 val wasStreaming = input.isStreamingFlow.value
                 input.startStream()
@@ -629,7 +629,7 @@ open class StreamerPipeline(
             } else {
                 false
             }
-            if (output.hasVideo) {
+            if (output.withVideo) {
                 val input = requireNotNull(videoInput)
                 try {
                     input.startStream()
@@ -694,7 +694,7 @@ open class StreamerPipeline(
             }
 
             // Stop audio input if it is the last audio output
-            if (output.hasAudio && getNumOfAudioStreamingOutputSafe(output) == 0) {
+            if (output.withAudio && getNumOfAudioStreamingOutputSafe(output) == 0) {
                 Logger.d(TAG, "No more audio output. Stopping audio input.")
                 try {
                     audioInput?.stopStream()
@@ -703,7 +703,7 @@ open class StreamerPipeline(
                 }
             }
             // Stop video input if it is the last video output
-            if (output.hasVideo && getNumOfVideoStreamingOutputSafe(output) == 0) {
+            if (output.withVideo && getNumOfVideoStreamingOutputSafe(output) == 0) {
                 Logger.d(TAG, "No more video output. Stopping video input.")
                 try {
                     videoInput?.stopStream()
