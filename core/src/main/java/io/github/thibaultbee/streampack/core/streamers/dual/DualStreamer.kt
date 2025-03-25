@@ -34,8 +34,40 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodin
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import kotlinx.coroutines.flow.StateFlow
 
+
 /**
- * A class that handles 2 audio and video output.
+ * Creates a [DualStreamer] with an audio source and a video source.
+ *
+ * @param context the application context
+ * @param audioSourceFactory the audio source factory.
+ * @param videoSourceFactory the video source factory.
+ * @param firstEndpointFactory the [IEndpointInternal] implementation of the first output. By default, it is a [DynamicEndpoint].
+ * @param secondEndpointFactory the [IEndpointInternal] implementation of the second output. By default, it is a [DynamicEndpoint].
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ */
+suspend fun DualStreamer(
+    context: Context,
+    audioSourceFactory: IAudioSourceInternal.Factory,
+    videoSourceFactory: IVideoSourceInternal.Factory,
+    firstEndpointFactory: IEndpointInternal.Factory,
+    secondEndpointFactory: IEndpointInternal.Factory,
+    @RotationValue defaultRotation: Int
+): DualStreamer {
+    val streamer = DualStreamer(
+        context = context,
+        hasAudio = true,
+        hasVideo = true,
+        firstEndpointFactory = firstEndpointFactory,
+        secondEndpointFactory = secondEndpointFactory,
+        defaultRotation = defaultRotation
+    )
+    streamer.setAudioSource(audioSourceFactory)
+    streamer.setVideoSource(videoSourceFactory)
+    return streamer
+}
+
+/**
+ * A class that handles 2 outputs.
  *
  * For example, you can use it to live stream and record simultaneously.
  *

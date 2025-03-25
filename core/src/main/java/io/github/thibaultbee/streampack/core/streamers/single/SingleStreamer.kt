@@ -41,6 +41,34 @@ import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStre
 import kotlinx.coroutines.flow.StateFlow
 
 /**
+ * Creates a [SingleStreamer] with an audio source and a video source.
+ *
+ * @param context the application context
+ * @param audioSourceFactory the audio source factory.
+ * @param videoSourceFactory the video source factory.
+ * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ */
+suspend fun SingleStreamer(
+    context: Context,
+    audioSourceFactory: IAudioSourceInternal.Factory,
+    videoSourceFactory: IVideoSourceInternal.Factory,
+    endpointFactory: IEndpointInternal.Factory,
+    @RotationValue defaultRotation: Int
+): SingleStreamer {
+    val streamer = SingleStreamer(
+        context = context,
+        hasAudio = true,
+        hasVideo = true,
+        endpointFactory = endpointFactory,
+        defaultRotation = defaultRotation
+    )
+    streamer.setAudioSource(audioSourceFactory)
+    streamer.setVideoSource(videoSourceFactory)
+    return streamer
+}
+
+/**
  * A class that handles one audio and video output.
  *
  * @param context the application context
