@@ -119,7 +119,7 @@ class CameraSessionController private constructor(
     suspend fun addTargets(targets: List<Surface>): Boolean {
         require(targets.isNotEmpty()) { "At least one target is required" }
         require(targets.all { it.isValid }) { "All targets must be valid" }
-        require(targets.all { outputs.contains(it) }) { "Targets must be in the current capture session" }
+        require(targets.all { outputs.contains(it) }) { "Targets must be in the current capture session: $targets ($outputs)" }
 
         val res = requestTargetMutex.withLock {
             targets.map {
@@ -137,7 +137,7 @@ class CameraSessionController private constructor(
      */
     suspend fun addTarget(target: Surface): Boolean {
         require(target.isValid) { "Target must be valid: $target" }
-        require(outputs.contains(target)) { "Target must be in the current capture session" }
+        require(outputs.contains(target)) { "Target must be in the current capture session: $target ($outputs)" }
 
         val res = requestTargetMutex.withLock {
             captureRequestBuilder.addTarget(target)
