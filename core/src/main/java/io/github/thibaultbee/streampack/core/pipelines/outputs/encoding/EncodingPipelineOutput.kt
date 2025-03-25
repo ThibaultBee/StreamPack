@@ -146,7 +146,11 @@ internal class EncodingPipelineOutput(
                 return
             }
 
-            setTargetRotationInternal(value)
+            runBlocking {
+                videoConfigurationMutex.withLock {
+                    setTargetRotationInternal(value)
+                }
+            }
         }
 
     private val _throwableFlow = MutableStateFlow<Throwable?>(null)
@@ -526,16 +530,10 @@ internal class EncodingPipelineOutput(
     private suspend fun resetVideoEncoder() {
         _surfaceFlow.emit(null)
 
-        val previousVideoEncoder = videoEncoderInternal
         pendingTargetRotation?.let {
             setTargetRotationInternal(it)
-        }
+        } ?: videoEncoderInternal?.reset()
         pendingTargetRotation = null
-
-        // Only reset if the encoder is the same. Otherwise, it is already configured.
-        if (previousVideoEncoder == videoEncoderInternal) {
-            videoEncoderInternal?.reset()
-        }
     }
 
     /**
@@ -641,11 +639,7 @@ internal class EncodingPipelineOutput(
     private fun updateVideoEncoderForTransformation() {
         val videoConfig = videoCodecConfig
         if (videoConfig != null) {
-            runBlocking {
-                videoConfigurationMutex.withLock {
-                    applyVideoCodecConfig(videoConfig)
-                }
-            }
+            applyVideoCodecConfig(videoConfig)
         }
     }
 
