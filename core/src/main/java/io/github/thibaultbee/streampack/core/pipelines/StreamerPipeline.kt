@@ -251,27 +251,19 @@ open class StreamerPipeline(
         videoOutput: IVideoSurfacePipelineOutputInternal
     ) {
         Logger.i(TAG, "Updating transformation")
-        videoOutput.surfaceFlow.value?.let {
-            videoInput?.removeOutputSurface(it.surface)
+        videoOutput.surfaceFlow.value?.let { surfaceWithSize ->
+            videoInput?.removeOutputSurface(surfaceWithSize.surface)
+            videoInput?.let { input ->
+                input.addOutputSurface(
+                    buildSurfaceOutput(
+                        surfaceWithSize.surface,
+                        surfaceWithSize.resolution,
+                        videoOutput::isStreaming,
+                        input.infoProviderFlow.value
+                    )
+                )
+            }
         }
-
-        videoInput?.addOutputSurface(buildSurfaceOutput(videoOutput))
-    }
-
-    private fun buildSurfaceOutput(
-        videoOutput: IVideoSurfacePipelineOutputInternal
-    ): AbstractSurfaceOutput {
-        val input = requireNotNull(videoInput) { "Video input is not set" }
-        val surfaceWithSize = requireNotNull(videoOutput.surfaceFlow.value) {
-            "Output $videoOutput has no surface"
-        }
-
-        return buildSurfaceOutput(
-            surfaceWithSize.surface,
-            surfaceWithSize.resolution,
-            videoOutput::isStreaming,
-            input.infoProviderFlow.value
-        )
     }
 
     /**
@@ -306,14 +298,14 @@ open class StreamerPipeline(
     }
 
     private suspend fun getNumOfAudioStreamingOutputSafe(output: IPipelineOutput?): Int {
-        return safeOutputCall {
+        return safeOutputCall { outputs ->
             outputs.keys.minus(output).filterIsInstance<IAudioPipelineOutputInternal>()
                 .count { it.isStreaming && it.withAudio }
         }
     }
 
     private suspend fun getNumOfVideoStreamingOutputSafe(output: IPipelineOutput?): Int {
-        return safeOutputCall {
+        return safeOutputCall { outputs ->
             outputs.keys.minus(output).filterIsInstance<IVideoPipelineOutputInternal>()
                 .count { it.isStreaming && it.withVideo }
         }
@@ -650,7 +642,7 @@ open class StreamerPipeline(
      * If an [IEncodingPipelineOutput] is not opened, it won't start the stream.
      */
     suspend fun startStream() = withContext(coroutineDispatcher) {
-        safeOutputCall {
+        safeOutputCall { outputs ->
             outputs.keys.forEach {
                 try {
                     it.startStream()
@@ -725,8 +717,8 @@ open class StreamerPipeline(
         /**
          *  [stopInputStreams] is called when all outputs are stopped.
          */
-        safeStreamingOutputCall {
-            it.forEach {
+        safeStreamingOutputCall { outputs ->
+            outputs.forEach {
                 try {
                     it.stopStream()
                 } catch (t: Throwable) {
@@ -777,17 +769,17 @@ open class StreamerPipeline(
         }
 
         // Outputs
-        safeOutputCall {
+        safeOutputCall { outputs ->
             outputs.entries.forEach { (output, scope) ->
                 try {
                     detachOutput(output)
                 } catch (t: Throwable) {
-                    Logger.w(TAG, "release: Can't detach output $it: ${t.message}")
+                    Logger.w(TAG, "release: Can't detach output $output: ${t.message}")
                 }
                 try {
                     output.release()
                 } catch (t: Throwable) {
-                    Logger.w(TAG, "release: Can't release output $it: ${t.message}")
+                    Logger.w(TAG, "release: Can't release output $output: ${t.message}")
                 }
                 scope.cancel()
             }

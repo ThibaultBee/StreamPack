@@ -343,8 +343,8 @@ internal class VideoInput(
             }
         }
         outputMutex.withLock {
-            surfaceProcessor.removeAllOutputSurfaces()
             surfaceOutput.clear()
+            surfaceProcessor.removeAllOutputSurfaces()
         }
 
         surfaceProcessor.release()

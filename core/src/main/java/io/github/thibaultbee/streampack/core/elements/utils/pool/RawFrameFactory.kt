@@ -34,7 +34,7 @@ class RawFrameFactory(private val bufferPool: ByteBufferPool) : IRawFrameFactory
             try {
                 bufferPool.put(rawFrame.rawBuffer)
             } catch (e: Exception) {
-                Logger.w(TAG, "Error while putting buffer in pool", e)
+                Logger.w(TAG, "Error while putting buffer in pool: $e")
             }
         }
     }
