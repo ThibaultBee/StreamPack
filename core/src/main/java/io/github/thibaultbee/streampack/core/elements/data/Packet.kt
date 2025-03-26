@@ -37,8 +37,8 @@ open class Packet(
      */
     val type: PacketType = PacketType.UNKNOWN,
 ) {
-    val isVideo = type == PacketType.VIDEO
-    val isAudio = type == PacketType.AUDIO
+    val isVideo by lazy { type == PacketType.VIDEO }
+    val isAudio by lazy { type == PacketType.AUDIO }
 
     override fun toString(): String {
         return "Packet(buffer=$buffer, ts=$ts, type=$type)"

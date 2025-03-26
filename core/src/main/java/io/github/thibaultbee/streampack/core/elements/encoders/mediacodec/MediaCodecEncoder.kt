@@ -66,6 +66,8 @@ internal constructor(
 ) : IEncoderInternal {
     private val mediaCodec: MediaCodec
     private val format: MediaFormat
+    private var outputFormat: MediaFormat? = null
+
     private val isVideo = encoderConfig.isVideo
     private val tag = if (isVideo) "VideoEncoder" else "AudioEncoder" + "(${this.hashCode()})"
 
@@ -362,7 +364,7 @@ internal constructor(
                     }
 
                     val frame = Frame(
-                        codec, index, info, tag
+                        codec, index, outputFormat!!, info, tag
                     )
                     listenerExecutor.execute {
                         try {
@@ -449,6 +451,7 @@ internal constructor(
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
+            outputFormat = format
             Logger.i(tag, "Format changed : $format")
         }
 
@@ -514,6 +517,8 @@ internal constructor(
     }
 
     internal inner class SyncByteBufferInput : IEncoderInternal.ISyncByteBufferInput {
+        private val bufferInfo = BufferInfo()
+
         /**
          * Process output frame synchronously
          *
@@ -559,7 +564,6 @@ internal constructor(
                             counter++
                         }
 
-                        val bufferInfo = BufferInfo()
                         var outputBufferId: Int
                         while (mediaCodec.dequeueOutputBuffer(bufferInfo, 0) // Don't block
                                 .also { outputBufferId = it } != MediaCodec.INFO_TRY_AGAIN_LATER
@@ -567,6 +571,7 @@ internal constructor(
                             if (outputBufferId >= 0) {
                                 processOutputFrameSync(mediaCodec, outputBufferId, bufferInfo)
                             } else if (outputBufferId == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                                outputFormat = mediaCodec.outputFormat
                                 Logger.i(tag, "Format changed: ${mediaCodec.outputFormat}")
                             }
                         }
@@ -596,7 +601,7 @@ internal constructor(
          * @param info the buffer info
          */
         private fun Frame(
-            codec: MediaCodec, index: Int, info: BufferInfo, tag: String
+            codec: MediaCodec, index: Int, outputFormat: MediaFormat, info: BufferInfo, tag: String
         ): Frame {
             val buffer = requireNotNull(codec.getOutputBuffer(index))
             return Frame(
@@ -604,7 +609,7 @@ internal constructor(
                 info.presentationTimeUs, // pts
                 null, // dts
                 info.isKeyFrame,
-                codec.outputFormat,
+                outputFormat,
                 onClosed = {
                     try {
                         codec.releaseOutputBuffer(index, false)

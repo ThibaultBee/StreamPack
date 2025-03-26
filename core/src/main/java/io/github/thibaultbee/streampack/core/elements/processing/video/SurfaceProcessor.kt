@@ -26,7 +26,7 @@ class SurfaceProcessor(
 
     private val surfaceOutputs: MutableList<AbstractSurfaceOutput> = mutableListOf()
     private val surfaceInputs: MutableList<SurfaceInput> = mutableListOf()
-    private val surfaceInputsTimestampMap: MutableMap<SurfaceTexture, Long> = hashMapOf()
+    private val surfaceInputsTimestampInNsMap: MutableMap<SurfaceTexture, Long> = hashMapOf()
 
     private val glThread = HandlerThread("GL Thread").apply {
         start()
@@ -56,7 +56,7 @@ class SurfaceProcessor(
             surfaceTexture.setDefaultBufferSize(surfaceSize.width, surfaceSize.height)
             surfaceTexture.setOnFrameAvailableListener(this, glHandler)
 
-            surfaceInputsTimestampMap[surfaceTexture] = timestampOffsetInNs
+            surfaceInputsTimestampInNsMap[surfaceTexture] = timestampOffsetInNs
 
             SurfaceInput(Surface(surfaceTexture), surfaceTexture)
         }
@@ -89,7 +89,7 @@ class SurfaceProcessor(
                 surfaceTexture.release()
                 surface.release()
 
-                surfaceInputsTimestampMap.remove(surfaceTexture)
+                surfaceInputsTimestampInNsMap.remove(surfaceTexture)
                 surfaceInputs.remove(surfaceInput)
 
                 checkReadyToRelease()
@@ -148,16 +148,20 @@ class SurfaceProcessor(
         }
     }
 
+    private fun removeAllOutputSurfacesInternal() {
+        surfaceOutputs.forEach { surfaceOutput ->
+            renderer.unregisterOutputSurface(surfaceOutput.surface)
+        }
+        surfaceOutputs.clear()
+    }
+
     override fun removeAllOutputSurfaces() {
         if (isReleaseRequested.get()) {
             return
         }
 
         executeSafely {
-            surfaceOutputs.forEach { surfaceOutput ->
-                renderer.unregisterOutputSurface(surfaceOutput.surface)
-                surfaceOutputs.remove(surfaceOutput)
-            }
+            removeAllOutputSurfacesInternal()
         }
     }
 
@@ -177,8 +181,7 @@ class SurfaceProcessor(
     private fun checkReadyToRelease() {
         if (isReleased && surfaceInputs.isEmpty()) {
             // Once release is called, we can stop sending frame to output surfaces.
-            surfaceOutputs.forEach { it.close() }
-            removeAllOutputSurfaces()
+            removeAllOutputSurfacesInternal()
 
             renderer.release()
             glThread.quit()
@@ -194,15 +197,14 @@ class SurfaceProcessor(
         surfaceTexture.updateTexImage()
         surfaceTexture.getTransformMatrix(textureMatrix)
 
-        val timestamp = surfaceTexture.timestamp + (surfaceInputsTimestampMap[surfaceTexture] ?: 0L)
-        surfaceOutputs.forEach {
+        val timestamp =
+            surfaceTexture.timestamp + (surfaceInputsTimestampInNsMap[surfaceTexture] ?: 0L)
+        surfaceOutputs.filter { it.isStreaming() }.forEach {
             try {
-                if (it.isStreaming()) {
-                    it.updateTransformMatrix(surfaceOutputMatrix, textureMatrix)
-                    renderer.render(timestamp, surfaceOutputMatrix, it.surface)
-                }
-            } catch (e: Exception) {
-                Logger.e(TAG, "Error while rendering frame", e)
+                it.updateTransformMatrix(surfaceOutputMatrix, textureMatrix)
+                renderer.render(timestamp, surfaceOutputMatrix, it.surface)
+            } catch (t: Throwable) {
+                Logger.e(TAG, "Error while rendering frame", t)
             }
         }
     }
