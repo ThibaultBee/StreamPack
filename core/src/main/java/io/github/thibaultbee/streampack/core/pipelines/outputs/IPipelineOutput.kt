@@ -197,10 +197,9 @@ sealed interface IVideoPipelineOutputInternal : IPipelineOutput
  */
 interface IVideoSurfacePipelineOutputInternal : IVideoPipelineOutputInternal {
     /**
-     * The rotation in one the [Surface] rotations from the device natural orientation.
+     * Sets the rotation in one the [Surface] rotations from the device natural orientation.
      */
-    @RotationValue
-    var targetRotation: Int
+    suspend fun setTargetRotation(@RotationValue rotation: Int)
 
     /**
      * The [Surface] flow to render video.

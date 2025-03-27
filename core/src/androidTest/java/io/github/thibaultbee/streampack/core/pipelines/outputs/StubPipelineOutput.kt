@@ -21,6 +21,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
+import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.sourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.mapState
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -47,7 +48,8 @@ open class StubVideoSurfacePipelineOutput(resolution: Size) :
     StubPipelineOutput(withAudio = false, withVideo = true),
     IVideoSurfacePipelineOutputInternal {
 
-    override var targetRotation: Int = 0
+    override suspend fun setTargetRotation(@RotationValue rotation: Int) = Unit
+
     private val _surfaceFlow =
         MutableStateFlow<SurfaceWithSize?>(
             SurfaceWithSize(
@@ -62,7 +64,8 @@ class StubAudioSyncVideoSurfacePipelineOutput(resolution: Size) :
     StubPipelineOutput(withAudio = true, withVideo = true),
     IAudioSyncPipelineOutputInternal, IVideoSurfacePipelineOutputInternal {
 
-    override var targetRotation: Int = 0
+    override suspend fun setTargetRotation(@RotationValue rotation: Int) = Unit
+
     private val _surfaceFlow =
         MutableStateFlow<SurfaceWithSize?>(
             SurfaceWithSize(
@@ -80,7 +83,10 @@ class StubAudioSyncVideoSurfacePipelineOutput(resolution: Size) :
     }
 }
 
-abstract class StubPipelineOutput(override val withAudio: Boolean, override val withVideo: Boolean) :
+abstract class StubPipelineOutput(
+    override val withAudio: Boolean,
+    override val withVideo: Boolean
+) :
     IPipelineOutput {
 
     private val _throwableFlow = MutableStateFlow<Throwable?>(null)
@@ -120,7 +126,8 @@ class StubAudioSyncVideoSurfacePipelineOutputInternal(resolution: Size) :
     StubPipelineOutputInternal(hasAudio = true, hasVideo = true),
     IAudioSyncPipelineOutputInternal, IVideoSurfacePipelineOutputInternal {
 
-    override var targetRotation: Int = 0
+    override suspend fun setTargetRotation(@RotationValue rotation: Int) = Unit
+
     private val _surfaceFlow =
         MutableStateFlow<SurfaceWithSize?>(
             SurfaceWithSize(
@@ -142,7 +149,8 @@ class StubVideoSurfacePipelineOutputInternal(resolution: Size) :
     StubPipelineOutputInternal(hasAudio = false, hasVideo = true),
     IVideoSurfacePipelineOutputInternal {
 
-    override var targetRotation: Int = 0
+    override suspend fun setTargetRotation(@RotationValue rotation: Int) = Unit
+    
     private val _surfaceFlow =
         MutableStateFlow<SurfaceWithSize?>(
             SurfaceWithSize(

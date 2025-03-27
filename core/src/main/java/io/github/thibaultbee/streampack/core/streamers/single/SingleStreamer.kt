@@ -140,13 +140,13 @@ open class SingleStreamer(
         get() = pipelineOutput.endpoint
 
     /**
-     * The target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
+     * Sets the target rotation.
+     *
+     * @param rotation the target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
      */
-    override var targetRotation: Int
-        @RotationValue get() = pipeline.targetRotation
-        set(@RotationValue newTargetRotation) {
-            pipeline.targetRotation = newTargetRotation
-        }
+    override suspend fun setTargetRotation(@RotationValue rotation: Int) {
+        pipeline.setTargetRotation(rotation)
+    }
 
     /**
      * Gets configuration information.

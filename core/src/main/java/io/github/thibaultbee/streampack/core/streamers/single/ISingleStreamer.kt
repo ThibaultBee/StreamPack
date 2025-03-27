@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.core.streamers.single
 
 import android.net.Uri
+import android.view.Surface
 import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
@@ -32,6 +33,7 @@ import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineAudi
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineVideoStreamer
 import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
+import androidx.core.net.toUri
 
 /**
  * The single streamer audio configuration.
@@ -93,10 +95,11 @@ interface IAudioSingleStreamer : IAudioStreamer {
  */
 interface IVideoSingleStreamer : IVideoStreamer {
     /**
-     * The rotation in one the [Surface] rotations from the device natural orientation.
+     * Sets the target rotation.
+     *
+     * @param rotation the target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
      */
-    @RotationValue
-    var targetRotation: Int
+    suspend fun setTargetRotation(@RotationValue rotation: Int)
 
     /**
      * Gets the video configuration.
@@ -108,13 +111,6 @@ interface IVideoSingleStreamer : IVideoStreamer {
      */
     val videoEncoder: IEncoder?
 }
-
-/**
- * Returns the rotation in degrees from [Int] rotation.
- */
-val IVideoSingleStreamer.targetRotationDegrees: Int
-    @IntRange(from = 0, to = 359)
-    get() = targetRotation.rotationToDegrees
 
 interface ICoroutineAudioSingleStreamer : ICoroutineAudioStreamer<AudioConfig>, IAudioSingleStreamer
 
@@ -146,7 +142,7 @@ suspend fun ICoroutineSingleStreamer.open(uri: Uri) =
  * @param uriString The uri to open
  */
 suspend fun ICoroutineSingleStreamer.open(uriString: String) =
-    open(UriMediaDescriptor(Uri.parse(uriString)))
+    open(UriMediaDescriptor(uriString.toUri()))
 
 /**
  * Starts audio/video stream.

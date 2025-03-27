@@ -136,20 +136,21 @@ open class StreamerPipeline(
     private val outputMapMutex = Mutex()
     private val outputs = hashMapOf<IPipelineOutput, CoroutineScope>()
 
+    private var targetRotation: Int = context.displayRotation
+
     /**
      * Sets the target rotation of all outputs.
      */
-    var targetRotation: Int = context.displayRotation
-        set(@RotationValue value) {
-            require(withVideo) { "Do not need to set video rotation as it is an audio only streamer" }
-            coroutineScope.launch {
-                safeOutputCall { outputs ->
-                    outputs.keys.filterIsInstance<IVideoSurfacePipelineOutputInternal>()
-                        .forEach { it.targetRotation = value }
-                }
-            }
-            field = value
+    suspend fun setTargetRotation(
+        @RotationValue rotation: Int
+    ) {
+        require(withVideo) { "Do not need to set video rotation as it is an audio only streamer" }
+        safeOutputCall { outputs ->
+            outputs.keys.filterIsInstance<IVideoSurfacePipelineOutputInternal>()
+                .forEach { it.setTargetRotation(rotation) }
         }
+        targetRotation = rotation
+    }
 
     init {
         videoInput?.let { input ->
