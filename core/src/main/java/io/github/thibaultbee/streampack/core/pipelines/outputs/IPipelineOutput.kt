@@ -233,6 +233,10 @@ interface IVideoSyncPipelineOutputInternal : IVideoPipelineOutputInternal {
      * modify the original [RawFrame.rawBuffer].
      *
      * You should call [RawFrame.close] when you are done with the frame to release resources.
+     *
+     * Also, to avoid blocking other outputs, you should execute this method in another thread than
+     * the calling thread.
+     *
      * @param frame The video [RawFrame] to queue.
      */
     fun queueVideoFrame(frame: RawFrame)
@@ -255,7 +259,10 @@ interface IAudioSyncPipelineOutputInternal : IAudioPipelineOutputInternal {
      * frame, you should create a new [ByteBuffer] and copy the data from the original frame. Do not
      * modify the original [RawFrame.rawBuffer].
      *
-     * You should call [RawFrame.close] when you are done with the frame to release resources.
+     * You must call [RawFrame.close] when you are done with the frame to release resources.
+     *
+     * Also, to avoid blocking other outputs, you should execute this method in another thread than
+     * the calling thread.
      *
      * @param frame The audio [RawFrame] to queue.
      */

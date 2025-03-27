@@ -128,9 +128,9 @@ class MediaMuxerEndpoint(
         frame: Frame,
         streamPid: Int
     ) {
-        val mediaMuxer = requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
-
         return mutex.withLock {
+            val mediaMuxer = requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
+
             if (streamIdToTrackId.size < numOfStreams) {
                 addTrack(mediaMuxer, streamPid, frame.format)
                 if (streamIdToTrackId.size == numOfStreams) {
@@ -172,44 +172,47 @@ class MediaMuxerEndpoint(
     }
 
     override suspend fun startStream() {
-        val mediaMuxer = requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
-
         /**
          * [MediaMuxer.start] is called when we called addTrack for each stream.
          */
         if (streamIdToTrackId.size == numOfStreams) {
             mutex.withLock {
+                val mediaMuxer = requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
                 startMediaMuxer(mediaMuxer)
             }
         }
     }
 
     override suspend fun stopStream() {
-        try {
-            mediaMuxer?.stop()
-        } catch (_: IllegalStateException) {
-        } finally {
-            isStarted = false
+        mutex.withLock {
+            try {
+                mediaMuxer?.stop()
+            } catch (_: IllegalStateException) {
+            } finally {
+                isStarted = false
+            }
         }
     }
 
     override suspend fun close() {
-        try {
+        mutex.withLock {
             try {
-                fileDescriptor?.close()
-            } catch (_: Throwable) {
-            } finally {
-                fileDescriptor = null
-            }
+                try {
+                    fileDescriptor?.close()
+                } catch (_: Throwable) {
+                } finally {
+                    fileDescriptor = null
+                }
 
-            mediaMuxer?.release()
-        } catch (_: Throwable) {
-            // MediaMuxer is already released
-        } finally {
-            numOfStreams = 0
-            streamIdToTrackId.clear()
-            mediaMuxer = null
-            _isOpenFlow.emit(false)
+                mediaMuxer?.release()
+            } catch (_: Throwable) {
+                // MediaMuxer is already released
+            } finally {
+                numOfStreams = 0
+                streamIdToTrackId.clear()
+                mediaMuxer = null
+                _isOpenFlow.emit(false)
+            }
         }
     }
 

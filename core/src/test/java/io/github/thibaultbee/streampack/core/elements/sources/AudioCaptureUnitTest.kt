@@ -19,6 +19,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.
 import io.github.thibaultbee.streampack.core.elements.utils.StubLogger
 import io.github.thibaultbee.streampack.core.elements.utils.StubRawFrameFactory
 import io.github.thibaultbee.streampack.core.logger.Logger
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test
 
@@ -28,7 +29,7 @@ class MicrophoneSourceUnitTest {
     }
 
     @Test
-    fun `assert exception on bad state`() {
+    fun `assert exception on bad state`() = runTest {
         val microphoneSource = MicrophoneSource()
         try {
             microphoneSource.startStream()
@@ -43,7 +44,7 @@ class MicrophoneSourceUnitTest {
     }
 
     @Test
-    fun `assert no exception on bad state`() {
+    fun `assert no exception on bad state`() = runTest {
         val microphoneSource = MicrophoneSource()
         try {
             microphoneSource.stopStream()

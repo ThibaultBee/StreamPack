@@ -21,6 +21,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.pool.RawFrameFactory
 import io.github.thibaultbee.streampack.core.logger.Logger
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 fun RawFramePullPush(
@@ -34,7 +35,7 @@ fun RawFramePullPush(
  *
  * @param frameProcessor the frame processor
  * @param onFrame the output frame callback
- * @param byteBufferPool the buffer pool to get a buffer from
+ * @param frameFactory the frame factory to create frames
  */
 class RawFramePullPush(
     private val frameProcessor: IFrameProcessor<RawFrame>,
@@ -42,11 +43,11 @@ class RawFramePullPush(
     private val frameFactory: IRawFrameFactory
 ) {
     private val processExecutor = Executors.newSingleThreadExecutor()
-    private val frameExecutor = Executors.newSingleThreadExecutor()
 
     private var getFrame: ((frameFactory: IRawFrameFactory) -> RawFrame)? = null
 
     private val isRunning = AtomicBoolean(false)
+    private val isReleaseRequested = AtomicBoolean(false)
     private var executorTask: Future<*>? = null
 
     fun setInput(getFrame: (frameFactory: IRawFrameFactory) -> RawFrame) {
@@ -62,6 +63,10 @@ class RawFramePullPush(
     }
 
     fun startStream() {
+        if (isReleaseRequested.get()) {
+            Logger.w(TAG, "Already released")
+            return
+        }
         if (isRunning.getAndSet(true)) {
             Logger.w(TAG, "Stream is already running")
             return
@@ -85,16 +90,17 @@ class RawFramePullPush(
                 val processedFrame = frameProcessor.processFrame(rawFrame)
 
                 // Store for outputs
-                frameExecutor.execute {
-                    onFrame(processedFrame)
-                }
+                onFrame(processedFrame)
             }
         }
     }
 
     fun stopStream() {
+        if (isReleaseRequested.get()) {
+            Logger.w(TAG, "Already released")
+            return
+        }
         if (!isRunning.getAndSet(false)) {
-            Logger.w(TAG, "Stream is already stopped")
             return
         }
         executorTask?.get()
@@ -105,11 +111,17 @@ class RawFramePullPush(
     fun release() {
         stopStream()
 
+        if (isReleaseRequested.getAndSet(true)) {
+            Logger.w(TAG, "Already released")
+            return
+        }
+
         processExecutor.shutdown()
+        processExecutor.awaitTermination(500, TimeUnit.MILLISECONDS)
         frameFactory.close()
     }
 
     companion object {
-        private const val TAG = "FrameProcessor"
+        private const val TAG = "FramePullPush"
     }
 }

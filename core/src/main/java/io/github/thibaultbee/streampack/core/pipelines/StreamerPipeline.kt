@@ -155,6 +155,10 @@ open class StreamerPipeline(
         videoInput?.let { input ->
             coroutineScope.launch {
                 input.infoProviderFlow.collect {
+                    if (isReleaseRequested.get()) {
+                        Logger.w(TAG, "Pipeline is released, dropping video info")
+                        return@collect
+                    }
                     resetSurfaceProcessorOutputSurface()
                 }
             }
@@ -711,7 +715,6 @@ open class StreamerPipeline(
                 _isStreamingFlow.emit(false)
             }
         }
-
 
     private suspend fun stopOutputStreams() {
         /**
