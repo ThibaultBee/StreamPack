@@ -36,7 +36,9 @@ object SingleStreamerConfigUtils {
      * Creates an audio configuration from a [MediaDescriptor] for test
      */
     fun audioConfig(descriptor: MediaDescriptor): AudioConfig {
-        return if (descriptor.type.containerType == MediaContainerType.WEBM) {
+        return if ((descriptor.type.containerType == MediaContainerType.WEBM)
+            || (descriptor.type.containerType == MediaContainerType.OGG)
+        ) {
             AudioCodecConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_OPUS)
         } else {
             defaultAudioConfig()

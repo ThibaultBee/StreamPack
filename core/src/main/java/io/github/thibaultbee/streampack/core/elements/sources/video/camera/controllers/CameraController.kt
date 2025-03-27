@@ -24,7 +24,7 @@ import kotlinx.coroutines.sync.withLock
  */
 class CameraController private constructor(
     private val manager: CameraManager,
-    private val camera: CameraDevice,
+    private val camera: CameraDeviceController,
     private val sessionCompat: ICameraCaptureSessionCompat,
     private val isClosedFlow: StateFlow<Boolean>
 ) {
@@ -101,9 +101,15 @@ class CameraController private constructor(
             }
 
             try {
-                this.sessionController = sessionController.createCameraControllerForOutputs(
-                    outputs = sessionController.outputs - output
-                )
+                val newOutputs = sessionController.outputs - output
+                if (newOutputs.isEmpty()) {
+                    sessionController.release()
+                    this.sessionController = null
+                } else {
+                    this.sessionController = sessionController.createCameraControllerForOutputs(
+                        outputs = sessionController.outputs - output
+                    )
+                }
             } catch (t: Throwable) {
                 Logger.e(
                     TAG,
@@ -261,7 +267,7 @@ class CameraController private constructor(
             )
             return CameraController(
                 manager,
-                cameraDevice,
+                CameraDeviceController(cameraDevice),
                 sessionCompat,
                 isClosedFlow.asStateFlow()
             )

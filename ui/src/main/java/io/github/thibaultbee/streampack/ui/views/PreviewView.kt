@@ -295,7 +295,11 @@ class PreviewView @JvmOverloads constructor(
 
         if (visibility == GONE) {
             lifecycleScope?.launch {
-                stopPreview()
+                try {
+                    stopPreview()
+                } catch (t: Throwable) {
+                    Logger.e(TAG, "Failed to stop preview", t)
+                }
             } ?: Logger.e(TAG, "LifecycleScope is not available")
         }
     }
@@ -318,7 +322,11 @@ class PreviewView @JvmOverloads constructor(
         super.onDetachedFromWindow()
 
         lifecycleScope?.launch {
-            stopPreview()
+            try {
+                stopPreview()
+            } catch (t: Throwable) {
+                Logger.e(TAG, "Failed to stop preview", t)
+            }
         } ?: Logger.e(TAG, "LifecycleScope is not available")
 
         cancelState()
@@ -349,7 +357,7 @@ class PreviewView @JvmOverloads constructor(
             return true
         }
 
-        return super.onTouchEvent(event)
+        return true
     }
 
     private fun performCameraTapOnFocus(cameraSource: ICameraSource) {

@@ -113,8 +113,10 @@ internal class CameraSource(
 
     override suspend fun resetPreviewImpl() {
         stopPreviewInternal()
-        previewSurface?.let { controller.removeOutput(it) }
-        previewSurface = null
+        surfaceMutex.withLock {
+            previewSurface?.let { controller.removeOutput(it) }
+            previewSurface = null
+        }
     }
 
     override suspend fun getOutput() = outputSurface
@@ -135,10 +137,12 @@ internal class CameraSource(
 
     override suspend fun resetOutputImpl() {
         stopStream()
-        outputSurface?.let {
-            controller.removeOutput(it)
+        surfaceMutex.withLock {
+            outputSurface?.let {
+                controller.removeOutput(it)
+            }
+            outputSurface = null
         }
-        outputSurface = null
     }
 
     private suspend fun addSurface(previousSurface: Surface?, surface: Surface) {

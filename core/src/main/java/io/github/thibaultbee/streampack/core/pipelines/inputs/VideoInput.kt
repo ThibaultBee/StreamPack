@@ -151,7 +151,7 @@ internal class VideoInput(
 
                 infoProviderJob += coroutineScope.launch {
                     newVideoSource.infoProviderFlow.collect {
-                        _infoProviderFlow.value = it
+                        _infoProviderFlow.emit(it)
                     }
                 }
 
@@ -374,6 +374,9 @@ internal class VideoInput(
             } catch (t: Throwable) {
                 Logger.w(TAG, "release: Can't release video source: ${t.message}")
             }
+
+            isStreamingJob.cancel()
+            infoProviderJob.cancel()
         }
         coroutineScope.coroutineContext.cancelChildren()
     }

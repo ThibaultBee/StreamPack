@@ -22,7 +22,7 @@ class CameraSessionController private constructor(
     val cameraId: String,
     private val captureSessionCompat: ICameraCaptureSessionCompat,
     captureSessionWithOutputs: CameraCaptureSessionWithOutputs,
-    private val dynamicRange: Long,
+    val dynamicRange: Long,
     private val isClosedFlow: StateFlow<Boolean>,
     private val captureRequestBuilder: CaptureRequestBuilderWithTargets = CaptureRequestBuilderWithTargets.create(
         captureSessionWithOutputs.session.device
@@ -75,7 +75,7 @@ class CameraSessionController private constructor(
     suspend fun createCameraControllerForOutputs(
         dynamicRange: Long = this.dynamicRange,
         outputs: List<Surface> = this.outputs
-    ): CameraSessionController {
+    ): CameraSessionController = requestTargetMutex.withLock {
         require(outputs.isNotEmpty()) { "At least one output is required" }
         require(outputs.all { it.isValid }) { "All outputs $outputs must be valid but ${outputs.filter { !it.isValid }} is invalid" }
 
@@ -267,7 +267,7 @@ class CameraSessionController private constructor(
         internal suspend fun create(
             sessionCompat: ICameraCaptureSessionCompat,
             manager: CameraManager,
-            camera: CameraDevice,
+            cameraDevice: CameraDeviceController,
             outputs: List<Surface>,
             dynamicRange: Long
         ): CameraSessionController {
@@ -275,14 +275,14 @@ class CameraSessionController private constructor(
             val captureSession =
                 CameraUtils.createCaptureSession(
                     sessionCompat,
-                    camera,
+                    cameraDevice.camera,
                     outputs,
                     dynamicRange,
                     isClosedFlow
                 )
             return CameraSessionController(
                 manager,
-                camera.id,
+                cameraDevice.id,
                 sessionCompat,
                 CameraCaptureSessionWithOutputs(captureSession, outputs),
                 dynamicRange,

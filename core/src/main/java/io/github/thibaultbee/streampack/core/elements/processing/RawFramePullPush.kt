@@ -34,7 +34,7 @@ fun RawFramePullPush(
  *
  * @param frameProcessor the frame processor
  * @param onFrame the output frame callback
- * @param byteBufferPool the buffer pool to get a buffer from
+ * @param frameFactory the frame factory to create frames
  */
 class RawFramePullPush(
     private val frameProcessor: IFrameProcessor<RawFrame>,
@@ -110,6 +110,6 @@ class RawFramePullPush(
     }
 
     companion object {
-        private const val TAG = "FrameProcessor"
+        private const val TAG = "FramePullPush"
     }
 }

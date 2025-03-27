@@ -68,10 +68,6 @@ internal object CameraUtils {
         dynamicRange: Long,
         isClosedFlow: MutableStateFlow<Boolean>
     ): CameraCaptureSession = suspendCancellableCoroutine { continuation ->
-        continuation.invokeOnCancellation {
-            camera.close()
-        }
-
         val callbacks = object : CameraCaptureSession.StateCallback() {
             override fun onConfigured(session: CameraCaptureSession) =
                 continuation.resume(session)
