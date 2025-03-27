@@ -60,6 +60,19 @@ interface Configurable<T> {
     fun configure(config: T)
 }
 
+/**
+ * Same as [Configurable] but with suspend functions.
+ */
+interface SuspendConfigurable<T> {
+    /**
+     * Configure the [Configurable] implementation.
+     *
+     * @param config [Configurable] implementation configuration
+     */
+    suspend fun configure(config: T)
+}
+
+
 interface Releasable {
     /**
      * Closes and releases resources

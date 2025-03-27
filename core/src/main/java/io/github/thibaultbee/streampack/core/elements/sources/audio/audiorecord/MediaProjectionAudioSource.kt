@@ -88,7 +88,7 @@ internal class MediaProjectionAudioSource(
             .build()
     }
 
-    override fun stopStream() {
+    override suspend fun stopStream() {
         super.stopStream()
 
         mediaProjection?.stop()
@@ -96,15 +96,28 @@ internal class MediaProjectionAudioSource(
     }
 }
 
+/**
+ * A factory to create a [MediaProjectionAudioSource].
+ *
+ * @param effects The audio effects to apply
+ * @param activityResult The activity result to get the media projection
+ */
 @RequiresApi(Build.VERSION_CODES.Q)
 class MediaProjectionAudioSourceFactory(
     effects: Set<UUID> = setOf(
         AudioEffect.EFFECT_TYPE_AEC,
         AudioEffect.EFFECT_TYPE_NS
-    )
+    ),
+    private val activityResult: ActivityResult? = null
 ) : AudioRecordSourceFactory(effects) {
-    override suspend fun createImpl(context: Context) =
-        MediaProjectionAudioSource(context)
+    override suspend fun createImpl(context: Context): AudioRecordSource {
+        val source = MediaProjectionAudioSource(context)
+
+        if (activityResult != null) {
+            source.activityResult = activityResult
+        }
+        return source
+    }
 
     override fun isSourceEquals(source: IAudioSourceInternal?): Boolean {
         return source is MediaProjectionAudioSource

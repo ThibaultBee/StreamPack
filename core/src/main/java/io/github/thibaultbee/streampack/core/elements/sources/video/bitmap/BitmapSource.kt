@@ -112,7 +112,7 @@ internal class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSo
         outputSurface = null
     }
 
-    override fun configure(config: VideoSourceConfig) {
+    override suspend fun configure(config: VideoSourceConfig) {
         videoSourceConfig = config
 
         scaledBitmap?.recycle()

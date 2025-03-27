@@ -290,6 +290,16 @@ class PreviewView @JvmOverloads constructor(
         sourceJob = null
     }
 
+    override fun onWindowVisibilityChanged(visibility: Int) {
+        super.onWindowVisibilityChanged(visibility)
+
+        if (visibility == GONE) {
+            lifecycleScope?.launch {
+                stopPreview()
+            } ?: Logger.e(TAG, "LifecycleScope is not available")
+        }
+    }
+
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         if (w != oldw || h != oldh) {
             requestSurface(Size(w, h))
@@ -436,6 +446,7 @@ class PreviewView @JvmOverloads constructor(
             val source = it.videoSourceFlow.value
             if (source is IPreviewableSource) {
                 source.stopPreview()
+                source.resetPreview()
             }
         }
         viewfinderSurfaceRequest?.markSurfaceSafeToRelease()

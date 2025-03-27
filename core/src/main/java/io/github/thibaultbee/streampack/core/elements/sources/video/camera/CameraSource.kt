@@ -26,7 +26,6 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.AbstractPrev
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraController
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameras
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getAutoFocusModes
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFrameRateSupported
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSizes
@@ -90,6 +89,7 @@ internal class CameraSource(
     override val isPreviewingFlow = _isPreviewingFlow.asStateFlow()
 
     private val previewMutex = Mutex()
+    private val surfaceMutex = Mutex()
 
     // Configuration
     private var fps: Int = 30
@@ -103,10 +103,12 @@ internal class CameraSource(
             return
         }
 
-        if (controller.isAvailable) {
-            addSurface(previewSurface, surface)
+        surfaceMutex.withLock {
+            if (controller.isAvailable) {
+                addSurface(previewSurface, surface)
+            }
+            previewSurface = surface
         }
-        previewSurface = surface
     }
 
     override suspend fun resetPreviewImpl() {
@@ -123,10 +125,12 @@ internal class CameraSource(
             return
         }
 
-        if (controller.isAvailable) {
-            addSurface(outputSurface, surface)
+        surfaceMutex.withLock {
+            if (controller.isAvailable) {
+                addSurface(outputSurface, surface)
+            }
+            outputSurface = surface
         }
-        outputSurface = surface
     }
 
     override suspend fun resetOutputImpl() {
@@ -149,12 +153,14 @@ internal class CameraSource(
         targets: List<Surface>
     ) {
         try {
-            /**
-             * If the camera is already streaming, we can add the target to the current session.
-             */
-            if (!controller.addTargets(targets)) {
-                // If the camera is not streaming, we need to create a new session
-                createCaptureSession(targets)
+            surfaceMutex.withLock {
+                /**
+                 * If the camera is already streaming, we can add the target to the current session.
+                 */
+                if (!controller.addTargets(targets)) {
+                    // If the camera is not streaming, we need to create a new session
+                    createCaptureSession(targets)
+                }
             }
         } catch (e: IllegalStateException) {
             Logger.w(TAG, "Failed to start camera: $e")
@@ -175,10 +181,9 @@ internal class CameraSource(
     private suspend fun startDefaultCaptureRequest(
         targets: List<Surface>
     ) {
-        val fpsRange = CameraUtils.getClosestFpsRange(manager, cameraId, fps)
-
         targets.forEach { controller.addTarget(it) }
 
+        val fpsRange = CameraUtils.getClosestFpsRange(manager, cameraId, fps)
         controller.setSetting(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
         if (manager.getAutoFocusModes(cameraId)
                 .contains(CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO)
@@ -191,7 +196,7 @@ internal class CameraSource(
         controller.setRepeatingSession()
     }
 
-    override fun configure(config: VideoSourceConfig) {
+    override suspend fun configure(config: VideoSourceConfig) {
         if (!manager.isFrameRateSupported(cameraId, config.fps)) {
             Logger.w(TAG, "Camera $cameraId does not support ${config.fps} fps")
         }
@@ -205,8 +210,10 @@ internal class CameraSource(
                 controller.setSetting(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
             }
         }
-        require(!needRestart && !controller.isAvailable) {
-            "Need to restart camera to apply new configuration"
+        if (needRestart) {
+            if (controller.isAvailable) {
+                controller.setDynamicRange(config.dynamicRangeProfile.dynamicRange)
+            }
         }
 
         fps = config.fps
