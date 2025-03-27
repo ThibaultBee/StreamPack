@@ -169,13 +169,13 @@ open class DualStreamer(
         get() = pipeline.audioProcessor
 
     /**
-     * The target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
+     * Sets the target rotation.
+     *
+     * @param rotation the target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
      */
-    var targetRotation: Int
-        @RotationValue get() = pipeline.targetRotation
-        set(@RotationValue newTargetRotation) {
-            pipeline.targetRotation = newTargetRotation
-        }
+    suspend fun setTargetRotation(@RotationValue rotation: Int) {
+        pipeline.setTargetRotation(rotation)
+    }
 
     /**
      * Sets audio configuration.

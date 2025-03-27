@@ -162,7 +162,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         viewModelScope.launch {
             rotationRepository.rotationFlow
                 .collect {
-                    streamer.targetRotation = it
+                    streamer.setTargetRotation(it)
                 }
         }
         viewModelScope.launch {

@@ -180,7 +180,9 @@ abstract class DefaultScreenRecorderService(
     }
 
     override fun onOrientationChanged(rotation: Int) {
-        streamer?.targetRotation = rotation
+        lifecycleScope.launch {
+            streamer?.setTargetRotation(rotation)
+        }
     }
 
     override fun onDestroy() {

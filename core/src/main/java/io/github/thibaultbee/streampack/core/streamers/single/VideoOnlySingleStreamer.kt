@@ -16,12 +16,14 @@
 package io.github.thibaultbee.streampack.core.streamers.single
 
 import android.content.Context
+import android.view.Surface
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
+import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 
@@ -70,11 +72,13 @@ class VideoOnlySingleStreamer internal constructor(
     override val info: IConfigurationInfo
         get() = streamer.info
 
-    override var targetRotation: Int
-        get() = streamer.targetRotation
-        set(value) {
-            streamer.targetRotation = value
-        }
+    /**
+     * Sets the target rotation.
+     *
+     * @param rotation the target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
+     */
+    override suspend fun setTargetRotation(@RotationValue rotation: Int) =
+        streamer.setTargetRotation(rotation)
 
     override suspend fun setVideoConfig(videoConfig: VideoConfig) =
         streamer.setVideoConfig(videoConfig)

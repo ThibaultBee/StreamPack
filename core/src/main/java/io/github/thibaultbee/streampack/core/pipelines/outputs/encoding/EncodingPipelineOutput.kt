@@ -131,27 +131,32 @@ internal class EncodingPipelineOutput(
      * The target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
      */
     @RotationValue
-    private var _targetRotation = defaultRotation
+    private var currentTargetRotation = defaultRotation
 
-    override var targetRotation: Int
-        @RotationValue get() = _targetRotation
-        set(@RotationValue value) {
-            if (!withVideo) {
-                Logger.w(TAG, "Video is not enabled")
-                return
-            }
-            if (isStreaming) {
-                Logger.w(TAG, "Can't change rotation to $value while streaming")
-                pendingTargetRotation = value
-                return
-            }
-
-            runBlocking {
-                videoConfigurationMutex.withLock {
-                    setTargetRotationInternal(value)
-                }
-            }
+    /**
+     * Sets the target rotation..
+     *
+     * It is used to set the rotation of the video encoder.
+     *
+     * @param rotation The target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
+     */
+    override suspend fun setTargetRotation(rotation: Int) {
+        if (!withVideo) {
+            Logger.w(TAG, "Video is not enabled")
+            return
         }
+        if (isStreaming) {
+            Logger.w(
+                TAG,
+                "Can't change rotation to $rotation while streaming. Waiting for stopStream"
+            )
+            pendingTargetRotation = rotation
+            return
+        }
+        videoConfigurationMutex.withLock {
+            setTargetRotationInternal(rotation)
+        }
+    }
 
     private val _throwableFlow = MutableStateFlow<Throwable?>(null)
     override val throwableFlow = _throwableFlow.asStateFlow()
@@ -320,7 +325,7 @@ internal class EncodingPipelineOutput(
     private fun applyVideoCodecConfig(videoConfig: VideoCodecConfig) {
         try {
             videoEncoderInternal = buildAndConfigureVideoEncoder(
-                videoConfig, targetRotation
+                videoConfig, currentTargetRotation
             )
         } catch (t: Throwable) {
             videoEncoderInternal?.release()
@@ -425,7 +430,7 @@ internal class EncodingPipelineOutput(
                  * We need to get oriented size for the muxer.
                  * For example, the [FlvMuxer] `onMetaData` event needs to know the oriented size.
                  */
-                it.rotateFromNaturalOrientation(context, targetRotation).apply {
+                it.rotateFromNaturalOrientation(context, currentTargetRotation).apply {
                     streams.add(this)
                 }
             }
@@ -647,8 +652,8 @@ internal class EncodingPipelineOutput(
      * @return true if the target rotation has changed
      */
     private fun shouldUpdateRotation(@RotationValue newTargetRotation: Int): Boolean {
-        return if (targetRotation != newTargetRotation) {
-            _targetRotation = newTargetRotation
+        return if (currentTargetRotation != newTargetRotation) {
+            currentTargetRotation = newTargetRotation
             true
         } else {
             false
