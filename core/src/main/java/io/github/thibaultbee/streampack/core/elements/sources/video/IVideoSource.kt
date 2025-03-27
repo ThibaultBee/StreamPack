@@ -16,8 +16,8 @@
 package io.github.thibaultbee.streampack.core.elements.sources.video
 
 import android.content.Context
-import io.github.thibaultbee.streampack.core.elements.interfaces.Configurable
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
+import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendConfigurable
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamable
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import kotlinx.coroutines.flow.StateFlow
@@ -33,7 +33,7 @@ interface IVideoSource
  * Internal interface for video sources.
  */
 interface IVideoSourceInternal : IVideoSource,
-    SuspendStreamable, Configurable<VideoSourceConfig>, Releasable {
+    SuspendStreamable, SuspendConfigurable<VideoSourceConfig>, Releasable {
     /**
      * Orientation provider of the capture source.
      * It is used to orientate the frame according to the source orientation.

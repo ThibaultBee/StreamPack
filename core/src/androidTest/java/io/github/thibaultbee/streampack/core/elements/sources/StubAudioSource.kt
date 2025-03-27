@@ -17,15 +17,15 @@ class StubAudioSource : IAudioSourceInternal {
 
     override fun getAudioFrame(frameFactory: IReadOnlyRawFrameFactory) = frameFactory.create(8192, 0)
 
-    override fun startStream() {
+    override suspend fun startStream() {
         _isStreamingFlow.value = true
     }
 
-    override fun stopStream() {
+    override suspend fun stopStream() {
         _isStreamingFlow.value = false
     }
 
-    override fun configure(config: AudioSourceConfig) {
+    override suspend fun configure(config: AudioSourceConfig) {
         _configurationFlow.value = config
     }
 

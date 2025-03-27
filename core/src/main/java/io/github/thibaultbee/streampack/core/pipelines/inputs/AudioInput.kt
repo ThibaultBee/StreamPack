@@ -153,7 +153,7 @@ internal class AudioInput(
             }
         }
 
-    private fun applyAudioSourceConfig(
+    private suspend fun applyAudioSourceConfig(
         audioSource: IAudioSourceInternal,
         audioConfig: AudioSourceConfig
     ) {

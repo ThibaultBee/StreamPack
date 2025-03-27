@@ -16,13 +16,13 @@
 package io.github.thibaultbee.streampack.core.elements.sources.audio
 
 import android.content.Context
-import io.github.thibaultbee.streampack.core.elements.interfaces.Configurable
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
-import io.github.thibaultbee.streampack.core.elements.interfaces.Streamable
+import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendConfigurable
+import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamable
 import kotlinx.coroutines.flow.StateFlow
 
-interface IAudioSourceInternal : IAudioSource, IAudioFrameSourceInternal, Streamable,
-    Configurable<AudioSourceConfig>, Releasable {
+interface IAudioSourceInternal : IAudioSource, IAudioFrameSourceInternal, SuspendStreamable,
+    SuspendConfigurable<AudioSourceConfig>, Releasable {
     /**
      * Flow of the last streaming state.
      */

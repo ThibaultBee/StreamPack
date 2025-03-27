@@ -76,6 +76,13 @@ class CameraSessionController private constructor(
         dynamicRange: Long = this.dynamicRange,
         outputs: List<Surface> = this.outputs
     ): CameraSessionController {
+        require(outputs.isNotEmpty()) { "At least one output is required" }
+        require(outputs.all { it.isValid }) { "All outputs $outputs must be valid but ${outputs.filter { !it.isValid }} is invalid" }
+
+        if (dynamicRange == this.dynamicRange && outputs == this.outputs) {
+            return this
+        }
+
         val isClosedFlow = MutableStateFlow(false)
         val newCaptureSession =
             CameraUtils.createCaptureSession(

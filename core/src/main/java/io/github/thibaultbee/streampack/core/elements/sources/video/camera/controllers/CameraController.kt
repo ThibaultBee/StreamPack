@@ -37,7 +37,11 @@ class CameraController private constructor(
     private var sessionController: CameraSessionController? = null
     private val mutex = Mutex()
 
+    /**
+     * Creates a new capture session with the given outputs.
+     */
     suspend fun createSessionController(outputs: List<Surface>, dynamicRange: Long) {
+        require(outputs.isNotEmpty()) { "Outputs is empty" }
         require(outputs.all { it.isValid }) { "At least one output is invalid: ${outputs.filter { !it.isValid }}" }
         mutex.withLock {
             sessionController =
@@ -49,6 +53,15 @@ class CameraController private constructor(
                     dynamicRange
                 )
         }
+    }
+
+    /**
+     * Sets the dynamic range of the camera.
+     *
+     * Internally, it creates a new capture session with the given dynamic range.
+     */
+    suspend fun setDynamicRange(dynamicRange: Long) = mutex.withLock {
+        sessionController?.createCameraControllerForOutputs(dynamicRange = dynamicRange)
     }
 
     private fun hasOutput(output: Surface): Boolean {
@@ -87,9 +100,17 @@ class CameraController private constructor(
                 return
             }
 
-            this.sessionController = sessionController.createCameraControllerForOutputs(
-                outputs = sessionController.outputs - output
-            )
+            try {
+                this.sessionController = sessionController.createCameraControllerForOutputs(
+                    outputs = sessionController.outputs - output
+                )
+            } catch (t: Throwable) {
+                Logger.e(
+                    TAG,
+                    "Failed to remove output $output from ${sessionController.outputs}: $t"
+                )
+                throw t
+            }
         }
     }
 

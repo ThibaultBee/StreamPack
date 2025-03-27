@@ -70,7 +70,7 @@ abstract class StubVideoSource : IVideoSourceInternal {
         _isStreamingFlow.emit(false)
     }
 
-    override fun configure(config: VideoSourceConfig) {
+    override suspend fun configure(config: VideoSourceConfig) {
         _configurationFlow.value = config
     }
 

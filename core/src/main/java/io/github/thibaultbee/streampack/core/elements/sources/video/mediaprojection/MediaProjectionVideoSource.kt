@@ -92,7 +92,7 @@ internal class MediaProjectionVideoSource(
         outputSurface = null
     }
 
-    override fun configure(config: VideoSourceConfig) = Unit
+    override suspend fun configure(config: VideoSourceConfig) = Unit
 
     override suspend fun startStream() {
         val activityResult = requireNotNull(activityResult) {
@@ -145,11 +145,19 @@ internal class MediaProjectionVideoSource(
 }
 
 /**
- * A factory to create a [MediaProjectionVideoSource].
+ * A factory to create a [MediaProjectionVideoSourceFactory].
+ *
+ * @param activityResult The activity result to get the media projection
  */
-class MediaProjectionVideoSourceFactory : IVideoSourceInternal.Factory {
-    override suspend fun create(context: Context): IVideoSourceInternal =
-        MediaProjectionVideoSource(context)
+class MediaProjectionVideoSourceFactory(private val activityResult: ActivityResult? = null) :
+    IVideoSourceInternal.Factory {
+    override suspend fun create(context: Context): IVideoSourceInternal {
+        val source = MediaProjectionVideoSource(context)
+        if (activityResult != null) {
+            source.activityResult = activityResult
+        }
+        return source
+    }
 
     override fun isSourceEquals(source: IVideoSourceInternal?): Boolean {
         return source is MediaProjectionVideoSource

@@ -61,7 +61,7 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
     ): AudioRecord
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    override fun configure(config: AudioSourceConfig) {
+    override suspend fun configure(config: AudioSourceConfig) {
         /**
          * [configure] might be called multiple times.
          * If audio source is already running, we need to prevent reconfiguration.
@@ -98,7 +98,7 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
         }
     }
 
-    override fun startStream() {
+    override suspend fun startStream() {
         if (isRunning) {
             Logger.d(TAG, "Already running")
             return
@@ -111,7 +111,7 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
         _isStreamingFlow.tryEmit(true)
     }
 
-    override fun stopStream() {
+    override suspend fun stopStream() {
         if (!isRunning) {
             Logger.d(TAG, "Not running")
             return
