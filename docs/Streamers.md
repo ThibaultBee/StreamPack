@@ -5,61 +5,73 @@
 The `Streamer` is a class that streams audio and video from a source to an endpoint. It is
 responsible for controlling the audio and video sources, encoders, and endpoint.
 
-StreamPack comes with a few streamers that are ready to use and can be customized. Also, it worth
-noting that you can create your own streamer by extending the `SingleStreamer` or `DualStreamer`
-class.
+Multiple streamers are available depending on the number of independent outputs you want to
+have:
 
-## Coroutine or callback streamers
-
-There are 2 types of streamers:
-
-- Kotlin Coroutine based: streamer APIs use `suspend` functions and `Flow`
-- callback based: streamer APIs use callbacks.
-
-I recommend using the coroutine based streamer. But if you don't want to use coroutines, you can use
-the callback based streamer. The callback based streamer is a wrapper of the coroutine based
-streamer but it might miss some features. On your side, you can create your own callback based
-streamer by wrapping the coroutine based streamer.
+- `SingleStreamer`: for a single output (live or record)
+- `DualStreamer`: for 2 independent outputs (live and record/record audio in file and video
+  in
+  another file)
+- for multiple outputs, you can use the `StreamerPipeline` class that allows to create a
+  custom pipeline with multiple independent outputs.
 
 ## Single streamers
 
-The base streamer implementation is the `SingleStreamer`. It is `Streamer` with a single endpoint.
-Other single streamers inherit from `SingleStreamer`.
+The `SingleStreamer` is a `Streamer` that streams to a single output.
+The implementation is the `SingleStreamer`. Underneath, it is `StreamerPipeline` with a single
+`EncodingOutput`.
 
 The single streamers data flow is as follows:
 
 <!--
 @startuml
-rectangle CameraSingleStreamer {
-[CameraSource] as VideoSource
-[MicrophoneSource] as AudioSource
-[Encoder] as VideoEncoder
-[Encoder] as AudioEncoder
-[Endpoint] as Endpoint
-VideoSource -r-> VideoEncoder
-AudioSource -r-> AudioEncoder
-VideoEncoder -r-> Endpoint
+rectangle SingleStreamer {
+rectangle StreamerPipeline {
+rectangle EncodingOutput {
+  port audio
+  port video
+  [Video encoder] as VideoEncoder
+  [Audio encoder] as AudioEncoder
+  [Endpoint] as Endpoint
+
+  audio --> AudioEncoder
+video --> VideoEncoder
 AudioEncoder -r-> Endpoint
-AudioSource -d[hidden]-> VideoSource
-AudioEncoder -d[hidden]-> VideoEncoder
+VideoEncoder -r-> Endpoint
+}
+[Video source] as VideoSource
+[Audio source] as AudioSource
+
+VideoSource --> video
+AudioSource --> audio
 }
 }
 @enduml
 -->
 
 - `AudioOnlySingleStreamer`: A streamer that streams from an audio source (microphone by default).
-- `CameraSingleStreamer`/`CameraCallbackSingleStreamer`: A streamer that streams from a camera and
-  microphone. It
-  adds `startPreview`, `stopPreview` methods to the `Streamer` object as well as a camera settings.
-- `ScreenRecorderSingleStreamer`: A streamer that streams from the phone screen and microphone. It
-  adds specific methods for screen recorder as a API to set activity result.
+- `VideoOnlySingleStreamer`: A streamer that streams from a video source (microphone by default).
+- `CameraSingleStreamer`: A factory to create a streamer with a camera source.
+- `ScreenRecorderSingleStreamer`: A factory to create a streamer with a media projection video
+  source. You need to set activity result.
 
 By default the `Streamer` endpoint is the `DynamicEndpoint` which made the `Streamer` agnostic of
 the protocol.
 The `DynamicEndpoint` infers from the `MediaDescriptor` object passed to the `Streamer` by `open` or
 `startStream` methods.
 
-### Limiting supported protocols
+## Dual streamers
+
+The `DualStreamer` is a `Streamer` that streams to 2 independent outputs.
+The implementation is the `DualStreamer`. Underneath, it is `StreamerPipeline` with 2
+`EncodingOutput`.
+
+## Streamer pipeline
+
+The `StreamerPipeline` offers a way to create a custom pipeline with multiple independent outputs.
+Add an `EncodingOutput` to the pipeline with `createOutput` method.
+
+## Limiting supported protocols
 
 By default, the `Streamer` supports all StreamPack supported output protocols thanks to the
 `DynamicEndpoint`.
@@ -67,17 +79,23 @@ If you want to limit the supported protocols, you can directly pass a endpoint t
 constructor.
 
 ```kotlin
-val streamer = CameraSingleStreamer(
+// For single streamer
+val streamer = SingleStreamer(
     context,
-    internalEndpoint = YourEndpoint() // Example: RtmpEndpoint()
+    endpointFactory = YourEndpointFactory() // Example: RtmpEndpointFactory()
+)
+// For dual streamer
+val streamer = DualStreamer(
+    context,
+    firstEndpointFactory = YourEndpointFactory(), // Example: RtmpEndpointFactory()
+    secondEndpointFactory = YourEndpointFactory() // Example: RtmpEndpointFactory()
+)
+// For streamer pipeline
+val streamer = StreamerPipeline(
+    context
+)
+streamer.createOutput(
+    YourEndpointFactory() // Example: RtmpEndpointFactory()
 )
 ```
-
-### Implementing your own single streamer
-
-`Streamers` implement the `ICoroutineSingleStreamer` interface.
-
-## Dual streamers
-
-The `DualStreamer` is a `Streamer` that streams to 2 independent outputs.
 
