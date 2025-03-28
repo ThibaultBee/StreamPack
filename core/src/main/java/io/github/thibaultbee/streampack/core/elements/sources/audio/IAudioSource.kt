@@ -21,6 +21,16 @@ import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendConfigur
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamable
 import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * The public interface for audio sources.
+ */
+interface IAudioSource
+
+/**
+ * The internal interface for audio sources.
+ *
+ * This interface extends [IAudioSource] and adds additional functionality for streaming and configuration.
+ */
 interface IAudioSourceInternal : IAudioSource, IAudioFrameSourceInternal, SuspendStreamable,
     SuspendConfigurable<AudioSourceConfig>, Releasable {
     /**
@@ -45,5 +55,3 @@ interface IAudioSourceInternal : IAudioSource, IAudioFrameSourceInternal, Suspen
         fun isSourceEquals(source: IAudioSourceInternal?): Boolean
     }
 }
-
-interface IAudioSource

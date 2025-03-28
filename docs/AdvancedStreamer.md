@@ -53,6 +53,12 @@
 val info = streamer.getInfo(MediaDescriptor(`media uri`))
 ```
 
+* `Internal` interface and `public` interface:
+  They are public to let you create your own `Source`, `Encoder`, `Muxer` or `Sink`.
+  Example: `IAudioSourceInternal` is the internal interface of `IAudioSource`.
+  In other cases, use the public interface instead.
+  Example: `IAudioSource` is the public interface of `IAudioSourceInternal`.
+
 * Element specific configuration:
   Each streamer elements have a public interface that allows yo have access to specific
   information or configuration.
@@ -69,28 +75,44 @@ streamer.videoEncoder!!.bitrate = 2000000
 
 ## Sources
 
-Audio sources implement the `IAudioSource` interface.
-Video sources implement the `IVideoSource` interface and `IFrameSource` or `ISurfaceSource`.
+It is possible to set the audio source and the video source in the `Streamer` object.
+You need the source factory to create the source.
+
+```kotlin
+val streamer = CameraSingleStreamer()
+streamer.setAudioSource(MicrophoneSourceFactory())
+streamer.setVideoSource(CameraSourceFactory())
+
+// Specific for camera
+streamer.setCameraId("0") // where 0 = Camera id
+```
 
 ### Available sources
 
 * Video sources:
-    - `CameraSource`: A source that captures frames from a camera.
-    - `MediaProjectionVideoSource`: A source that captures frames from the screen.
+    - `CameraSource`: A source that captures frames from a camera. Specific interface:
+      `ICameraSource`. Pass a `CameraSourceFactory` to the `Streamer` `setVideoSource` method.
+    - `MediaProjectionVideoSource`: A source that captures frames from the screen. Specific
+      interface: `IMediaProjectionSource`. Pass a `MediaProjectionVideoSourceFactory` to the
+      `Streamer` `setVideoSource` method.
 
 * Audio sources:
-    - `MicrophoneSource`: A source that captures frames from a microphone.
-    - `MediaProjectionAudioSource`: A source that captures frames from the screen.
-
-Sources are a parameter of `Streamer` constructors.
+    - `MicrophoneSource`: A source that captures frames from a microphone. Specific interface:
+      `IAudioRecordSource`. Pass a `MicrophoneSourceFactory` to the `Streamer` `setAudioSource`
+      method.
+    - `MediaProjectionAudioSource`: A source that captures frames from the screen. Specific
+      interface:
+      `IMediaProjectionSource` and `IAudioRecordSource`. Pass a `MediaProjectionAudioSourceFactory`
+      to the `Streamer` `setAudioSource` method.
 
 ### Creates your custom sources
 
 There are 2 types of sources:
 
 - frames are captured in a `ByteBuffer`: such as a microphone. `ByteBuffer` sources
-  implement `IAudioFrameSource` (for audio) (such as `MicrophoneSource`) and `IVideoFrameSource` (
-  for video) (not usable).
+  implement `IAudioFrameSourceInternal` (for audio) (such as `MicrophoneSource`) and
+  `IVideoFrameSourceInternal` (
+  for video) (not available).
 - frames are passed to the encoder surface (video only): when the video source can write to
   a `Surface`. Its purpose is to improve encoder performance. For example, it suits camera and
   screen recorder. `Surface` sources implement `ISurfaceSourceInternal` (such as `CameraSource`).
@@ -110,38 +132,72 @@ interface IVideoFrameSourceInternal {
 interface IVideoSource {
 }
 
+interface IVideoSourceInternal {
+    + startStream()
+    + stopStream()
+}
+
+IVideoSourceInternal <|.. IVideoSource
+
+interface ICameraSource {
+  + settings: CameraSettings
+}
+
+ICameraSource <|.. IVideoSource
+
+interface IPreviewableSource {
+  + setPreview(surface: Surface)
+  + resetPreview()
+  + startPreview()
+  + stopPreview()
+  + startPreview(surface: Surface)
+}
+
 class CameraSource {
 }
 
-CameraSource <|.. IVideoFrameSourceInternal
-CameraSource <|.. IVideoSource
+CameraSource <|.. ISurfaceSourceInternal
+CameraSource <|.. IVideoSourceInternal
+CameraSource <|.. ICameraSource
+CameraSource <|.. IPreviewableSource
 
 interface IAudioFrameSourceInternal {
   + getAudioFrame(buffer: ByteBuffer): Frame
 }
 
 interface IAudioSource
-IAudioSource <|.. IAudioFrameSourceInternal
+interface IAudioSourceInternal {
+    + startStream()
+    + stopStream()
+}
+IAudioSourceInternal <|.. IAudioFrameSourceInternal
+IAudioSourceInternal <|.. IAudioSource
+
+interface IAudioRecordSource {
+  + addEffect(effect: UUID)
+  + removeEffect(effect: UUID)
+}
 
 class MicrophoneSource {
 }
 
+MicrophoneSource <|.. IAudioSourceInternal
 MicrophoneSource <|.. IAudioSource
+MicrophoneSource <|.. IAudioRecordSource
 @enduml
 -->
 
-To create a new audio source, implements a `IAudioSource` and `IAudioSourceInternal`. It inherits
-from `IAudioFrameSource`.
+To create a new audio source, implements `IAudioSourceInternal`(inherits
+from `IAudioFrameSource`).
 
-To create a new video source, implements a `IVideoSource`, `IVideoSourceInternal` and
-`IVideoFrameSourceInternal`
-or `ISurfaceSourceInternal`. Always prefer to use a video source as a `Surface` source if it is
-possible.
-`IVideoFrameSourceInternal` is not usable in a streamer.
-If the video source is previewable, it must implements `IPreviewableSource`. You can use the `AbstractPreviewableSource` class to simplify the
-work.
+To create a new video source, implements `IVideoSourceInternal` and  `ISurfaceSourceInternal` (or
+`IVideoFrameSourceInternal` - not supported). Always prefer to use a video source as a `Surface`
+source if it is
+possible. `IVideoFrameSourceInternal` is not usable in a streamer.
+If the video source is previewable, it must implements `IPreviewableSource`. You can use the
+`AbstractPreviewableSource` class to simplify the work.
 
-### Encoders
+## Encoders
 
 The only encoder is based on Android `MediaCodec` API. It implements the `IEncoder` interface.
 
@@ -154,7 +210,7 @@ interface IEncoder {
 
 ## Endpoints
 
-Endpoints implement the `IEndpoint` interface.
+It is possible to pass the endpoint in the `Streamer` constructor through a `EndpointFactory`.
 
 ### Available endpoints
 
@@ -251,7 +307,7 @@ On a streamer object, you can retrieve the source object and cast it to the spec
 ```kotlin 
 val streamer = CameraSingleStreamer()
 // Audio source
-streamer.audioSource?.apply {
+streamer.audioSourceFlow.value?.apply {
     if (this is IAudioRecordSource) {
         // Specific audio source configuration
         // Example: IAudioRecordSource specific configuration has `addEffect` method
@@ -259,7 +315,7 @@ streamer.audioSource?.apply {
     }
 }
 // Video source
-streamer.videoSource?.apply {
+streamer.videoSourceFlow.value?.apply {
     if (this is ICameraSource) {
         // Specific video source configuration
         // Example: ICameraSource specific configuration has `settings` method

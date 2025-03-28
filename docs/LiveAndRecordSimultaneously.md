@@ -30,7 +30,7 @@ val dualEndpoint = DualEndpoint(
     secondEndpoint = SrtEndpoint()
 )
 
-val streamer = CameraSingleStreamer(
+val streamer = SingleStreamer(
     context,
     internalEndpoint = dualEndpoint
 )
@@ -51,4 +51,9 @@ Use a `DualStreamer`:
 
 ```kotlin
 val streamer = DualStreamer(context)
+
+// To start the live stream on the first output
+streamer.first.startStream("rtmp://serverip:1935/s/streamKey")
+// To start the recording on the second output
+streamer.second.startStream("file:///path.to.file.mp4")
 ```
