@@ -104,7 +104,7 @@ internal class CameraSource(
         }
 
         surfaceMutex.withLock {
-            if (controller.isAvailable) {
+            if (controller.isAvailableFlow.value) {
                 addSurface(previewSurface, surface)
             }
             previewSurface = surface
@@ -128,7 +128,7 @@ internal class CameraSource(
         }
 
         surfaceMutex.withLock {
-            if (controller.isAvailable) {
+            if (controller.isAvailableFlow.value) {
                 addSurface(outputSurface, surface)
             }
             outputSurface = surface
@@ -209,13 +209,13 @@ internal class CameraSource(
         if ((dynamicRangeProfile != config.dynamicRangeProfile)) {
             needRestart = true
         } else if (fps != config.fps) {
-            if (controller.isAvailable) {
+            if (controller.isAvailableFlow.value) {
                 val fpsRange = CameraUtils.getClosestFpsRange(manager, cameraId, fps)
                 controller.setSetting(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
             }
         }
         if (needRestart) {
-            if (controller.isAvailable) {
+            if (controller.isAvailableFlow.value) {
                 controller.setDynamicRange(config.dynamicRangeProfile.dynamicRange)
             }
         }

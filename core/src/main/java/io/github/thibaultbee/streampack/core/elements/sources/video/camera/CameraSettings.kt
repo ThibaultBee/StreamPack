@@ -71,8 +71,7 @@ class CameraSettings(
      * Whether the camera is available.
      * To be used before calling any camera settings.
      */
-    val isAvailable: Boolean
-        get() = cameraController.isAvailable
+    val isAvailableFlow = cameraController.isAvailableFlow
 
     /**
      * Current camera flash API.
