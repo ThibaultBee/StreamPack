@@ -275,7 +275,6 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         if (videoSource is ICameraSource) {
             viewModelScope.launch {
                 streamer.toggleBackToFront(application)
-                notifySourceChanged()
             }
         }
         return true
@@ -292,7 +291,6 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         if (videoSource is ICameraSource) {
             viewModelScope.launch {
                 streamer.setNextCameraId(application)
-                notifySourceChanged()
             }
         }
     }
@@ -331,10 +329,10 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
 
     val isAutoWhiteBalanceAvailable = MutableLiveData(false)
     fun toggleAutoWhiteBalanceMode() {
-        cameraSettings?.let {
-            val awbModes = it.whiteBalance.availableAutoModes
-            val index = awbModes.indexOf(it.whiteBalance.autoMode)
-            it.whiteBalance.autoMode = awbModes[(index + 1) % awbModes.size]
+        cameraSettings?.let { settings ->
+            val awbModes = settings.whiteBalance.availableAutoModes
+            val index = awbModes.indexOf(settings.whiteBalance.autoMode)
+            settings.whiteBalance.autoMode = awbModes[(index + 1) % awbModes.size]
         } ?: Log.e(TAG, "Camera settings is not accessible")
     }
 
@@ -347,13 +345,22 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     val exposureCompensationRange = MutableLiveData<Range<Int>>()
     val exposureCompensationStep = MutableLiveData<Rational>()
     var exposureCompensation: Float
-        @Bindable get() =
-            cameraSettings?.exposure?.let { it.compensation * it.availableCompensationStep.toFloat() }
-                ?: 0f
+        @Bindable get() {
+            val settings = cameraSettings
+            return if (settings != null && settings.isAvailableFlow.value) {
+                settings.exposure.compensation * settings.exposure.availableCompensationStep.toFloat()
+            } else {
+                0f
+            }
+        }
         set(value) {
-            cameraSettings?.exposure?.let {
-                it.compensation = (value / it.availableCompensationStep.toFloat()).toInt()
-                notifyPropertyChanged(BR.exposureCompensation)
+            cameraSettings?.let { settings ->
+                settings.exposure.let {
+                    if (settings.isAvailableFlow.value) {
+                        it.compensation = (value / it.availableCompensationStep.toFloat()).toInt()
+                    }
+                    notifyPropertyChanged(BR.exposureCompensation)
+                }
             } ?: Log.e(TAG, "Camera settings is not accessible")
         }
 
@@ -365,11 +372,19 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     val isZoomAvailable = MutableLiveData(false)
     val zoomRatioRange = MutableLiveData<Range<Float>>()
     var zoomRatio: Float
-        @Bindable get() = cameraSettings?.zoom?.zoomRatio
-            ?: 1f
+        @Bindable get() {
+            val settings = cameraSettings
+            return if (settings != null && settings.isAvailableFlow.value) {
+                settings.zoom.zoomRatio
+            } else {
+                1f
+            }
+        }
         set(value) {
-            cameraSettings?.zoom?.let {
-                it.zoomRatio = value
+            cameraSettings?.let { settings ->
+                if (settings.isAvailableFlow.value) {
+                    settings.zoom.zoomRatio = value
+                }
                 notifyPropertyChanged(BR.zoomRatio)
             } ?: Log.e(TAG, "Camera settings is not accessible")
         }
@@ -391,66 +406,85 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     val showLensDistanceSlider = MutableLiveData(false)
     val lensDistanceRange = MutableLiveData<Range<Float>>()
     var lensDistance: Float
-        @Bindable get() = cameraSettings?.focus?.lensDistance
-            ?: 0f
+        @Bindable get() {
+            val settings = cameraSettings
+            return if ((settings != null) &&
+                settings.isAvailableFlow.value
+            ) {
+                settings.focus.lensDistance
+            } else {
+                0f
+            }
+        }
         set(value) {
-            cameraSettings?.focus?.let {
-                it.lensDistance = value
-                notifyPropertyChanged(BR.lensDistance)
+            cameraSettings?.let { settings ->
+                settings.focus.let {
+                    if (settings.isAvailableFlow.value) {
+                        it.lensDistance = value
+                    }
+                    notifyPropertyChanged(BR.lensDistance)
+                }
             } ?: Log.e(TAG, "Camera settings is not accessible")
         }
 
     private fun notifySourceChanged() {
-        cameraSettings?.let {
-            if (!it.isAvailable) {
-                Log.e(TAG, "Camera settings are not available")
-                return
-            }
+        val videoSource = streamer.videoSourceFlow.value ?: return
+        if (videoSource is ICameraSource) {
+            notifyCameraChanged(videoSource)
+        } else {
+            isFlashAvailable.postValue(false)
+            isAutoWhiteBalanceAvailable.postValue(false)
+            isExposureCompensationAvailable.postValue(false)
+            isZoomAvailable.postValue(false)
+            isAutoFocusModeAvailable.postValue(false)
+        }
+    }
 
-            // Set optical stabilization first
-            // Do not set both video and optical stabilization at the same time
-            if (it.stabilization.availableOptical) {
-                it.stabilization.enableOptical = true
+    private fun notifyCameraChanged(videoSource: ICameraSource) {
+        val settings = videoSource.settings
+        // Set optical stabilization first
+        // Do not set both video and optical stabilization at the same time
+        if (settings.isAvailableFlow.value) {
+            if (settings.stabilization.availableOptical) {
+                settings.stabilization.enableOptical = true
             } else {
-                it.stabilization.enableVideo = true
+                settings.stabilization.enableVideo = true
             }
+        }
 
-            isAutoWhiteBalanceAvailable.postValue(it.whiteBalance.availableAutoModes.size > 1)
-            isFlashAvailable.postValue(it.flash.available)
+        // Flash
+        isFlashAvailable.postValue(settings.flash.available)
 
-            it.exposure.let { exposure ->
-                isExposureCompensationAvailable.postValue(
-                    !exposure.availableCompensationRange.isEmpty
-                )
+        // WB
+        isAutoWhiteBalanceAvailable.postValue(settings.whiteBalance.availableAutoModes.size > 1)
 
-                exposureCompensationRange.postValue(
-                    Range(
-                        (exposure.availableCompensationRange.lower * exposure.availableCompensationStep.toFloat()).toInt(),
-                        (exposure.availableCompensationRange.upper * exposure.availableCompensationStep.toFloat()).toInt()
-                    )
-                )
-                exposureCompensationStep.postValue(exposure.availableCompensationStep)
-                exposureCompensation =
-                    exposure.compensation * exposure.availableCompensationStep.toFloat()
-            }
+        // Exposure
+        isExposureCompensationAvailable.postValue(
+            !settings.exposure.availableCompensationRange.isEmpty
+        )
+        exposureCompensationRange.postValue(
+            Range(
+                (settings.exposure.availableCompensationRange.lower * settings.exposure.availableCompensationStep.toFloat()).toInt(),
+                (settings.exposure.availableCompensationRange.upper * settings.exposure.availableCompensationStep.toFloat()).toInt()
+            )
+        )
+        exposureCompensationStep.postValue(settings.exposure.availableCompensationStep)
+        exposureCompensation = 0f
 
-            it.zoom.let { zoom ->
-                isZoomAvailable.postValue(
-                    !zoom.availableRatioRange.isEmpty
-                )
+        // Zoom
+        isZoomAvailable.postValue(
+            !settings.zoom.availableRatioRange.isEmpty
+        )
+        zoomRatioRange.postValue(settings.zoom.availableRatioRange)
+        zoomRatio = 1.0f
 
-                zoomRatioRange.postValue(zoom.availableRatioRange)
-                zoomRatio = zoom.zoomRatio
-            }
+        // Focus
+        isAutoFocusModeAvailable.postValue(settings.focus.availableAutoModes.size > 1)
 
-            it.focus.let { focus ->
-                isAutoFocusModeAvailable.postValue(focus.availableAutoModes.size > 1)
-
-                showLensDistanceSlider.postValue(false)
-                lensDistanceRange.postValue(focus.availableLensDistanceRange)
-                lensDistance = focus.lensDistance
-            }
-        } ?: Log.e(TAG, "Camera settings is not accessible")
+        // Lens distance
+        showLensDistanceSlider.postValue(false)
+        lensDistanceRange.postValue(settings.focus.availableLensDistanceRange)
+        lensDistance = 0f
     }
 
     override fun onCleared() {

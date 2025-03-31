@@ -10,6 +10,7 @@ import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.CameraCaptureSessionCompatBuilder
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.ICameraCaptureSessionCompat
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraUtils
+import io.github.thibaultbee.streampack.core.elements.utils.mapState
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,10 +32,10 @@ class CameraController private constructor(
 
     val cameraId: String = camera.id
 
-    val isAvailable: Boolean
-        get() = sessionController != null
+    private val sessionController = MutableStateFlow<CameraSessionController?>(null)
 
-    private var sessionController: CameraSessionController? = null
+    val isAvailableFlow: StateFlow<Boolean> = sessionController.mapState { it != null }
+
     private val mutex = Mutex()
 
     /**
@@ -44,7 +45,7 @@ class CameraController private constructor(
         require(outputs.isNotEmpty()) { "Outputs is empty" }
         require(outputs.all { it.isValid }) { "At least one output is invalid: ${outputs.filter { !it.isValid }}" }
         mutex.withLock {
-            sessionController =
+            sessionController.emit(
                 CameraSessionController.create(
                     sessionCompat,
                     manager,
@@ -52,6 +53,7 @@ class CameraController private constructor(
                     outputs,
                     dynamicRange
                 )
+            )
         }
     }
 
@@ -61,11 +63,11 @@ class CameraController private constructor(
      * Internally, it creates a new capture session with the given dynamic range.
      */
     suspend fun setDynamicRange(dynamicRange: Long) = mutex.withLock {
-        sessionController?.createCameraControllerForOutputs(dynamicRange = dynamicRange)
+        sessionController.value?.createCameraControllerForOutputs(dynamicRange = dynamicRange)
     }
 
     private fun hasOutput(output: Surface): Boolean {
-        return sessionController?.hasOutput(output) ?: false
+        return sessionController.value?.hasOutput(output) ?: false
     }
 
     /**
@@ -77,13 +79,15 @@ class CameraController private constructor(
     suspend fun addOutput(output: Surface) {
         require(output.isValid) { "Output is invalid: $output" }
         mutex.withLock {
-            val sessionController = sessionController ?: return
+            val sessionController = sessionController.value ?: return
             if (sessionController.hasOutput(output)) {
                 return
             }
 
-            this.sessionController = sessionController.createCameraControllerForOutputs(
-                outputs = sessionController.outputs + output
+            this.sessionController.emit(
+                sessionController.createCameraControllerForOutputs(
+                    outputs = sessionController.outputs + output
+                )
             )
         }
     }
@@ -95,7 +99,7 @@ class CameraController private constructor(
      */
     suspend fun removeOutput(output: Surface) {
         mutex.withLock {
-            val sessionController = sessionController ?: return
+            val sessionController = sessionController.value ?: return
             if (!sessionController.hasOutput(output)) {
                 return
             }
@@ -104,10 +108,12 @@ class CameraController private constructor(
                 val newOutputs = sessionController.outputs - output
                 if (newOutputs.isEmpty()) {
                     sessionController.release()
-                    this.sessionController = null
+                    this.sessionController.emit(null)
                 } else {
-                    this.sessionController = sessionController.createCameraControllerForOutputs(
-                        outputs = sessionController.outputs - output
+                    this.sessionController.emit(
+                        sessionController.createCameraControllerForOutputs(
+                            outputs = sessionController.outputs - output
+                        )
                     )
                 }
             } catch (t: Throwable) {
@@ -129,7 +135,7 @@ class CameraController private constructor(
     suspend fun replaceOutput(previousOutput: Surface, newOutput: Surface) {
         require(newOutput.isValid) { "Output is invalid: $newOutput" }
         mutex.withLock {
-            val sessionController = sessionController ?: return
+            val sessionController = sessionController.value ?: return
             if (sessionController.hasOutput(newOutput) && !sessionController.hasOutput(
                     previousOutput
                 )
@@ -137,8 +143,10 @@ class CameraController private constructor(
                 return
             }
 
-            this.sessionController = sessionController.createCameraControllerForOutputs(
-                outputs = sessionController.outputs - previousOutput + newOutput
+            this.sessionController.emit(
+                sessionController.createCameraControllerForOutputs(
+                    outputs = sessionController.outputs - previousOutput + newOutput
+                )
             )
         }
     }
@@ -150,7 +158,7 @@ class CameraController private constructor(
      * @return true if the target has been added, false otherwise
      */
     suspend fun addTarget(output: Surface): Boolean = mutex.withLock {
-        return sessionController?.addTarget(output) ?: false
+        return sessionController.value?.addTarget(output) ?: false
     }
 
     /**
@@ -160,14 +168,14 @@ class CameraController private constructor(
      * @return true if the targets have been added, false otherwise
      */
     suspend fun addTargets(targets: List<Surface>): Boolean = mutex.withLock {
-        return sessionController?.addTargets(targets) ?: false
+        return sessionController.value?.addTargets(targets) ?: false
     }
 
     /**
      * Removes a target from the current capture session.
      */
     suspend fun removeTarget(output: Surface) = mutex.withLock {
-        sessionController?.removeTarget(output)
+        sessionController.value?.removeTarget(output)
     }
 
     /**
@@ -186,7 +194,8 @@ class CameraController private constructor(
      * Gets a setting from the current capture request.
      */
     fun <T> getSetting(key: CaptureRequest.Key<T?>): T? {
-        val sessionController = requireNotNull(sessionController) { "SessionController is null" }
+        val sessionController =
+            requireNotNull(sessionController.value) { "SessionController is null" }
         return sessionController.getSetting(key)
     }
 
@@ -199,7 +208,8 @@ class CameraController private constructor(
      * @param value The setting value
      */
     fun <T> setSetting(key: CaptureRequest.Key<T>, value: T) {
-        val sessionController = requireNotNull(sessionController) { "SessionController is null" }
+        val sessionController =
+            requireNotNull(sessionController.value) { "SessionController is null" }
         sessionController.setSetting(key, value)
     }
 
@@ -207,20 +217,22 @@ class CameraController private constructor(
      * Sets a repeating session with the current capture request.
      */
     fun setRepeatingSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
-        val sessionController = requireNotNull(sessionController) { "SessionController is null" }
+        val sessionController =
+            requireNotNull(sessionController.value) { "SessionController is null" }
         sessionController.setRepeatingSession(cameraCaptureCallback)
     }
 
     fun setBurstSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
-        val sessionController = requireNotNull(sessionController) { "SessionController is null" }
+        val sessionController =
+            requireNotNull(sessionController.value) { "SessionController is null" }
         sessionController.setBurstSession(cameraCaptureCallback)
     }
 
     fun release() {
         runBlocking {
             mutex.withLock {
-                sessionController?.release()
-                sessionController = null
+                sessionController.value?.release()
+                sessionController.emit(null)
             }
         }
         camera.close()
