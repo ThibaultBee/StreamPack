@@ -24,6 +24,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 
@@ -33,11 +34,13 @@ import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
  * @param context the application context
  * @param videoSourceFactory the video source factory. If parameter is null, no audio source are set. It can be set later with [VideoOnlySingleStreamer.setVideoSource].
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 suspend fun VideoOnlySingleStreamer(
     context: Context,
     videoSourceFactory: IVideoSourceInternal.Factory?,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
+    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    @RotationValue defaultRotation: Int = context.displayRotation
 ): VideoOnlySingleStreamer {
     val streamer = VideoOnlySingleStreamer(
         context = context,
@@ -52,16 +55,19 @@ suspend fun VideoOnlySingleStreamer(
  *
  * @param context the application context
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-class VideoOnlySingleStreamer internal constructor(
+class VideoOnlySingleStreamer(
     context: Context,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
+    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    @RotationValue defaultRotation: Int = context.displayRotation
 ) : ICoroutineSingleStreamer, ICoroutineVideoSingleStreamer {
     private val streamer = SingleStreamer(
         context = context,
         endpointFactory = endpointFactory,
         withAudio = false,
-        withVideo = true
+        withVideo = true,
+        defaultRotation = defaultRotation
     )
     override val throwableFlow = streamer.throwableFlow
     override val isOpenFlow = streamer.isOpenFlow

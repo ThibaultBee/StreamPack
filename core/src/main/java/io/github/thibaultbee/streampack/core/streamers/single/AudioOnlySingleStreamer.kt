@@ -52,7 +52,7 @@ suspend fun AudioOnlySingleStreamer(
  * @param context the application context
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  */
-class AudioOnlySingleStreamer internal constructor(
+class AudioOnlySingleStreamer(
     context: Context,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
 ) : ICoroutineSingleStreamer, ICoroutineAudioSingleStreamer {

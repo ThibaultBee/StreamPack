@@ -32,7 +32,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 
 /**
- * Creates a [ScreenRecorderSingleStreamer] with a default audio source.
+ * Creates a [SingleStreamer] with the screen as video source and an audio source (by default, the microphone).
  *
  * @param context the application context
  * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory.
@@ -46,30 +46,51 @@ suspend fun ScreenRecorderSingleStreamer(
     @RotationValue defaultRotation: Int = context.displayRotation
 ): SingleStreamer {
     val streamer = ScreenRecorderSingleStreamer(
-        context, true, endpointFactory, defaultRotation
+        context, endpointFactory, defaultRotation
     )
     streamer.setAudioSource(audioSourceFactory)
     return streamer
 }
 
 /**
- * Creates a [ScreenRecorderSingleStreamer].
+ * Creates a [SingleStreamer] with the screen as video source.
+ *
+ * The audio source can be set later using [SingleStreamer.setAudioSource].
  *
  * @param context the application context
- * @param withAudio [Boolean.true] if the streamer will capture audio.
  * @param endpointFactory the [IEndpointInternal.Factory] implementation
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 suspend fun ScreenRecorderSingleStreamer(
     context: Context,
-    withAudio: Boolean,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ): SingleStreamer {
     val streamer = SingleStreamer(
         context = context,
         endpointFactory = endpointFactory,
-        withAudio = withAudio,
+        withAudio = true,
+        defaultRotation = defaultRotation
+    )
+    streamer.setVideoSource(MediaProjectionVideoSourceFactory())
+    return streamer
+}
+
+/**
+ * Creates a [SingleStreamer] with the screen as video source and no audio source.
+ *
+ * @param context the application context
+ * @param endpointFactory the [IEndpointInternal.Factory] implementation
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ */
+suspend fun ScreenRecorderVideoOnlySingleStreamer(
+    context: Context,
+    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    @RotationValue defaultRotation: Int = context.displayRotation
+): VideoOnlySingleStreamer {
+    val streamer = VideoOnlySingleStreamer(
+        context = context,
+        endpointFactory = endpointFactory,
         defaultRotation = defaultRotation
     )
     streamer.setVideoSource(MediaProjectionVideoSourceFactory())

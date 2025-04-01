@@ -27,7 +27,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRo
 import io.github.thibaultbee.streampack.core.streamers.interfaces.setCameraId
 
 /**
- * Creates a [CameraSingleStreamer] with a default audio source.
+ * Creates a [SingleStreamer] with the camera as video source and an audio source (by default, the microphone).
  *
  * @param context the application context
  * @param cameraId the camera id to use. By default, it is the default camera.
@@ -43,30 +43,51 @@ suspend fun CameraSingleStreamer(
     @RotationValue defaultRotation: Int = context.displayRotation
 ): SingleStreamer {
     val streamer = CameraSingleStreamer(
-        context, true, cameraId, endpointFactory, defaultRotation
+        context, cameraId, endpointFactory, defaultRotation
     )
     streamer.setAudioSource(audioSourceFactory)
     return streamer
 }
 
 /**
- * Creates a [CameraSingleStreamer].
+ * Creates a [SingleStreamer] with the camera as video source.
+ *
+ * The audio source can be set later using [SingleStreamer.setAudioSource].
  *
  * @param context the application context
- * @param withAudio [Boolean.true] if the streamer will capture audio.
  * @param cameraId the camera id to use. By default, it is the default camera.
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 suspend fun CameraSingleStreamer(
     context: Context,
-    withAudio: Boolean,
     cameraId: String = context.defaultCameraId,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ): SingleStreamer {
     val streamer = SingleStreamer(
-        context, withAudio, withVideo = true, endpointFactory, defaultRotation
+        context, true, withVideo = true, endpointFactory, defaultRotation
+    )
+    streamer.setCameraId(cameraId)
+    return streamer
+}
+
+/**
+ * Creates a [VideoOnlySingleStreamer] with the camera as video source and no audio source.
+ *
+ * @param context the application context
+ * @param cameraId the camera id to use. By default, it is the default camera.
+ * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ */
+suspend fun CameraVideoOnlySingleStreamer(
+    context: Context,
+    cameraId: String = context.defaultCameraId,
+    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    @RotationValue defaultRotation: Int = context.displayRotation
+): VideoOnlySingleStreamer {
+    val streamer = VideoOnlySingleStreamer(
+        context, endpointFactory, defaultRotation
     )
     streamer.setCameraId(cameraId)
     return streamer
