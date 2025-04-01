@@ -16,10 +16,12 @@
 package io.github.thibaultbee.streampack.core.pipelines.outputs
 
 import android.util.Size
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
+import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.sourceConfig
@@ -27,6 +29,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.mapState
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
+import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.utils.SurfaceUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -150,7 +153,7 @@ class StubVideoSurfacePipelineOutputInternal(resolution: Size) :
     IVideoSurfacePipelineOutputInternal {
 
     override suspend fun setTargetRotation(@RotationValue rotation: Int) = Unit
-    
+
     private val _surfaceFlow =
         MutableStateFlow<SurfaceWithSize?>(
             SurfaceWithSize(
@@ -194,6 +197,28 @@ internal class StubAudioSyncConfigurableEncodingPipelineOutputInternal :
         audioConfigEventListener?.onSetAudioSourceConfig(audioCodecConfig.sourceConfig)
         _audioCodecConfigFlow.emit(audioCodecConfig)
     }
+
+    override val endpoint: IEndpoint
+        get() = TODO("Not yet implemented")
+
+    override fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) {
+        TODO("Not yet implemented")
+    }
+
+    override fun removeBitrateRegulatorController() {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun open(descriptor: MediaDescriptor) {
+        TODO("Not yet implemented")
+    }
+
+    override val isOpenFlow: StateFlow<Boolean>
+        get() = TODO("Not yet implemented")
+
+    override suspend fun close() {
+        TODO("Not yet implemented")
+    }
 }
 
 internal class StubVideoSurfaceConfigurableEncodingPipelineOutputInternal :
@@ -213,5 +238,27 @@ internal class StubVideoSurfaceConfigurableEncodingPipelineOutputInternal :
     override suspend fun setVideoCodecConfig(videoCodecConfig: VideoCodecConfig) {
         videoConfigEventListener?.onSetVideoSourceConfig(videoCodecConfig.sourceConfig)
         _videoCodecConfigFlow.emit(videoCodecConfig)
+    }
+
+    override val endpoint: IEndpoint
+        get() = TODO("Not yet implemented")
+
+    override fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) {
+        TODO("Not yet implemented")
+    }
+
+    override fun removeBitrateRegulatorController() {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun open(descriptor: MediaDescriptor) {
+        TODO("Not yet implemented")
+    }
+
+    override val isOpenFlow: StateFlow<Boolean>
+        get() = TODO("Not yet implemented")
+
+    override suspend fun close() {
+        TODO("Not yet implemented")
     }
 }

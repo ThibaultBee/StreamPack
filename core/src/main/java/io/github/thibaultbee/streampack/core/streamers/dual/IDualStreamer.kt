@@ -29,11 +29,10 @@ import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig.
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig.Companion.getBestProfile
 import io.github.thibaultbee.streampack.core.elements.utils.ByteFormatValue
 import io.github.thibaultbee.streampack.core.elements.utils.ChannelConfigValue
-import io.github.thibaultbee.streampack.core.streamers.interfaces.IAudioStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineAudioStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineVideoStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
+import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
+import io.github.thibaultbee.streampack.core.streamers.IAudioStreamer
+import io.github.thibaultbee.streampack.core.streamers.IVideoStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 
@@ -236,10 +235,18 @@ internal constructor(
     val secondVideoConfig: VideoCodecConfig
 )
 
-interface ICoroutineAudioDualStreamer : ICoroutineAudioStreamer<DualStreamerAudioConfig>,
-    IAudioStreamer
+interface IAudioDualStreamer : IAudioStreamer<DualStreamerAudioConfig>
 
-interface ICoroutineVideoDualStreamer : ICoroutineVideoStreamer<DualStreamerVideoConfig>,
-    IVideoStreamer
+interface IVideoDualStreamer : IVideoStreamer<DualStreamerVideoConfig>
 
-interface ICoroutineDualStreamer : ICoroutineStreamer
+interface IDualStreamer : ICloseableStreamer {
+    /**
+     * First output of the streamer.
+     */
+    val first: IEncodingPipelineOutput
+
+    /**
+     * Second output of the streamer.
+     */
+    val second: IEncodingPipelineOutput
+}

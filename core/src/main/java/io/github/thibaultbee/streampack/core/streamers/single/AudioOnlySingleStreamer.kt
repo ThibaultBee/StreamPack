@@ -35,19 +35,19 @@ import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
  */
 suspend fun AudioOnlySingleStreamer(
     context: Context,
-    audioSourceFactory: IAudioSourceInternal.Factory? = MicrophoneSourceFactory(),
+    audioSourceFactory: IAudioSourceInternal.Factory = MicrophoneSourceFactory(),
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
 ): AudioOnlySingleStreamer {
     val streamer = AudioOnlySingleStreamer(
         context = context,
         endpointFactory = endpointFactory,
     )
-    audioSourceFactory?.let { streamer.setAudioSource(it) }
+    streamer.setAudioSource(audioSourceFactory)
     return streamer
 }
 
 /**
- * A [ICoroutineSingleStreamer] for audio only (without video).
+ * A [ISingleStreamer] implementation for audio only (without video).
  *
  * @param context the application context
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
@@ -55,7 +55,7 @@ suspend fun AudioOnlySingleStreamer(
 class AudioOnlySingleStreamer(
     context: Context,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
-) : ICoroutineSingleStreamer, ICoroutineAudioSingleStreamer {
+) : ISingleStreamer, IAudioSingleStreamer {
     private val streamer = SingleStreamer(
         context = context,
         endpointFactory = endpointFactory,
@@ -70,8 +70,7 @@ class AudioOnlySingleStreamer(
     override val info: IConfigurationInfo
         get() = streamer.info
 
-    override val audioConfig: AudioConfig
-        get() = streamer.audioConfig
+    override val audioConfigFlow = streamer.audioConfigFlow
     override val audioSourceFlow = streamer.audioSourceFlow
     override val audioProcessor = streamer.audioProcessor
     override val audioEncoder: IEncoder?

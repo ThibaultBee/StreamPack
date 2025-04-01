@@ -51,10 +51,10 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.Camer
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFrameRateSupported
-import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
+import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
+import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
+import io.github.thibaultbee.streampack.core.interfaces.startStream
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrtBitrateRegulatorController
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -88,7 +88,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
      */
     private val cameraSettings: CameraSettings?
         get() {
-            val videoSource = (streamer as? IVideoStreamer)?.videoSourceFlow?.value
+            val videoSource = (streamer as? IWithVideoSource)?.videoSourceFlow?.value
             return (videoSource as? ICameraSource)?.settings
         }
 

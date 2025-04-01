@@ -22,15 +22,15 @@ import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal.IAsyncByteBufferInput.OnFrameRequestedListener
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
-import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
-import io.github.thibaultbee.streampack.core.streamers.single.startStream
+import io.github.thibaultbee.streampack.core.interfaces.IStreamer
+import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 
 /**
  * An output component for a streamer.
  */
-interface IPipelineOutput {
+interface IPipelineOutput: IStreamer {
     /**
      * Whether the output has audio.
      */
@@ -40,35 +40,6 @@ interface IPipelineOutput {
      * Whether the output has video.
      */
     val withVideo: Boolean
-
-    /**
-     * Returns the last throwable that occurred.
-     */
-    val throwableFlow: StateFlow<Throwable?>
-
-    /**
-     * Returns true if output is running.
-     */
-    val isStreamingFlow: StateFlow<Boolean>
-
-    /**
-     * Starts audio/video stream.
-     *
-     * @see [stopStream]
-     */
-    suspend fun startStream()
-
-    /**
-     * Stops audio/video stream.
-     *
-     * @see [startStream]
-     */
-    suspend fun stopStream()
-
-    /**
-     * Clean and reset the output.
-     */
-    suspend fun release()
 }
 
 /**
@@ -195,12 +166,7 @@ sealed interface IVideoPipelineOutputInternal : IPipelineOutput
 /**
  * An internal video output component for a pipeline.
  */
-interface IVideoSurfacePipelineOutputInternal : IVideoPipelineOutputInternal {
-    /**
-     * Sets the rotation in one the [Surface] rotations from the device natural orientation.
-     */
-    suspend fun setTargetRotation(@RotationValue rotation: Int)
-
+interface IVideoSurfacePipelineOutputInternal : IVideoPipelineOutputInternal, IWithVideoRotation {
     /**
      * The [Surface] flow to render video.
      * For surface mode video encoder.

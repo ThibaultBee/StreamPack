@@ -15,25 +15,17 @@
  */
 package io.github.thibaultbee.streampack.core.streamers.single
 
-import android.net.Uri
-import android.view.Surface
-import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotationToDegrees
+import io.github.thibaultbee.streampack.core.interfaces.IOpenableStreamer
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
+import io.github.thibaultbee.streampack.core.streamers.IAudioStreamer
+import io.github.thibaultbee.streampack.core.streamers.IVideoStreamer
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
-import io.github.thibaultbee.streampack.core.streamers.interfaces.IAudioStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineAudioStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineVideoStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
-import androidx.core.net.toUri
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * The single streamer audio configuration.
@@ -48,7 +40,7 @@ typealias VideoConfig = VideoCodecConfig
 /**
  * A single Streamer that is agnostic to the underlying implementation (either with coroutines or callbacks).
  */
-interface ISingleStreamer {
+interface ISingleStreamer : IOpenableStreamer {
     /**
      * Advanced settings for the endpoint.
      */
@@ -78,11 +70,11 @@ interface ISingleStreamer {
 /**
  * An audio single Streamer
  */
-interface IAudioSingleStreamer : IAudioStreamer {
+interface IAudioSingleStreamer : IAudioStreamer<AudioConfig> {
     /**
-     * Gets the audio configuration.
+     * The audio configuration flow.
      */
-    val audioConfig: AudioConfig?
+    val audioConfigFlow: StateFlow<AudioConfig?>
 
     /**
      * Advanced settings for the audio encoder.
@@ -93,18 +85,11 @@ interface IAudioSingleStreamer : IAudioStreamer {
 /**
  * A video single streamer.
  */
-interface IVideoSingleStreamer : IVideoStreamer {
+interface IVideoSingleStreamer : IVideoStreamer<VideoConfig> {
     /**
-     * Sets the target rotation.
-     *
-     * @param rotation the target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
+     * The video configuration flow.
      */
-    suspend fun setTargetRotation(@RotationValue rotation: Int)
-
-    /**
-     * Gets the video configuration.
-     */
-    val videoConfig: VideoConfig?
+    val videoConfigFlow: StateFlow<VideoConfig?>
 
     /**
      * Advanced settings for the video encoder.
@@ -112,73 +97,3 @@ interface IVideoSingleStreamer : IVideoStreamer {
     val videoEncoder: IEncoder?
 }
 
-interface ICoroutineAudioSingleStreamer : ICoroutineAudioStreamer<AudioConfig>, IAudioSingleStreamer
-
-interface ICoroutineVideoSingleStreamer : ICoroutineVideoStreamer<VideoConfig>, IVideoSingleStreamer
-
-/**
- * A single Streamer based on coroutines.
- */
-interface ICoroutineSingleStreamer : ICoroutineStreamer, ISingleStreamer {
-    /**
-     * Opens the streamer endpoint.
-     *
-     * @param descriptor Media descriptor to open
-     */
-    suspend fun open(descriptor: MediaDescriptor)
-}
-
-/**
- * Opens the streamer endpoint.
- *
- * @param uri The uri to open
- */
-suspend fun ICoroutineSingleStreamer.open(uri: Uri) =
-    open(UriMediaDescriptor(uri))
-
-/**
- * Opens the streamer endpoint.
- *
- * @param uriString The uri to open
- */
-suspend fun ICoroutineSingleStreamer.open(uriString: String) =
-    open(UriMediaDescriptor(uriString.toUri()))
-
-/**
- * Starts audio/video stream.
- *
- * Same as doing [open] and [startStream].
- *
- * @param descriptor The media descriptor to open
- * @see [ICoroutineSingleStreamer.stopStream]
- */
-suspend fun ICoroutineSingleStreamer.startStream(descriptor: MediaDescriptor) {
-    open(descriptor)
-    startStream()
-}
-
-/**
- * Starts audio/video stream.
- *
- * Same as doing [open] and [startStream].
- *
- * @param uri The uri to open
- * @see [ICoroutineSingleStreamer.stopStream]
- */
-suspend fun ICoroutineSingleStreamer.startStream(uri: Uri) {
-    open(uri)
-    startStream()
-}
-
-/**
- * Starts audio/video stream.
- *
- * Same as doing [open] and [startStream].
- *
- * @param uriString The uri to open
- * @see [ICoroutineSingleStreamer.stopStream]
- */
-suspend fun ICoroutineSingleStreamer.startStream(uriString: String) {
-    open(uriString)
-    startStream()
-}

@@ -36,6 +36,9 @@ import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isCompatibleWith
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.runningHistoryNotNull
+import io.github.thibaultbee.streampack.core.interfaces.IWithAudioSource
+import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
+import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.inputs.AudioInput
 import io.github.thibaultbee.streampack.core.pipelines.inputs.VideoInput
@@ -55,8 +58,6 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.Encoding
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.pipelines.utils.SourceConfigUtils
-import io.github.thibaultbee.streampack.core.streamers.interfaces.IAudioStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -84,7 +85,7 @@ open class StreamerPipeline(
     val withAudio: Boolean = true,
     val withVideo: Boolean = true,
     protected val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
-) : IVideoStreamer, IAudioStreamer {
+) : IWithVideoSource, IWithVideoRotation, IWithAudioSource {
     private val coroutineScope: CoroutineScope = CoroutineScope(coroutineDispatcher)
     private var isReleaseRequested = AtomicBoolean(false)
 
@@ -143,7 +144,7 @@ open class StreamerPipeline(
     /**
      * Sets the target rotation of all outputs.
      */
-    suspend fun setTargetRotation(
+    override suspend fun setTargetRotation(
         @RotationValue rotation: Int
     ) {
         if (isReleaseRequested.get()) {

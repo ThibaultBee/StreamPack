@@ -35,11 +35,13 @@ import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rootCause
+import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.streamers.IVideoStreamer
 import io.github.thibaultbee.streampack.core.streamers.orientation.IRotationProvider
 import io.github.thibaultbee.streampack.core.streamers.orientation.SensorRotationProvider
 import io.github.thibaultbee.streampack.core.streamers.single.ScreenRecorderSingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.ScreenRecorderVideoOnlySingleStreamer
 import io.github.thibaultbee.streampack.services.utils.NotificationUtils
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
@@ -76,7 +78,7 @@ abstract class DefaultScreenRecorderService(
     @StringRes protected val channelDescriptionResourceId: Int = 0,
     @DrawableRes protected val notificationIconResourceId: Int = R.drawable.ic_baseline_linked_camera_24
 ) : LifecycleService(), IRotationProvider.Listener {
-    protected var streamer: SingleStreamer? = null
+    protected var streamer: IVideoStreamer<*>? = null
         private set
 
     protected open val rotationProvider: IRotationProvider by lazy { SensorRotationProvider(this) }
@@ -155,7 +157,7 @@ abstract class DefaultScreenRecorderService(
      * @param customBundle the custom bundle passed as [launch] parameter.
      * @return the streamer to use.
      */
-    open suspend fun createStreamer(customBundle: Bundle): SingleStreamer {
+    open suspend fun createStreamer(customBundle: Bundle): IVideoStreamer<*> {
         val enableMicrophone = customBundle.getBoolean(ENABLE_MICROPHONE_KEY, false)
         if (enableMicrophone) {
             if (ActivityCompat.checkSelfPermission(
@@ -172,16 +174,15 @@ abstract class DefaultScreenRecorderService(
                 applicationContext,
             )
         } else {
-            ScreenRecorderSingleStreamer(
-                applicationContext,
-                withAudio = false
+            ScreenRecorderVideoOnlySingleStreamer(
+                applicationContext
             )
         }
     }
 
     override fun onOrientationChanged(rotation: Int) {
         lifecycleScope.launch {
-            streamer?.setTargetRotation(rotation)
+            (streamer as? IWithVideoRotation)?.setTargetRotation(rotation)
         }
     }
 
@@ -264,7 +265,7 @@ abstract class DefaultScreenRecorderService(
     }
 
     protected inner class ScreenRecorderServiceBinder : Binder() {
-        val streamer: SingleStreamer?
+        val streamer: IVideoStreamer<*>?
             get() = this@DefaultScreenRecorderService.streamer
     }
 
@@ -293,7 +294,7 @@ abstract class DefaultScreenRecorderService(
         fun launch(
             context: Context,
             serviceClass: Class<out DefaultScreenRecorderService>,
-            onServiceCreated: (SingleStreamer) -> Unit,
+            onServiceCreated: (IVideoStreamer<*>) -> Unit,
             onServiceDisconnected: (name: ComponentName?) -> Unit = {},
             customBundle: Bundle = Bundle(),
             enableAudio: Boolean = false

@@ -29,7 +29,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.combineStates
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableEncodingPipelineOutput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import kotlinx.coroutines.flow.StateFlow
@@ -85,7 +85,7 @@ open class DualStreamer(
     firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
-) : ICoroutineDualStreamer, ICoroutineAudioDualStreamer, ICoroutineVideoDualStreamer {
+) : IDualStreamer, IAudioDualStreamer, IVideoDualStreamer {
     private val pipeline = StreamerPipeline(
         context,
         withAudio,
@@ -101,7 +101,7 @@ open class DualStreamer(
     /**
      * First output of the streamer.
      */
-    val first = firstPipelineOutput as IConfigurableEncodingPipelineOutput
+    override val first = firstPipelineOutput as IConfigurableAudioVideoEncodingPipelineOutput
 
     private val secondPipelineOutput: IEncodingPipelineOutputInternal =
         pipeline.createOutput(
@@ -112,7 +112,7 @@ open class DualStreamer(
     /**
      * Second output of the streamer.
      */
-    val second = secondPipelineOutput as IConfigurableEncodingPipelineOutput
+    override val second = secondPipelineOutput as IConfigurableAudioVideoEncodingPipelineOutput
 
     override val throwableFlow: StateFlow<Throwable?> =
         combineStates(
@@ -173,14 +173,14 @@ open class DualStreamer(
      *
      * @param rotation the target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
      */
-    suspend fun setTargetRotation(@RotationValue rotation: Int) {
+    override suspend fun setTargetRotation(@RotationValue rotation: Int) {
         pipeline.setTargetRotation(rotation)
     }
 
     /**
      * Sets audio configuration.
      *
-     * It is a shortcut for [IConfigurableEncodingPipelineOutput.setAudioCodecConfig].
+     * It is a shortcut for [IConfigurableAudioVideoEncodingPipelineOutput.setAudioCodecConfig].
      *
      * @param audioConfig the audio configuration to set
      */
@@ -204,7 +204,7 @@ open class DualStreamer(
     /**
      * Sets video configuration.
      *
-     * It is a shortcut for [IConfigurableEncodingPipelineOutput.setVideoCodecConfig].
+     * It is a shortcut for [IConfigurableAudioVideoEncodingPipelineOutput.setVideoCodecConfig].
      * To only set video configuration for a specific output, use [first.setVideoCodecConfig] or
      * [second.setVideoCodecConfig] outputs.
      * In that case, you call [first.setVideoCodecConfig] or [second.setVideoCodecConfig] explicitly,

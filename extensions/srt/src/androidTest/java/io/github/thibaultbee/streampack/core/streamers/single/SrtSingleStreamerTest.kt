@@ -8,6 +8,7 @@ import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameras
+import io.github.thibaultbee.streampack.core.interfaces.startStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest

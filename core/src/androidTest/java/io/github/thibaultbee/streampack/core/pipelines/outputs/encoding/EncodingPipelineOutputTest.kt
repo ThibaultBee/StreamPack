@@ -28,6 +28,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpointDum
 import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
+import io.github.thibaultbee.streampack.core.interfaces.startStream
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableAudioPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineEventOutputInternal

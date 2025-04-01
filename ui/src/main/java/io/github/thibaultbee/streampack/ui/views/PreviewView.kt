@@ -43,8 +43,8 @@ import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
 import io.github.thibaultbee.streampack.core.elements.utils.OrientationUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.runningHistoryNotNull
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.startPreview
+import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
+import io.github.thibaultbee.streampack.core.interfaces.startPreview
 import io.github.thibaultbee.streampack.ui.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -136,18 +136,18 @@ class PreviewView @JvmOverloads constructor(
     private var sourceJob: Job? = null
 
     /**
-     * Sets the [IVideoStreamer] to preview.
+     * Sets the [IWithVideoSource] to preview.
      * To force the preview to start, use [startPreview].
      */
-    var streamer: IVideoStreamer? = null
+    var streamer: IWithVideoSource? = null
         /**
-         * Sets the [IVideoStreamer] to preview.
+         * Sets the [IWithVideoSource] to preview.
          *
          * If the previous streamer was previewing, it will stop the preview and start the new one.
          * If the new streamer is already previewing, it will throw an exception. Make sure to stop
          * the preview before setting a new streamer.
          *
-         * @param newStreamer the [IVideoStreamer] to preview
+         * @param newStreamer the [IWithVideoSource] to preview
          */
         set(newStreamer) {
             if (field == newStreamer) {
@@ -240,7 +240,7 @@ class PreviewView @JvmOverloads constructor(
 
     private fun collectSource(
         coroutineScope: CoroutineScope,
-        streamer: IVideoStreamer
+        streamer: IWithVideoSource
     ) {
         sourceJob = coroutineScope.launch {
             streamer.videoSourceFlow.runningHistoryNotNull()

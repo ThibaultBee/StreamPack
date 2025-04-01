@@ -20,12 +20,12 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigu
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.regulator.controllers.BitrateRegulatorController
-import io.github.thibaultbee.streampack.core.regulator.controllers.DefaultBitrateRegulatorController
+import io.github.thibaultbee.streampack.core.regulator.controllers.DummyBitrateRegulatorController
 import io.github.thibaultbee.streampack.ext.srt.regulator.DefaultSrtBitrateRegulator
 import io.github.thibaultbee.streampack.ext.srt.regulator.SrtBitrateRegulator
 
 /**
- * A [DefaultBitrateRegulatorController] implementation for a [SrtSink].
+ * A [DummyBitrateRegulatorController] implementation for a [SrtSink].
  */
 class DefaultSrtBitrateRegulatorController {
     class Factory(
@@ -33,7 +33,7 @@ class DefaultSrtBitrateRegulatorController {
         private val bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
         private val delayTimeInMs: Long = 500
     ) : BitrateRegulatorController.Factory() {
-        override fun newBitrateRegulatorController(pipelineOutput: IEncodingPipelineOutput): DefaultBitrateRegulatorController {
+        override fun newBitrateRegulatorController(pipelineOutput: IEncodingPipelineOutput): DummyBitrateRegulatorController {
             require(pipelineOutput is IConfigurableVideoEncodingPipelineOutput) {
                 "Pipeline output must be an video encoding output"
             }
@@ -47,7 +47,7 @@ class DefaultSrtBitrateRegulatorController {
             } else {
                 null
             }
-            return DefaultBitrateRegulatorController(
+            return DummyBitrateRegulatorController(
                 audioEncoder,
                 videoEncoder,
                 pipelineOutput.endpoint,

@@ -34,7 +34,7 @@ import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
  * @param bitrateRegulatorConfig bitrate regulator configuration
  * @param delayTimeInMs delay between each call to [IBitrateRegulator.update]
  */
-open class DefaultBitrateRegulatorController(
+open class DummyBitrateRegulatorController(
     audioEncoder: IEncoder?,
     videoEncoder: IEncoder,
     endpoint: IEndpoint,
@@ -97,7 +97,7 @@ open class DefaultBitrateRegulatorController(
             } else {
                 null
             }
-            return DefaultBitrateRegulatorController(
+            return DummyBitrateRegulatorController(
                 audioEncoder,
                 videoEncoder,
                 pipelineOutput.endpoint,

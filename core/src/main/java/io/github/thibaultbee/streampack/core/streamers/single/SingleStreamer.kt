@@ -37,7 +37,6 @@ import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegul
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.StreamerConfigurationInfo
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -69,7 +68,7 @@ suspend fun SingleStreamer(
 }
 
 /**
- * A class that handles one audio and video output.
+ * A [ISingleStreamer] implementation for audio and video.
  *
  * @param context the application context
  * @param withAudio [Boolean.true] to capture audio. It can't be changed after instantiation.
@@ -83,7 +82,7 @@ open class SingleStreamer(
     val withVideo: Boolean = true,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
-) : ICoroutineSingleStreamer, ICoroutineAudioSingleStreamer, ICoroutineVideoSingleStreamer {
+) : ISingleStreamer, IAudioSingleStreamer, IVideoSingleStreamer {
     private val pipeline = StreamerPipeline(
         context,
         withAudio,
@@ -185,13 +184,9 @@ open class SingleStreamer(
 
     // CONFIGURATION
     /**
-     * Whether the streamer has audio configuration.
+     * The audio configuration flow.
      */
-    val hasAudioConfig: Boolean
-        get() = pipelineOutput.audioCodecConfigFlow.value != null
-
-    override val audioConfig: AudioConfig
-        get() = requireNotNull(pipelineOutput.audioCodecConfigFlow.value)
+    override val audioConfigFlow: StateFlow<AudioConfig?> = pipelineOutput.audioCodecConfigFlow
 
     /**
      * Configures audio settings.
@@ -210,13 +205,9 @@ open class SingleStreamer(
     }
 
     /**
-     * Whether the streamer has video configuration.
+     * The video configuration flow.
      */
-    val hasVideoConfig: Boolean
-        get() = pipelineOutput.videoCodecConfigFlow.value != null
-
-    override val videoConfig: VideoConfig
-        get() = requireNotNull(pipelineOutput.videoCodecConfigFlow.value)
+    override val videoConfigFlow: StateFlow<VideoConfig?> = pipelineOutput.videoCodecConfigFlow
 
     /**
      * Configures video settings.
@@ -250,7 +241,7 @@ open class SingleStreamer(
      * @param videoConfig Video configuration to set
      *
      * @throws [Throwable] if configuration can not be applied.
-     * @see [ICoroutineStreamer.release]
+     * @see [IStreamer.release]
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     suspend fun setConfig(audioConfig: AudioConfig, videoConfig: VideoConfig) {

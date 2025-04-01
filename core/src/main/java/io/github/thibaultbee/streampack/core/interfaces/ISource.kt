@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.streamers.interfaces
+package io.github.thibaultbee.streampack.core.interfaces
 
 import android.Manifest
 import android.view.Surface
@@ -28,93 +28,13 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewable
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSourceFactory
-import io.github.thibaultbee.streampack.core.streamers.single.startStream
+import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.runBlocking
-
-interface IStreamer
-
-/**
- * A single Streamer based on coroutines.
- */
-interface ICoroutineStreamer : IStreamer {
-    /**
-     * Returns the last throwable that occurred.
-     */
-    val throwableFlow: StateFlow<Throwable?>
-
-    /**
-     * Returns true if the streamer is opened.
-     * For example, if the streamer is connected to a server if the endpoint is SRT or RTMP.
-     */
-    val isOpenFlow: StateFlow<Boolean>
-
-    /**
-     * Closes the streamer.
-     */
-    suspend fun close()
-
-    /**
-     * Returns true if stream is running.
-     */
-    val isStreamingFlow: StateFlow<Boolean>
-
-    /**
-     * Starts audio/video stream.
-     *
-     * @see [stopStream]
-     */
-    suspend fun startStream()
-
-    /**
-     * Stops audio/video stream.
-     *
-     * @see [startStream]
-     */
-    suspend fun stopStream()
-
-    /**
-     * Clean and reset the streamer.
-     */
-    suspend fun release()
-}
-
-/**
- * Clean and reset the streamer synchronously.
- *
- * @see [ICoroutineStreamer.release]
- */
-fun ICoroutineStreamer.releaseBlocking() = runBlocking {
-    release()
-}
-
-
-interface ICoroutineAudioStreamer<T> {
-    /**
-     * Configures only audio settings.
-     *
-     * @param audioConfig Audio configuration to set
-     *
-     * @throws [Throwable] if configuration can not be applied.
-     */
-    suspend fun setAudioConfig(audioConfig: T)
-}
-
-interface ICoroutineVideoStreamer<T> {
-    /**
-     * Configures only video settings.
-     *
-     * @param videoConfig Video configuration to set
-     *
-     * @throws [Throwable] if configuration can not be applied.
-     */
-    suspend fun setVideoConfig(videoConfig: T)
-}
 
 /**
  * An audio single Streamer
  */
-interface IAudioStreamer {
+interface IWithAudioSource {
     /**
      * An audio source flow to access to advanced settings.
      */
@@ -133,10 +53,19 @@ interface IAudioStreamer {
     suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory)
 }
 
+interface IWithVideoRotation {
+    /**
+     * Sets the target rotation.
+     *
+     * @param rotation the target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
+     */
+    suspend fun setTargetRotation(@RotationValue rotation: Int)
+}
+
 /**
  * A video single streamer.
  */
-interface IVideoStreamer {
+interface IWithVideoSource {
     /**
      * A video source flow to access to advanced settings.
      */
@@ -153,18 +82,18 @@ interface IVideoStreamer {
 /**
  * Sets the camera id.
  *
- * Same as [setVideoSource] with a [CameraSourceFactory].
+ * Same as [IWithVideoSource.setVideoSource] with a [CameraSourceFactory].
  *
  * @param cameraId the camera id
  */
 @RequiresPermission(Manifest.permission.CAMERA)
-suspend fun IVideoStreamer.setCameraId(cameraId: String) =
+suspend fun IWithVideoSource.setCameraId(cameraId: String) =
     setVideoSource(CameraSourceFactory(cameraId))
 
 /**
  * Whether the video source has a preview.
  */
-val IVideoStreamer.isPreviewable: Boolean
+val IWithVideoSource.isPreviewable: Boolean
     get() = videoSourceFlow.value is IPreviewableSource
 
 /**
@@ -173,7 +102,7 @@ val IVideoStreamer.isPreviewable: Boolean
  * @param surface The [Surface] used for the source preview
  * @throws [IllegalStateException] if the video source is not previewable
  */
-suspend fun IVideoStreamer.setPreview(surface: Surface) {
+suspend fun IWithVideoSource.setPreview(surface: Surface) {
     (videoSourceFlow.value as? IPreviewableSource)?.setPreview(surface)
         ?: throw IllegalStateException("Video source is not previewable")
 }
@@ -184,7 +113,7 @@ suspend fun IVideoStreamer.setPreview(surface: Surface) {
  * @param surfaceView The [SurfaceView] used for the source preview
  * @throws [IllegalStateException] if the video source is not previewable
  */
-suspend fun IVideoStreamer.setPreview(surfaceView: SurfaceView) =
+suspend fun IWithVideoSource.setPreview(surfaceView: SurfaceView) =
     setPreview(surfaceView.holder.surface)
 
 /**
@@ -193,7 +122,7 @@ suspend fun IVideoStreamer.setPreview(surfaceView: SurfaceView) =
  * @param surfaceHolder The [SurfaceHolder] used the source preview
  * @throws [IllegalStateException] if the video source is not previewable
  */
-suspend fun IVideoStreamer.setPreview(surfaceHolder: SurfaceHolder) =
+suspend fun IWithVideoSource.setPreview(surfaceHolder: SurfaceHolder) =
     setPreview(surfaceHolder.surface)
 
 /**
@@ -202,7 +131,7 @@ suspend fun IVideoStreamer.setPreview(surfaceHolder: SurfaceHolder) =
  * @param textureView The [TextureView] used for the source preview
  * @throws [IllegalStateException] if the video source is not previewable
  */
-suspend fun IVideoStreamer.setPreview(textureView: TextureView) =
+suspend fun IWithVideoSource.setPreview(textureView: TextureView) =
     setPreview(Surface(textureView.surfaceTexture))
 
 /**
@@ -210,7 +139,7 @@ suspend fun IVideoStreamer.setPreview(textureView: TextureView) =
  *
  * @throws [IllegalStateException] if the video source is not previewable
  */
-suspend fun IVideoStreamer.startPreview() {
+suspend fun IWithVideoSource.startPreview() {
     (videoSourceFlow.value as? IPreviewableSource)?.startPreview()
         ?: throw IllegalStateException("Video source is not previewable")
 }
@@ -220,9 +149,9 @@ suspend fun IVideoStreamer.startPreview() {
  *
  * @param surface The [Surface] used for the source preview
  * @throws [IllegalStateException] if the video source is not previewable
- * @see [IVideoStreamer.stopPreview]
+ * @see [IWithVideoSource.stopPreview]
  */
-suspend fun IVideoStreamer.startPreview(surface: Surface) {
+suspend fun IWithVideoSource.startPreview(surface: Surface) {
     (videoSourceFlow.value as? IPreviewableSource)?.startPreview(surface)
         ?: throw IllegalStateException("Video source is not previewable")
 }
@@ -232,10 +161,10 @@ suspend fun IVideoStreamer.startPreview(surface: Surface) {
  *
  * @param surfaceView The [SurfaceView] used for the source preview
  * @throws [IllegalStateException] if the video source is not previewable
- * @see [IVideoStreamer.stopPreview]
+ * @see [IWithVideoSource.stopPreview]
  */
 @RequiresPermission(Manifest.permission.CAMERA)
-suspend fun IVideoStreamer.startPreview(surfaceView: SurfaceView) =
+suspend fun IWithVideoSource.startPreview(surfaceView: SurfaceView) =
     startPreview(surfaceView.holder.surface)
 
 /**
@@ -243,10 +172,10 @@ suspend fun IVideoStreamer.startPreview(surfaceView: SurfaceView) =
  *
  * @param surfaceHolder The [SurfaceHolder] used for camera preview
  * @throws [IllegalStateException] if the video source is not previewable
- * @see [IVideoStreamer.stopPreview]
+ * @see [IWithVideoSource.stopPreview]
  */
 @RequiresPermission(Manifest.permission.CAMERA)
-suspend fun IVideoStreamer.startPreview(surfaceHolder: SurfaceHolder) =
+suspend fun IWithVideoSource.startPreview(surfaceHolder: SurfaceHolder) =
     startPreview(surfaceHolder.surface)
 
 /**
@@ -254,15 +183,15 @@ suspend fun IVideoStreamer.startPreview(surfaceHolder: SurfaceHolder) =
  *
  * @param textureView The [TextureView] used for camera preview
  * @throws [IllegalStateException] if the video source is not previewable
- * @see [IVideoStreamer.stopPreview]
+ * @see [IWithVideoSource.stopPreview]
  */
 @RequiresPermission(Manifest.permission.CAMERA)
-suspend fun IVideoStreamer.startPreview(textureView: TextureView) =
+suspend fun IWithVideoSource.startPreview(textureView: TextureView) =
     startPreview(Surface(textureView.surfaceTexture))
 
 /**
  * Stops video preview.
  */
-suspend fun IVideoStreamer.stopPreview() {
+suspend fun IWithVideoSource.stopPreview() {
     (videoSourceFlow.value as? IPreviewableSource)?.stopPreview()
 }

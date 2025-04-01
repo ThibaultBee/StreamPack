@@ -75,7 +75,7 @@ internal class EncodingPipelineOutput(
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
-) : IConfigurableEncodingPipelineOutput, IEncodingPipelineOutputInternal,
+) : IConfigurableAudioVideoEncodingPipelineOutput, IEncodingPipelineOutputInternal,
     IVideoSurfacePipelineOutputInternal, IAudioSyncPipelineOutputInternal {
     /**
      * Mutex to avoid concurrent start/stop operations.

@@ -17,8 +17,8 @@ package io.github.thibaultbee.streampack.core.streamers.lifecycle
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
+import io.github.thibaultbee.streampack.core.interfaces.IStreamer
+import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 
 /**
  * A [DefaultLifecycleObserver] to control a streamer on [Activity] lifecycle.
@@ -30,7 +30,7 @@ import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlockin
  *
  *  @param streamer The streamer to control
  */
-open class StreamerActivityLifeCycleObserver(streamer: ICoroutineStreamer) :
+open class StreamerActivityLifeCycleObserver(streamer: IStreamer) :
     StreamerViewModelLifeCycleObserver(streamer) {
 
     override fun onDestroy(owner: LifecycleOwner) {

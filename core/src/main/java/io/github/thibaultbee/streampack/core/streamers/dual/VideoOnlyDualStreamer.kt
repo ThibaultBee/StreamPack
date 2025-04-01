@@ -19,67 +19,88 @@ import android.content.Context
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
-import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
-import io.github.thibaultbee.streampack.core.interfaces.setCameraId
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
 
 /**
- * Creates a [DualStreamer] with a default audio source.
+ * Creates a [VideoOnlyDualStreamer] with a default video source.
  *
  * @param context the application context
- * @param cameraId the camera id to use. By default, it is the default camera.
- * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory. If set to null, you will have to set it later explicitly.
+ * @param videoSourceFactory the video source factory. If parameter is null, no audio source are set. It can be set later with [VideoOnlySingleStreamer.setVideoSource].
  * @param firstEndpointFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
  * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-suspend fun CameraDualStreamer(
+suspend fun VideoOnlyDualStreamer(
     context: Context,
-    cameraId: String = context.defaultCameraId,
-    audioSourceFactory: IAudioSourceInternal.Factory? = MicrophoneSourceFactory(),
-    firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
-    secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
-    @RotationValue defaultRotation: Int = context.displayRotation
-): DualStreamer {
-    val streamer = DualStreamer(
-        context,
-        withAudio = true,
-        withVideo = true,
-        firstEndpointFactory,
-        secondEndpointFactory,
-        defaultRotation
-    )
-    streamer.setCameraId(cameraId)
-    if (audioSourceFactory != null) {
-        streamer.setAudioSource(audioSourceFactory)
-    }
-    return streamer
-}
-
-/**
- * Creates a [VideoOnlyDualStreamer] with the camera as video source and no audio source.
- *
- * @param context the application context
- * @param cameraId the camera id to use. By default, it is the default camera.
- * @param firstEndpointFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
- * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
- * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
- */
-suspend fun CameraVideoOnlyDualStreamer(
-    context: Context,
-    cameraId: String = context.defaultCameraId,
+    videoSourceFactory: IVideoSourceInternal.Factory,
     firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ): VideoOnlyDualStreamer {
     val streamer = VideoOnlyDualStreamer(
-        context, firstEndpointFactory, secondEndpointFactory, defaultRotation
+        context = context,
+        firstEndpointFactory = firstEndpointFactory,
+        secondEndpointFactory = secondEndpointFactory,
+        defaultRotation = defaultRotation
     )
-    streamer.setCameraId(cameraId)
+    streamer.setVideoSource(videoSourceFactory)
     return streamer
 }
 
+/**
+ * A [ISingleStreamer] implementation for video only (without audio).
+ *
+ * @param context the application context
+ * @param firstEndpointFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
+ * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ */
+class VideoOnlyDualStreamer(
+    context: Context,
+    firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    @RotationValue defaultRotation: Int = context.displayRotation
+) : IDualStreamer, IVideoDualStreamer {
+    private val streamer = DualStreamer(
+        context = context,
+        firstEndpointFactory = firstEndpointFactory,
+        secondEndpointFactory = secondEndpointFactory,
+        withAudio = false,
+        withVideo = true,
+        defaultRotation = defaultRotation
+    )
 
+    override val first = streamer.first as IConfigurableVideoEncodingPipelineOutput
+    override val second = streamer.second as IConfigurableVideoEncodingPipelineOutput
+
+    override val throwableFlow = streamer.throwableFlow
+    override val isOpenFlow = streamer.isOpenFlow
+    override val isStreamingFlow = streamer.isStreamingFlow
+
+    /**
+     * Sets the target rotation.
+     *
+     * @param rotation the target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
+     */
+    override suspend fun setTargetRotation(@RotationValue rotation: Int) =
+        streamer.setTargetRotation(rotation)
+
+    override suspend fun setVideoConfig(videoConfig: DualStreamerVideoConfig) =
+        streamer.setVideoConfig(videoConfig)
+
+    override val videoSourceFlow = streamer.videoSourceFlow
+
+    override suspend fun setVideoSource(videoSourceFactory: IVideoSourceInternal.Factory) =
+        streamer.setVideoSource(videoSourceFactory)
+
+    override suspend fun close() = streamer.close()
+
+    override suspend fun startStream() = streamer.startStream()
+
+    override suspend fun stopStream() = streamer.stopStream()
+
+    override suspend fun release() = streamer.release()
+}

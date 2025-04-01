@@ -17,9 +17,10 @@ package io.github.thibaultbee.streampack.core.streamers.lifecycle
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.stopPreview
+import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
+import io.github.thibaultbee.streampack.core.interfaces.IStreamer
+import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
+import io.github.thibaultbee.streampack.core.interfaces.stopPreview
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -32,17 +33,19 @@ import kotlinx.coroutines.runBlocking
  *
  *  @param streamer The streamer to control
  */
-open class StreamerViewModelLifeCycleObserver(protected val streamer: ICoroutineStreamer) :
+open class StreamerViewModelLifeCycleObserver(protected val streamer: IStreamer) :
     DefaultLifecycleObserver {
 
     override fun onPause(owner: LifecycleOwner) {
         runBlocking {
-            if (streamer is IVideoStreamer) {
+            if (streamer is IWithVideoSource) {
                 streamer.stopPreview()
             }
             streamer.stopStream()
-            if (streamer.isOpenFlow.value) {
-                streamer.close()
+            if (streamer is ICloseableStreamer) {
+                if (streamer.isOpenFlow.value) {
+                    streamer.close()
+                }
             }
         }
     }

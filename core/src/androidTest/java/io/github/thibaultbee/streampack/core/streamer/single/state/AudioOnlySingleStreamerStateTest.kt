@@ -15,15 +15,15 @@
  */
 package io.github.thibaultbee.streampack.core.streamer.single.state
 
-import androidx.core.net.toUri
 import android.util.Log
+import androidx.core.net.toUri
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
+import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
+import io.github.thibaultbee.streampack.core.interfaces.startStream
 import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreamerConfigUtils
-import io.github.thibaultbee.streampack.core.streamers.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.streamers.single.AudioOnlySingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.runBlocking

@@ -22,7 +22,6 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.Display
@@ -33,16 +32,26 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecHelper
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
+import io.github.thibaultbee.streampack.core.interfaces.startStream
+import io.github.thibaultbee.streampack.core.streamers.IConfigurableAudioStreamer
+import io.github.thibaultbee.streampack.core.streamers.IVideoStreamer
+import io.github.thibaultbee.streampack.core.streamers.dual.DualStreamerAudioConfig
+import io.github.thibaultbee.streampack.core.streamers.dual.DualStreamerVideoConfig
+import io.github.thibaultbee.streampack.core.streamers.dual.IAudioDualStreamer
+import io.github.thibaultbee.streampack.core.streamers.dual.IDualStreamer
+import io.github.thibaultbee.streampack.core.streamers.dual.IVideoDualStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
-import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import io.github.thibaultbee.streampack.core.streamers.single.createScreenRecorderIntent
 import io.github.thibaultbee.streampack.core.streamers.single.setActivityResult
-import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import io.github.thibaultbee.streampack.screenrecorder.databinding.ActivityMainBinding
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
@@ -68,7 +77,7 @@ class MainActivity : AppCompatActivity() {
 
     private var connection: ServiceConnection? = null
 
-    private var streamer: SingleStreamer? = null
+    private var streamer: IVideoStreamer<*>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -150,7 +159,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-    private fun configure(streamer: SingleStreamer) {
+    private fun configure(streamer: IVideoStreamer<*>) {
         val deviceRefreshRate =
             (this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager).getDisplay(
                 Display.DEFAULT_DISPLAY
@@ -170,7 +179,18 @@ class MainActivity : AppCompatActivity() {
             fps = fps
         )
         lifecycleScope.launch {
-            streamer.setVideoConfig(videoConfig)
+            if (streamer is IVideoSingleStreamer) {
+                streamer.setVideoConfig(videoConfig)
+            } else if (streamer is IVideoDualStreamer) {
+                streamer.setVideoConfig(DualStreamerVideoConfig(videoConfig))
+            } else {
+                throw IllegalStateException("Streamer is not a video streamer")
+            }
+        }
+
+        if (streamer !is IConfigurableAudioStreamer<*>) {
+            Log.e(TAG, "Streamer does not support audio configuration")
+            return
         }
 
         if (configuration.audio.enable) {
@@ -187,7 +207,13 @@ class MainActivity : AppCompatActivity() {
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 lifecycleScope.launch {
-                    streamer.setAudioConfig(audioConfig)
+                    if (streamer is IAudioSingleStreamer) {
+                        streamer.setAudioConfig(audioConfig)
+                    } else if (streamer is IAudioDualStreamer) {
+                        streamer.setAudioConfig(DualStreamerAudioConfig(audioConfig))
+                    } else {
+                        throw IllegalStateException("Streamer is not a audio streamer")
+                    }
                 }
             } else {
                 throw SecurityException("Permission RECORD_AUDIO must have been granted!")
@@ -195,7 +221,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun startStream(streamer: SingleStreamer) {
+    private suspend fun startStream(streamer: IVideoStreamer<*>) {
         try {
             val descriptor = when (configuration.endpoint.type) {
                 EndpointType.SRT -> SrtMediaDescriptor(
@@ -206,10 +232,17 @@ class MainActivity : AppCompatActivity() {
                     serviceInfo = tsServiceInfo
                 )
 
-                EndpointType.RTMP -> UriMediaDescriptor(Uri.parse(configuration.endpoint.rtmp.url))
+                EndpointType.RTMP -> UriMediaDescriptor(configuration.endpoint.rtmp.url.toUri())
             }
 
-            streamer.startStream(descriptor)
+            if (streamer is ISingleStreamer) {
+                streamer.startStream(descriptor)
+            } else if (streamer is IDualStreamer) {
+                Log.w(TAG, "Only first output will be used")
+                streamer.first.startStream(descriptor)
+            } else {
+                throw IllegalStateException("Streamer is not a single streamer")
+            }
             moveTaskToBack(true)
         } catch (t: Throwable) {
             this.showAlertDialog(

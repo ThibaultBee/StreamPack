@@ -30,11 +30,11 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameras
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.frontCameras
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isBackCamera
-import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.setCameraId
+import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
+import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 
 @RequiresPermission(Manifest.permission.CAMERA)
-suspend fun IVideoStreamer.setNextCameraId(context: Context) {
+suspend fun IWithVideoSource.setNextCameraId(context: Context) {
     val cameras = context.cameras
     val videoSource = videoSourceFlow.value
 
@@ -49,7 +49,7 @@ suspend fun IVideoStreamer.setNextCameraId(context: Context) {
 }
 
 @RequiresPermission(Manifest.permission.CAMERA)
-suspend fun IVideoStreamer.toggleBackToFront(context: Context) {
+suspend fun IWithVideoSource.toggleBackToFront(context: Context) {
     val videoSource = videoSourceFlow.value
     val cameras = if (videoSource is ICameraSource) {
         if (context.isBackCamera(videoSource.cameraId)) {

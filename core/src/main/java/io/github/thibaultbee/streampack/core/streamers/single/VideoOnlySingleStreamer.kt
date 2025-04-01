@@ -38,20 +38,21 @@ import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
  */
 suspend fun VideoOnlySingleStreamer(
     context: Context,
-    videoSourceFactory: IVideoSourceInternal.Factory?,
+    videoSourceFactory: IVideoSourceInternal.Factory,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ): VideoOnlySingleStreamer {
     val streamer = VideoOnlySingleStreamer(
         context = context,
-        endpointFactory = endpointFactory
+        endpointFactory = endpointFactory,
+        defaultRotation = defaultRotation
     )
-    videoSourceFactory?.let { streamer.setVideoSource(it) }
+    streamer.setVideoSource(videoSourceFactory)
     return streamer
 }
 
 /**
- * A [ICoroutineSingleStreamer] for video only (without audio).
+ * A [ISingleStreamer] implementation for video only (without audio).
  *
  * @param context the application context
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
@@ -61,7 +62,7 @@ class VideoOnlySingleStreamer(
     context: Context,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
-) : ICoroutineSingleStreamer, ICoroutineVideoSingleStreamer {
+) : ISingleStreamer, IVideoSingleStreamer {
     private val streamer = SingleStreamer(
         context = context,
         endpointFactory = endpointFactory,
@@ -89,8 +90,7 @@ class VideoOnlySingleStreamer(
     override suspend fun setVideoConfig(videoConfig: VideoConfig) =
         streamer.setVideoConfig(videoConfig)
 
-    override val videoConfig: VideoConfig
-        get() = streamer.videoConfig
+    override val videoConfigFlow = streamer.videoConfigFlow
     override val videoEncoder: IEncoder?
         get() = streamer.videoEncoder
     override val videoSourceFlow = streamer.videoSourceFlow

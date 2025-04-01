@@ -15,51 +15,29 @@
  */
 package io.github.thibaultbee.streampack.core.pipelines.outputs.encoding
 
-import android.net.Uri
-import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.core.interfaces.IOpenableStreamer
+import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableAudioPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableAudioPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVideoPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVideoPipelineOutputInternal
-import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineEventOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutput
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
-import io.github.thibaultbee.streampack.core.streamers.single.open
-import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import kotlinx.coroutines.flow.StateFlow
-import androidx.core.net.toUri
 
 /**
  * An output component for a streamer.
  */
-interface IEncodingPipelineOutput : IPipelineOutput {
+interface IEncodingPipelineOutput : IPipelineOutput, IOpenableStreamer {
     /**
      * Advanced settings for the endpoint.
      */
     val endpoint: IEndpoint
-
-    /**
-     * Returns true if output is opened.
-     * For example, if the streamer is connected to a server if the endpoint is SRT or RTMP.
-     */
-    val isOpenFlow: StateFlow<Boolean>
-
-    /**
-     * Opens the streamer output.
-     *
-     * @param descriptor Media descriptor to open
-     */
-    suspend fun open(descriptor: MediaDescriptor)
-
-    /**
-     * Closes the streamer output.
-     */
-    suspend fun close()
 
     /**
      * Adds a bitrate regulator controller to the streamer.
@@ -73,79 +51,10 @@ interface IEncodingPipelineOutput : IPipelineOutput {
 }
 
 /**
- * Opens the streamer endpoint.
- *
- * @param uri The uri to open
- */
-suspend fun IEncodingPipelineOutput.open(uri: Uri) = open(UriMediaDescriptor(uri))
-
-/**
- * Opens the streamer endpoint.
- *
- * @param uriString The uri to open
- */
-suspend fun IEncodingPipelineOutput.open(uriString: String) =
-    open(UriMediaDescriptor(uriString.toUri()))
-
-
-/**
- * Starts audio/video stream.
- *
- * Same as doing [open] and [startStream].
- *
- * @param descriptor The media descriptor to open
- * @see [IEncodingPipelineOutput.stopStream]
- */
-suspend fun IEncodingPipelineOutput.startStream(descriptor: MediaDescriptor) {
-    open(descriptor)
-    try {
-        startStream()
-    } catch (t: Throwable) {
-        close()
-        throw t
-    }
-}
-
-/**
- * Starts audio/video stream.
- *
- * Same as doing [open] and [startStream].
- *
- * @param uri The uri to open
- * @see [IEncodingPipelineOutput.stopStream]
- */
-suspend fun IEncodingPipelineOutput.startStream(uri: Uri) {
-    open(uri)
-    try {
-        startStream()
-    } catch (t: Throwable) {
-        close()
-        throw t
-    }
-}
-
-/**
- * Starts audio/video stream.
- *
- * Same as doing [open] and [startStream].
- *
- * @param uriString The uri to open
- * @see [IEncodingPipelineOutput.stopStream]
- */
-suspend fun IEncodingPipelineOutput.startStream(uriString: String) {
-    open(uriString)
-    try {
-        startStream()
-    } catch (t: Throwable) {
-        close()
-        throw t
-    }
-}
-
-/**
  * A configurable audio output component for a pipeline.
  */
-interface IConfigurableAudioEncodingPipelineOutput : IConfigurableAudioPipelineOutput {
+interface IConfigurableAudioEncodingPipelineOutput : IEncodingPipelineOutput,
+    IConfigurableAudioPipelineOutput {
     /**
      * The audio configuration flow.
      */
@@ -169,7 +78,8 @@ interface IConfigurableAudioEncodingPipelineOutput : IConfigurableAudioPipelineO
 /**
  * A configurable video output component for a pipeline.
  */
-interface IConfigurableVideoEncodingPipelineOutput : IConfigurableVideoPipelineOutput {
+interface IConfigurableVideoEncodingPipelineOutput : IEncodingPipelineOutput,
+    IConfigurableVideoPipelineOutput, IWithVideoRotation {
     /**
      * The video configuration flow.
      */
@@ -190,10 +100,10 @@ interface IConfigurableVideoEncodingPipelineOutput : IConfigurableVideoPipelineO
     suspend fun setVideoCodecConfig(videoCodecConfig: VideoCodecConfig)
 }
 
-interface IConfigurableEncodingPipelineOutput : IEncodingPipelineOutput,
+interface IConfigurableAudioVideoEncodingPipelineOutput :
     IConfigurableAudioEncodingPipelineOutput, IConfigurableVideoEncodingPipelineOutput
 
-internal interface IEncodingPipelineOutputInternal : IConfigurableEncodingPipelineOutput,
+internal interface IEncodingPipelineOutputInternal : IConfigurableAudioVideoEncodingPipelineOutput,
     IConfigurableAudioPipelineOutputInternal,
     IConfigurableVideoPipelineOutputInternal,
     IPipelineEventOutputInternal

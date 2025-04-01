@@ -13,42 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.streamers.single
+package io.github.thibaultbee.streampack.core.streamers.dual
 
 import android.content.Context
-import android.content.Intent
-import android.media.projection.MediaProjectionManager
 import android.view.Surface
-import androidx.activity.ComponentActivity
-import androidx.activity.result.ActivityResult
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
-import io.github.thibaultbee.streampack.core.interfaces.IWithAudioSource
-import io.github.thibaultbee.streampack.core.streamers.IVideoStreamer
 
 /**
- * Creates a [SingleStreamer] with the screen as video source and an audio source (by default, the microphone).
+ * Creates a [DualStreamer] with the screen as video source and an audio source (by default, the microphone).
  *
  * @param context the application context
  * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory. If set to null, you will have to set it later explicitly.
- * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param firstEndpointFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
+ * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-suspend fun ScreenRecorderSingleStreamer(
+suspend fun ScreenRecorderDualStreamer(
     context: Context,
     audioSourceFactory: IAudioSourceInternal.Factory? = MicrophoneSourceFactory(),
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
-): SingleStreamer {
-    val streamer = SingleStreamer(
+): DualStreamer {
+    val streamer = DualStreamer(
         context = context,
-        endpointFactory = endpointFactory,
+        firstEndpointFactory = firstEndpointFactory,
+        secondEndpointFactory = secondEndpointFactory,
         withAudio = true,
         defaultRotation = defaultRotation
     )
@@ -60,46 +56,25 @@ suspend fun ScreenRecorderSingleStreamer(
 }
 
 /**
- * Creates a [SingleStreamer] with the screen as video source and no audio source.
+ * Creates a [DualStreamer] with the screen as video source and no audio source.
  *
  * @param context the application context
- * @param endpointFactory the [IEndpointInternal.Factory] implementation
+ * @param firstEndpointFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
+ * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-suspend fun ScreenRecorderVideoOnlySingleStreamer(
+suspend fun ScreenRecorderVideoOnlyDualStreamer(
     context: Context,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
-): VideoOnlySingleStreamer {
-    val streamer = VideoOnlySingleStreamer(
+): VideoOnlyDualStreamer {
+    val streamer = VideoOnlyDualStreamer(
         context = context,
-        endpointFactory = endpointFactory,
+        firstEndpointFactory = firstEndpointFactory,
+        secondEndpointFactory = secondEndpointFactory,
         defaultRotation = defaultRotation
     )
     streamer.setVideoSource(MediaProjectionVideoSourceFactory())
     return streamer
 }
-
-/**
- * Sets activity result from [ComponentActivity.registerForActivityResult] callback.
- */
-fun IVideoStreamer<*>.setActivityResult(activityResult: ActivityResult) {
-    val videoSource = videoSourceFlow.value
-    if (videoSource !is IMediaProjectionSource) {
-        throw IllegalStateException("Video source must be a MediaProjectionVideoSource")
-    }
-    videoSource.activityResult = activityResult
-    if (this is IWithAudioSource) {
-        if (audioSourceFlow.value is IMediaProjectionSource) {
-            (audioSourceFlow.value as IMediaProjectionSource).activityResult = activityResult
-        }
-    }
-}
-
-/**
- * Creates a screen recorder intent.
- */
-fun createScreenRecorderIntent(context: Context): Intent =
-    (context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager).run {
-        createScreenCaptureIntent()
-    }

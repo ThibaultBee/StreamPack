@@ -34,8 +34,8 @@ import io.github.thibaultbee.streampack.app.R
 import io.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import io.github.thibaultbee.streampack.app.utils.DialogUtils
 import io.github.thibaultbee.streampack.app.utils.PermissionManager
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
+import io.github.thibaultbee.streampack.core.interfaces.IStreamer
+import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.streamers.lifecycle.StreamerViewModelLifeCycleObserver
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.ui.views.PreviewView
@@ -106,13 +106,13 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
         }
 
         previewViewModel.streamerLiveData.observe(viewLifecycleOwner) { streamer ->
-            if (streamer is ICoroutineStreamer) {
+            if (streamer is IStreamer) {
                 // TODO: Remove this observer when streamer is released
                 lifecycle.addObserver(StreamerViewModelLifeCycleObserver(streamer))
             } else {
                 Log.e(TAG, "Streamer is not a ICoroutineStreamer")
             }
-            if (streamer is IVideoStreamer) {
+            if (streamer is IWithVideoSource) {
                 inflateStreamerPreview(streamer)
             } else {
                 Log.e(TAG, "Can't start preview, streamer is not a IVideoStreamer")

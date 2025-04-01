@@ -1,11 +1,10 @@
 package io.github.thibaultbee.streampack.core.streamer.utils
 
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.startStream
+import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
+import io.github.thibaultbee.streampack.core.interfaces.startStream
 import io.github.thibaultbee.streampack.core.streamers.dual.DualStreamer
-import io.github.thibaultbee.streampack.core.streamers.interfaces.ICoroutineStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.startStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -39,7 +38,7 @@ object StreamerUtils {
     }
 
     private suspend fun runStream(
-        streamer: ICoroutineStreamer,
+        streamer: ICloseableStreamer,
         duration: Duration,
         pollDuration: Duration = 1.seconds
     ) {

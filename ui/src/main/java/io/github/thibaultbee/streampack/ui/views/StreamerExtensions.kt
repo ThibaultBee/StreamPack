@@ -4,7 +4,7 @@ import android.util.Size
 import androidx.camera.viewfinder.CameraViewfinder
 import androidx.camera.viewfinder.core.ViewfinderSurfaceRequest
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
-import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
+import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 
 /**
  * Set preview on a [CameraViewfinder]
@@ -14,7 +14,7 @@ import io.github.thibaultbee.streampack.core.streamers.interfaces.IVideoStreamer
  * @return The [ViewfinderSurfaceRequest] used to set the preview. Use it to call [ViewfinderSurfaceRequest.markSurfaceSafeToRelease].
  * @throws [IllegalStateException] if the video source is not previewable
  */
-suspend fun IVideoStreamer.setPreview(
+suspend fun IWithVideoSource.setPreview(
     viewfinder: CameraViewfinder,
     previewSize: Size
 ): ViewfinderSurfaceRequest {
@@ -28,10 +28,10 @@ suspend fun IVideoStreamer.setPreview(
  *
  * @param viewfinder The [CameraViewfinder] to set as preview
  * @param previewSize The size of the preview
- * @return The [ViewfinderSurfaceRequest] used to set the preview. Use it to call [ViewfinderSurfaceRequest.markSurfaceSafeToRelease] after [IVideoStreamer.stopPreview].
+ * @return The [ViewfinderSurfaceRequest] used to set the preview. Use it to call [ViewfinderSurfaceRequest.markSurfaceSafeToRelease] after [IWithVideoSource.stopPreview].
  * @throws [IllegalStateException] if the video source is not previewable
  */
-suspend fun IVideoStreamer.startPreview(
+suspend fun IWithVideoSource.startPreview(
     viewfinder: CameraViewfinder,
     previewSize: Size
 ): ViewfinderSurfaceRequest {
