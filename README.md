@@ -84,12 +84,11 @@ minutes, you will be able to stream live video to your server.
    incl. encoding, muxing, sending).
    Multiple streamers are available depending on the number of independent outputs you want to
    have:
-    - `SingleStreamer`: for a single output (live or record)
-    - `DualStreamer`: for 2 independent outputs (live and record/record audio in file and video
-      in
+    - `SingleStreamer`: for a single output (such as live or record)
+    - `DualStreamer`: for 2 independent outputs (such as independent live and record)
+    - for multiple outputs, you can use the `StreamerPipeline` class that allows to create more
+      complex pipeline with multiple independent outputs (such as audio in one file, video in
       another file)
-    - for multiple outputs, you can use the `StreamerPipeline` class that allows to create a
-      custom pipeline with multiple independent outputs.
 
    The `SingleStreamer` and the `DualStreamer` comes with factory for `Camera` and
    `ScreenRecorder`.

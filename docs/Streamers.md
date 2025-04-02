@@ -8,12 +8,10 @@ responsible for controlling the audio and video sources, encoders, and endpoint.
 Multiple streamers are available depending on the number of independent outputs you want to
 have:
 
-- `SingleStreamer`: for a single output (live or record)
-- `DualStreamer`: for 2 independent outputs (live and record/record audio in file and video
-  in
-  another file)
-- for multiple outputs, you can use the `StreamerPipeline` class that allows to create a
-  custom pipeline with multiple independent outputs.
+- `SingleStreamer`: for a single output (example: live or record)
+- `DualStreamer`: for 2 independent outputs (example: live stream and record)
+- for multiple outputs, you can use the `StreamerPipeline` class that allows to create more complex
+  pipeline with multiple independent outputs (example: audio in one file, video in another file)
 
 ## Single streamers
 
@@ -70,6 +68,40 @@ The implementation is the `DualStreamer`. Underneath, it is `StreamerPipeline` w
 
 The `StreamerPipeline` offers a way to create a custom pipeline with multiple independent outputs.
 Add an `EncodingOutput` to the pipeline with `createOutput` method.
+
+There are currently no limitations on the number of outputs you can create but be careful with the
+number of encoders you create. Each encoder will use CPU and memory resources.
+
+```kotlin
+// In this example, we create a streamer pipeline with 2 outputs: one for audio and one for video
+val streamerPipeline = StreamerPipeline(context, withAudio = true, withVideo = true)
+
+// Add sources
+streamerPipeline.setAudioSource(MicrophoneSourceFactory())
+streamerPipeline.setVideoSource(CameraSourceFactory())
+
+// Add outputs
+val audioOnlyOutput =
+    streamerPipeline.createEncodingOutput(withVideo = false) as IConfigurableAudioEncodingPipelineOutput
+val videoOnlyOutput =
+    streamerPipeline.createEncodingOutput(withAudio = false) as IConfigurableVideoEncodingPipelineOutput
+
+// Configure outputs
+val audioConfig = AudioCodecConfig(mimeType = MediaFormat.MIMETYPE_AUDIO_OPUS)
+val videoConfig = VideoCodecConfig(
+    mimeType = MediaFormat.MIMETYPE_VIDEO_AVC,
+    resolution = Size(VIDEO_WIDTH, VIDEO_HEIGHT)
+)
+
+audioOnlyOutput.setAudioCodecConfig(audioConfig)
+videoOnlyOutput.setVideoCodecConfig(videoConfig)
+
+// Run stream
+val audioOnlyDescriptor = UriMediaDescriptor(FileUtils.createCacheFile("audio.ogg").toUri())
+val videoOnlyDescriptor = UriMediaDescriptor(FileUtils.createCacheFile("video.mp4").toUri())
+audioOnlyOutput.startStream(audioOnlyDescriptor)
+videoOnlyOutput.startStream(videoOnlyDescriptor)
+```
 
 ## Limiting supported protocols
 

@@ -20,6 +20,7 @@ import android.util.Size
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.data.ICloseableFrame
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
+import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.AbstractSurfaceOutput
@@ -55,6 +56,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoAsyncPipeli
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoSurfacePipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.pipelines.utils.SourceConfigUtils
@@ -160,6 +162,8 @@ open class StreamerPipeline(
     }
 
     init {
+        require(withAudio || withVideo) { "At least one of audio or video must be set" }
+
         videoInput?.let { input ->
             coroutineScope.launch {
                 input.infoProviderFlow.collect {
@@ -339,20 +343,42 @@ open class StreamerPipeline(
     /**
      * Creates and adds an output to the pipeline.
      *
+     * @param withAudio whether the output has audio. If the [StreamerPipeline] does not have audio, it will be ignored.
+     * @param withVideo whether the output has video. If the [StreamerPipeline] does not have video, it will be ignored.
      * @param endpointFactory the endpoint factory to add the output to
      * @param targetRotation the target rotation of the output
      *
      * @return the [EncodingPipelineOutput] created
      */
-    fun createOutput(
-        endpointFactory: IEndpointInternal.Factory,
+    fun createEncodingOutput(
+        withAudio: Boolean = this.withAudio,
+        withVideo: Boolean = this.withVideo,
+        endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
         @RotationValue targetRotation: Int = context.displayRotation
-    ): IEncodingPipelineOutput {
+    ): IConfigurableAudioVideoEncodingPipelineOutput {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Pipeline is released")
         }
+        require(withAudio || withVideo) { "At least one of audio or video must be set" }
+        val withAudioCorrected = if (this.withAudio) {
+            withAudio
+        } else {
+            false
+        }
+        val withVideoCorrected = if (this.withVideo) {
+            withVideo
+        } else {
+            false
+        }
+
         val output =
-            EncodingPipelineOutput(context, withAudio, withVideo, endpointFactory, targetRotation)
+            EncodingPipelineOutput(
+                context,
+                withAudioCorrected,
+                withVideoCorrected,
+                endpointFactory,
+                targetRotation
+            )
         return addOutput(output)
     }
 

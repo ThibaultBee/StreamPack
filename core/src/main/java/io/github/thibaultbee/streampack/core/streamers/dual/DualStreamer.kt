@@ -93,7 +93,9 @@ open class DualStreamer(
     )
 
     private val firstPipelineOutput: IEncodingPipelineOutputInternal =
-        pipeline.createOutput(
+        pipeline.createEncodingOutput(
+            withAudio,
+            withVideo,
             firstEndpointFactory,
             defaultRotation
         ) as IEncodingPipelineOutputInternal
@@ -104,7 +106,9 @@ open class DualStreamer(
     override val first = firstPipelineOutput as IConfigurableAudioVideoEncodingPipelineOutput
 
     private val secondPipelineOutput: IEncodingPipelineOutputInternal =
-        pipeline.createOutput(
+        pipeline.createEncodingOutput(
+            withAudio,
+            withVideo,
             secondEndpointFactory,
             defaultRotation
         ) as IEncodingPipelineOutputInternal

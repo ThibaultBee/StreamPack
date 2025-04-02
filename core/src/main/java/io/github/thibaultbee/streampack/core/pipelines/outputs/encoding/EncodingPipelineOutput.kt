@@ -59,7 +59,8 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * An implementation of [IEncodingPipelineOutputInternal] that manages encoding and endpoint.
+ * An implementation of [IEncodingPipelineOutputInternal] that manages encoding and endpoint for
+ * audio and video.
  *
  * @param context The application context
  * @param withAudio whether the output has audio.

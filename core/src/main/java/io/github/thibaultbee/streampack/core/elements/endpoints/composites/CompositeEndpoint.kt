@@ -32,7 +32,7 @@ import kotlinx.coroutines.runBlocking
 /**
  * An [IEndpointInternal] implementation that combines a [IMuxerInternal] and a [ISinkInternal].
  */
-open class CompositeEndpoint(
+class CompositeEndpoint(
     override val muxer: IMuxerInternal,
     override val sink: ISinkInternal
 ) :
