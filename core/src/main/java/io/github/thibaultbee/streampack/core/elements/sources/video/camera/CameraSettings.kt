@@ -23,7 +23,9 @@ import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.CaptureResult
+import android.hardware.camera2.params.ColorSpaceTransform
 import android.hardware.camera2.params.MeteringRectangle
+import android.hardware.camera2.params.RggbChannelVector
 import android.os.Build
 import android.util.Range
 import android.util.Rational
@@ -89,6 +91,11 @@ class CameraSettings(
     val iso = Iso(cameraManager, this)
 
     /**
+     * Current camera color correction API.
+     */
+    val colorCorrection = ColorCorrection(cameraManager, this)
+
+    /**
      * Current camera exposure API.
      */
     val exposure = Exposure(cameraManager, this)
@@ -148,17 +155,17 @@ class CameraSettings(
         private val cameraSettings: CameraSettings
     ) {
         /**
-         * Checks if the current camera has a flash device.
+         * Whether the the current camera has a flash device.
          *
          * @return [Boolean.true] if camera has a flash device, [Boolean.false] otherwise.
          */
-        val available: Boolean
+        val isAvailable: Boolean
             get() = cameraManager.isFlashAvailable(cameraSettings.cameraId)
 
         /**
          * Enables or disables flash.
          *
-         * @see [available]
+         * @see [isAvailable]
          */
         var enable: Boolean
             /**
@@ -300,6 +307,57 @@ class CameraSettings(
             const val DEFAULT_SENSITIVITY = 100
             val DEFAULT_SENSITIVITY_RANGE = Range(DEFAULT_SENSITIVITY, DEFAULT_SENSITIVITY)
         }
+    }
+
+
+    class ColorCorrection(
+        private val cameraManager: CameraManager,
+        private val cameraSettings: CameraSettings
+    ) {
+        /**
+         * Whether the camera supports color correction.
+         *
+         * @return [Boolean.true] if camera has a flash device, [Boolean.false] otherwise.
+         */
+        val isAvailable: Boolean
+            get() {
+                return cameraManager.getCameraCharacteristics(cameraSettings.cameraId)
+                    .get(CameraCharacteristics.COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES)
+                    ?.contains(CaptureRequest.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX) == true
+            }
+
+        /**
+         * Sets or gets color correction gain.
+         *
+         * It will disable auto white balance mode if set.
+         *
+         * @return the color correction gain or null if not set
+         * @see [isAvailable]
+         * @see [WhiteBalance.autoMode]
+         */
+        var rggbChannelVector: RggbChannelVector?
+            get() = cameraSettings.get(CaptureRequest.COLOR_CORRECTION_GAINS)
+            set(value) {
+                cameraSettings.set(
+                    CaptureRequest.CONTROL_AWB_MODE,
+                    CaptureRequest.CONTROL_AWB_MODE_OFF
+                )
+                cameraSettings.set(
+                    CaptureRequest.COLOR_CORRECTION_MODE,
+                    CaptureRequest.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX
+                )
+                // 3*3 identity matrix represented in numerator, denominator format
+                val identityMatrix =
+                    intArrayOf(1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1)
+                cameraSettings.set(
+                    CaptureRequest.COLOR_CORRECTION_TRANSFORM,
+                    ColorSpaceTransform(identityMatrix)
+                )
+                cameraSettings.set(
+                    CaptureRequest.COLOR_CORRECTION_GAINS, value
+                )
+                cameraSettings.applyRepeatingSession()
+            }
     }
 
     class Exposure(
@@ -696,7 +754,7 @@ class CameraSettings(
          */
         var enableVideo: Boolean
             /**
-             * Checks if video stabilization is enabled.
+             * Whether the video stabilization is enabled.
              *
              * @return [Boolean.true] if video stabilization is enabled, otherwise [Boolean.false]
              */
@@ -722,13 +780,13 @@ class CameraSettings(
             }
 
         /**
-         * Check if optical video stabilization is available.
+         * Whether the optical video stabilization is available.
          *
          * @return [Boolean.true] if optical video stabilization is supported, otherwise [Boolean.false]
          *
          * @see [enableOptical]
          */
-        val availableOptical: Boolean
+        val isOpticalAvailable: Boolean
             get() = cameraManager.isOpticalStabilizationAvailable(
                 cameraSettings.cameraId
             )
@@ -739,11 +797,11 @@ class CameraSettings(
          *
          * Do not enable both [enableVideo] and [enableOptical] at the same time.
          *
-         * @see [availableOptical]
+         * @see [isOpticalAvailable]
          */
         var enableOptical: Boolean
             /**
-             * Checks if optical video stabilization is enabled.
+             * Whether the optical video stabilization is enabled.
              *
              * @return [Boolean.true] if optical video stabilization is enabled, otherwise [Boolean.false]
              */

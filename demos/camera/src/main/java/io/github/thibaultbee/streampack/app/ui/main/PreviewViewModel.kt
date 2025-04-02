@@ -445,7 +445,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         // Set optical stabilization first
         // Do not set both video and optical stabilization at the same time
         if (settings.isAvailableFlow.value) {
-            if (settings.stabilization.availableOptical) {
+            if (settings.stabilization.isOpticalAvailable) {
                 settings.stabilization.enableOptical = true
             } else {
                 settings.stabilization.enableVideo = true
@@ -453,7 +453,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         }
 
         // Flash
-        isFlashAvailable.postValue(settings.flash.available)
+        isFlashAvailable.postValue(settings.flash.isAvailable)
 
         // WB
         isAutoWhiteBalanceAvailable.postValue(settings.whiteBalance.availableAutoModes.size > 1)
