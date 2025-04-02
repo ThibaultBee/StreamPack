@@ -85,6 +85,15 @@ open class AudioCodecConfig(
         if (mimeType == MediaFormat.MIMETYPE_AUDIO_AAC_HE_V2) {
             require(channelConfig == AudioFormat.CHANNEL_IN_STEREO) { "AAC_HE_V2 only supports stereo" }
         }
+        if (mimeType == MediaFormat.MIMETYPE_AUDIO_OPUS) {
+            require(opusSupportedSamplingRate.contains(sampleRate)) {
+                " Opus only supports ${
+                    opusSupportedSamplingRate.joinToString(
+                        ", "
+                    )
+                }"
+            }
+        }
     }
 
     /**
@@ -156,6 +165,14 @@ open class AudioCodecConfig(
 
     companion object {
         private const val MIMETYPE_AAC_PREFIX = "audio/mp4a"
+
+        private val opusSupportedSamplingRate = intArrayOf(
+            8000,
+            12000,
+            16000,
+            24000,
+            48000
+        )
 
         internal fun isAacMimeType(mimeType: String) = mimeType.startsWith(MIMETYPE_AAC_PREFIX)
 
