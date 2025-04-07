@@ -22,9 +22,11 @@ import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Handler
 import android.os.HandlerThread
+import android.util.Size
 import android.view.Surface
 import androidx.activity.result.ActivityResult
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
+import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
@@ -39,7 +41,8 @@ internal class MediaProjectionVideoSource(
     private val context: Context
 ) : IVideoSourceInternal, ISurfaceSourceInternal, IMediaProjectionSource {
     override val timestampOffsetInNs = 0L
-    override val infoProviderFlow = MutableStateFlow(DefaultSourceInfoProvider()).asStateFlow()
+    override val infoProviderFlow =
+        MutableStateFlow(FullScreenInfoProvider(context) as ISourceInfoProvider).asStateFlow()
 
     private val _isStreamingFlow = MutableStateFlow(false)
     override val isStreamingFlow = _isStreamingFlow.asStateFlow()
@@ -134,6 +137,14 @@ internal class MediaProjectionVideoSource(
             virtualDisplayThread.join()
         } catch (e: InterruptedException) {
             e.printStackTrace()
+        }
+    }
+
+    private inner class FullScreenInfoProvider(private val context: Context) :
+        DefaultSourceInfoProvider() {
+        override fun getSurfaceSize(size: Size): Size {
+            val screenRect = context.screenRect
+            return Size(screenRect.width(), screenRect.height())
         }
     }
 

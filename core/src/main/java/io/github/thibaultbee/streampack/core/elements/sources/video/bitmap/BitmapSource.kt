@@ -19,8 +19,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Size
 import android.view.Surface
-import androidx.core.graphics.scale
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
+import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.AbstractPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
@@ -41,7 +41,8 @@ internal class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSo
     ISurfaceSourceInternal,
     IBitmapSource {
     override val timestampOffsetInNs = 0L
-    override val infoProviderFlow = MutableStateFlow(DefaultSourceInfoProvider()).asStateFlow()
+    override val infoProviderFlow =
+        MutableStateFlow(SourceInfoProvider() as ISourceInfoProvider).asStateFlow()
 
     private var videoSourceConfig: VideoSourceConfig? = null
 
@@ -59,8 +60,6 @@ internal class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSo
 
     private val _isPreviewingFlow = MutableStateFlow(false)
     override val isPreviewingFlow = _isPreviewingFlow.asStateFlow()
-
-    private var scaledBitmap: Bitmap? = null
 
     /**
      * Gets the size of the bitmap.
@@ -114,16 +113,12 @@ internal class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSo
 
     override suspend fun configure(config: VideoSourceConfig) {
         videoSourceConfig = config
-
-        scaledBitmap?.recycle()
-        scaledBitmap = bitmap.scale(config.resolution.width, config.resolution.height)
     }
 
     override suspend fun startStream() {
         val sourceConfig =
             requireNotNull(videoSourceConfig) { "Video source must be configured before starting stream" }
         requireNotNull(outputSurface) { "Output surface must be set before starting stream" }
-        requireNotNull(scaledBitmap) { "Bitmap must be set before starting stream" }
 
         _isStreamingFlow.emit(true)
         outputScheduler = outputExecutor.scheduleWithFixedDelay(
@@ -140,14 +135,13 @@ internal class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSo
     }
 
     override fun release() {
-        scaledBitmap?.recycle()
         outputExecutor.shutdown()
         previewExecutor.shutdown()
     }
 
     private fun drawOutput() {
         outputSurface?.let {
-            scaledBitmap?.let { bitmap ->
+            bitmap.let { bitmap ->
                 val canvas = it.lockCanvas(null)
                 canvas.drawBitmap(bitmap, 0f, 0f, null)
                 it.unlockCanvasAndPost(canvas)
@@ -160,6 +154,12 @@ internal class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSo
             val canvas = it.lockCanvas(null)
             canvas.drawBitmap(bitmap, 0f, 0f, null)
             it.unlockCanvasAndPost(canvas)
+        }
+    }
+
+    private inner class SourceInfoProvider : DefaultSourceInfoProvider(rotationDegrees = 0) {
+        override fun getSurfaceSize(size: Size): Size {
+            return Size(bitmap.width, bitmap.height)
         }
     }
 }
