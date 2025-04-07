@@ -45,13 +45,13 @@ import io.github.thibaultbee.streampack.core.streamers.dual.DualStreamerVideoCon
 import io.github.thibaultbee.streampack.core.streamers.dual.IAudioDualStreamer
 import io.github.thibaultbee.streampack.core.streamers.dual.IDualStreamer
 import io.github.thibaultbee.streampack.core.streamers.dual.IVideoDualStreamer
+import io.github.thibaultbee.streampack.core.streamers.extensions.setActivityResult
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
-import io.github.thibaultbee.streampack.core.streamers.single.createScreenRecorderIntent
-import io.github.thibaultbee.streampack.core.streamers.single.setActivityResult
+import io.github.thibaultbee.streampack.core.streamers.utils.ScreenRecorderUtils
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import io.github.thibaultbee.streampack.screenrecorder.databinding.ActivityMainBinding
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity() {
             showPermissionAlertDialog(this) { this.finish() }
         } else {
             getContent.launch(
-                createScreenRecorderIntent(
+                ScreenRecorderUtils.createScreenRecorderIntent(
                     this
                 )
             )

@@ -22,14 +22,14 @@ import android.os.Bundle
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.core.streamers.IVideoStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.ScreenRecorderSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.screenRecorderSingleStreamer
 import io.github.thibaultbee.streampack.screenrecorder.R
 import io.github.thibaultbee.streampack.screenrecorder.models.Actions
 import io.github.thibaultbee.streampack.services.DefaultScreenRecorderService
 import kotlinx.coroutines.launch
 
 /**
- * A dummy [DefaultScreenRecorderService] to demonstrate how to create a custom [ScreenRecorderSingleStreamer].
+ * A dummy [DefaultScreenRecorderService] to demonstrate how to create a custom [screenRecorderSingleStreamer].
  */
 class DemoScreenRecorderService : DefaultScreenRecorderService(
     notificationId = 0x4569,
@@ -51,7 +51,7 @@ class DemoScreenRecorderService : DefaultScreenRecorderService(
     }
 
     /**
-     * Create a [ScreenRecorderSingleStreamer] with the custom [Bundle].
+     * Create a [screenRecorderSingleStreamer] with the custom [Bundle].
      */
     override suspend fun createStreamer(customBundle: Bundle): IVideoStreamer<*> {
         val streamer = super.createStreamer(customBundle)

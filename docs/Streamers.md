@@ -49,7 +49,7 @@ AudioSource --> audio
 
 - `AudioOnlySingleStreamer`: A streamer that streams from an audio source (microphone by default).
 - `VideoOnlySingleStreamer`: A streamer that streams from a video source (microphone by default).
-- `CameraSingleStreamer`: A factory to create a streamer with a camera source.
+- `cameraSingleStreamer`: A factory to create a streamer with a camera source.
 - `ScreenRecorderSingleStreamer`: A factory to create a streamer with a media projection video
   source. You need to set activity result.
 

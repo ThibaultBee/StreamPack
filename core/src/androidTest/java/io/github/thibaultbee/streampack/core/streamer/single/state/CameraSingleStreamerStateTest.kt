@@ -27,7 +27,7 @@ import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreame
 import io.github.thibaultbee.streampack.core.streamer.surface.SurfaceUtils
 import io.github.thibaultbee.streampack.core.streamer.surface.SurfaceViewTestActivity
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
-import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.cameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.runBlocking
@@ -38,11 +38,11 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
-class CameraSingleStreamerStateTest(descriptor: MediaDescriptor) :
+class cameraSingleStreamerStateTest(descriptor: MediaDescriptor) :
     SingleStreamerStateTest(
         descriptor
     ) {
-    override val streamer by lazy { runBlocking { CameraSingleStreamer(context) } }
+    override val streamer by lazy { runBlocking { cameraSingleStreamer(context) } }
 
     override val audioConfig: AudioConfig by lazy { audioConfig(descriptor) }
     override val videoConfig: VideoConfig by lazy { videoConfig(descriptor) }

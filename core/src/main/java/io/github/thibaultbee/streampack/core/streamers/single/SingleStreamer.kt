@@ -26,11 +26,15 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointF
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
+import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.combineStates
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
@@ -38,6 +42,60 @@ import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfi
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.StreamerConfigurationInfo
 import kotlinx.coroutines.flow.StateFlow
+
+
+/**
+ * Creates a [SingleStreamer] with the camera as video source and an audio source (by default, the microphone).
+ *
+ * @param context the application context
+ * @param cameraId the camera id to use. By default, it is the default camera.
+ * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory. If set to null, you will have to set it later explicitly.
+ * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ */
+suspend fun cameraSingleStreamer(
+    context: Context,
+    cameraId: String = context.defaultCameraId,
+    audioSourceFactory: IAudioSourceInternal.Factory? = MicrophoneSourceFactory(),
+    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    @RotationValue defaultRotation: Int = context.displayRotation
+): SingleStreamer {
+    val streamer = SingleStreamer(
+        context, withAudio = true, withVideo = true, endpointFactory, defaultRotation
+    )
+    streamer.setCameraId(cameraId)
+    if (audioSourceFactory != null) {
+        streamer.setAudioSource(audioSourceFactory)
+    }
+    return streamer
+}
+
+/**
+ * Creates a [SingleStreamer] with the screen as video source and an audio source (by default, the microphone).
+ *
+ * @param context the application context
+ * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory. If set to null, you will have to set it later explicitly.
+ * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ */
+suspend fun screenRecorderSingleStreamer(
+    context: Context,
+    audioSourceFactory: IAudioSourceInternal.Factory? = MicrophoneSourceFactory(),
+    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    @RotationValue defaultRotation: Int = context.displayRotation
+): SingleStreamer {
+    val streamer = SingleStreamer(
+        context = context,
+        endpointFactory = endpointFactory,
+        withAudio = true,
+        defaultRotation = defaultRotation
+    )
+    streamer.setVideoSource(MediaProjectionVideoSourceFactory())
+    if (audioSourceFactory != null) {
+        streamer.setAudioSource(audioSourceFactory)
+    }
+    return streamer
+}
 
 /**
  * Creates a [SingleStreamer] with an audio source and a video source.

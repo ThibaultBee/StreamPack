@@ -20,13 +20,13 @@ import android.util.Range
 import android.util.Size
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
-import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.cameraSingleStreamer
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.get10BitSupportedProfiles
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraFps
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraOutputStreamSizes
 
 /**
- * Configuration infos\ for [CameraSingleStreamer].
+ * Configuration infos\ for [cameraSingleStreamer].
  * It wraps supported values from MediaCodec, Camera and TS Muxer.
  */
 open class CameraStreamerConfigurationInfo(endpointInfo: IEndpoint.IEndpointInfo) :
@@ -54,7 +54,7 @@ class VideoCameraStreamerConfigurationInfo(videoEndpointInfo: IEndpoint.IEndpoin
     }
 
     /**
-     * Get supported framerate for a [CameraSingleStreamer].
+     * Get supported framerate for a [cameraSingleStreamer].
      *
      * @param context application context
      * @param mimeType video encoder mime type
@@ -71,7 +71,7 @@ class VideoCameraStreamerConfigurationInfo(videoEndpointInfo: IEndpoint.IEndpoin
     }
 
     /**
-     * Get supported 8-bit and 10-bit profiles for a [CameraSingleStreamer].
+     * Get supported 8-bit and 10-bit profiles for a [cameraSingleStreamer].
      *
      * @param context application context
      * @param mimeType video encoder mime type

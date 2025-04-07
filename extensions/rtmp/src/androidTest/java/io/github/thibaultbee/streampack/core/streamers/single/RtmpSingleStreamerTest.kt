@@ -54,7 +54,7 @@ class RtmpSingleStreamerTest {
 
         try {
             // Run live stream
-            val streamer = CameraSingleStreamer(context)
+            val streamer = cameraSingleStreamer(context)
             streamer.setConfig(
                 AudioConfig(),
                 VideoConfig(startBitrate = 500_000, resolution = Size(VIDEO_WIDTH, VIDEO_HEIGHT))

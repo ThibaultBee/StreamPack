@@ -20,9 +20,60 @@ import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
+import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
+
+
+/**
+ * Creates a [VideoOnlyDualStreamer] with the camera as video source and no audio source.
+ *
+ * @param context the application context
+ * @param cameraId the camera id to use. By default, it is the default camera.
+ * @param firstEndpointFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
+ * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ */
+suspend fun cameraVideoOnlyDualStreamer(
+    context: Context,
+    cameraId: String = context.defaultCameraId,
+    firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    @RotationValue defaultRotation: Int = context.displayRotation
+): VideoOnlyDualStreamer {
+    val streamer = VideoOnlyDualStreamer(
+        context, firstEndpointFactory, secondEndpointFactory, defaultRotation
+    )
+    streamer.setCameraId(cameraId)
+    return streamer
+}
+
+/**
+ * Creates a [DualStreamer] with the screen as video source and no audio source.
+ *
+ * @param context the application context
+ * @param firstEndpointFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
+ * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ */
+suspend fun screenRecorderVideoOnlyDualStreamer(
+    context: Context,
+    firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    @RotationValue defaultRotation: Int = context.displayRotation
+): VideoOnlyDualStreamer {
+    val streamer = VideoOnlyDualStreamer(
+        context = context,
+        firstEndpointFactory = firstEndpointFactory,
+        secondEndpointFactory = secondEndpointFactory,
+        defaultRotation = defaultRotation
+    )
+    streamer.setVideoSource(MediaProjectionVideoSourceFactory())
+    return streamer
+}
 
 /**
  * Creates a [VideoOnlyDualStreamer] with a default video source.

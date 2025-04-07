@@ -30,7 +30,7 @@ import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.streamer.dual.utils.DualStreamerConfigUtils
 import io.github.thibaultbee.streampack.core.streamer.utils.StreamerUtils
 import io.github.thibaultbee.streampack.core.streamer.utils.VideoUtils
-import io.github.thibaultbee.streampack.core.streamers.dual.CameraDualStreamer
+import io.github.thibaultbee.streampack.core.streamers.dual.cameraDualStreamer
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.runBlocking
@@ -54,17 +54,17 @@ class CameraDualStreamerFileTest(
     private val streamer by lazy {
         runBlocking {
             if (firstEndpointFactory != null && secondEndpointFactory != null) {
-                CameraDualStreamer(
+                cameraDualStreamer(
                     context,
                     firstEndpointFactory = firstEndpointFactory,
                     secondEndpointFactory = secondEndpointFactory
                 )
             } else if (firstEndpointFactory != null) {
-                CameraDualStreamer(context, firstEndpointFactory = firstEndpointFactory)
+                cameraDualStreamer(context, firstEndpointFactory = firstEndpointFactory)
             } else if (secondEndpointFactory != null) {
-                CameraDualStreamer(context, secondEndpointFactory = secondEndpointFactory)
+                cameraDualStreamer(context, secondEndpointFactory = secondEndpointFactory)
             } else {
-                CameraDualStreamer(context)
+                cameraDualStreamer(context)
             }
         }
     }

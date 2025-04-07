@@ -40,8 +40,8 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.streamers.IVideoStreamer
 import io.github.thibaultbee.streampack.core.streamers.orientation.IRotationProvider
 import io.github.thibaultbee.streampack.core.streamers.orientation.SensorRotationProvider
-import io.github.thibaultbee.streampack.core.streamers.single.ScreenRecorderSingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.ScreenRecorderVideoOnlySingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.screenRecorderSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.screenRecorderVideoOnlySingleStreamer
 import io.github.thibaultbee.streampack.services.utils.NotificationUtils
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
@@ -170,11 +170,11 @@ abstract class DefaultScreenRecorderService(
         }
 
         return if (enableMicrophone) {
-            ScreenRecorderSingleStreamer(
+            screenRecorderSingleStreamer(
                 applicationContext,
             )
         } else {
-            ScreenRecorderVideoOnlySingleStreamer(
+            screenRecorderVideoOnlySingleStreamer(
                 applicationContext
             )
         }

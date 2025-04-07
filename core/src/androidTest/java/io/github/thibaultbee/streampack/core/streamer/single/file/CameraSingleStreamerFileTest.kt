@@ -30,7 +30,7 @@ import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreamerConfigUtils
 import io.github.thibaultbee.streampack.core.streamer.utils.StreamerUtils
 import io.github.thibaultbee.streampack.core.streamer.utils.VideoUtils
-import io.github.thibaultbee.streampack.core.streamers.single.CameraSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.cameraSingleStreamer
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.runBlocking
@@ -43,7 +43,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @LargeTest
 @RunWith(Parameterized::class)
-class CameraSingleStreamerFileTest(
+class cameraSingleStreamerFileTest(
     private val descriptor: MediaDescriptor,
     private val verify: Boolean,
     endpointFactory: IEndpointInternal.Factory?
@@ -51,9 +51,9 @@ class CameraSingleStreamerFileTest(
     private val streamer by lazy {
         runBlocking {
             if (endpointFactory != null) {
-                CameraSingleStreamer(context, endpointFactory = endpointFactory)
+                cameraSingleStreamer(context, endpointFactory = endpointFactory)
             } else {
-                CameraSingleStreamer(context)
+                cameraSingleStreamer(context)
             }
         }
     }

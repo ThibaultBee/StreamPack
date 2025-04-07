@@ -79,7 +79,7 @@ It is possible to set the audio source and the video source in the `Streamer` ob
 You need the source factory to create the source.
 
 ```kotlin
-val streamer = CameraSingleStreamer()
+val streamer = cameraSingleStreamer()
 streamer.setAudioSource(MicrophoneSourceFactory())
 streamer.setVideoSource(CameraSourceFactory())
 
@@ -305,7 +305,7 @@ On a streamer object, you can retrieve the source object and cast it to the spec
 `audioSource` (an `IAudioSource`) or `videoSource` (an `IVideoSource`).
 
 ```kotlin 
-val streamer = CameraSingleStreamer()
+val streamer = cameraSingleStreamer()
 // Audio source
 streamer.audioSourceFlow.value?.apply {
     if (this is IAudioRecordSource) {
@@ -339,7 +339,7 @@ The encoder object is accessible from the streamer object: `audioEncoder` and `v
 directly as`IEncoder`.
 
 ```kotlin
-val streamer = CameraSingleStreamer()
+val streamer = cameraSingleStreamer()
 // Audio encoder
 streamer.audioEncoder?.apply {
     // Specific audio encoder configuration
@@ -357,7 +357,7 @@ streamer.videoEncoder?.apply {
 The endpoint object is accessible from the streamer object: `endpoint` directly as `IEndpoint`.
 
 ```kotlin
-val streamer = CameraSingleStreamer()
+val streamer = cameraSingleStreamer()
 // Endpoint
 streamer.endpoint.apply {
     // Specific endpoint configuration

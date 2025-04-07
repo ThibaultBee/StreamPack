@@ -103,8 +103,8 @@ minutes, you will be able to stream live video to your server.
      *  viewModelScope.launch {
      *  }
      */
-    val streamer = CameraSingleStreamer(context = requireContext())
-    // To have multiple independent outputs (like for live and record), use a `CameraDualStreamer` or even the `StreamerPipeline`.
+    val streamer = cameraSingleStreamer(context = requireContext())
+    // To have multiple independent outputs (like for live and record), use a `cameraDualStreamer` or even the `StreamerPipeline`.
     // You can also use the `SingleStreamer`or the `DualStreamer` and add later the audio and video source with `setAudioSource` 
     // and `setVideoSource`.
     ```
@@ -114,7 +114,7 @@ minutes, you will be able to stream live video to your server.
 4. Configures audio and video settings
 
     ```kotlin
-    val streamer = CameraSingleStreamer(context = requireContext()) // Already instantiated streamer
+    val streamer = cameraSingleStreamer(context = requireContext()) // Already instantiated streamer
     
     // Creates a new audio and video config
     val audioConfig = AudioCodecConfig(
@@ -139,7 +139,7 @@ minutes, you will be able to stream live video to your server.
 5. Inflates the preview with the streamer
 
     ```kotlin
-    val streamer = CameraSingleStreamer(context = requireContext()) // Already instantiated streamer
+    val streamer = cameraSingleStreamer(context = requireContext()) // Already instantiated streamer
     val preview = findViewById<PreviewView>(R.id.preview) // Already inflated preview
     /**
      * If the preview is a `PreviewView`
@@ -158,7 +158,7 @@ minutes, you will be able to stream live video to your server.
 
     ```kotlin
     // Already instantiated streamer
-    val streamer = CameraSingleStreamer(context = requireContext())
+    val streamer = cameraSingleStreamer(context = requireContext())
     
     // Sets the device orientation
     streamer.setTargetRotation(Surface.ROTATION_90) // Or Surface.ROTATION_0, Surface.ROTATION_180, Surface.ROTATION_270
@@ -172,7 +172,7 @@ minutes, you will be able to stream live video to your server.
       and if orientation is locked, it will return the last known orientation.
 
     ```kotlin
-    val streamer = CameraSingleStreamer(context = requireContext()) // Already instantiated streamer
+    val streamer = cameraSingleStreamer(context = requireContext()) // Already instantiated streamer
     val rotationProvider = SensorRotationProvider(context = requireContext())
     
     // Sets the device orientation
@@ -189,7 +189,7 @@ minutes, you will be able to stream live video to your server.
    You can transform the `RotationProvider` into a `Flow` provider through the `asFlowProvider`.
 
    ```kotlin
-    val streamer = CameraSingleStreamer(context = requireContext()) // Already instantiated streamer
+    val streamer = cameraSingleStreamer(context = requireContext()) // Already instantiated streamer
     val rotationProvider = SensorRotationProvider(context = requireContext())
    
     // For coroutine based
@@ -206,7 +206,7 @@ minutes, you will be able to stream live video to your server.
 
     ```kotlin
     // Already instantiated streamer
-    val streamer = CameraSingleStreamer(context = requireContext())
+    val streamer = cameraSingleStreamer(context = requireContext())
     
     val descriptor =
         UriMediaDescriptor("rtmps://serverip:1935/s/streamKey") // For RTMP/RTMPS. Uri also supports SRT url, file path, content path,...
@@ -225,7 +225,7 @@ minutes, you will be able to stream live video to your server.
 
     ```kotlin
     // Already instantiated streamer
-    val streamer = CameraSingleStreamer(context = requireContext())
+    val streamer = cameraSingleStreamer(context = requireContext())
     
     streamer.stopStream()
     streamer.close() // Disconnect from server or close the file
@@ -254,10 +254,10 @@ For a complete example, check out the [demos/camera](demos/camera) directory.
 4. Creates a screen record `Intent` and requests the activity result
 
     ```kotlin
-    ScreenRecorderSingleStreamer.createScreenRecorderIntent(context = requireContext())
+    ScreenRecorderUtils.createScreenRecorderIntent(context = requireContext())
     ```
 
-4. Starts the service
+5. Starts the service
 
     ```kotlin
     DefaultScreenRecorderService.launch(
