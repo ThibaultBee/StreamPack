@@ -135,7 +135,8 @@ internal class EncodingPipelineOutput(
      * The target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
      */
     @RotationValue
-    private var currentTargetRotation = defaultRotation
+    override var targetRotation = defaultRotation
+        private set
 
     /**
      * Sets the target rotation..
@@ -345,7 +346,7 @@ internal class EncodingPipelineOutput(
     private fun applyVideoCodecConfig(videoConfig: VideoCodecConfig) {
         try {
             videoEncoderInternal = buildAndConfigureVideoEncoder(
-                videoConfig, currentTargetRotation
+                videoConfig, targetRotation
             )
         } catch (t: Throwable) {
             videoEncoderInternal?.release()
@@ -456,7 +457,7 @@ internal class EncodingPipelineOutput(
                  * We need to get oriented size for the muxer.
                  * For example, the [FlvMuxer] `onMetaData` event needs to know the oriented size.
                  */
-                it.rotateFromNaturalOrientation(context, currentTargetRotation).apply {
+                it.rotateFromNaturalOrientation(context, targetRotation).apply {
                     streams.add(this)
                 }
             }
@@ -696,8 +697,8 @@ internal class EncodingPipelineOutput(
      * @return true if the target rotation has changed
      */
     private fun shouldUpdateRotation(@RotationValue newTargetRotation: Int): Boolean {
-        return if (currentTargetRotation != newTargetRotation) {
-            currentTargetRotation = newTargetRotation
+        return if (targetRotation != newTargetRotation) {
+            targetRotation = newTargetRotation
             true
         } else {
             false

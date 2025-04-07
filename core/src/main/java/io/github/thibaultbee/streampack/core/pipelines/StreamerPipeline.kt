@@ -141,8 +141,6 @@ open class StreamerPipeline(
     private val outputMapMutex = Mutex()
     private val outputs = hashMapOf<IPipelineOutput, CoroutineScope>()
 
-    private var targetRotation: Int = context.displayRotation
-
     /**
      * Sets the target rotation of all outputs.
      */
@@ -158,7 +156,6 @@ open class StreamerPipeline(
             outputs.keys.filterIsInstance<IVideoSurfacePipelineOutputInternal>()
                 .forEach { it.setTargetRotation(rotation) }
         }
-        targetRotation = rotation
     }
 
     init {
@@ -286,6 +283,7 @@ open class StreamerPipeline(
                     buildSurfaceOutput(
                         surfaceWithSize.surface,
                         surfaceWithSize.resolution,
+                        videoOutput.targetRotation,
                         videoOutput::isStreaming,
                         input.infoProviderFlow.value
                     )
@@ -301,11 +299,13 @@ open class StreamerPipeline(
      *
      * @param surface the encoder surface
      * @param resolution the resolution of the surface
+     * @param targetRotation the target rotation of the surface
      * @param infoProvider the source info provider for internal processing
      */
     private fun buildSurfaceOutput(
         surface: Surface,
         resolution: Size,
+        @RotationValue targetRotation: Int,
         isStreaming: () -> Boolean,
         infoProvider: ISourceInfoProvider?
     ): AbstractSurfaceOutput {
@@ -559,6 +559,7 @@ open class StreamerPipeline(
                             buildSurfaceOutput(
                                 it.surface,
                                 it.resolution,
+                                output.targetRotation,
                                 output::isStreaming,
                                 input.infoProviderFlow.value
                             )

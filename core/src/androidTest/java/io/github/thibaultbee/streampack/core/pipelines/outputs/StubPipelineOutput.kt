@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.core.pipelines.outputs
 
 import android.util.Size
+import android.view.Surface
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
@@ -51,6 +52,7 @@ open class StubVideoSurfacePipelineOutput(resolution: Size) :
     StubPipelineOutput(withAudio = false, withVideo = true),
     IVideoSurfacePipelineOutputInternal {
 
+    override val targetRotation = Surface.ROTATION_0
     override suspend fun setTargetRotation(@RotationValue rotation: Int) = Unit
 
     private val _surfaceFlow =
@@ -67,6 +69,7 @@ class StubAudioSyncVideoSurfacePipelineOutput(resolution: Size) :
     StubPipelineOutput(withAudio = true, withVideo = true),
     IAudioSyncPipelineOutputInternal, IVideoSurfacePipelineOutputInternal {
 
+    override val targetRotation = Surface.ROTATION_0
     override suspend fun setTargetRotation(@RotationValue rotation: Int) = Unit
 
     private val _surfaceFlow =
@@ -129,6 +132,7 @@ class StubAudioSyncVideoSurfacePipelineOutputInternal(resolution: Size) :
     StubPipelineOutputInternal(hasAudio = true, hasVideo = true),
     IAudioSyncPipelineOutputInternal, IVideoSurfacePipelineOutputInternal {
 
+    override val targetRotation = Surface.ROTATION_0
     override suspend fun setTargetRotation(@RotationValue rotation: Int) = Unit
 
     private val _surfaceFlow =
@@ -152,6 +156,7 @@ class StubVideoSurfacePipelineOutputInternal(resolution: Size) :
     StubPipelineOutputInternal(hasAudio = false, hasVideo = true),
     IVideoSurfacePipelineOutputInternal {
 
+    override val targetRotation = Surface.ROTATION_0
     override suspend fun setTargetRotation(@RotationValue rotation: Int) = Unit
 
     private val _surfaceFlow =

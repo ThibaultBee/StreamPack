@@ -22,6 +22,7 @@ import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal.IAsyncByteBufferInput.OnFrameRequestedListener
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
+import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +31,7 @@ import kotlinx.coroutines.runBlocking
 /**
  * An output component for a streamer.
  */
-interface IPipelineOutput: IStreamer {
+interface IPipelineOutput : IStreamer {
     /**
      * Whether the output has audio.
      */
@@ -161,7 +162,13 @@ data class SurfaceWithSize(
 /**
  * An internal audio output component for a pipeline.
  */
-sealed interface IVideoPipelineOutputInternal : IPipelineOutput
+sealed interface IVideoPipelineOutputInternal : IPipelineOutput {
+    /**
+     * The target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
+     */
+    @RotationValue
+    val targetRotation: Int
+}
 
 /**
  * An internal video output component for a pipeline.
