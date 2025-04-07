@@ -251,9 +251,14 @@ internal class VideoInput(
             surfaceProcessor = buildSurfaceProcessor(videoConfig)
         } else if (previousVideoConfig.resolution != videoConfig.resolution) {
             outputSurface?.let {
-                currentSurfaceProcessor.updateInputSurface(
-                    it,
-                    videoConfig.resolution
+                if (videoSourceInternal is ISurfaceSourceInternal) {
+                    videoSourceInternal.resetOutput()
+                }
+                currentSurfaceProcessor.removeInputSurface(it)
+                addSourceSurface(
+                    videoConfig,
+                    currentSurfaceProcessor,
+                    videoSourceInternal
                 )
             }
         }

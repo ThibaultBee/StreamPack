@@ -25,8 +25,6 @@ interface ISurfaceProcessor
 interface ISurfaceProcessorInternal : ISurfaceProcessor, Releasable {
     fun createInputSurface(surfaceSize: Size, timestampOffsetInNs: Long): Surface
 
-    fun updateInputSurface(surface: Surface, surfaceSize: Size)
-
     fun removeInputSurface(surface: Surface)
 
     fun addOutputSurface(surfaceOutput: AbstractSurfaceOutput)
