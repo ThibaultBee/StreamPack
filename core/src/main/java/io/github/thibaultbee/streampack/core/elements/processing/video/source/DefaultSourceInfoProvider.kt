@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.processing.video.source
 
+import android.util.Size
 import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 
@@ -28,6 +29,8 @@ open class DefaultSourceInfoProvider(
     ): Int {
         return 0
     }
+
+    override fun getSurfaceSize(targetResolution: Size) = targetResolution
 
     override fun toString(): String {
         return "DefaultSourceInfoProvider(isMirror=$isMirror, rotationDegrees=$rotationDegrees)"

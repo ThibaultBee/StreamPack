@@ -16,6 +16,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.processing.video
 
+import android.graphics.Rect
 import android.opengl.EGL14
 import android.opengl.EGLConfig
 import android.opengl.EGLContext
@@ -246,7 +247,8 @@ class OpenGlRenderer {
     fun render(
         timestampNs: Long,
         textureTransform: FloatArray,
-        surface: Surface
+        surface: Surface,
+        viewportRect: Rect
     ) {
         checkInitializedOrThrow(mInitialized, true)
         checkGlThreadOrThrow(mGlThread)
@@ -255,7 +257,7 @@ class OpenGlRenderer {
 
         // Workaround situations that out surface is failed to create or needs to be recreated.
         if (outputSurface === NO_OUTPUT_SURFACE) {
-            outputSurface = createOutputSurfaceInternal(surface)
+            outputSurface = createOutputSurfaceInternal(surface, viewportRect)
             if (outputSurface == null) {
                 return
             }
@@ -269,9 +271,20 @@ class OpenGlRenderer {
         if (surface !== mCurrentSurface) {
             makeCurrent(outputSurface.eglSurface)
             mCurrentSurface = surface
-            GLES20.glViewport(0, 0, outputSurface.width, outputSurface.height)
-            GLES20.glScissor(0, 0, outputSurface.width, outputSurface.height)
+            GLES20.glViewport(
+                outputSurface.viewPortRect.left,
+                outputSurface.viewPortRect.top,
+                outputSurface.viewPortRect.width(),
+                outputSurface.viewPortRect.height()
+            )
+            GLES20.glScissor(
+                outputSurface.viewPortRect.left,
+                outputSurface.viewPortRect.top,
+                outputSurface.viewPortRect.width(),
+                outputSurface.viewPortRect.height()
+            )
         }
+
 
         // TODO(b/245855601): Upload the matrix to GPU when textureTransform is changed.
         val program: Program2D = requireNotNull(mCurrentProgram)
@@ -568,10 +581,12 @@ class OpenGlRenderer {
         return requireNotNull(mOutputSurfaceMap[surface])
     }
 
-    protected fun createOutputSurfaceInternal(surface: Surface): OutputSurface? {
-        val eglSurface: EGLSurface
-        try {
-            eglSurface = createWindowSurface(
+    protected fun createOutputSurfaceInternal(
+        surface: Surface,
+        viewportRect: Rect
+    ): OutputSurface? {
+        val eglSurface = try {
+            createWindowSurface(
                 mEglDisplay, requireNotNull(mEglConfig), surface,
                 mSurfaceAttrib
             )
@@ -583,8 +598,7 @@ class OpenGlRenderer {
             return null
         }
 
-        val size: Size = getSurfaceSize(mEglDisplay, eglSurface)
-        return OutputSurface.of(eglSurface, size.width, size.height)
+        return OutputSurface(eglSurface, viewportRect)
     }
 
     protected fun removeOutputSurfaceInternal(surface: Surface, unregister: Boolean) {

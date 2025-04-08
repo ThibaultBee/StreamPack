@@ -142,7 +142,7 @@ internal class MediaProjectionVideoSource(
 
     private inner class FullScreenInfoProvider(private val context: Context) :
         DefaultSourceInfoProvider() {
-        override fun getSurfaceSize(size: Size): Size {
+        override fun getSurfaceSize(targetResolution: Size): Size {
             val screenRect = context.screenRect
             return Size(screenRect.width(), screenRect.height())
         }

@@ -16,10 +16,20 @@
  */
 package io.github.thibaultbee.streampack.core.elements.processing.video.utils
 
+import android.graphics.Rect
 import android.opengl.EGLSurface
 
 /**
- * Wrapper for output [EGLSurface] in [io.github.thibaultbee.streampack.core.elements.processing.video.OpenGlRenderer].
+ * Creates an [OutputSurface] with the given [EGLSurface] and viewport is full screen.
+ */
+fun OutputSurface(eglSurface: EGLSurface, width: Int, height: Int) =
+    OutputSurface(
+        eglSurface,
+        Rect(0, 0, width, height)
+    )
+
+/**
+ * Wrapper for output [EGLSurface] in [OpenGlRenderer].
  */
 
 data class OutputSurface(
@@ -29,22 +39,7 @@ data class OutputSurface(
     val eglSurface: EGLSurface,
 
     /**
-     * Gets [EGLSurface] width.
+     * Gets the [Rect] that defines the viewport.
      */
-    val width: Int,
-
-    /**
-     * Gets [EGLSurface] height.
-     */
-    val height: Int
-) {
-
-    companion object {
-        /**
-         * Creates [OutputSurface].
-         */
-        fun of(eglSurface: EGLSurface, width: Int, height: Int): OutputSurface {
-            return OutputSurface(eglSurface, width, height)
-        }
-    }
-}
+    val viewPortRect: Rect,
+)

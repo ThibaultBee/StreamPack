@@ -54,6 +54,9 @@ interface ISourceInfoProvider {
 
     /**
      * Gets the size of the surface to allocate to display the source.
+     *
+     * @param targetResolution the target resolution
+     * @return the size of the surface to allocate
      */
-    fun getSurfaceSize(size: Size): Size = size
+    fun getSurfaceSize(targetResolution: Size): Size
 }

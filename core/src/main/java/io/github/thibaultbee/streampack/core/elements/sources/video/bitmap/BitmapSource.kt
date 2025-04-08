@@ -158,7 +158,7 @@ internal class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSo
     }
 
     private inner class SourceInfoProvider : DefaultSourceInfoProvider(rotationDegrees = 0) {
-        override fun getSurfaceSize(size: Size): Size {
+        override fun getSurfaceSize(targetResolution: Size): Size {
             return Size(bitmap.width, bitmap.height)
         }
     }

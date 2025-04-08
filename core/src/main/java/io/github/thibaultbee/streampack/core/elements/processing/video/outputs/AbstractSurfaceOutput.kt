@@ -22,16 +22,13 @@ import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils
 
 
-open class AbstractSurfaceOutput(
+abstract class AbstractSurfaceOutput(
     override val surface: Surface,
     final override val resolution: Size,
     override val isStreaming: () -> Boolean
 ) : ISurfaceOutput {
     protected val lock = Any()
     protected var isClosed = false
-
-    // Full frame. Keep for future usage.
-    override val cropRect: Rect = Rect(0, 0, resolution.width, resolution.height)
 
     override fun updateTransformMatrix(output: FloatArray, input: FloatArray) {
         Matrix.multiplyMM(
@@ -50,9 +47,9 @@ open class AbstractSurfaceOutput(
 
 interface ISurfaceOutput {
     val surface: Surface
-    val cropRect: Rect
     val resolution: Size
     val isStreaming: () -> Boolean
+    val viewportRect: Rect
 
     fun updateTransformMatrix(output: FloatArray, input: FloatArray)
 

@@ -15,11 +15,13 @@
  */
 package io.github.thibaultbee.streampack.core.elements.processing.video.outputs
 
+import android.graphics.Rect
 import android.graphics.RectF
 import android.opengl.Matrix
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.IntRange
+import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ViewPortUtils.calculateViewportRect
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.TransformUtils
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.preRotate
@@ -50,6 +52,12 @@ class SurfaceOutput(
 
     private val additionalTransform = FloatArray(16)
     private val invertedTextureTransform = FloatArray(16)
+
+    override val viewportRect = calculateViewportRect(
+        transformationInfo.aspectRatioMode,
+        transformationInfo.infoProvider.getSurfaceSize(resolution),
+        resolution
+    )
 
     init {
         calculateAdditionalTransform(
@@ -121,7 +129,7 @@ class SurfaceOutput(
             rotationDegrees,
             sourceInfoProvider.isMirror
         )
-        val rotatedCroppedRect = RectF(cropRect)
+        val rotatedCroppedRect = RectF(transformationInfo.cropRect)
         imageTransform.mapRect(rotatedCroppedRect)
         // According to the rotated size and cropRect, compute the normalized offset and the scale
         // of X and Y.
@@ -180,7 +188,9 @@ class SurfaceOutput(
     }
 
     data class TransformationInfo(
+        val aspectRatioMode: AspectRatioMode,
         @RotationValue val targetRotation: Int,
+        val cropRect: Rect,
         val needMirroring: Boolean,
         val infoProvider: ISourceInfoProvider
     )

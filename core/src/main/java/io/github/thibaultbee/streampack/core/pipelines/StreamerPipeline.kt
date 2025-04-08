@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.core.pipelines
 
 import android.content.Context
+import android.graphics.Rect
 import android.util.Size
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.data.ICloseableFrame
@@ -24,6 +25,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointF
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.AbstractSurfaceOutput
+import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.AspectRatioMode
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.SurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
@@ -309,13 +311,23 @@ open class StreamerPipeline(
         isStreaming: () -> Boolean,
         infoProvider: ISourceInfoProvider?
     ): AbstractSurfaceOutput {
+        val cropRect = Rect(0, 0, resolution.width, resolution.height)
         return SurfaceOutput(
             surface, resolution, isStreaming, SurfaceOutput.TransformationInfo(
+                getAspectRatioMode(),
                 targetRotation,
+                cropRect,
                 isMirroringRequired(),
                 infoProvider ?: DefaultSourceInfoProvider()
             )
         )
+    }
+
+    /**
+     * Gets the aspect ratio mode to calculate the viewport rectangle.
+     */
+    protected open fun getAspectRatioMode(): AspectRatioMode {
+        return AspectRatioMode.PRESERVE
     }
 
     /**

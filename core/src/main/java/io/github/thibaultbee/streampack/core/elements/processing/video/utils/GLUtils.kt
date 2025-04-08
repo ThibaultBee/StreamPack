@@ -117,7 +117,7 @@ void main() {
     const val SIZEOF_FLOAT: Int = 4
     val VERTEX_BUF: FloatBuffer = createFloatBuffer(VERTEX_COORDS)
     val TEX_BUF: FloatBuffer = createFloatBuffer(TEX_COORDS)
-    val NO_OUTPUT_SURFACE: OutputSurface = OutputSurface.of(EGL14.EGL_NO_SURFACE, 0, 0)
+    val NO_OUTPUT_SURFACE: OutputSurface = OutputSurface(EGL14.EGL_NO_SURFACE, 0, 0)
     private val SHADER_PROVIDER_DEFAULT: ShaderProvider = object : ShaderProvider {
         override fun createFragmentShader(
             samplerVarName: String,

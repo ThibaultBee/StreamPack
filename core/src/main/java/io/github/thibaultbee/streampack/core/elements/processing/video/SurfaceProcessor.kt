@@ -174,8 +174,8 @@ class SurfaceProcessor(
         }
     }
 
-
-    private fun onFrameAvailableInternal(surfaceTexture: SurfaceTexture) {
+    // Executed on GL thread
+    override fun onFrameAvailable(surfaceTexture: SurfaceTexture) {
         if (isReleaseRequested.get()) {
             return
         }
@@ -188,15 +188,11 @@ class SurfaceProcessor(
         surfaceOutputs.filter { it.isStreaming() }.forEach {
             try {
                 it.updateTransformMatrix(surfaceOutputMatrix, textureMatrix)
-                renderer.render(timestamp, surfaceOutputMatrix, it.surface)
+                renderer.render(timestamp, surfaceOutputMatrix, it.surface, it.viewportRect)
             } catch (t: Throwable) {
                 Logger.e(TAG, "Error while rendering frame", t)
             }
         }
-    }
-
-    override fun onFrameAvailable(surfaceTexture: SurfaceTexture) {
-        onFrameAvailableInternal(surfaceTexture)
     }
 
     private fun executeSafely(

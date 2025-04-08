@@ -22,7 +22,6 @@ import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraOrientationUtils
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.landscapize
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotationToDegrees
 
 internal fun CameraInfoProvider(
@@ -64,7 +63,7 @@ class CameraInfoProvider(
         )
     }
 
-    override fun getSurfaceSize(size: Size) = size.landscapize
+    override fun getSurfaceSize(targetResolution: Size) = targetResolution
 
     override fun toString(): String {
         return "CameraInfoProvider(rotationDegrees=$rotationDegrees, isMirror=$isMirror, facingDirection=$facingDirection, isFrontFacing=$isFrontFacing)"
