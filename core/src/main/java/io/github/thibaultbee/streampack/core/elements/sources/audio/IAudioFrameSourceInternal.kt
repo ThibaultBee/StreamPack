@@ -20,9 +20,18 @@ import io.github.thibaultbee.streampack.core.elements.utils.pool.IRawFrameFactor
 import io.github.thibaultbee.streampack.core.elements.utils.pool.IReadOnlyRawFrameFactory
 
 interface IAudioFrameSourceInternal {
+    /**
+     * Gets an audio frame from the source.
+     *
+     * @param frame the [RawFrame] to fill with audio data.
+     * @return a [RawFrame] containing audio data.
+     */
+    fun fillAudioFrame(frame: RawFrame): RawFrame
 
     /**
      * Gets an audio frame from the source.
+     *
+     * The [RawFrame] to fill with audio data is created by the [frameFactory].
      *
      * @param frameFactory a [IRawFrameFactory] to create [RawFrame].
      * @return a [RawFrame] containing audio data.

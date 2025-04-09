@@ -43,9 +43,10 @@ import io.github.thibaultbee.streampack.core.interfaces.IWithAudioSource
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline.AudioOutputMode
 import io.github.thibaultbee.streampack.core.pipelines.inputs.AudioInput
 import io.github.thibaultbee.streampack.core.pipelines.inputs.VideoInput
-import io.github.thibaultbee.streampack.core.pipelines.outputs.IAudioAsyncPipelineOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IAudioCallbackPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IAudioPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IAudioSyncPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableAudioPipelineOutput
@@ -54,7 +55,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVide
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineEventOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutput
-import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoAsyncPipelineOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoCallbackPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoSurfacePipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutput
@@ -77,17 +78,19 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * Base class of all streamers.
+ * The main pipeline for the streamer.
  *
  * @param context the application context
  * @param withAudio whether the streamer has audio. It will create necessary audio components.
  * @param withVideo whether the streamer has video. It will create necessary video components.
+ * @param audioOutputMode the audio output mode. It can be [AudioOutputMode.PUSH] or [AudioOutputMode.CALLBACK]. Only use [AudioOutputMode.CALLBACK] when you have a single output and its implements [IAudioCallbackPipelineOutputInternal]. By default, it is [AudioOutputMode.PUSH].
  * @param coroutineDispatcher the coroutine dispatcher
  */
 open class StreamerPipeline(
     protected val context: Context,
     val withAudio: Boolean = true,
     val withVideo: Boolean = true,
+    private val audioOutputMode: AudioOutputMode = AudioOutputMode.PUSH,
     protected val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : IWithVideoSource, IWithVideoRotation, IWithAudioSource {
     private val coroutineScope: CoroutineScope = CoroutineScope(coroutineDispatcher)
@@ -98,7 +101,10 @@ open class StreamerPipeline(
 
     // INPUTS
     private val audioInput = if (withAudio) {
-        AudioInput(context, ::queueAudioFrame)
+        when (audioOutputMode) {
+            AudioOutputMode.PUSH -> AudioInput(context, AudioInput.PushConfig(::queueAudioFrame))
+            AudioOutputMode.CALLBACK -> AudioInput(context, AudioInput.CallbackConfig())
+        }
     } else {
         null
     }
@@ -257,7 +263,7 @@ open class StreamerPipeline(
         input.setVideoSourceConfig(value)
     }
 
-// VIDEO PROCESSING
+    // VIDEO PROCESSING
     /**
      * Updates the transformation of the surface output.
      * To be called when the source info provider or [isMirroringRequired] is updated.
@@ -350,7 +356,6 @@ open class StreamerPipeline(
                 .count { it.isStreaming && it.withVideo }
         }
     }
-
 
     /**
      * Creates and adds an output to the pipeline.
@@ -492,8 +497,15 @@ open class StreamerPipeline(
 
         if (output is IAudioPipelineOutputInternal) {
             if (withAudio) {
-                if ((output !is IAudioSyncPipelineOutputInternal) && (output is IAudioAsyncPipelineOutputInternal)) {
-                    addAudioAsyncOutputIfNeeded(output)
+                val audioInput = requireNotNull(audioInput) { "Audio input is not set" }
+                if (audioOutputMode == AudioOutputMode.CALLBACK) {
+                    require(output is IAudioCallbackPipelineOutputInternal) {
+                        "Output $output must be an audio callback output"
+                    }
+                    addAudioAsyncOutputIfNeeded(
+                        audioInput,
+                        output
+                    )
                 }
                 if (output is IConfigurableAudioPipelineOutputInternal) {
                     addEncodingAudioOutput(output)
@@ -525,12 +537,15 @@ open class StreamerPipeline(
         return SourceConfigUtils.buildAudioSourceConfig(audioSourceConfigs)
     }
 
-    private fun addAudioAsyncOutputIfNeeded(output: IAudioAsyncPipelineOutputInternal) {
+    private fun addAudioAsyncOutputIfNeeded(
+        audioInput: AudioInput,
+        output: IAudioCallbackPipelineOutputInternal
+    ) {
         require(outputs.keys.filterIsInstance<IAudioPipelineOutputInternal>().size == 1) {
-            "Only one output is allowed for frame source"
+            "Only one audio output is allowed for sync source"
         }
 
-        throw NotImplementedError("Audio async output not supported yet")
+        output.audioFrameRequestedListener = audioInput.audioFrameRequestedListener
     }
 
     private fun addEncodingAudioOutput(
@@ -642,7 +657,7 @@ open class StreamerPipeline(
         if (output is IPipelineEventOutputInternal) {
             output.streamEventListener = null
         }
-        if (output is IAudioAsyncPipelineOutputInternal) {
+        if (output is IAudioCallbackPipelineOutputInternal) {
             output.audioFrameRequestedListener = null
         }
         if (output is IVideoSurfacePipelineOutputInternal) {
@@ -650,7 +665,7 @@ open class StreamerPipeline(
                 videoInput?.removeOutputSurface(it.surface)
             }
         }
-        if (output is IVideoAsyncPipelineOutputInternal) {
+        if (output is IVideoCallbackPipelineOutputInternal) {
             output.videoFrameRequestedListener = null
         }
     }
@@ -885,6 +900,21 @@ open class StreamerPipeline(
 
     companion object {
         private const val TAG = "StreamerPipeline"
+    }
+
+    /**
+     * Audio output mode.
+     */
+    enum class AudioOutputMode {
+        /**
+         * The audio is pushed to the output.
+         */
+        PUSH,
+
+        /**
+         * The audio is pulled by the output.
+         */
+        CALLBACK,
     }
 }
 

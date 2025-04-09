@@ -157,20 +157,30 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
     }
 
 
-    override fun getAudioFrame(frameFactory: IReadOnlyRawFrameFactory): RawFrame {
+    override fun fillAudioFrame(frame: RawFrame): RawFrame {
         val audioRecord = requireNotNull(audioRecord) { "Audio source is not initialized" }
-        val bufferSize = requireNotNull(bufferSize) { "Buffer size is not initialized" }
+        if (audioRecord.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
+            throw IllegalStateException("Audio source is not recording")
+        }
 
-        val frame = frameFactory.create(bufferSize, 0)
         val buffer = frame.rawBuffer
         val length = audioRecord.read(buffer, buffer.remaining())
-        if (length >= 0) {
+        if (length > 0) {
             frame.timestampInUs = getTimestampInUs(audioRecord)
             return frame
         } else {
             frame.close()
             throw IllegalArgumentException(audioRecordErrorToString(length))
         }
+    }
+
+    override fun getAudioFrame(frameFactory: IReadOnlyRawFrameFactory): RawFrame {
+        val bufferSize = requireNotNull(bufferSize) { "Buffer size is not initialized" }
+
+        /**
+         * Dummy timestamp: it is overwritten later.
+         */
+        return fillAudioFrame(frameFactory.create(bufferSize, 0))
     }
 
     /**

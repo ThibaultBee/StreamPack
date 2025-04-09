@@ -56,12 +56,14 @@ class StreamerPipelineTest {
     private suspend fun buildStreamerPipeline(
         context: Context,
         audioSource: IAudioSourceInternal.Factory?,
-        videoSource: IVideoSourceInternal.Factory?
+        videoSource: IVideoSourceInternal.Factory?,
+        audioOutputMode: StreamerPipeline.AudioOutputMode = StreamerPipeline.AudioOutputMode.PUSH
     ): StreamerPipeline {
         val pipeline = StreamerPipeline(
             context,
             withAudio = audioSource != null,
-            withVideo = videoSource != null
+            withVideo = videoSource != null,
+            audioOutputMode = audioOutputMode,
         )
         audioSource?.let { pipeline.setAudioSource(it) }
         videoSource?.let { pipeline.setVideoSource(it) }

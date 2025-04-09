@@ -1,9 +1,9 @@
 package io.github.thibaultbee.streampack.core.elements.sources
 
 import android.content.Context
+import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
-import io.github.thibaultbee.streampack.core.elements.utils.pool.IRawFrameFactory
 import io.github.thibaultbee.streampack.core.elements.utils.pool.IReadOnlyRawFrameFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,7 +15,12 @@ class StubAudioSource : IAudioSourceInternal {
     private val _configurationFlow = MutableStateFlow<AudioSourceConfig?>(null)
     val configurationFlow = _configurationFlow.asStateFlow()
 
-    override fun getAudioFrame(frameFactory: IReadOnlyRawFrameFactory) = frameFactory.create(8192, 0)
+    override fun fillAudioFrame(frame: RawFrame): RawFrame {
+        return frame
+    }
+
+    override fun getAudioFrame(frameFactory: IReadOnlyRawFrameFactory) =
+        frameFactory.create(8192, 0)
 
     override suspend fun startStream() {
         _isStreamingFlow.value = true

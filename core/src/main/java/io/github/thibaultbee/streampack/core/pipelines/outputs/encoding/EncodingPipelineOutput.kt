@@ -39,6 +39,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRo
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.sourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.mapState
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IAudioCallbackPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IAudioSyncPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableAudioPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVideoPipelineOutputInternal
@@ -77,7 +78,8 @@ internal class EncodingPipelineOutput(
     @RotationValue defaultRotation: Int = context.displayRotation,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : IConfigurableAudioVideoEncodingPipelineOutput, IEncodingPipelineOutputInternal,
-    IVideoSurfacePipelineOutputInternal, IAudioSyncPipelineOutputInternal {
+    IVideoSurfacePipelineOutputInternal, IAudioSyncPipelineOutputInternal,
+    IAudioCallbackPipelineOutputInternal {
     /**
      * Mutex to avoid concurrent start/stop operations.
      */
@@ -101,6 +103,9 @@ internal class EncodingPipelineOutput(
     private var videoStreamId: Int? = null
 
     // INPUTS
+    override var audioFrameRequestedListener: IEncoderInternal.IAsyncByteBufferInput.OnFrameRequestedListener? =
+        null
+
     private val _surfaceFlow = MutableStateFlow<SurfaceWithSize?>(null)
 
     /**
@@ -290,12 +295,8 @@ internal class EncodingPipelineOutput(
     private fun applyAudioCodecConfig(audioConfig: AudioCodecConfig) {
         try {
             audioEncoderInternal?.release()
-            audioEncoderInternal = MediaCodecEncoder(
-                AudioEncoderConfig(
-                    audioConfig,
-                    EncoderMode.SYNC
-                ), listener = audioEncoderListener
-            ).apply {
+
+            audioEncoderInternal = buildAudioEncoder(audioConfig).apply {
                 configure()
             }
         } catch (t: Throwable) {
@@ -303,6 +304,35 @@ internal class EncodingPipelineOutput(
             audioEncoderInternal = null
             throw t
         }
+    }
+
+    private fun buildAudioEncoder(audioConfig: AudioCodecConfig): IEncoderInternal {
+        val encoderMode = if (audioFrameRequestedListener != null) {
+            EncoderMode.ASYNC
+        } else {
+            EncoderMode.SYNC
+        }
+        val audioEncoder = MediaCodecEncoder(
+            AudioEncoderConfig(
+                audioConfig, encoderMode
+            ), listener = audioEncoderListener
+        )
+
+        when (audioEncoder.input) {
+            is MediaCodecEncoder.AsyncByteBufferInput -> {
+                audioEncoder.input.listener = requireNotNull(audioFrameRequestedListener) {
+                    "Audio frame requested listener is not set"
+                }
+            }
+
+            is MediaCodecEncoder.SyncByteBufferInput -> Unit
+
+            else -> {
+                throw UnsupportedOperationException("Unknown audio input type: ${audioEncoder.input}")
+            }
+        }
+
+        return audioEncoder
     }
 
     private val _videoCodecConfigFlow = MutableStateFlow<VideoCodecConfig?>(null)
@@ -393,7 +423,7 @@ internal class EncodingPipelineOutput(
             }
 
             else -> {
-                throw UnsupportedOperationException("Unknown input type: ${videoEncoder.input}")
+                throw UnsupportedOperationException("Unknown video input type: ${videoEncoder.input}")
             }
         }
 
@@ -472,12 +502,12 @@ internal class EncodingPipelineOutput(
             }
             audioCodecConfig?.let { audioStreamId = streamsIdMap[it] }
 
-            endpointInternal.startStream()
+            streamEventListener?.onStartStream()
 
             audioEncoderInternal?.startStream()
             videoEncoderInternal?.startStream()
 
-            streamEventListener?.onStartStream()
+            endpointInternal.startStream()
 
             bitrateRegulatorController?.start()
         } catch (t: Throwable) {

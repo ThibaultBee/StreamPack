@@ -444,6 +444,8 @@ internal constructor(
                             queueInputFrame(index, frame)
                         } catch (t: Throwable) {
                             handleError(t)
+                        } finally {
+                            frame.close()
                         }
                     }
                 }

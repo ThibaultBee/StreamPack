@@ -144,7 +144,8 @@ open class SingleStreamer(
     private val pipeline = StreamerPipeline(
         context,
         withAudio,
-        withVideo
+        withVideo,
+        audioOutputMode = StreamerPipeline.AudioOutputMode.CALLBACK
     )
     private val pipelineOutput: IEncodingPipelineOutputInternal =
         pipeline.createEncodingOutput(

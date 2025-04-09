@@ -17,13 +17,18 @@ package io.github.thibaultbee.streampack.core.pipelines.inputs
 
 import android.content.Context
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
+import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal.IAsyncByteBufferInput.OnFrameRequestedListener
+import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
+import io.github.thibaultbee.streampack.core.elements.interfaces.Streamable
 import io.github.thibaultbee.streampack.core.elements.processing.RawFramePullPush
 import io.github.thibaultbee.streampack.core.elements.processing.audio.AudioFrameProcessor
 import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.elements.utils.pool.IRawFrameFactory
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.pipelines.inputs.AudioInput.PushConfig
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,13 +37,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.nio.ByteBuffer
 
 /**
  * A internal class that manages an audio source and an audio processor.
  */
 internal class AudioInput(
     private val context: Context,
-    onFrame: (RawFrame) -> Unit,
+    config: Config,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
     private val audioSourceMutex = Mutex()
@@ -58,13 +64,26 @@ internal class AudioInput(
      */
     val audioSourceFlow: StateFlow<IAudioSource?> = audioSourceInternalFlow.asStateFlow()
 
+    val audioFrameRequestedListener: OnFrameRequestedListener
+        get() {
+            return if (audioPort is CallbackAudioPort) {
+                audioPort.audioFrameRequestedListener
+            } else {
+                throw IllegalStateException("Audio frame requested listener is not supported in this mode: ${audioPort::class.java}")
+            }
+        }
+
     // PROCESSOR
     /**
      * The audio processor.
      */
     private val audioFrameProcessorInternal = AudioFrameProcessor()
     val audioProcessor: IAudioFrameProcessor = audioFrameProcessorInternal
-    private val audioPullPush = RawFramePullPush(audioFrameProcessorInternal, onFrame)
+    private val audioPort = if (config is PushConfig) {
+        PushAudioPort(audioFrameProcessorInternal, config)
+    } else {
+        CallbackAudioPort(audioFrameProcessorInternal)
+    }
 
     // CONFIG
     private val _audioSourceConfigFlow = MutableStateFlow<AudioSourceConfig?>(null)
@@ -110,7 +129,16 @@ internal class AudioInput(
                 if (isStreaming) {
                     newAudioSource.startStream()
                 }
-                audioPullPush.setInput(newAudioSource::getAudioFrame)
+
+                when (audioPort) {
+                    is PushAudioPort -> {
+                        audioPort.setInput(newAudioSource::getAudioFrame)
+                    }
+
+                    is CallbackAudioPort -> {
+                        audioPort.setInput(newAudioSource::fillAudioFrame)
+                    }
+                }
 
                 // Replace audio source
                 audioSourceInternalFlow.emit(newAudioSource)
@@ -174,7 +202,7 @@ internal class AudioInput(
             }
             source.startStream()
             try {
-                audioPullPush.startStream()
+                audioPort.startStream()
             } catch (t: Throwable) {
                 Logger.w(TAG, "startStream: Can't start audio processor: ${t.message}")
                 source.stopStream()
@@ -188,7 +216,7 @@ internal class AudioInput(
         audioSourceMutex.withLock {
             _isStreamingFlow.emit(false)
             try {
-                audioPullPush.stopStream()
+                audioPort.stopStream()
             } catch (t: Throwable) {
                 Logger.w(TAG, "stopStream: Can't stop audio processor: ${t.message}")
             }
@@ -204,12 +232,12 @@ internal class AudioInput(
         audioSourceMutex.withLock {
             _isStreamingFlow.emit(false)
             try {
-                audioPullPush.removeInput()
+                audioPort.removeInput()
             } catch (t: Throwable) {
                 Logger.w(TAG, "release: Can't remove audio processor input: ${t.message}")
             }
             try {
-                audioPullPush.release()
+                audioPort.release()
             } catch (t: Throwable) {
                 Logger.w(TAG, "release: Can't release audio processor: ${t.message}")
             }
@@ -224,4 +252,74 @@ internal class AudioInput(
     companion object {
         private const val TAG = "AudioInput"
     }
+
+    internal sealed class Config
+
+    internal class PushConfig(val onFrame: (RawFrame) -> Unit) : Config()
+    internal class CallbackConfig : Config()
+}
+
+private sealed interface IAudioPort<T> : Streamable, Releasable {
+    fun setInput(getFrame: T)
+    fun removeInput()
+}
+
+private class PushAudioPort(
+    audioFrameProcessor: AudioFrameProcessor,
+    config: PushConfig,
+) : IAudioPort<(frameFactory: IRawFrameFactory) -> RawFrame> {
+    private val audioPullPush = RawFramePullPush(audioFrameProcessor, config.onFrame)
+
+    override fun setInput(getFrame: (frameFactory: IRawFrameFactory) -> RawFrame) {
+        audioPullPush.setInput(getFrame)
+    }
+
+    override fun removeInput() {
+        audioPullPush.removeInput()
+    }
+
+    override fun startStream() {
+        audioPullPush.startStream()
+    }
+
+    override fun stopStream() {
+        audioPullPush.stopStream()
+    }
+
+    override fun release() {
+        audioPullPush.release()
+    }
+}
+
+private class CallbackAudioPort(private val audioFrameProcessor: AudioFrameProcessor) :
+    IAudioPort<(frame: RawFrame) -> RawFrame> {
+    private var getFrame: ((frame: RawFrame) -> RawFrame)? = null
+
+    var audioFrameRequestedListener: OnFrameRequestedListener = object : OnFrameRequestedListener {
+        override fun onFrameRequested(buffer: ByteBuffer): RawFrame {
+            val getFrame = requireNotNull(getFrame) {
+                "Audio frame requested listener is not set yet"
+            }
+            val frame = getFrame(RawFrame(buffer, 0))
+            return audioFrameProcessor.processFrame(frame)
+        }
+    }
+
+    override fun setInput(getFrame: (frame: RawFrame) -> RawFrame) {
+        synchronized(this) {
+            this.getFrame = getFrame
+        }
+    }
+
+    override fun removeInput() {
+        synchronized(this) {
+            this.getFrame = null
+        }
+    }
+
+    override fun startStream() = Unit
+
+    override fun stopStream() = Unit
+
+    override fun release() = Unit
 }

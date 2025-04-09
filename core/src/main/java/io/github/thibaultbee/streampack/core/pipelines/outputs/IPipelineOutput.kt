@@ -185,7 +185,7 @@ interface IVideoSurfacePipelineOutputInternal : IVideoPipelineOutputInternal, IW
  * An internal video output component for a pipeline.
  * The pipeline is responsible for pulling video [Frame] from the user.
  */
-interface IVideoAsyncPipelineOutputInternal : IVideoPipelineOutputInternal {
+interface IVideoCallbackPipelineOutputInternal : IVideoPipelineOutputInternal {
     /**
      * The video [Frame] listener.
      */
@@ -245,7 +245,7 @@ interface IAudioSyncPipelineOutputInternal : IAudioPipelineOutputInternal {
  * An internal audio output component for a pipeline.
  * The pipeline is responsible for pulling audio [Frame] from the user.
  */
-interface IAudioAsyncPipelineOutputInternal : IAudioPipelineOutputInternal {
+interface IAudioCallbackPipelineOutputInternal : IAudioPipelineOutputInternal {
     /**
      * The audio [Frame] listener.
      */
