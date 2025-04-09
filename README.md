@@ -117,13 +117,13 @@ minutes, you will be able to stream live video to your server.
     val streamer = cameraSingleStreamer(context = requireContext()) // Already instantiated streamer
     
     // Creates a new audio and video config
-    val audioConfig = AudioCodecConfig(
+    val audioConfig = AudioConfig(
         startBitrate = 128000,
         sampleRate = 44100,
         channelConfig = AudioFormat.CHANNEL_IN_STEREO
     )
     
-    val videoConfig = VideoCodecConfig(
+    val videoConfig = VideoConfig(
         startBitrate = 2000000, // 2 Mb/s
         resolution = Size(1280, 720),
         fps = 30
