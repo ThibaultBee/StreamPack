@@ -1,0 +1,405 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>CombineEndpoint</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+<a class="library-name--link" href="../../../index.html">
+                    StreamPack
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">3.0.0-RC
+        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":streampack-core:dokkaHtmlPartial/release">androidJvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":streampack-core:dokkaHtmlPartial/release" data-filter=":streampack-core:dokkaHtmlPartial/release">
+                                <span class="checkbox--icon"></span>
+                                androidJvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    StreamPack
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="streampack-core::io.github.thibaultbee.streampack.core.elements.endpoints/CombineEndpoint///PointingToDeclaration//1850203186">
+  <div class="breadcrumbs"><a href="../../index.html">streampack-core</a><span class="delimiter">/</span><a href="../index.html">io.github.thibaultbee.streampack.core.elements.endpoints</a><span class="delimiter">/</span><span class="current">CombineEndpoint</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Combine</span><wbr><span><span>Endpoint</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="index.html">CombineEndpoint</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>endpointInternals<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-i-endpoint-internal/index.html">IEndpointInternal</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <a href="../-i-endpoint-internal/index.html">IEndpointInternal</a></div><p class="paragraph">Combines multiple endpoints into one. This endpoint will write frames to all endpoints if they are opened.</p><p class="paragraph">For example, you can combine a local endpoint and a remote endpoint to record and stream at the same time.</p><p class="paragraph">For specific behavior like reconnecting your remote endpoint, you can create a custom endpoint that inherits from <a href="index.html">CombineEndpoint</a> and override <a href="open.html">open</a>, <a href="close.html">close</a>, <a href="start-stream.html">startStream</a>, <a href="stop-stream.html">stopStream</a>.</p><h4 class="">Inheritors</h4><div class="table"><div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-dual-endpoint/index.html">DualEndpoint</a></div></span></div><div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="34138344%2FConstructors%2F1850203186" anchor-label="CombineEndpoint" id="34138344%2FConstructors%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-combine-endpoint.html"><span>Combine</span><wbr><span><span>Endpoint</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="34138344%2FConstructors%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">endpointInternals<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-i-endpoint-internal/index.html">IEndpointInternal</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="1211978227%2FClasslikes%2F1850203186" anchor-label="CombineDescriptor" id="1211978227%2FClasslikes%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-combine-descriptor/index.html"><span>Combine</span><wbr><span><span>Descriptor</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1211978227%2FClasslikes%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-combine-descriptor/index.html">CombineDescriptor</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>descriptors<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../io.github.thibaultbee.streampack.core.configuration.mediadescriptor/-media-descriptor/index.html">MediaDescriptor</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <a href="../../io.github.thibaultbee.streampack.core.configuration.mediadescriptor/-media-descriptor/index.html">MediaDescriptor</a></div><div class="brief "><p class="paragraph">A <a href="../../io.github.thibaultbee.streampack.core.configuration.mediadescriptor/-media-descriptor/index.html">MediaDescriptor</a> that combines multiple <a href="../../io.github.thibaultbee.streampack.core.configuration.mediadescriptor/-media-descriptor/index.html">MediaDescriptor</a>s.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2078973259%2FClasslikes%2F1850203186" anchor-label="Companion" id="-2078973259%2FClasslikes%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2078973259%2FClasslikes%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="-11976627%2FProperties%2F1850203186" anchor-label="endpointInternals" id="-11976627%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="endpoint-internals.html"><span>endpoint</span><wbr><span><span>Internals</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-11976627%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">val </span><a href="endpoint-internals.html">endpointInternals</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-i-endpoint-internal/index.html">IEndpointInternal</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="139756976%2FProperties%2F1850203186" anchor-label="endpoints" id="139756976%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="endpoints.html"><span><span>endpoints</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="139756976%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="endpoints.html">endpoints</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-i-endpoint/index.html">IEndpoint</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">List of <a href="../-i-endpoint/index.html">IEndpoint</a>s</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1444367375%2FProperties%2F1850203186" anchor-label="endpointsToStreamIdsMap" id="-1444367375%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="endpoints-to-stream-ids-map.html"><span>endpoints</span><wbr><span>To</span><wbr><span>Stream</span><wbr><span>Ids</span><wbr><span><span>Map</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1444367375%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">val </span><a href="endpoints-to-stream-ids-map.html">endpointsToStreamIdsMap</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-mutable-map/index.html">MutableMap</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-pair/index.html">Pair</a><span class="token operator">&lt;</span><a href="../-i-endpoint/index.html">IEndpoint</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Internal map of endpoint streamId to real streamIds</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1527724418%2FProperties%2F1850203186" anchor-label="info" id="-1527724418%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="info.html"><span><span>info</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1527724418%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="info.html">info</a><span class="token operator">: </span><a href="../-i-endpoint/-i-endpoint-info/index.html">IEndpoint.IEndpointInfo</a></div><div class="brief "><p class="paragraph">The union of all endpoints' <a href="../-i-endpoint/-i-endpoint-info/index.html">IEndpoint.IEndpointInfo</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="860577930%2FProperties%2F1850203186" anchor-label="isOpenFlow" id="860577930%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-open-flow.html"><span>is</span><wbr><span>Open</span><wbr><span><span>Flow</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="860577930%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-open-flow.html">isOpenFlow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Whether at least one endpoint is open. This is a combination of all endpoints' <a href="../-i-endpoint/is-open-flow.html">IEndpoint.isOpenFlow</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1519639115%2FProperties%2F1850203186" anchor-label="metrics" id="1519639115%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="metrics.html"><span><span>metrics</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1519639115%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="metrics.html">metrics</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a></div><div class="brief "><p class="paragraph">Throws <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unsupported-operation-exception/index.html">UnsupportedOperationException</a> because <a href="index.html">CombineEndpoint</a> does not have metrics.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="1135828527%2FFunctions%2F1850203186" anchor-label="addStream" id="1135828527%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="add-stream.html"><span>add</span><wbr><span><span>Stream</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1135828527%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="add-stream.html"><span class="token function">addStream</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">streamConfig<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.encoders/-codec-config/index.html">CodecConfig</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Registers a new stream to the <a href="../-i-endpoint-internal/index.html">IEndpointInternal</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-534516468%2FFunctions%2F1850203186" anchor-label="addStreams" id="-534516468%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="add-streams.html"><span>add</span><wbr><span><span>Streams</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-534516468%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="add-streams.html"><span class="token function">addStreams</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">streamConfigs<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../io.github.thibaultbee.streampack.core.elements.encoders/-codec-config/index.html">CodecConfig</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="../../io.github.thibaultbee.streampack.core.elements.encoders/-codec-config/index.html">CodecConfig</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Registers new streams to the <a href="../-i-endpoint-internal/index.html">IEndpointInternal</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1116887798%2FFunctions%2F1850203186" anchor-label="close" id="1116887798%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="close.html"><span><span>close</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1116887798%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="close.html"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Closes all endpoints</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-97669032%2FFunctions%2F1850203186" anchor-label="getInfo" id="-97669032%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-info.html"><span>get</span><wbr><span><span>Info</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-97669032%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-info.html"><span class="token function">getInfo</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">type<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.configuration.mediadescriptor/-media-descriptor/-type/index.html">MediaDescriptor.Type</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-i-endpoint/-i-endpoint-info/index.html">IEndpoint.IEndpointInfo</a></div><div class="brief "><p class="paragraph">The union of all endpoints' <a href="../-i-endpoint/-i-endpoint-info/index.html">IEndpoint.IEndpointInfo</a>.</p></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-i-endpoint/get-info.html"><span class="token function">getInfo</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">descriptor<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.configuration.mediadescriptor/-media-descriptor/index.html">MediaDescriptor</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-i-endpoint/-i-endpoint-info/index.html">IEndpoint.IEndpointInfo</a></div><div class="brief "><p class="paragraph">Gets configuration information</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1749039826%2FFunctions%2F1850203186" anchor-label="open" id="1749039826%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="open.html"><span><span>open</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1749039826%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="open.html"><span class="token function">open</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">descriptor<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.configuration.mediadescriptor/-media-descriptor/index.html">MediaDescriptor</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Opens the endpoints. For specific behavior like reconnecting your remote endpoint, you can override this method.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="575809760%2FFunctions%2F1850203186" anchor-label="release" id="575809760%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-i-endpoint-internal/release.html"><span><span>release</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="575809760%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="../-i-endpoint-internal/release.html"><span class="token function">release</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Releases an <a href="../-i-endpoint-internal/index.html">IEndpointInternal</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1235955948%2FFunctions%2F1850203186" anchor-label="startStream" id="1235955948%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="start-stream.html"><span>start</span><wbr><span><span>Stream</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1235955948%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="start-stream.html"><span class="token function">startStream</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Starts all endpoints</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="178256970%2FFunctions%2F1850203186" anchor-label="stopStream" id="178256970%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="stop-stream.html"><span>stop</span><wbr><span><span>Stream</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="178256970%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="stop-stream.html"><span class="token function">stopStream</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Stops all endpoints</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1208068024%2FFunctions%2F1850203186" anchor-label="write" id="1208068024%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write.html"><span><span>write</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1208068024%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="write.html"><span class="token function">write</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">frame<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.data/-frame/index.html">Frame</a><span class="token punctuation">, </span></span><span class="parameter ">streamPid<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Writes frame to all opened endpoints.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>© 2025 Copyright</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

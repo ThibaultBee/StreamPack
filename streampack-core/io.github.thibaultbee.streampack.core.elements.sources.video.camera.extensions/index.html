@@ -1,0 +1,576 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions</title>
+<link href="../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../ui-kit/ui-kit.min.js" defer></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+<a class="library-name--link" href="../../index.html">
+                    StreamPack
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">3.0.0-RC
+        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":streampack-core:dokkaHtmlPartial/release">androidJvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":streampack-core:dokkaHtmlPartial/release" data-filter=":streampack-core:dokkaHtmlPartial/release">
+                                <span class="checkbox--icon"></span>
+                                androidJvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    StreamPack
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="package" id="content" pageids="streampack-core::io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions////PointingToDeclaration//1850203186">
+  <div class="breadcrumbs"><a href="../index.html">streampack-core</a><span class="delimiter">/</span><span class="current">io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button><button class="section-tab" data-togglable="PROPERTY,EXTENSION_PROPERTY">Properties</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="EXTENSION_PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="1686343691%2FProperties%2F1850203186" anchor-label="backCameras" id="1686343691%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="back-cameras.html"><span>back</span><wbr><span><span>Cameras</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1686343691%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="back-cameras.html">backCameras</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="back-cameras.html">backCameras</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Gets back camera id list.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1202041643%2FProperties%2F1850203186" anchor-label="cameras" id="1202041643%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="cameras.html"><span><span>cameras</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1202041643%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="cameras.html">cameras</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="cameras.html">cameras</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Gets camera id list.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2035794379%2FProperties%2F1850203186" anchor-label="defaultCameraId" id="2035794379%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="default-camera-id.html"><span>default</span><wbr><span>Camera</span><wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2035794379%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="default-camera-id.html">defaultCameraId</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="default-camera-id.html">defaultCameraId</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Gets default camera id.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1006645643%2FProperties%2F1850203186" anchor-label="externalCameras" id="1006645643%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="external-cameras.html"><span>external</span><wbr><span><span>Cameras</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1006645643%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="external-cameras.html">externalCameras</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="external-cameras.html">externalCameras</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Gets external camera id list.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1245887673%2FProperties%2F1850203186" anchor-label="frontCameras" id="-1245887673%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="front-cameras.html"><span>front</span><wbr><span><span>Cameras</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1245887673%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="front-cameras.html">frontCameras</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="front-cameras.html">frontCameras</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Gets front camera id list.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="EXTENSION_FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="147041323%2FFunctions%2F1850203186" anchor-label="get10BitSupportedProfiles" id="147041323%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get10-bit-supported-profiles.html"><span>get10Bit</span><wbr><span>Supported</span><wbr><span><span>Profiles</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="147041323%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get10-bit-supported-profiles.html"><span class="token function">get10BitSupportedProfiles</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get10-bit-supported-profiles.html"><span class="token function">get10BitSupportedProfiles</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Gets list of 10-bit dynamic range output profiles.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2091638811%2FFunctions%2F1850203186" anchor-label="getAutoExposureModes" id="-2091638811%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-auto-exposure-modes.html"><span>get</span><wbr><span>Auto</span><wbr><span>Exposure</span><wbr><span><span>Modes</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2091638811%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-auto-exposure-modes.html"><span class="token function">getAutoExposureModes</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get-auto-exposure-modes.html"><span class="token function">getAutoExposureModes</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Gets supported auto exposure modes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-479660251%2FFunctions%2F1850203186" anchor-label="getAutoFocusModes" id="-479660251%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-auto-focus-modes.html"><span>get</span><wbr><span>Auto</span><wbr><span>Focus</span><wbr><span><span>Modes</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-479660251%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-auto-focus-modes.html"><span class="token function">getAutoFocusModes</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get-auto-focus-modes.html"><span class="token function">getAutoFocusModes</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Gets supported auto focus modes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1235422235%2FFunctions%2F1850203186" anchor-label="getAutoWhiteBalanceModes" id="-1235422235%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-auto-white-balance-modes.html"><span>get</span><wbr><span>Auto</span><wbr><span>White</span><wbr><span>Balance</span><wbr><span><span>Modes</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1235422235%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-auto-white-balance-modes.html"><span class="token function">getAutoWhiteBalanceModes</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get-auto-white-balance-modes.html"><span class="token function">getAutoWhiteBalanceModes</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Gets supported auto white balance modes</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-294150178%2FFunctions%2F1850203186" anchor-label="getCameraCharacteristics" id="-294150178%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-camera-characteristics.html"><span>get</span><wbr><span>Camera</span><wbr><span><span>Characteristics</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-294150178%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-camera-characteristics.html"><span class="token function">getCameraCharacteristics</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraCharacteristics.html">CameraCharacteristics</a></div><div class="brief "><p class="paragraph">Gets camera characteristics.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-686082907%2FFunctions%2F1850203186" anchor-label="getCameraFps" id="-686082907%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-camera-fps.html"><span>get</span><wbr><span>Camera</span><wbr><span><span>Fps</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-686082907%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-camera-fps.html"><span class="token function">getCameraFps</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/android/util/Range.html">Range</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get-camera-fps.html"><span class="token function">getCameraFps</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/android/util/Range.html">Range</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Gets list of framerate for a camera.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1078175045%2FFunctions%2F1850203186" anchor-label="getCameraOutputSizes" id="1078175045%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-camera-output-sizes.html"><span>get</span><wbr><span>Camera</span><wbr><span>Output</span><wbr><span><span>Sizes</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1078175045%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="get-camera-output-sizes.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-camera-output-sizes.html"><span class="token function">getCameraOutputSizes</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">klass<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><a href="get-camera-output-sizes.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="get-camera-output-sizes.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get-camera-output-sizes.html"><span class="token function">getCameraOutputSizes</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">klass<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><a href="get-camera-output-sizes.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Gets list of output sizes compatible with <a href="get-camera-output-sizes.html">klass</a> of a camera. Use it to select camera preview size.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="511639972%2FFunctions%2F1850203186" anchor-label="getCameraOutputStreamSizes" id="511639972%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-camera-output-stream-sizes.html"><span>get</span><wbr><span>Camera</span><wbr><span>Output</span><wbr><span>Stream</span><wbr><span><span>Sizes</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="511639972%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-camera-output-stream-sizes.html"><span class="token function">getCameraOutputStreamSizes</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get-camera-output-stream-sizes.html"><span class="token function">getCameraOutputStreamSizes</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Gets all output capture sizes.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-camera-output-stream-sizes.html"><span class="token function">getCameraOutputStreamSizes</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">imageFormat<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>ImageFormat.YUV_420_888</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get-camera-output-stream-sizes.html"><span class="token function">getCameraOutputStreamSizes</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">imageFormat<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>ImageFormat.YUV_420_888</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Gets list of output stream sizes of a camera.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-551472123%2FFunctions%2F1850203186" anchor-label="getExposureMaxMeteringRegionsSupported" id="-551472123%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-exposure-max-metering-regions-supported.html"><span>get</span><wbr><span>Exposure</span><wbr><span>Max</span><wbr><span>Metering</span><wbr><span>Regions</span><wbr><span><span>Supported</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-551472123%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-exposure-max-metering-regions-supported.html"><span class="token function">getExposureMaxMeteringRegionsSupported</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get-exposure-max-metering-regions-supported.html"><span class="token function">getExposureMaxMeteringRegionsSupported</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Gets the number of camera supported exposure metering regions.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1279312411%2FFunctions%2F1850203186" anchor-label="getExposureRange" id="-1279312411%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-exposure-range.html"><span>get</span><wbr><span>Exposure</span><wbr><span><span>Range</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1279312411%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-exposure-range.html"><span class="token function">getExposureRange</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Range.html">Range</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span><span class="token operator">?</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get-exposure-range.html"><span class="token function">getExposureRange</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Range.html">Range</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Gets exposure range.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1350543875%2FFunctions%2F1850203186" anchor-label="getExposureStep" id="-1350543875%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-exposure-step.html"><span>get</span><wbr><span>Exposure</span><wbr><span><span>Step</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1350543875%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-exposure-step.html"><span class="token function">getExposureStep</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Rational.html">Rational</a><span class="token operator">?</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get-exposure-step.html"><span class="token function">getExposureStep</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Rational.html">Rational</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Gets exposure compensation step.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1183900677%2FFunctions%2F1850203186" anchor-label="getFacingDirection" id="1183900677%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-facing-direction.html"><span>get</span><wbr><span>Facing</span><wbr><span><span>Direction</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1183900677%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-facing-direction.html"><span class="token function">getFacingDirection</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get-facing-direction.html"><span class="token function">getFacingDirection</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Gets camera facing direction.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1709202559%2FFunctions%2F1850203186" anchor-label="getFocusMaxMeteringRegionsSupported" id="1709202559%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-focus-max-metering-regions-supported.html"><span>get</span><wbr><span>Focus</span><wbr><span>Max</span><wbr><span>Metering</span><wbr><span>Regions</span><wbr><span><span>Supported</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1709202559%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-focus-max-metering-regions-supported.html"><span class="token function">getFocusMaxMeteringRegionsSupported</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get-focus-max-metering-regions-supported.html"><span class="token function">getFocusMaxMeteringRegionsSupported</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Gets if camera supports focus metering regions.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-552601115%2FFunctions%2F1850203186" anchor-label="getLensDistanceRange" id="-552601115%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-lens-distance-range.html"><span>get</span><wbr><span>Lens</span><wbr><span>Distance</span><wbr><span><span>Range</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-552601115%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-lens-distance-range.html"><span class="token function">getLensDistanceRange</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Range.html">Range</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get-lens-distance-range.html"><span class="token function">getLensDistanceRange</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Range.html">Range</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Gets supported lens distance range.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-414838075%2FFunctions%2F1850203186" anchor-label="getScalerMaxZoom" id="-414838075%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-scaler-max-zoom.html"><span>get</span><wbr><span>Scaler</span><wbr><span>Max</span><wbr><span><span>Zoom</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-414838075%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-scaler-max-zoom.html"><span class="token function">getScalerMaxZoom</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get-scaler-max-zoom.html"><span class="token function">getScalerMaxZoom</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a></div><div class="brief "><p class="paragraph">Gets max scaler zoom.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1562429459%2FFunctions%2F1850203186" anchor-label="getSensitivityRange" id="1562429459%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-sensitivity-range.html"><span>get</span><wbr><span>Sensitivity</span><wbr><span><span>Range</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1562429459%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-sensitivity-range.html"><span class="token function">getSensitivityRange</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Range.html">Range</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span><span class="token operator">?</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get-sensitivity-range.html"><span class="token function">getSensitivityRange</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Range.html">Range</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Gets supported iso range</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1993247027%2FFunctions%2F1850203186" anchor-label="getWhiteBalanceMeteringRegionsSupported" id="-1993247027%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-white-balance-metering-regions-supported.html"><span>get</span><wbr><span>White</span><wbr><span>Balance</span><wbr><span>Metering</span><wbr><span>Regions</span><wbr><span><span>Supported</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1993247027%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-white-balance-metering-regions-supported.html"><span class="token function">getWhiteBalanceMeteringRegionsSupported</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get-white-balance-metering-regions-supported.html"><span class="token function">getWhiteBalanceMeteringRegionsSupported</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Gets the number of camera supported white balance metering regions.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-773788447%2FFunctions%2F1850203186" anchor-label="getZoomRatioRange" id="-773788447%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-zoom-ratio-range.html"><span>get</span><wbr><span>Zoom</span><wbr><span>Ratio</span><wbr><span><span>Range</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-773788447%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresApi.html"><span class="token annotation builtin">RequiresApi</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">30</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="get-zoom-ratio-range.html"><span class="token function">getZoomRatioRange</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Range.html">Range</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a><span class="token operator">&gt;</span><span class="token operator">?</span></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresApi.html"><span class="token annotation builtin">RequiresApi</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">30</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="get-zoom-ratio-range.html"><span class="token function">getZoomRatioRange</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Range.html">Range</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a><span class="token operator">&gt;</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Gets zoom ratio range.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1976744829%2FFunctions%2F1850203186" anchor-label="is10BitProfileSupported" id="1976744829%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is10-bit-profile-supported.html"><span>is10Bit</span><wbr><span>Profile</span><wbr><span><span>Supported</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1976744829%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is10-bit-profile-supported.html"><span class="token function">is10BitProfileSupported</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="is10-bit-profile-supported.html"><span class="token function">is10BitProfileSupported</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the camera supports 10-bit dynamic range output.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2096276389%2FFunctions%2F1850203186" anchor-label="isBackCamera" id="2096276389%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-back-camera.html"><span>is</span><wbr><span>Back</span><wbr><span><span>Camera</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2096276389%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-back-camera.html"><span class="token function">isBackCamera</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="is-back-camera.html"><span class="token function">isBackCamera</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the <a href="is-back-camera.html">cameraId</a> is a back camera id</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-848166235%2FFunctions%2F1850203186" anchor-label="isExternalCamera" id="-848166235%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-external-camera.html"><span>is</span><wbr><span>External</span><wbr><span><span>Camera</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-848166235%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-external-camera.html"><span class="token function">isExternalCamera</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="is-external-camera.html"><span class="token function">isExternalCamera</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the <a href="is-external-camera.html">cameraId</a> is an external camera id</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1574025851%2FFunctions%2F1850203186" anchor-label="isFlashAvailable" id="-1574025851%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-flash-available.html"><span>is</span><wbr><span>Flash</span><wbr><span><span>Available</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1574025851%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-flash-available.html"><span class="token function">isFlashAvailable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="is-flash-available.html"><span class="token function">isFlashAvailable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the camera has a flash device.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-476684581%2FFunctions%2F1850203186" anchor-label="isFrameRateSupported" id="-476684581%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-frame-rate-supported.html"><span>is</span><wbr><span>Frame</span><wbr><span>Rate</span><wbr><span><span>Supported</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-476684581%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-frame-rate-supported.html"><span class="token function">isFrameRateSupported</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">fps<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="is-frame-rate-supported.html"><span class="token function">isFrameRateSupported</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">fps<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the camera supports a frame rate</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-903827853%2FFunctions%2F1850203186" anchor-label="isFrontCamera" id="-903827853%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-front-camera.html"><span>is</span><wbr><span>Front</span><wbr><span><span>Camera</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-903827853%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-front-camera.html"><span class="token function">isFrontCamera</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="is-front-camera.html"><span class="token function">isFrontCamera</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the <a href="is-front-camera.html">cameraId</a> is a front camera id</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-888117669%2FFunctions%2F1850203186" anchor-label="isOpticalStabilizationAvailable" id="-888117669%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-optical-stabilization-available.html"><span>is</span><wbr><span>Optical</span><wbr><span>Stabilization</span><wbr><span><span>Available</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-888117669%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-optical-stabilization-available.html"><span class="token function">isOpticalStabilizationAvailable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/hardware/camera2/CameraManager.html">CameraManager</a><span class="token punctuation">.</span><a href="is-optical-stabilization-available.html"><span class="token function">isOpticalStabilizationAvailable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the camera supports optical stabilization.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>© 2025 Copyright</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

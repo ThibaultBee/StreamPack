@@ -1,0 +1,1030 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>io.github.thibaultbee.streampack.core.elements.utils.extensions</title>
+<link href="../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../ui-kit/ui-kit.min.js" defer></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+<a class="library-name--link" href="../../index.html">
+                    StreamPack
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">3.0.0-RC
+        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":streampack-core:dokkaHtmlPartial/release">androidJvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":streampack-core:dokkaHtmlPartial/release" data-filter=":streampack-core:dokkaHtmlPartial/release">
+                                <span class="checkbox--icon"></span>
+                                androidJvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    StreamPack
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="package" id="content" pageids="streampack-core::io.github.thibaultbee.streampack.core.elements.utils.extensions////PointingToDeclaration//1850203186">
+  <div class="breadcrumbs"><a href="../index.html">streampack-core</a><span class="delimiter">/</span><span class="current">io.github.thibaultbee.streampack.core.elements.utils.extensions</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button><button class="section-tab" data-togglable="PROPERTY,EXTENSION_PROPERTY">Properties</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="-717446954%2FClasslikes%2F1850203186" anchor-label="History" id="-717446954%2FClasslikes%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-history/index.html"><span><span>History</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-717446954%2FClasslikes%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-history/index.html">History</a><span class="token operator">&lt;</span><a href="-history/index.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>previous<span class="token operator">: </span><a href="-history/index.html">T</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>current<span class="token operator">: </span><a href="-history/index.html">T</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="EXTENSION_PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="-1332466779%2FProperties%2F1850203186" anchor-label="densityDpi" id="-1332466779%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="density-dpi.html"><span>density</span><wbr><span><span>Dpi</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1332466779%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="density-dpi.html">densityDpi</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Get the application pixel density</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="678481924%2FProperties%2F1850203186" anchor-label="displayRotation" id="678481924%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="display-rotation.html"><span>display</span><wbr><span><span>Rotation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="678481924%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="display-rotation.html">displayRotation</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the display orientation in degrees from the natural orientation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2007114761%2FProperties%2F1850203186" anchor-label="displayRotationDegrees" id="-2007114761%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="display-rotation-degrees.html"><span>display</span><wbr><span>Rotation</span><wbr><span><span>Degrees</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2007114761%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/IntRange.html"><span class="token annotation builtin">IntRange</span></a><span class="token punctuation">(</span><span>from<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">0</span></span><span class="token punctuation">, </span></span><wbr><span>to<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">359</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="display-rotation-degrees.html">displayRotationDegrees</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the display orientation in degrees from the natural orientation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-531276053%2FProperties%2F1850203186" anchor-label="extra" id="-531276053%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="extra.html"><span><span>extra</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-531276053%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/media/MediaFormat.html">MediaFormat</a><span class="token punctuation">.</span><a href="extra.html">extra</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token operator">&gt;</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Extracts csd buffers from MediaFormat. It can contains SPS, PPS for AVC.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="593249755%2FProperties%2F1850203186" anchor-label="isAnnexB" id="593249755%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-annex-b.html"><span>is</span><wbr><span>Annex</span><wbr><span><span>B</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="593249755%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="is-annex-b.html">isAnnexB</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether <a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a> is Annex B or not. Annex B frames start with a start code (0x00000001 or 0x000001).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="286141157%2FProperties%2F1850203186" anchor-label="isApplicationLandscape" id="286141157%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-application-landscape.html"><span>is</span><wbr><span>Application</span><wbr><span><span>Landscape</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="286141157%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-application-landscape.html">isApplicationLandscape</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the application is in landscape.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1831597147%2FProperties%2F1850203186" anchor-label="isApplicationPortrait" id="-1831597147%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-application-portrait.html"><span>is</span><wbr><span>Application</span><wbr><span><span>Portrait</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1831597147%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-application-portrait.html">isApplicationPortrait</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the application is in portrait.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="651857474%2FProperties%2F1850203186" anchor-label="isAvcc" id="651857474%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-avcc.html"><span>is</span><wbr><span><span>Avcc</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="651857474%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="is-avcc.html">isAvcc</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether <a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a> is AVCC/HVCC or not. AVCC/HVCC frames start with a the frame size.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1964904351%2FProperties%2F1850203186" anchor-label="isDeviceLandscape" id="1964904351%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-device-landscape.html"><span>is</span><wbr><span>Device</span><wbr><span><span>Landscape</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1964904351%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-device-landscape.html">isDeviceLandscape</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the device is in landscape orientation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="993503147%2FProperties%2F1850203186" anchor-label="isDevicePortrait" id="993503147%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-device-portrait.html"><span>is</span><wbr><span>Device</span><wbr><span><span>Portrait</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="993503147%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-device-portrait.html">isDevicePortrait</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the device is in portrait orientation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-318551160%2FProperties%2F1850203186" anchor-label="isLandscape" id="-318551160%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-landscape.html"><span>is</span><wbr><span><span>Landscape</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-318551160%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token punctuation">.</span><a href="is-landscape.html">isLandscape</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the size is in landscape orientation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-677599695%2FProperties%2F1850203186" anchor-label="isNaturalToLandscape" id="-677599695%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-natural-to-landscape.html"><span>is</span><wbr><span>Natural</span><wbr><span>To</span><wbr><span><span>Landscape</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-677599695%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-natural-to-landscape.html">isNaturalToLandscape</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the application is in landscape orientation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="908261081%2FProperties%2F1850203186" anchor-label="isNaturalToPortrait" id="908261081%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-natural-to-portrait.html"><span>is</span><wbr><span>Natural</span><wbr><span>To</span><wbr><span><span>Portrait</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="908261081%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-natural-to-portrait.html">isNaturalToPortrait</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the natural orientation is portrait.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-654440088%2FProperties%2F1850203186" anchor-label="isPortrait" id="-654440088%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-portrait.html"><span>is</span><wbr><span><span>Portrait</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-654440088%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token punctuation">.</span><a href="is-portrait.html">isPortrait</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the size is in portrait orientation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2020442687%2FProperties%2F1850203186" anchor-label="landscapize" id="-2020442687%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="landscapize.html"><span><span>landscapize</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2020442687%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token punctuation">.</span><a href="landscapize.html">landscapize</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a></div><div class="brief "><p class="paragraph">Gets the size in landscape orientation: the largest dimension as width and the smallest as height.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2052253520%2FProperties%2F1850203186" anchor-label="portraitize" id="-2052253520%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="portraitize.html"><span><span>portraitize</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2052253520%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token punctuation">.</span><a href="portraitize.html">portraitize</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a></div><div class="brief "><p class="paragraph">Gets the size in portrait orientation: the smallest dimension as width and the largest as height.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-355042893%2FProperties%2F1850203186" anchor-label="resolution" id="-355042893%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="resolution.html"><span><span>resolution</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-355042893%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/media/MediaFormat.html">MediaFormat</a><span class="token punctuation">.</span><a href="resolution.html">resolution</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a></div><div class="brief "><p class="paragraph">Extracts resolution from a <a href="https://developer.android.com/reference/kotlin/android/media/MediaFormat.html">MediaFormat</a>. Only for <a href="https://developer.android.com/reference/kotlin/android/media/MediaFormat.html">MediaFormat</a> of video.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1355166073%2FProperties%2F1850203186" anchor-label="reverse" id="1355166073%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="reverse.html"><span><span>reverse</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1355166073%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token punctuation">.</span><a href="reverse.html">reverse</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a></div><div class="brief "><p class="paragraph">Reverses width and height for a <a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="152090015%2FProperties%2F1850203186" anchor-label="rootCause" id="152090015%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="root-cause.html"><span>root</span><wbr><span><span>Cause</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="152090015%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token punctuation">.</span><a href="root-cause.html">rootCause</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a></div><div class="brief "><p class="paragraph">Get root cause. This code is from guava Throwables API.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="536507072%2FProperties%2F1850203186" anchor-label="screenRect" id="536507072%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="screen-rect.html"><span>screen</span><wbr><span><span>Rect</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="536507072%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="screen-rect.html">screenRect</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/graphics/Rect.html">Rect</a></div><div class="brief "><p class="paragraph">Get the screen rectangle in pixels</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-904796546%2FProperties%2F1850203186" anchor-label="size" id="-904796546%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="size.html"><span><span>size</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-904796546%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/graphics/Rect.html">Rect</a><span class="token punctuation">.</span><a href="size.html">size</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a></div><div class="brief "><p class="paragraph">Returns the <a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a> of the <a href="https://developer.android.com/reference/kotlin/android/graphics/Rect.html">Rect</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-934899541%2FProperties%2F1850203186" anchor-label="sourceConfig" id="-934899541%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="source-config.html"><span>source</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-934899541%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="../io.github.thibaultbee.streampack.core.elements.encoders/-audio-codec-config/index.html">AudioCodecConfig</a><span class="token punctuation">.</span><a href="source-config.html">sourceConfig</a><span class="token operator">: </span><a href="../io.github.thibaultbee.streampack.core.elements.sources.audio/-audio-source-config/index.html">AudioSourceConfig</a></div><div class="brief "><p class="paragraph">Converts <a href="../io.github.thibaultbee.streampack.core.elements.encoders/-audio-codec-config/index.html">AudioCodecConfig</a> to <a href="../io.github.thibaultbee.streampack.core.elements.sources.audio/-audio-source-config/index.html">AudioSourceConfig</a>.</p></div><div class="symbol monospace"><span class="token keyword">val </span><a href="../io.github.thibaultbee.streampack.core.elements.encoders/-video-codec-config/index.html">VideoCodecConfig</a><span class="token punctuation">.</span><a href="source-config.html">sourceConfig</a><span class="token operator">: </span><a href="../io.github.thibaultbee.streampack.core.elements.sources.video/-video-source-config/index.html">VideoSourceConfig</a></div><div class="brief "><p class="paragraph">Converts <a href="../io.github.thibaultbee.streampack.core.elements.encoders/-video-codec-config/index.html">VideoCodecConfig</a> to <a href="../io.github.thibaultbee.streampack.core.elements.sources.video/-video-source-config/index.html">VideoSourceConfig</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-851575801%2FProperties%2F1850203186" anchor-label="startCodeSize" id="-851575801%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="start-code-size.html"><span>start</span><wbr><span>Code</span><wbr><span><span>Size</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-851575801%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="start-code-size.html">startCodeSize</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Get start code size of <a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1274953095%2FProperties%2F1850203186" anchor-label="type" id="1274953095%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="type.html"><span><span>type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1274953095%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="https://developer.android.com/reference/kotlin/android/media/audiofx/AudioEffect.html">AudioEffect</a><span class="token punctuation">.</span><a href="type.html">type</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/util/UUID.html">UUID</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="EXTENSION_FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-815621676%2FFunctions%2F1850203186" anchor-label="clone" id="-815621676%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="clone.html"><span><span>clone</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-815621676%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="clone.html"><span class="token function">clone</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a></div><div class="brief "><p class="paragraph">Clone <a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a>. The position of the original <a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a> will be 0 after the clone.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1616436463%2FFunctions%2F1850203186" anchor-label="closestTo" id="1616436463%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="closest-to.html"><span>closest</span><wbr><span><span>To</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1616436463%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="closest-to.html"><span class="token function">closestTo</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">size<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a></div><div class="brief "><p class="paragraph">Find the closest size to the given size in a list of sizes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-537174141%2FFunctions%2F1850203186" anchor-label="extractRbsp" id="-537174141%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="extract-rbsp.html"><span>extract</span><wbr><span><span>Rbsp</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-537174141%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="extract-rbsp.html"><span class="token function">extractRbsp</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">headerLength<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1308196626%2FFunctions%2F1850203186" anchor-label="getLong" id="-1308196626%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-long.html"><span>get</span><wbr><span><span>Long</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1308196626%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="get-long.html"><span class="token function">getLong</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">isLittleEndian<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1444546460%2FFunctions%2F1850203186" anchor-label="getString" id="1444546460%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-string.html"><span>get</span><wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1444546460%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="get-string.html"><span class="token function">getString</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">size<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>this.remaining()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="553047025%2FFunctions%2F1850203186" anchor-label="indicesOf" id="553047025%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="indices-of.html"><span>indices</span><wbr><span><span>Of</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="553047025%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="indices-of.html"><span class="token function">indicesOf</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">prefix<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-750072639%2FFunctions%2F1850203186" anchor-label="isCompatibleWith" id="-750072639%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-compatible-with.html"><span>is</span><wbr><span>Compatible</span><wbr><span><span>With</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-750072639%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../io.github.thibaultbee.streampack.core.elements.encoders/-audio-codec-config/index.html">AudioCodecConfig</a><span class="token punctuation">.</span><a href="is-compatible-with.html"><span class="token function">isCompatibleWith</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">sourceConfig<span class="token operator">: </span><a href="../io.github.thibaultbee.streampack.core.elements.sources.audio/-audio-source-config/index.html">AudioSourceConfig</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether <a href="../io.github.thibaultbee.streampack.core.elements.encoders/-audio-codec-config/index.html">AudioCodecConfig</a> is compatible with <a href="../io.github.thibaultbee.streampack.core.elements.sources.audio/-audio-source-config/index.html">AudioSourceConfig</a>.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="../io.github.thibaultbee.streampack.core.elements.encoders/-video-codec-config/index.html">VideoCodecConfig</a><span class="token punctuation">.</span><a href="is-compatible-with.html"><span class="token function">isCompatibleWith</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">sourceConfig<span class="token operator">: </span><a href="../io.github.thibaultbee.streampack.core.elements.sources.video/-video-source-config/index.html">VideoSourceConfig</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether <a href="../io.github.thibaultbee.streampack.core.elements.encoders/-video-codec-config/index.html">VideoCodecConfig</a> is compatible with <a href="../io.github.thibaultbee.streampack.core.elements.encoders/-video-codec-config/index.html">VideoCodecConfig</a>.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="../io.github.thibaultbee.streampack.core.elements.sources.audio/-audio-source-config/index.html">AudioSourceConfig</a><span class="token punctuation">.</span><a href="is-compatible-with.html"><span class="token function">isCompatibleWith</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">sourceConfig<span class="token operator">: </span><a href="../io.github.thibaultbee.streampack.core.elements.sources.audio/-audio-source-config/index.html">AudioSourceConfig</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether <a href="../io.github.thibaultbee.streampack.core.elements.sources.audio/-audio-source-config/index.html">AudioSourceConfig</a> is compatible with <a href="../io.github.thibaultbee.streampack.core.elements.sources.audio/-audio-source-config/index.html">AudioSourceConfig</a>.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="../io.github.thibaultbee.streampack.core.elements.sources.video/-video-source-config/index.html">VideoSourceConfig</a><span class="token punctuation">.</span><a href="is-compatible-with.html"><span class="token function">isCompatibleWith</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">sourceConfig<span class="token operator">: </span><a href="../io.github.thibaultbee.streampack.core.elements.sources.video/-video-source-config/index.html">VideoSourceConfig</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether <a href="../io.github.thibaultbee.streampack.core.elements.sources.video/-video-source-config/index.html">VideoSourceConfig</a> is compatible with <a href="../io.github.thibaultbee.streampack.core.elements.sources.video/-video-source-config/index.html">VideoSourceConfig</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="679959868%2FFunctions%2F1850203186" anchor-label="isRotationDegreesPortrait" id="679959868%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-rotation-degrees-portrait.html"><span>is</span><wbr><span>Rotation</span><wbr><span>Degrees</span><wbr><span><span>Portrait</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="679959868%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-rotation-degrees-portrait.html"><span class="token function">isRotationDegreesPortrait</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/IntRange.html"><span class="token annotation builtin">IntRange</span></a><span class="token punctuation">(</span><span>from<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">0</span></span><span class="token punctuation">, </span></span><wbr><span>to<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">359</span></span></span><wbr><span class="token punctuation">)</span>&nbsp;</span>rotationDegrees<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the rotation is portrait for this device.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1062973105%2FFunctions%2F1850203186" anchor-label="isRotationPortrait" id="1062973105%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-rotation-portrait.html"><span>is</span><wbr><span>Rotation</span><wbr><span><span>Portrait</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1062973105%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">.</span><a href="is-rotation-portrait.html"><span class="token function">isRotationPortrait</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">rotation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the rotation is portrait for this device.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1788656759%2FFunctions%2F1850203186" anchor-label="or" id="1788656759%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="or.html"><span><span>or</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1788656759%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">infix </span><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte/index.html">Byte</a><span class="token punctuation">.</span><a href="or.html"><span class="token function">or</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">b<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte/index.html">Byte</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="symbol monospace"><span class="token keyword">infix </span><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte/index.html">Byte</a><span class="token punctuation">.</span><a href="or.html"><span class="token function">or</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">other<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="526604058%2FFunctions%2F1850203186" anchor-label="put" id="526604058%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="put.html"><span><span>put</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="526604058%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="put.html"><span class="token function">put</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">i<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="put.html"><span class="token function">put</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">s<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-short/index.html">Short</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="put.html"><span class="token function">put</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">i<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">i1<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="put.html"><span class="token function">put</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">buffer<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">, </span></span><span class="parameter ">offset<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">length<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1051317224%2FFunctions%2F1850203186" anchor-label="put3x3Matrix" id="1051317224%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="put3x3-matrix.html"><span><span>put3x3Matrix</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1051317224%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="put3x3-matrix.html"><span class="token function">put3x3Matrix</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">matrix<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int-array/index.html">IntArray</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1466180729%2FFunctions%2F1850203186" anchor-label="putFixed1616" id="1466180729%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="put-fixed1616.html"><span>put</span><wbr><span><span>Fixed1616</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1466180729%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="put-fixed1616.html"><span class="token function">putFixed1616</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">f<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="put-fixed1616.html"><span class="token function">putFixed1616</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">i<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="692146073%2FFunctions%2F1850203186" anchor-label="putFixed88" id="692146073%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="put-fixed88.html"><span>put</span><wbr><span><span>Fixed88</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="692146073%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="put-fixed88.html"><span class="token function">putFixed88</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">f<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="651935979%2FFunctions%2F1850203186" anchor-label="putInt" id="651935979%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="put-int.html"><span>put</span><wbr><span><span>Int</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="651935979%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="put-int.html"><span class="token function">putInt</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">d<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="put-int.html"><span class="token function">putInt</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">l<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1252350115%2FFunctions%2F1850203186" anchor-label="putInt24" id="1252350115%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="put-int24.html"><span>put</span><wbr><span><span>Int24</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1252350115%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="put-int24.html"><span class="token function">putInt24</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">i<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-109349613%2FFunctions%2F1850203186" anchor-label="putLong48" id="-109349613%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="put-long48.html"><span>put</span><wbr><span><span>Long48</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-109349613%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="put-long48.html"><span class="token function">putLong48</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">i<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1955898690%2FFunctions%2F1850203186" anchor-label="putShort" id="-1955898690%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="put-short.html"><span>put</span><wbr><span><span>Short</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1955898690%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="put-short.html"><span class="token function">putShort</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">d<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="put-short.html"><span class="token function">putShort</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">f<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="put-short.html"><span class="token function">putShort</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">i<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="put-short.html"><span class="token function">putShort</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">l<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-911760531%2FFunctions%2F1850203186" anchor-label="putString" id="-911760531%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="put-string.html"><span>put</span><wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-911760531%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="put-string.html"><span class="token function">putString</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">s<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1176092417%2FFunctions%2F1850203186" anchor-label="removePrefixes" id="1176092417%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="remove-prefixes.html"><span>remove</span><wbr><span><span>Prefixes</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1176092417%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="remove-prefixes.html"><span class="token function">removePrefixes</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">prefixes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a></div><div class="brief "><p class="paragraph">Remove all <a href="remove-prefixes.html">prefixes</a> from <a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a> whatever their order. It slices <a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a> so it does not copy data.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-108499902%2FFunctions%2F1850203186" anchor-label="removeStartCode" id="-108499902%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="remove-start-code.html"><span>remove</span><wbr><span>Start</span><wbr><span><span>Code</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-108499902%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="remove-start-code.html"><span class="token function">removeStartCode</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-438945924%2FFunctions%2F1850203186" anchor-label="rotate" id="-438945924%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="rotate.html"><span><span>rotate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-438945924%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token punctuation">.</span><a href="rotate.html"><span class="token function">rotate</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/IntRange.html"><span class="token annotation builtin">IntRange</span></a><span class="token punctuation">(</span><span>from<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">0</span></span><span class="token punctuation">, </span></span><wbr><span>to<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">359</span></span></span><wbr><span class="token punctuation">)</span>&nbsp;</span>rotationDegrees<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a></div><div class="brief "><p class="paragraph">Rotates a <a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a> according to the rotation degrees.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-645003099%2FFunctions%2F1850203186" anchor-label="rotateFromNaturalOrientation" id="-645003099%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="rotate-from-natural-orientation.html"><span>rotate</span><wbr><span>From</span><wbr><span>Natural</span><wbr><span><span>Orientation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-645003099%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token punctuation">.</span><a href="rotate-from-natural-orientation.html"><span class="token function">rotateFromNaturalOrientation</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter "><span><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/IntRange.html"><span class="token annotation builtin">IntRange</span></a><span class="token punctuation">(</span><span>from<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">0</span></span><span class="token punctuation">, </span></span><wbr><span>to<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">359</span></span></span><wbr><span class="token punctuation">)</span>&nbsp;</span>rotationDegrees<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a></div><div class="brief "><p class="paragraph">Rotates a <a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a> according to device natural orientation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1644992103%2FFunctions%2F1850203186" anchor-label="runningHistory" id="1644992103%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="running-history.html"><span>running</span><wbr><span><span>History</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1644992103%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="running-history.html">T</a><span class="token operator">&gt; </span><span data-unresolved-link="kotlinx.coroutines.flow/SharedFlow///PointingToDeclaration/">SharedFlow</span><span class="token operator">&lt;</span><a href="running-history.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="running-history.html"><span class="token function">runningHistory</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/Flow///PointingToDeclaration/">Flow</span><span class="token operator">&lt;</span><a href="-history/index.html">History</a><span class="token operator">&lt;</span><a href="running-history.html">T</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-420903733%2FFunctions%2F1850203186" anchor-label="runningHistoryNotNull" id="-420903733%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="running-history-not-null.html"><span>running</span><wbr><span>History</span><wbr><span>Not</span><wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-420903733%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="running-history-not-null.html">T</a><span class="token operator">&gt; </span><span data-unresolved-link="kotlinx.coroutines.flow/SharedFlow///PointingToDeclaration/">SharedFlow</span><span class="token operator">&lt;</span><a href="running-history-not-null.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="running-history-not-null.html"><span class="token function">runningHistoryNotNull</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/Flow///PointingToDeclaration/">Flow</span><span class="token operator">&lt;</span><a href="-history/index.html">History</a><span class="token operator">&lt;</span><a href="running-history-not-null.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1646472935%2FFunctions%2F1850203186" anchor-label="shl" id="-1646472935%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="shl.html"><span><span>shl</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1646472935%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">infix </span><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">.</span><a href="shl.html"><span class="token function">shl</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">i<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="symbol monospace"><span class="token keyword">infix </span><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte/index.html">Byte</a><span class="token punctuation">.</span><a href="shl.html"><span class="token function">shl</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">i<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="symbol monospace"><span class="token keyword">infix </span><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-short/index.html">Short</a><span class="token punctuation">.</span><a href="shl.html"><span class="token function">shl</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">i<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1300026265%2FFunctions%2F1850203186" anchor-label="shr" id="1300026265%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="shr.html"><span><span>shr</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1300026265%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">infix </span><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte/index.html">Byte</a><span class="token punctuation">.</span><a href="shr.html"><span class="token function">shr</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">i<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="350384352%2FFunctions%2F1850203186" anchor-label="slices" id="350384352%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="slices.html"><span><span>slices</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="350384352%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="slices.html"><span class="token function">slices</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">prefix<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get all <a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a> occurrences that start with <a href="slices.html">prefix</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="99472708%2FFunctions%2F1850203186" anchor-label="startsWith" id="99472708%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="starts-with.html"><span>starts</span><wbr><span><span>With</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="99472708%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="starts-with.html"><span class="token function">startsWith</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">prefix<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the <a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a> starts with a <a href="starts-with.html">String</a> from the current position.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="starts-with.html"><span class="token function">startsWith</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">prefixes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-pair/index.html">Pair</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Whether the <a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a> starts with a list of <a href="starts-with.html">ByteBuffer</a> from the current position.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="starts-with.html"><span class="token function">startsWith</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">prefix<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">, </span></span><span class="parameter ">prefixSkip<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="starts-with.html"><span class="token function">startsWith</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">prefix<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">prefixSkip<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the <a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a> starts with a <a href="starts-with.html">ByteArray</a> from the current position.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="886010821%2FFunctions%2F1850203186" anchor-label="toBitList" id="886010821%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-bit-list.html"><span>to</span><wbr><span>Bit</span><wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="886010821%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">.</span><a href="to-bit-list.html"><span class="token function">toBitList</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="893934793%2FFunctions%2F1850203186" anchor-label="toBoolean" id="893934793%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-boolean.html"><span>to</span><wbr><span><span>Boolean</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="893934793%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte/index.html">Byte</a><span class="token punctuation">.</span><a href="to-boolean.html"><span class="token function">toBoolean</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Convert Byte to a Boolean.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">.</span><a href="to-boolean.html"><span class="token function">toBoolean</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Convert Int to a Boolean.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1078836767%2FFunctions%2F1850203186" anchor-label="toByte" id="1078836767%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-byte.html"><span>to</span><wbr><span><span>Byte</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1078836767%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">.</span><a href="to-byte.html"><span class="token function">toByte</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte/index.html">Byte</a></div><div class="brief "><p class="paragraph">Convert a Boolean to a Byte.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-706937491%2FFunctions%2F1850203186" anchor-label="toByteArray" id="-706937491%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-byte-array.html"><span>to</span><wbr><span>Byte</span><wbr><span><span>Array</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-706937491%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">.</span><a href="to-byte-array.html"><span class="token function">toByteArray</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">Returns ByteBuffer array even if <a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html#hasarray">ByteBuffer.hasArray</a> returns false.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1215906906%2FFunctions%2F1850203186" anchor-label="toInt" id="1215906906%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-int.html"><span>to</span><wbr><span><span>Int</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1215906906%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">.</span><a href="to-int.html"><span class="token function">toInt</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Convert a Boolean to an Int.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-123326213%2FFunctions%2F1850203186" anchor-label="unzip" id="-123326213%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="unzip.html"><span><span>unzip</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-123326213%2FFunctions%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="unzip.html">T</a><span class="token operator">&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-iterable/index.html">Iterable</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="unzip.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="unzip.html"><span class="token function">unzip</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="unzip.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>© 2025 Copyright</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

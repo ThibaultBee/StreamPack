@@ -1,0 +1,232 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>DualStreamerVideoCodecConfig</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+<a class="library-name--link" href="../../../index.html">
+                    StreamPack
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">3.0.0-RC
+        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":streampack-core:dokkaHtmlPartial/release">androidJvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":streampack-core:dokkaHtmlPartial/release" data-filter=":streampack-core:dokkaHtmlPartial/release">
+                                <span class="checkbox--icon"></span>
+                                androidJvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    StreamPack
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="streampack-core::io.github.thibaultbee.streampack.core.streamers.dual/DualStreamerVideoCodecConfig///PointingToDeclaration//1850203186">
+  <div class="breadcrumbs"><a href="../../index.html">streampack-core</a><span class="delimiter">/</span><a href="../index.html">io.github.thibaultbee.streampack.core.streamers.dual</a><span class="delimiter">/</span><span class="current">DualStreamerVideoCodecConfig</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Dual</span><wbr><span>Streamer</span><wbr><span>Video</span><wbr><span>Codec</span><wbr><span><span>Config</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">DualStreamerVideoCodecConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>mimeType<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>MediaFormat.MIMETYPE_VIDEO_AVC<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>startBitrate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>resolution<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token operator"> = </span>Size(1280, 720)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>profile<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>getBestProfile(mimeType)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>level<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>getBestLevel(mimeType, profile)<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>gopDurationInS<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a><span class="token operator"> = </span><span class="token constant">1.0f</span></span></span><span class="token punctuation">)</span></div><p class="paragraph">A data class that holds video specific codec data.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="-1662752133%2FConstructors%2F1850203186" anchor-label="DualStreamerVideoCodecConfig" id="-1662752133%2FConstructors%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-dual-streamer-video-codec-config.html"><span>Dual</span><wbr><span>Streamer</span><wbr><span>Video</span><wbr><span>Codec</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1662752133%2FConstructors%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">mimeType<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>MediaFormat.MIMETYPE_VIDEO_AVC<span class="token punctuation">, </span></span><span class="parameter ">startBitrate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">resolution<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token operator"> = </span>Size(1280, 720)<span class="token punctuation">, </span></span><span class="parameter ">profile<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>getBestProfile(mimeType)<span class="token punctuation">, </span></span><span class="parameter ">level<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>getBestLevel(mimeType, profile)<span class="token punctuation">, </span></span><span class="parameter ">gopDurationInS<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a><span class="token operator"> = </span><span class="token constant">1.0f</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="-1563584389%2FProperties%2F1850203186" anchor-label="gopDurationInS" id="-1563584389%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="gop-duration-in-s.html"><span>gop</span><wbr><span>Duration</span><wbr><span>In</span><wbr><span><span>S</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1563584389%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="gop-duration-in-s.html">gopDurationInS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a><span class="token operator"> = </span><span class="token constant">1.0f</span></div><div class="brief "><p class="paragraph">Video encoder I-frame interval in seconds. This is a best effort as few camera can not generate a fixed framerate. For live streaming, I-frame interval should be really low. For recording, I-frame interval should be higher. A value of 0 means that each frame is an I-frame. On device with API &lt; 25, this value will be rounded to an integer. So don't expect a precise value and any value &lt; 0.5 will be considered as 0.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="437426761%2FProperties%2F1850203186" anchor-label="level" id="437426761%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="level.html"><span><span>level</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="437426761%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="level.html">level</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Video encoder level. Encoders may not support requested level. In this case, StreamPack fallbacks to default level. ** See ** <a href="https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel">MediaCodecInfo.CodecProfileLevel</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="459174495%2FProperties%2F1850203186" anchor-label="mimeType" id="459174495%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="mime-type.html"><span>mime</span><wbr><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="459174495%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="mime-type.html">mimeType</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Video encoder mime type. Only <a href="https://developer.android.com/reference/kotlin/android/media/MediaFormat.html#mimetype_video_avc">MediaFormat.MIMETYPE_VIDEO_AVC</a>, <a href="https://developer.android.com/reference/kotlin/android/media/MediaFormat.html#mimetype_video_hevc">MediaFormat.MIMETYPE_VIDEO_HEVC</a>, <a href="https://developer.android.com/reference/kotlin/android/media/MediaFormat.html#mimetype_video_vp9">MediaFormat.MIMETYPE_VIDEO_VP9</a> and <a href="https://developer.android.com/reference/kotlin/android/media/MediaFormat.html#mimetype_video_av1">MediaFormat.MIMETYPE_VIDEO_AV1</a> are supported yet.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1658276804%2FProperties%2F1850203186" anchor-label="profile" id="1658276804%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="profile.html"><span><span>profile</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1658276804%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="profile.html">profile</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Video encoder profile. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile. If not set, profile is always a 8 bit profile. StreamPack try to apply the highest profile available. If the decoder does not support the profile, you should explicitly set the profile to a lower value such as <a href="https://developer.android.com/reference/kotlin/android/media/MediaCodecInfo.CodecProfileLevel.html#avcprofilebaseline">AVCProfileBaseline</a> for AVC, <a href="https://developer.android.com/reference/kotlin/android/media/MediaCodecInfo.CodecProfileLevel.html#hevcprofilemain">HEVCProfileMain</a> for HEVC, <a href="https://developer.android.com/reference/kotlin/android/media/MediaCodecInfo.CodecProfileLevel.html#vp9profile0">VP9Profile0</a> for VP9. ** See ** <a href="https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel">MediaCodecInfo.CodecProfileLevel</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="683583745%2FProperties%2F1850203186" anchor-label="resolution" id="683583745%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="resolution.html"><span><span>resolution</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="683583745%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="resolution.html">resolution</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a></div><div class="brief "><p class="paragraph">Video output resolution in pixel.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1307047394%2FProperties%2F1850203186" anchor-label="startBitrate" id="1307047394%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="start-bitrate.html"><span>start</span><wbr><span><span>Bitrate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1307047394%2FProperties%2F1850203186"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="start-bitrate.html">startBitrate</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Video encoder bitrate in bits/s.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>© 2025 Copyright</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
