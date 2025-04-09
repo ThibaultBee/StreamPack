@@ -1,6 +1,20 @@
 Changelog
 ==========
 
+Version 3.0.0-RC
+-------------
+
+Version 3.0.0-RC is a release candidate for the next major version of StreamPack. It includes:
+
+- dynamic endpoint: the endpoint (RTMP, SRT, File,...) is inferred from the stream URL.
+- multiple outputs: you can now stream to multiple endpoints at the same time.
+- dynamic input: you can set the input source (camera, screen, file,...) at runtime.
+- a new file writer based on Android `MediaMuxer`.
+- package have been moved, renamed and splits.
+
+For the migration, see
+the [migration guide](https://github.com/ThibaultBee/StreamPack/wiki/Migration-from-2.6.X-to-3.X.X).
+
 Version 2.6.1
 -------------
 
