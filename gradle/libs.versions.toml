@@ -2,7 +2,7 @@
 agp = "8.9.1"
 concurrentFutures = "1.2.0"
 datastorePreference = "1.1.4"
-guava = "33.3.1-android"
+guava = "33.4.7-android"
 videoApiClient = "1.6.7"
 androidxActivity = "1.10.1"
 androidxAppcompat = "1.7.0"
