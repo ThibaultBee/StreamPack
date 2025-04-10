@@ -369,7 +369,7 @@ void main() {
 
         GLES20.glTexParameteri(
             GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MIN_FILTER,
-            GLES20.GL_NEAREST
+            GLES20.GL_LINEAR
         )
         GLES20.glTexParameteri(
             GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MAG_FILTER,
@@ -579,7 +579,6 @@ void main() {
 
         /**
          * Input format is explicitly YUV.
-         *
          *
          * This needs to be specified for HDR content. Only __samplerExternal2DY2YEXT should be
          * used for HDR YUV content as samplerExternalOES may not correctly convert to RGB.

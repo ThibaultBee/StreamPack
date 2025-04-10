@@ -49,7 +49,6 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLU
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils.deleteTexture
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils.generateFbo
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils.generateTexture
-import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils.getSurfaceSize
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils.glVersionNumber
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GraphicDeviceInfo
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.OutputSurface

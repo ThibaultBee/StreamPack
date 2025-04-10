@@ -7,6 +7,7 @@ import android.util.Size
 import android.view.Surface
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.AbstractSurfaceOutput
+import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
 import java.util.concurrent.Future
@@ -55,9 +56,11 @@ class SurfaceProcessor(
             val surfaceTexture = SurfaceTexture(renderer.textureName)
             surfaceTexture.setDefaultBufferSize(surfaceSize.width, surfaceSize.height)
             surfaceTexture.setOnFrameAvailableListener(this, glHandler)
+            if (dynamicRangeProfile.isHdr) {
+                renderer.setInputFormat(GLUtils.InputFormat.YUV)
+            }
 
             surfaceInputsTimestampInNsMap[surfaceTexture] = timestampOffsetInNs
-
             SurfaceInput(Surface(surfaceTexture), surfaceTexture)
         }
 

@@ -112,6 +112,9 @@ internal class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSo
     }
 
     override suspend fun configure(config: VideoSourceConfig) {
+        require(!config.dynamicRangeProfile.isHdr) {
+            "Bitmap source does not support HDR"
+        }
         videoSourceConfig = config
     }
 
