@@ -26,23 +26,29 @@ dependencies {
 ## Features
 
 * Video:
-    * Source: Cameras or Screen recorder
+    * Source: Cameras, Screen recorder
+      or [custom video source](docs/AdvancedStreamer.md#creates-your-custom-sources)
     * Orientation: portrait or landscape
-    * Codec: HEVC/H.265, AVC/H.264, VP9 or AV1 (experimental,
-      see https://github.com/ThibaultBee/StreamPack/discussions/90)
+    * Codec: HEVC/H.265, AVC/H.264, VP9 or AV1
     * HDR (experimental, see https://github.com/ThibaultBee/StreamPack/discussions/91)
     * Configurable bitrate, resolution, frame rate (tested up to 60), encoder level, encoder profile
     * Video only mode
     * Device video capabilities
+    * Switch between video sources
+    * Camera settings: auto-focus, exposure, white balance, zoom, flash,...
 * Audio:
+    * Source: Microphone, device audio
+      or [custom audio source](docs/AdvancedStreamer.md#creates-your-custom-sources)
     * Codec: AAC:LC, HE, HEv2,... or Opus
     * Configurable bitrate, sample rate, stereo/mono, data format
     * Processing: Noise suppressor or echo cancellation
     * Audio only mode
     * Device audio capabilities
+    * Switch between audio sources
 * File: TS, FLV, MP4, WebM and Fragmented MP4
     * Write to a single file or multiple chunk files
 * Streaming: RTMP/RTMPS or SRT
+    * [Record to a file and stream at the same time](docs/LiveAndRecordSimultaneously.md)
     * Support for enhanced RTMP
     * Ultra low-latency based on [SRT](https://github.com/Haivision/srt)
     * Network adaptive bitrate mechanism for [SRT](https://github.com/Haivision/srt)
