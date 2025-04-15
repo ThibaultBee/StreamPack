@@ -26,6 +26,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ISinkInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
+import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 
