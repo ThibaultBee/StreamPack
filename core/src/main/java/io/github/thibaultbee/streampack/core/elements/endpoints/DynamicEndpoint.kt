@@ -34,7 +34,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.update
 
 /**
  * An implementation of [IEndpointInternal] where the endpoint is created based on the [MediaDescriptor].
@@ -86,11 +85,8 @@ open class DynamicEndpoint(
             return
         }
 
-        _endpointFlow.update {
-            getEndpointAndConfig(descriptor).apply {
-                open(descriptor)
-            }
-        }
+        _endpointFlow.emit(getEndpointAndConfig(descriptor))
+        _endpoint?.open(descriptor) ?: throw IllegalStateException("Endpoint is null")
     }
 
     override fun addStreams(streamConfigs: List<CodecConfig>) =
@@ -110,9 +106,7 @@ open class DynamicEndpoint(
         try {
             _endpoint?.close()
         } finally {
-            _endpointFlow.update {
-                null
-            }
+            _endpointFlow.emit(null)
         }
     }
 
@@ -122,10 +116,10 @@ open class DynamicEndpoint(
         if (endpoint is CompositeEndpoint) {
             if (endpoint.muxer is TsMuxer) {
                 // Clean up services
-                (endpoint.muxer as TsMuxer).removeServices()
+                endpoint.muxer.removeServices()
                 val serviceInfo = mediaDescriptor.getCustomData(TSServiceInfo::class.java)
                     ?: createDefaultTsServiceInfo()
-                (endpoint.muxer as TsMuxer).addService(serviceInfo)
+                endpoint.muxer.addService(serviceInfo)
             }
         }
 

@@ -72,19 +72,20 @@ class SrtSink : AbstractSink() {
             require(mediaDescriptor.srtUrl.transtype == Transtype.LIVE)
         }
 
-        socket = CoroutineSrtSocket().apply {
+        socket = CoroutineSrtSocket()
+        socket?.let {
             // Forces this value. Only works if they are null in [srtUrl]
-            setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
-            setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
+            it.setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)
+            it.setSockFlag(SockOpt.TRANSTYPE, Transtype.LIVE)
             completionException = null
             isOnError = false
-            socketContext.invokeOnCompletion { t ->
+            it.socketContext.invokeOnCompletion { t ->
                 completionException = t
                 runBlocking {
                     this@SrtSink.close()
                 }
             }
-            connect(mediaDescriptor.srtUrl)
+            it.connect(mediaDescriptor.srtUrl)
         }
         _isOpenFlow.emit(true)
     }

@@ -446,10 +446,6 @@ internal class EncodingPipelineOutput(
      * Closes the streamer endpoint.
      */
     override suspend fun close() = withContext(coroutineDispatcher) {
-        if (!isOpenFlow.value) {
-            Logger.i(TAG, "Endpoint is already closed")
-            return@withContext
-        }
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Output is released")
         }
