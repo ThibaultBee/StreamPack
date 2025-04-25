@@ -15,15 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources
 
-import androidx.activity.result.ActivityResult
-
 /**
  * Interface to implement class that uses MediaProjection.
- * This interface is used to get the activity result from the activity.
  */
-interface IMediaProjectionSource {
-    /**
-     * Set the activity result to get the media projection.
-     */
-    var activityResult: ActivityResult?
-}
+interface IMediaProjectionSource

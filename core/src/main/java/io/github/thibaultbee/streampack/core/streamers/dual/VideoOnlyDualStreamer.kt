@@ -16,7 +16,10 @@
 package io.github.thibaultbee.streampack.core.streamers.dual
 
 import android.content.Context
+import android.content.Intent
+import android.media.projection.MediaProjection
 import android.view.Surface
+import androidx.activity.result.ActivityResult
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
@@ -26,6 +29,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
+import io.github.thibaultbee.streampack.core.utils.extensions.getMediaProjection
 
 
 /**
@@ -55,12 +59,39 @@ suspend fun cameraVideoOnlyDualStreamer(
  * Creates a [DualStreamer] with the screen as video source and no audio source.
  *
  * @param context the application context
+ * @param resultCode the result code of the [ActivityResult]
+ * @param resultData the result data of the [ActivityResult]
  * @param firstEndpointFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
  * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 suspend fun screenRecorderVideoOnlyDualStreamer(
     context: Context,
+    resultCode: Int,
+    resultData: Intent,
+    firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    @RotationValue defaultRotation: Int = context.displayRotation
+) = screenRecorderVideoOnlyDualStreamer(
+    context,
+    context.getMediaProjection(resultCode, resultData),
+    firstEndpointFactory,
+    secondEndpointFactory,
+    defaultRotation
+)
+
+/**
+ * Creates a [DualStreamer] with the screen as video source and no audio source.
+ *
+ * @param context the application context
+ * @param mediaProjection the media projection
+ * @param firstEndpointFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
+ * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ */
+suspend fun screenRecorderVideoOnlyDualStreamer(
+    context: Context,
+    mediaProjection: MediaProjection,
     firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
@@ -71,7 +102,7 @@ suspend fun screenRecorderVideoOnlyDualStreamer(
         secondEndpointFactory = secondEndpointFactory,
         defaultRotation = defaultRotation
     )
-    streamer.setVideoSource(MediaProjectionVideoSourceFactory())
+    streamer.setVideoSource(MediaProjectionVideoSourceFactory(mediaProjection))
     return streamer
 }
 
