@@ -45,7 +45,7 @@ import io.github.thibaultbee.streampack.core.streamers.dual.DualStreamerVideoCon
 import io.github.thibaultbee.streampack.core.streamers.dual.IAudioDualStreamer
 import io.github.thibaultbee.streampack.core.streamers.dual.IDualStreamer
 import io.github.thibaultbee.streampack.core.streamers.dual.IVideoDualStreamer
-import io.github.thibaultbee.streampack.core.streamers.extensions.setActivityResult
+import io.github.thibaultbee.streampack.core.streamers.extensions.setVideoActivityResult
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
@@ -135,7 +135,7 @@ class MainActivity : AppCompatActivity() {
                     this,
                     DemoScreenRecorderService::class.java,
                     { streamer ->
-                        streamer.setActivityResult(result)
+                        streamer.setVideoActivityResult(result)
                         lifecycleScope.launch {
                             try {
                                 configure(streamer)
