@@ -50,7 +50,7 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
     private val isRunning: Boolean
         get() = audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING
 
-    private val _isStreamingFlow = MutableStateFlow(false)
+    protected val _isStreamingFlow = MutableStateFlow(false)
     override val isStreamingFlow = _isStreamingFlow.asStateFlow()
 
     private val audioTimestamp = AudioTimestamp()
@@ -342,5 +342,12 @@ abstract class AudioRecordSourceFactory(
                 }
             }
         }
+    }
+
+    companion object {
+        internal val defaultAudioEffects = setOf(
+            AudioEffect.EFFECT_TYPE_AEC,
+            AudioEffect.EFFECT_TYPE_NS
+        )
     }
 }
