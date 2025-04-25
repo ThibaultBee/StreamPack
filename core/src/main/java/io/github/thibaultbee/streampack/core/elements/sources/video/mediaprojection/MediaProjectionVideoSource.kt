@@ -16,15 +16,17 @@
 package io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection
 
 import android.content.Context
+import android.content.Intent
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.projection.MediaProjection
-import android.media.projection.MediaProjectionManager
+import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Size
 import android.view.Surface
 import androidx.activity.result.ActivityResult
+import androidx.annotation.RequiresApi
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSource
@@ -34,11 +36,13 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceC
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.densityDpi
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.screenRect
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.utils.extensions.getMediaProjection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 internal class MediaProjectionVideoSource(
-    private val context: Context
+    private val context: Context,
+    private val mediaProjection: MediaProjection
 ) : IVideoSourceInternal, ISurfaceSourceInternal, IMediaProjectionSource {
     override val timestampOffsetInNs = 0L
     override val infoProviderFlow =
@@ -49,15 +53,6 @@ internal class MediaProjectionVideoSource(
 
     private var outputSurface: Surface? = null
 
-    private var mediaProjection: MediaProjection? = null
-
-    /**
-     * Set the activity result to get the media projection.
-     */
-    override var activityResult: ActivityResult? = null
-
-    private val mediaProjectionManager =
-        context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
     private var virtualDisplay: VirtualDisplay? = null
 
     private val virtualDisplayThread = HandlerThread("VirtualDisplayThread").apply { start() }
@@ -98,28 +93,19 @@ internal class MediaProjectionVideoSource(
     override suspend fun configure(config: VideoSourceConfig) = Unit
 
     override suspend fun startStream() {
-        val activityResult = requireNotNull(activityResult) {
-            "MediaProjection requires an activity result to be set"
-        }
-
         val screenRect = context.screenRect
 
-        mediaProjection = mediaProjectionManager.getMediaProjection(
-            activityResult.resultCode,
-            activityResult.data!!
-        ).apply {
-            registerCallback(mediaProjectionCallback, virtualDisplayHandler)
-            virtualDisplay = createVirtualDisplay(
-                VIRTUAL_DISPLAY_NAME,
-                screenRect.width(),
-                screenRect.height(),
-                context.densityDpi,
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                outputSurface,
-                virtualDisplayCallback,
-                virtualDisplayHandler
-            )
-        }
+        mediaProjection.registerCallback(mediaProjectionCallback, virtualDisplayHandler)
+        virtualDisplay = mediaProjection.createVirtualDisplay(
+            VIRTUAL_DISPLAY_NAME,
+            screenRect.width(),
+            screenRect.height(),
+            context.densityDpi,
+            DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+            outputSurface,
+            virtualDisplayCallback,
+            virtualDisplayHandler
+        )
         _isStreamingFlow.emit(true)
     }
 
@@ -127,8 +113,8 @@ internal class MediaProjectionVideoSource(
         virtualDisplay?.release()
         virtualDisplay = null
 
-        mediaProjection?.stop()
-        mediaProjection = null
+        mediaProjection.unregisterCallback(mediaProjectionCallback)
+        mediaProjection.stop()
     }
 
     override fun release() {
@@ -156,17 +142,31 @@ internal class MediaProjectionVideoSource(
 }
 
 /**
+ * Creates a [MediaProjectionVideoSourceFactory].
+ *
+ * @param context The application context
+ * @param resultCode the result code of the [ActivityResult]
+ * @param resultData the result data of the [ActivityResult]
+ * @return A [MediaProjectionVideoSourceFactory] instance
+ */
+@RequiresApi(Build.VERSION_CODES.Q)
+fun MediaProjectionVideoSourceFactory(
+    context: Context,
+    resultCode: Int,
+    resultData: Intent
+) = MediaProjectionVideoSourceFactory(
+    context.getMediaProjection(resultCode, resultData)
+)
+
+/**
  * A factory to create a [MediaProjectionVideoSourceFactory].
  *
- * @param activityResult The activity result to get the media projection
+ * @param mediaProjection The media projection
  */
-class MediaProjectionVideoSourceFactory(private val activityResult: ActivityResult? = null) :
+class MediaProjectionVideoSourceFactory(private val mediaProjection: MediaProjection) :
     IVideoSourceInternal.Factory {
     override suspend fun create(context: Context): IVideoSourceInternal {
-        val source = MediaProjectionVideoSource(context)
-        if (activityResult != null) {
-            source.activityResult = activityResult
-        }
+        val source = MediaProjectionVideoSource(context, mediaProjection)
         return source
     }
 
