@@ -28,6 +28,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
+import android.view.Surface
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.app.ActivityCompat
@@ -39,6 +40,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.rootCause
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.streamers.IVideoStreamer
+import io.github.thibaultbee.streampack.core.streamers.orientation.DisplayRotationProvider
 import io.github.thibaultbee.streampack.core.streamers.orientation.IRotationProvider
 import io.github.thibaultbee.streampack.core.streamers.orientation.SensorRotationProvider
 import io.github.thibaultbee.streampack.core.streamers.single.screenRecorderSingleStreamer
@@ -82,7 +84,7 @@ abstract class DefaultScreenRecorderService(
     protected var streamer: IVideoStreamer<*>? = null
         private set
 
-    protected open val rotationProvider: IRotationProvider by lazy { SensorRotationProvider(this) }
+    protected open val rotationProvider: IRotationProvider by lazy { DisplayRotationProvider(this) }
 
     private val binder = ScreenRecorderServiceBinder()
     private val notificationUtils: NotificationUtils by lazy {
@@ -182,7 +184,7 @@ abstract class DefaultScreenRecorderService(
         return if (enableMicrophone) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 screenRecorderSingleStreamer(
-                    applicationContext, resultCode, resultData
+                    applicationContext, resultCode, resultData, defaultRotation = Surface.ROTATION_90
                 )
             } else {
                 screenRecorderSingleStreamer(

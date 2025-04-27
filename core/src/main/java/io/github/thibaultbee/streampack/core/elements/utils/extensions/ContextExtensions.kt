@@ -48,7 +48,8 @@ val Context.displayRotationDegrees: Int
 val Context.displayRotation: Int
     @RotationValue
     get() {
-        return ContextCompat.getDisplayOrDefault(this).rotation
+        return Surface.ROTATION_90
+//        return ContextCompat.getDisplayOrDefault(this).rotation
     }
 
 /**
@@ -138,7 +139,11 @@ val Context.densityDpi: Int
     get() = resources.displayMetrics.densityDpi
 
 /**
- * Get the screen rectangle in pixels
+ * 获取屏幕矩形区域(强制横屏尺寸)
  */
 val Context.screenRect: Rect
-    get() = WindowUtils.getScreenRect(this)
+    get() {
+        val rect = WindowUtils.getScreenRect(this)
+        return if (rect.width() > rect.height()) rect 
+        else Rect(0, 0, rect.height(), rect.width())
+    }
