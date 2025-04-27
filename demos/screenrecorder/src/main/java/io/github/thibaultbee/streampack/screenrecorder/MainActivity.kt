@@ -45,7 +45,6 @@ import io.github.thibaultbee.streampack.core.streamers.dual.DualStreamerVideoCon
 import io.github.thibaultbee.streampack.core.streamers.dual.IAudioDualStreamer
 import io.github.thibaultbee.streampack.core.streamers.dual.IDualStreamer
 import io.github.thibaultbee.streampack.core.streamers.dual.IVideoDualStreamer
-import io.github.thibaultbee.streampack.core.streamers.extensions.setVideoActivityResult
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
@@ -135,7 +134,7 @@ class MainActivity : AppCompatActivity() {
                     this,
                     DemoScreenRecorderService::class.java,
                     { streamer ->
-                        streamer.setVideoActivityResult(result)
+//                        streamer.setVideoActivityResult(result)
                         lifecycleScope.launch {
                             try {
                                 configure(streamer)
@@ -153,6 +152,12 @@ class MainActivity : AppCompatActivity() {
                     {
                         binding.liveButton.isChecked = false
                         Log.i(TAG, "Service disconnected")
+                    },
+                    customBundle = Bundle().apply{
+                        putInt("resultCode",result.resultCode)
+                        result.data?.let {
+                            this.putParcelable("resultData",it)
+                        }
                     },
                     enableAudio = configuration.audio.enable
                 )

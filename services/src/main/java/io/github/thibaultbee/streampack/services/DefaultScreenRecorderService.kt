@@ -34,6 +34,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rootCause
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -159,6 +160,15 @@ abstract class DefaultScreenRecorderService(
      */
     open suspend fun createStreamer(customBundle: Bundle): IVideoStreamer<*> {
         val enableMicrophone = customBundle.getBoolean(ENABLE_MICROPHONE_KEY, false)
+        val resultCode = customBundle.getInt("resultCode", -1)
+        // 获取 resultData
+        val resultData = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            customBundle.getParcelable("resultData", Intent::class.java)
+        } else {
+            customBundle.getParcelable<Intent>("resultData")
+        }
+        requireNotNull(resultData)
+
         if (enableMicrophone) {
             if (ActivityCompat.checkSelfPermission(
                     this,
@@ -170,12 +180,20 @@ abstract class DefaultScreenRecorderService(
         }
 
         return if (enableMicrophone) {
-            screenRecorderSingleStreamer(
-                applicationContext,
-            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                screenRecorderSingleStreamer(
+                    applicationContext, resultCode, resultData
+                )
+            } else {
+                screenRecorderSingleStreamer(
+                    applicationContext, resultCode, resultData, MicrophoneSourceFactory()
+                )
+
+            }
+
         } else {
             screenRecorderVideoOnlySingleStreamer(
-                applicationContext
+                applicationContext, resultCode, resultData
             )
         }
     }
