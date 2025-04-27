@@ -150,7 +150,7 @@ internal class EncodingPipelineOutput(
      *
      * @param rotation The target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
      */
-    override suspend fun setTargetRotation(rotation: Int) {
+    override suspend fun setTargetRotation(@RotationValue rotation: Int) {
         if (!withVideo) {
             Logger.w(TAG, "Video is not enabled")
             return
