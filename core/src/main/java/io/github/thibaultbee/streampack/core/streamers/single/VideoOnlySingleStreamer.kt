@@ -16,10 +16,9 @@
 package io.github.thibaultbee.streampack.core.streamers.single
 
 import android.content.Context
-import android.content.Intent
 import android.media.projection.MediaProjection
+import android.media.projection.MediaProjectionManager
 import android.view.Surface
-import androidx.activity.result.ActivityResult
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
@@ -33,7 +32,6 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRo
 import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
-import io.github.thibaultbee.streampack.core.utils.extensions.getMediaProjection
 
 
 /**
@@ -61,29 +59,7 @@ suspend fun cameraVideoOnlySingleStreamer(
  * Creates a [SingleStreamer] with the screen as video source and no audio source.
  *
  * @param context the application context
- * @param resultCode the result code of the [ActivityResult]
- * @param resultData the result data of the [ActivityResult]
- * @param endpointFactory the [IEndpointInternal.Factory] implementation
- * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
- */
-suspend fun videoMediaProjectionVideoOnlySingleStreamer(
-    context: Context,
-    resultCode: Int,
-    resultData: Intent,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
-    @RotationValue defaultRotation: Int = context.displayRotation
-) = videoMediaProjectionVideoOnlySingleStreamer(
-    context,
-    context.getMediaProjection(resultCode, resultData),
-    endpointFactory,
-    defaultRotation
-)
-
-/**
- * Creates a [SingleStreamer] with the screen as video source and no audio source.
- *
- * @param context the application context
- * @param mediaProjection the media projection
+ * @param mediaProjection the media projection. It can be obtained with [MediaProjectionManager.getMediaProjection]. Don't forget to call [MediaProjection.stop] when you are done.
  * @param endpointFactory the [IEndpointInternal.Factory] implementation
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */

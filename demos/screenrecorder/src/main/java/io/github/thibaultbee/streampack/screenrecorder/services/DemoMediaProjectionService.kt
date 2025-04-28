@@ -20,6 +20,7 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.projection.MediaProjection
 import android.os.Bundle
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -31,7 +32,6 @@ import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStream
 import io.github.thibaultbee.streampack.core.streamers.single.audioVideoMediaProjectionSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.videoMediaProjectionSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.videoMediaProjectionVideoOnlySingleStreamer
-import io.github.thibaultbee.streampack.core.utils.extensions.getMediaProjection
 import io.github.thibaultbee.streampack.screenrecorder.R
 import io.github.thibaultbee.streampack.screenrecorder.models.Actions
 import io.github.thibaultbee.streampack.services.MediaProjectionService
@@ -63,16 +63,13 @@ class DemoMediaProjectionService : MediaProjectionService<IVideoSingleStreamer>(
      */
     override suspend fun createMediaProjectionStreamer(
         extras: Bundle,
-        resultCode: Int,
-        resultData: Intent
+        mediaProjection: MediaProjection
     ): IVideoSingleStreamer {
         val bundle = extras.getBundle(MY_CUSTOM_BUNDLE_KEY) ?: throw UnsupportedOperationException(
             "No bundle found in extras"
         )
         val enableAudio = bundle.getBoolean(ENABLE_AUDIO_KEY, false)
 
-        val mediaProjection = applicationContext.getMediaProjection(resultCode, resultData)
-        
         return if (enableAudio) {
             if (ActivityCompat.checkSelfPermission(
                     this,

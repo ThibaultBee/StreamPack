@@ -17,11 +17,10 @@ package io.github.thibaultbee.streampack.core.streamers.single
 
 import android.Manifest
 import android.content.Context
-import android.content.Intent
 import android.media.projection.MediaProjection
+import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.view.Surface
-import androidx.activity.result.ActivityResult
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
@@ -47,7 +46,6 @@ import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegul
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.StreamerConfigurationInfo
-import io.github.thibaultbee.streampack.core.utils.extensions.getMediaProjection
 import kotlinx.coroutines.flow.StateFlow
 
 
@@ -81,30 +79,7 @@ suspend fun cameraSingleStreamer(
  * Creates a [SingleStreamer] with the screen as video source and audio playback as audio source.
  *
  * @param context the application context
- * @param resultCode the result code of the [ActivityResult]
- * @param resultData the result data of the [ActivityResult]
- * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
- * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
- */
-@RequiresApi(Build.VERSION_CODES.Q)
-suspend fun audioVideoMediaProjectionSingleStreamer(
-    context: Context,
-    resultCode: Int,
-    resultData: Intent,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
-    @RotationValue defaultRotation: Int = context.displayRotation
-) = audioVideoMediaProjectionSingleStreamer(
-    context,
-    context.getMediaProjection(resultCode, resultData),
-    endpointFactory,
-    defaultRotation
-)
-
-/**
- * Creates a [SingleStreamer] with the screen as video source and audio playback as audio source.
- *
- * @param context the application context
- * @param mediaProjection the media projection
+ * @param mediaProjection the media projection. It can be obtained with [MediaProjectionManager.getMediaProjection]. Don't forget to call [MediaProjection.stop] when you are done.
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
@@ -132,32 +107,7 @@ suspend fun audioVideoMediaProjectionSingleStreamer(
  * Creates a [SingleStreamer] with the screen as video source and an audio source (by default, the microphone).
  *
  * @param context the application context
- * @param resultCode the result code of the [ActivityResult]
- * @param resultData the result data of the [ActivityResult]
- * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory. If set to null, you will have to set it later explicitly.
- * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
- * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
- */
-suspend fun videoMediaProjectionSingleStreamer(
-    context: Context,
-    resultCode: Int,
-    resultData: Intent,
-    audioSourceFactory: IAudioSourceInternal.Factory? = MicrophoneSourceFactory(),
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
-    @RotationValue defaultRotation: Int = context.displayRotation
-) = videoMediaProjectionSingleStreamer(
-    context,
-    context.getMediaProjection(resultCode, resultData),
-    audioSourceFactory,
-    endpointFactory,
-    defaultRotation
-)
-
-/**
- * Creates a [SingleStreamer] with the screen as video source and an audio source (by default, the microphone).
- *
- * @param context the application context
- * @param mediaProjection the media projection
+ * @param mediaProjection the media projection. It can be obtained with [MediaProjectionManager.getMediaProjection]. Don't forget to call [MediaProjection.stop] when you are done.
  * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory. If set to null, you will have to set it later explicitly.
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.

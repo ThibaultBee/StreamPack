@@ -42,7 +42,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 internal class MediaProjectionVideoSource(
     private val context: Context,
-    private val mediaProjection: MediaProjection
+    val mediaProjection: MediaProjection
 ) : IVideoSourceInternal, ISurfaceSourceInternal, IMediaProjectionSource {
     override val timestampOffsetInNs = 0L
     override val infoProviderFlow =
@@ -117,7 +117,6 @@ internal class MediaProjectionVideoSource(
     }
 
     override fun release() {
-        mediaProjection.stop()
         virtualDisplayThread.quitSafely()
         try {
             virtualDisplayThread.join()
@@ -140,23 +139,6 @@ internal class MediaProjectionVideoSource(
         private const val VIRTUAL_DISPLAY_NAME = "StreamPackScreenSource"
     }
 }
-
-/**
- * Creates a [MediaProjectionVideoSourceFactory].
- *
- * @param context The application context
- * @param resultCode the result code of the [ActivityResult]
- * @param resultData the result data of the [ActivityResult]
- * @return A [MediaProjectionVideoSourceFactory] instance
- */
-@RequiresApi(Build.VERSION_CODES.Q)
-fun MediaProjectionVideoSourceFactory(
-    context: Context,
-    resultCode: Int,
-    resultData: Intent
-) = MediaProjectionVideoSourceFactory(
-    context.getMediaProjection(resultCode, resultData)
-)
 
 /**
  * A factory to create a [MediaProjectionVideoSourceFactory].
