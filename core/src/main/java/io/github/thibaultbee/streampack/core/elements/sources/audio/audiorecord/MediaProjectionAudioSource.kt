@@ -16,7 +16,6 @@
 package io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord
 
 import android.content.Context
-import android.content.Intent
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioPlaybackCaptureConfiguration
@@ -25,13 +24,11 @@ import android.media.projection.MediaProjection
 import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
-import androidx.activity.result.ActivityResult
 import androidx.annotation.RequiresApi
 import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.utils.extensions.getMediaProjection
 import java.util.UUID
 
 /**
@@ -42,7 +39,7 @@ import java.util.UUID
  */
 @RequiresApi(Build.VERSION_CODES.Q)
 internal class MediaProjectionAudioSource(
-    private val mediaProjection: MediaProjection,
+    val mediaProjection: MediaProjection,
 ) : AudioRecordSource(), IMediaProjectionSource {
     private val callbackHandlerThread = HandlerThread("AudioProjectionThread").apply { start() }
     private val callbackHandler = Handler(callbackHandlerThread.looper)
@@ -80,12 +77,10 @@ internal class MediaProjectionAudioSource(
         super.stopStream()
 
         mediaProjection.unregisterCallback(mediaProjectionCallback)
-        mediaProjection.stop()
     }
 
     override fun release() {
         super.release()
-        mediaProjection.stop()
         callbackHandlerThread.quitSafely()
         try {
             callbackHandlerThread.join()
@@ -98,25 +93,6 @@ internal class MediaProjectionAudioSource(
         private const val TAG = "ScreenSource"
     }
 }
-
-/**
- * Creates a [MediaProjectionAudioSourceFactory].
- *
- * @param context The application context
- * @param resultCode the result code of the [ActivityResult]
- * @param resultData the result data of the [ActivityResult]
- * @param effects The audio effects to apply
- */
-@RequiresApi(Build.VERSION_CODES.Q)
-fun MediaProjectionAudioSourceFactory(
-    context: Context,
-    resultCode: Int,
-    resultData: Intent,
-    effects: Set<UUID> = AudioRecordSourceFactory.defaultAudioEffects
-) = MediaProjectionAudioSourceFactory(
-    context.getMediaProjection(resultCode, resultData),
-    effects
-)
 
 /**
  * A factory to create a [MediaProjectionAudioSource].

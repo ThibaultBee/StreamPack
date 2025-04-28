@@ -21,13 +21,20 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.media.projection.MediaProjection
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.lifecycle.lifecycleScope
+import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.streamers.IVideoStreamer
+import io.github.thibaultbee.streampack.core.utils.extensions.getMediaProjection
+import io.github.thibaultbee.streampack.services.MediaProjectionService.Companion.bindService
 import io.github.thibaultbee.streampack.services.StreamerService.Companion.bindService
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
 
 /**
  * Foreground service that manages screen recorder streamers.
@@ -67,6 +74,15 @@ abstract class MediaProjectionService<T : IVideoStreamer<*>>(
     notificationIconResourceId
 ) {
     /**
+     * The media projection used to stream the screen.
+     *
+     * It is set when the streamer is created and stopped when the service is destroyed or when the
+     * streamer is stopped.
+     */
+    protected var mediaProjection: MediaProjection? = null
+        private set
+
+    /**
      * Creates the media projection streamer.
      *
      * It is called when the service is created.
@@ -76,10 +92,29 @@ abstract class MediaProjectionService<T : IVideoStreamer<*>>(
      * @param resultData the result data of the [ActivityResult]
      * @return the streamer to use.
      */
-    abstract suspend fun createMediaProjectionStreamer(
+    private suspend fun createMediaProjectionStreamer(
         extras: Bundle,
         resultCode: Int,
         resultData: Intent
+    ): T {
+        val mediaProjection = applicationContext.getMediaProjection(resultCode, resultData).also {
+            this@MediaProjectionService.mediaProjection = it
+        }
+        return createMediaProjectionStreamer(extras, mediaProjection)
+    }
+
+    /**
+     * Creates the media projection streamer.
+     *
+     * It is called when the service is created.
+     *
+     * @param extras the bundle passed in the [Intent.getExtras] pass to [bindService]
+     * @param mediaProjection the media projection. It is stopped when the service is destroyed.
+     * @return the streamer to use.
+     */
+    protected abstract suspend fun createMediaProjectionStreamer(
+        extras: Bundle,
+        mediaProjection: MediaProjection
     ): T
 
     override suspend fun createStreamer(extras: Bundle): T {
@@ -95,10 +130,40 @@ abstract class MediaProjectionService<T : IVideoStreamer<*>>(
         }
             ?: throw IllegalStateException("Activity result data must be pass to the service")
 
-        return createMediaProjectionStreamer(extras, resultCode, resultData)
+        val streamer = createMediaProjectionStreamer(extras, resultCode, resultData)
+        lifecycleScope.launch {
+            streamer.isStreamingFlow.drop(1).collect { isStreaming ->
+                if (!isStreaming) {
+                    Logger.d(TAG, "Streamer stopped")
+                    onStreamStopped()
+                }
+            }
+        }
+        return streamer
+    }
+
+    /**
+     * Called when the streamer is stopped.
+     *
+     * By default, it stops the media projection but you can override it to do something else.
+     */
+    protected open fun onStreamStopped() {
+        // Stop the media projection
+        mediaProjection?.stop()
+        mediaProjection = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        // Stop the media projection
+        mediaProjection?.stop()
+        mediaProjection = null
     }
 
     companion object {
+        private const val TAG = "MediaProjectionService"
+
         private const val DEFAULT_NOTIFICATION_CHANNEL_ID =
             "io.github.thibaultbee.streampack.services.mediaprojection"
         private const val DEFAULT_NOTIFICATION_ID = 3783

@@ -158,7 +158,7 @@ abstract class StreamerService<T : IStreamer>(
      * @param extras the bundle passed in the [Intent.getExtras] pass to [bindService]
      * @return the streamer to use.
      */
-    abstract suspend fun createStreamer(
+    protected abstract suspend fun createStreamer(
         extras: Bundle
     ): T
 
