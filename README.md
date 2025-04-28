@@ -255,7 +255,7 @@ For a complete example, check out the [demos/camera](demos/camera) directory.
 
 2. Requests the required permissions in your Activity/Fragment. See the
    [Permissions](#permissions) section for more information.
-3. Creates a `MyService` that extends `DefaultScreenRecorderService` (so you can customize
+3. Creates a `MyService` that extends `MediaProjectionService` (so you can customize
    notifications among other things).
 4. Creates a screen record `Intent` and requests the activity result
 
@@ -266,7 +266,7 @@ For a complete example, check out the [demos/camera](demos/camera) directory.
 5. Starts the service
 
     ```kotlin
-    DefaultScreenRecorderService.bindService(
+    MediaProjectionService.bindService(
         requireContext(),
         MyService::class.java,
         result.resultCode,
