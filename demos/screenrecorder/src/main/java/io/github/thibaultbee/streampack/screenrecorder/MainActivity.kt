@@ -45,19 +45,19 @@ import io.github.thibaultbee.streampack.core.streamers.dual.DualStreamerVideoCon
 import io.github.thibaultbee.streampack.core.streamers.dual.IAudioDualStreamer
 import io.github.thibaultbee.streampack.core.streamers.dual.IDualStreamer
 import io.github.thibaultbee.streampack.core.streamers.dual.IVideoDualStreamer
-import io.github.thibaultbee.streampack.core.streamers.extensions.setVideoActivityResult
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
-import io.github.thibaultbee.streampack.core.streamers.utils.ScreenRecorderUtils
+import io.github.thibaultbee.streampack.core.streamers.utils.MediaProjectionUtils
 import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
 import io.github.thibaultbee.streampack.screenrecorder.databinding.ActivityMainBinding
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
-import io.github.thibaultbee.streampack.screenrecorder.services.DemoScreenRecorderService
+import io.github.thibaultbee.streampack.screenrecorder.services.DemoMediaProjectionService
+import io.github.thibaultbee.streampack.screenrecorder.services.DemoMediaProjectionService.Companion.ENABLE_AUDIO_KEY
 import io.github.thibaultbee.streampack.screenrecorder.settings.SettingsActivity
-import io.github.thibaultbee.streampack.services.DefaultScreenRecorderService
+import io.github.thibaultbee.streampack.services.MediaProjectionService
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity() {
             showPermissionAlertDialog(this) { this.finish() }
         } else {
             getContent.launch(
-                ScreenRecorderUtils.createScreenRecorderIntent(
+                MediaProjectionUtils.createScreenCaptureIntent(
                     this
                 )
             )
@@ -131,11 +131,13 @@ class MainActivity : AppCompatActivity() {
                     startStream(requireNotNull(streamer))
                 }
             } else {
-                connection = DefaultScreenRecorderService.launch(
-                    this,
-                    DemoScreenRecorderService::class.java,
-                    { streamer ->
-                        streamer.setVideoActivityResult(result)
+                connection = MediaProjectionService.bindService(
+                    context = this,
+                    serviceClass = DemoMediaProjectionService::class.java,
+                    resultCode = result.resultCode,
+                    resultData = result.data!!,
+                    onServiceCreated = { streamer ->
+                        streamer as IVideoStreamer<*> // Cast to IVideoStreamer
                         lifecycleScope.launch {
                             try {
                                 configure(streamer)
@@ -150,11 +152,14 @@ class MainActivity : AppCompatActivity() {
                         }
                         this.streamer = streamer
                     },
-                    {
+                    onServiceDisconnected = {
                         binding.liveButton.isChecked = false
                         Log.i(TAG, "Service disconnected")
                     },
-                    enableAudio = configuration.audio.enable
+                    customBundleName = DemoMediaProjectionService.MY_CUSTOM_BUNDLE_KEY,
+                    customBundle = Bundle().apply {
+                        putBoolean(ENABLE_AUDIO_KEY, configuration.audio.enable)
+                    }
                 )
             }
         }
@@ -179,12 +184,10 @@ class MainActivity : AppCompatActivity() {
             fps = fps
         )
         lifecycleScope.launch {
-            if (streamer is IVideoSingleStreamer) {
-                streamer.setVideoConfig(videoConfig)
-            } else if (streamer is IVideoDualStreamer) {
-                streamer.setVideoConfig(DualStreamerVideoConfig(videoConfig))
-            } else {
-                throw IllegalStateException("Streamer is not a video streamer")
+            when (streamer) {
+                is IVideoSingleStreamer -> streamer.setVideoConfig(videoConfig)
+                is IVideoDualStreamer -> streamer.setVideoConfig(DualStreamerVideoConfig(videoConfig))
+                else -> throw IllegalStateException("Streamer is not a supported streamer")
             }
         }
 
@@ -235,13 +238,15 @@ class MainActivity : AppCompatActivity() {
                 EndpointType.RTMP -> UriMediaDescriptor(configuration.endpoint.rtmp.url.toUri())
             }
 
-            if (streamer is ISingleStreamer) {
-                streamer.startStream(descriptor)
-            } else if (streamer is IDualStreamer) {
-                Log.w(TAG, "Only first output will be used")
-                streamer.first.startStream(descriptor)
-            } else {
-                throw IllegalStateException("Streamer is not a single streamer")
+            when (streamer) {
+                is ISingleStreamer -> streamer.startStream(descriptor)
+
+                is IDualStreamer -> {
+                    Log.w(TAG, "Only first output will be used")
+                    streamer.first.startStream(descriptor)
+                }
+
+                else -> throw IllegalStateException("Streamer is not a supported streamer")
             }
             moveTaskToBack(true)
         } catch (t: Throwable) {

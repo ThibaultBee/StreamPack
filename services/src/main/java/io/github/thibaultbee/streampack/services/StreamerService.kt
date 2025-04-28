@@ -15,13 +15,11 @@
  */
 package io.github.thibaultbee.streampack.services
 
-import android.Manifest
 import android.app.Notification
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.Build
@@ -30,25 +28,23 @@ import android.os.IBinder
 import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.core.app.ActivityCompat
 import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rootCause
+import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
+import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.streamers.IVideoStreamer
 import io.github.thibaultbee.streampack.core.streamers.orientation.IRotationProvider
 import io.github.thibaultbee.streampack.core.streamers.orientation.SensorRotationProvider
-import io.github.thibaultbee.streampack.core.streamers.single.screenRecorderSingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.screenRecorderVideoOnlySingleStreamer
 import io.github.thibaultbee.streampack.services.utils.NotificationUtils
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 /**
- * Foreground service that manages screen recorder streamers.
+ * Foreground service that manages streamers.
  *
  * To customise this service, you have to extend this class.
  *
@@ -71,19 +67,19 @@ import kotlinx.coroutines.runBlocking
  * @param channelDescriptionResourceId A string resource identifier for the user visible description of the notification channel.
  * @param notificationIconResourceId A drawable resource identifier for the user visible icon of the notification channel.
  */
-abstract class DefaultScreenRecorderService(
+abstract class StreamerService<T : IStreamer>(
     private val notificationId: Int = DEFAULT_NOTIFICATION_ID,
     protected val channelId: String = DEFAULT_NOTIFICATION_CHANNEL_ID,
     @StringRes protected val channelNameResourceId: Int = R.string.default_channel_name,
     @StringRes protected val channelDescriptionResourceId: Int = 0,
     @DrawableRes protected val notificationIconResourceId: Int = R.drawable.ic_baseline_linked_camera_24
 ) : LifecycleService(), IRotationProvider.Listener {
-    protected var streamer: IVideoStreamer<*>? = null
+    protected var streamer: T? = null
         private set
 
-    protected open val rotationProvider: IRotationProvider by lazy { SensorRotationProvider(this) }
+    protected open val rotationProvider: IRotationProvider? by lazy { SensorRotationProvider(this) }
 
-    private val binder = ScreenRecorderServiceBinder()
+    private val binder = StreamerServiceBinder()
     private val notificationUtils: NotificationUtils by lazy {
         NotificationUtils(this, channelId, notificationId)
     }
@@ -91,11 +87,10 @@ abstract class DefaultScreenRecorderService(
     override fun onCreate() {
         super.onCreate()
 
-        rotationProvider.addListener(this)
+        rotationProvider?.addListener(this)
 
         notificationUtils.createNotificationChannel(
-            channelNameResourceId,
-            channelDescriptionResourceId
+            channelNameResourceId, channelDescriptionResourceId
         )
 
         ServiceCompat.startForeground(
@@ -119,25 +114,30 @@ abstract class DefaultScreenRecorderService(
         super.onBind(intent)
 
         try {
-            val customBundle = intent.extras?.getBundle(CUSTOM_BUNDLE_KEY)
+            val extras = intent.extras
                 ?: throw IllegalStateException("Config bundle must be pass to the service")
 
-            streamer = runBlocking { createStreamer(customBundle) }.apply {
-                lifecycleScope.launch {
-                    throwableFlow.filterNotNull().collect { t ->
-                        Logger.e(TAG, "An error occurred", t)
-                        onErrorNotification(t)?.let { notify(it) }
-                        stopSelf()
-                    }
+            val streamer = runBlocking { createStreamer(extras) }.apply {
+                this@StreamerService.streamer = this
+            }
+
+            lifecycleScope.launch {
+                streamer.throwableFlow.filterNotNull().collect { t ->
+                    Logger.e(TAG, "An error occurred", t)
+                    onErrorNotification(t)?.let { notify(it) }
+                    stopSelf()
                 }
+            }
+
+            if (streamer is ICloseableStreamer) {
                 lifecycleScope.launch {
-                    isOpenFlow.collect { isOpen ->
+                    streamer.isOpenFlow.collect { isOpen ->
                         if (isOpen) {
                             Logger.i(TAG, "Open succeeded")
                             onOpenNotification()?.let { notify(it) }
                         } else {
-                            onCloseNotification()?.let { notify(it) }
                             Logger.w(TAG, "Closed")
+                            onCloseNotification()?.let { notify(it) }
                         }
                     }
                 }
@@ -151,34 +151,16 @@ abstract class DefaultScreenRecorderService(
     }
 
     /**
-     * Calls when service needs to create the streamer.
-     * You can customize the streamer by overriding this method.
+     * Creates the streamer from the [Intent.getExtras] passed in the [Intent].
      *
-     * @param customBundle the custom bundle passed as [launch] parameter.
+     * It is called when the service is created.
+     *
+     * @param extras the bundle passed in the [Intent.getExtras] pass to [bindService]
      * @return the streamer to use.
      */
-    open suspend fun createStreamer(customBundle: Bundle): IVideoStreamer<*> {
-        val enableMicrophone = customBundle.getBoolean(ENABLE_MICROPHONE_KEY, false)
-        if (enableMicrophone) {
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.RECORD_AUDIO
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                throw SecurityException("Permission RECORD_AUDIO must have been granted!")
-            }
-        }
-
-        return if (enableMicrophone) {
-            screenRecorderSingleStreamer(
-                applicationContext,
-            )
-        } else {
-            screenRecorderVideoOnlySingleStreamer(
-                applicationContext
-            )
-        }
-    }
+    abstract suspend fun createStreamer(
+        extras: Bundle
+    ): T
 
     override fun onOrientationChanged(rotation: Int) {
         lifecycleScope.launch {
@@ -190,11 +172,11 @@ abstract class DefaultScreenRecorderService(
         super.onDestroy()
         notificationUtils.cancel()
 
-        rotationProvider.removeListener(this)
+        rotationProvider?.removeListener(this)
 
         runBlocking {
             streamer?.stopStream()
-            streamer?.close()
+            (streamer as ICloseableStreamer?)?.close()
             streamer?.release()
         }
         streamer = null
@@ -249,9 +231,7 @@ abstract class DefaultScreenRecorderService(
      */
     protected open fun onOpenNotification(): Notification? {
         return notificationUtils.createNotification(
-            R.string.service_notification_streamer_open,
-            0,
-            notificationIconResourceId
+            R.string.service_notification_streamer_open, 0, notificationIconResourceId
         )
     }
 
@@ -264,44 +244,44 @@ abstract class DefaultScreenRecorderService(
         notificationUtils.notify(notification)
     }
 
-    protected inner class ScreenRecorderServiceBinder : Binder() {
-        val streamer: IVideoStreamer<*>?
-            get() = this@DefaultScreenRecorderService.streamer
+    protected inner class StreamerServiceBinder : Binder() {
+        val streamer: T?
+            get() = this@StreamerService.streamer
     }
 
     companion object {
-        private const val TAG = "ScreenRecorderService"
+        private const val TAG = "StreamerService"
 
-        const val DEFAULT_NOTIFICATION_CHANNEL_ID =
-            "io.github.thibaultbee.streampack.streamers.services"
-        const val DEFAULT_NOTIFICATION_ID = 3782
+        // Notification
+        private const val DEFAULT_NOTIFICATION_CHANNEL_ID =
+            "io.github.thibaultbee.streampack.services.streamer"
+        private const val DEFAULT_NOTIFICATION_ID = 3782
 
         // Config
-        private const val CUSTOM_BUNDLE_KEY = "bundle"
-        private const val ENABLE_MICROPHONE_KEY = "enableMicrophone"
+        const val USER_BUNDLE_KEY = "bundle"
 
         /**
          * Starts and binds the service with the appropriate parameters.
          *
          * @param context the application context.
-         * @param serviceClass the service class to launch. It is a children of [DefaultScreenRecorderService].
-         * @param customBundle the user defined [Bundle]. It will be passed to the service. You can retrieve it in [createStreamer] method.
-         * @param onServiceCreated the callback that returns a children of [DefaultScreenRecorderService] instance when the service has been connected.
+         * @param serviceClass the service class to launch. It is a children of [StreamerService].
+         * @param onServiceCreated the callback that returns a children of [StreamerService] instance when the service has been connected.
          * @param onServiceDisconnected the callback that will be called when the service is disconnected.
-         * @param enableAudio enable audio recording.
+         * @param customBundleName the name of the bundle to pass to the service. It is used to retrieve the bundle in [createStreamer] method.
+         * @param customBundle the user defined [Bundle]. It will be passed to the service. You can retrieve it in [createStreamer] method.
          * @return the service connection. Use it to [Context.unbindService] when you don't need the service anymore.
          */
-        fun launch(
+        fun bindService(
             context: Context,
-            serviceClass: Class<out DefaultScreenRecorderService>,
-            onServiceCreated: (IVideoStreamer<*>) -> Unit,
+            serviceClass: Class<out StreamerService<*>>,
+            onServiceCreated: (IStreamer) -> Unit,
             onServiceDisconnected: (name: ComponentName?) -> Unit = {},
-            customBundle: Bundle = Bundle(),
-            enableAudio: Boolean = false
+            customBundleName: String = USER_BUNDLE_KEY,
+            customBundle: Bundle = Bundle()
         ): ServiceConnection {
             val connection = object : ServiceConnection {
                 override fun onServiceConnected(name: ComponentName?, service: IBinder) {
-                    if (service is ScreenRecorderServiceBinder) {
+                    if (service is StreamerService<*>.StreamerServiceBinder) {
                         service.streamer?.let { onServiceCreated(it) }
                     }
                 }
@@ -311,7 +291,9 @@ abstract class DefaultScreenRecorderService(
                 }
             }
 
-            launch(context, serviceClass, connection, customBundle, enableAudio)
+            bindService(
+                context, serviceClass, connection, customBundleName, customBundle
+            )
 
             return connection
         }
@@ -320,27 +302,24 @@ abstract class DefaultScreenRecorderService(
          * Starts and binds the service with the appropriate parameters.
          *
          * @param context the application context.
-         * @param serviceClass the service class to launch. It is a children of [DefaultScreenRecorderService].
+         * @param serviceClass the service class to launch. It is a children of [StreamerService].
          * @param connection the service connection.
+         * @param customBundleName the name of the bundle to pass to the service. It is used to retrieve the bundle in [createStreamer] method.
          * @param customBundle the user defined [Bundle]. It will be passed to the service. You can retrieve it in [createStreamer] method.
-         * @param enableAudio enable audio recording.
          */
-        fun launch(
+        fun bindService(
             context: Context,
-            serviceClass: Class<out DefaultScreenRecorderService>,
+            serviceClass: Class<out StreamerService<*>>,
             connection: ServiceConnection,
-            customBundle: Bundle = Bundle(),
-            enableAudio: Boolean = false
+            customBundleName: String = USER_BUNDLE_KEY,
+            customBundle: Bundle = Bundle()
         ) {
-            customBundle.putBoolean(ENABLE_MICROPHONE_KEY, enableAudio)
             val intent = Intent(context, serviceClass).apply {
-                putExtra(CUSTOM_BUNDLE_KEY, customBundle)
+                putExtra(customBundleName, customBundle)
             }
 
             context.bindService(
-                intent,
-                connection,
-                Context.BIND_AUTO_CREATE
+                intent, connection, Context.BIND_AUTO_CREATE
             )
         }
     }
