@@ -29,6 +29,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSo
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.logger.Logger
+import kotlinx.coroutines.runBlocking
 import java.util.UUID
 
 /**
@@ -49,13 +50,13 @@ internal class MediaProjectionAudioSource(
             super.onStop()
             Logger.i(TAG, "onStop")
 
-            _isStreamingFlow.tryEmit(false)
+            runBlocking {
+                stopStream()
+            }
         }
     }
 
     override fun buildAudioRecord(config: AudioSourceConfig, bufferSize: Int): AudioRecord {
-        mediaProjection.registerCallback(mediaProjectionCallback, callbackHandler)
-
         val audioFormat = AudioFormat.Builder()
             .setEncoding(config.byteFormat)
             .setSampleRate(config.sampleRate)
@@ -73,6 +74,12 @@ internal class MediaProjectionAudioSource(
             .build()
     }
 
+    override suspend fun startStream() {
+        mediaProjection.registerCallback(mediaProjectionCallback, callbackHandler)
+
+        super.startStream()
+    }
+
     override suspend fun stopStream() {
         super.stopStream()
 
@@ -81,6 +88,7 @@ internal class MediaProjectionAudioSource(
 
     override fun release() {
         super.release()
+        mediaProjection.unregisterCallback(mediaProjectionCallback)
         callbackHandlerThread.quitSafely()
         try {
             callbackHandlerThread.join()
@@ -90,7 +98,7 @@ internal class MediaProjectionAudioSource(
     }
 
     companion object {
-        private const val TAG = "ScreenSource"
+        private const val TAG = "MediaProjectionAudio"
     }
 }
 
