@@ -65,14 +65,14 @@ suspend fun cameraVideoOnlyDualStreamer(
  * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-suspend fun screenRecorderVideoOnlyDualStreamer(
+suspend fun videoMediaProjectionVideoOnlyDualStreamer(
     context: Context,
     resultCode: Int,
     resultData: Intent,
     firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
-) = screenRecorderVideoOnlyDualStreamer(
+) = videoMediaProjectionVideoOnlyDualStreamer(
     context,
     context.getMediaProjection(resultCode, resultData),
     firstEndpointFactory,
@@ -89,7 +89,7 @@ suspend fun screenRecorderVideoOnlyDualStreamer(
  * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-suspend fun screenRecorderVideoOnlyDualStreamer(
+suspend fun videoMediaProjectionVideoOnlyDualStreamer(
     context: Context,
     mediaProjection: MediaProjection,
     firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
