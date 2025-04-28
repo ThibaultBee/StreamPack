@@ -89,14 +89,14 @@ suspend fun cameraDualStreamer(
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 @RequiresApi(Build.VERSION_CODES.Q)
-suspend fun screenRecorderDualStreamer(
+suspend fun audioVideoMediaProjectionDualStreamer(
     context: Context,
     resultCode: Int,
     resultData: Intent,
     firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
-) = screenRecorderDualStreamer(
+) = audioVideoMediaProjectionDualStreamer(
     context,
     context.getMediaProjection(resultCode, resultData),
     firstEndpointFactory,
@@ -114,7 +114,7 @@ suspend fun screenRecorderDualStreamer(
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 @RequiresApi(Build.VERSION_CODES.Q)
-suspend fun screenRecorderDualStreamer(
+suspend fun audioVideoMediaProjectionDualStreamer(
     context: Context,
     mediaProjection: MediaProjection,
     firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
@@ -146,7 +146,7 @@ suspend fun screenRecorderDualStreamer(
  * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-suspend fun screenRecorderDualStreamer(
+suspend fun videoMediaProjectionDualStreamer(
     context: Context,
     resultCode: Int,
     resultData: Intent,
@@ -154,7 +154,7 @@ suspend fun screenRecorderDualStreamer(
     firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
-) = screenRecorderDualStreamer(
+) = videoMediaProjectionDualStreamer(
     context,
     context.getMediaProjection(resultCode, resultData),
     audioSourceFactory,
@@ -173,7 +173,7 @@ suspend fun screenRecorderDualStreamer(
  * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-suspend fun screenRecorderDualStreamer(
+suspend fun videoMediaProjectionDualStreamer(
     context: Context,
     mediaProjection: MediaProjection,
     audioSourceFactory: IAudioSourceInternal.Factory? = MicrophoneSourceFactory(),

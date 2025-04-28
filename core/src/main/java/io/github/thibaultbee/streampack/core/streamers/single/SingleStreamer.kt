@@ -87,13 +87,13 @@ suspend fun cameraSingleStreamer(
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 @RequiresApi(Build.VERSION_CODES.Q)
-suspend fun screenRecorderSingleStreamer(
+suspend fun audioVideoMediaProjectionSingleStreamer(
     context: Context,
     resultCode: Int,
     resultData: Intent,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
-) = screenRecorderSingleStreamer(
+) = audioVideoMediaProjectionSingleStreamer(
     context,
     context.getMediaProjection(resultCode, resultData),
     endpointFactory,
@@ -109,7 +109,7 @@ suspend fun screenRecorderSingleStreamer(
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
 @RequiresApi(Build.VERSION_CODES.Q)
-suspend fun screenRecorderSingleStreamer(
+suspend fun audioVideoMediaProjectionSingleStreamer(
     context: Context,
     mediaProjection: MediaProjection,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
@@ -138,14 +138,14 @@ suspend fun screenRecorderSingleStreamer(
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-suspend fun screenRecorderSingleStreamer(
+suspend fun videoMediaProjectionSingleStreamer(
     context: Context,
     resultCode: Int,
     resultData: Intent,
     audioSourceFactory: IAudioSourceInternal.Factory? = MicrophoneSourceFactory(),
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
-) = screenRecorderSingleStreamer(
+) = videoMediaProjectionSingleStreamer(
     context,
     context.getMediaProjection(resultCode, resultData),
     audioSourceFactory,
@@ -162,7 +162,7 @@ suspend fun screenRecorderSingleStreamer(
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-suspend fun screenRecorderSingleStreamer(
+suspend fun videoMediaProjectionSingleStreamer(
     context: Context,
     mediaProjection: MediaProjection,
     audioSourceFactory: IAudioSourceInternal.Factory? = MicrophoneSourceFactory(),

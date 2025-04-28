@@ -66,13 +66,13 @@ suspend fun cameraVideoOnlySingleStreamer(
  * @param endpointFactory the [IEndpointInternal.Factory] implementation
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-suspend fun screenRecorderVideoOnlySingleStreamer(
+suspend fun videoMediaProjectionVideoOnlySingleStreamer(
     context: Context,
     resultCode: Int,
     resultData: Intent,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
-) = screenRecorderVideoOnlySingleStreamer(
+) = videoMediaProjectionVideoOnlySingleStreamer(
     context,
     context.getMediaProjection(resultCode, resultData),
     endpointFactory,
@@ -87,7 +87,7 @@ suspend fun screenRecorderVideoOnlySingleStreamer(
  * @param endpointFactory the [IEndpointInternal.Factory] implementation
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-suspend fun screenRecorderVideoOnlySingleStreamer(
+suspend fun videoMediaProjectionVideoOnlySingleStreamer(
     context: Context,
     mediaProjection: MediaProjection,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
