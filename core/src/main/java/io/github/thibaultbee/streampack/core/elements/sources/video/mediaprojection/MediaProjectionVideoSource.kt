@@ -16,17 +16,13 @@
 package io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection
 
 import android.content.Context
-import android.content.Intent
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.projection.MediaProjection
-import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Size
 import android.view.Surface
-import androidx.activity.result.ActivityResult
-import androidx.annotation.RequiresApi
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSource
@@ -36,9 +32,9 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceC
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.densityDpi
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.screenRect
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.utils.extensions.getMediaProjection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.runBlocking
 
 internal class MediaProjectionVideoSource(
     private val context: Context,
@@ -67,7 +63,9 @@ internal class MediaProjectionVideoSource(
             super.onStopped()
             Logger.i(TAG, "onStopped")
 
-            _isStreamingFlow.tryEmit(false)
+            runBlocking {
+                stopStream()
+            }
         }
     }
 
@@ -76,7 +74,9 @@ internal class MediaProjectionVideoSource(
             super.onStop()
             Logger.i(TAG, "onStop")
 
-            _isStreamingFlow.tryEmit(false)
+            runBlocking {
+                stopStream()
+            }
         }
     }
 
@@ -114,6 +114,7 @@ internal class MediaProjectionVideoSource(
         virtualDisplay = null
 
         mediaProjection.unregisterCallback(mediaProjectionCallback)
+        _isStreamingFlow.emit(false)
     }
 
     override fun release() {
@@ -134,7 +135,7 @@ internal class MediaProjectionVideoSource(
     }
 
     companion object {
-        private const val TAG = "ScreenSource"
+        private const val TAG = "MediaProjectionVideo"
 
         private const val VIRTUAL_DISPLAY_NAME = "StreamPackScreenSource"
     }
