@@ -179,6 +179,57 @@ open class StreamerPipeline(
                     resetSurfaceProcessorOutputSurface()
                 }
             }
+            coroutineScope.launch {
+                input.isStreamingFlow.collect { isStreaming ->
+                    if (isReleaseRequested.get()) {
+                        Logger.w(TAG, "Pipeline is released, dropping video streaming state")
+                        return@collect
+                    }
+
+                    if (!isStreaming) {
+                        if (audioInput?.isStreamingFlow?.value == true) {
+                            Logger.i(TAG, "Stopping video only outputs")
+                            // Only stops video only output
+                            safeStreamingOutputCall { streamingOutputs ->
+                                streamingOutputs.filter { !it.withAudio && it.isStreaming }
+                                    .forEach { it.stopStream() }
+                            }
+                        } else {
+                            Logger.i(TAG, "Stopping all outputs")
+                            // Stops all outputs
+                            _isStreamingFlow.emit(false)
+                            stopOutputStreams()
+                        }
+                    }
+                }
+            }
+        }
+
+        audioInput?.let { input ->
+            coroutineScope.launch {
+                input.isStreamingFlow.collect { isStreaming ->
+                    if (isReleaseRequested.get()) {
+                        Logger.w(TAG, "Pipeline is released, dropping audio streaming state")
+                        return@collect
+                    }
+
+                    if (!isStreaming) {
+                        if (videoInput?.isStreamingFlow?.value == true) {
+                            Logger.i(TAG, "Stopping audio only outputs")
+                            // Stops audio only output
+                            safeStreamingOutputCall { streamingOutputs ->
+                                streamingOutputs.filter { !it.withVideo && it.isStreaming }
+                                    .forEach { it.stopStream() }
+                            }
+                        } else {
+                            Logger.i(TAG, "Stopping all outputs")
+                            // Stops all outputs
+                            _isStreamingFlow.emit(false)
+                            stopOutputStreams()
+                        }
+                    }
+                }
+            }
         }
     }
 
