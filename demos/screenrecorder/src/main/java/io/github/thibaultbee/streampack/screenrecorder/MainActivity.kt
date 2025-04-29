@@ -101,6 +101,8 @@ class MainActivity : AppCompatActivity() {
                     streamer?.stopStream()
                     streamer?.close()
                 }
+                connection?.let { unbindService(it) }
+                connection = null
             }
         }
     }
@@ -126,42 +128,36 @@ class MainActivity : AppCompatActivity() {
 
     private var getContent =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (streamer != null) {
-                lifecycleScope.launch {
-                    startStream(requireNotNull(streamer))
-                }
-            } else {
-                connection = MediaProjectionService.bindService(
-                    context = this,
-                    serviceClass = DemoMediaProjectionService::class.java,
-                    resultCode = result.resultCode,
-                    resultData = result.data!!,
-                    onServiceCreated = { streamer ->
-                        streamer as IVideoStreamer<*> // Cast to IVideoStreamer
-                        lifecycleScope.launch {
-                            try {
-                                configure(streamer)
-                            } catch (t: Throwable) {
-                                this@MainActivity.showAlertDialog(
-                                    this@MainActivity, "Error", t.message ?: "Unknown error"
-                                )
-                                binding.liveButton.isChecked = false
-                                Log.e(TAG, "Error while starting streamer", t)
-                            }
-                            startStream(streamer)
+            connection = MediaProjectionService.bindService(
+                context = this,
+                serviceClass = DemoMediaProjectionService::class.java,
+                resultCode = result.resultCode,
+                resultData = result.data!!,
+                onServiceCreated = { streamer ->
+                    lifecycleScope.launch {
+                        try {
+                            configure(streamer)
+                        } catch (t: Throwable) {
+                            this@MainActivity.showAlertDialog(
+                                this@MainActivity, "Error", t.message ?: "Unknown error"
+                            )
+                            binding.liveButton.isChecked = false
+                            Log.e(TAG, "Error while starting streamer", t)
                         }
-                        this.streamer = streamer
-                    },
-                    onServiceDisconnected = {
-                        binding.liveButton.isChecked = false
-                        Log.i(TAG, "Service disconnected")
-                    },
-                    customBundleName = DemoMediaProjectionService.MY_CUSTOM_BUNDLE_KEY,
-                    customBundle = Bundle().apply {
-                        putBoolean(ENABLE_AUDIO_KEY, configuration.audio.enable)
+                        startStream(streamer)
                     }
-                )
-            }
+                    this.streamer = streamer
+                },
+                onServiceDisconnected = {
+                    binding.liveButton.isChecked = false
+                    streamer = null
+                    Log.i(TAG, "Service disconnected")
+                },
+                customBundleName = DemoMediaProjectionService.MY_CUSTOM_BUNDLE_KEY,
+                customBundle = Bundle().apply {
+                    putBoolean(ENABLE_AUDIO_KEY, configuration.audio.enable)
+                }
+            )
         }
 
     private fun configure(streamer: IVideoStreamer<*>) {
@@ -210,12 +206,15 @@ class MainActivity : AppCompatActivity() {
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 lifecycleScope.launch {
-                    if (streamer is IAudioSingleStreamer) {
-                        streamer.setAudioConfig(audioConfig)
-                    } else if (streamer is IAudioDualStreamer) {
-                        streamer.setAudioConfig(DualStreamerAudioConfig(audioConfig))
-                    } else {
-                        throw IllegalStateException("Streamer is not a audio streamer")
+                    when (streamer) {
+                        is IAudioSingleStreamer -> streamer.setAudioConfig(audioConfig)
+                        is IAudioDualStreamer -> streamer.setAudioConfig(
+                            DualStreamerAudioConfig(
+                                audioConfig
+                            )
+                        )
+
+                        else -> throw IllegalStateException("Streamer is not a audio streamer")
                     }
                 }
             } else {
@@ -261,6 +260,8 @@ class MainActivity : AppCompatActivity() {
     private fun stopService() {
         connection?.let { unbindService(it) }
         connection = null
+        val intent = Intent(this, DemoMediaProjectionService::class.java)
+        stopService(intent)
     }
 
     private fun showPopup() {
