@@ -35,6 +35,7 @@ import io.github.thibaultbee.streampack.services.MediaProjectionService.Companio
 import io.github.thibaultbee.streampack.services.StreamerService.Companion.bindService
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /**
  * Foreground service that manages screen recorder streamers.
@@ -149,14 +150,17 @@ abstract class MediaProjectionService<T : IVideoStreamer<*>>(
      */
     protected open fun onStreamStopped() {
         // Stop the media projection
-        mediaProjection?.stop()
-        mediaProjection = null
+        stopMediaProjection()
     }
 
     override fun onDestroy() {
         super.onDestroy()
 
         // Stop the media projection
+        stopMediaProjection()
+    }
+
+    private fun stopMediaProjection() {
         mediaProjection?.stop()
         mediaProjection = null
     }

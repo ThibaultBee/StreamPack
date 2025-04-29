@@ -35,6 +35,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.rootCause
 import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
+import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.streamers.orientation.IRotationProvider
 import io.github.thibaultbee.streampack.core.streamers.orientation.SensorRotationProvider
@@ -111,12 +112,14 @@ abstract class StreamerService<T : IStreamer>(
     }
 
     override fun onBind(intent: Intent): IBinder? {
+        Logger.i(TAG, "Service bound")
         super.onBind(intent)
 
         try {
             val extras = intent.extras
                 ?: throw IllegalStateException("Config bundle must be pass to the service")
 
+            streamer?.releaseBlocking()
             val streamer = runBlocking { createStreamer(extras) }.apply {
                 this@StreamerService.streamer = this
             }
@@ -166,6 +169,11 @@ abstract class StreamerService<T : IStreamer>(
         lifecycleScope.launch {
             (streamer as? IWithVideoRotation)?.setTargetRotation(rotation)
         }
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        Logger.i(TAG, "Service unbound")
+        return super.onUnbind(intent)
     }
 
     override fun onDestroy() {
