@@ -39,6 +39,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isCompatibleWith
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.runningHistoryNotNull
+import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IWithAudioSource
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
@@ -62,6 +63,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.Encoding
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
+import io.github.thibaultbee.streampack.core.pipelines.utils.MultiException
 import io.github.thibaultbee.streampack.core.pipelines.utils.SourceConfigUtils
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -92,12 +94,12 @@ open class StreamerPipeline(
     val withVideo: Boolean = true,
     private val audioOutputMode: AudioOutputMode = AudioOutputMode.PUSH,
     protected val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
-) : IWithVideoSource, IWithVideoRotation, IWithAudioSource {
+) : IWithVideoSource, IWithVideoRotation, IWithAudioSource, IStreamer {
     private val coroutineScope: CoroutineScope = CoroutineScope(coroutineDispatcher)
     private var isReleaseRequested = AtomicBoolean(false)
 
     private val _throwableFlow = MutableStateFlow<Throwable?>(null)
-    val throwableFlow = _throwableFlow.asStateFlow()
+    override val throwableFlow = _throwableFlow.asStateFlow()
 
     // INPUTS
     private val audioInput = if (withAudio) {
@@ -143,7 +145,7 @@ open class StreamerPipeline(
      *
      * It is true if a least one input (audio or video) is streaming.
      */
-    val isStreamingFlow: StateFlow<Boolean> = _isStreamingFlow.asStateFlow()
+    override val isStreamingFlow: StateFlow<Boolean> = _isStreamingFlow.asStateFlow()
 
     // OUTPUTS
     private val outputMapMutex = Mutex()
@@ -777,19 +779,29 @@ open class StreamerPipeline(
     /**
      * Try to start all streams.
      *
-     * If an [IEncodingPipelineOutput] is not opened, it won't start the stream.
+     * If an [IEncodingPipelineOutput] is not opened, it won't start the stream and will throw an
+     * exception. But the other outputs will be started.
      */
-    suspend fun startStream() = withContext(coroutineDispatcher) {
+    override suspend fun startStream() = withContext(coroutineDispatcher) {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Pipeline is released")
         }
+        val exceptions = mutableListOf<Throwable>()
         safeOutputCall { outputs ->
             outputs.keys.forEach {
                 try {
                     it.startStream()
                 } catch (t: Throwable) {
+                    exceptions += t
                     Logger.w(TAG, "startStream: Can't start output $it: ${t.message}")
                 }
+            }
+        }
+        if (exceptions.isNotEmpty()) {
+            if (exceptions.size == 1) {
+                throw exceptions.first()
+            } else {
+                throw MultiException(exceptions)
             }
         }
     }
@@ -873,7 +885,7 @@ open class StreamerPipeline(
      *
      * It stops audio and video sources and calls [IPipelineOutput.stopStream] on all outputs.
      */
-    suspend fun stopStream() = withContext(coroutineDispatcher) {
+    override suspend fun stopStream() = withContext(coroutineDispatcher) {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Pipeline is released")
         }
@@ -904,7 +916,7 @@ open class StreamerPipeline(
      * It releases the audio and video sources and the processors.
      * It also calls [IPipelineOutput.release] on all outputs.
      */
-    suspend fun release() = withContext(coroutineDispatcher) {
+    override suspend fun release() = withContext(coroutineDispatcher) {
         if (isReleaseRequested.getAndSet(true)) {
             Logger.w(TAG, "Already released")
         }
