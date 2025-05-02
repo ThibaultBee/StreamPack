@@ -127,7 +127,13 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
             streamerFlow.collect {
                 // Set audio source and video source
                 streamer.setAudioSource(MicrophoneSourceFactory())
-                streamer.setVideoSource(CameraSourceFactory())
+                if (ActivityCompat.checkSelfPermission(
+                        application,
+                        Manifest.permission.CAMERA
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    streamer.setVideoSource(CameraSourceFactory())
+                }
             }
         }
         viewModelScope.launch {
@@ -216,6 +222,17 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
             } catch (t: Throwable) {
                 Log.e(TAG, "configureAudio failed", t)
                 _streamerErrorLiveData.postValue("configureAudio: ${t.message ?: "Unknown error"}")
+            }
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
+    fun initializeVideoSource() {
+        viewModelScope.launch {
+            if (streamer.videoSourceFlow.value == null) {
+                streamer.setVideoSource(CameraSourceFactory())
+            } else {
+                Log.i(TAG, "Camera source already set")
             }
         }
     }
