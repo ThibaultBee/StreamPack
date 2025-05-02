@@ -29,8 +29,13 @@ import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSo
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
+import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.densityDpi
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.isRotationPortrait
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.landscapize
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.portraitize
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.screenRect
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.size
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,11 +43,17 @@ import kotlinx.coroutines.runBlocking
 
 internal class MediaProjectionVideoSource(
     private val context: Context,
-    val mediaProjection: MediaProjection
+    val mediaProjection: MediaProjection,
+    @RotationValue private val overrideRotation: Int? = null,
 ) : IVideoSourceInternal, ISurfaceSourceInternal, IMediaProjectionSource {
     override val timestampOffsetInNs = 0L
     override val infoProviderFlow =
-        MutableStateFlow(FullScreenInfoProvider(context) as ISourceInfoProvider).asStateFlow()
+        MutableStateFlow(
+            FullScreenInfoProvider(
+                context,
+                overrideRotation
+            ) as ISourceInfoProvider
+        ).asStateFlow()
 
     private val _isStreamingFlow = MutableStateFlow(false)
     override val isStreamingFlow = _isStreamingFlow.asStateFlow()
@@ -93,13 +104,13 @@ internal class MediaProjectionVideoSource(
     override suspend fun configure(config: VideoSourceConfig) = Unit
 
     override suspend fun startStream() {
-        val screenRect = context.screenRect
+        val screenSize = getMediaProjectionSurfaceSize()
 
         mediaProjection.registerCallback(mediaProjectionCallback, virtualDisplayHandler)
         virtualDisplay = mediaProjection.createVirtualDisplay(
             VIRTUAL_DISPLAY_NAME,
-            screenRect.width(),
-            screenRect.height(),
+            screenSize.width,
+            screenSize.height,
             context.densityDpi,
             DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
             outputSurface,
@@ -126,11 +137,26 @@ internal class MediaProjectionVideoSource(
         }
     }
 
-    private inner class FullScreenInfoProvider(private val context: Context) :
+    private fun getMediaProjectionSurfaceSize(): Size {
+        val screenSize = context.screenRect.size
+        return if (overrideRotation != null) {
+            if (context.isRotationPortrait(overrideRotation)) {
+                screenSize.portraitize
+            } else {
+                screenSize.landscapize
+            }
+        } else {
+            screenSize
+        }
+    }
+
+    private inner class FullScreenInfoProvider(
+        private val context: Context,
+        @RotationValue private val overrideRotation: Int? = null,
+    ) :
         DefaultSourceInfoProvider() {
         override fun getSurfaceSize(targetResolution: Size): Size {
-            val screenRect = context.screenRect
-            return Size(screenRect.width(), screenRect.height())
+            return getMediaProjectionSurfaceSize()
         }
     }
 
@@ -145,11 +171,15 @@ internal class MediaProjectionVideoSource(
  * A factory to create a [MediaProjectionVideoSourceFactory].
  *
  * @param mediaProjection The media projection
+ * @param overrideRotation The override rotation. If null, the rotation is taken from the device orientation. Use this to force a specific rotation of the media projection surface.
  */
-class MediaProjectionVideoSourceFactory(private val mediaProjection: MediaProjection) :
+class MediaProjectionVideoSourceFactory(
+    private val mediaProjection: MediaProjection,
+    @RotationValue private val overrideRotation: Int? = null
+) :
     IVideoSourceInternal.Factory {
     override suspend fun create(context: Context): IVideoSourceInternal {
-        val source = MediaProjectionVideoSource(context, mediaProjection)
+        val source = MediaProjectionVideoSource(context, mediaProjection, overrideRotation)
         return source
     }
 

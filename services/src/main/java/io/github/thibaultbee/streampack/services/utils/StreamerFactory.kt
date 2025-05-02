@@ -16,6 +16,8 @@
 package io.github.thibaultbee.streampack.services.utils
 
 import android.content.Context
+import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.streamers.dual.DualStreamer
 import io.github.thibaultbee.streampack.core.streamers.dual.IDualStreamer
@@ -42,11 +44,21 @@ interface StreamerFactory<T : IStreamer> {
  *
  * @param withAudio true if the streamer have an audio source
  * @param withVideo true if the streamer have a video source
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-open class SingleStreamerFactory(private val withAudio: Boolean, private val withVideo: Boolean) :
+open class SingleStreamerFactory(
+    private val withAudio: Boolean,
+    private val withVideo: Boolean,
+    @RotationValue private val defaultRotation: Int? = null
+) :
     StreamerFactory<ISingleStreamer> {
     override fun create(context: Context): ISingleStreamer {
-        return SingleStreamer(context, withAudio, withVideo)
+        return SingleStreamer(
+            context,
+            withAudio,
+            withVideo,
+            defaultRotation = defaultRotation ?: context.displayRotation
+        )
     }
 }
 
@@ -55,10 +67,20 @@ open class SingleStreamerFactory(private val withAudio: Boolean, private val wit
  *
  * @param withAudio true if the streamer have an audio source
  * @param withVideo true if the streamer have a video source
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-open class DualStreamerFactory(private val withAudio: Boolean, private val withVideo: Boolean) :
+open class DualStreamerFactory(
+    private val withAudio: Boolean,
+    private val withVideo: Boolean,
+    @RotationValue private val defaultRotation: Int? = null
+) :
     StreamerFactory<IDualStreamer> {
     override fun create(context: Context): IDualStreamer {
-        return DualStreamer(context, withAudio, withVideo)
+        return DualStreamer(
+            context,
+            withAudio,
+            withVideo,
+            defaultRotation = defaultRotation ?: context.displayRotation
+        )
     }
 }
