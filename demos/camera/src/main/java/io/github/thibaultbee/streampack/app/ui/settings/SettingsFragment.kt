@@ -371,14 +371,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }.toTypedArray()
         audioProfileListPreference.entryValues = profiles.map { "$it" }.toTypedArray()
         if (audioProfileListPreference.entry == null) {
-            audioProfileListPreference.value =
-                if (profiles.contains(MediaCodecInfo.CodecProfileLevel.AACObjectLC)) {
-                    MediaCodecInfo.CodecProfileLevel.AACObjectLC.toString()
-                } else if (profiles.isNotEmpty()) {
-                    profiles.first().toString()
-                } else {
-                    null
-                }
+            val value = if (profiles.contains(MediaCodecInfo.CodecProfileLevel.AACObjectLC)) {
+                MediaCodecInfo.CodecProfileLevel.AACObjectLC
+            } else if (profiles.isNotEmpty()) {
+                profiles.first()
+            } else {
+                0
+            }
+            audioProfileListPreference.value = value.toString()
         }
     }
 
