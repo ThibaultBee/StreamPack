@@ -55,7 +55,8 @@ import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDes
 import io.github.thibaultbee.streampack.screenrecorder.databinding.ActivityMainBinding
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
 import io.github.thibaultbee.streampack.screenrecorder.services.DemoMediaProjectionService
-import io.github.thibaultbee.streampack.screenrecorder.services.DemoMediaProjectionService.Companion.ENABLE_AUDIO_KEY
+import io.github.thibaultbee.streampack.screenrecorder.services.DemoMediaProjectionService.Companion.AUDIO_SOURCE_KEY
+import io.github.thibaultbee.streampack.screenrecorder.services.DemoMediaProjectionService.Companion.AUDIO_SOURCE_MICROPHONE_KEY
 import io.github.thibaultbee.streampack.screenrecorder.settings.SettingsActivity
 import io.github.thibaultbee.streampack.services.MediaProjectionService
 import kotlinx.coroutines.launch
@@ -93,16 +94,18 @@ class MainActivity : AppCompatActivity() {
             showPopup()
         }
 
-        binding.liveButton.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                requestAudioPermissionsLauncher.launch(Manifest.permission.RECORD_AUDIO)
-            } else {
-                runBlocking {
-                    streamer?.stopStream()
-                    streamer?.close()
+        binding.liveButton.setOnCheckedChangeListener { view, isChecked ->
+            if (view.isPressed) {
+                if (isChecked) {
+                    requestAudioPermissionsLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                } else {
+                    runBlocking {
+                        streamer?.stopStream()
+                        streamer?.close()
+                    }
+                    connection?.let { unbindService(it) }
+                    connection = null
                 }
-                connection?.let { unbindService(it) }
-                connection = null
             }
         }
     }
@@ -134,6 +137,7 @@ class MainActivity : AppCompatActivity() {
                 resultCode = result.resultCode,
                 resultData = result.data!!,
                 onServiceCreated = { streamer ->
+                    streamer as IVideoStreamer<*> // Cast to streamer type
                     lifecycleScope.launch {
                         try {
                             configure(streamer)
@@ -146,16 +150,19 @@ class MainActivity : AppCompatActivity() {
                         }
                         startStream(streamer)
                     }
+                    lifecycleScope.launch {
+                        streamer.isStreamingFlow.collect { isStreaming ->
+                            binding.liveButton.isChecked = isStreaming
+                        }
+                    }
                     this.streamer = streamer
                 },
                 onServiceDisconnected = {
-                    binding.liveButton.isChecked = false
                     streamer = null
                     Log.i(TAG, "Service disconnected")
                 },
-                customBundleName = DemoMediaProjectionService.MY_CUSTOM_BUNDLE_KEY,
-                customBundle = Bundle().apply {
-                    putBoolean(ENABLE_AUDIO_KEY, configuration.audio.enable)
+                onExtra = { extra ->
+                    extra.putExtra(AUDIO_SOURCE_KEY, AUDIO_SOURCE_MICROPHONE_KEY)
                 }
             )
         }
@@ -192,34 +199,32 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        if (configuration.audio.enable) {
-            val audioConfig = AudioConfig(
-                mimeType = configuration.audio.encoder,
-                startBitrate = configuration.audio.bitrate,
-                sampleRate = configuration.audio.sampleRate,
-                channelConfig = AudioConfig.getChannelConfig(configuration.audio.numberOfChannels),
-                byteFormat = configuration.audio.byteFormat
-            )
+        val audioConfig = AudioConfig(
+            mimeType = configuration.audio.encoder,
+            startBitrate = configuration.audio.bitrate,
+            sampleRate = configuration.audio.sampleRate,
+            channelConfig = AudioConfig.getChannelConfig(configuration.audio.numberOfChannels),
+            byteFormat = configuration.audio.byteFormat
+        )
 
-            if (ActivityCompat.checkSelfPermission(
-                    this, Manifest.permission.RECORD_AUDIO
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                lifecycleScope.launch {
-                    when (streamer) {
-                        is IAudioSingleStreamer -> streamer.setAudioConfig(audioConfig)
-                        is IAudioDualStreamer -> streamer.setAudioConfig(
-                            DualStreamerAudioConfig(
-                                audioConfig
-                            )
+        if (ActivityCompat.checkSelfPermission(
+                this, Manifest.permission.RECORD_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            lifecycleScope.launch {
+                when (streamer) {
+                    is IAudioSingleStreamer -> streamer.setAudioConfig(audioConfig)
+                    is IAudioDualStreamer -> streamer.setAudioConfig(
+                        DualStreamerAudioConfig(
+                            audioConfig
                         )
+                    )
 
-                        else -> throw IllegalStateException("Streamer is not a audio streamer")
-                    }
+                    else -> throw IllegalStateException("Streamer is not a audio streamer")
                 }
-            } else {
-                throw SecurityException("Permission RECORD_AUDIO must have been granted!")
             }
+        } else {
+            throw SecurityException("Permission RECORD_AUDIO must have been granted!")
         }
     }
 
@@ -252,7 +257,6 @@ class MainActivity : AppCompatActivity() {
             this.showAlertDialog(
                 this, "Error", t.message ?: "Unknown error"
             )
-            binding.liveButton.isChecked = false
             Log.e(TAG, "Error while starting streamer", t)
         }
     }

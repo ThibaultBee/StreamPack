@@ -15,26 +15,27 @@
  */
 package io.github.thibaultbee.streampack.screenrecorder.services
 
-import android.Manifest
 import android.app.Notification
 import android.app.PendingIntent
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.media.projection.MediaProjection
+import android.os.Build
 import android.os.Bundle
-import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.lifecycleScope
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MediaProjectionAudioSourceFactory
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
 import io.github.thibaultbee.streampack.core.streamers.dual.IVideoDualStreamer
 import io.github.thibaultbee.streampack.core.streamers.orientation.IRotationProvider
+import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.audioVideoMediaProjectionSingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.videoMediaProjectionSingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.videoMediaProjectionVideoOnlySingleStreamer
 import io.github.thibaultbee.streampack.screenrecorder.R
 import io.github.thibaultbee.streampack.screenrecorder.models.Actions
 import io.github.thibaultbee.streampack.services.MediaProjectionService
+import io.github.thibaultbee.streampack.services.utils.SingleStreamerFactory
 import kotlinx.coroutines.launch
 
 /**
@@ -44,7 +45,11 @@ import kotlinx.coroutines.launch
  * The [MediaProjectionService] expects [IVideoSingleStreamer] or [IVideoDualStreamer] as generic
  * type.
  */
-class DemoMediaProjectionService : MediaProjectionService<IVideoSingleStreamer>(
+class DemoMediaProjectionService : MediaProjectionService<ISingleStreamer>(
+    streamerFactory = SingleStreamerFactory(
+        withAudio = true,
+        withVideo = true
+    ),
     notificationId = 0x4569,
     channelId = "io.github.thibaultbee.streampack.screenrecorder.demo",
     channelNameResourceId = R.string.app_name
@@ -55,53 +60,33 @@ class DemoMediaProjectionService : MediaProjectionService<IVideoSingleStreamer>(
     //override val rotationProvider: IRotationProvider? = null
 
     /**
-     * Creates a [audioVideoMediaProjectionSingleStreamer].
-     *
-     * The demo services uses a [SingleStreamer] where the audio sources is the microphone.
-     *
-     * You can pass configuration in the [extras] bundle. See [MediaProjectionService.bindService]
+     * Override to use another audio source.
      */
-    override suspend fun createMediaProjectionStreamer(
-        extras: Bundle,
-        mediaProjection: MediaProjection
-    ): IVideoSingleStreamer {
-        val bundle = extras.getBundle(MY_CUSTOM_BUNDLE_KEY) ?: throw UnsupportedOperationException(
-            "No bundle found in extras"
-        )
-        val enableAudio = bundle.getBoolean(ENABLE_AUDIO_KEY, false)
+    override fun createDefaultAudioSource(
+        mediaProjection: MediaProjection,
+        extras: Bundle
+    ): IAudioSourceInternal.Factory {
+        val audioSource = extras.getString(AUDIO_SOURCE_KEY)
+        return if (audioSource == AUDIO_SOURCE_MEDIA_PROJECTION_KEY) {
+            /**
+             * For audio playback as audio source.
+             */
 
-        return if (enableAudio) {
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.RECORD_AUDIO
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                throw SecurityException("Permission RECORD_AUDIO must have been granted!")
-            }
-            /**
-             * For microphone
-             */
-            videoMediaProjectionSingleStreamer(
-                applicationContext,
-                mediaProjection
-            )
-            /**
-             * For audio playback, use [audioVideoMediaProjectionSingleStreamer]:
-             */
-            /*
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                audioVideoMediaProjectionSingleStreamer(applicationContext, mediaProjection)
+                MediaProjectionAudioSourceFactory(mediaProjection)
             } else {
                 throw UnsupportedOperationException(
                     "Media projection audio source is not supported on this version of Android"
                 )
             }
-            */
+        } else if (audioSource == AUDIO_SOURCE_MICROPHONE_KEY) {
+            /**
+             * For microphone as audio source.
+             */
+            MicrophoneSourceFactory()
         } else {
-            // No audio
-            videoMediaProjectionVideoOnlySingleStreamer(
-                applicationContext,
-                mediaProjection
+            throw IllegalArgumentException(
+                "Audio source $audioSource is not supported. Use $AUDIO_SOURCE_MEDIA_PROJECTION_KEY or $AUDIO_SOURCE_MICROPHONE_KEY"
             )
         }
     }
@@ -111,10 +96,10 @@ class DemoMediaProjectionService : MediaProjectionService<IVideoSingleStreamer>(
      */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent != null) {
-            streamer?.let {
+            streamer.let {
                 if (intent.action == Actions.STOP.value) {
                     lifecycleScope.launch {
-                        streamer?.stopStream()
+                        streamer.stopStream()
                         (streamer as? ICloseableStreamer)?.close()
                     }
                 }
@@ -144,7 +129,8 @@ class DemoMediaProjectionService : MediaProjectionService<IVideoSingleStreamer>(
     }
 
     companion object {
-        internal const val MY_CUSTOM_BUNDLE_KEY = "myCustomBundleKey"
-        internal const val ENABLE_AUDIO_KEY = "enableAudio"
+        internal const val AUDIO_SOURCE_KEY = "audioSource"
+        internal const val AUDIO_SOURCE_MICROPHONE_KEY = "microphone"
+        internal const val AUDIO_SOURCE_MEDIA_PROJECTION_KEY = "mediaProjection"
     }
 }

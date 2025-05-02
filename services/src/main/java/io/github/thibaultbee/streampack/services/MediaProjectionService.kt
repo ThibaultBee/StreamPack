@@ -27,18 +27,19 @@ import android.os.Bundle
 import android.os.IBinder
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.lifecycle.lifecycleScope
-import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.streamers.IVideoStreamer
+import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSource
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MediaProjectionAudioSourceFactory
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
+import io.github.thibaultbee.streampack.core.interfaces.IStreamer
+import io.github.thibaultbee.streampack.core.interfaces.IWithAudioSource
+import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.utils.extensions.getMediaProjection
-import io.github.thibaultbee.streampack.services.MediaProjectionService.Companion.bindService
-import io.github.thibaultbee.streampack.services.StreamerService.Companion.bindService
-import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import io.github.thibaultbee.streampack.services.utils.StreamerFactory
 
 /**
- * Foreground service that manages screen recorder streamers.
+ * Foreground bound service that manages screen recorder streamers.
  *
  * To customise this service, you have to extend this class.
  *
@@ -55,19 +56,22 @@ import kotlinx.coroutines.runBlocking
  *   - R.string.service_notification_* string values
  *   - override open onNotification methods: [onOpenNotification], [onCloseNotification] and [onErrorNotification]
  *
+ * @param streamerFactory the streamer factory
  * @param notificationId the notification id a unique number
  * @param channelId the notification channel id
  * @param channelNameResourceId A string resource identifier for the user visible name of the notification channel.
  * @param channelDescriptionResourceId A string resource identifier for the user visible description of the notification channel.
  * @param notificationIconResourceId A drawable resource identifier for the user visible icon of the notification channel.
  */
-abstract class MediaProjectionService<T : IVideoStreamer<*>>(
+abstract class MediaProjectionService<T : IStreamer>(
+    streamerFactory: StreamerFactory<T>,
     notificationId: Int = DEFAULT_NOTIFICATION_ID,
     channelId: String = DEFAULT_NOTIFICATION_CHANNEL_ID,
     @StringRes channelNameResourceId: Int = R.string.default_channel_name,
     @StringRes channelDescriptionResourceId: Int = 0,
     @DrawableRes notificationIconResourceId: Int = R.drawable.ic_baseline_linked_camera_24
 ) : StreamerService<T>(
+    streamerFactory,
     notificationId,
     channelId,
     channelNameResourceId,
@@ -83,42 +87,7 @@ abstract class MediaProjectionService<T : IVideoStreamer<*>>(
     protected var mediaProjection: MediaProjection? = null
         private set
 
-    /**
-     * Creates the media projection streamer.
-     *
-     * It is called when the service is created.
-     *
-     * @param extras the bundle passed in the [Intent.getExtras] pass to [bindService]
-     * @param resultCode the result code of the [ActivityResult]
-     * @param resultData the result data of the [ActivityResult]
-     * @return the streamer to use.
-     */
-    private suspend fun createMediaProjectionStreamer(
-        extras: Bundle,
-        resultCode: Int,
-        resultData: Intent
-    ): T {
-        val mediaProjection = applicationContext.getMediaProjection(resultCode, resultData).also {
-            this@MediaProjectionService.mediaProjection = it
-        }
-        return createMediaProjectionStreamer(extras, mediaProjection)
-    }
-
-    /**
-     * Creates the media projection streamer.
-     *
-     * It is called when the service is created.
-     *
-     * @param extras the bundle passed in the [Intent.getExtras] pass to [bindService]
-     * @param mediaProjection the media projection. It is stopped when the service is destroyed.
-     * @return the streamer to use.
-     */
-    protected abstract suspend fun createMediaProjectionStreamer(
-        extras: Bundle,
-        mediaProjection: MediaProjection
-    ): T
-
-    override suspend fun createStreamer(extras: Bundle): T {
+    private fun createMediaProjectionFromBundle(extras: Bundle): MediaProjection {
         val activityResultBundle =
             extras.getBundle(ACTIVITY_RESULT_KEY)
                 ?: throw IllegalStateException("Activity result bundle must be pass to the service")
@@ -130,17 +99,9 @@ abstract class MediaProjectionService<T : IVideoStreamer<*>>(
             activityResultBundle.getParcelable(RESULT_DATA_KEY)
         }
             ?: throw IllegalStateException("Activity result data must be pass to the service")
-
-        val streamer = createMediaProjectionStreamer(extras, resultCode, resultData)
-        lifecycleScope.launch {
-            streamer.isStreamingFlow.drop(1).collect { isStreaming ->
-                if (!isStreaming) {
-                    Logger.d(TAG, "Streamer stopped")
-                    onStreamStopped()
-                }
-            }
+        return applicationContext.getMediaProjection(resultCode, resultData).also {
+            this@MediaProjectionService.mediaProjection = it
         }
-        return streamer
     }
 
     /**
@@ -148,9 +109,92 @@ abstract class MediaProjectionService<T : IVideoStreamer<*>>(
      *
      * By default, it stops the media projection but you can override it to do something else.
      */
-    protected open fun onStreamStopped() {
+    override fun onStreamingStop() {
+        super.onStreamingStop()
         // Stop the media projection
         stopMediaProjection()
+    }
+
+    /**
+     * Creates the default video source.
+     *
+     * The default video source is a [MediaProjectionVideoSourceFactory].
+     *
+     * @param mediaProjection the media projection
+     * @param extras the extras bundle
+     * @return the video source factory
+     */
+    protected open fun createDefaultVideoSource(
+        mediaProjection: MediaProjection,
+        extras: Bundle
+    ): IVideoSourceInternal.Factory? {
+        return MediaProjectionVideoSourceFactory(mediaProjection)
+    }
+
+    /**
+     * Creates the default audio source.
+     *
+     * @param mediaProjection the media projection
+     * @param extras the extras bundle
+     * @return the audio source factory
+     */
+    protected abstract fun createDefaultAudioSource(
+        mediaProjection: MediaProjection, extras: Bundle
+    ): IAudioSourceInternal.Factory?
+
+    /**
+     * Sets the media projection to the streamer.
+     *
+     * This method is called when [onBind] is called.
+     *
+     * You can use it to set the audio and video sources
+     *
+     * @param streamer the streamer of the service
+     * @param mediaProjection the media projection to set
+     * @param extras the extras bundle
+     */
+    protected open suspend fun setStreamerMediaProjection(
+        streamer: T,
+        mediaProjection: MediaProjection,
+        extras: Bundle
+    ) {
+        require(streamer is IWithVideoSource || streamer is IWithAudioSource) {
+            "Streamer must implement IWithVideoSource or IWithAudioSource"
+        }
+
+        if (streamer is IWithVideoSource) {
+            val videoSource = streamer.videoSourceFlow.value
+            if (videoSource is IMediaProjectionSource) {
+                streamer.setVideoSource(MediaProjectionVideoSourceFactory(mediaProjection))
+            } else if (videoSource == null) {
+                createDefaultVideoSource(
+                    mediaProjection,
+                    extras
+                )?.let { streamer.setVideoSource(it) }
+            }
+        }
+
+        if (streamer is IWithAudioSource) {
+            val audioSource = streamer.audioSourceFlow.value
+            if (audioSource is IMediaProjectionSource) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    streamer.setAudioSource(MediaProjectionAudioSourceFactory(mediaProjection))
+                } else {
+                    throw UnsupportedOperationException(
+                        "Media projection audio source is not supported on this version of Android"
+                    )
+                }
+            } else if (audioSource == null) {
+                createDefaultAudioSource(
+                    mediaProjection,
+                    extras
+                )?.let { streamer.setAudioSource(it) }
+            }
+        }
+    }
+
+    override suspend fun onExtra(extras: Bundle) {
+        setStreamerMediaProjection(streamer, createMediaProjectionFromBundle(extras), extras)
     }
 
     override fun onDestroy() {
@@ -166,8 +210,6 @@ abstract class MediaProjectionService<T : IVideoStreamer<*>>(
     }
 
     companion object {
-        private const val TAG = "MediaProjectionService"
-
         private const val DEFAULT_NOTIFICATION_CHANNEL_ID =
             "io.github.thibaultbee.streampack.services.mediaprojection"
         private const val DEFAULT_NOTIFICATION_ID = 3783
@@ -186,8 +228,7 @@ abstract class MediaProjectionService<T : IVideoStreamer<*>>(
          * @param resultData the result data of the [ActivityResult]
          * @param onServiceCreated the callback that returns a children of [MediaProjectionService] instance when the service has been connected.
          * @param onServiceDisconnected the callback that will be called when the service is disconnected.
-         * @param customBundleName the name of the bundle to pass to the service. It is used to retrieve the bundle in [createStreamer] method.
-         * @param customBundle the user defined [Bundle]. It will be passed to the service. You can retrieve it in [createStreamer] method.
+         * @param onExtra the callback that will be called to pass the extra bundle to the service
          * @return the service connection. Use it to [Context.unbindService] when you don't need the service anymore.
          */
         fun bindService(
@@ -195,15 +236,14 @@ abstract class MediaProjectionService<T : IVideoStreamer<*>>(
             serviceClass: Class<out MediaProjectionService<*>>,
             resultCode: Int,
             resultData: Intent,
-            onServiceCreated: (IVideoStreamer<*>) -> Unit,
+            onServiceCreated: (IStreamer) -> Unit,
             onServiceDisconnected: (name: ComponentName?) -> Unit = {},
-            customBundleName: String = USER_BUNDLE_KEY,
-            customBundle: Bundle = Bundle()
+            onExtra: (Intent) -> Unit = {}
         ): ServiceConnection {
             val connection = object : ServiceConnection {
                 override fun onServiceConnected(name: ComponentName?, service: IBinder) {
                     if (service is StreamerService<*>.StreamerServiceBinder) {
-                        service.streamer?.let { onServiceCreated(it as IVideoStreamer<*>) }
+                        onServiceCreated(service.streamer)
                     }
                 }
 
@@ -218,8 +258,7 @@ abstract class MediaProjectionService<T : IVideoStreamer<*>>(
                 resultCode,
                 resultData,
                 connection,
-                customBundleName,
-                customBundle
+                onExtra
             )
 
             return connection
@@ -233,8 +272,7 @@ abstract class MediaProjectionService<T : IVideoStreamer<*>>(
          * @param resultCode the result code of the [ActivityResult]
          * @param resultData the result data of the [ActivityResult]
          * @param connection the service connection.
-         * @param customBundleName the name of the bundle to pass to the service. It is used to retrieve the bundle in [createStreamer] method.
-         * @param customBundle the user defined [Bundle]. It will be passed to the service. You can retrieve it in [createStreamer] method.
+         * @param onExtra the callback that will be called to pass the extra bundle to the service.
          */
         private fun bindService(
             context: Context,
@@ -242,8 +280,7 @@ abstract class MediaProjectionService<T : IVideoStreamer<*>>(
             resultCode: Int,
             resultData: Intent,
             connection: ServiceConnection,
-            customBundleName: String = USER_BUNDLE_KEY,
-            customBundle: Bundle = Bundle(),
+            onExtra: (Intent) -> Unit = {}
         ) {
             require(resultCode == Activity.RESULT_OK) {
                 "Result code must be Activity.RESULT_OK"
@@ -253,14 +290,14 @@ abstract class MediaProjectionService<T : IVideoStreamer<*>>(
                 putInt(RESULT_CODE_KEY, resultCode)
                 putParcelable(RESULT_DATA_KEY, resultData)
             }
-            val intent = Intent(context, serviceClass).apply {
-                putExtra(customBundleName, customBundle)
-                putExtra(ACTIVITY_RESULT_KEY, activityResultBundle)
-            }
 
-            context.bindService(
-                intent, connection, Context.BIND_AUTO_CREATE
-            )
+            bindService(
+                context, serviceClass, connection
+            ) { extra ->
+                onExtra(extra)
+                // Pass the extra bundle to the service
+                extra.putExtra(ACTIVITY_RESULT_KEY, activityResultBundle)
+            }
         }
     }
 }

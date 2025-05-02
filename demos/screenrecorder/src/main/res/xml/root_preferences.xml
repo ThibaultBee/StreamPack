@@ -31,11 +31,6 @@
 
     <PreferenceCategory app:title="@string/audio">
 
-        <SwitchPreference
-            android:defaultValue="true"
-            app:key="@string/audio_enable_key"
-            app:title="@string/audio_enable" />
-
         <PreferenceCategory
             app:key="@string/audio_settings_key"
             app:title="@string/settings">
