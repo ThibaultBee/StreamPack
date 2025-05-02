@@ -40,7 +40,7 @@ import java.util.UUID
  */
 @RequiresApi(Build.VERSION_CODES.Q)
 internal class MediaProjectionAudioSource(
-    val mediaProjection: MediaProjection,
+    override val mediaProjection: MediaProjection,
 ) : AudioRecordSource(), IMediaProjectionSource {
     private val callbackHandlerThread = HandlerThread("AudioProjectionThread").apply { start() }
     private val callbackHandler = Handler(callbackHandlerThread.looper)

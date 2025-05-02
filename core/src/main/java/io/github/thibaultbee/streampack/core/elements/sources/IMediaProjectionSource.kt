@@ -15,7 +15,11 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources
 
+import android.media.projection.MediaProjection
+
 /**
  * Interface to implement class that uses MediaProjection.
  */
-interface IMediaProjectionSource
+interface IMediaProjectionSource {
+    val mediaProjection: MediaProjection
+}
