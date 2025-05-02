@@ -35,17 +35,18 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.rootCause
 import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
-import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.streamers.orientation.IRotationProvider
 import io.github.thibaultbee.streampack.core.streamers.orientation.SensorRotationProvider
 import io.github.thibaultbee.streampack.services.utils.NotificationUtils
+import io.github.thibaultbee.streampack.services.utils.StreamerFactory
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 /**
- * Foreground service that manages streamers.
+ * Foreground bound service that manages streamers.
  *
  * To customise this service, you have to extend this class.
  *
@@ -62,6 +63,7 @@ import kotlinx.coroutines.runBlocking
  *   - R.string.service_notification_* string values
  *   - override open onNotification methods: [onOpenNotification], [onCloseNotification] and [onErrorNotification]
  *
+ * @param streamerFactory the streamer factory to create the streamer
  * @param notificationId the notification id a unique number
  * @param channelId the notification channel id
  * @param channelNameResourceId A string resource identifier for the user visible name of the notification channel.
@@ -69,20 +71,74 @@ import kotlinx.coroutines.runBlocking
  * @param notificationIconResourceId A drawable resource identifier for the user visible icon of the notification channel.
  */
 abstract class StreamerService<T : IStreamer>(
+    private val streamerFactory: StreamerFactory<T>,
     private val notificationId: Int = DEFAULT_NOTIFICATION_ID,
     protected val channelId: String = DEFAULT_NOTIFICATION_CHANNEL_ID,
     @StringRes protected val channelNameResourceId: Int = R.string.default_channel_name,
     @StringRes protected val channelDescriptionResourceId: Int = 0,
     @DrawableRes protected val notificationIconResourceId: Int = R.drawable.ic_baseline_linked_camera_24
 ) : LifecycleService(), IRotationProvider.Listener {
-    protected var streamer: T? = null
-        private set
+    protected val streamer: T by lazy {
+        streamerFactory.create(this).apply {
+            lifecycleScope.launch {
+                throwableFlow.filterNotNull().collect { t ->
+                    onError(t)
+                }
+            }
+
+            lifecycleScope.launch {
+                isStreamingFlow.drop(1).collect { isStreaming ->
+                    if (isStreaming) {
+                        onStreamingStart()
+                    } else {
+                        onStreamingStop()
+                    }
+                }
+            }
+
+            if (this is ICloseableStreamer) {
+                lifecycleScope.launch {
+                    isOpenFlow.drop(1).collect { isOpen ->
+                        if (isOpen) {
+                            onOpen()
+                        } else {
+                            onClose()
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     protected open val rotationProvider: IRotationProvider? by lazy { SensorRotationProvider(this) }
 
     private val binder = StreamerServiceBinder()
     private val notificationUtils: NotificationUtils by lazy {
         NotificationUtils(this, channelId, notificationId)
+    }
+
+    protected open fun onOpen() {
+        Logger.i(TAG, "Open succeeded")
+        onOpenNotification()?.let { notify(it) }
+    }
+
+    protected open fun onClose() {
+        Logger.w(TAG, "Closed")
+        onCloseNotification()?.let { notify(it) }
+    }
+
+    protected open fun onStreamingStart() {
+        Logger.i(TAG, "Streaming started")
+    }
+
+    protected open fun onStreamingStop() {
+        Logger.i(TAG, "Streaming stopped")
+    }
+
+    protected open fun onError(t: Throwable) {
+        Logger.e(TAG, "An error occurred", t)
+        onErrorNotification(t)?.let { notify(it) }
+        stopSelf()
     }
 
     override fun onCreate() {
@@ -107,42 +163,18 @@ abstract class StreamerService<T : IStreamer>(
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        super.onStartCommand(intent, flags, startId)
-        return START_NOT_STICKY
+        Logger.i(TAG, "onStartCommand")
+        return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onBind(intent: Intent): IBinder? {
-        Logger.i(TAG, "Service bound")
         super.onBind(intent)
+        Logger.i(TAG, "onBind")
 
         try {
-            val extras = intent.extras
-                ?: throw IllegalStateException("Config bundle must be pass to the service")
-
-            streamer?.releaseBlocking()
-            val streamer = runBlocking { createStreamer(extras) }.apply {
-                this@StreamerService.streamer = this
-            }
-
-            lifecycleScope.launch {
-                streamer.throwableFlow.filterNotNull().collect { t ->
-                    Logger.e(TAG, "An error occurred", t)
-                    onErrorNotification(t)?.let { notify(it) }
-                    stopSelf()
-                }
-            }
-
-            if (streamer is ICloseableStreamer) {
-                lifecycleScope.launch {
-                    streamer.isOpenFlow.collect { isOpen ->
-                        if (isOpen) {
-                            Logger.i(TAG, "Open succeeded")
-                            onOpenNotification()?.let { notify(it) }
-                        } else {
-                            Logger.w(TAG, "Closed")
-                            onCloseNotification()?.let { notify(it) }
-                        }
-                    }
+            intent.extras?.let {
+                runBlocking {
+                    onExtra(it)
                 }
             }
         } catch (t: Throwable) {
@@ -154,16 +186,15 @@ abstract class StreamerService<T : IStreamer>(
     }
 
     /**
-     * Creates the streamer from the [Intent.getExtras] passed in the [Intent].
+     * Calls in [onBind] or [onStartCommand] with the [Intent.getExtras] passed in the [Intent].
      *
-     * It is called when the service is created.
+     * It is called when the service is bind.
      *
      * @param extras the bundle passed in the [Intent.getExtras] pass to [bindService]
-     * @return the streamer to use.
      */
-    protected abstract suspend fun createStreamer(
+    protected abstract suspend fun onExtra(
         extras: Bundle
-    ): T
+    )
 
     override fun onOrientationChanged(rotation: Int) {
         lifecycleScope.launch {
@@ -183,11 +214,10 @@ abstract class StreamerService<T : IStreamer>(
         rotationProvider?.removeListener(this)
 
         runBlocking {
-            streamer?.stopStream()
+            streamer.stopStream()
             (streamer as ICloseableStreamer?)?.close()
-            streamer?.release()
+            streamer.release()
         }
-        streamer = null
         Log.i(TAG, "Service destroyed")
     }
 
@@ -253,7 +283,7 @@ abstract class StreamerService<T : IStreamer>(
     }
 
     protected inner class StreamerServiceBinder : Binder() {
-        val streamer: T?
+        val streamer: T
             get() = this@StreamerService.streamer
     }
 
@@ -275,8 +305,7 @@ abstract class StreamerService<T : IStreamer>(
          * @param serviceClass the service class to launch. It is a children of [StreamerService].
          * @param onServiceCreated the callback that returns a children of [StreamerService] instance when the service has been connected.
          * @param onServiceDisconnected the callback that will be called when the service is disconnected.
-         * @param customBundleName the name of the bundle to pass to the service. It is used to retrieve the bundle in [createStreamer] method.
-         * @param customBundle the user defined [Bundle]. It will be passed to the service. You can retrieve it in [createStreamer] method.
+         * @param onExtra the callback that will be called to pass the extra bundle to the service.
          * @return the service connection. Use it to [Context.unbindService] when you don't need the service anymore.
          */
         fun bindService(
@@ -284,13 +313,12 @@ abstract class StreamerService<T : IStreamer>(
             serviceClass: Class<out StreamerService<*>>,
             onServiceCreated: (IStreamer) -> Unit,
             onServiceDisconnected: (name: ComponentName?) -> Unit = {},
-            customBundleName: String = USER_BUNDLE_KEY,
-            customBundle: Bundle = Bundle()
+            onExtra: (Intent) -> Unit = {}
         ): ServiceConnection {
             val connection = object : ServiceConnection {
                 override fun onServiceConnected(name: ComponentName?, service: IBinder) {
                     if (service is StreamerService<*>.StreamerServiceBinder) {
-                        service.streamer?.let { onServiceCreated(it) }
+                        onServiceCreated(service.streamer)
                     }
                 }
 
@@ -300,7 +328,7 @@ abstract class StreamerService<T : IStreamer>(
             }
 
             bindService(
-                context, serviceClass, connection, customBundleName, customBundle
+                context, serviceClass, connection, onExtra
             )
 
             return connection
@@ -312,18 +340,16 @@ abstract class StreamerService<T : IStreamer>(
          * @param context the application context.
          * @param serviceClass the service class to launch. It is a children of [StreamerService].
          * @param connection the service connection.
-         * @param customBundleName the name of the bundle to pass to the service. It is used to retrieve the bundle in [createStreamer] method.
-         * @param customBundle the user defined [Bundle]. It will be passed to the service. You can retrieve it in [createStreamer] method.
+         * @param onExtra the callback that will be called to pass the extra bundle to the service.
          */
         fun bindService(
             context: Context,
             serviceClass: Class<out StreamerService<*>>,
             connection: ServiceConnection,
-            customBundleName: String = USER_BUNDLE_KEY,
-            customBundle: Bundle = Bundle()
+            onExtra: (Intent) -> Unit = {}
         ) {
             val intent = Intent(context, serviceClass).apply {
-                putExtra(customBundleName, customBundle)
+                onExtra(this)
             }
 
             context.bindService(
