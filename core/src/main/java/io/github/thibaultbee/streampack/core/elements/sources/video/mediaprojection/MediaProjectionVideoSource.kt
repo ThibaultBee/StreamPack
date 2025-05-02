@@ -43,7 +43,7 @@ import kotlinx.coroutines.runBlocking
 
 internal class MediaProjectionVideoSource(
     private val context: Context,
-    val mediaProjection: MediaProjection,
+    override val mediaProjection: MediaProjection,
     @RotationValue private val overrideRotation: Int? = null,
 ) : IVideoSourceInternal, ISurfaceSourceInternal, IMediaProjectionSource {
     override val timestampOffsetInNs = 0L
