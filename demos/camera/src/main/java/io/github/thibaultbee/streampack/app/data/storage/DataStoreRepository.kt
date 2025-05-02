@@ -48,21 +48,22 @@ class DataStoreRepository(
         val mimeType =
             preferences[stringPreferencesKey(context.getString(R.string.audio_encoder_key))]
                 ?: ApplicationConstants.Audio.defaultEncoder
+
         val startBitrate =
-            preferences[stringPreferencesKey(context.getString(R.string.audio_bitrate_key))]?.toInt()
+            toIntOrNull(preferences[stringPreferencesKey(context.getString(R.string.audio_bitrate_key))])
                 ?: ApplicationConstants.Audio.defaultBitrateInBps
 
         val channelConfig =
-            preferences[stringPreferencesKey(context.getString(R.string.audio_channel_config_key))]?.toInt()
+            toIntOrNull(preferences[stringPreferencesKey(context.getString(R.string.audio_channel_config_key))])
                 ?: ApplicationConstants.Audio.defaultChannelConfig
         val sampleRate =
-            preferences[stringPreferencesKey(context.getString(R.string.audio_sample_rate_key))]?.toInt()
+            toIntOrNull(preferences[stringPreferencesKey(context.getString(R.string.audio_sample_rate_key))])
                 ?: ApplicationConstants.Audio.defaultSampleRate
         val byteFormat =
-            preferences[stringPreferencesKey(context.getString(R.string.audio_byte_format_key))]?.toInt()
+            toIntOrNull(preferences[stringPreferencesKey(context.getString(R.string.audio_byte_format_key))])
                 ?: ApplicationConstants.Audio.defaultByteFormat
         val profile =
-            preferences[stringPreferencesKey(context.getString(R.string.audio_profile_key))]?.toInt()
+            toIntOrNull(preferences[stringPreferencesKey(context.getString(R.string.audio_profile_key))])
                 ?: if (mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
                     MediaCodecInfo.CodecProfileLevel.AACObjectLC
                 } else {
@@ -103,13 +104,13 @@ class DataStoreRepository(
             )?.let { Size(it[0].toInt(), it[1].toInt()) }
                 ?: ApplicationConstants.Video.defaultResolution
         val fps =
-            preferences[stringPreferencesKey(context.getString(R.string.video_fps_key))]?.toInt()
+            toIntOrNull(preferences[stringPreferencesKey(context.getString(R.string.video_fps_key))])
                 ?: ApplicationConstants.Video.defaultFps
         val profile =
-            preferences[stringPreferencesKey(context.getString(R.string.video_profile_key))]?.toInt()
+            toIntOrNull(preferences[stringPreferencesKey(context.getString(R.string.video_profile_key))])
                 ?: VideoConfig.getBestProfile(mimeType)
         val level =
-            preferences[stringPreferencesKey(context.getString(R.string.video_level_key))]?.toInt()
+            toIntOrNull(preferences[stringPreferencesKey(context.getString(R.string.video_level_key))])
                 ?: VideoConfig.getBestLevel(mimeType, profile)
         VideoConfig(
             mimeType = mimeType,
@@ -123,7 +124,7 @@ class DataStoreRepository(
 
     val endpointDescriptorFlow: Flow<MediaDescriptor> = dataStore.data.map { preferences ->
         val endpointTypeId =
-            preferences[stringPreferencesKey(context.getString(R.string.endpoint_type_key))]?.toInt()
+            toIntOrNull(preferences[stringPreferencesKey(context.getString(R.string.endpoint_type_key))])
                 ?: EndpointType.SRT.id
         when (val endpointType = EndpointType.fromId(endpointTypeId)) {
             EndpointType.TS_FILE,
@@ -148,7 +149,7 @@ class DataStoreRepository(
                     preferences[stringPreferencesKey(context.getString(R.string.srt_server_ip_key))]
                         ?: context.getString(R.string.default_srt_server_url)
                 val port =
-                    preferences[stringPreferencesKey(context.getString(R.string.srt_server_port_key))]?.toInt()
+                    toIntOrNull(preferences[stringPreferencesKey(context.getString(R.string.srt_server_port_key))])
                         ?: 9998
                 val streamId =
                     preferences[stringPreferencesKey(context.getString(R.string.srt_server_stream_id_key))]
@@ -194,4 +195,18 @@ class DataStoreRepository(
                 videoBitrateRange = Range(videoMinBitrate, videoMaxBitrate)
             )
         }
+
+    companion object {
+        @JvmStatic
+        fun toIntOrNull(s: String?): Int? {
+            if (s != null) {
+                try {
+                    return s.toInt()
+                } catch (_: NumberFormatException) {
+
+                }
+            }
+            return null
+        }
+    }
 }
