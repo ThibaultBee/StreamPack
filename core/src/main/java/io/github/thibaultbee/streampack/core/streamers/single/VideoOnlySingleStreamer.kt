@@ -16,6 +16,8 @@
 package io.github.thibaultbee.streampack.core.streamers.single
 
 import android.content.Context
+import android.media.projection.MediaProjection
+import android.media.projection.MediaProjectionManager
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
@@ -57,11 +59,13 @@ suspend fun cameraVideoOnlySingleStreamer(
  * Creates a [SingleStreamer] with the screen as video source and no audio source.
  *
  * @param context the application context
+ * @param mediaProjection the media projection. It can be obtained with [MediaProjectionManager.getMediaProjection]. Don't forget to call [MediaProjection.stop] when you are done.
  * @param endpointFactory the [IEndpointInternal.Factory] implementation
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-suspend fun screenRecorderVideoOnlySingleStreamer(
+suspend fun videoMediaProjectionVideoOnlySingleStreamer(
     context: Context,
+    mediaProjection: MediaProjection,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
 ): VideoOnlySingleStreamer {
@@ -70,7 +74,7 @@ suspend fun screenRecorderVideoOnlySingleStreamer(
         endpointFactory = endpointFactory,
         defaultRotation = defaultRotation
     )
-    streamer.setVideoSource(MediaProjectionVideoSourceFactory())
+    streamer.setVideoSource(MediaProjectionVideoSourceFactory(mediaProjection))
     return streamer
 }
 

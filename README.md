@@ -14,7 +14,7 @@ dependencies {
     implementation 'io.github.thibaultbee.streampack:streampack-core:3.0.0-RC'
     // For UI (incl. PreviewView)
     implementation 'io.github.thibaultbee.streampack:streampack-ui:3.0.0-RC'
-    // For ScreenRecorder service
+    // For services (incl. screen capture/media projection service)
     implementation 'io.github.thibaultbee.streampack:streampack-services:3.0.0-RC'
     // For RTMP
     implementation 'io.github.thibaultbee.streampack:streampack-extension-rtmp:3.0.0-RC'
@@ -97,7 +97,7 @@ minutes, you will be able to stream live video to your server.
       another file)
 
    The `SingleStreamer` and the `DualStreamer` comes with factory for `Camera` and
-   `ScreenRecorder`.
+   `MediaProjection` (for screen capture).
    Otherwise, you can set the audio and the video source manually.
 
     ```kotlin
@@ -255,22 +255,23 @@ For a complete example, check out the [demos/camera](demos/camera) directory.
 
 2. Requests the required permissions in your Activity/Fragment. See the
    [Permissions](#permissions) section for more information.
-3. Creates a `MyService` that extends `DefaultScreenRecorderService` (so you can customize
+3. Creates a `MyService` that extends `MediaProjectionService` (so you can customize
    notifications among other things).
 4. Creates a screen record `Intent` and requests the activity result
 
     ```kotlin
-    ScreenRecorderUtils.createScreenRecorderIntent(context = requireContext())
+    MediaProjectionUtils.createScreenCaptureIntent(context = requireContext())
     ```
 
 5. Starts the service
 
     ```kotlin
-    DefaultScreenRecorderService.launch(
+    MediaProjectionService.bindService(
         requireContext(),
         MyService::class.java,
+        result.resultCode,
+        result.data,
         { streamer ->
-            streamer.setActivityResult(result)
             try {
                 configure(streamer)
             } catch (t: Throwable) {
@@ -346,7 +347,7 @@ You will also have to declare the `Service`,
 
 <application>
     <!-- YourScreenRecorderService extends DefaultScreenRecorderService -->
-    <service android:name=".services.YourScreenRecorderService" android:exported="false"
+    <service android:name=".services.MyService" android:exported="false"
         android:foregroundServiceType="mediaProjection" />
 </application>
 ```

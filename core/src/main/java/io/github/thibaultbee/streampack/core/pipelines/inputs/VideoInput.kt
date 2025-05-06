@@ -55,7 +55,7 @@ internal class VideoInput(
     private var isStreamingJob = ConflatedJob()
     private var infoProviderJob = ConflatedJob()
 
-    private val mutex = Mutex()
+    private val videoSourceMutex = Mutex()
 
     private var surfaceProcessor: ISurfaceProcessorInternal =
         SurfaceProcessor(dynamicRangeProfileHint)
@@ -108,7 +108,7 @@ internal class VideoInput(
 
     suspend fun setVideoSource(videoSourceFactory: IVideoSourceInternal.Factory) =
         withContext(coroutineDispatcher) {
-            mutex.withLock {
+            videoSourceMutex.withLock {
                 val previousVideoSource = videoSourceInternalFlow.value
                 val isStreaming = previousVideoSource?.isStreamingFlow?.value ?: false
 
@@ -219,7 +219,7 @@ internal class VideoInput(
 
     suspend fun setVideoSourceConfig(newVideoSourceConfig: VideoSourceConfig) =
         withContext(coroutineDispatcher) {
-            mutex.withLock {
+            videoSourceMutex.withLock {
                 if (videoSourceConfig == newVideoSourceConfig) {
                     Logger.i(TAG, "Video source configuration is the same, skipping configuration")
                     return@withContext
@@ -314,7 +314,7 @@ internal class VideoInput(
     }
 
     suspend fun startStream() = withContext(coroutineDispatcher) {
-        mutex.withLock {
+        videoSourceMutex.withLock {
             val source =
                 requireNotNull(videoSource) { "Video source must be set before starting stream" }
             if (isStreamingFlow.value) {
@@ -330,7 +330,7 @@ internal class VideoInput(
     }
 
     suspend fun stopStream() = withContext(coroutineDispatcher) {
-        mutex.withLock {
+        videoSourceMutex.withLock {
             _isStreamingFlow.emit(false)
             try {
                 videoSource?.stopStream()
@@ -356,7 +356,7 @@ internal class VideoInput(
     }
 
     suspend fun release() = withContext(coroutineDispatcher) {
-        mutex.withLock {
+        videoSourceMutex.withLock {
             _isStreamingFlow.emit(false)
             try {
                 releaseSurfaceProcessor()

@@ -19,45 +19,47 @@ import android.content.Context
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.projection.MediaProjection
-import android.media.projection.MediaProjectionManager
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Size
 import android.view.Surface
-import androidx.activity.result.ActivityResult
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
+import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.densityDpi
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.isRotationPortrait
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.landscapize
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.portraitize
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.screenRect
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.size
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.runBlocking
 
 internal class MediaProjectionVideoSource(
-    private val context: Context
+    private val context: Context,
+    override val mediaProjection: MediaProjection,
+    @RotationValue private val overrideRotation: Int? = null,
 ) : IVideoSourceInternal, ISurfaceSourceInternal, IMediaProjectionSource {
     override val timestampOffsetInNs = 0L
     override val infoProviderFlow =
-        MutableStateFlow(FullScreenInfoProvider(context) as ISourceInfoProvider).asStateFlow()
+        MutableStateFlow(
+            FullScreenInfoProvider(
+                context,
+                overrideRotation
+            ) as ISourceInfoProvider
+        ).asStateFlow()
 
     private val _isStreamingFlow = MutableStateFlow(false)
     override val isStreamingFlow = _isStreamingFlow.asStateFlow()
 
     private var outputSurface: Surface? = null
 
-    private var mediaProjection: MediaProjection? = null
-
-    /**
-     * Set the activity result to get the media projection.
-     */
-    override var activityResult: ActivityResult? = null
-
-    private val mediaProjectionManager =
-        context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
     private var virtualDisplay: VirtualDisplay? = null
 
     private val virtualDisplayThread = HandlerThread("VirtualDisplayThread").apply { start() }
@@ -72,7 +74,9 @@ internal class MediaProjectionVideoSource(
             super.onStopped()
             Logger.i(TAG, "onStopped")
 
-            _isStreamingFlow.tryEmit(false)
+            runBlocking {
+                stopStream()
+            }
         }
     }
 
@@ -81,7 +85,9 @@ internal class MediaProjectionVideoSource(
             super.onStop()
             Logger.i(TAG, "onStop")
 
-            _isStreamingFlow.tryEmit(false)
+            runBlocking {
+                stopStream()
+            }
         }
     }
 
@@ -98,28 +104,19 @@ internal class MediaProjectionVideoSource(
     override suspend fun configure(config: VideoSourceConfig) = Unit
 
     override suspend fun startStream() {
-        val activityResult = requireNotNull(activityResult) {
-            "MediaProjection requires an activity result to be set"
-        }
+        val screenSize = getMediaProjectionSurfaceSize()
 
-        val screenRect = context.screenRect
-
-        mediaProjection = mediaProjectionManager.getMediaProjection(
-            activityResult.resultCode,
-            activityResult.data!!
-        ).apply {
-            registerCallback(mediaProjectionCallback, virtualDisplayHandler)
-            virtualDisplay = createVirtualDisplay(
-                VIRTUAL_DISPLAY_NAME,
-                screenRect.width(),
-                screenRect.height(),
-                context.densityDpi,
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                outputSurface,
-                virtualDisplayCallback,
-                virtualDisplayHandler
-            )
-        }
+        mediaProjection.registerCallback(mediaProjectionCallback, virtualDisplayHandler)
+        virtualDisplay = mediaProjection.createVirtualDisplay(
+            VIRTUAL_DISPLAY_NAME,
+            screenSize.width,
+            screenSize.height,
+            context.densityDpi,
+            DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+            outputSurface,
+            virtualDisplayCallback,
+            virtualDisplayHandler
+        )
         _isStreamingFlow.emit(true)
     }
 
@@ -127,8 +124,8 @@ internal class MediaProjectionVideoSource(
         virtualDisplay?.release()
         virtualDisplay = null
 
-        mediaProjection?.stop()
-        mediaProjection = null
+        mediaProjection.unregisterCallback(mediaProjectionCallback)
+        _isStreamingFlow.emit(false)
     }
 
     override fun release() {
@@ -140,16 +137,31 @@ internal class MediaProjectionVideoSource(
         }
     }
 
-    private inner class FullScreenInfoProvider(private val context: Context) :
+    private fun getMediaProjectionSurfaceSize(): Size {
+        val screenSize = context.screenRect.size
+        return if (overrideRotation != null) {
+            if (context.isRotationPortrait(overrideRotation)) {
+                screenSize.portraitize
+            } else {
+                screenSize.landscapize
+            }
+        } else {
+            screenSize
+        }
+    }
+
+    private inner class FullScreenInfoProvider(
+        private val context: Context,
+        @RotationValue private val overrideRotation: Int? = null,
+    ) :
         DefaultSourceInfoProvider() {
         override fun getSurfaceSize(targetResolution: Size): Size {
-            val screenRect = context.screenRect
-            return Size(screenRect.width(), screenRect.height())
+            return getMediaProjectionSurfaceSize()
         }
     }
 
     companion object {
-        private const val TAG = "ScreenSource"
+        private const val TAG = "MediaProjectionVideo"
 
         private const val VIRTUAL_DISPLAY_NAME = "StreamPackScreenSource"
     }
@@ -158,15 +170,16 @@ internal class MediaProjectionVideoSource(
 /**
  * A factory to create a [MediaProjectionVideoSourceFactory].
  *
- * @param activityResult The activity result to get the media projection
+ * @param mediaProjection The media projection
+ * @param overrideRotation The override rotation. If null, the rotation is taken from the device orientation. Use this to force a specific rotation of the media projection surface.
  */
-class MediaProjectionVideoSourceFactory(private val activityResult: ActivityResult? = null) :
+class MediaProjectionVideoSourceFactory(
+    private val mediaProjection: MediaProjection,
+    @RotationValue private val overrideRotation: Int? = null
+) :
     IVideoSourceInternal.Factory {
     override suspend fun create(context: Context): IVideoSourceInternal {
-        val source = MediaProjectionVideoSource(context)
-        if (activityResult != null) {
-            source.activityResult = activityResult
-        }
+        val source = MediaProjectionVideoSource(context, mediaProjection, overrideRotation)
         return source
     }
 

@@ -68,10 +68,8 @@
     <string name="channel_description">Notices stream error or disconnection.</string>
     <string name="notification_title">StreamPack</string>
     <string name="notification_service_started">Service started</string>
-    <string name="audio_enable_key">audio_enable_key</string>
     <string name="audio_settings_key">audio_settings_key</string>
     <string name="settings">Settings</string>
-    <string name="audio_enable">Enable audio</string>
     <string name="endpoint_type_key">endpoint_type_key</string>
     <string name="endpoint_type">Type</string>
     <string name="srt_server_key">srt_server_key</string>

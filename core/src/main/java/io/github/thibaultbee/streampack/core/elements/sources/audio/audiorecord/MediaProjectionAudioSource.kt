@@ -20,57 +20,43 @@ import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioPlaybackCaptureConfiguration
 import android.media.AudioRecord
-import android.media.audiofx.AudioEffect
 import android.media.projection.MediaProjection
-import android.media.projection.MediaProjectionManager
 import android.os.Build
-import androidx.activity.result.ActivityResult
+import android.os.Handler
+import android.os.HandlerThread
 import androidx.annotation.RequiresApi
 import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.logger.Logger
+import kotlinx.coroutines.runBlocking
 import java.util.UUID
 
 /**
- * The [MediaProjectionAudioSource] class is an implementation of [AudioRecordSource] that
- * captures audio played by other apps.
- *
- * @param context The application context
- */
-@RequiresApi(Build.VERSION_CODES.Q)
-internal fun MediaProjectionAudioSource(
-    context: Context,
-) = MediaProjectionAudioSource(
-    context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager,
-)
-
-/**
  * The [MediaProjectionAudioSource] class is an implementation of [IAudioSourceInternal] that
- * captures audio played by other apps.
+ * captures audio playback.
  *
- * @param mediaProjectionManager The media projection manager
+ * @param mediaProjection The media projection
  */
 @RequiresApi(Build.VERSION_CODES.Q)
 internal class MediaProjectionAudioSource(
-    private val mediaProjectionManager: MediaProjectionManager,
+    override val mediaProjection: MediaProjection,
 ) : AudioRecordSource(), IMediaProjectionSource {
-    private var mediaProjection: MediaProjection? = null
+    private val callbackHandlerThread = HandlerThread("AudioProjectionThread").apply { start() }
+    private val callbackHandler = Handler(callbackHandlerThread.looper)
 
-    /**
-     * Set the activity result to get the media projection.
-     */
-    override var activityResult: ActivityResult? = null
+    private val mediaProjectionCallback = object : MediaProjection.Callback() {
+        override fun onStop() {
+            super.onStop()
+            Logger.i(TAG, "onStop")
+
+            runBlocking {
+                stopStream()
+            }
+        }
+    }
 
     override fun buildAudioRecord(config: AudioSourceConfig, bufferSize: Int): AudioRecord {
-        val activityResult = requireNotNull(activityResult) {
-            "MediaProjection requires an activity result to be set"
-        }
-
-        mediaProjection = mediaProjectionManager.getMediaProjection(
-            activityResult.resultCode,
-            activityResult.data!!
-        )
-
         val audioFormat = AudioFormat.Builder()
             .setEncoding(config.byteFormat)
             .setSampleRate(config.sampleRate)
@@ -81,42 +67,56 @@ internal class MediaProjectionAudioSource(
             .setAudioFormat(audioFormat)
             .setBufferSizeInBytes(bufferSize)
             .setAudioPlaybackCaptureConfig(
-                AudioPlaybackCaptureConfiguration.Builder(requireNotNull(mediaProjection))
+                AudioPlaybackCaptureConfiguration.Builder(mediaProjection)
                     .addMatchingUsage(AudioAttributes.USAGE_MEDIA)
                     .build()
             )
             .build()
     }
 
+    override suspend fun startStream() {
+        mediaProjection.registerCallback(mediaProjectionCallback, callbackHandler)
+
+        super.startStream()
+    }
+
     override suspend fun stopStream() {
         super.stopStream()
 
-        mediaProjection?.stop()
-        mediaProjection = null
+        mediaProjection.unregisterCallback(mediaProjectionCallback)
+    }
+
+    override fun release() {
+        super.release()
+        mediaProjection.unregisterCallback(mediaProjectionCallback)
+        callbackHandlerThread.quitSafely()
+        try {
+            callbackHandlerThread.join()
+        } catch (e: InterruptedException) {
+            Logger.e(TAG, "Failed to join callback handler thread: $e")
+        }
+    }
+
+    companion object {
+        private const val TAG = "MediaProjectionAudio"
     }
 }
 
 /**
  * A factory to create a [MediaProjectionAudioSource].
  *
+ * If you want to share the [MediaProjection] to another source. You must use this factory.
+ *
+ * @param mediaProjection The media projection
  * @param effects The audio effects to apply
- * @param activityResult The activity result to get the media projection
  */
 @RequiresApi(Build.VERSION_CODES.Q)
 class MediaProjectionAudioSourceFactory(
-    effects: Set<UUID> = setOf(
-        AudioEffect.EFFECT_TYPE_AEC,
-        AudioEffect.EFFECT_TYPE_NS
-    ),
-    private val activityResult: ActivityResult? = null
+    private val mediaProjection: MediaProjection,
+    effects: Set<UUID> = defaultAudioEffects
 ) : AudioRecordSourceFactory(effects) {
     override suspend fun createImpl(context: Context): AudioRecordSource {
-        val source = MediaProjectionAudioSource(context)
-
-        if (activityResult != null) {
-            source.activityResult = activityResult
-        }
-        return source
+        return MediaProjectionAudioSource(mediaProjection)
     }
 
     override fun isSourceEquals(source: IAudioSourceInternal?): Boolean {

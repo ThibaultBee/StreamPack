@@ -50,10 +50,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         this.findPreference(getString(R.string.video_bitrate_key))!!
     }
 
-    private val audioEnablePreference: SwitchPreference by lazy {
-        this.findPreference(getString(R.string.audio_enable_key))!!
-    }
-
     private val audioSettingsCategory: PreferenceCategory by lazy {
         this.findPreference(getString(R.string.audio_settings_key))!!
     }
@@ -211,12 +207,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun loadAudioSettings(encoder: String) {
-        audioSettingsCategory.isVisible = audioEnablePreference.isChecked
-        audioEnablePreference.setOnPreferenceChangeListener { _, newValue ->
-            audioSettingsCategory.isVisible = newValue as Boolean
-            true
-        }
-
         // Inflates audio number of channel
         val inputChannelRange =
             streamerInfo.audio.getSupportedInputChannelRange(encoder)

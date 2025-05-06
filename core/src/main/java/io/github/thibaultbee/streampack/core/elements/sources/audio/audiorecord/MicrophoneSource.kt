@@ -19,7 +19,6 @@ import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
-import android.media.audiofx.AudioEffect
 import android.os.Build
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
@@ -61,10 +60,7 @@ internal class MicrophoneSource : AudioRecordSource() {
  * @param effects a set of audio effects to apply to the audio source
  */
 class MicrophoneSourceFactory(
-    effects: Set<UUID> = setOf(
-        AudioEffect.EFFECT_TYPE_AEC,
-        AudioEffect.EFFECT_TYPE_NS
-    )
+    effects: Set<UUID> = defaultAudioEffects
 ) :
     AudioRecordSourceFactory(effects) {
     override suspend fun createImpl(context: Context) = MicrophoneSource()

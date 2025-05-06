@@ -26,14 +26,18 @@ import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFra
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
 import io.github.thibaultbee.streampack.core.elements.utils.pool.IRawFrameFactory
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.inputs.AudioInput.PushConfig
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -47,6 +51,9 @@ internal class AudioInput(
     config: Config,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
+    private val coroutineScope = CoroutineScope(coroutineDispatcher)
+    private var isStreamingJob = ConflatedJob()
+
     private val audioSourceMutex = Mutex()
 
     // SOURCE
@@ -128,6 +135,15 @@ internal class AudioInput(
                 audioSourceConfig?.let { newAudioSource.configure(it) }
                 if (isStreaming) {
                     newAudioSource.startStream()
+                }
+
+                isStreamingJob += coroutineScope.launch {
+                    newAudioSource.isStreamingFlow.collect { isStreaming ->
+                        if ((!isStreaming) && isStreamingFlow.value) {
+                            Logger.i(TAG, "Audio source has been stopped.")
+                            stopStream()
+                        }
+                    }
                 }
 
                 when (audioPort) {
@@ -246,7 +262,10 @@ internal class AudioInput(
             } catch (t: Throwable) {
                 Logger.w(TAG, "release: Can't release audio source: ${t.message}")
             }
+
+            isStreamingJob.cancel()
         }
+        coroutineScope.coroutineContext.cancelChildren()
     }
 
     companion object {
