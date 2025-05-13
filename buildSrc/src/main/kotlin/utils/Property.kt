@@ -1,6 +1,5 @@
 enum class Property(val key: String) {
-    SonatypeUsername("MAVEN_USERNAME"),
-    SonatypePassword("MAVEN_PASSWORD"),
+    CentralPortalToken("CENTRALPORTALTOKEN"),
     GpgKey("GPG_KEY"),
     GpgKeyId("GPG_KEY_ID"),
     GpgPassword("GPG_PASSWORD");
