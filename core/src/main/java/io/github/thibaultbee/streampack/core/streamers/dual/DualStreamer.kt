@@ -17,13 +17,18 @@ package io.github.thibaultbee.streampack.core.streamers.dual
 
 import android.Manifest
 import android.content.Context
+import android.media.projection.MediaProjection
+import android.media.projection.MediaProjectionManager
+import android.os.Build
 import android.view.Surface
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MediaProjectionAudioSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
@@ -72,16 +77,49 @@ suspend fun cameraDualStreamer(
 }
 
 /**
+ * Creates a [DualStreamer] with the screen as video source and audio playback as audio source.
+ *
+ * @param context the application context
+ * @param mediaProjection the media projection. It can be obtained with [MediaProjectionManager.getMediaProjection]. Don't forget to call [MediaProjection.stop] when you are done.
+ * @param firstEndpointFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
+ * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
+ * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ */
+@RequiresApi(Build.VERSION_CODES.Q)
+suspend fun audioVideoMediaProjectionDualStreamer(
+    context: Context,
+    mediaProjection: MediaProjection,
+    firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    @RotationValue defaultRotation: Int = context.displayRotation
+): DualStreamer {
+    val streamer = DualStreamer(
+        context = context,
+        firstEndpointFactory = firstEndpointFactory,
+        secondEndpointFactory = secondEndpointFactory,
+        withAudio = true,
+        withVideo = true,
+        defaultRotation = defaultRotation
+    )
+
+    streamer.setVideoSource(MediaProjectionVideoSourceFactory(mediaProjection))
+    streamer.setAudioSource(MediaProjectionAudioSourceFactory(mediaProjection))
+    return streamer
+}
+
+/**
  * Creates a [DualStreamer] with the screen as video source and an audio source (by default, the microphone).
  *
  * @param context the application context
+ * @param mediaProjection the media projection. It can be obtained with [MediaProjectionManager.getMediaProjection]. Don't forget to call [MediaProjection.stop] when you are done.
  * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory. If set to null, you will have to set it later explicitly.
  * @param firstEndpointFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
  * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-suspend fun screenRecorderDualStreamer(
+suspend fun videoMediaProjectionDualStreamer(
     context: Context,
+    mediaProjection: MediaProjection,
     audioSourceFactory: IAudioSourceInternal.Factory? = MicrophoneSourceFactory(),
     firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
@@ -92,9 +130,10 @@ suspend fun screenRecorderDualStreamer(
         firstEndpointFactory = firstEndpointFactory,
         secondEndpointFactory = secondEndpointFactory,
         withAudio = true,
+        withVideo = true,
         defaultRotation = defaultRotation
     )
-    streamer.setVideoSource(MediaProjectionVideoSourceFactory())
+    streamer.setVideoSource(MediaProjectionVideoSourceFactory(mediaProjection))
     if (audioSourceFactory != null) {
         streamer.setAudioSource(audioSourceFactory)
     }
@@ -153,17 +192,12 @@ open class DualStreamer(
     @RotationValue defaultRotation: Int = context.displayRotation
 ) : IDualStreamer, IAudioDualStreamer, IVideoDualStreamer {
     private val pipeline = StreamerPipeline(
-        context,
-        withAudio,
-        withVideo
+        context, withAudio, withVideo
     )
 
     private val firstPipelineOutput: IEncodingPipelineOutputInternal =
         pipeline.createEncodingOutput(
-            withAudio,
-            withVideo,
-            firstEndpointFactory,
-            defaultRotation
+            withAudio, withVideo, firstEndpointFactory, defaultRotation
         ) as IEncodingPipelineOutputInternal
 
     /**
@@ -173,10 +207,7 @@ open class DualStreamer(
 
     private val secondPipelineOutput: IEncodingPipelineOutputInternal =
         pipeline.createEncodingOutput(
-            withAudio,
-            withVideo,
-            secondEndpointFactory,
-            defaultRotation
+            withAudio, withVideo, secondEndpointFactory, defaultRotation
         ) as IEncodingPipelineOutputInternal
 
     /**
@@ -184,21 +215,19 @@ open class DualStreamer(
      */
     override val second = secondPipelineOutput as IConfigurableAudioVideoEncodingPipelineOutput
 
-    override val throwableFlow: StateFlow<Throwable?> =
-        combineStates(
-            pipeline.throwableFlow,
-            firstPipelineOutput.throwableFlow,
-            secondPipelineOutput.throwableFlow
-        ) { throwableArray ->
-            throwableArray[0] ?: throwableArray[1] ?: throwableArray[2]
-        }
+    override val throwableFlow: StateFlow<Throwable?> = combineStates(
+        pipeline.throwableFlow,
+        firstPipelineOutput.throwableFlow,
+        secondPipelineOutput.throwableFlow
+    ) { throwableArray ->
+        throwableArray[0] ?: throwableArray[1] ?: throwableArray[2]
+    }
 
     /**
      * Whether any of the output is opening.
      */
     override val isOpenFlow: StateFlow<Boolean> = combineStates(
-        firstPipelineOutput.isOpenFlow,
-        secondPipelineOutput.isOpenFlow
+        firstPipelineOutput.isOpenFlow, secondPipelineOutput.isOpenFlow
     ) { isOpeningArray ->
         isOpeningArray[0] || isOpeningArray[1]
     }
@@ -315,20 +344,16 @@ open class DualStreamer(
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     suspend fun setConfig(
-        audioConfig: DualStreamerAudioConfig,
-        videoConfig: DualStreamerVideoConfig
+        audioConfig: DualStreamerAudioConfig, videoConfig: DualStreamerVideoConfig
     ) {
         setAudioConfig(audioConfig)
         setVideoConfig(videoConfig)
     }
 
 
-    override suspend fun startStream() =
-        pipeline.startStream()
+    override suspend fun startStream() = pipeline.startStream()
 
-    override suspend fun stopStream() =
-        pipeline.stopStream()
+    override suspend fun stopStream() = pipeline.stopStream()
 
-    override suspend fun release() =
-        pipeline.release()
+    override suspend fun release() = pipeline.release()
 }

@@ -53,9 +53,6 @@ class Configuration(context: Context) {
     }
 
     class Audio(private val sharedPref: SharedPreferences, private val resources: Resources) {
-        var enable: Boolean = true
-            get() = sharedPref.getBoolean(resources.getString(R.string.audio_enable_key), field)
-
         var encoder: String = MediaFormat.MIMETYPE_AUDIO_AAC
             get() = sharedPref.getString(resources.getString(R.string.audio_encoder_key), field)!!
 
