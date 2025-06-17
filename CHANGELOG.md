@@ -1,6 +1,18 @@
 Changelog
 ==========
 
+Version 3.0.0-RC2
+----------------
+
+## Features:
+
+- MediaProjection: add a dedicated `Service` to handle screen recording.
+
+## Bug fixes:
+
+- Multiple fixes on MediaProjection
+- Fix HDR support for cameras
+
 Version 3.0.0-RC
 ----------------
 

@@ -11,15 +11,15 @@ Get StreamPack core latest artifacts on Maven Central:
 
 ```groovy
 dependencies {
-    implementation 'io.github.thibaultbee.streampack:streampack-core:3.0.0-RC'
+    implementation 'io.github.thibaultbee.streampack:streampack-core:3.0.0-RC2'
     // For UI (incl. PreviewView)
-    implementation 'io.github.thibaultbee.streampack:streampack-ui:3.0.0-RC'
+    implementation 'io.github.thibaultbee.streampack:streampack-ui:3.0.0-RC2'
     // For services (incl. screen capture/media projection service)
-    implementation 'io.github.thibaultbee.streampack:streampack-services:3.0.0-RC'
+    implementation 'io.github.thibaultbee.streampack:streampack-services:3.0.0-RC2'
     // For RTMP
-    implementation 'io.github.thibaultbee.streampack:streampack-extension-rtmp:3.0.0-RC'
+    implementation 'io.github.thibaultbee.streampack:streampack-extension-rtmp:3.0.0-RC2'
     // For SRT
-    implementation 'io.github.thibaultbee.streampack:streampack-extension-srt:3.0.0-RC'
+    implementation 'io.github.thibaultbee.streampack:streampack-extension-srt:3.0.0-RC2'
 }
 ```
 
@@ -249,7 +249,7 @@ For a complete example, check out the [demos/camera](demos/camera) directory.
 
     ```groovy
     dependencies {
-        implementation 'io.github.thibaultbee.streampack:streampack-services:3.0.0-RC'
+        implementation 'io.github.thibaultbee.streampack:streampack-services:3.0.0-RC2'
     }
     ```
 
