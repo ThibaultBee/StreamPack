@@ -1,5 +1,6 @@
 enum class Property(val key: String) {
-    CentralPortalToken("CENTRALPORTALTOKEN"),
+    CentralPortalUsername("CENTRAL_PORTAL_USERNAME"),
+    CentralPortalPassword("CENTRAL_PORTAL_PASSWORD"),
     GpgKey("GPG_KEY"),
     GpgKeyId("GPG_KEY_ID"),
     GpgPassword("GPG_PASSWORD");

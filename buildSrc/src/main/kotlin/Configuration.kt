@@ -6,8 +6,10 @@ object AndroidVersions {
 
 object Publication {
     object Repository {
-        val centralPortalToken: String?
-            get() = Property.get(Property.CentralPortalToken)
+        val username: String?
+            get() = Property.get(Property.CentralPortalUsername)
+        val password: String?
+            get() = Property.get(Property.CentralPortalPassword)
     }
 
     object Pom {

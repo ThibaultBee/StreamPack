@@ -2,11 +2,8 @@ import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.authentication.http.HttpHeaderAuthentication
-import org.gradle.api.credentials.HttpHeaderCredentials
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.credentials
 import org.gradle.kotlin.dsl.the
 import org.gradle.plugins.signing.SigningExtension
 
@@ -33,23 +30,17 @@ fun Project.configurePublication() {
             maven {
                 if (isRelease) {
                     name = "centralPortal"
-                    setUrl("https://central.sonatype.com/api/v1/publisher/deployments/download/")
+                    setUrl("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/")
                 } else {
                     name = "centralPortalSnapshots"
                     println("Using SNAPSHOT repository")
                     setUrl("https://central.sonatype.com/repository/maven-snapshots/")
                 }
 
-                Publication.Repository.centralPortalToken?.let {
-                    authentication {
-                        create<HttpHeaderAuthentication>("header")
-                    }
-                    
-                    credentials(HttpHeaderCredentials::class) {
-                        name = "Authorization"
-                        value = "Bearer $it"
-                    }
-                } ?: println("No central portal token found. Skipping authentication.")
+                credentials {
+                    username = Publication.Repository.username
+                    password = Publication.Repository.password
+                }
             }
         }
     }

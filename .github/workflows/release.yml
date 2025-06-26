@@ -2,7 +2,7 @@ name: Publish package to Maven Central
 
 on:
   release:
-    types: [published]
+    types: [ published ]
 
 jobs:
   publish:
@@ -26,7 +26,8 @@ jobs:
       - name: Publish package
         run: ./gradlew publish
         env:
-          CENTRALPORTALTOKEN: ${{ secrets.CENTRALPORTALTOKEN }}
+          CENTRAL_PORTAL_USERNAME: ${{ secrets.CENTRAL_PORTAL_USERNAME }}
+          CENTRAL_PORTAL_PASSWORD: ${{ secrets.CENTRAL_PORTAL_PASSWORD }}
           GPG_KEY: ${{ secrets.GPG_KEY }}
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
