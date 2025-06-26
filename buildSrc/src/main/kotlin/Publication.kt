@@ -33,7 +33,7 @@ fun Project.configurePublication() {
             maven {
                 if (isRelease) {
                     name = "centralPortal"
-                    setUrl("https://central.sonatype.com/api/v1/publisher/deployments/download/")
+                    setUrl("https://central.sonatype.com/api/v1/publisher/upload/")
                 } else {
                     name = "centralPortalSnapshots"
                     println("Using SNAPSHOT repository")
@@ -41,13 +41,15 @@ fun Project.configurePublication() {
                 }
 
                 Publication.Repository.centralPortalToken?.let {
-                    authentication {
-                        create<HttpHeaderAuthentication>("header")
-                    }
+                    println("Central portal token found.")
                     
                     credentials(HttpHeaderCredentials::class) {
                         name = "Authorization"
                         value = "Bearer $it"
+                    }
+
+                    authentication {
+                        create<HttpHeaderAuthentication>("header")
                     }
                 } ?: println("No central portal token found. Skipping authentication.")
             }
