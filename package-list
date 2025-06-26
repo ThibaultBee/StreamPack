@@ -22,7 +22,6 @@ io.github.thibaultbee.streampack.core.configuration.mediadescriptor
 io.github.thibaultbee.streampack.core.elements.data
 io.github.thibaultbee.streampack.core.elements.encoders
 io.github.thibaultbee.streampack.core.elements.encoders.mediacodec
-io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions
 io.github.thibaultbee.streampack.core.elements.endpoints
 io.github.thibaultbee.streampack.core.elements.endpoints.composites
 io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers
@@ -87,7 +86,6 @@ io.github.thibaultbee.streampack.core.regulator
 io.github.thibaultbee.streampack.core.regulator.controllers
 io.github.thibaultbee.streampack.core.streamers
 io.github.thibaultbee.streampack.core.streamers.dual
-io.github.thibaultbee.streampack.core.streamers.extensions
 io.github.thibaultbee.streampack.core.streamers.infos
 io.github.thibaultbee.streampack.core.streamers.lifecycle
 io.github.thibaultbee.streampack.core.streamers.orientation
