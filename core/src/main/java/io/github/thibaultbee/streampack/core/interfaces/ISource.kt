@@ -22,6 +22,7 @@ import android.view.SurfaceView
 import android.view.TextureView
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
+import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
@@ -70,6 +71,11 @@ interface IWithVideoSource {
      * A video source flow to access to advanced settings.
      */
     val videoSourceFlow: StateFlow<IVideoSource?>
+
+    /**
+     * Advanced settings for the video processor.
+     */
+    val videoProcessor: ISurfaceProcessor?
 
     /**
      * Sets the video source.

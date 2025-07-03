@@ -21,6 +21,7 @@ import android.media.projection.MediaProjectionManager
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessor
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
@@ -134,6 +135,9 @@ class VideoOnlyDualStreamer(
     override val throwableFlow = streamer.throwableFlow
     override val isOpenFlow = streamer.isOpenFlow
     override val isStreamingFlow = streamer.isStreamingFlow
+
+    override val videoProcessor: ISurfaceProcessor
+        get() = streamer.videoProcessor!!
 
     /**
      * Sets the target rotation.
