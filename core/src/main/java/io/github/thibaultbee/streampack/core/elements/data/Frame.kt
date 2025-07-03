@@ -120,7 +120,7 @@ data class Frame(
         } else {
             null
         }
-    } catch (t: Throwable) {
+    } catch (_: Throwable) {
         null
     }
 
