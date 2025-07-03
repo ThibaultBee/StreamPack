@@ -35,6 +35,7 @@ dependencies {
     testImplementation(libs.robolectric)
 
     androidTestImplementation(project(":streampack-srt"))
+    androidTestImplementation(project(":streampack-flv"))
     androidTestImplementation(project(":streampack-rtmp"))
 
     androidTestImplementation(libs.androidx.test.core.ktx)
