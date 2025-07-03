@@ -389,8 +389,7 @@ class TrackChunks(
                 val extra = this.extra
                 require((this.extra.size == 3) || (this.extra.size == 1)) { "For Opus, extra must contain 1 or 3 parameter sets" }
                 (track.config as AudioCodecConfig)
-                val triple = OpusCsdParser.parse(extra[0][0])
-                val identificationHeader = triple.first
+                val identificationHeader = OpusCsdParser.parse(extra[0][0])
                 OpusSampleEntry(
                     AudioCodecConfig.getNumberOfChannels(track.config.channelConfig).toShort(),
                     dOps = OpusSpecificBox(

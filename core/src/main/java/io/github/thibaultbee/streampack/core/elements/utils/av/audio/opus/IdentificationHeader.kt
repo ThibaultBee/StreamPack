@@ -37,12 +37,16 @@ class IdentificationHeader(
     }
 
     companion object {
+        private const val IDENTIFIER_HEADER_MIN_SIZE = 19
         private const val MAGIC_SIGNATURE_SIZE = 8
         private const val MAGIC_SIGNATURE = "OpusHead"
 
         fun isIdentificationHeader(buffer: ByteBuffer) = buffer.startsWith(MAGIC_SIGNATURE)
 
         fun parse(buffer: ByteBuffer): IdentificationHeader {
+            require(buffer.remaining() >= IDENTIFIER_HEADER_MIN_SIZE) {
+                "Buffer is too small to be an Opus identification header"
+            }
             val magicSignature =
                 buffer.getString(MAGIC_SIGNATURE_SIZE) // Drop magic Signature: "OpusHead"
             require(magicSignature == MAGIC_SIGNATURE) { "Magic signature $MAGIC_SIGNATURE expected but $magicSignature" }

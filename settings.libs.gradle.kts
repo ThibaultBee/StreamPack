@@ -7,6 +7,9 @@ include(":services")
 project(":services").name = "streampack-services"
 
 // Extensions
+include(":extension-flv")
+project(":extension-flv").projectDir = File(rootDir, "extensions/flv")
+project(":extension-flv").name = "streampack-flv"
 include(":extension-rtmp")
 project(":extension-rtmp").projectDir = File(rootDir, "extensions/rtmp")
 project(":extension-rtmp").name = "streampack-rtmp"

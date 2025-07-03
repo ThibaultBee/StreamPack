@@ -108,20 +108,20 @@ data class HEVCDecoderConfigurationRecord(
         private const val HEVC_PARAMETER_SET_HEADER_SIZE = 5
 
         fun fromParameterSets(
+            vps: ByteBuffer,
             sps: ByteBuffer,
-            pps: ByteBuffer,
-            vps: ByteBuffer
+            pps: ByteBuffer
         ) = fromParameterSets(
+            listOf(vps),
             listOf(sps),
-            listOf(pps),
-            listOf(vps)
+            listOf(pps)
         )
 
         fun fromParameterSets(
+            vps: List<ByteBuffer>,
             sps: List<ByteBuffer>,
             pps: List<ByteBuffer>,
-            vps: List<ByteBuffer>
-        ) = fromParameterSets(sps + pps + vps)
+        ) = fromParameterSets(vps + sps + pps)
 
         fun fromParameterSets(
             parameterSets: List<ByteBuffer>
