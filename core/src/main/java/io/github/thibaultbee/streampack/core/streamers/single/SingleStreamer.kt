@@ -29,6 +29,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MediaProjectionAudioSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
@@ -227,6 +228,8 @@ open class SingleStreamer(
      * It allows advanced video source settings.
      */
     override val videoSourceFlow = pipeline.videoSourceFlow
+    override val videoProcessor: ISurfaceProcessor?
+        get() = pipeline.videoProcessor
     override val videoEncoder: IEncoder?
         get() = pipelineOutput.videoEncoder
 

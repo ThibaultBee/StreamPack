@@ -6,15 +6,15 @@ import android.os.HandlerThread
 import android.util.Size
 import android.view.Surface
 import androidx.concurrent.futures.CallbackToFutureAdapter
+import com.google.common.util.concurrent.ListenableFuture
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.AbstractSurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
-import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicBoolean
 
 
-class SurfaceProcessor(
+private class DefaultSurfaceProcessor(
     private val dynamicRangeProfile: DynamicRangeProfile
 ) : ISurfaceProcessorInternal, SurfaceTexture.OnFrameAvailableListener {
     private val renderer = OpenGlRenderer()
@@ -226,7 +226,7 @@ class SurfaceProcessor(
         }
     }
 
-    private fun <T> submitSafely(block: () -> T): Future<T> {
+    private fun <T : Any> submitSafely(block: () -> T): ListenableFuture<T> {
         return CallbackToFutureAdapter.getFuture {
             executeSafely(block, { result -> it.set(result) }, { t -> it.setException(t) })
         }
@@ -237,4 +237,10 @@ class SurfaceProcessor(
     }
 
     private data class SurfaceInput(val surface: Surface, val surfaceTexture: SurfaceTexture)
+}
+
+class DefaultSurfaceProcessorFactory : ISurfaceProcessorInternal.Factory {
+    override fun create(dynamicRangeProfile: DynamicRangeProfile): ISurfaceProcessorInternal {
+        return DefaultSurfaceProcessor(dynamicRangeProfile)
+    }
 }

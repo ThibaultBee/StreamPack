@@ -24,6 +24,9 @@ import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
+import io.github.thibaultbee.streampack.core.elements.processing.video.DefaultSurfaceProcessorFactory
+import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessor
+import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.AbstractSurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.AspectRatioMode
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.SurfaceOutput
@@ -93,6 +96,7 @@ open class StreamerPipeline(
     val withAudio: Boolean = true,
     val withVideo: Boolean = true,
     private val audioOutputMode: AudioOutputMode = AudioOutputMode.PUSH,
+    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
     protected val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : IWithVideoSource, IWithVideoRotation, IWithAudioSource, IStreamer {
     private val coroutineScope: CoroutineScope = CoroutineScope(coroutineDispatcher)
@@ -116,16 +120,16 @@ open class StreamerPipeline(
      * It allows access to advanced audio source settings.
      */
     override val audioSourceFlow: StateFlow<IAudioSource?> =
-        audioInput?.audioSourceFlow ?: MutableStateFlow(null)
+        audioInput?.sourceFlow ?: MutableStateFlow(null)
 
     /**
      * The audio processor.
      * It allows access to advanced audio settings.
      */
-    override val audioProcessor: IAudioFrameProcessor? = audioInput?.audioProcessor
+    override val audioProcessor: IAudioFrameProcessor? = audioInput?.processor
 
     private val videoInput = if (withVideo) {
-        VideoInput(context)
+        VideoInput(context, surfaceProcessorFactory)
     } else {
         null
     }
@@ -135,8 +139,14 @@ open class StreamerPipeline(
      * It allows access to advanced video source settings.
      */
     override val videoSourceFlow: StateFlow<IVideoSource?> =
-        videoInput?.videoSourceFlow ?: MutableStateFlow(null)
+        videoInput?.sourceFlow ?: MutableStateFlow(null)
 
+    /**
+     * The video processor.
+     * It allows access to advanced video settings.
+     */
+    override val videoProcessor: ISurfaceProcessor?
+        get() = videoInput?.processor
 
     private val _isStreamingFlow = MutableStateFlow(false)
 
@@ -241,7 +251,7 @@ open class StreamerPipeline(
         }
         require(withAudio) { "Do not need to set audio as it is a video only streamer" }
         val input = requireNotNull(audioInput) { "Audio input is not set" }
-        input.setAudioSource(audioSourceFactory)
+        input.setSource(audioSourceFactory)
     }
 
     private suspend fun setAudioSourceConfig(value: AudioSourceConfig) {
@@ -250,7 +260,7 @@ open class StreamerPipeline(
         }
         require(withAudio) { "Do not need to set audio as it is a video only streamer" }
         val input = requireNotNull(audioInput) { "Audio input is not set" }
-        input.setAudioSourceConfig(value)
+        input.setSourceConfig(value)
     }
 
     private fun queueAudioFrame(frame: RawFrame) {
@@ -304,7 +314,7 @@ open class StreamerPipeline(
         }
         require(withVideo) { "Do not need to set video as it is an audio only streamer" }
         val input = requireNotNull(videoInput) { "Video input is not set" }
-        input.setVideoSource(videoSourceFactory)
+        input.setSource(videoSourceFactory)
     }
 
     private suspend fun setVideoSourceConfig(value: VideoSourceConfig) {
@@ -313,7 +323,7 @@ open class StreamerPipeline(
         }
         require(withVideo) { "Do not need to set video as it is an audio only streamer" }
         val input = requireNotNull(videoInput) { "Video input is not set" }
-        input.setVideoSourceConfig(value)
+        input.setSourceConfig(value)
     }
 
     // VIDEO PROCESSING
@@ -492,7 +502,7 @@ open class StreamerPipeline(
             require(output.streamEventListener == null) { "Output $output already have a listener" }
             output.streamEventListener = object : IPipelineEventOutputInternal.Listener {
                 override suspend fun onStartStream() = withContext(coroutineDispatcher) {
-                    require(audioInput?.audioSourceFlow?.value != null || videoInput?.videoSourceFlow?.value != null) {
+                    require(audioInput?.sourceFlow?.value != null || videoInput?.sourceFlow?.value != null) {
                         "At least one audio or video source must be provided"
                     }
                     /**
@@ -504,7 +514,7 @@ open class StreamerPipeline(
                         if (output is IConfigurableAudioPipelineOutput) {
                             val input = requireNotNull(audioInput) { "Audio input is not set" }
                             val inputSourceConfig =
-                                requireNotNull(input.audioSourceConfigFlow.value) { "Input audio source config is not set" }
+                                requireNotNull(input.sourceConfigFlow.value) { "Input audio source config is not set" }
                             val outputSourceConfig =
                                 requireNotNull(output.audioSourceConfigFlow.value) {
                                     "Output audio source config is not set"
@@ -517,7 +527,7 @@ open class StreamerPipeline(
                         if (output is IConfigurableVideoPipelineOutput) {
                             val input = requireNotNull(videoInput) { "Video input is not set" }
                             val inputSourceConfig =
-                                requireNotNull(input.videoSourceConfigFlow.value) { "Input video source config is not set" }
+                                requireNotNull(input.sourceConfigFlow.value) { "Input video source config is not set" }
                             val outputSourceConfig =
                                 requireNotNull(output.videoSourceConfigFlow.value) {
                                     "Output video codec config is not set"
@@ -598,7 +608,7 @@ open class StreamerPipeline(
             "Only one audio output is allowed for sync source"
         }
 
-        output.audioFrameRequestedListener = audioInput.audioFrameRequestedListener
+        output.audioFrameRequestedListener = audioInput.frameRequestedListener
     }
 
     private fun addEncodingAudioOutput(

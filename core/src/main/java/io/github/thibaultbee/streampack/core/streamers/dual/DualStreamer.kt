@@ -26,7 +26,7 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
+import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MediaProjectionAudioSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
@@ -265,8 +265,10 @@ open class DualStreamer(
         pipeline.setVideoSource(videoSourceFactory)
 
     // PROCESSORS
-    override val audioProcessor: IAudioFrameProcessor?
-        get() = pipeline.audioProcessor
+    override val audioProcessor = pipeline.audioProcessor
+
+    override val videoProcessor: ISurfaceProcessor?
+        get() = pipeline.videoProcessor
 
     /**
      * Sets the target rotation.
