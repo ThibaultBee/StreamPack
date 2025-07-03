@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.composites
+package io.github.thibaultbee.streampack.ext.srt.elements.endpoints.composites
 
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.createDefaultTsServiceInfo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpointFactory
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.FlvMuxer
-import io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.composites.sinks.RtmpSink
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TsMuxer
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
+import io.github.thibaultbee.streampack.ext.srt.elements.endpoints.composites.sinks.SrtSink
 
 /**
- * The RTMP endpoint factory.
+ * The SRT endpoint factory.
  *
- * It returns a [CompositeEndpointFactory] with a [FlvMuxer] and a [RtmpSink]
+ * It returns a [CompositeEndpointFactory] with a [TsMuxer] and a [SrtSink]
  */
-fun RtmpEndpointFactory() =
+fun SrtEndpointFactory(serviceInfo: TSServiceInfo = createDefaultTsServiceInfo()) =
     CompositeEndpointFactory(
-        FlvMuxer(
-            isForFile = false
-        ), RtmpSink()
+        TsMuxer().apply { addService(serviceInfo) },
+        SrtSink()
     )

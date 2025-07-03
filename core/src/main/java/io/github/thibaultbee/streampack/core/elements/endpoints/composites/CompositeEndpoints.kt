@@ -53,7 +53,7 @@ object CompositeEndpoints {
     private fun createRtmpSink(): ISinkInternal {
         return try {
             val clazz =
-                Class.forName("io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.composites.sinks.RtmpSink")
+                Class.forName("io.github.thibaultbee.streampack.ext.rtmp.elements.endpoints.composites.sinks.RtmpSink")
             clazz.getConstructor().newInstance() as ISinkInternal
         } catch (e: ClassNotFoundException) {
             // Expected if the app was built without the RTMP extension.
@@ -70,7 +70,7 @@ object CompositeEndpoints {
     private fun createSrtSink(): ISinkInternal {
         return try {
             val clazz =
-                Class.forName("io.github.thibaultbee.streampack.ext.srt.internal.endpoints.composites.sinks.SrtSink")
+                Class.forName("io.github.thibaultbee.streampack.ext.srt.elements.endpoints.composites.sinks.SrtSink")
             clazz.getConstructor().newInstance() as ISinkInternal
         } catch (e: ClassNotFoundException) {
             // Expected if the app was built without the SRT extension.

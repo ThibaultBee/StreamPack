@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.ext.srt.internal.endpoints.composites.sinks
+package io.github.thibaultbee.streampack.ext.srt.elements.endpoints.composites.sinks
 
 import io.github.thibaultbee.srtdroid.core.enums.Boundary
 import io.github.thibaultbee.srtdroid.core.enums.SockOpt

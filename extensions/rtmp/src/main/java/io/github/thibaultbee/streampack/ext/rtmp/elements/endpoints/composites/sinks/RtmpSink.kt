@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.ext.rtmp.internal.endpoints.composites.sinks
+package io.github.thibaultbee.streampack.ext.rtmp.elements.endpoints.composites.sinks
 
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.Packet
@@ -26,7 +26,6 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import video.api.rtmpdroid.Rtmp
