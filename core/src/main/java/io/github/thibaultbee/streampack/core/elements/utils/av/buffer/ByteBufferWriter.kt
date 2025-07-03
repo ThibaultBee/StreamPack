@@ -15,10 +15,6 @@
  */
 package io.github.thibaultbee.streampack.core.elements.utils.av.buffer
 
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.isAnnexB
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.isAvcc
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.removeStartCode
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.startCodeSize
 import java.nio.ByteBuffer
 
 abstract class ByteBufferWriter {
@@ -34,46 +30,4 @@ abstract class ByteBufferWriter {
     abstract fun write(output: ByteBuffer)
 }
 
-/**
- * A class that acts as a passthrough for a [ByteBuffer].
- */
-class PassthroughBufferWriter(private val buffer: ByteBuffer) : ByteBufferWriter() {
-    override val size = buffer.remaining()
-
-    override fun write(output: ByteBuffer) {
-        output.put(buffer)
-    }
-}
-
-/**
- * A class that convert a [ByteBuffer] to an AVCC format.
- */
-class AVCCBufferWriter(private val buffer: ByteBuffer) : ByteBufferWriter() {
-    private val isAvcc = buffer.isAvcc
-    private val isAnnexB = buffer.isAnnexB
-
-    override val size = computeSize()
-
-    private fun computeSize(): Int {
-        return if (isAvcc) {
-            buffer.remaining()
-        } else if (isAnnexB) {
-            buffer.remaining() - buffer.startCodeSize + 4
-        } else {
-            throw IllegalArgumentException("Buffer must be in AVCC or AnnexB format")
-        }
-    }
-
-    override fun write(output: ByteBuffer) {
-        if (isAvcc) {
-            output.put(buffer)
-        } else if (isAnnexB) {
-            val noStartCodeBuffer = buffer.removeStartCode()
-            output.putInt(noStartCodeBuffer.remaining())
-            output.put(noStartCodeBuffer)
-        } else {
-            throw IllegalArgumentException("Buffer must be in AVCC or AnnexB format")
-        }
-    }
-}
 

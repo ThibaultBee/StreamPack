@@ -34,19 +34,20 @@ class OpusCsdParser {
 
         fun isCsdSyntax(buffer: ByteBuffer) = buffer.startsWith(MARKER_PREFIX)
 
-        fun parse(buffer: ByteBuffer): Triple<IdentificationHeader, ByteBuffer?, ByteBuffer?> {
+        fun findIdentificationHeader(buffer: ByteBuffer): ByteBuffer? {
             if (IdentificationHeader.isIdentificationHeader(buffer)) {
-                return Triple(IdentificationHeader.parse(buffer), null, null)
+                return buffer
             }
 
-            var identificationHeader: IdentificationHeader? = null
             while (buffer.remaining() >= (MARKER_SIZE + LENGTH_SIZE)) {
                 val marker = buffer.getString(MARKER_SIZE)
                 val length = buffer.getLong(true)
                 val position = buffer.position()
                 when (marker) {
                     HEADER_MARKER -> {
-                        identificationHeader = IdentificationHeader.parse(buffer)
+                        return buffer.slice().apply {
+                            limit(length.toInt())
+                        }
                     }
 
                     CODEC_DELAY_MARKER -> {
@@ -61,11 +62,12 @@ class OpusCsdParser {
                 }
                 buffer.position(position + length.toInt())
             }
+            return null
+        }
 
-            if (identificationHeader == null) {
-                throw IllegalArgumentException("Opus identification header not found")
-            }
-            return Triple(identificationHeader, null, null)
+        fun parse(buffer: ByteBuffer): IdentificationHeader {
+            return findIdentificationHeader(buffer)?.let { IdentificationHeader.parse(it) }
+                ?: throw IllegalArgumentException("No Opus identification header found")
         }
     }
 }
