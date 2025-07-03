@@ -166,7 +166,7 @@ internal constructor(
 
         try {
             mediaCodec.reset()
-        } catch (e: IllegalStateException) {
+        } catch (_: IllegalStateException) {
             Logger.d(tag, "Failed to reset")
         } finally {
             configureSync()
@@ -253,7 +253,7 @@ internal constructor(
     private fun releaseSync() {
         try {
             mediaCodec.stop()
-        } catch (e: IllegalStateException) {
+        } catch (_: IllegalStateException) {
             Logger.d(tag, "Failed to stop")
         }
         if (state == State.RELEASED || state == State.PENDING_RELEASE) {
