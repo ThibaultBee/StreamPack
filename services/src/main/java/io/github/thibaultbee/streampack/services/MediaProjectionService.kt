@@ -101,7 +101,7 @@ abstract class MediaProjectionService<T : IStreamer>(
             ?: throw IllegalStateException("Activity result data must be pass to the service")
         return applicationContext.getMediaProjection(resultCode, resultData).also {
             this@MediaProjectionService.mediaProjection = it
-        }
+        } ?: throw IllegalStateException("Failed to create media projection")
     }
 
     /**
