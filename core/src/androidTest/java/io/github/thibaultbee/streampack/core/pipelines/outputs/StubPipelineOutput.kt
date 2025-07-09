@@ -56,8 +56,8 @@ open class StubVideoSurfacePipelineOutput(resolution: Size) :
     override suspend fun setTargetRotation(@RotationValue rotation: Int) = Unit
 
     private val _surfaceFlow =
-        MutableStateFlow<SurfaceWithSize?>(
-            SurfaceWithSize(
+        MutableStateFlow<SurfaceDescriptor?>(
+            SurfaceDescriptor(
                 SurfaceUtils.createSurface(resolution),
                 resolution
             )
@@ -73,8 +73,8 @@ class StubAudioSyncVideoSurfacePipelineOutput(resolution: Size) :
     override suspend fun setTargetRotation(@RotationValue rotation: Int) = Unit
 
     private val _surfaceFlow =
-        MutableStateFlow<SurfaceWithSize?>(
-            SurfaceWithSize(
+        MutableStateFlow<SurfaceDescriptor?>(
+            SurfaceDescriptor(
                 SurfaceUtils.createSurface(resolution),
                 resolution
             )
@@ -136,8 +136,8 @@ class StubAudioSyncVideoSurfacePipelineOutputInternal(resolution: Size) :
     override suspend fun setTargetRotation(@RotationValue rotation: Int) = Unit
 
     private val _surfaceFlow =
-        MutableStateFlow<SurfaceWithSize?>(
-            SurfaceWithSize(
+        MutableStateFlow<SurfaceDescriptor?>(
+            SurfaceDescriptor(
                 SurfaceUtils.createSurface(resolution),
                 resolution
             )
@@ -160,8 +160,8 @@ class StubVideoSurfacePipelineOutputInternal(resolution: Size) :
     override suspend fun setTargetRotation(@RotationValue rotation: Int) = Unit
 
     private val _surfaceFlow =
-        MutableStateFlow<SurfaceWithSize?>(
-            SurfaceWithSize(
+        MutableStateFlow<SurfaceDescriptor?>(
+            SurfaceDescriptor(
                 SurfaceUtils.createSurface(resolution),
                 resolution
             )

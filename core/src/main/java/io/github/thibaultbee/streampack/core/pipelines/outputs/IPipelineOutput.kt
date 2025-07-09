@@ -154,9 +154,14 @@ interface IConfigurableVideoPipelineOutputInternal : IConfigurableVideoPipelineO
  *
  * @param surface The [Surface].
  * @param resolution The resolution of the [Surface].
+ * @param targetRotation The target rotation in [Surface] rotation ([Surface.ROTATION_0], ...).
+ * @param isEncoderInputSurface Whether the [Surface] is used as an input for a video encoder.
  */
-data class SurfaceWithSize(
-    val surface: Surface, val resolution: Size
+data class SurfaceDescriptor(
+    val surface: Surface,
+    val resolution: Size,
+    @RotationValue val targetRotation: Int = 0,
+    val isEncoderInputSurface: Boolean = false
 )
 
 /**
@@ -178,7 +183,7 @@ interface IVideoSurfacePipelineOutputInternal : IVideoPipelineOutputInternal, IW
      * The [Surface] flow to render video.
      * For surface mode video encoder.
      */
-    val surfaceFlow: StateFlow<SurfaceWithSize?>
+    val surfaceFlow: StateFlow<SurfaceDescriptor?>
 }
 
 /**

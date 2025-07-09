@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.pipelines.inputs
 import android.content.Context
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal
-import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.AbstractSurfaceOutput
+import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
@@ -105,7 +105,7 @@ internal class VideoInput(
 
     // OUTPUT
     private val outputMutex = Mutex()
-    private val surfaceOutput = mutableListOf<AbstractSurfaceOutput>()
+    private val surfaceOutput = mutableListOf<ISurfaceOutput>()
 
     suspend fun setSource(videoSourceFactory: IVideoSourceInternal.Factory) =
         withContext(coroutineDispatcher) {
@@ -299,7 +299,7 @@ internal class VideoInput(
         return newSurfaceProcessor
     }
 
-    suspend fun addOutputSurface(output: AbstractSurfaceOutput) {
+    suspend fun addOutputSurface(output: ISurfaceOutput) {
         outputMutex.withLock {
             surfaceOutput.add(output)
             processor.addOutputSurface(output)
@@ -308,7 +308,7 @@ internal class VideoInput(
 
     suspend fun removeOutputSurface(output: Surface) {
         outputMutex.withLock {
-            surfaceOutput.firstOrNull { it.surface == output }?.let {
+            surfaceOutput.firstOrNull { it.descriptor.surface == output }?.let {
                 surfaceOutput.remove(it)
             }
             processor.removeOutputSurface(output)

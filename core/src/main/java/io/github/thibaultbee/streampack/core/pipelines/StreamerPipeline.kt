@@ -17,8 +17,6 @@ package io.github.thibaultbee.streampack.core.pipelines
 
 import android.content.Context
 import android.graphics.Rect
-import android.util.Size
-import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.data.ICloseableFrame
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
@@ -27,8 +25,8 @@ import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFra
 import io.github.thibaultbee.streampack.core.elements.processing.video.DefaultSurfaceProcessorFactory
 import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessor
 import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal
-import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.AbstractSurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.AspectRatioMode
+import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.SurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
@@ -62,6 +60,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoCallbackPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoSurfacePipelineOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
@@ -347,14 +346,12 @@ open class StreamerPipeline(
         videoOutput: IVideoSurfacePipelineOutputInternal
     ) {
         Logger.i(TAG, "Updating transformation")
-        videoOutput.surfaceFlow.value?.let { surfaceWithSize ->
-            videoInput?.removeOutputSurface(surfaceWithSize.surface)
+        videoOutput.surfaceFlow.value?.let { surfaceDescriptor ->
+            videoInput?.removeOutputSurface(surfaceDescriptor.surface)
             videoInput?.let { input ->
                 input.addOutputSurface(
                     buildSurfaceOutput(
-                        surfaceWithSize.surface,
-                        surfaceWithSize.resolution,
-                        videoOutput.targetRotation,
+                        surfaceDescriptor,
                         videoOutput::isStreaming,
                         input.infoProviderFlow.value
                     )
@@ -368,23 +365,21 @@ open class StreamerPipeline(
      *
      * Use it for additional processing.
      *
-     * @param surface the encoder surface
-     * @param resolution the resolution of the surface
-     * @param targetRotation the target rotation of the surface
+     * @param surfaceDescriptor the encoder surface
+     * @param isStreaming a lambda to check if the surface is streaming
      * @param infoProvider the source info provider for internal processing
      */
     private fun buildSurfaceOutput(
-        surface: Surface,
-        resolution: Size,
-        @RotationValue targetRotation: Int,
+        surfaceDescriptor: SurfaceDescriptor,
         isStreaming: () -> Boolean,
         infoProvider: ISourceInfoProvider?
-    ): AbstractSurfaceOutput {
-        val cropRect = Rect(0, 0, resolution.width, resolution.height)
+    ): ISurfaceOutput {
+        val cropRect =
+            Rect(0, 0, surfaceDescriptor.resolution.width, surfaceDescriptor.resolution.height)
         return SurfaceOutput(
-            surface, resolution, isStreaming, SurfaceOutput.TransformationInfo(
+            surfaceDescriptor, isStreaming, SurfaceOutput.TransformationInfo(
                 getAspectRatioMode(),
-                targetRotation,
+                surfaceDescriptor.targetRotation,
                 cropRect,
                 isMirroringRequired(),
                 infoProvider ?: DefaultSourceInfoProvider()
@@ -631,25 +626,23 @@ open class StreamerPipeline(
     ) {
         scope.launch {
             output.surfaceFlow.runningHistoryNotNull()
-                .collect { (previousSurface, newSurface) ->
+                .collect { (previousSurfaceDescriptor, newSurfaceDescriptor) ->
                     Logger.i(TAG, "Surface changed")
-                    if (previousSurface?.surface == newSurface?.surface) {
+                    if (previousSurfaceDescriptor?.surface == newSurfaceDescriptor?.surface) {
                         return@collect
                     }
 
                     val input = requireNotNull(videoInput) { "Video input is not set" }
 
-                    previousSurface?.let {
-                        Logger.i(TAG, "Removing previous surface: $previousSurface")
+                    previousSurfaceDescriptor?.let {
+                        Logger.i(TAG, "Removing previous surface: $previousSurfaceDescriptor")
                         input.removeOutputSurface(it.surface)
                     }
-                    newSurface?.let {
-                        Logger.i(TAG, "Adding new surface: $newSurface")
+                    newSurfaceDescriptor?.let {
+                        Logger.i(TAG, "Adding new surface: $newSurfaceDescriptor")
                         input.addOutputSurface(
                             buildSurfaceOutput(
-                                it.surface,
-                                it.resolution,
-                                output.targetRotation,
+                                it,
                                 output::isStreaming,
                                 input.infoProviderFlow.value
                             )

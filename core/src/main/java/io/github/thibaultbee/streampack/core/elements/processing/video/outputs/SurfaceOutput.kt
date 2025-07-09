@@ -18,8 +18,6 @@ package io.github.thibaultbee.streampack.core.elements.processing.video.outputs
 import android.graphics.Rect
 import android.graphics.RectF
 import android.opengl.Matrix
-import android.util.Size
-import android.view.Surface
 import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ViewPortUtils.calculateViewportRect
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
@@ -29,15 +27,16 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.utils.ext
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.toRectF
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
+import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
 
 class SurfaceOutput(
-    surface: Surface,
-    resolution: Size,
-    isStreaming: () -> Boolean,
+    override val descriptor: SurfaceDescriptor,
+    override val isStreaming: () -> Boolean,
     private val transformationInfo: TransformationInfo
 ) :
-    AbstractSurfaceOutput(surface, resolution, isStreaming) {
-
+    ISurfaceOutput {
+    private val resolution = descriptor.resolution
+    
     private val infoProvider: ISourceInfoProvider
         get() = transformationInfo.infoProvider
 
