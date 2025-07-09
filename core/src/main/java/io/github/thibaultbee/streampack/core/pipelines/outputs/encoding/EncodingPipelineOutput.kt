@@ -45,7 +45,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableAudi
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineEventOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoSurfacePipelineOutputInternal
-import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceWithSize
+import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import kotlinx.coroutines.CoroutineDispatcher
@@ -106,7 +106,7 @@ internal class EncodingPipelineOutput(
     override var audioFrameRequestedListener: IEncoderInternal.IAsyncByteBufferInput.OnFrameRequestedListener? =
         null
 
-    private val _surfaceFlow = MutableStateFlow<SurfaceWithSize?>(null)
+    private val _surfaceFlow = MutableStateFlow<SurfaceDescriptor?>(null)
 
     /**
      * The surface used to encode video.
@@ -417,7 +417,14 @@ internal class EncodingPipelineOutput(
                 videoEncoder.input.listener =
                     object : IEncoderInternal.ISurfaceInput.OnSurfaceUpdateListener {
                         override fun onSurfaceUpdated(surface: Surface) {
-                            _surfaceFlow.tryEmit(SurfaceWithSize(surface, videoConfig.resolution))
+                            _surfaceFlow.tryEmit(
+                                SurfaceDescriptor(
+                                    surface,
+                                    videoConfig.resolution,
+                                    targetRotation,
+                                    true
+                                )
+                            )
                         }
                     }
             }

@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.elements.processing.video
 import android.util.Size
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
-import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.AbstractSurfaceOutput
+import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 
 interface ISurfaceProcessor
@@ -36,9 +36,9 @@ interface ISurfaceProcessorInternal : ISurfaceProcessor, Releasable {
 
     fun removeInputSurface(surface: Surface)
 
-    fun addOutputSurface(surfaceOutput: AbstractSurfaceOutput)
+    fun addOutputSurface(surfaceOutput: ISurfaceOutput)
 
-    fun removeOutputSurface(surfaceOutput: AbstractSurfaceOutput)
+    fun removeOutputSurface(surfaceOutput: ISurfaceOutput)
 
     fun removeOutputSurface(surface: Surface)
 

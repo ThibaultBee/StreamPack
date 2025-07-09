@@ -17,41 +17,24 @@ package io.github.thibaultbee.streampack.core.elements.processing.video.outputs
 
 import android.graphics.Rect
 import android.opengl.Matrix
-import android.util.Size
-import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils
+import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
 
 
-abstract class AbstractSurfaceOutput(
-    override val surface: Surface,
-    final override val resolution: Size,
-    override val isStreaming: () -> Boolean
+class IdentitySurfaceOutput(
+    override val descriptor: SurfaceDescriptor,
+    override val isStreaming: () -> Boolean,
+    override val viewportRect: Rect = Rect(
+        0,
+        0,
+        descriptor.resolution.width,
+        descriptor.resolution.height
+    )
 ) : ISurfaceOutput {
-    protected val lock = Any()
-    protected var isClosed = false
-
     override fun updateTransformMatrix(output: FloatArray, input: FloatArray) {
         Matrix.multiplyMM(
             output, 0, input, 0, GLUtils.IDENTITY_MATRIX, 0
         )
     }
-
-    override fun close() {
-        synchronized(lock) {
-            if (!isClosed) {
-                isClosed = true
-            }
-        }
-    }
 }
 
-interface ISurfaceOutput {
-    val surface: Surface
-    val resolution: Size
-    val isStreaming: () -> Boolean
-    val viewportRect: Rect
-
-    fun updateTransformMatrix(output: FloatArray, input: FloatArray)
-
-    fun close()
-}
