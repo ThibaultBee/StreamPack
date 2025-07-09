@@ -15,10 +15,12 @@
  */
 package io.github.thibaultbee.streampack.core.streamers.single
 
+import android.Manifest
 import android.content.Context
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.view.Surface
+import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
@@ -42,6 +44,7 @@ import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
+@RequiresPermission(Manifest.permission.CAMERA)
 suspend fun cameraVideoOnlySingleStreamer(
     context: Context,
     cameraId: String = context.defaultCameraId,

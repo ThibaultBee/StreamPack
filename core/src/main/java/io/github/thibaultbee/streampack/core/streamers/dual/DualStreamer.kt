@@ -53,6 +53,7 @@ import kotlinx.coroutines.flow.StateFlow
  * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
+@RequiresPermission(Manifest.permission.CAMERA)
 suspend fun cameraDualStreamer(
     context: Context,
     cameraId: String = context.defaultCameraId,
