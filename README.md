@@ -17,9 +17,9 @@ dependencies {
     // For services (incl. screen capture/media projection service)
     implementation 'io.github.thibaultbee.streampack:streampack-services:3.0.0-RC2'
     // For RTMP
-    implementation 'io.github.thibaultbee.streampack:streampack-extension-rtmp:3.0.0-RC2'
+    implementation 'io.github.thibaultbee.streampack:streampack-rtmp:3.0.0-RC2'
     // For SRT
-    implementation 'io.github.thibaultbee.streampack:streampack-extension-srt:3.0.0-RC2'
+    implementation 'io.github.thibaultbee.streampack:streampack-srt:3.0.0-RC2'
 }
 ```
 

@@ -49,8 +49,8 @@ android {
 dependencies {
     implementation(project(":streampack-core"))
     implementation(project(":streampack-ui"))
-    implementation(project(":streampack-extension-rtmp"))
-    implementation(project(":streampack-extension-srt"))
+    implementation(project(":streampack-rtmp"))
+    implementation(project(":streampack-srt"))
 
     implementation(libs.android.material)
     implementation(libs.androidx.appcompat)
