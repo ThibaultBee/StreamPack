@@ -57,26 +57,26 @@ internal class AudioInput(
     private val audioSourceMutex = Mutex()
 
     // SOURCE
-    private var audioSourceInternalFlow = MutableStateFlow<IAudioSourceInternal?>(null)
+    private var sourceInternalFlow = MutableStateFlow<IAudioSourceInternal?>(null)
 
     /**
      * Whether the pipeline has an audio source.
      */
-    val hasSource: Boolean
-        get() = audioSourceInternalFlow.value != null
+    val withSource: Boolean
+        get() = sourceInternalFlow.value != null
 
     /**
      * The audio source.
      * It allows access to advanced audio settings.
      */
-    val audioSourceFlow: StateFlow<IAudioSource?> = audioSourceInternalFlow.asStateFlow()
+    val sourceFlow: StateFlow<IAudioSource?> = sourceInternalFlow.asStateFlow()
 
-    val audioFrameRequestedListener: OnFrameRequestedListener
+    val frameRequestedListener: OnFrameRequestedListener
         get() {
-            return if (audioPort is CallbackAudioPort) {
-                audioPort.audioFrameRequestedListener
+            return if (port is CallbackAudioPort) {
+                port.audioFrameRequestedListener
             } else {
-                throw IllegalStateException("Audio frame requested listener is not supported in this mode: ${audioPort::class.java}")
+                throw IllegalStateException("Audio frame requested listener is not supported in this mode: ${port::class.java}")
             }
         }
 
@@ -84,27 +84,27 @@ internal class AudioInput(
     /**
      * The audio processor.
      */
-    private val audioFrameProcessorInternal = AudioFrameProcessor()
-    val audioProcessor: IAudioFrameProcessor = audioFrameProcessorInternal
-    private val audioPort = if (config is PushConfig) {
-        PushAudioPort(audioFrameProcessorInternal, config)
+    private val frameProcessorInternal = AudioFrameProcessor()
+    val processor: IAudioFrameProcessor = frameProcessorInternal
+    private val port = if (config is PushConfig) {
+        PushAudioPort(frameProcessorInternal, config)
     } else {
-        CallbackAudioPort(audioFrameProcessorInternal)
+        CallbackAudioPort(frameProcessorInternal)
     }
 
     // CONFIG
-    private val _audioSourceConfigFlow = MutableStateFlow<AudioSourceConfig?>(null)
+    private val _sourceConfigFlow = MutableStateFlow<AudioSourceConfig?>(null)
 
     /**
      * The audio source configuration.
      */
-    val audioSourceConfigFlow = _audioSourceConfigFlow.asStateFlow()
+    val sourceConfigFlow = _sourceConfigFlow.asStateFlow()
 
-    private val audioSourceConfig: AudioSourceConfig?
-        get() = audioSourceConfigFlow.value
+    private val sourceConfig: AudioSourceConfig?
+        get() = sourceConfigFlow.value
 
-    val hasConfig: Boolean
-        get() = audioSourceConfigFlow.value != null
+    val withConfig: Boolean
+        get() = sourceConfigFlow.value != null
 
     // STATE
     /**
@@ -118,10 +118,10 @@ internal class AudioInput(
      *
      * @param audioSourceFactory The new audio source factory.
      */
-    suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory) =
+    suspend fun setSource(audioSourceFactory: IAudioSourceInternal.Factory) =
         withContext(coroutineDispatcher) {
             audioSourceMutex.withLock {
-                val previousAudioSource = audioSourceInternalFlow.value
+                val previousAudioSource = sourceInternalFlow.value
                 val isStreaming = previousAudioSource?.isStreamingFlow?.value ?: false
 
                 if (audioSourceFactory.isSourceEquals(previousAudioSource)) {
@@ -132,7 +132,7 @@ internal class AudioInput(
                 // Prepare new video source
                 val newAudioSource = audioSourceFactory.create(context)
 
-                audioSourceConfig?.let { newAudioSource.configure(it) }
+                sourceConfig?.let { newAudioSource.configure(it) }
                 if (isStreaming) {
                     newAudioSource.startStream()
                 }
@@ -146,18 +146,18 @@ internal class AudioInput(
                     }
                 }
 
-                when (audioPort) {
+                when (port) {
                     is PushAudioPort -> {
-                        audioPort.setInput(newAudioSource::getAudioFrame)
+                        port.setInput(newAudioSource::getAudioFrame)
                     }
 
                     is CallbackAudioPort -> {
-                        audioPort.setInput(newAudioSource::fillAudioFrame)
+                        port.setInput(newAudioSource::fillAudioFrame)
                     }
                 }
 
                 // Replace audio source
-                audioSourceInternalFlow.emit(newAudioSource)
+                sourceInternalFlow.emit(newAudioSource)
 
                 // Stop previous audio source
                 try {
@@ -170,18 +170,18 @@ internal class AudioInput(
         }
 
 
-    suspend fun setAudioSourceConfig(newAudioSourceConfig: AudioSourceConfig) =
+    suspend fun setSourceConfig(newAudioSourceConfig: AudioSourceConfig) =
         withContext(coroutineDispatcher) {
             audioSourceMutex.withLock {
-                if (audioSourceConfig == newAudioSourceConfig) {
+                if (sourceConfig == newAudioSourceConfig) {
                     Logger.i(TAG, "Audio source configuration is the same, skipping configuration")
                     return@withContext
                 }
                 require(!isStreamingFlow.value) { "Can't change audio source configuration while streaming" }
 
                 try {
-                    audioSourceInternalFlow.value?.let {
-                        applyAudioSourceConfig(
+                    sourceInternalFlow.value?.let {
+                        applySourceConfig(
                             it,
                             newAudioSourceConfig
                         )
@@ -192,12 +192,12 @@ internal class AudioInput(
                 } catch (t: Throwable) {
                     throw t
                 } finally {
-                    _audioSourceConfigFlow.emit(newAudioSourceConfig)
+                    _sourceConfigFlow.emit(newAudioSourceConfig)
                 }
             }
         }
 
-    private suspend fun applyAudioSourceConfig(
+    private suspend fun applySourceConfig(
         audioSource: IAudioSourceInternal,
         audioConfig: AudioSourceConfig
     ) {
@@ -206,19 +206,19 @@ internal class AudioInput(
 
     suspend fun startStream() = withContext(coroutineDispatcher) {
         audioSourceMutex.withLock {
-            val source = requireNotNull(audioSourceInternalFlow.value) {
+            val source = requireNotNull(sourceInternalFlow.value) {
                 "Audio source is not set yet"
             }
             if (isStreamingFlow.value) {
                 Logger.w(TAG, "Stream is already running")
                 return@withContext
             }
-            if (!hasConfig) {
+            if (!withConfig) {
                 Logger.w(TAG, "Audio source configuration is not set yet")
             }
             source.startStream()
             try {
-                audioPort.startStream()
+                port.startStream()
             } catch (t: Throwable) {
                 Logger.w(TAG, "startStream: Can't start audio processor: ${t.message}")
                 source.stopStream()
@@ -232,12 +232,12 @@ internal class AudioInput(
         audioSourceMutex.withLock {
             _isStreamingFlow.emit(false)
             try {
-                audioPort.stopStream()
+                port.stopStream()
             } catch (t: Throwable) {
                 Logger.w(TAG, "stopStream: Can't stop audio processor: ${t.message}")
             }
             try {
-                audioSourceInternalFlow.value?.stopStream()
+                sourceInternalFlow.value?.stopStream()
             } catch (t: Throwable) {
                 Logger.w(TAG, "stopStream: Can't stop audio source: ${t.message}")
             }
@@ -248,17 +248,17 @@ internal class AudioInput(
         audioSourceMutex.withLock {
             _isStreamingFlow.emit(false)
             try {
-                audioPort.removeInput()
+                port.removeInput()
             } catch (t: Throwable) {
                 Logger.w(TAG, "release: Can't remove audio processor input: ${t.message}")
             }
             try {
-                audioPort.release()
+                port.release()
             } catch (t: Throwable) {
                 Logger.w(TAG, "release: Can't release audio processor: ${t.message}")
             }
             try {
-                audioSourceInternalFlow.value?.release()
+                sourceInternalFlow.value?.release()
             } catch (t: Throwable) {
                 Logger.w(TAG, "release: Can't release audio source: ${t.message}")
             }
