@@ -3,6 +3,7 @@ package io.github.thibaultbee.streampack.app.ui.main.usecases
 import android.content.Context
 import io.github.thibaultbee.streampack.app.data.storage.DataStoreRepository
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
+import io.github.thibaultbee.streampack.ext.media3.effect.Media3SurfaceProcessorFactory
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
@@ -23,7 +24,11 @@ class BuildStreamerUseCase(
         }
 
         if (previousStreamer == null) {
-            return SingleStreamer(context, isAudioEnable)
+            return SingleStreamer(
+                context,
+                isAudioEnable,
+                surfaceProcessorFactory = Media3SurfaceProcessorFactory(context)
+            )
         } else if ((previousStreamer.audioSourceFlow.value == null) != !isAudioEnable) {
             return SingleStreamer(context, isAudioEnable)
         }

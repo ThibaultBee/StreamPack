@@ -51,6 +51,7 @@ dependencies {
     implementation(project(":streampack-ui"))
     implementation(project(":streampack-rtmp"))
     implementation(project(":streampack-srt"))
+    implementation(project(":streampack-media3-effect"))
 
     implementation(libs.android.material)
     implementation(libs.androidx.appcompat)
@@ -62,6 +63,7 @@ dependencies {
     implementation(libs.androidx.preference.ktx)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.datastore)
+    implementation(libs.androidx.media3.effect)
 
     testImplementation(libs.junit)
 

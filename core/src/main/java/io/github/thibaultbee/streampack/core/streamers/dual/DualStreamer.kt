@@ -26,7 +26,9 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.processing.video.DefaultSurfaceProcessorFactory
 import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessor
+import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MediaProjectionAudioSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
@@ -183,6 +185,7 @@ suspend fun DualStreamer(
  * @param firstEndpointFactory the [IEndpointInternal] implementation of the first output. By default, it is a [DynamicEndpoint].
  * @param secondEndpointFactory the [IEndpointInternal] implementation of the second output. By default, it is a [DynamicEndpoint].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation to use for video processing. By default, it is a [DefaultSurfaceProcessorFactory].
  */
 open class DualStreamer(
     protected val context: Context,
@@ -190,7 +193,8 @@ open class DualStreamer(
     val withVideo: Boolean = true,
     firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
-    @RotationValue defaultRotation: Int = context.displayRotation
+    @RotationValue defaultRotation: Int = context.displayRotation,
+    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
 ) : IDualStreamer, IAudioDualStreamer, IVideoDualStreamer {
     private val pipeline = StreamerPipeline(
         context, withAudio, withVideo

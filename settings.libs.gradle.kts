@@ -10,6 +10,11 @@ project(":services").name = "streampack-services"
 include(":extension-rtmp")
 project(":extension-rtmp").projectDir = File(rootDir, "extensions/rtmp")
 project(":extension-rtmp").name = "streampack-rtmp"
+
 include(":extension-srt")
 project(":extension-srt").projectDir = File(rootDir, "extensions/srt")
 project(":extension-srt").name = "streampack-srt"
+
+include(":extension-media3-effect")
+project(":extension-media3-effect").projectDir = File(rootDir, "extensions/media3-effect")
+project(":extension-media3-effect").name = "streampack-media3-effect"

@@ -31,6 +31,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import androidx.media3.effect.Brightness
 import io.github.thibaultbee.streampack.app.BR
 import io.github.thibaultbee.streampack.app.R
 import io.github.thibaultbee.streampack.app.data.rotation.RotationRepository
@@ -56,6 +57,7 @@ import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.interfaces.startStream
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
+import io.github.thibaultbee.streampack.ext.media3.effect.Media3SurfaceProcessor
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrtBitrateRegulatorController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -125,6 +127,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     init {
         viewModelScope.launch {
             streamerFlow.collect {
+               // (streamer.videoProcessor!! as Media3SurfaceProcessor).setEffects(listOf(Brightness(-0.9f)))
                 // Set audio source and video source
                 if (streamer.withAudio) {
                     Log.i(TAG, "Audio source is enabled. Setting audio source")
