@@ -26,7 +26,6 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MediaProjectionAudioSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
@@ -72,7 +71,7 @@ suspend fun cameraDualStreamer(
     )
     streamer.setCameraId(cameraId)
     if (audioSourceFactory != null) {
-        streamer.setAudioSource(audioSourceFactory)
+        streamer.audioInput!!.setSource(audioSourceFactory)
     }
     return streamer
 }
@@ -103,7 +102,7 @@ suspend fun audioVideoMediaProjectionDualStreamer(
         defaultRotation = defaultRotation
     )
 
-    streamer.setVideoSource(MediaProjectionVideoSourceFactory(mediaProjection))
+    streamer.videoInput!!.setSource(MediaProjectionVideoSourceFactory(mediaProjection))
     streamer.setAudioSource(MediaProjectionAudioSourceFactory(mediaProjection))
     return streamer
 }
@@ -254,21 +253,10 @@ open class DualStreamer(
     }
 
     // SOURCES
-    override val audioSourceFlow = pipeline.audioSourceFlow
-
-    override suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory) =
-        pipeline.setAudioSource(audioSourceFactory)
-
-    override val videoSourceFlow = pipeline.videoSourceFlow
-
-    override suspend fun setVideoSource(videoSourceFactory: IVideoSourceInternal.Factory) =
-        pipeline.setVideoSource(videoSourceFactory)
+    override val audioInput = pipeline.audioInput
 
     // PROCESSORS
-    override val audioProcessor = pipeline.audioProcessor
-
-    override val videoProcessor: ISurfaceProcessor?
-        get() = pipeline.videoProcessor
+    override val videoInput = pipeline.videoInput
 
     /**
      * Sets the target rotation.

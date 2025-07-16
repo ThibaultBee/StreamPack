@@ -26,13 +26,13 @@ import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessor
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.interfaces.setCameraId
+import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 
@@ -136,10 +136,8 @@ class VideoOnlySingleStreamer(
     override val videoConfigFlow = streamer.videoConfigFlow
     override val videoEncoder: IEncoder?
         get() = streamer.videoEncoder
-    override val videoSourceFlow = streamer.videoSourceFlow
-    override val videoProcessor: ISurfaceProcessor
-        get() = streamer.videoProcessor!!
-    
+    override val videoInput: IVideoInput = streamer.videoInput!!
+
     /**
      * Sets the target rotation.
      *
@@ -150,9 +148,6 @@ class VideoOnlySingleStreamer(
 
     override suspend fun setVideoConfig(videoConfig: VideoConfig) =
         streamer.setVideoConfig(videoConfig)
-
-    override suspend fun setVideoSource(videoSourceFactory: IVideoSourceInternal.Factory) =
-        streamer.setVideoSource(videoSourceFactory)
 
     override fun getInfo(descriptor: MediaDescriptor) = streamer.getInfo(descriptor)
 

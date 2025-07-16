@@ -21,37 +21,32 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.TextureView
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
-import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessor
-import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
-import kotlinx.coroutines.flow.StateFlow
+import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
+import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
 
 /**
  * An audio single Streamer
  */
 interface IWithAudioSource {
     /**
-     * An audio source flow to access to advanced settings.
+     * The audio input to access to advanced settings.
      */
-    val audioSourceFlow: StateFlow<IAudioSource?>
+    val audioInput: IAudioInput?
 
     /**
-     * Advanced settings for the audio processor.
-     */
-    val audioProcessor: IAudioFrameProcessor?
-
-    /**
-     * Sets the audio source.
+     * Sets a new audio source.
      *
-     * @param audioSourceFactory The audio source factory to set
+     * @param audioSourceFactory The new audio source factory.
      */
-    suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory)
+    suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory) {
+        val audio = requireNotNull(audioInput) { "Audio input is not available" }
+        audio.setSource(audioSourceFactory)
+    }
 }
 
 interface IWithVideoRotation {
@@ -68,39 +63,40 @@ interface IWithVideoRotation {
  */
 interface IWithVideoSource {
     /**
-     * A video source flow to access to advanced settings.
+     * The audio input to access to advanced settings.
      */
-    val videoSourceFlow: StateFlow<IVideoSource?>
-
-    /**
-     * Advanced settings for the video processor.
-     */
-    val videoProcessor: ISurfaceProcessor?
+    val videoInput: IVideoInput?
 
     /**
      * Sets the video source.
      *
-     * @param videoSourceFactory The video source factory to set
+     * The previous video source will be released unless its preview is still running.
      */
-    suspend fun setVideoSource(videoSourceFactory: IVideoSourceInternal.Factory)
+    suspend fun setVideoSource(videoSourceFactory: IVideoSourceInternal.Factory) {
+        val video = requireNotNull(videoInput) { "Video input is not available" }
+        video.setSource(videoSourceFactory)
+    }
 }
 
 /**
  * Sets the camera id.
  *
- * Same as [IWithVideoSource.setVideoSource] with a [CameraSourceFactory].
+ * Same as [IWithVideoSource.videoInput.setSource] with a [CameraSourceFactory].
  *
  * @param cameraId the camera id
  */
 @RequiresPermission(Manifest.permission.CAMERA)
-suspend fun IWithVideoSource.setCameraId(cameraId: String) =
-    setVideoSource(CameraSourceFactory(cameraId))
+suspend fun IWithVideoSource.setCameraId(cameraId: String) {
+    val video = requireNotNull(videoInput) { "Video input is not available" }
+    video.setSource(CameraSourceFactory(cameraId))
+}
+
 
 /**
  * Whether the video source has a preview.
  */
 val IWithVideoSource.isPreviewable: Boolean
-    get() = videoSourceFlow.value is IPreviewableSource
+    get() = videoInput?.sourceFlow?.value is IPreviewableSource
 
 /**
  * Sets the preview surface.
@@ -109,7 +105,7 @@ val IWithVideoSource.isPreviewable: Boolean
  * @throws [IllegalStateException] if the video source is not previewable
  */
 suspend fun IWithVideoSource.setPreview(surface: Surface) {
-    (videoSourceFlow.value as? IPreviewableSource)?.setPreview(surface)
+    (videoInput?.sourceFlow?.value as? IPreviewableSource)?.setPreview(surface)
         ?: throw IllegalStateException("Video source is not previewable")
 }
 
@@ -146,7 +142,7 @@ suspend fun IWithVideoSource.setPreview(textureView: TextureView) =
  * @throws [IllegalStateException] if the video source is not previewable
  */
 suspend fun IWithVideoSource.startPreview() {
-    (videoSourceFlow.value as? IPreviewableSource)?.startPreview()
+    (videoInput?.sourceFlow?.value as? IPreviewableSource)?.startPreview()
         ?: throw IllegalStateException("Video source is not previewable")
 }
 
@@ -158,7 +154,7 @@ suspend fun IWithVideoSource.startPreview() {
  * @see [IWithVideoSource.stopPreview]
  */
 suspend fun IWithVideoSource.startPreview(surface: Surface) {
-    (videoSourceFlow.value as? IPreviewableSource)?.startPreview(surface)
+    (videoInput?.sourceFlow?.value as? IPreviewableSource)?.startPreview(surface)
         ?: throw IllegalStateException("Video source is not previewable")
 }
 
@@ -199,5 +195,5 @@ suspend fun IWithVideoSource.startPreview(textureView: TextureView) =
  * Stops video preview.
  */
 suspend fun IWithVideoSource.stopPreview() {
-    (videoSourceFlow.value as? IPreviewableSource)?.stopPreview()
+    (videoInput?.sourceFlow?.value as? IPreviewableSource)?.stopPreview()
 }

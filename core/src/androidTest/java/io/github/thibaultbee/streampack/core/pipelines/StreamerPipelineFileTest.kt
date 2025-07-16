@@ -110,7 +110,7 @@ class StreamerPipelineFileTest : DeviceTest() {
         audioOnlyOutput.close()
         videoOnlyOutput.close()
         streamerPipeline.release()
-
+        
         // Verify
         VideoUtils.verifyFile(
             context,

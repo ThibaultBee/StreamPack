@@ -23,13 +23,13 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessor
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.interfaces.setCameraId
+import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
 
 
@@ -110,7 +110,7 @@ suspend fun VideoOnlyDualStreamer(
 }
 
 /**
- * A [ISingleStreamer] implementation for video only (without audio).
+ * A [IDualStreamer] implementation for video only (without audio).
  *
  * @param context the application context
  * @param firstEndpointFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
@@ -139,8 +139,7 @@ class VideoOnlyDualStreamer(
     override val isOpenFlow = streamer.isOpenFlow
     override val isStreamingFlow = streamer.isStreamingFlow
 
-    override val videoProcessor: ISurfaceProcessor
-        get() = streamer.videoProcessor!!
+    override val videoInput: IVideoInput = streamer.videoInput!!
 
     /**
      * Sets the target rotation.
@@ -152,11 +151,6 @@ class VideoOnlyDualStreamer(
 
     override suspend fun setVideoConfig(videoConfig: DualStreamerVideoConfig) =
         streamer.setVideoConfig(videoConfig)
-
-    override val videoSourceFlow = streamer.videoSourceFlow
-
-    override suspend fun setVideoSource(videoSourceFactory: IVideoSourceInternal.Factory) =
-        streamer.setVideoSource(videoSourceFactory)
 
     override suspend fun close() = streamer.close()
 

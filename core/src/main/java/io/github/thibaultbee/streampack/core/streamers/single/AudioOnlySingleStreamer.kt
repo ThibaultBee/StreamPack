@@ -23,6 +23,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
+import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 
@@ -71,8 +72,8 @@ class AudioOnlySingleStreamer(
         get() = streamer.info
 
     override val audioConfigFlow = streamer.audioConfigFlow
-    override val audioSourceFlow = streamer.audioSourceFlow
-    override val audioProcessor = streamer.audioProcessor
+    override val audioInput: IAudioInput = streamer.audioInput!!
+    
     override val audioEncoder: IEncoder?
         get() = streamer.audioEncoder
 

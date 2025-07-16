@@ -24,7 +24,7 @@ class BuildStreamerUseCase(
 
         if (previousStreamer == null) {
             return SingleStreamer(context, isAudioEnable)
-        } else if ((previousStreamer.audioSourceFlow.value == null) != !isAudioEnable) {
+        } else if ((previousStreamer.audioInput?.sourceFlow?.value == null) != !isAudioEnable) {
             return SingleStreamer(context, isAudioEnable)
         }
         return previousStreamer

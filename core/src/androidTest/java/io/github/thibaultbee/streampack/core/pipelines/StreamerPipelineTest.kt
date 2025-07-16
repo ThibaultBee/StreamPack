@@ -84,8 +84,8 @@ class StreamerPipelineTest {
         )
         streamerPipeline.addOutput(output)
 
-        val audioSource = streamerPipeline.audioSourceFlow.value as IAudioSourceInternal
-        val videoSource = streamerPipeline.videoSourceFlow.value as IVideoSourceInternal
+        val audioSource = streamerPipeline.audioInput?.sourceFlow?.value as IAudioSourceInternal
+        val videoSource = streamerPipeline.videoInput?.sourceFlow?.value as IVideoSourceInternal
 
         streamerPipeline.startStream()
         assertTrue(streamerPipeline.isStreamingFlow.first { it })

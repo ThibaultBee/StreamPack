@@ -42,9 +42,8 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
 import io.github.thibaultbee.streampack.core.elements.utils.OrientationUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.runningHistoryNotNull
-import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
-import io.github.thibaultbee.streampack.core.interfaces.startPreview
+import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.ui.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -154,12 +153,12 @@ class PreviewView @JvmOverloads constructor(
                 Logger.w(TAG, "No need to set the same video streamer")
                 return
             }
-            val newSource = newStreamer?.videoSourceFlow?.value as? IPreviewableSource
+            val newSource = newStreamer?.videoInput?.sourceFlow?.value as? IPreviewableSource
             if (newSource != null) {
                 require(!newSource.isPreviewingFlow.value) { "Cannot set streamer while it is already previewing. Stop preview before." }
             }
 
-            val previousSource = field?.videoSourceFlow?.value as? IPreviewableSource
+            val previousSource = field?.videoInput?.sourceFlow?.value as? IPreviewableSource
             val isPreviousSourcePreviewing = previousSource?.isPreviewingFlow?.value ?: false
 
             sourceJob?.cancel()
@@ -203,7 +202,7 @@ class PreviewView @JvmOverloads constructor(
 
         addView(
             viewfinder, ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+                LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT
             )
         )
     }
@@ -243,8 +242,8 @@ class PreviewView @JvmOverloads constructor(
         streamer: IWithVideoSource
     ) {
         sourceJob = coroutineScope.launch {
-            streamer.videoSourceFlow.runningHistoryNotNull()
-                .collect { (previousVideoSource, newVideoSource) ->
+            streamer.videoInput?.sourceFlow?.runningHistoryNotNull()
+                ?.collect { (previousVideoSource, newVideoSource) ->
                     if (previousVideoSource == newVideoSource) {
                         Logger.w(TAG, "No change in video source")
                     } else {
@@ -272,7 +271,7 @@ class PreviewView @JvmOverloads constructor(
             surfaceFlow.filterNotNull().collect { surface ->
                 Logger.i(TAG, "New surface collected")
                 val previewableSource =
-                    streamer?.videoSourceFlow?.value as? IPreviewableSource
+                    streamer?.videoInput?.sourceFlow?.value as? IPreviewableSource
                 previewableSource?.let {
                     startPreviewIfNeeded(it, surface)
                 }
@@ -379,7 +378,7 @@ class PreviewView @JvmOverloads constructor(
     }
 
     override fun performClick(): Boolean {
-        val videoSource = streamer?.videoSourceFlow?.value
+        val videoSource = streamer?.videoInput?.sourceFlow?.value
         if (videoSource is ICameraSource) {
             performCameraTapOnFocus(videoSource)
         }
@@ -405,7 +404,7 @@ class PreviewView @JvmOverloads constructor(
      * Use [requestSurface] instead.
      */
     private suspend fun requestSurface(coroutineContext: CoroutineContext, size: Size) {
-        val videoSource = streamer?.videoSourceFlow?.value
+        val videoSource = streamer?.videoInput?.sourceFlow?.value
         if (videoSource is IPreviewableSource) {
             requestSurface(coroutineContext, size, videoSource)
         } else {
@@ -451,7 +450,7 @@ class PreviewView @JvmOverloads constructor(
     private suspend fun stopPreviewInternal() {
         _isPreviewingFlow.emit(false)
         streamer?.let {
-            val source = it.videoSourceFlow.value
+            val source = it.videoInput?.sourceFlow?.value
             if (source is IPreviewableSource) {
                 source.stopPreview()
                 source.resetPreview()
@@ -475,7 +474,7 @@ class PreviewView @JvmOverloads constructor(
         try {
             val streamer = requireNotNull(streamer) { "Streamer is not set" }
             _isPreviewingFlow.emit(true)
-            val videoSource = streamer.videoSourceFlow.value
+            val videoSource = streamer.videoInput?.sourceFlow?.value
             if (videoSource !is IPreviewableSource) {
                 Logger.e(
                     TAG,
@@ -578,7 +577,7 @@ class PreviewView @JvmOverloads constructor(
 
     private inner class PinchToZoomOnScaleGestureListener : SimpleOnScaleGestureListener() {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
-            val source = streamer?.videoSourceFlow?.value
+            val source = streamer?.videoInput?.sourceFlow?.value
             if (source is ICameraSource) {
                 val zoom = source.settings.zoom
                 zoom.onPinch(detector.scaleFactor)

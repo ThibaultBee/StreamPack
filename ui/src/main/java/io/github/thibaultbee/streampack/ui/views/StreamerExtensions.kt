@@ -18,7 +18,7 @@ suspend fun IWithVideoSource.setPreview(
     viewfinder: CameraViewfinder,
     previewSize: Size
 ): ViewfinderSurfaceRequest {
-    val videoSource = videoSourceFlow.value as? IPreviewableSource
+    val videoSource = videoInput?.sourceFlow?.value as? IPreviewableSource
         ?: throw IllegalStateException("Video source is not previewable")
     return videoSource.setPreview(viewfinder, previewSize)
 }
@@ -35,7 +35,7 @@ suspend fun IWithVideoSource.startPreview(
     viewfinder: CameraViewfinder,
     previewSize: Size
 ): ViewfinderSurfaceRequest {
-    val videoSource = videoSourceFlow.value as? IPreviewableSource
+    val videoSource = videoInput?.sourceFlow?.value as? IPreviewableSource
         ?: throw IllegalStateException("Video source is not previewable")
     return videoSource.startPreview(viewfinder, previewSize)
 }

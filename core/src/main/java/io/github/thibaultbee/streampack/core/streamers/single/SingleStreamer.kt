@@ -29,7 +29,6 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MediaProjectionAudioSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
@@ -211,11 +210,11 @@ open class SingleStreamer(
 
     // AUDIO
     /**
-     * The audio source.
+     * The audio input.
      * It allows advanced audio source settings.
      */
-    override val audioSourceFlow = pipeline.audioSourceFlow
-    override val audioProcessor = pipeline.audioProcessor
+    override val audioInput = pipeline.audioInput
+
     override val audioEncoder: IEncoder?
         get() = pipelineOutput.audioEncoder
 
@@ -224,17 +223,13 @@ open class SingleStreamer(
 
     // VIDEO
     /**
-     * The video source.
+     * The video input.
      * It allows advanced video source settings.
      */
-    override val videoSourceFlow = pipeline.videoSourceFlow
-    override val videoProcessor: ISurfaceProcessor?
-        get() = pipeline.videoProcessor
+    override val videoInput = pipeline.videoInput
+
     override val videoEncoder: IEncoder?
         get() = pipelineOutput.videoEncoder
-
-    override suspend fun setVideoSource(videoSourceFactory: IVideoSourceInternal.Factory) =
-        pipeline.setVideoSource(videoSourceFactory)
 
     // ENDPOINT
     override val endpoint: IEndpoint
@@ -257,7 +252,7 @@ open class SingleStreamer(
      * In this case, prefer using [getInfo] with the [MediaDescriptor] used in [open].
      */
     override val info: IConfigurationInfo
-        get() = if (videoSourceFlow.value is CameraSource) {
+        get() = if (videoInput?.sourceFlow?.value is CameraSource) {
             CameraStreamerConfigurationInfo(endpoint.info)
         } else {
             StreamerConfigurationInfo(endpoint.info)
@@ -277,7 +272,7 @@ open class SingleStreamer(
         } catch (_: Throwable) {
             endpoint.getInfo(descriptor)
         }
-        return if (videoSourceFlow.value is CameraSource) {
+        return if (videoInput?.sourceFlow?.value is CameraSource) {
             CameraStreamerConfigurationInfo(endpointInfo)
         } else {
             StreamerConfigurationInfo(endpointInfo)
