@@ -42,7 +42,7 @@ class RtmpSingleStreamerTest {
     }
 
     @Test
-    fun writetoRtmp() = runTest(timeout = TEST_TIMEOUT_MS.milliseconds) {
+    fun writeToRtmp() = runTest(timeout = TEST_TIMEOUT_MS.milliseconds) {
         assumeTrue("Required API key", apiKey != null)
         assumeTrue("API key not set", apiKey != "null")
 
