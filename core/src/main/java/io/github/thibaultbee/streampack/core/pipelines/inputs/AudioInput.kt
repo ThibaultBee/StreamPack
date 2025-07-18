@@ -319,6 +319,7 @@ internal class AudioInput(
     suspend fun release() {
         if (isReleaseRequested.getAndSet(true)) {
             Logger.w(TAG, "Already released")
+            return
         }
 
         withContext(coroutineDispatcher) {

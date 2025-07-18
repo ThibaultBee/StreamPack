@@ -102,21 +102,24 @@ abstract class StubPipelineOutput(
     override val isStreamingFlow = _isStreamingFlow.asStateFlow()
 
     override suspend fun startStream() {
+        Logger.i(TAG, "Start stream called")
         if (isStreamingFlow.value) {
             Logger.w(TAG, "Stream is already running")
             return
         }
-        Logger.i(TAG, "Start stream called")
         _isStreamingFlow.emit(true)
+        Logger.i(TAG, "Stream started")
     }
 
     override suspend fun stopStream() {
+        Logger.i(TAG, "Stop stream called")
         if (!isStreamingFlow.value) {
             Logger.w(TAG, "Stream is not running")
             return
         }
-        Logger.i(TAG, "Stop stream called")
+
         _isStreamingFlow.emit(false)
+        Logger.i(TAG, "Stream Stopped")
     }
 
     override suspend fun release() {

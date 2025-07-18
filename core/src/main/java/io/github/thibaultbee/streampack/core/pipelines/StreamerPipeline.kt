@@ -170,14 +170,25 @@ open class StreamerPipeline(
 
                     if (!isStreaming) {
                         if (_audioInput?.isStreamingFlow?.value == true) {
-                            Logger.i(TAG, "Stopping video only outputs")
+                            Logger.i(TAG, "Video input is stopped: stopping video only outputs")
                             // Only stops video only output
                             safeStreamingOutputCall { streamingOutputs ->
-                                streamingOutputs.filter { !it.withAudio && it.isStreaming }
-                                    .forEach { it.stopStream() }
+                                streamingOutputs.filter { !it.key.withAudio && it.key.isStreaming }
+                                    .forEach {
+                                        it.value.launch {
+                                            try {
+                                                it.key.stopStream()
+                                            } catch (t: Throwable) {
+                                                Logger.w(
+                                                    TAG,
+                                                    "Stop video only output: Can't stop output $it: ${t.message}"
+                                                )
+                                            }
+                                        }
+                                    }
                             }
                         } else {
-                            Logger.i(TAG, "Stopping all outputs")
+                            Logger.i(TAG, "Video input is stopped: stopping all outputs")
                             // Stops all outputs
                             _isStreamingFlow.emit(false)
                             stopOutputStreams()
@@ -197,14 +208,25 @@ open class StreamerPipeline(
 
                     if (!isStreaming) {
                         if (_videoInput?.isStreamingFlow?.value == true) {
-                            Logger.i(TAG, "Stopping audio only outputs")
+                            Logger.i(TAG, "Audio input is stopped: stopping audio only outputs")
                             // Stops audio only output
                             safeStreamingOutputCall { streamingOutputs ->
-                                streamingOutputs.filter { !it.withVideo && it.isStreaming }
-                                    .forEach { it.stopStream() }
+                                streamingOutputs.filter { !it.key.withVideo && it.key.isStreaming }
+                                    .forEach {
+                                        it.value.launch {
+                                            try {
+                                                it.key.stopStream()
+                                            } catch (t: Throwable) {
+                                                Logger.w(
+                                                    TAG,
+                                                    "Stop audio only output: Can't stop output $it: ${t.message}"
+                                                )
+                                            }
+                                        }
+                                    }
                             }
                         } else {
-                            Logger.i(TAG, "Stopping all outputs")
+                            Logger.i(TAG, "Audio input is stopped: stopping all outputs")
                             // Stops all outputs
                             _isStreamingFlow.emit(false)
                             stopOutputStreams()
@@ -232,7 +254,7 @@ open class StreamerPipeline(
         runBlocking {
             safeStreamingOutputCall { streamingOutputs ->
                 val audioStreamingOutput =
-                    streamingOutputs.filterIsInstance<IAudioSyncPipelineOutputInternal>()
+                    streamingOutputs.keys.filterIsInstance<IAudioSyncPipelineOutputInternal>()
                 if (audioStreamingOutput.isEmpty()) {
                     Logger.w(TAG, "No audio streaming output to process the frame")
                     frame.close()
@@ -279,6 +301,7 @@ open class StreamerPipeline(
      * To be called when the source info provider or [isMirroringRequired] is updated.
      */
     private suspend fun resetSurfaceProcessorOutputSurface() {
+        Logger.d(TAG, "Resetting surface processor output surface")
         safeOutputCall { outputs ->
             outputs.keys.filterIsInstance<IVideoSurfacePipelineOutputInternal>()
                 .filter { it.surfaceFlow.value != null }.forEach {
@@ -484,7 +507,8 @@ open class StreamerPipeline(
                 }
 
                 override suspend fun onStopStream() = withContext(coroutineDispatcher) {
-                    stopInputStreams(output)
+                    Logger.i(TAG, "Stopping output $output")
+                    stopInputStreamsIfNeeded(output)
                 }
             }
         } else {
@@ -495,7 +519,7 @@ open class StreamerPipeline(
                             startInputStreams(output)
                         }
                     } else {
-                        stopInputStreams(output)
+                        stopInputStreamsIfNeeded(output)
                     }
                 }
             }
@@ -535,7 +559,7 @@ open class StreamerPipeline(
 
     private suspend fun buildAudioSourceConfig(newAudioSourceConfig: AudioSourceConfig? = null): AudioSourceConfig {
         val audioSourceConfigs = safeStreamingOutputCall { streamingOutputs ->
-            streamingOutputs.filterIsInstance<IAudioPipelineOutputInternal>().mapNotNull {
+            streamingOutputs.keys.filterIsInstance<IAudioPipelineOutputInternal>().mapNotNull {
                 (it as? IConfigurableAudioPipelineOutputInternal)?.audioSourceConfigFlow?.value
             }.toMutableSet()
         }
@@ -586,6 +610,10 @@ open class StreamerPipeline(
                         Logger.i(TAG, "Removing previous surface: $previousSurfaceDescriptor")
                         input.removeOutputSurface(it.surface)
                     }
+                    if (isReleaseRequested.get()) {
+                        Logger.w(TAG, "Pipeline is released, dropping new surface")
+                        return@collect
+                    }
                     newSurfaceDescriptor?.let {
                         Logger.i(TAG, "Adding new surface: $newSurfaceDescriptor")
                         input.addOutputSurface(
@@ -619,7 +647,7 @@ open class StreamerPipeline(
     private suspend fun buildVideoSourceConfig(newVideoSourceConfig: VideoSourceConfig? = null): VideoSourceConfig {
         val videoSourceConfigs =
             safeStreamingOutputCall { streamingOutputs ->
-                streamingOutputs.filterIsInstance<IVideoPipelineOutputInternal>()
+                streamingOutputs.keys.filterIsInstance<IVideoPipelineOutputInternal>()
                     .filterIsInstance<IConfigurableVideoPipelineOutputInternal>()
                     .mapNotNull { it.videoSourceConfigFlow.value }.toMutableSet()
             }
@@ -689,9 +717,9 @@ open class StreamerPipeline(
         }
 
         detachOutput(output)
+        outputs[output]?.cancel()
 
         safeOutputCall { outputs ->
-            outputs[output]?.cancel()
             outputs.remove(output)
         }
     }
@@ -780,7 +808,7 @@ open class StreamerPipeline(
     /**
      * Stops input streams that are no longer needed.
      */
-    private suspend fun stopInputStreams(output: IPipelineOutput) =
+    private suspend fun stopInputStreamsIfNeeded(output: IPipelineOutput) =
         withContext(coroutineDispatcher) {
             // If sources are not streaming, do nothing
             var isAudioSourceStreaming = _audioInput != null && _audioInput.isStreamingFlow.value
@@ -818,14 +846,16 @@ open class StreamerPipeline(
 
     private suspend fun stopOutputStreams() {
         /**
-         *  [stopInputStreams] is called when all outputs are stopped.
+         *  [stopInputStreamsIfNeeded] is called when all outputs are stopped.
          */
         safeStreamingOutputCall { outputs ->
             outputs.forEach {
-                try {
-                    it.stopStream()
-                } catch (t: Throwable) {
-                    Logger.w(TAG, "stopStream: Can't stop output $it: ${t.message}")
+                it.value.launch {
+                    try {
+                        it.key.stopStream()
+                    } catch (t: Throwable) {
+                        Logger.w(TAG, "stopStream: Can't stop output $it: ${t.message}")
+                    }
                 }
             }
         }
@@ -870,7 +900,9 @@ open class StreamerPipeline(
     override suspend fun release() = withContext(coroutineDispatcher) {
         if (isReleaseRequested.getAndSet(true)) {
             Logger.w(TAG, "Already released")
+            return@withContext
         }
+        Logger.d(TAG, "Releasing pipeline")
 
         // Sources
         try {
@@ -879,6 +911,7 @@ open class StreamerPipeline(
             Logger.w(TAG, "release: Can't release sources: ${t.message}")
         }
 
+        Logger.d(TAG, "Sources released")
         // Outputs
         safeOutputCall { outputs ->
             outputs.entries.forEach { (output, scope) ->
@@ -906,9 +939,9 @@ open class StreamerPipeline(
             }
         }
 
-    private suspend fun <T> safeStreamingOutputCall(block: suspend (List<IPipelineOutput>) -> T) =
+    private suspend fun <T> safeStreamingOutputCall(block: suspend (Map<IPipelineOutput, CoroutineScope>) -> T) =
         safeOutputCall { outputs ->
-            val streamingOutputs = outputs.keys.filter { it.isStreamingFlow.value }
+            val streamingOutputs = outputs.filter { it.key.isStreamingFlow.value }
             block(streamingOutputs)
         }
 

@@ -298,8 +298,8 @@ class StreamerPipelineTest {
 
         streamerPipeline.stopStream()
         assertFalse(streamerPipeline.isStreamingFlow.first { !it })
-        assertFalse(firstOutput.isStreamingFlow.value)
-        assertFalse(secondOutput.isStreamingFlow.value)
+        assertFalse(firstOutput.isStreamingFlow.first { !it })
+        assertFalse(secondOutput.isStreamingFlow.first { !it })
     }
 
     @Test
@@ -324,7 +324,7 @@ class StreamerPipelineTest {
 
         firstOutput.stopStream()
         assertFalse(streamerPipeline.isStreamingFlow.first { !it })
-        assertFalse(firstOutput.isStreamingFlow.value)
+        assertFalse(firstOutput.isStreamingFlow.first { !it })
         assertFalse(secondOutput.isStreamingFlow.value)
     }
 

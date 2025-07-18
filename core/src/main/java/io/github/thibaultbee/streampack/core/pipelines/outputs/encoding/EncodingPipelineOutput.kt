@@ -738,6 +738,18 @@ internal class EncodingPipelineOutput(
         }
     }
 
+    override fun toString(): String {
+        return "EncodingPipelineOutput(" +
+                "withAudio=$withAudio, " +
+                "withVideo=$withVideo, " +
+                "isStreaming=$isStreaming, " +
+                "audioCodecConfig=${audioCodecConfigFlow.value}, " +
+                "videoCodecConfig=${videoCodecConfigFlow.value}, " +
+                "targetRotation=$targetRotation, " +
+                "isOpen=${isOpenFlow.value}" +
+                ")"
+    }
+
     companion object {
         private const val TAG = "EncodingPipelineOutput"
     }
