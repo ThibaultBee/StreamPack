@@ -1,6 +1,25 @@
 Changelog
 ==========
 
+Version 3.0.0-RC3
+----------------
+
+## Features:
+
+- Move `RTMP` and `SRT` packages to `io.github.thibaultbee.streampack:streampack-rtmp` and
+  `io.github.thibaultbee.streampack:streampack-srt`.
+- Made `SurfaceProcessor` customizable: you can now set a custom `ISurfaceProcessorInternal` to
+  process the
+  frames before they are sent to the encoders.
+- Move audio and video input settings to `audioInput` and `videoInput` members
+
+## Bug fixes:
+
+- Fix 16 KB page size alignment for SRT
+- Demos: fix crash on startup for audio only demo
+- Fix permissions of RTMP and SRT packages
+- Fix dead lock on `release`
+
 Version 3.0.0-RC2
 ----------------
 
