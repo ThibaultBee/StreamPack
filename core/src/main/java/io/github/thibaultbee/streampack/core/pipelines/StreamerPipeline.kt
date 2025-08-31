@@ -83,6 +83,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @param withAudio whether the streamer has audio. It will create necessary audio components.
  * @param withVideo whether the streamer has video. It will create necessary video components.
  * @param audioOutputMode the audio output mode. It can be [AudioOutputMode.PUSH] or [AudioOutputMode.CALLBACK]. Only use [AudioOutputMode.CALLBACK] when you have a single output and its implements [IAudioCallbackPipelineOutputInternal]. By default, it is [AudioOutputMode.PUSH].
+ * @param surfaceProcessorFactory the factory to create the surface processor
  * @param coroutineDispatcher the coroutine dispatcher
  */
 open class StreamerPipeline(

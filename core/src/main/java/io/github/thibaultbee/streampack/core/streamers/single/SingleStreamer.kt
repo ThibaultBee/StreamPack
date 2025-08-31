@@ -29,6 +29,8 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.processing.video.DefaultSurfaceProcessorFactory
+import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MediaProjectionAudioSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
@@ -148,8 +150,8 @@ suspend fun SingleStreamer(
     context: Context,
     audioSourceFactory: IAudioSourceInternal.Factory,
     videoSourceFactory: IVideoSourceInternal.Factory,
-    endpointFactory: IEndpointInternal.Factory,
-    @RotationValue defaultRotation: Int
+    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    @RotationValue defaultRotation: Int = context.displayRotation,
 ): SingleStreamer {
     val streamer = SingleStreamer(
         context = context,
@@ -171,19 +173,22 @@ suspend fun SingleStreamer(
  * @param withVideo [Boolean.true] to capture video. It can't be changed after instantiation.
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
  */
 open class SingleStreamer(
     protected val context: Context,
     val withAudio: Boolean = true,
     val withVideo: Boolean = true,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
-    @RotationValue defaultRotation: Int = context.displayRotation
+    @RotationValue defaultRotation: Int = context.displayRotation,
+    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
 ) : ISingleStreamer, IAudioSingleStreamer, IVideoSingleStreamer {
     private val pipeline = StreamerPipeline(
         context,
         withAudio,
         withVideo,
-        audioOutputMode = StreamerPipeline.AudioOutputMode.CALLBACK
+        audioOutputMode = StreamerPipeline.AudioOutputMode.CALLBACK,
+        surfaceProcessorFactory
     )
     private val pipelineOutput: IEncodingPipelineOutputInternal =
         pipeline.createEncodingOutput(
