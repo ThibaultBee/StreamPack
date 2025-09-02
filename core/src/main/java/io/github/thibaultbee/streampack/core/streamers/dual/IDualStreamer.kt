@@ -25,6 +25,8 @@ import android.util.Size
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig.Companion.getDefaultProfile
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
+import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig.Companion.DEFAULT_FPS
+import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig.Companion.DEFAULT_RESOLUTION
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig.Companion.getBestLevel
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig.Companion.getBestProfile
 import io.github.thibaultbee.streampack.core.elements.utils.ByteFormatValue
@@ -168,7 +170,7 @@ fun DualStreamerVideoConfig(
      * Video framerate.
      * This is a best effort as few camera can not generate a fixed framerate.
      */
-    fps: Int = 30,
+    fps: Int = DEFAULT_FPS,
     firstVideoCodecConfig: DualStreamerVideoCodecConfig = DualStreamerVideoCodecConfig(),
     secondVideoCodecConfig: DualStreamerVideoCodecConfig = DualStreamerVideoCodecConfig()
 ) = DualStreamerVideoConfig(
@@ -195,7 +197,7 @@ data class DualStreamerVideoCodecConfig(
     /**
      * Video output resolution in pixel.
      */
-    val resolution: Size = Size(1280, 720),
+    val resolution: Size = DEFAULT_RESOLUTION,
     /**
      * Video encoder profile. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile.
      * If not set, profile is always a 8 bit profile. StreamPack try to apply the highest profile available.
