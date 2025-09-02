@@ -239,7 +239,7 @@ internal class CameraSource(
         _isPreviewingFlow.emit(true)
     }
 
-
+    @RequiresPermission(Manifest.permission.CAMERA)
     override suspend fun startPreview() = previewMutex.withLock {
         startPreviewInternal()
     }
@@ -278,6 +278,7 @@ internal class CameraSource(
     /**
      * Starts video preview on [previewSurface].
      */
+    @RequiresPermission(Manifest.permission.CAMERA)
     override suspend fun startPreview(previewSurface: Surface) = previewMutex.withLock {
         setPreview(previewSurface)
         startPreviewInternal()
