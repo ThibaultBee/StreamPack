@@ -170,7 +170,7 @@ fun DualStreamerVideoConfig(
      * Video framerate.
      * This is a best effort as few camera can not generate a fixed framerate.
      */
-    fps: Int = DEFAULT_FPS,
+    fps: Float = DEFAULT_FPS,
     firstVideoCodecConfig: DualStreamerVideoCodecConfig = DualStreamerVideoCodecConfig(),
     secondVideoCodecConfig: DualStreamerVideoCodecConfig = DualStreamerVideoCodecConfig()
 ) = DualStreamerVideoConfig(
@@ -220,7 +220,7 @@ data class DualStreamerVideoCodecConfig(
      */
     val gopDurationInS: Float = 1f  // 1s between I frames
 ) {
-    internal fun toVideoCodecConfig(fps: Int) = VideoCodecConfig(
+    internal fun toVideoCodecConfig(fps: Float) = VideoCodecConfig(
         mimeType = mimeType,
         startBitrate = startBitrate,
         resolution = resolution,

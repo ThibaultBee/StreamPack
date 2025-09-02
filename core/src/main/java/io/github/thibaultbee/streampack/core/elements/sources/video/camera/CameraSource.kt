@@ -201,16 +201,20 @@ internal class CameraSource(
     }
 
     override suspend fun configure(config: VideoSourceConfig) {
-        if (!manager.isFrameRateSupported(cameraId, config.fps)) {
+        val fpsAsInt = config.fps.toInt()
+        require(fpsAsInt.toFloat() == config.fps) {
+            "CameraSource only supports integer fps but got ${config.fps}"
+        }
+        if (!manager.isFrameRateSupported(cameraId, fpsAsInt)) {
             Logger.w(TAG, "Camera $cameraId does not support ${config.fps} fps")
         }
 
         var needRestart = false
         if ((dynamicRangeProfile != config.dynamicRangeProfile)) {
             needRestart = true
-        } else if (fps != config.fps) {
+        } else if (fps != fpsAsInt) {
             if (controller.isAvailableFlow.value) {
-                val fpsRange = CameraUtils.getClosestFpsRange(manager, cameraId, config.fps)
+                val fpsRange = CameraUtils.getClosestFpsRange(manager, cameraId, fpsAsInt)
                 controller.setSetting(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
             }
         }
@@ -220,7 +224,7 @@ internal class CameraSource(
             }
         }
 
-        fps = config.fps
+        fps = fpsAsInt
         dynamicRangeProfile = config.dynamicRangeProfile
     }
 

@@ -14,7 +14,7 @@ data class VideoSourceConfig(
     /**
      * Video framerate.
      */
-    val fps: Int = DEFAULT_FPS,
+    val fps: Float = DEFAULT_FPS,
 
     /**
      * The dynamic range profile.

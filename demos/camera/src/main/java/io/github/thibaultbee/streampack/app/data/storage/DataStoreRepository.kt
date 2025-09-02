@@ -115,7 +115,7 @@ class DataStoreRepository(
             mimeType = mimeType,
             startBitrate = startBitrate,
             resolution = resolution,
-            fps = fps,
+            fps = fps.toFloat(),
             profile = profile,
             level = level
         )

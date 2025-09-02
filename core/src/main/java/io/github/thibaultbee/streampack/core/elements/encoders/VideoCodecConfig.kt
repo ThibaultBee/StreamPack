@@ -66,7 +66,7 @@ fun VideoCodecConfig(
      * Video framerate.
      * This is a best effort as few camera can not generate a fixed framerate.
      */
-    fps: Int = DEFAULT_FPS,
+    fps: Float = DEFAULT_FPS,
     /**
      * Video encoder profile/level. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile.
      * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
@@ -113,7 +113,7 @@ open class VideoCodecConfig(
      * Video framerate.
      * This is a best effort as few camera can not generate a fixed framerate.
      */
-    val fps: Int = DEFAULT_FPS,
+    val fps: Float = DEFAULT_FPS,
     /**
      * Video encoder profile. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile.
      * If not set, profile is always a 8 bit profile. StreamPack try to apply the highest profile available.
@@ -170,7 +170,7 @@ open class VideoCodecConfig(
 
         // Extended video format
         format.setInteger(MediaFormat.KEY_BIT_RATE, startBitrate)
-        format.setInteger(MediaFormat.KEY_FRAME_RATE, fps)
+        format.setFloat(MediaFormat.KEY_FRAME_RATE, fps)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
             format.setFloat(MediaFormat.KEY_I_FRAME_INTERVAL, gopDurationInS)
         } else {
@@ -213,7 +213,7 @@ open class VideoCodecConfig(
         mimeType: String = this.mimeType,
         startBitrate: Int = this.startBitrate,
         resolution: Size = this.resolution,
-        fps: Int = this.fps,
+        fps: Float = this.fps,
         profile: Int = this.profile,
         level: Int = this.level,
         gopDuration: Float = this.gopDurationInS
@@ -239,7 +239,7 @@ open class VideoCodecConfig(
         var result = mimeType.hashCode()
         result = 31 * result + startBitrate
         result = 31 * result + resolution.hashCode()
-        result = 31 * result + fps
+        result = 31 * result + fps.hashCode()
         result = 31 * result + profile
         result = 31 * result + level
         result = 31 * result + gopDurationInS.hashCode()
@@ -248,7 +248,7 @@ open class VideoCodecConfig(
 
     companion object {
         internal val DEFAULT_RESOLUTION = Size(1280, 720)
-        internal const val DEFAULT_FPS = 30
+        internal const val DEFAULT_FPS = 30.0f
 
         /**
          * Return the best bitrate according to resolution

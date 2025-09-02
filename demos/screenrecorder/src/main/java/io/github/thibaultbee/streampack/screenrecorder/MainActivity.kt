@@ -184,7 +184,7 @@ class MainActivity : AppCompatActivity() {
             mimeType = configuration.video.encoder,
             startBitrate = configuration.video.bitrate * 1000, // to b/s
             resolution = configuration.video.resolution,
-            fps = fps
+            fps = fps.toFloat()
         )
         lifecycleScope.launch {
             when (streamer) {

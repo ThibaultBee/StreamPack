@@ -137,7 +137,7 @@ class VideoMetadata(
     dataRate: Int,
     val width: Int,
     val height: Int,
-    val frameRate: Int
+    val frameRate: Float
 ) : Metadata(dataRate) {
     companion object {
         private const val TAG = "VideoMetadata"
@@ -150,7 +150,7 @@ class VideoMetadata(
             } else {
                 try {
                     CodecID.fromMimeType(config.mimeType).value
-                } catch (t: Throwable) {
+                } catch (_: Throwable) {
                     Logger.e(TAG, "Failed to get videocodecid for: ${config.mimeType}")
                     null
                 }
