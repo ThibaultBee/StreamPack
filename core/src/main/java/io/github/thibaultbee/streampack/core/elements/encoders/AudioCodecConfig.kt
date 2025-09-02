@@ -77,6 +77,9 @@ open class AudioCodecConfig(
 ) : CodecConfig(mimeType, startBitrate, profile) {
     init {
         require(mimeType.isAudio) { "MimeType must be audio" }
+        require(startBitrate > 0) { "Start bitrate must be > 0" }
+        require(sampleRate > 0) { "Sample rate must be > 0" }
+
         if (mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
             if (profile == MediaCodecInfo.CodecProfileLevel.AACObjectHE_PS) {
                 require(channelConfig == AudioFormat.CHANNEL_IN_STEREO) { "AACObjectHE_PS only supports stereo" }

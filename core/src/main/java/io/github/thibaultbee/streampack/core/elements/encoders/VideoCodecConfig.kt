@@ -34,6 +34,9 @@ import android.media.MediaFormat.KEY_PRIORITY
 import android.os.Build
 import android.util.Size
 import androidx.annotation.IntRange
+import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig.Companion.DEFAULT_FPS
+import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig.Companion.DEFAULT_RESOLUTION
+import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig.Companion.getBestBitrate
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecHelper
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
@@ -42,6 +45,48 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotateFro
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotationToDegrees
 import java.security.InvalidParameterException
 import kotlin.math.roundToInt
+
+fun VideoCodecConfig(
+    /**
+     * Video encoder mime type.
+     * Only [MediaFormat.MIMETYPE_VIDEO_AVC], [MediaFormat.MIMETYPE_VIDEO_HEVC], [MediaFormat.MIMETYPE_VIDEO_VP9] and [MediaFormat.MIMETYPE_VIDEO_AV1] are supported yet.
+     *
+     * **See Also:** [MediaFormat MIMETYPE_VIDEO_*](https://developer.android.com/reference/android/media/MediaFormat)
+     */
+    mimeType: String = MediaFormat.MIMETYPE_VIDEO_AVC,
+    /**
+     * Video output resolution in pixel.
+     */
+    resolution: Size = DEFAULT_RESOLUTION,
+    /**
+     * Video encoder bitrate in bits/s.
+     */
+    startBitrate: Int = getBestBitrate(resolution),
+    /**
+     * Video framerate.
+     * This is a best effort as few camera can not generate a fixed framerate.
+     */
+    fps: Int = DEFAULT_FPS,
+    /**
+     * Video encoder profile/level. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile.
+     * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
+     */
+    profileLevel: CodecProfileLevel,
+    /**
+     * Video encoder I-frame interval in seconds.
+     * This is a best effort as few camera can not generate a fixed framerate.
+     * For live streaming, I-frame interval should be really low. For recording, I-frame interval should be higher.
+     */
+    gopDurationInS: Float = 1f  // 1s between I frames
+) = VideoCodecConfig(
+    mimeType,
+    startBitrate,
+    resolution,
+    fps,
+    profileLevel.profile,
+    profileLevel.level,
+    gopDurationInS
+)
 
 /**
  * Video configuration class.
@@ -63,12 +108,12 @@ open class VideoCodecConfig(
     /**
      * Video output resolution in pixel.
      */
-    val resolution: Size = Size(1280, 720),
+    val resolution: Size = DEFAULT_RESOLUTION,
     /**
      * Video framerate.
      * This is a best effort as few camera can not generate a fixed framerate.
      */
-    val fps: Int = 30,
+    val fps: Int = DEFAULT_FPS,
     /**
      * Video encoder profile. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile.
      * If not set, profile is always a 8 bit profile. StreamPack try to apply the highest profile available.
@@ -93,49 +138,11 @@ open class VideoCodecConfig(
 ) : CodecConfig(mimeType, startBitrate, profile) {
     init {
         require(mimeType.isVideo) { "MimeType must be video" }
+        require(startBitrate > 0) { "Bitrate must be > 0" }
+        require(resolution.width > 0 && resolution.height > 0) { "Resolution width and height must be > 0" }
+        require(fps > 0) { "FPS must be > 0" }
+        require(gopDurationInS >= 0f) { "GOP duration must be >= 0" }
     }
-
-    constructor(
-        /**
-         * Video encoder mime type.
-         * Only [MediaFormat.MIMETYPE_VIDEO_AVC], [MediaFormat.MIMETYPE_VIDEO_HEVC], [MediaFormat.MIMETYPE_VIDEO_VP9] and [MediaFormat.MIMETYPE_VIDEO_AV1] are supported yet.
-         *
-         * **See Also:** [MediaFormat MIMETYPE_VIDEO_*](https://developer.android.com/reference/android/media/MediaFormat)
-         */
-        mimeType: String = MediaFormat.MIMETYPE_VIDEO_AVC,
-        /**
-         * Video output resolution in pixel.
-         */
-        resolution: Size = DEFAULT_RESOLUTION,
-        /**
-         * Video encoder bitrate in bits/s.
-         */
-        startBitrate: Int = getBestBitrate(resolution),
-        /**
-         * Video framerate.
-         * This is a best effort as few camera can not generate a fixed framerate.
-         */
-        fps: Int = DEFAULT_FPS,
-        /**
-         * Video encoder profile/level. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile.
-         * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
-         */
-        profileLevel: CodecProfileLevel,
-        /**
-         * Video encoder I-frame interval in seconds.
-         * This is a best effort as few camera can not generate a fixed framerate.
-         * For live streaming, I-frame interval should be really low. For recording, I-frame interval should be higher.
-         */
-        gopDurationInS: Float = 1f  // 1s between I frames
-    ) : this(
-        mimeType,
-        startBitrate,
-        resolution,
-        fps,
-        profileLevel.profile,
-        profileLevel.level,
-        gopDurationInS
-    )
 
     /**
      * The dynamic range profile.
@@ -158,9 +165,7 @@ open class VideoCodecConfig(
      */
     override fun getFormat(withProfileLevel: Boolean): MediaFormat {
         val format = MediaFormat.createVideoFormat(
-            mimeType,
-            resolution.width,
-            resolution.height
+            mimeType, resolution.width, resolution.height
         )
 
         // Extended video format
@@ -181,13 +186,11 @@ open class VideoCodecConfig(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 if (isHdr) {
                     format.setInteger(
-                        MediaFormat.KEY_COLOR_STANDARD,
-                        MediaFormat.COLOR_STANDARD_BT2020
+                        MediaFormat.KEY_COLOR_STANDARD, MediaFormat.COLOR_STANDARD_BT2020
                     )
                     format.setInteger(MediaFormat.KEY_COLOR_RANGE, MediaFormat.COLOR_RANGE_FULL)
                     format.setInteger(
-                        MediaFormat.KEY_COLOR_TRANSFER,
-                        dynamicRangeProfile.transferFunction
+                        MediaFormat.KEY_COLOR_TRANSFER, dynamicRangeProfile.transferFunction
                     )
                     format.setFeatureEnabled(
                         MediaCodecInfo.CodecCapabilities.FEATURE_HdrEditing, true
@@ -345,8 +348,7 @@ fun VideoCodecConfig.rotateFromNaturalOrientation(context: Context, @RotationVal
  * Rotatse video configuration to [rotationDegrees] from device natural orientation.
  */
 fun VideoCodecConfig.rotateDegreesFromNaturalOrientation(
-    context: Context,
-    @IntRange(from = 0, to = 359) rotationDegrees: Int
+    context: Context, @IntRange(from = 0, to = 359) rotationDegrees: Int
 ): VideoCodecConfig {
     val newResolution = resolution.rotateFromNaturalOrientation(context, rotationDegrees)
     return if (resolution != newResolution) {
