@@ -210,7 +210,7 @@ internal class CameraSource(
             needRestart = true
         } else if (fps != config.fps) {
             if (controller.isAvailableFlow.value) {
-                val fpsRange = CameraUtils.getClosestFpsRange(manager, cameraId, fps)
+                val fpsRange = CameraUtils.getClosestFpsRange(manager, cameraId, config.fps)
                 controller.setSetting(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
             }
         }
