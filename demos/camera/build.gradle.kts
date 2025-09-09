@@ -39,11 +39,6 @@ android {
         viewBinding = true
         dataBinding = true
     }
-    packaging {
-        jniLibs {
-            pickFirsts += setOf("**/*.so")
-        }
-    }
 }
 
 dependencies {
