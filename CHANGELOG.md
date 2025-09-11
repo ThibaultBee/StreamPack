@@ -1,6 +1,21 @@
 Changelog
 ==========
 
+Version 3.0.0
+----------------
+
+## Features:
+
+- Add a `SurfaceProcessor` factory to `SingleStreamer` and `DualStreamer` constructors to
+  customize the processing of the input surface.
+- Verify `VideoConfig` and `AudioConfig` during instantiation.
+
+## Bug fixes:
+
+- Camera: Fix FPS
+- Camera: add missing `RequiresPermission` annotation for `startPreview`
+- DualStreamer: correctly use default value
+
 Version 3.0.0-RC3
 ----------------
 
