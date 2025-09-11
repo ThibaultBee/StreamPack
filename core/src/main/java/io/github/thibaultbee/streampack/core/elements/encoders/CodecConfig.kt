@@ -22,7 +22,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaC
  * Base configuration class.
  * If you don't know how to set class members, [Video encoding recommendations](https://developer.android.com/guide/topics/media/media-formats#video-encoding) should give you hints.
  */
-open class CodecConfig(
+sealed class CodecConfig(
     /**
      * The encoder mime type.
      *
