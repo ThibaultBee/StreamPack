@@ -16,48 +16,46 @@
 package io.github.thibaultbee.streampack.ui.views
 
 import android.util.Size
-import androidx.camera.viewfinder.CameraViewfinder
-import androidx.camera.viewfinder.CameraViewfinderExt.requestSurface
+import androidx.camera.viewfinder.core.TransformationInfo
 import androidx.camera.viewfinder.core.ViewfinderSurfaceRequest
-import androidx.camera.viewfinder.core.populateFromCharacteristics
+import androidx.camera.viewfinder.view.ViewfinderView
+import androidx.camera.viewfinder.view.requestSurfaceSession
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraCharacteristics
 
 /**
- * Start preview on a [CameraViewfinder]
+ * Start preview on a [ViewfinderView]
  *
- * @param viewfinder The [CameraViewfinder] to set as preview
+ * @param viewfinderView The [ViewfinderView] to set as preview
  * @param previewSize The size of the preview
- * @return The [ViewfinderSurfaceRequest] used to set the preview. Use it to call [ViewfinderSurfaceRequest.markSurfaceSafeToRelease] after [stopPreview].
  */
 suspend fun IPreviewableSource.startPreview(
-    viewfinder: CameraViewfinder,
+    viewfinderView: ViewfinderView,
     previewSize: Size
-): ViewfinderSurfaceRequest {
-    val request = setPreview(viewfinder, previewSize)
+) {
+    setPreview(viewfinderView, previewSize)
     startPreview()
-    return request
 }
 
 /**
- * Set preview on a [CameraViewfinder]
+ * Set preview on a [ViewfinderView]
  *
- * @param viewfinder The [CameraViewfinder] to set as preview
+ * @param viewfinderView The [ViewfinderView] to set as preview
  * @param previewSize The size of the preview
- * @return The [ViewfinderSurfaceRequest] used to set the preview. Use it to call [ViewfinderSurfaceRequest.markSurfaceSafeToRelease].
  */
 suspend fun IPreviewableSource.setPreview(
-    viewfinder: CameraViewfinder,
+    viewfinderView: ViewfinderView,
     previewSize: Size
-): ViewfinderSurfaceRequest {
-    val builder = ViewfinderSurfaceRequest.Builder(previewSize)
+) {
+    val request = ViewfinderSurfaceRequest(previewSize.width, previewSize.height)
+
+    /*
     val request = if (this is ICameraSource) {
         val cameraCharacteristics = viewfinder.context.getCameraCharacteristics(cameraId)
         builder.populateFromCharacteristics(cameraCharacteristics).build()
     } else {
         builder.build()
-    }
-    setPreview(viewfinder.requestSurface(request))
-    return request
+    }*/
+    val session = viewfinderView.requestSurfaceSession(request)
+    viewfinderView.transformationInfo = infoProviderFlow.value.toTransformationInfo()
+    setPreview(session.surface)
 }

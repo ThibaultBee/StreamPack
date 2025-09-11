@@ -1,41 +1,53 @@
+/*
+ * Copyright 2025 Thibault B.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.github.thibaultbee.streampack.ui.views
 
 import android.util.Size
-import androidx.camera.viewfinder.CameraViewfinder
-import androidx.camera.viewfinder.core.ViewfinderSurfaceRequest
+import androidx.camera.viewfinder.view.ViewfinderView
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 
 /**
- * Set preview on a [CameraViewfinder]
+ * Set preview on a [ViewfinderView]
  *
- * @param viewfinder The [CameraViewfinder] to set as preview
+ * @param viewfinder The [ViewfinderView] to set as preview
  * @param previewSize The size of the preview
- * @return The [ViewfinderSurfaceRequest] used to set the preview. Use it to call [ViewfinderSurfaceRequest.markSurfaceSafeToRelease].
  * @throws [IllegalStateException] if the video source is not previewable
  */
 suspend fun IWithVideoSource.setPreview(
-    viewfinder: CameraViewfinder,
+    viewfinder: ViewfinderView,
     previewSize: Size
-): ViewfinderSurfaceRequest {
+) {
     val videoSource = videoInput?.sourceFlow?.value as? IPreviewableSource
         ?: throw IllegalStateException("Video source is not previewable")
-    return videoSource.setPreview(viewfinder, previewSize)
+    videoSource.setPreview(viewfinder, previewSize)
 }
 
 /**
- * Start preview on a [CameraViewfinder]
+ * Start preview on a [ViewfinderView]
  *
- * @param viewfinder The [CameraViewfinder] to set as preview
+ * @param viewfinder The [ViewfinderView] to set as preview
  * @param previewSize The size of the preview
- * @return The [ViewfinderSurfaceRequest] used to set the preview. Use it to call [ViewfinderSurfaceRequest.markSurfaceSafeToRelease] after [IWithVideoSource.stopPreview].
  * @throws [IllegalStateException] if the video source is not previewable
  */
 suspend fun IWithVideoSource.startPreview(
-    viewfinder: CameraViewfinder,
+    viewfinder: ViewfinderView,
     previewSize: Size
-): ViewfinderSurfaceRequest {
+) {
     val videoSource = videoInput?.sourceFlow?.value as? IPreviewableSource
         ?: throw IllegalStateException("Video source is not previewable")
-    return videoSource.startPreview(viewfinder, previewSize)
+    videoSource.startPreview(viewfinder, previewSize)
 }

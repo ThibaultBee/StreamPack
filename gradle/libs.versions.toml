@@ -6,7 +6,7 @@ guava = "33.4.8-android"
 videoApiClient = "1.6.7"
 androidxActivity = "1.10.1"
 androidxAppcompat = "1.7.1"
-androidxCamera = "1.4.0-alpha13"
+androidxCamera = "1.5.0-rc01"
 androidxConstraintlayout = "2.2.1"
 androidxCore = "1.17.0"
 androidxDatabinding = "8.13.0"
@@ -38,7 +38,7 @@ android-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp
 android-material = { module = "com.google.android.material:material", version.ref = "material" }
 androidx-activity = { module = "androidx.activity:activity", version.ref = "androidxActivity" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidxAppcompat" }
-androidx-camera-viewfinder-view = { module = "androidx.camera.viewfinder:viewfinder-view", version.ref = "androidxCamera" }
+androidx-camera-viewfinder-view = { group = "androidx.camera.viewfinder", name = "viewfinder-view", version.ref = "androidxCamera" }
 androidx-concurrent-futures = { module = "androidx.concurrent:concurrent-futures", version.ref = "concurrentFutures" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidxConstraintlayout" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
