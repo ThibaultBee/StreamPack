@@ -65,6 +65,8 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class PreviewViewModel(private val application: Application) : ObservableViewModel() {
     private val storageRepository = DataStoreRepository(application, application.dataStore)
@@ -122,9 +124,11 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     private val _isTryingConnectionLiveData = MutableLiveData<Boolean>()
     val isTryingConnectionLiveData: LiveData<Boolean> = _isTryingConnectionLiveData
 
+    private val videoSourceMutex = Mutex()
+
     init {
         viewModelScope.launch {
-            streamerFlow.collect {
+            streamerFlow.collect { streamer ->
                 // Set audio source and video source
                 if (streamer.withAudio) {
                     Log.i(TAG, "Audio source is enabled. Setting audio source")
@@ -138,42 +142,45 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                             Manifest.permission.CAMERA
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
-                        streamer.setVideoSource(CameraSourceFactory())
+                        initializeVideoSource()
                     }
                 } else {
                     Log.i(TAG, "Video source is disabled")
                 }
+
+                viewModelScope.launch {
+                    streamer.videoInput?.sourceFlow?.collect {
+                        notifySourceChanged()
+                    }
+                }
+
+                viewModelScope.launch {
+                    streamer.throwableFlow.filterNotNull().filter { !it.isClosedException }
+                        .map { "${it.javaClass.simpleName}: ${it.message}" }.collect {
+                            _streamerErrorLiveData.postValue(it)
+                        }
+                }
+                viewModelScope.launch {
+                    streamer.throwableFlow.filterNotNull().filter { it.isClosedException }
+                        .map { "Connection lost: ${it.message}" }.collect {
+                            _endpointErrorLiveData.postValue(it)
+                        }
+                }
+                viewModelScope.launch {
+                    streamer.isOpenFlow
+                        .collect {
+                            Log.i(TAG, "Streamer is opened: $it")
+                        }
+                }
+                viewModelScope.launch {
+                    streamer.isStreamingFlow
+                        .collect {
+                            Log.i(TAG, "Streamer is streaming: $it")
+                        }
+                }
             }
         }
-        viewModelScope.launch {
-            streamer.videoInput?.sourceFlow?.collect {
-                notifySourceChanged()
-            }
-        }
-        viewModelScope.launch {
-            streamer.throwableFlow.filterNotNull().filter { !it.isClosedException }
-                .map { "${it.javaClass.simpleName}: ${it.message}" }.collect {
-                    _streamerErrorLiveData.postValue(it)
-                }
-        }
-        viewModelScope.launch {
-            streamer.throwableFlow.filterNotNull().filter { it.isClosedException }
-                .map { "Connection lost: ${it.message}" }.collect {
-                    _endpointErrorLiveData.postValue(it)
-                }
-        }
-        viewModelScope.launch {
-            streamer.isOpenFlow
-                .collect {
-                    Log.i(TAG, "Streamer is opened: $it")
-                }
-        }
-        viewModelScope.launch {
-            streamer.isStreamingFlow
-                .collect {
-                    Log.i(TAG, "Streamer is streaming: $it")
-                }
-        }
+
         viewModelScope.launch {
             rotationRepository.rotationFlow
                 .collect {
@@ -235,13 +242,15 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         }
     }
 
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
+    @RequiresPermission(Manifest.permission.CAMERA)
     fun initializeVideoSource() {
         viewModelScope.launch {
-            if (streamer.videoInput?.sourceFlow?.value == null) {
-                streamer.setVideoSource(CameraSourceFactory())
-            } else {
-                Log.i(TAG, "Camera source already set")
+            videoSourceMutex.withLock {
+                if (streamer.videoInput?.sourceFlow?.value == null) {
+                    streamer.setVideoSource(CameraSourceFactory())
+                } else {
+                    Log.i(TAG, "Camera source already set")
+                }
             }
         }
     }
@@ -313,34 +322,38 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
          * exception instead of crashing. You can either catch the exception or check if the
          * configuration is valid for the new camera with [Context.isFrameRateSupported].
          */
-        val videoSource = streamer.videoInput?.sourceFlow?.value
-        if (videoSource is ICameraSource) {
-            viewModelScope.launch {
-                streamer.setNextCameraId(application)
+        viewModelScope.launch {
+            videoSourceMutex.withLock {
+                val videoSource = streamer.videoInput?.sourceFlow?.value
+                if (videoSource is ICameraSource) {
+                    streamer.setNextCameraId(application)
+                }
             }
         }
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
     fun toggleVideoSource() {
-        val videoSource = streamer.videoInput?.sourceFlow?.value
         viewModelScope.launch {
-            val nextSource = when (videoSource) {
-                is ICameraSource -> {
-                    BitmapSourceFactory(testBitmap)
-                }
+            videoSourceMutex.withLock {
+                val videoSource = streamer.videoInput?.sourceFlow?.value
+                val nextSource = when (videoSource) {
+                    is ICameraSource -> {
+                        BitmapSourceFactory(testBitmap)
+                    }
 
-                is IBitmapSource -> {
-                    CameraSourceFactory()
-                }
+                    is IBitmapSource -> {
+                        CameraSourceFactory()
+                    }
 
-                else -> {
-                    Log.i(TAG, "Unknown video source. Fallback to camera sources")
-                    CameraSourceFactory()
+                    else -> {
+                        Log.i(TAG, "Unknown video source. Fallback to camera sources")
+                        CameraSourceFactory()
+                    }
                 }
+                Log.i(TAG, "Switch video source to $nextSource")
+                streamer.setVideoSource(nextSource)
             }
-            Log.i(TAG, "Switch video source to $nextSource")
-            streamer.setVideoSource(nextSource)
         }
     }
 
