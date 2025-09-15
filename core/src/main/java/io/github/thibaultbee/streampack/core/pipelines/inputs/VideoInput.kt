@@ -200,8 +200,9 @@ internal class VideoInput(
 
                 // Start new video source
                 if (isStreaming) {
+                    Logger.e(TAG, "Starting new video source streaming")
                     try {
-                        previousVideoSource?.stopStream()
+                        previousVideoSource.stopStream()
                     } catch (t: Throwable) {
                         Logger.w(
                             TAG,
