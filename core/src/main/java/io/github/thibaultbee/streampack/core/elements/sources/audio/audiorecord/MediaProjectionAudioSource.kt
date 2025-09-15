@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord
 
+import android.Manifest
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFormat
@@ -25,6 +26,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import androidx.annotation.RequiresApi
+import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
@@ -56,6 +58,7 @@ internal class MediaProjectionAudioSource(
         }
     }
 
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun buildAudioRecord(config: AudioSourceConfig, bufferSize: Int): AudioRecord {
         val audioFormat = AudioFormat.Builder()
             .setEncoding(config.byteFormat)
@@ -121,5 +124,9 @@ class MediaProjectionAudioSourceFactory(
 
     override fun isSourceEquals(source: IAudioSourceInternal?): Boolean {
         return source is MediaProjectionAudioSource
+    }
+
+    override fun toString(): String {
+        return "MediaProjectionAudioSourceFactory(mediaProjection=$mediaProjection, effects=$effects)"
     }
 }

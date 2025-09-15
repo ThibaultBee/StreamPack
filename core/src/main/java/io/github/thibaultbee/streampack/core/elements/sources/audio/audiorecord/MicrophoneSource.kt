@@ -15,11 +15,13 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord
 
+import android.Manifest
 import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Build
+import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import java.util.UUID
@@ -29,6 +31,7 @@ import java.util.UUID
  * from the microphone.
  */
 internal class MicrophoneSource : AudioRecordSource() {
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun buildAudioRecord(config: AudioSourceConfig, bufferSize: Int): AudioRecord {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val audioFormat = AudioFormat.Builder()
@@ -67,5 +70,9 @@ class MicrophoneSourceFactory(
 
     override fun isSourceEquals(source: IAudioSourceInternal?): Boolean {
         return source is MicrophoneSource
+    }
+
+    override fun toString(): String {
+        return "MicrophoneSourceFactory(effects=$effects)"
     }
 }

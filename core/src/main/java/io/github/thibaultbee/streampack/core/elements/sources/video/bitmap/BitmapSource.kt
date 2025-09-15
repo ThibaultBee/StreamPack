@@ -180,4 +180,8 @@ class BitmapSourceFactory(private val bitmap: Bitmap) : IVideoSourceInternal.Fac
     override fun isSourceEquals(source: IVideoSourceInternal?): Boolean {
         return source is BitmapSource && source.bitmap == bitmap
     }
+
+    override fun toString(): String {
+        return "BitmapSourceFactory(bitmap=$bitmap)"
+    }
 }

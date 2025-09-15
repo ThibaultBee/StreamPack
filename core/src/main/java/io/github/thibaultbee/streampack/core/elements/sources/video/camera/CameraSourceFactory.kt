@@ -35,4 +35,8 @@ class CameraSourceFactory(val cameraId: String? = null) : IVideoSourceInternal.F
     override fun isSourceEquals(source: IVideoSourceInternal?): Boolean {
         return source is CameraSource && source.cameraId == cameraId
     }
+
+    override fun toString(): String {
+        return "CameraSourceFactory(cameraId=$cameraId)"
+    }
 }

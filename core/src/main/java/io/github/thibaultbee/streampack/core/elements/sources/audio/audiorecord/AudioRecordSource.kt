@@ -327,7 +327,7 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
 
 
 abstract class AudioRecordSourceFactory(
-    private val effects: Set<UUID>
+    protected val effects: Set<UUID>
 ) : IAudioSourceInternal.Factory {
     /**
      * Create an [AudioRecordSource] implementation.

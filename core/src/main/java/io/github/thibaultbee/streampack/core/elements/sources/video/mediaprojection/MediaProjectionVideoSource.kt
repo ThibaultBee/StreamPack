@@ -186,4 +186,8 @@ class MediaProjectionVideoSourceFactory(
     override fun isSourceEquals(source: IVideoSourceInternal?): Boolean {
         return source is MediaProjectionVideoSource
     }
+
+    override fun toString(): String {
+        return "MediaProjectionVideoSourceFactory(mediaProjection=$mediaProjection, overrideRotation=$overrideRotation)"
+    }
 }
