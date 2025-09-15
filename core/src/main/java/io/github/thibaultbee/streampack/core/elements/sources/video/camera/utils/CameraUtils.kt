@@ -10,6 +10,7 @@ import android.util.Range
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraException
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraDeviceController
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraFps
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.ICameraCaptureSessionCompat
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.resumeIfActive
@@ -34,11 +35,13 @@ internal object CameraUtils {
             override fun onOpened(device: CameraDevice) = continuation.resumeIfActive(device)
 
             override fun onDisconnected(camera: CameraDevice) {
+                isClosedFlow.tryEmit(true)
                 Logger.w(TAG, "Camera ${camera.id} has been disconnected")
                 continuation.resumeWithExceptionIfActive(RuntimeException("Camera has been disconnected"))
             }
 
             override fun onError(camera: CameraDevice, error: Int) {
+                isClosedFlow.tryEmit(true)
                 Logger.e(TAG, "Camera ${camera.id} is in error $error")
 
                 val exception = when (error) {
@@ -54,32 +57,39 @@ internal object CameraUtils {
             }
 
             override fun onClosed(camera: CameraDevice) {
-                Logger.i(TAG, "Camera ${camera.id} has been closed")
                 isClosedFlow.tryEmit(true)
+                Logger.i(TAG, "Camera ${camera.id} has been closed")
             }
         }
         sessionCompat.openCamera(manager, cameraId, callbacks)
     }
 
     internal suspend fun createCaptureSession(
-        sessionCompat: ICameraCaptureSessionCompat,
-        camera: CameraDevice,
+        cameraDeviceController: CameraDeviceController,
         outputs: List<Surface>,
         dynamicRange: Long,
         isClosedFlow: MutableStateFlow<Boolean>
     ): CameraCaptureSession = suspendCancellableCoroutine { continuation ->
+        val cameraId = cameraDeviceController.id
         val callbacks = object : CameraCaptureSession.StateCallback() {
             override fun onConfigured(session: CameraCaptureSession) =
                 continuation.resume(session)
 
             override fun onConfigureFailed(session: CameraCaptureSession) {
-                Logger.e(TAG, "Camera session configuration failed")
-                continuation.resumeWithExceptionIfActive(CameraException("Camera: failed to configure the capture session for camera ${camera.id} and outputs $outputs"))
+                isClosedFlow.tryEmit(true)
+                Logger.e(
+                    TAG,
+                    "Camera session configuration failed for camera $cameraId and outputs $outputs"
+                )
+                continuation.resumeWithExceptionIfActive(CameraException("Camera: failed to configure the capture session for camera $cameraId and outputs $outputs"))
             }
 
             override fun onClosed(session: CameraCaptureSession) {
-                Logger.e(TAG, "Camera capture session closed")
                 isClosedFlow.tryEmit(true)
+                Logger.e(
+                    TAG,
+                    "Camera capture session closed for camera $cameraId and outputs $outputs"
+                )
             }
         }
 
@@ -92,12 +102,12 @@ internal object CameraUtils {
                 }
             }
 
-            sessionCompat.createCaptureSessionByOutputConfiguration(
-                camera, outputConfigurations, callbacks
+            cameraDeviceController.createCaptureSessionByOutputConfiguration(
+                outputConfigurations, callbacks
             )
         } else {
-            sessionCompat.createCaptureSession(
-                camera, outputs, callbacks
+            cameraDeviceController.createCaptureSession(
+                outputs, callbacks
             )
         }
     }

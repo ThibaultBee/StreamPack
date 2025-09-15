@@ -16,12 +16,15 @@
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.RequiresPermission
+import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.core.elements.sources.video.AbstractPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraController
@@ -29,37 +32,30 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getAutoFocusModes
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFrameRateSupported
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSizes
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSurface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraTimestampHelper
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraUtils
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestBuilderWithTargets
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
  * Creates a [CameraSource] from a [Context].
  */
-@RequiresPermission(Manifest.permission.CAMERA)
-internal suspend fun CameraSource(context: Context, cameraId: String) =
-    CameraSource(context.getSystemService(Context.CAMERA_SERVICE) as CameraManager, cameraId)
+internal fun CameraSource(context: Context, cameraId: String) =
+    CameraSource(
+        context,
+        context.getSystemService(Context.CAMERA_SERVICE) as CameraManager,
+        cameraId
+    )
 
-
-/**
- * Creates a [CameraSource] from a [CameraManager].
- */
-@RequiresPermission(Manifest.permission.CAMERA)
-internal suspend fun CameraSource(
-    manager: CameraManager, cameraId: String
-): CameraSource {
-    require(manager.cameras.contains(cameraId)) {
-        "Camera $cameraId is not available"
-    }
-
-    return CameraSource(manager, CameraController.create(manager, cameraId))
-}
 
 /**
  * Camera source implementation.
@@ -67,17 +63,21 @@ internal suspend fun CameraSource(
  * Based on Camera2 API.
  */
 internal class CameraSource(
-    private val manager: CameraManager, private val controller: CameraController
+    private val context: Context,
+    private val manager: CameraManager, override val cameraId: String
 ) : ICameraSourceInternal, ICameraSource, AbstractPreviewableSource() {
+    private val coroutineScope = CoroutineScope(Dispatchers.Default)
+
+    private val controller = CameraController(manager, cameraId, {
+        dynamicRangeProfile.dynamicRange
+    }, {
+        defaultCaptureRequest(this)
+    })
+
     override val settings by lazy { CameraSettings(manager, controller) }
 
-    override val cameraId = controller.cameraId
     override val timestampOffsetInNs =
         CameraTimestampHelper.getTimeOffsetInNsToMonoClock(manager, cameraId)
-
-    // Surfaces that are running or will be running
-    private var outputSurface: Surface? = null
-    private var previewSurface: Surface? = null
 
     override val infoProviderFlow = MutableStateFlow(CameraInfoProvider(manager, cameraId))
 
@@ -89,117 +89,77 @@ internal class CameraSource(
     override val isPreviewingFlow = _isPreviewingFlow.asStateFlow()
 
     private val previewMutex = Mutex()
-    private val surfaceMutex = Mutex()
+    private val streamMutex = Mutex()
 
     // Configuration
     private var fps: Int = 30
     private var dynamicRangeProfile: DynamicRangeProfile = DynamicRangeProfile.sdr
 
-    override suspend fun hasPreview() = previewSurface != null
-
-    override suspend fun setPreview(surface: Surface) {
-        if (previewSurface == surface) {
-            Logger.w(TAG, "Preview surface is already set")
-            return
+    init {
+        val deviceCameras = manager.cameras
+        require(deviceCameras.contains(cameraId)) {
+            "Camera $cameraId is not available. Available cameras: ${
+                deviceCameras.joinToString(", ")
+            }"
         }
 
-        surfaceMutex.withLock {
-            if (controller.isAvailableFlow.value) {
-                addSurface(previewSurface, surface)
-            }
-            previewSurface = surface
-        }
-    }
-
-    override suspend fun resetPreviewImpl() {
-        stopPreviewInternal()
-        surfaceMutex.withLock {
-            previewSurface?.let { controller.removeOutput(it) }
-            previewSurface = null
-        }
-    }
-
-    override suspend fun getOutput() = outputSurface
-
-    override suspend fun setOutput(surface: Surface) {
-        if (outputSurface == surface) {
-            Logger.w(TAG, "Output surface is already set")
-            return
-        }
-
-        surfaceMutex.withLock {
-            if (controller.isAvailableFlow.value) {
-                addSurface(outputSurface, surface)
-            }
-            outputSurface = surface
-        }
-    }
-
-    override suspend fun resetOutputImpl() {
-        stopStream()
-        surfaceMutex.withLock {
-            outputSurface?.let {
-                controller.removeOutput(it)
-            }
-            outputSurface = null
-        }
-    }
-
-    private suspend fun addSurface(previousSurface: Surface?, surface: Surface) {
-        if (previousSurface != null) {
-            controller.replaceOutput(previousSurface, surface)
-        } else {
-            controller.addOutput(surface)
-        }
-    }
-
-    private suspend fun addTargets(
-        targets: List<Surface>
-    ) {
-        try {
-            surfaceMutex.withLock {
-                /**
-                 * If the camera is already streaming, we can add the target to the current session.
-                 */
-                if (!controller.addTargets(targets)) {
-                    // If the camera is not streaming, we need to create a new session
-                    createCaptureSession(targets)
+        coroutineScope.launch {
+            controller.isActiveFlow.collect { isAvailable ->
+                if (!isAvailable) {
+                    _isStreamingFlow.emit(false)
+                    _isPreviewingFlow.emit(false)
                 }
             }
-        } catch (e: IllegalStateException) {
-            Logger.w(TAG, "Failed to start camera: $e")
         }
     }
 
-    private suspend fun createCaptureSession(targets: List<Surface>) {
-        val outputs = mutableListOf<Surface>()
-        previewSurface?.let { outputs.add(it) }
-        outputSurface?.let { outputs.add(it) }
-
-        controller.createSessionController(
-            outputs, dynamicRangeProfile.dynamicRange
-        )
-        startDefaultCaptureRequest(targets)
-    }
-
-    private suspend fun startDefaultCaptureRequest(
-        targets: List<Surface>
+    private fun defaultCaptureRequest(
+        captureRequest: CaptureRequestBuilderWithTargets
     ) {
-        targets.forEach { controller.addTarget(it) }
-
         val fpsRange = CameraUtils.getClosestFpsRange(manager, cameraId, fps)
-        controller.setSetting(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
+        captureRequest.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
         if (manager.getAutoFocusModes(cameraId)
                 .contains(CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO)
         ) {
-            controller.setSetting(
+            captureRequest.set(
                 CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO
             )
         }
-
-        controller.setRepeatingSession()
     }
 
+    override suspend fun hasPreview() = controller.hasOutput(PREVIEW_NAME)
+
+    @RequiresPermission(Manifest.permission.CAMERA)
+    override suspend fun setPreview(surface: Surface) {
+        if (isPreviewingFlow.value) {
+            Logger.w(TAG, "Trying to set preview while previewing")
+        }
+        controller.addOutput(CameraSurface(PREVIEW_NAME, surface))
+    }
+
+    @SuppressLint("MissingPermission")
+    override suspend fun resetPreviewImpl() {
+        controller.removeOutput(PREVIEW_NAME)
+    }
+
+    override suspend fun getOutput() = controller.getOutput(STREAM_NAME)?.surface
+
+    @RequiresPermission(Manifest.permission.CAMERA)
+    override suspend fun setOutput(surface: Surface) {
+        if (isStreamingFlow.value) {
+            Logger.w(TAG, "Trying to set output while streaming")
+        }
+        controller.addOutput(CameraSurface(STREAM_NAME, surface))
+    }
+
+    @SuppressLint("MissingPermission")
+    override suspend fun resetOutputImpl() {
+        executeIfCameraPermission {
+            controller.removeOutput(STREAM_NAME)
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.CAMERA)
     override suspend fun configure(config: VideoSourceConfig) {
         if (!manager.isFrameRateSupported(cameraId, config.fps)) {
             Logger.w(TAG, "Camera $cameraId does not support ${config.fps} fps")
@@ -209,14 +169,16 @@ internal class CameraSource(
         if ((dynamicRangeProfile != config.dynamicRangeProfile)) {
             needRestart = true
         } else if (fps != config.fps) {
-            if (controller.isAvailableFlow.value) {
-                val fpsRange = CameraUtils.getClosestFpsRange(manager, cameraId, config.fps)
-                controller.setSetting(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
-            }
+            val fpsRange = CameraUtils.getClosestFpsRange(manager, cameraId, config.fps)
+            controller.setSetting(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
         }
+
         if (needRestart) {
-            if (controller.isAvailableFlow.value) {
-                controller.setDynamicRange(config.dynamicRangeProfile.dynamicRange)
+            if (controller.isActiveFlow.value) {
+                Logger.d(TAG, "Restarting camera session to apply new configuration")
+                controller.restartSession()
+            } else {
+                Logger.d(TAG, "Camera is not active, no need to restart session")
             }
         }
 
@@ -224,48 +186,6 @@ internal class CameraSource(
         dynamicRangeProfile = config.dynamicRangeProfile
     }
 
-    @RequiresPermission(Manifest.permission.CAMERA)
-    private suspend fun startPreviewInternal() {
-        if (isPreviewingFlow.value) {
-            Logger.w(TAG, "Camera is already previewing")
-            return
-        }
-
-        val previewSurface = requireNotNull(previewSurface) {
-            "Preview surface is not set"
-        }
-
-        addTargets(listOf(previewSurface))
-        _isPreviewingFlow.emit(true)
-    }
-
-    @RequiresPermission(Manifest.permission.CAMERA)
-    override suspend fun startPreview() = previewMutex.withLock {
-        startPreviewInternal()
-    }
-
-    private suspend fun stopPreviewInternal() {
-        if (!isPreviewingFlow.value) {
-            Logger.w(TAG, "Camera is not previewing")
-            return
-        }
-        _isPreviewingFlow.emit(false)
-
-        val previewSurface = requireNotNull(previewSurface) {
-            "Preview surface is not set"
-        }
-        try {
-            controller.removeTarget(previewSurface)
-        } catch (e: IllegalArgumentException) {
-            Logger.w(TAG, "Failed to stop preview: $e")
-        }
-    }
-
-    override suspend fun stopPreview() {
-        previewMutex.withLock {
-            stopPreviewInternal()
-        }
-    }
 
     override fun <T> getPreviewSize(targetSize: Size, targetClass: Class<T>): Size {
         return CameraSizes.getPreviewOutputSize(
@@ -275,62 +195,103 @@ internal class CameraSource(
         )
     }
 
+    @RequiresPermission(Manifest.permission.CAMERA)
+    override suspend fun startPreview(): Unit = previewMutex.withLock {
+        if (isPreviewingFlow.value) {
+            Logger.w(TAG, "Camera is already previewing")
+            return
+        }
+        controller.addTarget(PREVIEW_NAME)
+        _isPreviewingFlow.emit(true)
+    }
+
     /**
      * Starts video preview on [previewSurface].
      */
     @RequiresPermission(Manifest.permission.CAMERA)
     override suspend fun startPreview(previewSurface: Surface) = previewMutex.withLock {
+        if (isPreviewingFlow.value) {
+            Logger.w(TAG, "Camera is already previewing")
+            return
+        }
         setPreview(previewSurface)
-        startPreviewInternal()
+        startPreview()
     }
 
-    override suspend fun startStream() {
+    @SuppressLint("MissingPermission")
+    override suspend fun stopPreview() = previewMutex.withLock {
+        Logger.d(TAG, "Stopping preview")
+        if (!isPreviewingFlow.value) {
+            Logger.w(TAG, "Camera is not previewing")
+            return
+        }
+
+        try {
+            executeIfCameraPermission {
+                controller.removeTarget(PREVIEW_NAME)
+            }
+        } catch (t: Throwable) {
+            Logger.w(TAG, "Failed to stop preview: $t")
+        } finally {
+            _isPreviewingFlow.emit(false)
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.CAMERA)
+    override suspend fun startStream() = streamMutex.withLock {
         if (isStreamingFlow.value) {
             Logger.w(TAG, "Camera is already streaming")
             return
         }
-
-        val outputSurface = requireNotNull(outputSurface) {
-            "Output surface is not set"
-        }
-
-        addTargets(listOf(outputSurface))
+        Logger.d(TAG, "startStream")
+        controller.addTarget(STREAM_NAME)
         _isStreamingFlow.emit(true)
         controller.muteVibrationAndSound()
     }
 
-    override suspend fun stopStream() {
+    @SuppressLint("MissingPermission")
+    override suspend fun stopStream() = streamMutex.withLock {
+        Logger.d(TAG, "stopStream")
         if (!isStreamingFlow.value) {
             Logger.w(TAG, "Camera is not streaming")
             return
         }
 
-        _isStreamingFlow.emit(false)
-
-        val outputSurface = requireNotNull(outputSurface) {
-            "Output surface is not set"
-        }
-
         try {
             controller.unmuteVibrationAndSound()
-            controller.removeTarget(outputSurface)
-        } catch (e: IllegalArgumentException) {
-            Logger.w(TAG, "Failed to stop stream: $e")
+            executeIfCameraPermission {
+                controller.removeTarget(STREAM_NAME)
+            }
+        } catch (t: Throwable) {
+            Logger.w(TAG, "Failed to stop stream: $t")
+        } finally {
+            _isStreamingFlow.emit(false)
         }
     }
 
     override fun release() {
         controller.unmuteVibrationAndSound()
-        runBlocking {
-            outputSurface?.let { controller.removeTarget(it) }
-            previewSurface?.let { controller.removeTarget(it) }
-            _isStreamingFlow.emit(false)
-            _isPreviewingFlow.emit(false)
-        }
         controller.release()
+    }
+
+    private suspend fun executeIfCameraPermission(block: suspend () -> Unit) {
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            block()
+        }
+    }
+
+    override fun toString(): String {
+        return "CameraSource(id=$cameraId)"
     }
 
     companion object {
         private const val TAG = "CameraSource"
+
+        private const val PREVIEW_NAME = "preview"
+        private const val STREAM_NAME = "stream"
     }
 }

@@ -52,6 +52,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.isNormali
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.normalize
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
 import io.github.thibaultbee.streampack.core.logger.Logger
+import kotlinx.coroutines.runBlocking
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -61,7 +62,7 @@ import java.util.concurrent.TimeUnit
  * Use to change camera settings.
  * This object is returned by [ICameraSource.settings].
  */
-class CameraSettings(
+class CameraSettings internal constructor(
     cameraManager: CameraManager, private val cameraController: CameraController
 ) {
     /**
@@ -73,7 +74,7 @@ class CameraSettings(
      * Whether the camera is available.
      * To be used before calling any camera settings.
      */
-    val isAvailableFlow = cameraController.isAvailableFlow
+    val isActiveFlow = cameraController.isActiveFlow
 
     /**
      * Current camera flash API.
@@ -143,12 +144,12 @@ class CameraSettings(
     /**
      * Applies settings to the camera repeatedly.
      */
-    fun applyRepeatingSession() = cameraController.setRepeatingSession()
+    fun applyRepeatingSession() = runBlocking { cameraController.setRepeatingSession() }
 
     /**
      * Applies settings to the camera burst.
      */
-    fun applyBurstSession() = cameraController.setBurstSession()
+    fun applyBurstSession() = runBlocking { cameraController.setBurstSession() }
 
     class Flash(
         private val cameraManager: CameraManager,

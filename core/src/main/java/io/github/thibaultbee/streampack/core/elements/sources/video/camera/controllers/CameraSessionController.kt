@@ -1,13 +1,13 @@
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers
 
 import android.hardware.camera2.CameraCaptureSession
-import android.hardware.camera2.CameraDevice
-import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.ICameraCaptureSessionCompat
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSurface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraUtils
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestBuilderWithTargets
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,26 +17,18 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-class CameraSessionController private constructor(
-    private val manager: CameraManager,
-    val cameraId: String,
-    private val captureSessionCompat: ICameraCaptureSessionCompat,
-    captureSessionWithOutputs: CameraCaptureSessionWithOutputs,
+internal class CameraSessionController private constructor(
+    private val captureRequestBuilder: CaptureRequestBuilderWithTargets,
+    private val sessionCompat: ICameraCaptureSessionCompat,
+    private val captureSession: CameraCaptureSession,
+    private val outputs: List<CameraSurface>,
     val dynamicRange: Long,
-    private val isClosedFlow: StateFlow<Boolean>,
-    private val captureRequestBuilder: CaptureRequestBuilderWithTargets = CaptureRequestBuilderWithTargets.create(
-        captureSessionWithOutputs.session.device
-    )
+    val isClosedFlow: StateFlow<Boolean>
 ) {
-    private val captureSession = captureSessionWithOutputs.session
+    private val captureSessionMutex = Mutex()
 
-    /**
-     * The outputs of the current capture session
-     */
-    val outputs = captureSessionWithOutputs.outputs
-
-    var isReleased = false
-        private set
+    val isClosed: Boolean
+        get() = isClosedFlow.value
 
     private val requestTargetMutex = Mutex()
 
@@ -52,64 +44,13 @@ class CameraSessionController private constructor(
         }
     }
 
-    /**
-     * Whether the current capture request has an output.
-     *
-     * If the output is not in the current capture session, you will have to create a new capture
-     * session. See [createCameraControllerForOutputs].
-     *
-     * @param surface The output to check
-     * @return true if the output is in the current capture session, false otherwise
-     */
-    fun hasOutput(surface: Surface) = outputs.contains(surface)
-
-    /**
-     * Creates a new capture session with the given outputs.
-     *
-     * The capture session of the current [CameraSessionController] will be closed.
-     *
-     * @param dynamicRange The dynamic range to use
-     * @param outputs The outputs to use. By default it uses the current outputs.
-     * @return A new [CameraSessionController]
-     */
-    suspend fun createCameraControllerForOutputs(
-        dynamicRange: Long = this.dynamicRange,
-        outputs: List<Surface> = this.outputs
-    ): CameraSessionController = requestTargetMutex.withLock {
-        require(outputs.isNotEmpty()) { "At least one output is required" }
-        require(outputs.all { it.isValid }) { "All outputs $outputs must be valid but ${outputs.filter { !it.isValid }} is invalid" }
-
-        if (dynamicRange == this.dynamicRange && outputs == this.outputs) {
-            return this
-        }
-
-        val isClosedFlow = MutableStateFlow(false)
-        val newCaptureSession =
-            CameraUtils.createCaptureSession(
-                captureSessionCompat,
-                captureSession.device,
-                outputs,
-                dynamicRange,
-                isClosedFlow
-            )
-        captureSession.close()
-
-        val controller = CameraSessionController(
-            manager,
-            cameraId,
-            captureSessionCompat,
-            CameraCaptureSessionWithOutputs(newCaptureSession, outputs),
-            dynamicRange,
-            isClosedFlow.asStateFlow(),
-            captureRequestBuilder
-        )
-
-        controller.setRepeatingSession()
-        return controller
-    }
+    val isEmpty: Boolean
+        get() = runBlocking { requestTargetMutex.withLock { captureRequestBuilder.isEmpty } }
 
     /**
      * Whether the current capture request has a target
+     *
+     * The target must be in the current capture session, see [hasOutput].
      *
      * @param surface The target to check
      * @return true if the target is in the current capture request, false otherwise
@@ -119,21 +60,52 @@ class CameraSessionController private constructor(
     }
 
     /**
+     * Whether the current capture request has a target
+     *
+     * The target must be in the current capture session, see [hasOutput].
+     *
+     * @param cameraSurface The target to check
+     * @return true if the target is in the current capture request, false otherwise
+     */
+    suspend fun hasTarget(cameraSurface: CameraSurface) = requestTargetMutex.withLock {
+        captureRequestBuilder.hasTarget(cameraSurface)
+    }
+
+    /**
      * Adds targets to the current capture session
      *
      * @param targets The targets to add
      */
-    suspend fun addTargets(targets: List<Surface>): Boolean {
+    suspend fun addTargets(targets: List<CameraSurface>): Boolean {
         require(targets.isNotEmpty()) { "At least one target is required" }
-        require(targets.all { it.isValid }) { "All targets must be valid" }
+        require(targets.all { it.surface.isValid }) { "All targets must be valid" }
         require(targets.all { outputs.contains(it) }) { "Targets must be in the current capture session: $targets ($outputs)" }
 
         val res = requestTargetMutex.withLock {
-            targets.map {
+            val res = targets.map {
                 captureRequestBuilder.addTarget(it)
             }.all { it }
+            setRepeatingSession()
+            res
         }
-        setRepeatingSession()
+
+        return res
+    }
+
+    /**
+     * Adds a target to the current capture session
+     *
+     * @param name The name of target to add
+     */
+    suspend fun addTarget(name: String): Boolean {
+        require(outputs.any { it.name == name }) { "Target type must be in the current capture session: $name ($outputs)" }
+
+        val res = requestTargetMutex.withLock {
+            val target = outputs.first { it.name == name }
+            val res = captureRequestBuilder.addTarget(target)
+            setRepeatingSession()
+            res
+        }
         return res
     }
 
@@ -142,14 +114,15 @@ class CameraSessionController private constructor(
      *
      * @param target The target to add
      */
-    suspend fun addTarget(target: Surface): Boolean {
-        require(target.isValid) { "Target must be valid: $target" }
+    suspend fun addTarget(target: CameraSurface): Boolean {
+        require(target.surface.isValid) { "Target must be valid: $target" }
         require(outputs.contains(target)) { "Target must be in the current capture session: $target ($outputs)" }
 
         val res = requestTargetMutex.withLock {
-            captureRequestBuilder.addTarget(target)
+            val res = captureRequestBuilder.addTarget(target)
+            setRepeatingSession()
+            res
         }
-        setRepeatingSession()
         return res
     }
 
@@ -158,16 +131,36 @@ class CameraSessionController private constructor(
      *
      * @param targets The targets to remove
      */
-    suspend fun removeTargets(targets: List<Surface>) {
+    suspend fun removeTargets(targets: List<CameraSurface>) {
         requestTargetMutex.withLock {
             targets.forEach {
                 captureRequestBuilder.removeTarget(it)
             }
+            if (captureRequestBuilder.isEmpty) {
+                stopRepeatingSession()
+            } else {
+                setRepeatingSession()
+            }
         }
-        if (captureRequestBuilder.isEmpty) {
-            stopRepeatingSession()
-        } else {
-            setRepeatingSession()
+    }
+
+    /**
+     * Removes a target from the current capture session
+     *
+     * @param name The name of target to remove
+     */
+    suspend fun removeTarget(name: String) {
+        requestTargetMutex.withLock {
+            val target = outputs.firstOrNull { it.name == name }
+            target?.let {
+                captureRequestBuilder.removeTarget(it)
+            } ?: Logger.w(TAG, "Target type $name not found in current outputs $outputs")
+
+            if (captureRequestBuilder.isEmpty) {
+                stopRepeatingSession()
+            } else {
+                setRepeatingSession()
+            }
         }
     }
 
@@ -176,63 +169,79 @@ class CameraSessionController private constructor(
      *
      * @param target The target to remove
      */
-    suspend fun removeTarget(target: Surface) {
+    suspend fun removeTarget(target: CameraSurface) {
         requestTargetMutex.withLock {
             captureRequestBuilder.removeTarget(target)
-        }
 
-        if (captureRequestBuilder.isEmpty) {
-            stopRepeatingSession()
-        } else {
-            setRepeatingSession()
+            if (captureRequestBuilder.isEmpty) {
+                stopRepeatingSession()
+            } else {
+                setRepeatingSession()
+            }
         }
     }
 
-    fun release() {
-        isReleased = true
-        captureSession.close()
-        runBlocking {
-            isClosedFlow.first()
+    fun close() = runBlocking {
+        captureSessionMutex.withLock {
+            if (isClosed) {
+                Logger.w(TAG, "Session already closed")
+                return@runBlocking
+            }
+            captureSession.close()
+            if (!isClosedFlow.value) {
+                runBlocking {
+                    isClosedFlow.first { it }
+                }
+            }
         }
     }
 
     /**
      * Sets a repeating session with the current capture request.
      */
-    fun setRepeatingSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
-        if (isReleased) {
-            Logger.w(TAG, "Camera session controller is released")
-            return
-        }
+    suspend fun setRepeatingSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
         if (captureRequestBuilder.isEmpty) {
             Logger.w(TAG, "Capture request is empty")
             return
         }
-        captureSessionCompat.setRepeatingSingleRequest(
-            captureSession, captureRequestBuilder.build(), cameraCaptureCallback
-        )
+        captureSessionMutex.withLock {
+            if (isClosed) {
+                Logger.w(TAG, "Camera session controller is released")
+                return
+            }
+
+            sessionCompat.setRepeatingSingleRequest(
+                captureSession, captureRequestBuilder.build(), cameraCaptureCallback
+            )
+        }
     }
 
-    fun setBurstSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
-        if (isReleased) {
-            Logger.w(TAG, "Camera session controller is released")
-            return
-        }
+    suspend fun setBurstSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
         if (captureRequestBuilder.isEmpty) {
             Logger.w(TAG, "Capture request is empty")
             return
         }
-        captureSessionCompat.captureBurstRequests(
-            captureSession, listOf(captureRequestBuilder.build()), cameraCaptureCallback
-        )
+        captureSessionMutex.withLock {
+            if (isClosed) {
+                Logger.w(TAG, "Camera session controller is released")
+                return
+            }
+
+            sessionCompat.captureBurstRequests(
+                captureSession, listOf(captureRequestBuilder.build()), cameraCaptureCallback
+            )
+        }
     }
 
-    private fun stopRepeatingSession() {
-        if (isReleased) {
-            Logger.w(TAG, "Camera session controller is released")
-            return
+    private suspend fun stopRepeatingSession() {
+        captureSessionMutex.withLock {
+            if (isClosed) {
+                Logger.w(TAG, "Camera session controller is released")
+                return
+            }
+
+            captureSession.stopRepeating()
         }
-        captureSession.stopRepeating()
     }
 
     /**
@@ -256,9 +265,67 @@ class CameraSessionController private constructor(
      * @param key The setting key
      * @param value The setting value
      */
-    fun <T> setRepeatingSetting(key: CaptureRequest.Key<T>, value: T) {
+    suspend fun <T> setRepeatingSetting(key: CaptureRequest.Key<T>, value: T) {
         captureRequestBuilder.set(key, value)
         setRepeatingSession()
+    }
+
+    /**
+     * Creates a new capture session with the given outputs.
+     *
+     * The capture session of the current [CameraSessionController] will be closed.
+     *
+     * @param cameraDeviceController The [CameraDeviceController] to use.
+     * @param outputs The outputs to use. By default it uses the current outputs.
+     * @param dynamicRange The dynamic range to use
+     * @return A new [CameraSessionController]
+     */
+    suspend fun recreate(
+        cameraDeviceController: CameraDeviceController,
+        outputs: List<CameraSurface>,
+        dynamicRange: Long
+    ): CameraSessionController = requestTargetMutex.withLock {
+        require(outputs.isNotEmpty()) { "At least one output is required" }
+        require(outputs.all { it.surface.isValid }) { "All outputs $outputs must be valid but ${outputs.filter { !it.surface.isValid }} is invalid" }
+
+        if ((dynamicRange == this.dynamicRange) && (outputs == this.outputs) && !isClosed) {
+            Logger.w(TAG, "Same dynamic range and outputs, returning the same controller")
+            return this
+        }
+
+        // Re-add targets that are in the new outputs (identified by their name)
+        val targets = outputs.filter {
+            captureRequestBuilder.hasTarget(it.name)
+        }
+        captureRequestBuilder.clearTargets()
+        captureRequestBuilder.addTargets(targets)
+
+        // Close current session
+        close()
+
+        val isClosedFlow = MutableStateFlow(false)
+        val newCaptureSession =
+            CameraUtils.createCaptureSession(
+                cameraDeviceController,
+                outputs.map { it.surface },
+                dynamicRange,
+                isClosedFlow
+            )
+
+        val controller = CameraSessionController(
+            captureRequestBuilder,
+            sessionCompat,
+            newCaptureSession,
+            outputs,
+            dynamicRange,
+            isClosedFlow.asStateFlow()
+        )
+
+        if (!captureRequestBuilder.isEmpty) {
+            controller.setRepeatingSession()
+        }
+
+        return controller
     }
 
     companion object {
@@ -266,123 +333,37 @@ class CameraSessionController private constructor(
 
         internal suspend fun create(
             sessionCompat: ICameraCaptureSessionCompat,
-            manager: CameraManager,
-            cameraDevice: CameraDeviceController,
-            outputs: List<Surface>,
-            dynamicRange: Long
+            cameraDeviceController: CameraDeviceController,
+            outputs: List<CameraSurface>,
+            dynamicRange: Long,
+            defaultRequestBuilder: CaptureRequestBuilderWithTargets.() -> Unit = {}
         ): CameraSessionController {
+            require(outputs.isNotEmpty()) { "At least one output is required" }
+            require(outputs.all { it.surface.isValid }) { "All outputs $outputs must be valid but ${outputs.filter { !it.surface.isValid }} is invalid" }
+
             val isClosedFlow = MutableStateFlow(false)
             val captureSession =
                 CameraUtils.createCaptureSession(
-                    sessionCompat,
-                    cameraDevice.camera,
-                    outputs,
+                    cameraDeviceController,
+                    outputs.map { it.surface },
                     dynamicRange,
                     isClosedFlow
                 )
+
+            val captureRequestBuilder =
+                CaptureRequestBuilderWithTargets.create(
+                    cameraDeviceController
+                ).apply {
+                    defaultRequestBuilder()
+                }
             return CameraSessionController(
-                manager,
-                cameraDevice.id,
+                captureRequestBuilder,
                 sessionCompat,
-                CameraCaptureSessionWithOutputs(captureSession, outputs),
+                captureSession,
+                outputs,
                 dynamicRange,
                 isClosedFlow.asStateFlow()
             )
         }
-    }
-}
-
-
-/**
- * A data class that holds a [CameraCaptureSession] and its outputs
- */
-private data class CameraCaptureSessionWithOutputs(
-    val session: CameraCaptureSession,
-    val outputs: List<Surface>
-)
-
-/**
- * A builder for [CaptureRequest] with targets
- */
-private class CaptureRequestBuilderWithTargets private constructor(
-    private val captureRequest: CaptureRequest.Builder
-) {
-    private val mutableTargets = mutableSetOf<Surface>()
-
-    /**
-     * The targets of the CaptureRequest
-     */
-    val targets: List<Surface> get() = mutableTargets.toList()
-
-    /**
-     * Whether the CaptureRequest has no target
-     */
-    val isEmpty: Boolean
-        get() = mutableTargets.isEmpty()
-
-    /**
-     * Whether the [CaptureRequest.Builder] has a target
-     */
-    fun hasTarget(surface: Surface) = mutableTargets.contains(surface)
-
-    /**
-     * Adds a target to the CaptureRequest
-     *
-     * @param surface The surface to add
-     * @return true if the surface was added, false otherwise
-     */
-    fun addTarget(surface: Surface): Boolean {
-        val wasAdded = mutableTargets.add(surface)
-        if (wasAdded) {
-            captureRequest.addTarget(surface)
-        }
-        return wasAdded
-    }
-
-    /**
-     * Removes a target from the CaptureRequest
-     *
-     * @param surface The surface to remove
-     * @return true if the surface was removed, false otherwise
-     */
-    fun removeTarget(surface: Surface): Boolean {
-        val wasRemoved = mutableTargets.remove(surface)
-        if (wasRemoved) {
-            captureRequest.removeTarget(surface)
-        }
-        return wasRemoved
-    }
-
-    /**
-     * Same as [CaptureRequest.Builder.set]
-     */
-    fun <T> set(key: CaptureRequest.Key<T>, value: T) = captureRequest.set(key, value)
-
-    /**
-     * Same as [CaptureRequest.Builder.get]
-     */
-    fun <T> get(key: CaptureRequest.Key<T?>) = captureRequest.get(key)
-
-    /**
-     * Same as [CaptureRequest.Builder.setTag]
-     */
-    fun setTag(tag: Any) = captureRequest.setTag(tag)
-
-    /**
-     * Same as [CaptureRequest.Builder.build]
-     */
-    fun build() = captureRequest.build()
-
-    companion object {
-        /**
-         * Create a CaptureRequestBuilderWithTargets
-         *
-         * @param camera The camera device
-         * @param template The template to use
-         */
-        fun create(
-            camera: CameraDevice,
-            template: Int = CameraDevice.TEMPLATE_RECORD,
-        ) = CaptureRequestBuilderWithTargets(camera.createCaptureRequest(template))
     }
 }

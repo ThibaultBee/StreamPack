@@ -1,73 +1,75 @@
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers
 
+import android.Manifest
 import android.hardware.camera2.CameraCaptureSession
-import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
-import android.os.Build
-import android.view.Surface
+import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.CameraCaptureSessionCompatBuilder
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.ICameraCaptureSessionCompat
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraUtils
-import io.github.thibaultbee.streampack.core.elements.utils.mapState
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSurface
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestBuilderWithTargets
+import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
+
 /**
  * Encapsulates device controller and session controller.
  */
-class CameraController private constructor(
+internal class CameraController(
     private val manager: CameraManager,
-    private val camera: CameraDeviceController,
-    private val sessionCompat: ICameraCaptureSessionCompat,
-    private val isClosedFlow: StateFlow<Boolean>
+    val cameraId: String,
+    val dynamicRangeBuilder: DynamicRangeConfig.() -> Unit = {},
+    val captureRequestBuilder: CaptureRequestBuilderWithTargets.() -> Unit = {}
 ) {
+    private val sessionCompat = CameraCaptureSessionCompatBuilder.build()
 
-    val cameraId: String = camera.id
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+    private var isActiveJob: Job? = null
 
-    private val sessionController = MutableStateFlow<CameraSessionController?>(null)
+    private var deviceController: CameraDeviceController? = null
+    private var sessionController: CameraSessionController? = null
 
-    val isAvailableFlow: StateFlow<Boolean> = sessionController.mapState { it != null }
+    private val controllerMutex = Mutex()
 
-    private val mutex = Mutex()
+    private val outputs = mutableMapOf<String, CameraSurface>()
+    private val outputsMutex = Mutex()
+
+    private val _isAvailableFlow = MutableStateFlow(false)
+    val isActiveFlow = _isAvailableFlow.asStateFlow()
 
     /**
-     * Creates a new capture session with the given outputs.
+     * Whether the current capture session has the given output.
      */
-    suspend fun createSessionController(outputs: List<Surface>, dynamicRange: Long) {
-        require(outputs.isNotEmpty()) { "Outputs is empty" }
-        require(outputs.all { it.isValid }) { "At least one output is invalid: ${outputs.filter { !it.isValid }}" }
-        mutex.withLock {
-            sessionController.emit(
-                CameraSessionController.create(
-                    sessionCompat,
-                    manager,
-                    camera,
-                    outputs,
-                    dynamicRange
-                )
-            )
-        }
+    suspend fun hasOutput(output: CameraSurface): Boolean {
+        return outputsMutex.withLock { outputs.values.contains(output) }
     }
 
     /**
-     * Sets the dynamic range of the camera.
+     * Whether the current capture session has the given output.
      *
-     * Internally, it creates a new capture session with the given dynamic range.
+     * @param name The name of the output to check
      */
-    suspend fun setDynamicRange(dynamicRange: Long) = mutex.withLock {
-        sessionController.value?.createCameraControllerForOutputs(dynamicRange = dynamicRange)
+    suspend fun hasOutput(name: String): Boolean {
+        return outputsMutex.withLock { outputs.keys.contains(name) }
     }
 
-    private fun hasOutput(output: Surface): Boolean {
-        return sessionController.value?.hasOutput(output) ?: false
+    /**
+     * Gets an output from the current capture session.
+     *
+     * @param name The name of the output to get
+     */
+    suspend fun getOutput(name: String): CameraSurface? {
+        return outputsMutex.withLock { outputs[name] }
     }
 
     /**
@@ -76,19 +78,18 @@ class CameraController private constructor(
      * If the output is not in the current capture session, the capture session is recreated with
      * the new output.
      */
-    suspend fun addOutput(output: Surface) {
-        require(output.isValid) { "Output is invalid: $output" }
-        mutex.withLock {
-            val sessionController = sessionController.value ?: return
-            if (sessionController.hasOutput(output)) {
+    @RequiresPermission(Manifest.permission.CAMERA)
+    suspend fun addOutput(output: CameraSurface) {
+        require(output.surface.isValid) { "Output is invalid: $output" }
+        outputsMutex.withLock {
+            if (outputs.values.contains(output)) {
                 return
             }
-
-            this.sessionController.emit(
-                sessionController.createCameraControllerForOutputs(
-                    outputs = sessionController.outputs + output
-                )
-            )
+            val needRestart = isActiveFlow.value
+            outputs[output.name] = output
+            if (needRestart) {
+                restartSession()
+            }
         }
     }
 
@@ -97,68 +98,138 @@ class CameraController private constructor(
      *
      * If the output is in the current capture session, the capture session is recreated without.
      */
-    suspend fun removeOutput(output: Surface) {
-        mutex.withLock {
-            val sessionController = sessionController.value ?: return
-            if (!sessionController.hasOutput(output)) {
-                return
+    @RequiresPermission(Manifest.permission.CAMERA)
+    suspend fun removeOutput(name: String): Boolean {
+        return outputsMutex.withLock {
+            val needsRestart = outputs.containsKey(name) && isActiveFlow.value
+            outputs.remove(name) != null
+            if (needsRestart) {
+                restartSession()
             }
+            needsRestart
+        }
+    }
 
-            try {
-                val newOutputs = sessionController.outputs - output
-                if (newOutputs.isEmpty()) {
-                    sessionController.release()
-                    this.sessionController.emit(null)
-                } else {
-                    this.sessionController.emit(
-                        sessionController.createCameraControllerForOutputs(
-                            outputs = sessionController.outputs - output
-                        )
-                    )
-                }
-            } catch (t: Throwable) {
-                Logger.e(
-                    TAG,
-                    "Failed to remove output $output from ${sessionController.outputs}: $t"
-                )
-                throw t
+    /**
+     * To be used under [controllerMutex]
+     */
+    @RequiresPermission(Manifest.permission.CAMERA)
+    private suspend fun getDeviceController(): CameraDeviceController {
+        return if (deviceController != null && !deviceController!!.isClosed) {
+            deviceController!!
+        } else {
+            CameraDeviceController.create(manager, sessionCompat, cameraId).apply {
+                deviceController = this
+                Logger.d(TAG, "Device controller created")
             }
         }
     }
 
     /**
-     * Replaces an output in the current capture session.
-     *
-     * If the output is not in the current capture session, the capture session is recreated with
-     * the new output.
+     * To be used under [controllerMutex]
      */
-    suspend fun replaceOutput(previousOutput: Surface, newOutput: Surface) {
-        require(newOutput.isValid) { "Output is invalid: $newOutput" }
-        mutex.withLock {
-            val sessionController = sessionController.value ?: return
-            if (sessionController.hasOutput(newOutput) && !sessionController.hasOutput(
-                    previousOutput
-                )
-            ) {
+    @RequiresPermission(Manifest.permission.CAMERA)
+    private suspend fun getSessionController(): CameraSessionController {
+        return if (sessionController == null) {
+            val deviceController = getDeviceController()
+            CameraSessionController.create(
+                sessionCompat,
+                deviceController,
+                outputs.values.toList(),
+                dynamicRange = DynamicRangeConfig().apply(dynamicRangeBuilder).dynamicRange,
+                captureRequestBuilder
+            )
+                .apply {
+                    applySessionController(this)
+                    Logger.d(TAG, "Session controller created")
+                }
+        } else {
+            if (!sessionController!!.isClosed) {
+                sessionController!!
+            } else {
+                try {
+                    val deviceController = getDeviceController()
+                    sessionController!!.recreate(
+                        deviceController,
+                        outputs.values.toList(),
+                        dynamicRange = DynamicRangeConfig().apply(dynamicRangeBuilder).dynamicRange
+                    )
+                        .apply {
+                            applySessionController(this)
+                            Logger.d(TAG, "Session controller recreated")
+                        }
+                } catch (t: Throwable) {
+                    _isAvailableFlow.tryEmit(false)
+                    throw t
+                }
+            }
+        }
+    }
+
+    private fun applySessionController(sessionController: CameraSessionController) {
+        this.sessionController = sessionController
+
+        isActiveJob = coroutineScope.launch {
+            sessionController.isClosedFlow.collect {
+                _isAvailableFlow.emit(!it)
+            }
+        }
+    }
+
+    /**
+     * Restarts the current capture session.
+     *
+     * The current capture session is closed and a new one is created with the same outputs.
+     */
+    @RequiresPermission(Manifest.permission.CAMERA)
+    suspend fun restartSession() {
+        controllerMutex.withLock {
+            val sessionController = sessionController
+            if (sessionController == null) {
+                Logger.i(TAG, "SessionController is null, nothing to restart")
                 return
             }
 
-            this.sessionController.emit(
-                sessionController.createCameraControllerForOutputs(
-                    outputs = sessionController.outputs - previousOutput + newOutput
-                )
-            )
+            isActiveJob?.cancel()
+            isActiveJob = null
+
+            sessionController.recreate(
+                getDeviceController(),
+                outputs.values.toList(),
+                dynamicRange = DynamicRangeConfig().apply(dynamicRangeBuilder).dynamicRange,
+            ).apply {
+                applySessionController(this)
+                Logger.d(TAG, "Session controller restarted")
+            }
         }
     }
 
     /**
      * Adds a target to the current capture session.
      *
-     * @param output The target to add
+     * @param name The name of target to add
      * @return true if the target has been added, false otherwise
      */
-    suspend fun addTarget(output: Surface): Boolean = mutex.withLock {
-        return sessionController.value?.addTarget(output) ?: false
+    @RequiresPermission(Manifest.permission.CAMERA)
+    suspend fun addTarget(name: String): Boolean {
+        return controllerMutex.withLock {
+            val sessionController = getSessionController()
+            sessionController.addTarget(name)
+        }
+    }
+
+    /**
+     * Adds a target to the current capture session.
+     *
+     * @param target The target to add
+     * @return true if the target has been added, false otherwise
+     */
+    @RequiresPermission(Manifest.permission.CAMERA)
+    suspend fun addTarget(target: CameraSurface): Boolean {
+        return controllerMutex.withLock {
+            val sessionController = getSessionController()
+            sessionController.addTarget(target)
+        }
     }
 
     /**
@@ -167,15 +238,44 @@ class CameraController private constructor(
      * @param targets The targets to add
      * @return true if the targets have been added, false otherwise
      */
-    suspend fun addTargets(targets: List<Surface>): Boolean = mutex.withLock {
-        return sessionController.value?.addTargets(targets) ?: false
+    @RequiresPermission(Manifest.permission.CAMERA)
+    suspend fun addTargets(targets: List<CameraSurface>): Boolean {
+        return controllerMutex.withLock {
+            val sessionController = getSessionController()
+            sessionController.addTargets(targets)
+        }
     }
 
     /**
      * Removes a target from the current capture session.
+     *
+     * @param target The target to remove
      */
-    suspend fun removeTarget(output: Surface) = mutex.withLock {
-        sessionController.value?.removeTarget(output)
+    @RequiresPermission(Manifest.permission.CAMERA)
+    suspend fun removeTarget(target: CameraSurface) {
+        controllerMutex.withLock {
+            val sessionController = getSessionController()
+            sessionController.removeTarget(target)
+            if (sessionController.isEmpty) {
+                closeControllers()
+            }
+        }
+    }
+
+    /**
+     * Removes a target from the current capture session.
+     *
+     * @param name The name of target to remove
+     */
+    @RequiresPermission(Manifest.permission.CAMERA)
+    suspend fun removeTarget(name: String) {
+        controllerMutex.withLock {
+            val sessionController = getSessionController()
+            sessionController.removeTarget(name)
+            if (sessionController.isEmpty) {
+                closeControllers()
+            }
+        }
     }
 
     /**
@@ -194,8 +294,7 @@ class CameraController private constructor(
      * Gets a setting from the current capture request.
      */
     fun <T> getSetting(key: CaptureRequest.Key<T?>): T? {
-        val sessionController =
-            requireNotNull(sessionController.value) { "SessionController is null" }
+        val sessionController = requireNotNull(sessionController) { "SessionController is null" }
         return sessionController.getSetting(key)
     }
 
@@ -208,81 +307,54 @@ class CameraController private constructor(
      * @param value The setting value
      */
     fun <T> setSetting(key: CaptureRequest.Key<T>, value: T) {
-        val sessionController =
-            requireNotNull(sessionController.value) { "SessionController is null" }
+        val sessionController = requireNotNull(sessionController) { "SessionController is null" }
         sessionController.setSetting(key, value)
     }
 
     /**
      * Sets a repeating session with the current capture request.
      */
-    fun setRepeatingSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
-        val sessionController =
-            requireNotNull(sessionController.value) { "SessionController is null" }
+    suspend fun setRepeatingSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
+        val sessionController = requireNotNull(sessionController) { "SessionController is null" }
         sessionController.setRepeatingSession(cameraCaptureCallback)
     }
 
-    fun setBurstSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
+    suspend fun setBurstSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
         val sessionController =
-            requireNotNull(sessionController.value) { "SessionController is null" }
+            requireNotNull(sessionController) { "SessionController is null" }
         sessionController.setBurstSession(cameraCaptureCallback)
+    }
+
+    private fun closeControllers() {
+        sessionController?.close()
+        deviceController?.close()
+        deviceController = null
     }
 
     fun release() {
         runBlocking {
-            mutex.withLock {
-                sessionController.value?.release()
-                sessionController.emit(null)
+            controllerMutex.withLock {
+                closeControllers()
+                sessionController = null
             }
         }
-        camera.close()
-        runBlocking {
-            isClosedFlow.first()
-        }
+        outputs.clear()
         sessionCompat.release()
     }
 
     fun muteVibrationAndSound() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            try {
-                camera.cameraAudioRestriction = CameraDevice.AUDIO_RESTRICTION_VIBRATION_SOUND
-            } catch (t: Throwable) {
-                Logger.w(TAG, "Failed to mute vibration and sound $t")
-            }
-        }
+        deviceController?.muteVibrationAndSound()
     }
 
     fun unmuteVibrationAndSound() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            try {
-                camera.cameraAudioRestriction = CameraDevice.AUDIO_RESTRICTION_NONE
-            } catch (t: Throwable) {
-                Logger.w(TAG, "Failed to unmute vibration and sound: $t")
-            }
-        }
+        deviceController?.unmuteVibrationAndSound()
     }
 
     companion object {
         private const val TAG = "CameraController"
-
-        internal suspend fun create(
-            manager: CameraManager,
-            cameraId: String
-        ): CameraController {
-            val isClosedFlow = MutableStateFlow(false)
-            val sessionCompat = CameraCaptureSessionCompatBuilder.build()
-            val cameraDevice = CameraUtils.openCamera(
-                CameraCaptureSessionCompatBuilder.build(),
-                manager,
-                cameraId,
-                isClosedFlow
-            )
-            return CameraController(
-                manager,
-                CameraDeviceController(cameraDevice),
-                sessionCompat,
-                isClosedFlow.asStateFlow()
-            )
-        }
     }
+
+    internal class DynamicRangeConfig(
+        var dynamicRange: Long = DynamicRangeProfile.sdr.dynamicRange
+    )
 }
