@@ -43,8 +43,9 @@ fun Context.hasExternalCamera() = hasSystemFeature(PackageManager.FEATURE_CAMERA
  *
  * @param resultCode the result code from the screen capture request
  * @param resultData the result data from the screen capture request
+ * @return the [MediaProjection] or null if the request was denied
  */
-fun Context.getMediaProjection(resultCode: Int, resultData: Intent): MediaProjection {
+fun Context.getMediaProjection(resultCode: Int, resultData: Intent): MediaProjection? {
     val mediaProjectionManager =
         getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
     return mediaProjectionManager.getMediaProjection(
