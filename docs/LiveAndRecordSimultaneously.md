@@ -25,14 +25,14 @@ You have to call the `open` or `startStream` of the second endpoint by yourself.
 is started by the streamer.
 
 ```kotlin
-val dualEndpoint = DualEndpoint(
+val dualEndpointFactory = DualEndpointFactory(
     mainEndpoint = MediaMuxerEndpoint(context),
     secondEndpoint = SrtEndpoint()
 )
 
 val streamer = SingleStreamer(
     context,
-    internalEndpoint = dualEndpoint
+    endpointFactory = dualEndpointFactory
 )
 ```
 
