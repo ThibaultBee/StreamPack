@@ -17,6 +17,9 @@ package io.github.thibaultbee.streampack.core.streamers.infos
 
 import android.media.AudioFormat
 import android.media.MediaCodecInfo.CodecCapabilities.FEATURE_HdrEditing
+import android.media.MediaCodecInfo.CodecProfileLevel.APVProfile422_10
+import android.media.MediaCodecInfo.CodecProfileLevel.APVProfile422_10HDR10
+import android.media.MediaCodecInfo.CodecProfileLevel.APVProfile422_10HDR10Plus
 import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10
 import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10
 import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10Plus
@@ -199,6 +202,7 @@ open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IEndpoi
             MediaFormat.MIMETYPE_VIDEO_VP8 -> vp8Profiles
             MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9Profiles
             MediaFormat.MIMETYPE_VIDEO_AV1 -> av1Profiles
+            MediaFormat.MIMETYPE_VIDEO_APV -> apvProfiles
             else -> throw InvalidParameterException("Unknown mimetype $mimeType")
         }
         val supportedProfiles = MediaCodecHelper.getProfiles(mimeType)
@@ -321,6 +325,14 @@ open class VideoStreamerConfigurationInfo(private val videoEndpointInfo: IEndpoi
             AV1ProfileMain10,
             AV1ProfileMain10HDR10,
             AV1ProfileMain10HDR10Plus
+        )
+    }
+
+    private val apvProfiles by lazy {
+        listOf(
+            APVProfile422_10,
+            APVProfile422_10HDR10,
+            APVProfile422_10HDR10Plus
         )
     }
 }

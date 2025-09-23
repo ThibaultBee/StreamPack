@@ -143,6 +143,7 @@
     <string name="video_encoder_vp8">VP8</string>
     <string name="video_encoder_av1">AV1</string>
     <string name="video_encoder_h263">H.263</string>
+    <string name="video_encoder_apv">APV</string>
     <string name="audio_encoder_aac">AAC</string>
     <string name="audio_encoder_opus">Opus</string>
 

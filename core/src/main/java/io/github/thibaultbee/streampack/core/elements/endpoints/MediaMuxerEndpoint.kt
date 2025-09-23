@@ -53,7 +53,7 @@ class MediaMuxerEndpoint(
     private var numOfStreams = 0
 
     override val info: IEndpoint.IEndpointInfo
-        get() = containerType?.let { Companion.getInfo(it) }
+        get() = containerType?.let { getInfo(it) }
             ?: throw IllegalStateException("Endpoint is not opened")
 
     override fun getInfo(type: MediaDescriptor.Type) = Companion.getInfo(type)
@@ -250,7 +250,8 @@ class MediaMuxerEndpoint(
                     mutableListOf(
                         MediaFormat.MIMETYPE_VIDEO_H263,
                         MediaFormat.MIMETYPE_VIDEO_AVC,
-                        MediaFormat.MIMETYPE_VIDEO_MPEG4
+                        MediaFormat.MIMETYPE_VIDEO_MPEG4,
+                        MediaFormat.MIMETYPE_VIDEO_APV
                     ).apply {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                             add(MediaFormat.MIMETYPE_VIDEO_HEVC)

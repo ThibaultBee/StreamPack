@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.core.elements.encoders
 import android.content.Context
 import android.media.MediaCodecInfo
 import android.media.MediaCodecInfo.CodecProfileLevel
+import android.media.MediaCodecInfo.CodecProfileLevel.APVProfile422_10
 import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain8
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileConstrainedBaseline
@@ -309,6 +310,12 @@ open class VideoCodecConfig(
             )
         }
 
+        private val apvProfilePriority by lazy {
+            listOf(
+                APVProfile422_10
+            )
+        }
+
         /**
          * Return the higher profile with the higher level
          */
@@ -320,6 +327,7 @@ open class VideoCodecConfig(
                 MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9ProfilePriority
                 MediaFormat.MIMETYPE_VIDEO_VP8 -> vp8ProfilePriority
                 MediaFormat.MIMETYPE_VIDEO_AV1 -> av1ProfilePriority
+                MediaFormat.MIMETYPE_VIDEO_APV -> apvProfilePriority
                 else -> throw InvalidParameterException("Profile for $mimeType is not supported")
             }
 
@@ -345,7 +353,7 @@ fun VideoCodecConfig.rotateFromNaturalOrientation(context: Context, @RotationVal
     rotateDegreesFromNaturalOrientation(context, rotation.rotationToDegrees)
 
 /**
- * Rotatse video configuration to [rotationDegrees] from device natural orientation.
+ * Rotates video configuration to [rotationDegrees] from device natural orientation.
  */
 fun VideoCodecConfig.rotateDegreesFromNaturalOrientation(
     context: Context, @IntRange(from = 0, to = 359) rotationDegrees: Int

@@ -1,6 +1,9 @@
 package io.github.thibaultbee.streampack.core.elements.utils.av.video
 
 import android.hardware.camera2.params.DynamicRangeProfiles
+import android.media.MediaCodecInfo.CodecProfileLevel.APVProfile422_10
+import android.media.MediaCodecInfo.CodecProfileLevel.APVProfile422_10HDR10
+import android.media.MediaCodecInfo.CodecProfileLevel.APVProfile422_10HDR10Plus
 import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10
 import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10
 import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10Plus
@@ -85,6 +88,12 @@ data class DynamicRangeProfile(val dynamicRange: Long, val transferFunction: Int
             AV1ProfileMain10HDR10Plus to hdr10Plus,
         )
 
+        private val apvProfilesMap = mapOf(
+            APVProfile422_10 to hdr,
+            APVProfile422_10HDR10 to hdr10,
+            APVProfile422_10HDR10Plus to hdr10Plus,
+        )
+
         fun fromProfile(mimetype: String, profile: Int): DynamicRangeProfile {
             return when (mimetype) {
                 MediaFormat.MIMETYPE_VIDEO_H263 -> sdr
@@ -93,6 +102,7 @@ data class DynamicRangeProfile(val dynamicRange: Long, val transferFunction: Int
                 MediaFormat.MIMETYPE_VIDEO_VP8 -> vp8ProfilesMap[profile]
                 MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9ProfilesMap[profile]
                 MediaFormat.MIMETYPE_VIDEO_AV1 -> av1ProfilesMap[profile]
+                MediaFormat.MIMETYPE_VIDEO_APV -> apvProfilesMap[profile]
                 else -> throw IllegalArgumentException("Unknown mimetype $mimetype")
             } ?: throw IllegalArgumentException("Profile $profile is not supported for $mimetype")
         }

@@ -13,6 +13,65 @@ import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectMain
 import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectSSR
 import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectScalable
 import android.media.MediaCodecInfo.CodecProfileLevel.AACObjectXHE
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel11Band0
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel11Band1
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel11Band2
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel11Band3
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel1Band0
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel1Band1
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel1Band2
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel1Band3
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel21Band0
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel21Band1
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel21Band2
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel21Band3
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel2Band0
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel2Band1
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel2Band2
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel2Band3
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel31Band0
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel31Band1
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel31Band2
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel31Band3
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel3Band0
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel3Band1
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel3Band2
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel3Band3
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel41Band0
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel41Band1
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel41Band2
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel41Band3
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel4Band0
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel4Band1
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel4Band2
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel4Band3
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel51Band0
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel51Band1
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel51Band2
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel51Band3
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel5Band0
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel5Band1
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel5Band2
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel5Band3
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel61Band0
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel61Band1
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel61Band2
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel61Band3
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel6Band0
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel6Band1
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel6Band2
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel6Band3
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel71Band0
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel71Band1
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel71Band2
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel71Band3
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel7Band0
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel7Band1
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel7Band2
+import android.media.MediaCodecInfo.CodecProfileLevel.APVLevel7Band3
+import android.media.MediaCodecInfo.CodecProfileLevel.APVProfile422_10
+import android.media.MediaCodecInfo.CodecProfileLevel.APVProfile422_10HDR10
+import android.media.MediaCodecInfo.CodecProfileLevel.APVProfile422_10HDR10Plus
 import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level2
 import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level21
 import android.media.MediaCodecInfo.CodecProfileLevel.AV1Level22
@@ -254,6 +313,18 @@ class ProfileLevelDisplay(private val context: Context) {
             }
         }
 
+    private val apvProfileNameMap =
+        mutableMapOf<Int, String>().apply {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+                put(APVProfile422_10, context.getString(R.string.video_profile_main10))
+                put(APVProfile422_10HDR10, context.getString(R.string.video_profile_main10_hdr10))
+                put(
+                    APVProfile422_10HDR10Plus,
+                    context.getString(R.string.video_profile_main10_hdr10_plus)
+                )
+            }
+        }
+
     private val h263LevelNameMap =
         mutableMapOf(
             H263Level10 to context.getString(R.string.video_level_10),
@@ -392,6 +463,72 @@ class ProfileLevelDisplay(private val context: Context) {
             }
         }
 
+    private val apvLevelNameMap =
+        mutableMapOf<Int, String>().apply {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+                putAll(
+                    mapOf(
+                        APVLevel11Band0 to "${context.getString(R.string.video_level_11)} Band 0",
+                        APVLevel11Band1 to "${context.getString(R.string.video_level_11)} Band 1",
+                        APVLevel11Band2 to "${context.getString(R.string.video_level_11)} Band 2",
+                        APVLevel11Band3 to "${context.getString(R.string.video_level_11)} Band 3",
+                        APVLevel1Band0 to "${context.getString(R.string.video_level_1)} Band 0",
+                        APVLevel1Band1 to "${context.getString(R.string.video_level_1)} Band 1",
+                        APVLevel1Band2 to "${context.getString(R.string.video_level_1)} Band 2",
+                        APVLevel1Band3 to "${context.getString(R.string.video_level_1)} Band 3",
+                        APVLevel21Band0 to "${context.getString(R.string.video_level_21)} Band 0",
+                        APVLevel21Band1 to "${context.getString(R.string.video_level_21)} Band 1",
+                        APVLevel21Band2 to "${context.getString(R.string.video_level_21)} Band 2",
+                        APVLevel21Band3 to "${context.getString(R.string.video_level_21)} Band 3",
+                        APVLevel2Band0 to "${context.getString(R.string.video_level_2)} Band 0",
+                        APVLevel2Band1 to "${context.getString(R.string.video_level_2)} Band 1",
+                        APVLevel2Band2 to "${context.getString(R.string.video_level_2)} Band 2",
+                        APVLevel2Band3 to "${context.getString(R.string.video_level_2)} Band 3",
+                        APVLevel31Band0 to "${context.getString(R.string.video_level_31)} Band 0",
+                        APVLevel31Band1 to "${context.getString(R.string.video_level_31)} Band 1",
+                        APVLevel31Band2 to "${context.getString(R.string.video_level_31)} Band 2",
+                        APVLevel31Band3 to "${context.getString(R.string.video_level_31)} Band 3",
+                        APVLevel3Band0 to "${context.getString(R.string.video_level_3)} Band 0",
+                        APVLevel3Band1 to "${context.getString(R.string.video_level_3)} Band 1",
+                        APVLevel3Band2 to "${context.getString(R.string.video_level_3)} Band 2",
+                        APVLevel3Band3 to "${context.getString(R.string.video_level_3)} Band 3",
+                        APVLevel41Band0 to "${context.getString(R.string.video_level_41)} Band 0",
+                        APVLevel41Band1 to "${context.getString(R.string.video_level_41)} Band 1",
+                        APVLevel41Band2 to "${context.getString(R.string.video_level_41)} Band 2",
+                        APVLevel41Band3 to "${context.getString(R.string.video_level_41)} Band 3",
+                        APVLevel4Band0 to "${context.getString(R.string.video_level_4)} Band 0",
+                        APVLevel4Band1 to "${context.getString(R.string.video_level_4)} Band 1",
+                        APVLevel4Band2 to "${context.getString(R.string.video_level_4)} Band 2",
+                        APVLevel4Band3 to "${context.getString(R.string.video_level_4)} Band 3",
+                        APVLevel51Band0 to "${context.getString(R.string.video_level_51)} Band 0",
+                        APVLevel51Band1 to "${context.getString(R.string.video_level_51)} Band 1",
+                        APVLevel51Band2 to "${context.getString(R.string.video_level_51)} Band 2",
+                        APVLevel51Band3 to "${context.getString(R.string.video_level_51)} Band 3",
+                        APVLevel5Band0 to "${context.getString(R.string.video_level_5)} Band 0",
+                        APVLevel5Band1 to "${context.getString(R.string.video_level_5)} Band 1",
+                        APVLevel5Band2 to "${context.getString(R.string.video_level_5)} Band 2",
+                        APVLevel5Band3 to "${context.getString(R.string.video_level_5)} Band 3",
+                        APVLevel61Band0 to "${context.getString(R.string.video_level_61)} Band 0",
+                        APVLevel61Band1 to "${context.getString(R.string.video_level_61)} Band 1",
+                        APVLevel61Band2 to "${context.getString(R.string.video_level_61)} Band 2",
+                        APVLevel61Band3 to "${context.getString(R.string.video_level_61)} Band 3",
+                        APVLevel6Band0 to "${context.getString(R.string.video_level_6)} Band 0",
+                        APVLevel6Band1 to "${context.getString(R.string.video_level_6)} Band 1",
+                        APVLevel6Band2 to "${context.getString(R.string.video_level_6)} Band 2",
+                        APVLevel6Band3 to "${context.getString(R.string.video_level_6)} Band 3",
+                        APVLevel71Band0 to "${context.getString(R.string.video_level_71)} Band 0",
+                        APVLevel71Band1 to "${context.getString(R.string.video_level_71)} Band 1",
+                        APVLevel71Band2 to "${context.getString(R.string.video_level_71)} Band 2",
+                        APVLevel71Band3 to "${context.getString(R.string.video_level_71)} Band 3",
+                        APVLevel7Band0 to "${context.getString(R.string.video_level_7)} Band 0",
+                        APVLevel7Band1 to "${context.getString(R.string.video_level_7)} Band 1",
+                        APVLevel7Band2 to "${context.getString(R.string.video_level_7)} Band 2",
+                        APVLevel7Band3 to "${context.getString(R.string.video_level_7)} Band 3",
+                    )
+                )
+            }
+        }
+
     private fun getProfileMap(mimeType: String) = when (mimeType) {
         MediaFormat.MIMETYPE_AUDIO_AAC -> aacProfileNameMap
         MediaFormat.MIMETYPE_VIDEO_H263 -> h263ProfileNameMap
@@ -400,6 +537,7 @@ class ProfileLevelDisplay(private val context: Context) {
         MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9ProfileNameMap
         MediaFormat.MIMETYPE_VIDEO_VP8 -> vp8ProfileNameMap
         MediaFormat.MIMETYPE_VIDEO_AV1 -> av1ProfileNameMap
+        MediaFormat.MIMETYPE_VIDEO_APV -> apvProfileNameMap
         else -> emptyMap()
     }
 
@@ -424,6 +562,7 @@ class ProfileLevelDisplay(private val context: Context) {
         MediaFormat.MIMETYPE_VIDEO_VP9 -> vp9LevelNameMap
         MediaFormat.MIMETYPE_VIDEO_VP8 -> vp8LevelNameMap
         MediaFormat.MIMETYPE_VIDEO_AV1 -> av1LevelNameMap
+        MediaFormat.MIMETYPE_VIDEO_APV -> apvLevelNameMap
         else -> emptyMap()
     }
 
