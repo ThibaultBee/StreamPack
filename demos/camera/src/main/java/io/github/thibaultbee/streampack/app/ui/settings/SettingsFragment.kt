@@ -179,9 +179,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
             else -> supportedVideoEncoder.first()
         }
 
-        videoEncoderListPreference.entryValues = supportedVideoEncoder.toTypedArray()
+        val filteredSupportedVideoEncoder = supportedVideoEncoder.filter {
+            supportedVideoEncoderName.containsKey(it)
+        }
+        videoEncoderListPreference.entryValues = filteredSupportedVideoEncoder.toTypedArray()
         videoEncoderListPreference.entries =
-            supportedVideoEncoder.map { supportedVideoEncoderName[it] }.toTypedArray()
+            filteredSupportedVideoEncoder.map { supportedVideoEncoderName[it] }.toTypedArray()
         if (videoEncoderListPreference.entry == null) {
             videoEncoderListPreference.value = defaultVideoEncoder
         }
