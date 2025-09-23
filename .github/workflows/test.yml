@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'adopt'
       - name: Make gradlew executable
         run: chmod +x ./gradlew
@@ -40,8 +40,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'zulu'
+          java-version: '21'
+          distribution: 'adopt'
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Run Android Tests
