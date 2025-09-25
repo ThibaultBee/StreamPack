@@ -293,9 +293,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
             } else {
                 supportedAudioEncoder.first()
             }
-        audioEncoderListPreference.entryValues = supportedAudioEncoder.toTypedArray()
+        val filteredSupportedAudioEncoder = supportedAudioEncoder.filter {
+            supportedAudioEncoderName.containsKey(it)
+        }
+        audioEncoderListPreference.entryValues = filteredSupportedAudioEncoder.toTypedArray()
         audioEncoderListPreference.entries =
-            supportedAudioEncoder.map { supportedAudioEncoderName[it] }.toTypedArray()
+            filteredSupportedAudioEncoder.map { supportedAudioEncoderName[it] }.toTypedArray()
         if (audioEncoderListPreference.entry == null) {
             audioEncoderListPreference.value = defaultAudioEncoder
         }
