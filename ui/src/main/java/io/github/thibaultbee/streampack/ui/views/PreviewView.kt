@@ -431,7 +431,10 @@ class PreviewView @JvmOverloads constructor(
                 context.getCameraCharacteristics(videoSource.cameraId)
             builder.populateFromCharacteristics(cameraCharacteristics).build()
         } else {
-            builder.build()
+            val rotationDegrees = OrientationUtils.getSurfaceRotationDegrees(display.rotation)
+            builder
+                .setSourceOrientation(rotationDegrees)
+                .build()
         }.also { request ->
             val surface = withContext(coroutineContext + supervisorJob) {
                 viewfinder.requestSurface(request)
