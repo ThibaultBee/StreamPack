@@ -16,7 +16,9 @@
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.tables
 
 import android.media.MediaFormat
+import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
+import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TSResourcesUtils
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.Service
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.Stream
@@ -45,10 +47,10 @@ class PmtTest {
             )
         val streams = listOf(
             Stream(
-                CodecConfig(MediaFormat.MIMETYPE_VIDEO_MPEG2, 2 * 1024 * 1024),
+                VideoCodecConfig(MediaFormat.MIMETYPE_VIDEO_MPEG2, 2 * 1024 * 1024),
                 256
             ),
-            Stream(CodecConfig(MediaFormat.MIMETYPE_AUDIO_MPEG, 2 * 1024 * 1024), 257)
+            Stream(AudioCodecConfig(MediaFormat.MIMETYPE_AUDIO_MPEG, 2 * 1024 * 1024), 257)
         )
         Pmt(listener, service, streams, 0x1000).run {
             write()

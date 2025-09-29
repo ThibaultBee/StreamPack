@@ -6,7 +6,9 @@ broadcasters and new video enthusiasts.
 ## Hop On Board! 🚀
 
 ⭐ If you like this project, don’t forget to star it!
+
 💖 Want to support its development? Consider becoming a sponsor.
+
 🛠️ Contributions are welcome—feel free to open issues or submit pull requests!
 
 ## Setup
