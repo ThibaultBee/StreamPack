@@ -38,7 +38,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
-class cameraSingleStreamerStateTest(descriptor: MediaDescriptor) :
+class CameraSingleStreamerStateTest(descriptor: MediaDescriptor) :
     SingleStreamerStateTest(
         descriptor
     ) {

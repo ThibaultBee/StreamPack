@@ -43,7 +43,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @LargeTest
 @RunWith(Parameterized::class)
-class cameraSingleStreamerFileTest(
+class CameraSingleStreamerFileTest(
     private val descriptor: MediaDescriptor,
     private val verify: Boolean,
     endpointFactory: IEndpointInternal.Factory?

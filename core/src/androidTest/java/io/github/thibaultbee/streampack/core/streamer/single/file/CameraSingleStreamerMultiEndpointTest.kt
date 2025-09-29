@@ -39,7 +39,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * Test [cameraSingleStreamer] with multiple endpoint.
  */
 @LargeTest
-class cameraSingleStreamerMultiEndpointTest : DeviceTest() {
+class CameraSingleStreamerMultiEndpointTest : DeviceTest() {
     private val streamer by lazy { runBlocking { cameraSingleStreamer(context) } }
 
     private val descriptors = listOf(
