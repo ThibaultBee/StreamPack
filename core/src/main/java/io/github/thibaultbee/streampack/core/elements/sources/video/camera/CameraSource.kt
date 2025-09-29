@@ -21,6 +21,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
+import android.util.Log
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.RequiresPermission
@@ -131,10 +132,12 @@ internal class CameraSource(
 
     @RequiresPermission(Manifest.permission.CAMERA)
     override suspend fun setPreview(surface: Surface) {
+        Log.e("startPreviewStopPreviewTest", ">>>>>>>>>>> set preview in")
         if (isPreviewingFlow.value) {
             Logger.w(TAG, "Trying to set preview while previewing")
         }
         controller.addOutput(CameraSurface(PREVIEW_NAME, surface))
+        Log.e("startPreviewStopPreviewTest", ">>>>>>>>>>> set preview out")
     }
 
     @SuppressLint("MissingPermission")
@@ -196,13 +199,18 @@ internal class CameraSource(
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    override suspend fun startPreview(): Unit = previewMutex.withLock {
+    private suspend fun startPreviewUnsafe() {
         if (isPreviewingFlow.value) {
             Logger.w(TAG, "Camera is already previewing")
             return
         }
         controller.addTarget(PREVIEW_NAME)
         _isPreviewingFlow.emit(true)
+    }
+
+    @RequiresPermission(Manifest.permission.CAMERA)
+    override suspend fun startPreview(): Unit = previewMutex.withLock {
+        startPreviewUnsafe()
     }
 
     /**
@@ -215,7 +223,7 @@ internal class CameraSource(
             return
         }
         setPreview(previewSurface)
-        startPreview()
+        startPreviewUnsafe()
     }
 
     @SuppressLint("MissingPermission")
