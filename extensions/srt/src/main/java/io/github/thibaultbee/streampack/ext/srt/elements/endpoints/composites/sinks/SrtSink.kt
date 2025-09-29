@@ -30,7 +30,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.AbstractSink
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ClosedException
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
-import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
+import io.github.thibaultbee.streampack.ext.srt.configuration.mediadescriptor.SrtMediaDescriptor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking

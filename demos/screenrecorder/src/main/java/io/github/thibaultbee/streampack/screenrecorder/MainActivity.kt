@@ -51,7 +51,7 @@ import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import io.github.thibaultbee.streampack.core.streamers.utils.MediaProjectionUtils
-import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
+import io.github.thibaultbee.streampack.ext.srt.configuration.mediadescriptor.SrtMediaDescriptor
 import io.github.thibaultbee.streampack.screenrecorder.databinding.ActivityMainBinding
 import io.github.thibaultbee.streampack.screenrecorder.models.EndpointType
 import io.github.thibaultbee.streampack.screenrecorder.services.DemoMediaProjectionService

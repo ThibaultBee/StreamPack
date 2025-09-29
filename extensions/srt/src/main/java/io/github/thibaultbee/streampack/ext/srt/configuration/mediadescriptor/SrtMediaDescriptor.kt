@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor
+package io.github.thibaultbee.streampack.ext.srt.configuration.mediadescriptor
 
 import android.net.Uri
 import io.github.thibaultbee.srtdroid.core.models.SrtUrl

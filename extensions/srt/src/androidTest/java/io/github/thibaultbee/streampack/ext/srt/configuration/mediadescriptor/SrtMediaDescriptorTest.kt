@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Thibault B.
+ * Copyright (C) 2025 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.ext.srt.data
+package io.github.thibaultbee.streampack.ext.srt.configuration.mediadescriptor
 
-import io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor.SrtMediaDescriptor
-import org.junit.Assert.assertEquals
-import org.junit.Assert.fail
+import org.junit.Assert
 import org.junit.Test
 
 class SrtMediaDescriptorTest {
@@ -25,26 +23,26 @@ class SrtMediaDescriptorTest {
     fun fromUrl() {
         val url = "srt://broadcast.host.com:1234"
         val connection = SrtMediaDescriptor(url)
-        assertEquals("broadcast.host.com", connection.host)
-        assertEquals(1234, connection.port)
+        Assert.assertEquals("broadcast.host.com", connection.host)
+        Assert.assertEquals(1234, connection.port)
     }
 
     @Test
     fun fromIp() {
         val url = "srt://192.168.1.12:1234"
         val connection = SrtMediaDescriptor(url)
-        assertEquals("192.168.1.12", connection.host)
-        assertEquals(1234, connection.port)
+        Assert.assertEquals("192.168.1.12", connection.host)
+        Assert.assertEquals(1234, connection.port)
     }
 
     @Test
     fun fromUrlWithParameters() {
         val url = "srt://host.com:1234?streamid=streamId&passphrase=passPhrase"
         val connection = SrtMediaDescriptor(url)
-        assertEquals("host.com", connection.host)
-        assertEquals(1234, connection.port)
-        assertEquals("streamId", connection.streamId)
-        assertEquals("passPhrase", connection.passphrase)
+        Assert.assertEquals("host.com", connection.host)
+        Assert.assertEquals(1234, connection.port)
+        Assert.assertEquals("streamId", connection.streamId)
+        Assert.assertEquals("passPhrase", connection.passphrase)
     }
 
     @Test
@@ -52,7 +50,7 @@ class SrtMediaDescriptorTest {
         val url = "srtp://broadcast.host.com:1234"
         try {
             SrtMediaDescriptor(url)
-            fail("Should throw an exception")
+            Assert.fail("Should throw an exception")
         } catch (_: Throwable) {
         }
     }
@@ -63,7 +61,10 @@ class SrtMediaDescriptorTest {
         try {
             SrtMediaDescriptor(url)
         } catch (t: Throwable) {
-            assertEquals("Failed to parse URL $url: unknown parameter(s): unknown", t.message)
+            Assert.assertEquals(
+                "Failed to parse URL $url: unknown parameter(s): unknown",
+                t.message
+            )
         }
     }
 }
