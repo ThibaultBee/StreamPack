@@ -39,7 +39,6 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.Camer
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
-import io.github.thibaultbee.streampack.core.elements.utils.combineStates
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
@@ -50,9 +49,12 @@ import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegul
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.StreamerConfigurationInfo
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.runBlocking
 
 
@@ -179,7 +181,6 @@ suspend fun SingleStreamer(
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
- * @param dispatcherProvider the [CoroutineDispatcher] to use for internal operations. By default, it is [Dispatchers.Default].
  */
 open class SingleStreamer(
     protected val context: Context,
@@ -190,6 +191,8 @@ open class SingleStreamer(
     surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider(),
 ) : ISingleStreamer, IAudioSingleStreamer, IVideoSingleStreamer {
+    private val coroutineScope: CoroutineScope = CoroutineScope(dispatcherProvider.default)
+
     private val pipeline = StreamerPipeline(
         context,
         withAudio,
@@ -209,19 +212,16 @@ open class SingleStreamer(
         }
 
     override val throwableFlow: StateFlow<Throwable?> =
-        combineStates(pipeline.throwableFlow, pipelineOutput.throwableFlow) { throwableArray ->
-            throwableArray[0] ?: throwableArray[1]
-        }
+        merge(pipeline.throwableFlow, pipelineOutput.throwableFlow).stateIn(
+            coroutineScope,
+            SharingStarted.Eagerly,
+            null
+        )
 
     override val isOpenFlow: StateFlow<Boolean>
         get() = pipelineOutput.isOpenFlow
 
-    override val isStreamingFlow: StateFlow<Boolean> = combineStates(
-        pipelineOutput.isStreamingFlow,
-        pipeline.isStreamingFlow
-    ) { isStreamingArray ->
-        isStreamingArray[0] && isStreamingArray[1]
-    }
+    override val isStreamingFlow: StateFlow<Boolean> = pipeline.isStreamingFlow
 
     // AUDIO
     /**
@@ -398,6 +398,7 @@ open class SingleStreamer(
      */
     override suspend fun release() {
         pipeline.release()
+        coroutineScope.cancel()
     }
 
     /**

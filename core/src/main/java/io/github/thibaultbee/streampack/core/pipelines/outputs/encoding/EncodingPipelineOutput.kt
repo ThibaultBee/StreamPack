@@ -32,10 +32,10 @@ import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.VideoE
 import io.github.thibaultbee.streampack.core.elements.encoders.rotateFromNaturalOrientation
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.flush
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.sourceConfig
-import io.github.thibaultbee.streampack.core.elements.utils.mapState
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_ENCODER_PREFIX
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_ENCODING_OUTPUT_PREFIX
@@ -54,8 +54,11 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -288,7 +291,11 @@ internal class EncodingPipelineOutput(
 
     private val _audioCodecConfigFlow = MutableStateFlow<AudioCodecConfig?>(null)
     override val audioCodecConfigFlow = _audioCodecConfigFlow.asStateFlow()
-    override val audioSourceConfigFlow = audioCodecConfigFlow.mapState { it?.sourceConfig }
+    override val audioSourceConfigFlow = audioCodecConfigFlow.map { it?.sourceConfig }.stateIn(
+        coroutineScope,
+        SharingStarted.Eagerly,
+        null
+    )
 
     private val audioCodecConfig: AudioCodecConfig?
         get() = audioCodecConfigFlow.value
@@ -378,7 +385,13 @@ internal class EncodingPipelineOutput(
 
     private val _videoCodecConfigFlow = MutableStateFlow<VideoCodecConfig?>(null)
     override val videoCodecConfigFlow = _videoCodecConfigFlow.asStateFlow()
-    override val videoSourceConfigFlow = videoCodecConfigFlow.mapState { it?.sourceConfig }
+
+    override val videoSourceConfigFlow: StateFlow<VideoSourceConfig?> =
+        videoCodecConfigFlow.map { it?.sourceConfig }.stateIn(
+            coroutineScope,
+            SharingStarted.Eagerly,
+            null
+        )
 
     private val videoCodecConfig: VideoCodecConfig?
         get() = videoCodecConfigFlow.value
@@ -710,7 +723,7 @@ internal class EncodingPipelineOutput(
         } catch (t: Throwable) {
             Logger.w(TAG, "Can't release endpoint: ${t.message}")
         }
-
+        
         audioOutputDispatcher.cancel()
         audioEncoderDispatcher.cancel()
         videoOutputDispatcher.cancel()
@@ -729,6 +742,7 @@ internal class EncodingPipelineOutput(
         mutex.withLock {
             releaseUnsafe()
         }
+        coroutineScope.cancel()
     }
 
     /**
