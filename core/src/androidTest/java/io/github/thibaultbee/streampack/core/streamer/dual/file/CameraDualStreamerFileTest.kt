@@ -166,7 +166,7 @@ class CameraDualStreamerFileTest(
                     null,
                     UriMediaDescriptor(FileUtils.createCacheFile("video.mp4").toUri()),
                     true,
-                    CompositeEndpointFactory(Mp4Muxer(), FileSink())
+                    null
                 ),
             )
         }
