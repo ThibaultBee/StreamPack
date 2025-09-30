@@ -26,15 +26,20 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.sourceConfig
-import io.github.thibaultbee.streampack.core.elements.utils.mapState
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.utils.SurfaceUtils
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 open class StubAudioAsyncPipelineOutput :
     StubPipelineOutput(withAudio = true, withVideo = false),
@@ -91,9 +96,11 @@ class StubAudioSyncVideoSurfacePipelineOutput(resolution: Size) :
 
 abstract class StubPipelineOutput(
     override val withAudio: Boolean,
-    override val withVideo: Boolean
+    override val withVideo: Boolean,
+    coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) :
     IPipelineOutput {
+    protected val coroutineScope = CoroutineScope(coroutineDispatcher)
 
     private val _throwableFlow = MutableStateFlow<Throwable?>(null)
     override val throwableFlow = _throwableFlow.asStateFlow()
@@ -197,7 +204,10 @@ internal class StubAudioSyncConfigurableEncodingPipelineOutputInternal :
 
     private val _audioCodecConfigFlow = MutableStateFlow<AudioCodecConfig?>(null)
     override val audioCodecConfigFlow = _audioCodecConfigFlow.asStateFlow()
-    override val audioSourceConfigFlow = audioCodecConfigFlow.mapState { it?.sourceConfig }
+    override val audioSourceConfigFlow = audioCodecConfigFlow.map { it?.sourceConfig }.stateIn(
+        coroutineScope,
+        SharingStarted.Eagerly, null
+    )
 
     override val audioEncoder: IEncoder? = null
 
@@ -239,7 +249,10 @@ internal class StubVideoSurfaceConfigurableEncodingPipelineOutputInternal :
     private val _videoCodecConfigFlow = MutableStateFlow<VideoCodecConfig?>(null)
     override val videoCodecConfigFlow = _videoCodecConfigFlow.asStateFlow()
     override val videoSourceConfigFlow: StateFlow<VideoSourceConfig?> =
-        videoCodecConfigFlow.mapState { it?.sourceConfig }
+        videoCodecConfigFlow.map { it?.sourceConfig }.stateIn(
+            coroutineScope,
+            SharingStarted.Eagerly, null
+        )
 
     override val videoEncoder: IEncoder? = null
 

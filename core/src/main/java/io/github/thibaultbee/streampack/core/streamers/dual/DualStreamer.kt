@@ -35,16 +35,22 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
-import io.github.thibaultbee.streampack.core.elements.utils.combineStates
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
+import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline.AudioOutputMode
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combineTransform
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -188,7 +194,6 @@ suspend fun DualStreamer(
  * @param secondEndpointFactory the [IEndpointInternal] implementation of the second output. By default, it is a [DynamicEndpoint].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation to use to create the video processor. By default, it is a [DefaultSurfaceProcessorFactory].
- * @param dispatcherProvider the [DispatcherProvider] to use for coroutine dispatching.
  */
 open class DualStreamer(
     protected val context: Context,
@@ -200,12 +205,15 @@ open class DualStreamer(
     surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider(),
 ) : IDualStreamer, IAudioDualStreamer, IVideoDualStreamer {
+    private val coroutineScope = CoroutineScope(dispatcherProvider.default)
+
     private val pipeline = StreamerPipeline(
         context,
         withAudio,
         withVideo,
-        surfaceProcessorFactory = surfaceProcessorFactory,
-        dispatcherProvider = dispatcherProvider
+        AudioOutputMode.PUSH,
+        surfaceProcessorFactory,
+        dispatcherProvider
     )
 
     private val firstPipelineOutput: IEncodingPipelineOutputInternal =
@@ -233,33 +241,33 @@ open class DualStreamer(
      */
     override val second = secondPipelineOutput as IConfigurableAudioVideoEncodingPipelineOutput
 
-    override val throwableFlow: StateFlow<Throwable?> = combineStates(
+    override val throwableFlow: StateFlow<Throwable?> = merge(
         pipeline.throwableFlow,
         firstPipelineOutput.throwableFlow,
         secondPipelineOutput.throwableFlow
-    ) { throwableArray ->
-        throwableArray[0] ?: throwableArray[1] ?: throwableArray[2]
-    }
+    ).stateIn(
+        coroutineScope,
+        SharingStarted.Eagerly,
+        null
+    )
 
     /**
      * Whether any of the output is opening.
      */
-    override val isOpenFlow: StateFlow<Boolean> = combineStates(
+    override val isOpenFlow: StateFlow<Boolean> = combineTransform(
         firstPipelineOutput.isOpenFlow, secondPipelineOutput.isOpenFlow
-    ) { isOpeningArray ->
-        isOpeningArray[0] || isOpeningArray[1]
-    }
+    ) { isOpens ->
+        emit(isOpens.any { it })
+    }.stateIn(
+        coroutineScope,
+        SharingStarted.Eagerly,
+        false
+    )
 
     /**
      * Whether any of the output is streaming.
      */
-    override val isStreamingFlow: StateFlow<Boolean> = combineStates(
-        pipeline.isStreamingFlow,
-        firstPipelineOutput.isStreamingFlow,
-        secondPipelineOutput.isStreamingFlow
-    ) { isStreamingArray ->
-        isStreamingArray[0] && (isStreamingArray[1] || isStreamingArray[2])
-    }
+    override val isStreamingFlow: StateFlow<Boolean> = pipeline.isStreamingFlow
 
     /**
      * Closes the outputs.
@@ -364,5 +372,8 @@ open class DualStreamer(
 
     override suspend fun stopStream() = pipeline.stopStream()
 
-    override suspend fun release() = pipeline.release()
+    override suspend fun release() {
+        pipeline.release()
+        coroutineScope.cancel()
+    }
 }

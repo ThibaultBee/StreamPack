@@ -27,15 +27,19 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ContentSink
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
-import io.github.thibaultbee.streampack.core.elements.utils.DerivedStateFlow
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * An implementation of [IEndpointInternal] where the endpoint is created based on the [MediaDescriptor].
@@ -47,15 +51,13 @@ open class DynamicEndpoint(
     private val defaultDispatcher: CoroutineDispatcher,
     private val ioDispatcher: CoroutineDispatcher
 ) : IEndpointInternal {
+    private val coroutineScope = CoroutineScope(defaultDispatcher)
+    private val mutex = Mutex()
+
     // Current endpoint
-    private var _endpointFlow: MutableStateFlow<IEndpointInternal?> = MutableStateFlow(null)
-    private val endpointFlow = _endpointFlow.asStateFlow()
-
-    private val _endpoint: IEndpointInternal?
+    private val endpointFlow = MutableStateFlow<IEndpointInternal?>(null)
+    private val endpoint: IEndpointInternal?
         get() = endpointFlow.value
-
-    private val endpoint: IEndpointInternal
-        get() = requireNotNull(_endpoint) { "Endpoint is not open" }
 
     // Endpoints
     private var mediaMuxerEndpoint: IEndpointInternal? = null
@@ -66,56 +68,99 @@ open class DynamicEndpoint(
     private var srtEndpoint: IEndpointInternal? = null
     private var rtmpEndpoint: IEndpointInternal? = null
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override val isOpenFlow: StateFlow<Boolean> = DerivedStateFlow(
-        getValue = { _endpoint?.isOpenFlow?.value ?: false },
-        flow = endpointFlow.flatMapLatest { it?.isOpenFlow ?: MutableStateFlow(false) }
-    )
+    private val isOpenFlows = endpointFlow.map { it?.isOpenFlow }
+    private val _isOpenFlow = MutableStateFlow(false)
+    override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow.asStateFlow()
 
     /**
      * Only available when the endpoint is opened.
      */
     override val info: IEndpoint.IEndpointInfo
-        get() = endpoint.info
+        get() = endpoint?.info ?: throw IllegalStateException("Endpoint is not opened")
 
     override fun getInfo(type: MediaDescriptor.Type) = getEndpoint(type).getInfo(type)
 
     override val metrics: Any
-        get() = endpoint.metrics
+        get() = endpoint?.metrics ?: throw IllegalStateException("Endpoint is not opened")
 
-    override suspend fun open(descriptor: MediaDescriptor) {
-        if (isOpenFlow.value) {
-            Logger.w(TAG, "DynamicEndpoint is already opened")
-            return
+    init {
+        coroutineScope.launch {
+            isOpenFlows.collect { isOpenFlow ->
+                _isOpenFlow.emit(isOpenFlow?.value == true)
+            }
         }
-
-        _endpointFlow.emit(getEndpointAndConfig(descriptor))
-        _endpoint?.open(descriptor) ?: throw IllegalStateException("Endpoint is null")
     }
 
-    override fun addStreams(streamConfigs: List<CodecConfig>) =
-        endpoint.addStreams(streamConfigs)
+    private suspend fun safeEndpoint(block: suspend (IEndpointInternal) -> Unit) {
+        val endpoint = requireNotNull(endpoint) { "Not opened" }
+        block(endpoint)
+    }
 
-    override fun addStream(streamConfig: CodecConfig) = endpoint.addStream(streamConfig)
+    override suspend fun open(descriptor: MediaDescriptor) {
+        mutex.withLock {
+            if (isOpenFlow.value) {
+                Logger.w(TAG, "DynamicEndpoint is already opened")
+                return
+            }
+
+            val endpoint = prepareEndpoint(descriptor)
+            endpoint.open(descriptor)
+            _isOpenFlow.emit(true)
+            endpointFlow.emit(endpoint)
+        }
+    }
+
+    override fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
+        require(streamConfigs.isNotEmpty()) { "At least one stream config must be provided" }
+        mutex.tryLock()
+        return try {
+            val endpoint = endpoint ?: throw IllegalStateException("Endpoint is not opened")
+            endpoint.addStreams(streamConfigs)
+        } finally {
+            mutex.unlock()
+        }
+    }
+
+    override fun addStream(streamConfig: CodecConfig): Int {
+        mutex.tryLock()
+        return try {
+            val endpoint = endpoint ?: throw IllegalStateException("Endpoint is not opened")
+            endpoint.addStream(streamConfig)
+        } finally {
+            mutex.unlock()
+        }
+    }
 
     override suspend fun write(frame: Frame, streamPid: Int, onFrameProcessed: () -> Unit) =
-        endpoint.write(frame, streamPid, onFrameProcessed)
+        safeEndpoint { endpoint -> endpoint.write(frame, streamPid, onFrameProcessed) }
 
-    override suspend fun startStream() = endpoint.startStream()
+    override suspend fun startStream() = safeEndpoint { endpoint -> endpoint.startStream() }
 
     override suspend fun stopStream() {
-        _endpoint?.stopStream()
+        mutex.withLock {
+            endpoint?.stopStream()
+        }
     }
 
     override suspend fun close() {
-        try {
-            _endpoint?.close()
-        } finally {
-            _endpointFlow.emit(null)
+        mutex.withLock {
+            try {
+                endpoint?.close()
+            } finally {
+                _isOpenFlow.emit(false)
+                endpointFlow.emit(null)
+            }
         }
     }
 
-    private fun getEndpointAndConfig(mediaDescriptor: MediaDescriptor): IEndpointInternal {
+    override fun release() {
+        runBlocking {
+            close()
+        }
+        coroutineScope.coroutineContext.cancelChildren()
+    }
+
+    private fun prepareEndpoint(mediaDescriptor: MediaDescriptor): IEndpointInternal {
         val endpoint = getEndpoint(mediaDescriptor.type)
 
         if (endpoint is CompositeEndpoint) {
@@ -163,7 +208,7 @@ open class DynamicEndpoint(
             flvFileEndpoint = CompositeEndpoint(
                 FlvMuxer(
                     isForFile = true
-                ), FileSink()
+                ), FileSink(ioDispatcher)
             )
         }
         return flvFileEndpoint!!
@@ -174,7 +219,7 @@ open class DynamicEndpoint(
             flvContentEndpoint = CompositeEndpoint(
                 FlvMuxer(
                     isForFile = true
-                ), ContentSink(context)
+                ), ContentSink(context, ioDispatcher)
             )
         }
         return flvContentEndpoint!!
@@ -193,7 +238,7 @@ open class DynamicEndpoint(
     private fun getTsContentEndpoint(): IEndpointInternal {
         if (tsContentEndpoint == null) {
             tsContentEndpoint = CompositeEndpoint(
-                TsMuxer(), ContentSink(context)
+                TsMuxer(), ContentSink(context, ioDispatcher)
             )
         }
         return tsContentEndpoint!!

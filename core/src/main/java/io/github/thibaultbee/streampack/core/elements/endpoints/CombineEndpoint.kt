@@ -19,7 +19,6 @@ import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
-import io.github.thibaultbee.streampack.core.elements.utils.combineStates
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.intersect
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
@@ -29,7 +28,11 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combineTransform
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 
@@ -80,9 +83,13 @@ open class CombineEndpoint(
      * To verify if a specific endpoint is open, use [IEndpoint.isOpenFlow] of the endpoint.
      */
     override val isOpenFlow: StateFlow<Boolean> =
-        combineStates(*endpointInternals.map { it.isOpenFlow }.toTypedArray()) { _ ->
-            endpointInternals.any { it.isOpenFlow.value }
-        }
+        combineTransform(*endpointInternals.map { it.isOpenFlow }.toTypedArray()) { isOpens ->
+            emit(isOpens.any { it })
+        }.stateIn(
+            coroutineScope,
+            SharingStarted.Eagerly,
+            false
+        )
 
     /**
      * The union of all endpoints' [IEndpoint.IEndpointInfo].
@@ -233,6 +240,17 @@ open class CombineEndpoint(
         if (throwables.isNotEmpty()) {
             throw MultiThrowable(throwables)
         }
+    }
+
+    override fun release() {
+        endpointInternals.forEach { endpoint ->
+            try {
+                endpoint.release()
+            } catch (t: Throwable) {
+                Logger.e(TAG, "Failed to release endpoint $endpoint", t)
+            }
+        }
+        coroutineScope.coroutineContext.cancelChildren()
     }
 
     companion object {
