@@ -21,12 +21,12 @@ import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.test.filters.LargeTest
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.streamer.utils.StreamerUtils
 import io.github.thibaultbee.streampack.core.streamer.utils.VideoUtils
-import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
-import io.github.thibaultbee.streampack.core.streamers.single.cameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
+import io.github.thibaultbee.streampack.core.streamers.single.cameraSingleStreamer
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.runBlocking
@@ -71,9 +71,14 @@ class CameraSingleStreamerMultiEndpointTest : DeviceTest() {
         )
 
         descriptors.forEachIndexed { index, descriptor ->
-            // Run amd verify first stream
-            runStreamAndVerify(descriptor, audioConfig, videoConfig)
-            Log.i(TAG, "Stream $index done: $descriptor")
+            try {
+                // Run amd verify first stream
+                runStreamAndVerify(descriptor, audioConfig, videoConfig)
+                Log.i(TAG, "Stream $index done: $descriptor")
+            } catch (t: Throwable) {
+                Log.e(TAG, "Error while streaming to endpoint $descriptor", t)
+                throw t
+            }
         }
 
         streamer.release()
