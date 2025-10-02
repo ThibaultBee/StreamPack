@@ -26,44 +26,38 @@ import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.EncoderMode
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal
+import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecEncoder.Companion.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.hasEndOfStreamFlag
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.isKeyFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.isValid
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.put
 import io.github.thibaultbee.streampack.core.logger.Logger
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import kotlin.math.min
-
-/**
- * Creates a [MediaCodec] encoder with a given configuration and a listener.
- */
-internal fun MediaCodecEncoder(
-    encoderConfig: EncoderConfig<*>,
-    listener: IEncoderInternal.IListener,
-    encoderExecutor: ExecutorService = Executors.newSingleThreadExecutor(),
-    listenerExecutor: Executor = Executors.newSingleThreadExecutor(),
-): MediaCodecEncoder {
-    return MediaCodecEncoder(
-        encoderConfig, encoderExecutor
-    ).apply { setListener(listener, listenerExecutor) }
-}
 
 /**
  * The [MediaCodec] encoder implementation.
  *
  * @param encoderConfig the encoder configuration
- * @param encoderExecutor the executor to run the encoder. Must be a single thread executor. Is only visible for testing.
  */
-class MediaCodecEncoder
+internal class MediaCodecEncoder
 internal constructor(
     private val encoderConfig: EncoderConfig<*>,
-    private val encoderExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+    private val listener: IEncoderInternal.IListener,
+    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : IEncoderInternal {
+    private val coroutineScope = CoroutineScope(SupervisorJob() + coroutineDispatcher)
+    private val mutex = Mutex()
+
     private val mediaCodec: MediaCodec
     private val format: MediaFormat
     private var outputFormat: MediaFormat? = null
@@ -71,7 +65,6 @@ internal constructor(
     private val isVideo = encoderConfig.isVideo
     private val tag = if (isVideo) "VideoEncoder" else "AudioEncoder" + "(${this.hashCode()})"
 
-    private val dispatcher = encoderExecutor.asCoroutineDispatcher()
 
     private var state = State.IDLE
 
@@ -101,10 +94,6 @@ internal constructor(
         format = mediaCodecWithFormat.format
     }
 
-    private val listenerLock = Any()
-    private var listener: IEncoderInternal.IListener = object : IEncoderInternal.IListener {}
-    private var listenerExecutor: Executor = Executors.newSingleThreadExecutor()
-
     override val mimeType by lazy { format.getString(MediaFormat.KEY_MIME)!! }
 
     override val input = when (encoderConfig.mode) {
@@ -121,21 +110,11 @@ internal constructor(
         mediaCodec.setParameters(bundle)
     }
 
-    override fun setListener(
-        listener: IEncoderInternal.IListener, listenerExecutor: Executor
-    ) {
-        synchronized(listenerLock) {
-            this.listenerExecutor = listenerExecutor
-            this.listener = listener
-        }
-    }
-
-    private fun configureSync() {
+    private fun configureUnsafe() {
         try {
             if (input !is SyncByteBufferInput) {
                 /**
                  * Set encoder callback without handler.
-                 * The [encoderExecutor] is used to run the encoder callbacks.
                  */
                 mediaCodec.setCallback(encoderCallback)
             }
@@ -148,38 +127,38 @@ internal constructor(
             setState(State.CONFIGURED)
         } catch (t: Throwable) {
             Logger.e(tag, "Failed to configure for format: $format", t)
-            releaseSync()
+            releaseUnsafe()
             throw t
         }
     }
 
-    override fun configure() {
-        encoderExecutor.submit {
-            configureSync()
-        }.get()
+    override suspend fun configure() {
+        withMutexContext {
+            configureUnsafe()
+        }
     }
 
-    private fun resetSync() {
+    private fun resetUnsafe() {
         if (state == State.CONFIGURED) {
             return
         }
 
         try {
             mediaCodec.reset()
-        } catch (e: IllegalStateException) {
+        } catch (_: IllegalStateException) {
             Logger.d(tag, "Failed to reset")
         } finally {
-            configureSync()
+            configureUnsafe()
         }
     }
 
-    override fun reset() {
-        encoderExecutor.execute {
-            resetSync()
+    override suspend fun reset() {
+        withMutexContext {
+            resetUnsafe()
         }
     }
 
-    private fun startStreamSync() {
+    private fun startStreamUnsafe() {
         when (state) {
             State.STARTED, State.PENDING_START, State.ERROR -> {
                 return
@@ -206,12 +185,12 @@ internal constructor(
     }
 
     override suspend fun startStream() {
-        withContext(dispatcher) {
-            startStreamSync()
+        withMutexContext {
+            startStreamUnsafe()
         }
     }
 
-    private fun stopStreamSync() {
+    private fun stopStreamUnsafe() {
         when (state) {
             State.PENDING_STOP, State.STOPPED, State.ERROR -> {
                 return
@@ -232,7 +211,7 @@ internal constructor(
                     } else {
                         mediaCodec.stop()
                     }
-                } catch (e: IllegalStateException) {
+                } catch (_: IllegalStateException) {
                     Logger.d(tag, "Not running")
                 } finally {
                     setState(State.STOPPED)
@@ -245,15 +224,15 @@ internal constructor(
     }
 
     override suspend fun stopStream() {
-        withContext(dispatcher) {
-            stopStreamSync()
+        withMutexContext {
+            stopStreamUnsafe()
         }
     }
 
-    private fun releaseSync() {
+    private fun releaseUnsafe() {
         try {
             mediaCodec.stop()
-        } catch (e: IllegalStateException) {
+        } catch (_: IllegalStateException) {
             Logger.d(tag, "Failed to stop")
         }
         if (state == State.RELEASED || state == State.PENDING_RELEASE) {
@@ -275,56 +254,55 @@ internal constructor(
 
     override fun release() {
         runBlocking {
-            withContext(dispatcher) {
-                releaseSync()
+            withMutexContext {
+                releaseUnsafe()
             }
+            coroutineScope.coroutineContext.cancelChildren()
         }
     }
 
     private fun notifyError(t: Throwable) {
-        var listener: IEncoderInternal.IListener
-        var listenerExecutor: Executor
-        synchronized(listenerLock) {
-            listener = this.listener
-            listenerExecutor = this.listenerExecutor
-        }
-        listenerExecutor.execute {
+        coroutineScope.launch {
             listener.onError(t)
         }
     }
 
-    private fun handleError(t: Throwable) {
-        encoderExecutor.execute {
-            when (state) {
-                State.CONFIGURED -> {
-                    notifyError(t)
-                    // Trying to reset
-                    reset()
-                }
-
-                State.RELEASED -> { // Do Nothing
-                }
-
-                State.PENDING_STOP -> { // Do Nothing
-                }
-
-                State.STOPPED -> { // Do Nothing
-                }
-
-                State.ERROR -> {
-                    Logger.w(tag, "Get another error while in error state: ${t.message}", t)
-                }
-
-                else -> {
-                    try {
-                        stopStreamSync()
-                    } catch (e: Throwable) {
-                        Logger.w(tag, "Failed to stop stream", e)
-                    }
-                    setState(State.ERROR)
-                    notifyError(t)
-                }
+    private suspend fun handleErrorUnsafe(t: Throwable) {
+        when (state) {
+            State.CONFIGURED -> {
+                notifyError(t)
+                // Trying to reset
+                reset()
             }
+
+            State.RELEASED -> { // Do Nothing
+            }
+
+            State.PENDING_STOP -> { // Do Nothing
+            }
+
+            State.STOPPED -> { // Do Nothing
+            }
+
+            State.ERROR -> {
+                Logger.w(tag, "Get another error while in error state: ${t.message}", t)
+            }
+
+            else -> {
+                try {
+                    stopStreamUnsafe()
+                } catch (e: Throwable) {
+                    Logger.w(tag, "Failed to stop stream", e)
+                }
+                setState(State.ERROR)
+                notifyError(t)
+            }
+        }
+    }
+
+    private suspend fun handleError(t: Throwable) {
+        withMutexContext {
+            handleErrorUnsafe(t)
         }
     }
 
@@ -342,7 +320,23 @@ internal constructor(
         this.state = state
     }
 
-    private fun processOutputFrameSync(codec: MediaCodec, index: Int, info: BufferInfo) {
+    private suspend fun withMutexContext(block: suspend () -> Unit) {
+        withContext(coroutineDispatcher) {
+            mutex.withLock {
+                block()
+            }
+        }
+    }
+
+    private fun launchMutex(block: suspend () -> Unit) {
+        coroutineScope.launch {
+            mutex.withLock {
+                block()
+            }
+        }
+    }
+
+    private suspend fun processOutputFrameUnsafe(codec: MediaCodec, index: Int, info: BufferInfo) {
         when {
             !state.isRunning -> {
                 Logger.w(tag, "Receives output frame after codec is not running: $state.")
@@ -356,39 +350,27 @@ internal constructor(
 
             info.isValid -> {
                 try {
-                    var listener: IEncoderInternal.IListener
-                    var listenerExecutor: Executor
-                    synchronized(listenerLock) {
-                        listener = this@MediaCodecEncoder.listener
-                        listenerExecutor = this@MediaCodecEncoder.listenerExecutor
-                    }
-
                     val frame = Frame(
                         codec, index, outputFormat!!, info, tag
                     )
-                    listenerExecutor.execute {
-                        try {
-                            listener.onOutputFrame(frame)
-                        } catch (t: Throwable) {
-                            if (state.isRunning) {
-                                handleError(t)
-                            } else {
-                                /**
-                                 * Next streamer element could be stopped and we are still processing.
-                                 * In that case, just log the error.
-                                 */
-                                Logger.w(
-                                    tag,
-                                    "OnOutputFrame error ${t.message} but codec is not running: $state."
-                                )
-                            }
-                        } finally {
-                            frame.close()
+                    try {
+                        listener.outputChannel.send(frame)
+                    } catch (t: Throwable) {
+                        if (state.isRunning) {
+                            handleErrorUnsafe(t)
+                        } else {
+                            /**
+                             * Next streamer element could be stopped and we are still processing.
+                             * In that case, just log the error.
+                             */
+                            Logger.w(
+                                tag,
+                                "Sending frame to channel failed: ${t.message} but codec is not running: $state."
+                            )
                         }
                     }
-
                 } catch (t: Throwable) {
-                    handleError(t)
+                    handleErrorUnsafe(t)
                 }
             }
 
@@ -410,22 +392,22 @@ internal constructor(
         override fun onOutputBufferAvailable(
             codec: MediaCodec, index: Int, info: BufferInfo
         ) {
-            encoderExecutor.execute {
-                processOutputFrameSync(codec, index, info)
+            launchMutex {
+                processOutputFrameUnsafe(codec, index, info)
             }
         }
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
-            encoderExecutor.execute {
+            launchMutex {
                 when {
                     !state.isRunning -> {
                         Logger.w(tag, "Receives input frame after codec is not running: $state.")
-                        return@execute
+                        return@launchMutex
                     }
 
                     input !is IEncoderInternal.IAsyncByteBufferInput -> {
                         Logger.w(tag, "Input buffer is only available for byte buffer input")
-                        return@execute
+                        return@launchMutex
                     }
 
                     else -> {
@@ -437,13 +419,13 @@ internal constructor(
                             mediaCodec.queueInputBuffer(
                                 index, 0, 0, 0, 0
                             )
-                            return@execute
+                            return@launchMutex
                         }
 
                         try {
                             queueInputFrame(index, frame)
                         } catch (t: Throwable) {
-                            handleError(t)
+                            handleErrorUnsafe(t)
                         } finally {
                             frame.close()
                         }
@@ -458,7 +440,9 @@ internal constructor(
         }
 
         override fun onError(codec: MediaCodec, e: CodecException) {
-            handleError(e)
+            coroutineScope.launch {
+                handleError(e)
+            }
         }
 
         private fun queueInputFrame(
@@ -546,10 +530,10 @@ internal constructor(
         }
 
         override fun queueInputFrame(frame: RawFrame) {
-            encoderExecutor.execute {
+            launchMutex {
                 if (!state.isRunning) {
                     Logger.w(tag, "Receives input frame after codec is not running: $state.")
-                    return@execute
+                    return@launchMutex
                 }
 
                 try {
@@ -571,7 +555,7 @@ internal constructor(
                                 .also { outputBufferId = it } != MediaCodec.INFO_TRY_AGAIN_LATER
                         ) {
                             if (outputBufferId >= 0) {
-                                processOutputFrameSync(mediaCodec, outputBufferId, bufferInfo)
+                                processOutputFrameUnsafe(mediaCodec, outputBufferId, bufferInfo)
                             } else if (outputBufferId == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                                 outputFormat = mediaCodec.outputFormat
                                 Logger.i(tag, "Format changed: ${mediaCodec.outputFormat}")
@@ -585,7 +569,7 @@ internal constructor(
                         )
                     }
                 } catch (t: Throwable) {
-                    handleError(t)
+                    handleErrorUnsafe(t)
                 } finally {
                     // Release frame resources
                     frame.close()
@@ -607,19 +591,15 @@ internal constructor(
         ): Frame {
             val buffer = requireNotNull(codec.getOutputBuffer(index))
             return Frame(
-                buffer,
-                info.presentationTimeUs, // pts
+                buffer, info.presentationTimeUs, // pts
                 null, // dts
-                info.isKeyFrame,
-                outputFormat,
-                onClosed = {
+                info.isKeyFrame, outputFormat, onClosed = {
                     try {
                         codec.releaseOutputBuffer(index, false)
                     } catch (t: Throwable) {
                         Logger.w(tag, "Failed to release output buffer for code: ${t.message}")
                     }
-                }
-            )
+                })
         }
     }
 

@@ -35,7 +35,11 @@ interface ICloseableFrame : Closeable {
     val onClosed: (ICloseableFrame) -> Unit
 
     override fun close() {
-        onClosed(this)
+        try {
+            onClosed(this)
+        } catch (_: Throwable) {
+            // Nothing to do
+        }
     }
 }
 

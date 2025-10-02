@@ -49,10 +49,15 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -80,6 +85,8 @@ internal class EncodingPipelineOutput(
 ) : IConfigurableAudioVideoEncodingPipelineOutput, IEncodingPipelineOutputInternal,
     IVideoSurfacePipelineOutputInternal, IAudioSyncPipelineOutputInternal,
     IAudioCallbackPipelineOutputInternal {
+    private val coroutineScope = CoroutineScope(coroutineDispatcher)
+
     /**
      * Mutex to avoid concurrent start/stop operations.
      */
@@ -224,13 +231,9 @@ internal class EncodingPipelineOutput(
             onInternalError(t)
         }
 
-        override fun onOutputFrame(frame: Frame) {
-            audioStreamId?.let {
-                runBlocking {
-                    this@EncodingPipelineOutput.endpointInternal.write(frame, it)
-                }
-            } ?: Logger.w(TAG, "Audio frame received but audio stream is not set")
-        }
+        override val outputChannel = Channel<Frame>(Channel.UNLIMITED, onUndeliveredElement = {
+            it.close()
+        })
     }
 
     private val videoEncoderListener = object : IEncoderInternal.IListener {
@@ -238,12 +241,43 @@ internal class EncodingPipelineOutput(
             onInternalError(t)
         }
 
-        override fun onOutputFrame(frame: Frame) {
-            videoStreamId?.let {
-                runBlocking {
-                    this@EncodingPipelineOutput.endpointInternal.write(frame, it)
+        override val outputChannel = Channel<Frame>(Channel.UNLIMITED, onUndeliveredElement = {
+            it.close()
+        })
+    }
+    
+    init {
+        if (withAudio) {
+            coroutineScope.launch {
+                // Audio
+                audioEncoderListener.outputChannel.consumeEach { frame ->
+                    try {
+                        audioStreamId?.let {
+                            endpointInternal.write(frame, it)
+                        } ?: Logger.w(TAG, "Audio frame received but audio stream is not set")
+                    } catch (t: Throwable) {
+                        onInternalError(t)
+                    } finally {
+                        frame.close()
+                    }
                 }
-            } ?: Logger.w(TAG, "Video frame received but video stream is not set")
+            }
+        }
+        if (withVideo) {
+            coroutineScope.launch {
+                // Video
+                videoEncoderListener.outputChannel.consumeEach { frame ->
+                    try {
+                        videoStreamId?.let {
+                            endpointInternal.write(frame, it)
+                        } ?: Logger.w(TAG, "Video frame received but video stream is not set")
+                    } catch (t: Throwable) {
+                        onInternalError(t)
+                    } finally {
+                        frame.close()
+                    }
+                }
+            }
         }
     }
 
@@ -292,7 +326,7 @@ internal class EncodingPipelineOutput(
         _audioCodecConfigFlow.emit(audioCodecConfig)
     }
 
-    private fun applyAudioCodecConfig(audioConfig: AudioCodecConfig) {
+    private suspend fun applyAudioCodecConfig(audioConfig: AudioCodecConfig) {
         try {
             audioEncoderInternal?.release()
 
@@ -315,7 +349,9 @@ internal class EncodingPipelineOutput(
         val audioEncoder = MediaCodecEncoder(
             AudioEncoderConfig(
                 audioConfig, encoderMode
-            ), listener = audioEncoderListener
+            ),
+            audioEncoderListener,
+            coroutineDispatcher
         )
 
         when (audioEncoder.input) {
@@ -373,7 +409,7 @@ internal class EncodingPipelineOutput(
         _videoCodecConfigFlow.emit(videoCodecConfig)
     }
 
-    private fun applyVideoCodecConfig(videoConfig: VideoCodecConfig) {
+    private suspend fun applyVideoCodecConfig(videoConfig: VideoCodecConfig) {
         try {
             videoEncoderInternal = buildAndConfigureVideoEncoder(
                 videoConfig, targetRotation
@@ -385,7 +421,7 @@ internal class EncodingPipelineOutput(
         }
     }
 
-    private fun buildAndConfigureVideoEncoder(
+    private suspend fun buildAndConfigureVideoEncoder(
         videoConfig: VideoCodecConfig, @RotationValue targetRotation: Int
     ): IEncoderInternal {
         val rotatedVideoConfig = videoConfig.rotateFromNaturalOrientation(context, targetRotation)
@@ -408,8 +444,11 @@ internal class EncodingPipelineOutput(
     private fun buildVideoEncoder(videoConfig: VideoCodecConfig): IEncoderInternal {
         val videoEncoder = MediaCodecEncoder(
             VideoEncoderConfig(
-                videoConfig, EncoderMode.SURFACE
-            ), listener = videoEncoderListener
+                videoConfig,
+                EncoderMode.SURFACE
+            ),
+            videoEncoderListener,
+            coroutineDispatcher
         )
 
         when (videoEncoder.input) {
@@ -659,6 +698,7 @@ internal class EncodingPipelineOutput(
                 Logger.w(TAG, "Can't release audio encoder: ${t.message}")
             } finally {
                 audioEncoderInternal = null
+                audioEncoderListener.outputChannel.cancel()
             }
         }
 
@@ -670,6 +710,7 @@ internal class EncodingPipelineOutput(
             } finally {
                 _surfaceFlow.tryEmit(null)
                 videoEncoderInternal = null
+                videoEncoderListener.outputChannel.cancel()
             }
         }
 
@@ -679,6 +720,7 @@ internal class EncodingPipelineOutput(
         } catch (t: Throwable) {
             Logger.w(TAG, "Can't release endpoint: ${t.message}")
         }
+        coroutineScope.coroutineContext.cancelChildren()
     }
 
     /**
@@ -713,13 +755,13 @@ internal class EncodingPipelineOutput(
         Logger.d(TAG, "Bitrate regulator controller removed")
     }
 
-    private fun setTargetRotationInternal(@RotationValue newTargetRotation: Int) {
+    private suspend fun setTargetRotationInternal(@RotationValue newTargetRotation: Int) {
         if (shouldUpdateRotation(newTargetRotation)) {
             updateVideoEncoderForTransformation()
         }
     }
 
-    private fun updateVideoEncoderForTransformation() {
+    private suspend fun updateVideoEncoderForTransformation() {
         val videoConfig = videoCodecConfig
         if (videoConfig != null) {
             applyVideoCodecConfig(videoConfig)

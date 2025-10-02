@@ -39,7 +39,7 @@ internal object MediaCodecUtils {
         return MediaCodecWithFormat(MediaCodec.createByCodecName(encoderName), format)
     }
 
-    internal class MediaCodecWithFormat(val mediaCodec: MediaCodec, val format: MediaFormat)
+    internal data class MediaCodecWithFormat(val mediaCodec: MediaCodec, val format: MediaFormat)
 
     private const val TAG = "EncoderUtils"
 }
