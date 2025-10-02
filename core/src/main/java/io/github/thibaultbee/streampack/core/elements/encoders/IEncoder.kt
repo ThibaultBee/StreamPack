@@ -20,8 +20,8 @@ import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamable
+import kotlinx.coroutines.channels.SendChannel
 import java.nio.ByteBuffer
-import java.util.concurrent.Executor
 
 interface IEncoder {
     /**
@@ -75,22 +75,10 @@ interface IEncoderInternal : SuspendStreamable, Releasable,
         fun onError(t: Throwable) {}
 
         /**
-         * Calls when an encoder has generated an output frame.
-         * @param frame Output frame with correct parameters and buffers
+         * A channel where the encoder will send encoded frames.
          */
-        fun onOutputFrame(frame: Frame) {}
+        val outputChannel: SendChannel<Frame>
     }
-
-    /**
-     * Set the encoder listener
-     *
-     * @param listener the listener
-     * @param listenerExecutor the executor where the listener will be called
-     */
-    fun setListener(
-        listener: IListener,
-        listenerExecutor: Executor
-    )
 
     /**
      * The encoder input.
@@ -151,12 +139,12 @@ interface IEncoderInternal : SuspendStreamable, Releasable,
     /**
      * Reset the encoder
      */
-    fun reset()
+    suspend fun reset()
 
     /**
      * Configure the encoder
      */
-    fun configure()
+    suspend fun configure()
 }
 
 enum class EncoderMode {
