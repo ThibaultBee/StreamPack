@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
+import junit.framework.TestCase.fail
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
@@ -25,6 +26,7 @@ class MediaMuxerEndpointTest {
     fun openNotAFileTest() = runTest {
         try {
             mediaMuxerEndpoint.open(UriMediaDescriptor(Uri.parse("aaa://a/b/c/d")))
+            fail("Should throw")
         } catch (_: Throwable) {
         }
     }

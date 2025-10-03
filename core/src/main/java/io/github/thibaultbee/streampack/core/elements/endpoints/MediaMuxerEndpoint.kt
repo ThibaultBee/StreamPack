@@ -29,6 +29,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.security.InvalidParameterException
@@ -40,11 +41,12 @@ class MediaMuxerEndpoint(
     private val context: Context,
 ) : IEndpointInternal {
     private var mediaMuxer: MediaMuxer? = null
+    private val mutex = Mutex()
+
     private var containerType: MediaContainerType? = null
     private var fileDescriptor: ParcelFileDescriptor? = null
 
-    private var isStarted = false
-    private val mutex = Mutex()
+    private var state = State.IDLE
 
     /**
      * Map streamId to MediaMuxer trackId
@@ -64,7 +66,24 @@ class MediaMuxerEndpoint(
     private val _isOpenFlow = MutableStateFlow(false)
     override val isOpenFlow = _isOpenFlow.asStateFlow()
 
-    override suspend fun open(descriptor: MediaDescriptor) {
+    override suspend fun open(descriptor: MediaDescriptor) = mutex.withLock {
+        when (state) {
+            State.PENDING_START, State.STARTED -> {
+                throw IllegalStateException("Can't open while streaming")
+            }
+
+            State.PENDING_RELEASE, State.RELEASED -> {
+                throw IllegalStateException("Muxer is released")
+            }
+
+            State.PENDING_STOP, State.STOPPED, State.ERROR -> {
+                throw IllegalStateException("Muxer is stopping or stopped. Close it and open a new one.")
+            }
+
+            State.IDLE, State.CONFIGURED -> {
+                // Ok
+            }
+        }
         if (isOpenFlow.value) {
             Logger.w(TAG, "MediaMuxerEndpoint is already opened")
             return
@@ -128,16 +147,23 @@ class MediaMuxerEndpoint(
         frame: Frame,
         streamPid: Int
     ) {
-        return mutex.withLock {
+        mutex.withLock {
+            if (state != State.STARTED && state != State.PENDING_START) {
+                Logger.w(TAG, "Trying to write while not started. Current state: $state")
+                return
+            }
+
             val mediaMuxer = requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
 
-            if (streamIdToTrackId.size < numOfStreams) {
+            if ((state == State.PENDING_START) && (streamIdToTrackId.size < numOfStreams)) {
                 addTrack(mediaMuxer, streamPid, frame.format)
                 if (streamIdToTrackId.size == numOfStreams) {
-                    startMediaMuxer(mediaMuxer)
+                    mediaMuxer.start()
+                    setState(State.STARTED)
                 }
             }
-            if (streamIdToTrackId.size == numOfStreams) {
+
+            if (state == State.STARTED) {
                 val trackId = streamIdToTrackId[streamPid]
                     ?: throw IllegalStateException("Could not find trackId for streamPid $streamPid: ${frame.format}")
                 val info = BufferInfo().apply {
@@ -148,70 +174,134 @@ class MediaMuxerEndpoint(
                         if (frame.isKeyFrame) BUFFER_FLAG_KEY_FRAME else 0
                     )
                 }
-                mediaMuxer.writeSampleData(trackId, frame.buffer, info)
+                try {
+                    mediaMuxer.writeSampleData(trackId, frame.buffer, info)
+                } catch (e: IllegalStateException) {
+                    Logger.w(TAG, "MediaMuxer is in an illegal state. ${e.message}")
+                }
             }
         }
     }
 
     override fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
-        requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
-        /**
-         * We can't addTrack here because we don't have the codec specific data.
-         * We will add it when we receive the first frame.
-         */
-        return streamConfigs.associateWith { numOfStreams++ }
+        mutex.tryLock()
+        require(state != State.RELEASED) { "Muxer is released" }
+        return try {
+            requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
+            /**
+             * We can't addTrack here because we don't have the codec specific data.
+             * We will add it when we receive the first frame.
+             */
+            streamConfigs.associateWith { numOfStreams++ }
+        } finally {
+            setState(State.CONFIGURED)
+            mutex.unlock()
+        }
     }
 
     override fun addStream(streamConfig: CodecConfig): Int {
-        requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
-        /**
-         * We can't addTrack here because we don't have the codec specific data.
-         * We will add it when we receive the first frame.
-         */
-        return numOfStreams++
+        mutex.tryLock()
+        require(state != State.RELEASED) { "Muxer is released" }
+        return try {
+            requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
+            /**
+             * We can't addTrack here because we don't have the codec specific data.
+             * We will add it when we receive the first frame.
+             */
+            numOfStreams++
+        } finally {
+            setState(State.CONFIGURED)
+            mutex.unlock()
+        }
     }
 
     override suspend fun startStream() {
-        /**
-         * [MediaMuxer.start] is called when we called addTrack for each stream.
-         */
-        if (streamIdToTrackId.size == numOfStreams) {
-            mutex.withLock {
-                val mediaMuxer = requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
-                startMediaMuxer(mediaMuxer)
+        mutex.withLock {
+            when (state) {
+                State.PENDING_START, State.STARTED -> {
+                    return
+                }
+
+                State.RELEASED, State.PENDING_RELEASE -> {
+                    throw IllegalStateException("Muxer is released")
+                }
+
+                State.PENDING_STOP, State.STOPPED, State.ERROR -> {
+                    throw IllegalStateException("Muxer is stopping or stopped")
+                }
+
+                State.IDLE -> {
+                    throw IllegalStateException("Muxer is not configured")
+                }
+
+                State.CONFIGURED -> {
+                    require(numOfStreams > 0) { "No streams added" }
+                    setState(State.PENDING_START)
+                }
             }
         }
     }
 
     override suspend fun stopStream() {
         mutex.withLock {
-            try {
-                mediaMuxer?.stop()
-            } catch (_: IllegalStateException) {
-            } finally {
-                isStarted = false
+            when (state) {
+                State.PENDING_STOP, State.STOPPED, State.ERROR, State.IDLE, State.CONFIGURED -> {
+                    return
+                }
+
+                State.RELEASED, State.PENDING_RELEASE -> {
+                    throw IllegalStateException("Muxer is released")
+                }
+
+                State.PENDING_START -> {
+                    setState(State.CONFIGURED)
+                }
+
+                State.STARTED -> {
+                    setState(State.PENDING_STOP)
+                    try {
+                        mediaMuxer?.stop()
+                    } catch (_: IllegalStateException) {
+                    } finally {
+                        setState(State.STOPPED)
+                    }
+                }
             }
+        }
+    }
+
+    private suspend fun closeUnsafe() {
+        try {
+            try {
+                fileDescriptor?.close()
+            } catch (_: Throwable) {
+            } finally {
+                fileDescriptor = null
+            }
+
+            mediaMuxer?.release()
+        } catch (_: Throwable) {
+        } finally {
+            numOfStreams = 0
+            streamIdToTrackId.clear()
+            mediaMuxer = null
+            _isOpenFlow.emit(false)
         }
     }
 
     override suspend fun close() {
         mutex.withLock {
-            try {
-                try {
-                    fileDescriptor?.close()
-                } catch (_: Throwable) {
-                } finally {
-                    fileDescriptor = null
-                }
+            closeUnsafe()
+            setState(State.IDLE)
+        }
+    }
 
-                mediaMuxer?.release()
-            } catch (_: Throwable) {
-                // MediaMuxer is already released
-            } finally {
-                numOfStreams = 0
-                streamIdToTrackId.clear()
-                mediaMuxer = null
-                _isOpenFlow.emit(false)
+    override fun release() {
+        runBlocking {
+            mutex.withLock {
+                setState(State.PENDING_RELEASE)
+                closeUnsafe()
+                setState(State.RELEASED)
             }
         }
     }
@@ -222,11 +312,12 @@ class MediaMuxerEndpoint(
         }
     }
 
-    private fun startMediaMuxer(mediaMuxer: MediaMuxer) {
-        if (!isStarted) {
-            mediaMuxer.start()
-            isStarted = true
+    private fun setState(state: State) {
+        if (state == this.state) {
+            return
         }
+        Logger.d(TAG, "Transitioning muxer internal state: ${this.state} --> $state")
+        this.state = state
     }
 
     object Mp4EndpointInfo : IEndpoint.IEndpointInfo {
@@ -379,6 +470,29 @@ class MediaMuxerEndpoint(
                 MediaContainerType.OGG -> OggEndpointInfo
                 else -> throw IllegalArgumentException("Unsupported container type: $containerType")
             }
+    }
+
+    private enum class State {
+        IDLE,
+
+        CONFIGURED,
+
+        STARTED,
+
+        STOPPED,
+
+        PENDING_START,
+
+        PENDING_STOP,
+
+        PENDING_RELEASE,
+
+        ERROR,
+
+        RELEASED;
+
+        val isRunning: Boolean
+            get() = this == STARTED
     }
 }
 
