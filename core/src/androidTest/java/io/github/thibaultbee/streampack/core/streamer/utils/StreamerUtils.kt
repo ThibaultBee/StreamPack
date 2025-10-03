@@ -44,12 +44,13 @@ object StreamerUtils {
     ) {
         var i = 0
         val numOfLoop = duration / pollDuration
-        withContext(Dispatchers.Default) {
-            while (i < numOfLoop) {
-                i++
+        while (i < numOfLoop) {
+            i++
+            // In test delay returns immediately unless in another dispatcher.
+            withContext(Dispatchers.Default) {
                 delay(pollDuration)
-                assertTrue(streamer.isStreamingFlow.value)
             }
+            assertTrue(streamer.isStreamingFlow.value)
         }
 
         streamer.stopStream()

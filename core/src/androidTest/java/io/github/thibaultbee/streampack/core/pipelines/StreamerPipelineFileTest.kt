@@ -96,21 +96,22 @@ class StreamerPipelineFileTest : DeviceTest() {
         val pollDuration: Duration = STREAM_POLLING_MS.milliseconds
         var i = 0
         val numOfLoop = duration / pollDuration
-        withContext(Dispatchers.Default) {
-            while (i < numOfLoop) {
-                i++
+
+        while (i < numOfLoop) {
+            i++
+            withContext(Dispatchers.Default) {
                 delay(pollDuration)
-                assertTrue(streamerPipeline.isStreamingFlow.value)
-                assertTrue(audioOnlyOutput.isStreamingFlow.value)
-                assertTrue(videoOnlyOutput.isStreamingFlow.value)
             }
+            assertTrue(streamerPipeline.isStreamingFlow.value)
+            assertTrue(audioOnlyOutput.isStreamingFlow.value)
+            assertTrue(videoOnlyOutput.isStreamingFlow.value)
         }
 
         streamerPipeline.stopStream()
         audioOnlyOutput.close()
         videoOnlyOutput.close()
         streamerPipeline.release()
-        
+
         // Verify
         VideoUtils.verifyFile(
             context,
