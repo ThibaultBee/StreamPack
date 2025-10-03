@@ -105,7 +105,7 @@ class RtmpEndpoint internal constructor() : IEndpointInternal {
                     rtmpClient.write(
                         flvData,
                         ts.toInt(),
-                    ).await()
+                    )
                 }
                 if (flvData is AutoCloseable) {
                     flvData.close()
@@ -147,7 +147,7 @@ class RtmpEndpoint internal constructor() : IEndpointInternal {
             rtmpClient.writeSetDataFrame(
                 flvDataBuilder.metadata
             )
-        }.await()
+        }
     }
 
     override suspend fun stopStream() {

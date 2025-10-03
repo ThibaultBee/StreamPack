@@ -72,12 +72,12 @@ data class Frame(
     /**
      * Presentation timestamp in µs
      */
-    var ptsInUs: Long,
+    val ptsInUs: Long,
 
     /**
      * Decoded timestamp in µs (not used).
      */
-    var dtsInUs: Long? = null,
+    val dtsInUs: Long? = null,
 
     /**
      * [Boolean.true] if frame is a key frame (I-frame for AVC/HEVC and audio frames)
