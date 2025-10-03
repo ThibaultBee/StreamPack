@@ -177,7 +177,7 @@ open class AudioCodecConfig(
             48000
         )
 
-        internal fun isAacMimeType(mimeType: String) = mimeType.startsWith(MIMETYPE_AAC_PREFIX)
+        fun isAacMimeType(mimeType: String) = mimeType.startsWith(MIMETYPE_AAC_PREFIX)
 
         private fun getAacProfileFromMimeType(mimeType: String) = when (mimeType) {
             MediaFormat.MIMETYPE_AUDIO_AAC -> MediaCodecInfo.CodecProfileLevel.AACObjectLC

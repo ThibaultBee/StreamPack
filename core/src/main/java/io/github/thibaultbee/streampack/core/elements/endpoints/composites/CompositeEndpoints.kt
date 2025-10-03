@@ -17,7 +17,6 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites
 
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.FlvMuxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TsMuxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ISinkInternal
@@ -36,35 +35,6 @@ object CompositeEndpoints {
             muxer.addService(serviceInfo)
         }
         return CompositeEndpoint(muxer, sink)
-    }
-
-    /**
-     * Creates an endpoint for RTMP (with a FLV muxer)
-     */
-    internal fun createRtmpEndpoint(): IEndpointInternal {
-        val sink = createRtmpSink()
-        return CompositeEndpoint(
-            FlvMuxer(
-                isForFile = false
-            ), sink
-        )
-    }
-
-    private fun createRtmpSink(): ISinkInternal {
-        return try {
-            val clazz =
-                Class.forName("io.github.thibaultbee.streampack.ext.rtmp.elements.endpoints.composites.sinks.RtmpSink")
-            clazz.getConstructor().newInstance() as ISinkInternal
-        } catch (e: ClassNotFoundException) {
-            // Expected if the app was built without the RTMP extension.
-            throw ClassNotFoundException(
-                "Attempting to stream RTMP stream without depending on the RTMP extension",
-                e
-            )
-        } catch (t: Throwable) {
-            // The RTMP extension is present, but instantiation failed.
-            throw RuntimeException("Error instantiating RTMP extension", t)
-        }
     }
 
     private fun createSrtSink(): ISinkInternal {

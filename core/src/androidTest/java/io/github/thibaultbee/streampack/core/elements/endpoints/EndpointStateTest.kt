@@ -1,9 +1,6 @@
 package io.github.thibaultbee.streampack.core.elements.endpoints
 
 import androidx.test.platform.app.InstrumentationRegistry
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.FlvMuxer
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,8 +31,7 @@ class EndpointStateTest(private val endpoint: IEndpointInternal) {
 
             return arrayListOf(
                 DynamicEndpoint(context),
-                MediaMuxerEndpoint(context),
-                CompositeEndpoint(FlvMuxer(isForFile = false), FileSink())
+                MediaMuxerEndpoint(context)
             )
         }
     }
