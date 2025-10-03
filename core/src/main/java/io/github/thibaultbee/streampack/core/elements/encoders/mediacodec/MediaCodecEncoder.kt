@@ -61,6 +61,7 @@ internal constructor(
     private val mediaCodec: MediaCodec
     private val format: MediaFormat
     private var outputFormat: MediaFormat? = null
+    private val frameFactory by lazy { FrameFactory(mediaCodec) }
 
     private val isVideo = encoderConfig.isVideo
     private val tag = if (isVideo) "VideoEncoder" else "AudioEncoder" + "(${this.hashCode()})"
@@ -350,8 +351,8 @@ internal constructor(
 
             info.isValid -> {
                 try {
-                    val frame = Frame(
-                        codec, index, outputFormat!!, info, tag
+                    val frame = frameFactory.frame(
+                        index, outputFormat!!, info, tag
                     )
                     try {
                         listener.outputChannel.send(frame)
@@ -575,6 +576,32 @@ internal constructor(
                     frame.close()
                 }
             }
+        }
+    }
+
+    /**
+     * A workaround to address the fact that some AAC encoders do not provide frame with `presentationTimeUs` in order.
+     * If a frame is received with a timestamp lower or equal to the previous one, it is corrected by adding 1 to the previous timestamp.
+     */
+    class FrameFactory(private val codec: MediaCodec) {
+        private var previousPresentationTimestamp = 0L
+
+        /**
+         * Create a [Frame] from a [RawFrame]
+         *
+         * @return the created frame
+         */
+        fun frame(
+            index: Int, outputFormat: MediaFormat, info: BufferInfo, tag: String
+        ): Frame {
+            var pts = info.presentationTimeUs
+            if (pts <= previousPresentationTimestamp) {
+                pts = previousPresentationTimestamp + 1
+                Logger.w(tag, "Correcting timestamp: $pts <= $previousPresentationTimestamp")
+            }
+            info.presentationTimeUs = pts
+            previousPresentationTimestamp = pts
+            return Frame(codec, index, outputFormat, info, tag)
         }
     }
 
