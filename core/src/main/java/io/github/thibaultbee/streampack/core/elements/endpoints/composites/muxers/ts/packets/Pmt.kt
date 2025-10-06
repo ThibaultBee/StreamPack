@@ -24,15 +24,18 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.Stream
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.put
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.putShort
+import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
 import java.nio.ByteBuffer
 
 class Pmt(
+    byteBufferPool: ByteBufferPool,
     listener: IMuxerInternal.IMuxerListener? = null,
     private val service: Service,
     var streams: List<Stream>,
     pid: Short,
     versionNumber: Byte = 0,
 ) : Psi(
+    byteBufferPool,
     listener,
     pid,
     TID,

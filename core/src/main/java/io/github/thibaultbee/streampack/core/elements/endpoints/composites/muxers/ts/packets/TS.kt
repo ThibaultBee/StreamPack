@@ -20,17 +20,19 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.MuxerConst
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.TSOutputCallback
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.toInt
+import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
 import java.nio.ByteBuffer
 import java.security.InvalidParameterException
 
 open class TS(
+     byteBufferPool: ByteBufferPool,
     listener: IMuxerInternal.IMuxerListener? = null,
     val pid: Short,
     private val transportErrorIndicator: Boolean = false,
     private val transportPriority: Boolean = false,
     private val transportScramblingControl: Byte = 0, // Not scrambled
     private var continuityCounter: Byte = 0,
-) : TSOutputCallback(listener) {
+) : TSOutputCallback(byteBufferPool, listener) {
 
     companion object {
         const val SYNC_BYTE: Byte = 0x47
@@ -52,7 +54,7 @@ open class TS(
 
         var packetIndicator = 0
 
-        val buffer = ByteBuffer.allocateDirect(PACKET_SIZE * MuxerConst.MAX_OUTPUT_PACKET_NUMBER)
+        val buffer = byteBufferPool.get(PACKET_SIZE * MuxerConst.MAX_OUTPUT_PACKET_NUMBER)
 
         while (payload?.hasRemaining() == true || adaptationFieldIndicator) {
             buffer.limit(buffer.position() + PACKET_SIZE)

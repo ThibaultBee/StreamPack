@@ -15,12 +15,15 @@
  */
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.packets
 
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.CRC32
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.put
+import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
 import java.nio.ByteBuffer
 
 open class Psi(
-    listener: io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal.IMuxerListener? = null,
+    byteBufferPool: ByteBufferPool,
+    listener: IMuxerInternal.IMuxerListener? = null,
     pid: Short,
     private val tableId: Byte,
     private val sectionSyntaxIndicator: Boolean = false,
@@ -29,7 +32,7 @@ open class Psi(
     var versionNumber: Byte = 0,
     private val sectionNumber: Byte = 0,
     private val lastSectionNumber: Byte = 0,
-) : TS(listener, pid) {
+) : TS(byteBufferPool, listener, pid) {
     companion object {
         const val CRC_SIZE = 4
         const val PSI_HEADER_SIZE = 9 // contains pointer_field

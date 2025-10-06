@@ -33,11 +33,14 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.av.OpusControlHeader
 import io.github.thibaultbee.streampack.core.elements.utils.av.audio.aac.ADTSFrameWriter
 import io.github.thibaultbee.streampack.core.elements.utils.av.audio.aac.LATMFrameWriter
+import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
 import java.nio.ByteBuffer
 import java.util.MissingFormatArgumentException
 import kotlin.random.Random
 
 class TsMuxer : IMuxerInternal {
+    private val byteBufferPool = ByteBufferPool(true)
+
     override val info by lazy { TSMuxerInfo }
     private val tsServices = mutableListOf<Service>()
     private val tsPes = mutableListOf<Pes>()
@@ -56,10 +59,10 @@ class TsMuxer : IMuxerInternal {
 
     private val tsId = Random.nextInt(Byte.MIN_VALUE.toInt(), Byte.MAX_VALUE.toInt()).toShort()
     private var pat = Pat(
-        listener, tsServices, tsId, packetCount = 0
+        byteBufferPool, listener, tsServices, tsId, packetCount = 0
     )
     private var sdt = Sdt(
-        listener, tsServices, tsId, packetCount = 0
+        byteBufferPool, listener, tsServices, tsId, packetCount = 0
     )
 
     override val streamConfigs: List<CodecConfig>
@@ -339,11 +342,12 @@ class TsMuxer : IMuxerInternal {
         service.pmt = service.pmt?.apply {
             versionNumber = (versionNumber + 1).toByte()
             streams = service.streams
-        } ?: Pmt(listener, service, service.streams, getNewPid())
+        } ?: Pmt(byteBufferPool, listener, service, service.streams, getNewPid())
 
         // Init PES
         newStreams.forEach {
             Pes(
+                byteBufferPool,
                 listener,
                 it,
                 service.pcrPid == it.pid,
@@ -419,10 +423,12 @@ class TsMuxer : IMuxerInternal {
         tsServices.forEach {
             removeStreams(it)
         }
+        byteBufferPool.clear()
     }
 
     override fun release() {
         tsServices.clear()
+        byteBufferPool.close()
     }
 
     /**

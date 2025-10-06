@@ -18,16 +18,19 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxe
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.ITSElement
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.Service
+import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
 import java.nio.ByteBuffer
 import kotlin.experimental.or
 
 class Pat(
+    byteBufferPool: ByteBufferPool,
     listener: IMuxerInternal.IMuxerListener? = null,
     private val services: List<Service>,
     tsId: Short,
     versionNumber: Byte = 0,
     var packetCount: Int = 0,
 ) : Psi(
+    byteBufferPool,
     listener,
     PID,
     TID,
