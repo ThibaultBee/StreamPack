@@ -28,6 +28,8 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * An [IEndpointInternal] implementation that combines a [IMuxerInternal] and a [ISinkInternal].
@@ -41,7 +43,7 @@ class CompositeEndpoint(
      * The video and audio configurations.
      * It is used to configure the sink.
      */
-    private val configurations = mutableListOf<CodecConfig>()
+    private val mutex = Mutex()
 
     override val info by lazy { EndpointInfo(muxer.info) }
     override fun getInfo(type: MediaDescriptor.Type) = info
@@ -77,16 +79,24 @@ class CompositeEndpoint(
     ) = muxer.write(frame, streamPid)
 
     override fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
-        val streamIds = muxer.addStreams(streamConfigs)
-        return streamIds
+        mutex.tryLock()
+        return try {
+            muxer.addStreams(streamConfigs)
+        } finally {
+            mutex.unlock()
+        }
     }
 
     override fun addStream(streamConfig: CodecConfig): Int {
-        val streamId = muxer.addStream(streamConfig)
-        return streamId
+        mutex.tryLock()
+        return try {
+            muxer.addStream(streamConfig)
+        } finally {
+            mutex.unlock()
+        }
     }
 
-    override suspend fun startStream() {
+    override suspend fun startStream() = mutex.withLock {
         sink.configure(SinkConfiguration(muxer.streamConfigs))
         sink.startStream()
         muxer.startStream()
@@ -97,7 +107,7 @@ class CompositeEndpoint(
      *
      * It also clears registered streams and resets the bitrate.
      */
-    override suspend fun stopStream() {
+    override suspend fun stopStream() = mutex.withLock {
         muxer.stopStream()
         sink.stopStream()
     }
