@@ -23,9 +23,6 @@ import androidx.test.filters.LargeTest
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpointFactory
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.Mp4Muxer
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
 import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.streamer.dual.utils.DualStreamerConfigUtils
 import io.github.thibaultbee.streampack.core.streamer.utils.StreamerUtils

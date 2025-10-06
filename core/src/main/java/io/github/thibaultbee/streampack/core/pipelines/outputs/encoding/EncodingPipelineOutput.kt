@@ -51,6 +51,7 @@ import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegul
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
@@ -676,7 +677,7 @@ internal class EncodingPipelineOutput(
         } catch (t: Throwable) {
             Logger.w(TAG, "Can't release endpoint: ${t.message}")
         }
-        coroutineScope.coroutineContext.cancelChildren()
+        coroutineScope.cancel()
     }
 
     /**

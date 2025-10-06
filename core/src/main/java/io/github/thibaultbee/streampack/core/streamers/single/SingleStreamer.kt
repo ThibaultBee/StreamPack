@@ -48,7 +48,10 @@ import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegul
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.StreamerConfigurationInfo
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.runBlocking
 
 
 /**
@@ -174,6 +177,7 @@ suspend fun SingleStreamer(
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param coroutineDispatcher the [CoroutineDispatcher] to use for internal operations. By default, it is [Dispatchers.Default].
  */
 open class SingleStreamer(
     protected val context: Context,
@@ -182,21 +186,24 @@ open class SingleStreamer(
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
+    coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : ISingleStreamer, IAudioSingleStreamer, IVideoSingleStreamer {
     private val pipeline = StreamerPipeline(
         context,
         withAudio,
         withVideo,
         audioOutputMode = StreamerPipeline.AudioOutputMode.CALLBACK,
-        surfaceProcessorFactory
+        surfaceProcessorFactory,
+        coroutineDispatcher
     )
-    private val pipelineOutput: IEncodingPipelineOutputInternal =
+    private val pipelineOutput: IEncodingPipelineOutputInternal = runBlocking(coroutineDispatcher) {
         pipeline.createEncodingOutput(
             withAudio,
             withVideo,
             endpointFactory,
             defaultRotation
         ) as IEncodingPipelineOutputInternal
+    }
 
     override val throwableFlow: StateFlow<Throwable?> =
         combineStates(pipeline.throwableFlow, pipelineOutput.throwableFlow) { throwableArray ->

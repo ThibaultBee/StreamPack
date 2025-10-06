@@ -100,6 +100,23 @@ class StreamerPipelineTest {
 
     // Test on add/remove output
     @Test
+    fun testAddSameOutputMultipleTimes() = runTest {
+        val output = StubAudioSyncVideoSurfacePipelineOutputInternal(resolution = Size(640, 480))
+
+        streamerPipeline = buildStreamerPipeline(
+            context,
+            StubAudioSource.Factory(),
+            StubVideoSurfaceSource.Factory()
+        )
+        streamerPipeline.addOutput(output)
+        try {
+            streamerPipeline.addOutput(output)
+            fail("StreamerPipeline should not accept same output multiple times")
+        } catch (_: Throwable) {
+        }
+    }
+
+    @Test
     fun testRemoveOutput() = runTest {
         val output = StubAudioSyncVideoSurfacePipelineOutputInternal(resolution = Size(640, 480))
 
@@ -116,7 +133,7 @@ class StreamerPipelineTest {
 
         streamerPipeline.removeOutput(output)
         assertFalse(streamerPipeline.isStreamingFlow.value)
-        assertFalse(output.isStreamingFlow.value)
+        assertTrue(output.isStreamingFlow.value)
 
         // Release output
         try {
