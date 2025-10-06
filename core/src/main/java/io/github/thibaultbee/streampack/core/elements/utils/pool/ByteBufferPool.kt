@@ -46,9 +46,7 @@ class ByteBufferPool(private val isDirect: Boolean) : IBufferPool<ByteBuffer>, C
             buffers.tailMap(
                 capacity,
                 true
-            ).values
-                .mapNotNull(ArrayDeque<ByteBuffer>::removeFirstOrNull)
-                .firstOrNull()
+            ).values.firstNotNullOfOrNull(ArrayDeque<ByteBuffer>::removeFirstOrNull)
         }
         return if (buffer != null) {
             buffer.clear().limit(capacity)

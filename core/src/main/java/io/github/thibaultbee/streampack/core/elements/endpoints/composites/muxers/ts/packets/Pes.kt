@@ -23,12 +23,14 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.utils.TimeUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isVideo
+import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
 
 class Pes(
+    byteBufferPool: ByteBufferPool,
     muxerListener: IMuxerInternal.IMuxerListener? = null,
     val stream: Stream,
     private val hasPcr: Boolean,
-) : TS(muxerListener, stream.pid) {
+) : TS(byteBufferPool, muxerListener, stream.pid) {
     fun write(frame: Frame) {
         val programClockReference = if (hasPcr) {
             TimeUtils.currentTime()
@@ -48,7 +50,13 @@ class Pes(
             dts = frame.dtsInUs
         )
 
-        write(frame.buffer, adaptationField.toByteBuffer(), header.toByteBuffer(), true, frame.ptsInUs)
+        write(
+            frame.buffer,
+            adaptationField.toByteBuffer(),
+            header.toByteBuffer(),
+            true,
+            frame.ptsInUs
+        )
     }
 
     enum class StreamId(val value: Short) {

@@ -24,6 +24,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.utils.FakeFrames
 import io.github.thibaultbee.streampack.core.elements.utils.MockUtils
 import io.github.thibaultbee.streampack.core.elements.utils.ResourcesUtils
+import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
 import org.junit.Test
 import java.io.File
 import java.nio.ByteBuffer
@@ -63,6 +64,7 @@ class PesTest {
 
         val expectedBuffers = readFrames(TEST_SAMPLES_DIR + "pes-video1")
         Pes(
+            ByteBufferPool(true),
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
             Stream(
                 VideoCodecConfig(
@@ -91,6 +93,7 @@ class PesTest {
 
         val expectedBuffers = readFrames(TEST_SAMPLES_DIR + "pes-audio1")
         Pes(
+            ByteBufferPool(true),
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
             Stream(AudioCodecConfig(), 256),
             true
@@ -114,6 +117,7 @@ class PesTest {
 
         val expectedBuffers = readFrames(TEST_SAMPLES_DIR + "pes-audio2")
         Pes(
+            ByteBufferPool(true),
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
             Stream(AudioCodecConfig(), 256),
             true

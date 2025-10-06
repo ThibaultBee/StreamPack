@@ -21,6 +21,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.packets.Pat
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.packets.Pmt
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.AssertEqualsSingleBufferMockMuxerListener
+import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
 import org.junit.Test
 
 class PatTest {
@@ -29,6 +30,7 @@ class PatTest {
      */
     @Test
     fun `simple pat test`() {
+        val byteBufferPool = ByteBufferPool(true)
         val expectedBuffer = TSResourcesUtils.readByteBuffer("pat.ts")
         val listener = AssertEqualsSingleBufferMockMuxerListener(expectedBuffer)
         val service = Service(
@@ -40,9 +42,9 @@ class PatTest {
             ),
             pcrPid = 4567,  // not used in this test
         )
-        Pmt(listener, service, emptyList(), 0x64).run { service.pmt = this }
+        Pmt(byteBufferPool, listener, service, emptyList(), 0x64).run { service.pmt = this }
 
-        Pat(listener, listOf(service), tsId = 0x437, versionNumber = 3).run {
+        Pat(byteBufferPool, listener, listOf(service), tsId = 0x437, versionNumber = 3).run {
             write()
         }
     }

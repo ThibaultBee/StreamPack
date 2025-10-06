@@ -20,6 +20,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.packets.Sdt
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.AssertEqualsSingleBufferMockMuxerListener
+import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
 import org.junit.Test
 
 class SdtTest {
@@ -40,7 +41,7 @@ class SdtTest {
                 )
             )
         )
-        Sdt(listener, services, 0x0001, 0xff01.toShort()).run {
+        Sdt(ByteBufferPool(true), listener, services, 0x0001, 0xff01.toShort()).run {
             write()
         }
     }
