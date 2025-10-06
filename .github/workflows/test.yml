@@ -39,11 +39,10 @@ jobs:
             touch emulator.log
             chmod 777 emulator.log
             adb logcat >> emulator.log &
-            ./gradlew -Pandroid.testInstrumentationRunnerArguments.INTEGRATION_TESTS_API_KEY=$INTEGRATION_TESTS_API_KEY connectedCheck
+            ./gradlew --info --stacktrace -Pandroid.testInstrumentationRunnerArguments.INTEGRATION_TESTS_API_KEY=$INTEGRATION_TESTS_API_KEY connectedCheck
         env:
           INTEGRATION_TESTS_API_KEY: ${{ secrets.INTEGRATION_TESTS_API_KEY }}
       - name: Upload test reports
-        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: test-reports-${{ matrix.api-level }}
