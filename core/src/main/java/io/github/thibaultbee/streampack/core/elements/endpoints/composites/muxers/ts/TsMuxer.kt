@@ -62,6 +62,9 @@ class TsMuxer : IMuxerInternal {
         listener, tsServices, tsId, packetCount = 0
     )
 
+    override val streamConfigs: List<CodecConfig>
+        get() = tsServices.flatMap { it.streams }.map { it.config }
+
     /**
      * Encodes a frame to MPEG-TS format.
      * Each audio frames and each video key frames must come with an extra buffer containing sps, pps,...

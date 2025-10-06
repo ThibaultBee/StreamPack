@@ -54,6 +54,9 @@ class Mp4Muxer(
     private var dataOffset: Long = 0
     private var sequenceNumber = DEFAULT_SEQUENCE_NUMBER
 
+    override val streamConfigs: List<CodecConfig>
+        get() = tracks.map { it.config }
+    
     override fun write(frame: Frame, streamPid: Int) {
         synchronized(this) {
             if (segmenter!!.mustWriteSegment(frame)) {
@@ -64,16 +67,13 @@ class Mp4Muxer(
     }
 
     override fun addStreams(streamsConfig: List<CodecConfig>): Map<CodecConfig, Int> {
-        val newTracks = mutableListOf<Track>()
         streamsConfig.forEach { config ->
             val track = Track(getNewId(), config, timescale)
-            newTracks.add(track)
             tracks.add(track)
         }
 
         val streamMap = mutableMapOf<CodecConfig, Int>()
-        newTracks.forEach { streamMap[it.config] = it.id }
-        return streamMap
+        return streamsConfig.associateWith { streamMap[it]!! }
     }
 
     override fun addStream(streamConfig: CodecConfig): Int {
