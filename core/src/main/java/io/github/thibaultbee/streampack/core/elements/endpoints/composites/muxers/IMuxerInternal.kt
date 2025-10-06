@@ -26,6 +26,8 @@ interface IMuxerInternal :
     Releasable {
     var listener: IMuxerListener?
 
+    val streamConfigs: List<CodecConfig>
+
     interface IMuxerListener {
         fun onOutputFrame(packet: Packet)
     }

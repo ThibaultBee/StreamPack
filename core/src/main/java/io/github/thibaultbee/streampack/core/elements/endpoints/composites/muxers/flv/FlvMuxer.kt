@@ -39,6 +39,9 @@ class FlvMuxer(
     private var startUpTime: Long? = null
     private var hasFirstFrame = false
 
+    override val streamConfigs: List<CodecConfig>
+        get() = streams.map { it.config }
+    
     override fun write(frame: Frame, streamPid: Int) {
         synchronized(this) {
             if (!hasFirstFrame) {
