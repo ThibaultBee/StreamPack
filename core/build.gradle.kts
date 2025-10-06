@@ -34,6 +34,9 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)
 
+    androidTestImplementation(project(":streampack-srt"))
+    androidTestImplementation(project(":streampack-rtmp"))
+
     androidTestImplementation(libs.androidx.test.core.ktx)
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.androidx.junit)
