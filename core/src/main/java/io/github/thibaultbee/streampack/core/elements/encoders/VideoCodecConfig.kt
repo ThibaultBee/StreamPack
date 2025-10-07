@@ -47,6 +47,11 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotationT
 import java.security.InvalidParameterException
 import kotlin.math.roundToInt
 
+/**
+ * Creates a [VideoCodecConfig] with a [CodecProfileLevel]
+ *
+ * @return the [VideoCodecConfig]
+ */
 fun VideoCodecConfig(
     /**
      * Video encoder mime type.
@@ -78,7 +83,14 @@ fun VideoCodecConfig(
      * This is a best effort as few camera can not generate a fixed framerate.
      * For live streaming, I-frame interval should be really low. For recording, I-frame interval should be higher.
      */
-    gopDurationInS: Float = 1f  // 1s between I frames
+    gopDurationInS: Float = 1f,  // 1s between I frames
+    /**
+     * A callback to be invoked when the media format is generated.
+     * This is a dangerous callback as a wrong media format can make some encoders fail, also
+     * don't change existing keys as it can break your streaming.
+     * Also, don't block the thread.
+     */
+    customize: MediaFormatCustomHandler = {}
 ) = VideoCodecConfig(
     mimeType,
     startBitrate,
@@ -86,7 +98,8 @@ fun VideoCodecConfig(
     fps,
     profileLevel.profile,
     profileLevel.level,
-    gopDurationInS
+    gopDurationInS,
+    customize
 )
 
 /**
@@ -135,7 +148,14 @@ class VideoCodecConfig(
      * A value of 0 means that each frame is an I-frame.
      * On device with API < 25, this value will be rounded to an integer. So don't expect a precise value and any value < 0.5 will be considered as 0.
      */
-    val gopDurationInS: Float = 1f  // 1s between I frames
+    val gopDurationInS: Float = 1f,  // 1s between I frames
+    /**
+     * A callback to be invoked when the media format is generated.
+     * This is a dangerous callback as a wrong media format can make some encoders fail, also
+     * don't change existing keys as it can break your streaming.
+     * Also, don't block the thread.
+     */
+    private val customize: MediaFormatCustomHandler = {}
 ) : CodecConfig(mimeType, startBitrate, profile) {
     init {
         require(mimeType.isVideo) { "MimeType must be video" }
@@ -205,6 +225,8 @@ class VideoCodecConfig(
             format.setInteger(KEY_PRIORITY, 0) // Realtime hint
         }
 
+        format.customize(requestFallback)
+
         return format
     }
 
@@ -218,8 +240,9 @@ class VideoCodecConfig(
         fps: Int = this.fps,
         profile: Int = this.profile,
         level: Int = this.level,
-        gopDuration: Float = this.gopDurationInS
-    ) = VideoCodecConfig(mimeType, startBitrate, resolution, fps, profile, level, gopDuration)
+        gopDuration: Float = this.gopDurationInS,
+        customize: MediaFormatCustomHandler = this.customize
+    ) = VideoCodecConfig(mimeType, startBitrate, resolution, fps, profile, level, gopDuration, customize)
 
     override fun toString() =
         "VideoConfig(mimeType='$mimeType', startBitrate=$startBitrate, resolution=$resolution, fps=$fps, profile=$profile, level=$level)"
