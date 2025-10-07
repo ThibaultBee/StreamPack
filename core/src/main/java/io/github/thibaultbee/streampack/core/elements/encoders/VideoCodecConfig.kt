@@ -78,7 +78,14 @@ fun VideoCodecConfig(
      * This is a best effort as few camera can not generate a fixed framerate.
      * For live streaming, I-frame interval should be really low. For recording, I-frame interval should be higher.
      */
-    gopDurationInS: Float = 1f  // 1s between I frames
+    gopDurationInS: Float = 1f,  // 1s between I frames
+    /**
+     * A callback to be invoked when the media format is generated.
+     * This is a dangerous callback as a wrong media format can make some encoders fail, also
+     * don't change existing keys as it can break your streaming.
+     * Also, don't block the thread as it can impact encoding start time.
+     */
+    configure: MediaFormat.() -> Unit = {}
 ) = VideoCodecConfig(
     mimeType,
     startBitrate,
@@ -86,7 +93,8 @@ fun VideoCodecConfig(
     fps,
     profileLevel.profile,
     profileLevel.level,
-    gopDurationInS
+    gopDurationInS,
+    configure
 )
 
 /**
@@ -135,7 +143,14 @@ open class VideoCodecConfig(
      * A value of 0 means that each frame is an I-frame.
      * On device with API < 25, this value will be rounded to an integer. So don't expect a precise value and any value < 0.5 will be considered as 0.
      */
-    val gopDurationInS: Float = 1f  // 1s between I frames
+    val gopDurationInS: Float = 1f,  // 1s between I frames
+    /**
+     * A callback to be invoked when the media format is generated.
+     * This is a dangerous callback as a wrong media format can make some encoders fail, also
+     * don't change existing keys as it can break your streaming.
+     * Also, don't block the thread as it can impact encoding start time.
+     */
+    private val configure: MediaFormat.() -> Unit = {}
 ) : CodecConfig(mimeType, startBitrate, profile) {
     init {
         require(mimeType.isVideo) { "MimeType must be video" }
@@ -203,6 +218,8 @@ open class VideoCodecConfig(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             format.setInteger(KEY_PRIORITY, 0) // Realtime hint
         }
+
+        format.configure()
 
         return format
     }
