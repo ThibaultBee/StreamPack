@@ -13,6 +13,9 @@ class VideoCodecConfigTest {
     fun equalsConfigTest() {
         val videoConfig = VideoCodecConfig()
 
+        VideoCodecConfig(customize = { requestFallback ->
+            setString("test", "test")
+        })
         Assert.assertEquals(videoConfig, videoConfig)
         Assert.assertEquals(videoConfig, VideoCodecConfig())
         Assert.assertNotEquals(

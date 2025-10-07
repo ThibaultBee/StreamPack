@@ -19,6 +19,17 @@ import android.media.MediaFormat
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecHelper
 
 /**
+ * Type alias for a function that modifies a [MediaFormat].
+ * The function takes a Boolean parameter [requestFallback] which indicates whether to request a fallback format
+ * if the preferred one is not supported.
+ * When [requestFallback] is true, the function should adjust the [MediaFormat] to a more compatible configuration.
+ *
+ * @param requestFallback whether to request a fallback format if the preferred one is not supported
+ */
+typealias MediaFormatCustomHandler = MediaFormat.(requestFallback: Boolean) -> Unit
+
+
+/**
  * Base configuration class.
  * If you don't know how to set class members, [Video encoding recommendations](https://developer.android.com/guide/topics/media/media-formats#video-encoding) should give you hints.
  */
