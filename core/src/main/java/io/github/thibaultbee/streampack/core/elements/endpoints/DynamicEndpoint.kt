@@ -22,7 +22,6 @@ import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoints
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.FlvMuxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TsMuxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ContentSink
@@ -155,22 +154,14 @@ open class DynamicEndpoint(
 
     private fun getFlvFileEndpoint(): IEndpointInternal {
         if (flvFileEndpoint == null) {
-            flvFileEndpoint = CompositeEndpoint(
-                FlvMuxer(
-                    isForFile = true
-                ), FileSink()
-            )
+            flvFileEndpoint = Endpoints.createFlvFileEndpoint()
         }
         return flvFileEndpoint!!
     }
 
     private fun getFlvContentEndpoint(): IEndpointInternal {
         if (flvContentEndpoint == null) {
-            flvContentEndpoint = CompositeEndpoint(
-                FlvMuxer(
-                    isForFile = true
-                ), ContentSink(context)
-            )
+            flvContentEndpoint = Endpoints.createFlvContentEndpoint(context)
         }
         return flvContentEndpoint!!
     }
@@ -203,7 +194,7 @@ open class DynamicEndpoint(
 
     private fun getRtmpEndpoint(): IEndpointInternal {
         if (rtmpEndpoint == null) {
-            rtmpEndpoint = CompositeEndpoints.createRtmpEndpoint()
+            rtmpEndpoint = Endpoints.createRtmpEndpoint()
         }
         return rtmpEndpoint!!
     }
