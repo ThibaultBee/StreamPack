@@ -52,7 +52,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -114,7 +113,13 @@ internal class EncodingPipelineOutput(
     override val surfaceFlow = _surfaceFlow.asStateFlow()
 
     // ENCODERS
+    private var audioInput: IEncoderInternal.ISyncByteBufferInput? = null
+
     private var audioEncoderInternal: IEncoderInternal? = null
+        set(value) {
+            audioInput = value?.input as? IEncoderInternal.ISyncByteBufferInput
+            field = value
+        }
     override val audioEncoder: IEncoder?
         get() = audioEncoderInternal
 
@@ -281,9 +286,8 @@ internal class EncodingPipelineOutput(
         }
     }
 
-    override fun queueAudioFrame(frame: RawFrame) {
-        val encoder = requireNotNull(audioEncoderInternal) { "Audio is not configured" }
-        val input = encoder.input as IEncoderInternal.ISyncByteBufferInput
+    override suspend fun queueAudioFrame(frame: RawFrame) = mutex.withLock {
+        val input = requireNotNull(audioInput) { "Audio input is null" }
         input.queueInputFrame(
             frame
         )
