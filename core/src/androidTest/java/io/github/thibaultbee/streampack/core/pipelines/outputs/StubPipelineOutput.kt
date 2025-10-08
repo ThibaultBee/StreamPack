@@ -43,8 +43,8 @@ open class StubAudioAsyncPipelineOutput :
     private val _audioFrameFlow = MutableStateFlow<RawFrame?>(null)
     val audioFrameFlow = _audioFrameFlow.asStateFlow()
 
-    override fun queueAudioFrame(frame: RawFrame) {
-        _audioFrameFlow.value = frame
+    override suspend fun queueAudioFrame(frame: RawFrame) {
+        _audioFrameFlow.emit(frame)
     }
 }
 
@@ -84,8 +84,8 @@ class StubAudioSyncVideoSurfacePipelineOutput(resolution: Size) :
     private val _audioFrameFlow = MutableStateFlow<RawFrame?>(null)
     val audioFrameFlow = _audioFrameFlow.asStateFlow()
 
-    override fun queueAudioFrame(frame: RawFrame) {
-        _audioFrameFlow.value = frame
+    override suspend fun queueAudioFrame(frame: RawFrame) {
+        _audioFrameFlow.emit(frame)
     }
 }
 
@@ -150,8 +150,8 @@ class StubAudioSyncVideoSurfacePipelineOutputInternal(resolution: Size) :
     private val _audioFrameFlow = MutableStateFlow<RawFrame?>(null)
     val audioFrameFlow = _audioFrameFlow.asStateFlow()
 
-    override fun queueAudioFrame(frame: RawFrame) {
-        _audioFrameFlow.value = frame
+    override suspend fun queueAudioFrame(frame: RawFrame) {
+        _audioFrameFlow.emit(frame)
     }
 }
 

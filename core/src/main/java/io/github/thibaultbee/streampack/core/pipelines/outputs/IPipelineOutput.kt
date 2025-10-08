@@ -244,7 +244,7 @@ interface IAudioSyncPipelineOutputInternal : IAudioPipelineOutputInternal {
      *
      * @param frame The audio [RawFrame] to queue.
      */
-    fun queueAudioFrame(frame: RawFrame)
+    suspend fun queueAudioFrame(frame: RawFrame)
 }
 
 /**
