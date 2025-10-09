@@ -16,7 +16,9 @@
 package io.github.thibaultbee.streampack.core.pipelines.inputs
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.view.Surface
+import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
@@ -40,7 +42,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * The public interface for the video input.
@@ -75,6 +82,64 @@ interface IVideoInput {
      * The video processor for adding effects to the video frames.
      */
     val processor: ISurfaceProcessorInternal
+
+    /**
+     * Takes a snapshot of the current video frame.
+     *
+     * The snapshot is returned as a [Bitmap].
+     *
+     * @param rotationDegrees The rotation to apply to the snapshot, in degrees. 0 means no rotation.
+     * @return The snapshot as a [Bitmap].
+     */
+    suspend fun takeSnapshot(@IntRange(from = 0, to = 359) rotationDegrees: Int = 0): Bitmap
+}
+
+/**
+ * Takes a JPEG snapshot of the current video frame.
+ *
+ * The snapshot is saved to the specified file.
+ *
+ * @param filePathString The path of the file to save the snapshot to.
+ * @param quality The quality of the JPEG, from 0 to 100.
+ * @param rotationDegrees The rotation to apply to the snapshot, in degrees.
+ */
+suspend fun IVideoInput.takeJpegSnapshot(
+    filePathString: String,
+    @IntRange(from = 0, to = 100) quality: Int = 100,
+    @IntRange(from = 0, to = 359) rotationDegrees: Int = 0
+) = takeJpegSnapshot(FileOutputStream(filePathString), quality, rotationDegrees)
+
+
+/**
+ * Takes a JPEG snapshot of the current video frame.
+ *
+ * The snapshot is saved to the specified file.
+ *
+ * @param file The file to save the snapshot to.
+ * @param quality The quality of the JPEG, from 0 to 100.
+ * @param rotationDegrees The rotation to apply to the snapshot, in degrees.
+ */
+suspend fun IVideoInput.takeJpegSnapshot(
+    file: File,
+    @IntRange(from = 0, to = 100) quality: Int = 100,
+    @IntRange(from = 0, to = 359) rotationDegrees: Int = 0
+) = takeJpegSnapshot(FileOutputStream(file), quality, rotationDegrees)
+
+/**
+ * Takes a snapshot of the current video frame.
+ *
+ * The snapshot is saved as a JPEG to the specified output stream.
+ * @param outputStream The output stream to save the snapshot to.
+ * @param quality The quality of the JPEG, from 0 to 100.
+ * @param rotationDegrees The rotation to apply to the snapshot, in degrees.
+ */
+suspend fun IVideoInput.takeJpegSnapshot(
+    outputStream: OutputStream,
+    @IntRange(from = 0, to = 100) quality: Int = 100,
+    @IntRange(from = 0, to = 359) rotationDegrees: Int = 0
+) {
+    val bitmap = takeSnapshot(rotationDegrees)
+    bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
 }
 
 /**
@@ -98,7 +163,7 @@ internal class VideoInput(
 
     private var isReleaseRequested = AtomicBoolean(false)
 
-    private val sourceMutex = Mutex()
+    private val videoSourceMutex = Mutex()
 
     override var processor: ISurfaceProcessorInternal =
         surfaceProcessorFactory.create(dynamicRangeProfileHint, dispatcherProvider)
@@ -150,7 +215,7 @@ internal class VideoInput(
         }
 
         withContext(dispatcherProvider.default) {
-            sourceMutex.withLock {
+            videoSourceMutex.withLock {
                 val previousVideoSource = sourceInternalFlow.value
                 val isStreaming = previousVideoSource?.isStreamingFlow?.value ?: false
 
@@ -261,13 +326,13 @@ internal class VideoInput(
     }
 
 
-    internal suspend fun setSourceConfig(newVideoSourceConfig: VideoSourceConfig) {
+    suspend fun setSourceConfig(newVideoSourceConfig: VideoSourceConfig) {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
 
         withContext(dispatcherProvider.default) {
-            sourceMutex.withLock {
+            videoSourceMutex.withLock {
                 if (sourceConfig == newVideoSourceConfig) {
                     Logger.i(TAG, "Video source configuration is the same, skipping configuration")
                     return@withContext
@@ -349,7 +414,24 @@ internal class VideoInput(
         return newSurfaceProcessor
     }
 
-    internal suspend fun addOutputSurface(output: ISurfaceOutput) {
+    override suspend fun takeSnapshot(@IntRange(from = 0, to = 359) rotationDegrees: Int): Bitmap {
+        if (isReleaseRequested.get()) {
+            throw IllegalStateException("Input is released")
+        }
+        return withContext(dispatcherProvider.default) {
+            suspendCoroutine { continuation ->
+                val listener = processor.snapshot(rotationDegrees)
+                try {
+                    val bitmap = listener.get()
+                    continuation.resume(bitmap)
+                } catch (e: Exception) {
+                    continuation.resumeWith(Result.failure(e))
+                }
+            }
+        }
+    }
+
+    suspend fun addOutputSurface(output: ISurfaceOutput) {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
@@ -360,7 +442,7 @@ internal class VideoInput(
         }
     }
 
-    internal suspend fun removeOutputSurface(output: Surface) {
+    suspend fun removeOutputSurface(output: Surface) {
         outputMutex.withLock {
             surfaceOutput.firstOrNull { it.descriptor.surface == output }?.let {
                 surfaceOutput.remove(it)
@@ -369,12 +451,12 @@ internal class VideoInput(
         }
     }
 
-    internal suspend fun startStream() {
+    suspend fun startStream() {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
         withContext(dispatcherProvider.default) {
-            sourceMutex.withLock {
+            videoSourceMutex.withLock {
                 val source =
                     requireNotNull(source) { "Video source must be set before starting stream" }
                 if (isStreamingFlow.value) {
@@ -390,12 +472,12 @@ internal class VideoInput(
         }
     }
 
-    internal suspend fun stopStream() {
+    suspend fun stopStream() {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
         withContext(dispatcherProvider.default) {
-            sourceMutex.withLock {
+            videoSourceMutex.withLock {
                 _isStreamingFlow.emit(false)
                 try {
                     source?.stopStream()
@@ -421,14 +503,14 @@ internal class VideoInput(
         processor.release()
     }
 
-    internal suspend fun release() {
+    suspend fun release() {
         if (isReleaseRequested.getAndSet(true)) {
             Logger.w(TAG, "Already released")
             return
         }
 
         withContext(dispatcherProvider.default) {
-            sourceMutex.withLock {
+            videoSourceMutex.withLock {
                 _isStreamingFlow.emit(false)
                 try {
                     releaseSurfaceProcessor()

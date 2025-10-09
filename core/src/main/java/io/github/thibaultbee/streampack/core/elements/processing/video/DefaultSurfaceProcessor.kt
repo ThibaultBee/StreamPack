@@ -16,18 +16,24 @@
  */
 package io.github.thibaultbee.streampack.core.elements.processing.video
 
+import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.util.Size
 import android.view.Surface
+import androidx.annotation.IntRange
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import com.google.common.util.concurrent.ListenableFuture
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils
+import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.preRotate
+import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.preVerticalFlip
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_GL
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.utils.HandlerThreadExecutor
+import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -36,6 +42,8 @@ private class DefaultSurfaceProcessor(
     private val glThread: HandlerThreadExecutor,
 ) : ISurfaceProcessorInternal, SurfaceTexture.OnFrameAvailableListener {
     private val renderer = OpenGlRenderer()
+
+    private val glHandler = glThread.handler
 
     private val isReleaseRequested = AtomicBoolean(false)
     private var isReleased = false
@@ -47,7 +55,7 @@ private class DefaultSurfaceProcessor(
     private val surfaceInputs: MutableList<SurfaceInput> = mutableListOf()
     private val surfaceInputsTimestampInNsMap: MutableMap<SurfaceTexture, Long> = hashMapOf()
 
-    private val glHandler = glThread.handler
+    private val pendingSnapshots = mutableListOf<PendingSnapshot>()
 
     init {
         Logger.d(TAG, "Setting dynamic range profile to $dynamicRangeProfile")
@@ -195,6 +203,19 @@ private class DefaultSurfaceProcessor(
         }
     }
 
+    override fun snapshot(
+        @IntRange(from = 0, to = 359) rotationDegrees: Int
+    ): ListenableFuture<Bitmap> {
+        if (isReleaseRequested.get()) {
+            throw IllegalStateException("SurfaceProcessor is released")
+        }
+        return CallbackToFutureAdapter.getFuture { completer ->
+            executeSafely {
+                pendingSnapshots.add(PendingSnapshot(rotationDegrees, completer))
+            }
+        }
+    }
+
     // Executed on GL thread
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture) {
         if (isReleaseRequested.get()) {
@@ -219,6 +240,78 @@ private class DefaultSurfaceProcessor(
                 Logger.e(TAG, "Error while rendering frame", t)
             }
         }
+
+        // Surface, size and transform matrix for JPEG Surface if exists
+        if (pendingSnapshots.isNotEmpty()) {
+            try {
+                val first = surfaceOutputs.first()
+                val snapshotOutput = Pair(
+                    first.descriptor.resolution,
+                    surfaceOutputMatrix.clone()
+                )
+
+                // Execute all pending snapshots.
+                takeSnapshot(snapshotOutput)
+            } catch (e: RuntimeException) {
+                // Propagates error back to the app if failed to take snapshot.
+                failAllPendingSnapshots(e)
+            }
+        }
+    }
+
+    /**
+     * Takes a snapshot of the current frame and draws it to given JPEG surface.
+     *
+     * @param snapshotOutput The <Surface size, transform matrix> pair for drawing.
+     */
+    private fun takeSnapshot(snapshotOutput: Pair<Size, FloatArray>) {
+        if (pendingSnapshots.isEmpty()) {
+            // No pending snapshot requests, do nothing.
+            return
+        }
+
+        // Write to JPEG surface, once for each snapshot request.
+        try {
+            for (pendingSnapshot in pendingSnapshots) {
+                val (size, transform) = snapshotOutput
+
+                // Take a snapshot of the current frame.
+                val bitmap = getBitmap(size, transform, pendingSnapshot.rotationDegrees)
+
+                // Complete the snapshot request.
+                pendingSnapshot.completer.set(bitmap)
+            }
+            pendingSnapshots.clear()
+        } catch (e: IOException) {
+            failAllPendingSnapshots(e)
+        }
+    }
+
+    private fun failAllPendingSnapshots(throwable: Throwable) {
+        for (pendingSnapshot in pendingSnapshots) {
+            pendingSnapshot.completer.setException(throwable)
+        }
+        pendingSnapshots.clear()
+    }
+
+    private fun getBitmap(
+        size: Size,
+        textureTransform: FloatArray,
+        rotationDegrees: Int
+    ): Bitmap {
+        val snapshotTransform = textureTransform.clone()
+
+        // Rotate the output if requested.
+        snapshotTransform.preRotate(rotationDegrees.toFloat(), 0.5f, 0.5f)
+
+        // Flip the snapshot. This is for reverting the GL transform added in SurfaceOutputImpl.
+        snapshotTransform.preVerticalFlip(0.5f)
+
+        // Update the size based on the rotation degrees.
+        val rotatedSize = size.rotate(rotationDegrees)
+
+        // Take a snapshot Bitmap and compress it to JPEG.
+        return renderer.snapshot(rotatedSize, snapshotTransform)
     }
 
     private fun executeSafely(
@@ -260,6 +353,12 @@ private class DefaultSurfaceProcessor(
     }
 
     private data class SurfaceInput(val surface: Surface, val surfaceTexture: SurfaceTexture)
+
+    private data class PendingSnapshot(
+        @IntRange(from = 0, to = 359)
+        val rotationDegrees: Int,
+        val completer: CallbackToFutureAdapter.Completer<Bitmap>
+    )
 }
 
 class DefaultSurfaceProcessorFactory :
