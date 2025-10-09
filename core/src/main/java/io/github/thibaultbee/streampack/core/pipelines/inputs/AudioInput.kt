@@ -233,7 +233,10 @@ internal class AudioInput(
         withContext(dispatcherProvider.default) {
             sourceMutex.withLock {
                 if (sourceConfig == newAudioSourceConfig) {
-                    Logger.i(TAG, "Audio source configuration is the same, skipping configuration")
+                    Logger.i(
+                        TAG,
+                        "Audio source configuration is the same, skipping configuration"
+                    )
                     return@withContext
                 }
                 require(!isStreamingFlow.value) { "Can't change audio source configuration while streaming" }
@@ -285,7 +288,10 @@ internal class AudioInput(
                 try {
                     port.startStream()
                 } catch (t: Throwable) {
-                    Logger.w(TAG, "startStream: Can't start audio processor: ${t.message}")
+                    Logger.w(
+                        TAG,
+                        "startStream: Can't start audio processor: ${t.message}"
+                    )
                     source.stopStream()
                     throw t
                 }
@@ -305,12 +311,18 @@ internal class AudioInput(
                 try {
                     port.stopStream()
                 } catch (t: Throwable) {
-                    Logger.w(TAG, "stopStream: Can't stop audio processor: ${t.message}")
+                    Logger.w(
+                        TAG,
+                        "stopStream: Can't stop audio processor: ${t.message}"
+                    )
                 }
                 try {
                     sourceInternalFlow.value?.stopStream()
                 } catch (t: Throwable) {
-                    Logger.w(TAG, "stopStream: Can't stop audio source: ${t.message}")
+                    Logger.w(
+                        TAG,
+                        "stopStream: Can't stop audio source: ${t.message}"
+                    )
                 }
             }
         }
@@ -328,17 +340,26 @@ internal class AudioInput(
                 try {
                     port.removeInput()
                 } catch (t: Throwable) {
-                    Logger.w(TAG, "release: Can't remove audio processor input: ${t.message}")
+                    Logger.w(
+                        TAG,
+                        "release: Can't remove audio processor input: ${t.message}"
+                    )
                 }
                 try {
                     port.release()
                 } catch (t: Throwable) {
-                    Logger.w(TAG, "release: Can't release audio processor: ${t.message}")
+                    Logger.w(
+                        TAG,
+                        "release: Can't release audio processor: ${t.message}"
+                    )
                 }
                 try {
                     sourceInternalFlow.value?.release()
                 } catch (t: Throwable) {
-                    Logger.w(TAG, "release: Can't release audio source: ${t.message}")
+                    Logger.w(
+                        TAG,
+                        "release: Can't release audio source: ${t.message}"
+                    )
                 }
 
                 isStreamingJob.cancel()
@@ -353,7 +374,9 @@ internal class AudioInput(
 
     internal sealed class Config
 
-    internal class PushConfig(val onFrame: suspend (RawFrame) -> Unit) : Config()
+    internal class PushConfig(val onFrame: suspend (RawFrame) -> Unit) :
+        Config()
+
     internal class CallbackConfig : Config()
 }
 
@@ -370,7 +393,10 @@ private class PushAudioPort(
     private val audioPullPush = RawFramePullPush(
         audioFrameProcessor,
         config.onFrame,
-        dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_AUDIO_PREPROCESSING)
+        dispatcherProvider.createAudioDispatcher(
+            1,
+            THREAD_NAME_AUDIO_PREPROCESSING
+        )
     )
 
     override suspend fun setInput(getFrame: (frameFactory: IRawFrameFactory) -> RawFrame) {

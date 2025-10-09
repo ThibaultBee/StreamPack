@@ -24,6 +24,7 @@ import androidx.annotation.IntRange
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import com.google.common.util.concurrent.ListenableFuture
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
+import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.SurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.preRotate
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.preVerticalFlip
@@ -33,7 +34,6 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_GL
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.utils.HandlerThreadExecutor
-import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -120,7 +120,7 @@ private class DefaultSurfaceProcessor(
 
         executeSafely {
             if (!surfaceOutputs.contains(surfaceOutput)) {
-                renderer.registerOutputSurface(surfaceOutput.descriptor.surface)
+                renderer.registerOutputSurface(surfaceOutput.surface)
                 surfaceOutputs.add(surfaceOutput)
             } else {
                 Logger.w(TAG, "Surface already added")
@@ -130,7 +130,7 @@ private class DefaultSurfaceProcessor(
 
     private fun removeOutputSurfaceInternal(surfaceOutput: ISurfaceOutput) {
         if (surfaceOutputs.contains(surfaceOutput)) {
-            renderer.unregisterOutputSurface(surfaceOutput.descriptor.surface)
+            renderer.unregisterOutputSurface(surfaceOutput.surface)
             surfaceOutputs.remove(surfaceOutput)
         } else {
             Logger.w(TAG, "Surface not found")
@@ -154,7 +154,7 @@ private class DefaultSurfaceProcessor(
 
         executeSafely {
             val surfaceOutput =
-                surfaceOutputs.firstOrNull { it.descriptor.surface == surface }
+                surfaceOutputs.firstOrNull { it.surface == surface }
             if (surfaceOutput != null) {
                 removeOutputSurfaceInternal(surfaceOutput)
             } else {
@@ -165,7 +165,7 @@ private class DefaultSurfaceProcessor(
 
     private fun removeAllOutputSurfacesInternal() {
         surfaceOutputs.forEach { surfaceOutput ->
-            renderer.unregisterOutputSurface(surfaceOutput.descriptor.surface)
+            renderer.unregisterOutputSurface(surfaceOutput.surface)
         }
         surfaceOutputs.clear()
     }
@@ -227,15 +227,17 @@ private class DefaultSurfaceProcessor(
 
         val timestamp =
             surfaceTexture.timestamp + (surfaceInputsTimestampInNsMap[surfaceTexture] ?: 0L)
-        surfaceOutputs.filter { it.isStreaming() }.forEach {
+        surfaceOutputs.filterIsInstance<SurfaceOutput>().forEach {
             try {
                 it.updateTransformMatrix(surfaceOutputMatrix, textureMatrix)
-                renderer.render(
-                    timestamp,
-                    surfaceOutputMatrix,
-                    it.descriptor.surface,
-                    it.viewportRect
-                )
+                if (it.isStreaming()) {
+                    renderer.render(
+                        timestamp,
+                        surfaceOutputMatrix,
+                        it.surface,
+                        it.viewportRect
+                    )
+                }
             } catch (t: Throwable) {
                 Logger.e(TAG, "Error while rendering frame", t)
             }
@@ -244,14 +246,14 @@ private class DefaultSurfaceProcessor(
         // Surface, size and transform matrix for JPEG Surface if exists
         if (pendingSnapshots.isNotEmpty()) {
             try {
-                val first = surfaceOutputs.first()
-                val snapshotOutput = Pair(
-                    first.descriptor.resolution,
-                    surfaceOutputMatrix.clone()
-                )
+                val bitmapSurface =
+                    surfaceOutputs.maxByOrNull { it.resolution.width * it.resolution.height }
+                        ?: throw IllegalStateException(
+                            "No output surface available for snapshot"
+                        )
 
                 // Execute all pending snapshots.
-                takeSnapshot(snapshotOutput)
+                takeSnapshot(bitmapSurface.resolution, surfaceOutputMatrix.clone())
             } catch (e: RuntimeException) {
                 // Propagates error back to the app if failed to take snapshot.
                 failAllPendingSnapshots(e)
@@ -262,28 +264,32 @@ private class DefaultSurfaceProcessor(
     /**
      * Takes a snapshot of the current frame and draws it to given JPEG surface.
      *
-     * @param snapshotOutput The <Surface size, transform matrix> pair for drawing.
+     * @param snapshotSize The size of the snapshot.
+     * @param snapshotTransform The GL transform matrix to apply to the snapshot.
      */
-    private fun takeSnapshot(snapshotOutput: Pair<Size, FloatArray>) {
+    private fun takeSnapshot(snapshotSize: Size, snapshotTransform: FloatArray) {
         if (pendingSnapshots.isEmpty()) {
             // No pending snapshot requests, do nothing.
             return
         }
 
-        // Write to JPEG surface, once for each snapshot request.
+        // Write to Bitmap, once for each snapshot request.
         try {
             for (pendingSnapshot in pendingSnapshots) {
-                val (size, transform) = snapshotOutput
+                try {
+                    // Take a snapshot of the current frame.
+                    val bitmap =
+                        getBitmap(snapshotSize, snapshotTransform, pendingSnapshot.rotationDegrees)
 
-                // Take a snapshot of the current frame.
-                val bitmap = getBitmap(size, transform, pendingSnapshot.rotationDegrees)
-
-                // Complete the snapshot request.
-                pendingSnapshot.completer.set(bitmap)
+                    // Complete the snapshot request.
+                    pendingSnapshot.completer.set(bitmap)
+                } catch (t: Throwable) {
+                    // Propagate error back to the app if failed to take snapshot.
+                    pendingSnapshot.completer.setException(t)
+                }
             }
+        } finally {
             pendingSnapshots.clear()
-        } catch (e: IOException) {
-            failAllPendingSnapshots(e)
         }
     }
 
@@ -291,7 +297,6 @@ private class DefaultSurfaceProcessor(
         for (pendingSnapshot in pendingSnapshots) {
             pendingSnapshot.completer.setException(throwable)
         }
-        pendingSnapshots.clear()
     }
 
     private fun getBitmap(
