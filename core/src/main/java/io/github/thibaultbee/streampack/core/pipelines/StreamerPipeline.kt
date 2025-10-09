@@ -398,23 +398,23 @@ open class StreamerPipeline(
         withVideo: Boolean = this.withVideo,
         endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
         @RotationValue targetRotation: Int = context.displayRotation
-    ): IConfigurableAudioVideoEncodingPipelineOutput =
-        withContext(dispatcherProvider.default) {
-            if (isReleaseRequested.get()) {
-                throw IllegalStateException("Pipeline is released")
-            }
-            require(withAudio || withVideo) { "At least one of audio or video must be set" }
-            val withAudioCorrected = if (this@StreamerPipeline.withAudio) {
-                withAudio
-            } else {
-                false
-            }
-            val withVideoCorrected = if (this@StreamerPipeline.withVideo) {
-                withVideo
-            } else {
-                false
-            }
+    ): IConfigurableAudioVideoEncodingPipelineOutput {
+        if (isReleaseRequested.get()) {
+            throw IllegalStateException("Pipeline is released")
+        }
+        require(withAudio || withVideo) { "At least one of audio or video must be set" }
+        val withAudioCorrected = if (this@StreamerPipeline.withAudio) {
+            withAudio
+        } else {
+            false
+        }
+        val withVideoCorrected = if (this@StreamerPipeline.withVideo) {
+            withVideo
+        } else {
+            false
+        }
 
+        return withContext(dispatcherProvider.default) {
             val output =
                 EncodingPipelineOutput(
                     context,
@@ -426,6 +426,7 @@ open class StreamerPipeline(
                 )
             addOutput(output)
         }
+    }
 
     /**
      * Adds an output.
@@ -443,26 +444,32 @@ open class StreamerPipeline(
             "Output must be an audio or video output"
         }
 
-        if (safeOutputCall { outputs -> outputs.contains(output) }) {
-            throw IllegalStateException("Output $output already added")
-        }
-        require(!output.isStreaming) { "Output $output is already streaming" }
+        return withContext(dispatcherProvider.default) {
+            if (safeOutputCall { outputs -> outputs.contains(output) }) {
+                throw IllegalStateException("Output $output already added")
+            }
+            require(!output.isStreaming) { "Output $output is already streaming" }
 
-        try {
-            val jobs = addOutputImpl(output, coroutineScope)
-            safeOutputCall {
-                outputsToJobsMap[output] = jobs
-            }
-        } catch (t: Throwable) {
-            removeOutput(output)
             try {
-                output.release()
-            } catch (t2: Throwable) {
-                Logger.e(TAG, "Error while releasing output $output after a failure to add it", t2)
+                val jobs = addOutputImpl(output, coroutineScope)
+                safeOutputCall {
+                    outputsToJobsMap[output] = jobs
+                }
+            } catch (t: Throwable) {
+                removeOutput(output)
+                try {
+                    output.release()
+                } catch (t2: Throwable) {
+                    Logger.e(
+                        TAG,
+                        "Error while releasing output $output after a failure to add it",
+                        t2
+                    )
+                }
+                throw t
             }
-            throw t
+            output
         }
-        return output
     }
 
     /**
@@ -802,27 +809,32 @@ open class StreamerPipeline(
             throw IllegalStateException("Pipeline is released")
         }
 
-        val jobs = mutableListOf<Job>()
-        val exceptions = mutableListOf<Throwable>()
-        safeOutputCall { outputs ->
-            outputs.keys.forEach { output ->
-                jobs += coroutineScope.launch {
-                    try {
-                        output.startStream()
-                    } catch (t: Throwable) {
-                        exceptions += t
-                        Logger.w(TAG, "startStream: Can't start output $output: ${t.message}")
+        withContext(dispatcherProvider.default) {
+            val jobs = mutableListOf<Job>()
+            val exceptions = mutableListOf<Throwable>()
+            safeOutputCall { outputs ->
+                outputs.keys.forEach { output ->
+                    jobs += coroutineScope.launch {
+                        try {
+                            output.startStream()
+                        } catch (t: Throwable) {
+                            exceptions += t
+                            Logger.w(
+                                TAG,
+                                "startStream: Can't start output $output: ${t.message}"
+                            )
+                        }
                     }
                 }
             }
-        }
-        jobs.joinAll()
+            jobs.joinAll()
 
-        if (exceptions.isNotEmpty()) {
-            if (exceptions.size == 1) {
-                throw exceptions.first()
-            } else {
-                throw MultiThrowable(exceptions)
+            if (exceptions.isNotEmpty()) {
+                if (exceptions.size == 1) {
+                    throw exceptions.first()
+                } else {
+                    throw MultiThrowable(exceptions)
+                }
             }
         }
     }
@@ -852,8 +864,10 @@ open class StreamerPipeline(
      */
     private suspend fun stopStreamInputsIfNeededUnsafe(output: IPipelineOutput) {
         // If sources are not streaming, do nothing
-        var isAudioSourceStreaming = _audioInput != null && _audioInput.isStreamingFlow.value
-        var isVideoSourceStreaming = _videoInput != null && _videoInput.isStreamingFlow.value
+        var isAudioSourceStreaming =
+            _audioInput != null && _audioInput.isStreamingFlow.value
+        var isVideoSourceStreaming =
+            _videoInput != null && _videoInput.isStreamingFlow.value
         if (!isAudioSourceStreaming && !isVideoSourceStreaming) {
             return
         }
@@ -866,7 +880,10 @@ open class StreamerPipeline(
                     try {
                         it.stopStream()
                     } catch (t: Throwable) {
-                        Logger.w(TAG, "stopStream: Can't stop audio input: ${t.message}")
+                        Logger.w(
+                            TAG,
+                            "stopStream: Can't stop audio input: ${t.message}"
+                        )
                     }
                 }
             }
@@ -880,7 +897,10 @@ open class StreamerPipeline(
                     try {
                         it.stopStream()
                     } catch (t: Throwable) {
-                        Logger.w(TAG, "stopStream: Can't stop video input: ${t.message}")
+                        Logger.w(
+                            TAG,
+                            "stopStream: Can't stop video input: ${t.message}"
+                        )
                     }
                 }
             }
@@ -890,8 +910,10 @@ open class StreamerPipeline(
         videoJob?.join()
 
         // set isStreamingFlow to false if no more inputs are streaming
-        isAudioSourceStreaming = _audioInput != null && _audioInput.isStreamingFlow.value
-        isVideoSourceStreaming = _videoInput != null && _videoInput.isStreamingFlow.value
+        isAudioSourceStreaming =
+            _audioInput != null && _audioInput.isStreamingFlow.value
+        isVideoSourceStreaming =
+            _videoInput != null && _videoInput.isStreamingFlow.value
         if (!isAudioSourceStreaming && !isVideoSourceStreaming) {
             _isStreamingFlow.emit(false)
         }
@@ -924,16 +946,18 @@ open class StreamerPipeline(
      *
      * It stops audio and video sources and calls [IPipelineOutput.stopStream] on all outputs.
      */
-    override suspend fun stopStream() = withContext(dispatcherProvider.default) {
+    override suspend fun stopStream() {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Pipeline is released")
         }
+        withContext(dispatcherProvider.default) {
 
-        inputMutex.withLock {
-            stopStreamInputsUnsafe()
+            inputMutex.withLock {
+                stopStreamInputsUnsafe()
+            }
+
+            stopStreamOutputs()
         }
-
-        stopStreamOutputs()
     }
 
     private suspend fun releaseSourcesUnsafe() {
@@ -957,12 +981,18 @@ open class StreamerPipeline(
                 try {
                     detachOutput(output)
                 } catch (t: Throwable) {
-                    Logger.w(TAG, "release: Can't detach output $output: ${t.message}")
+                    Logger.w(
+                        TAG,
+                        "release: Can't detach output $output: ${t.message}"
+                    )
                 }
                 try {
                     output.release()
                 } catch (t: Throwable) {
-                    Logger.w(TAG, "release: Can't release output $output: ${t.message}")
+                    Logger.w(
+                        TAG,
+                        "release: Can't release output $output: ${t.message}"
+                    )
                 }
             }
             outputs.clear()
@@ -975,27 +1005,31 @@ open class StreamerPipeline(
      * It releases the audio and video sources and the processors.
      * It also calls [IPipelineOutput.release] on all outputs.
      */
-    override suspend fun release() = withContext(dispatcherProvider.default) {
+    override suspend fun release() {
         if (isReleaseRequested.getAndSet(true)) {
             Logger.w(TAG, "Already released")
-            return@withContext
+            return
         }
         Logger.d(TAG, "Releasing pipeline")
-
-        // Sources
-        inputMutex.withLock {
-            try {
-                releaseSourcesUnsafe()
-            } catch (t: Throwable) {
-                Logger.w(TAG, "release: Can't release sources: ${t.message}")
+        withContext(dispatcherProvider.default) {
+            // Sources
+            inputMutex.withLock {
+                try {
+                    releaseSourcesUnsafe()
+                } catch (t: Throwable) {
+                    Logger.w(
+                        TAG,
+                        "release: Can't release sources: ${t.message}"
+                    )
+                }
             }
+            Logger.d(TAG, "Sources released")
+
+            // Outputs
+            releaseOutputs()
+
+            coroutineScope.cancel()
         }
-        Logger.d(TAG, "Sources released")
-
-        // Outputs
-        releaseOutputs()
-
-        coroutineScope.cancel()
     }
 
     private suspend fun <T> safeOutputCall(block: suspend (MutableMap<IPipelineOutput, List<Job>>) -> T) =
@@ -1007,22 +1041,24 @@ open class StreamerPipeline(
 
     private suspend fun <T> safeStreamingOutputCall(block: suspend (Map<IPipelineOutput, List<Job>>) -> T) =
         safeOutputCall { outputs ->
-            val streamingOutputs = outputs.filter { it.key.isStreamingFlow.value }
+            val streamingOutputs =
+                outputs.filter { it.key.isStreamingFlow.value }
             block(streamingOutputs)
         }
 
     /**
      * Executes a block with the [coroutineDispatcher] and the [inputMutex] locked.
      */
-    private suspend fun <T> withContextInputMutex(block: suspend () -> T): T =
-        withContext(dispatcherProvider.default) {
-            if (isReleaseRequested.get()) {
-                throw IllegalStateException("Pipeline is released")
-            }
+    private suspend fun <T> withContextInputMutex(block: suspend () -> T): T {
+        if (isReleaseRequested.get()) {
+            throw IllegalStateException("Pipeline is released")
+        }
+        return withContext(dispatcherProvider.default) {
             inputMutex.withLock {
                 block()
             }
         }
+    }
 
     companion object {
         private const val TAG = "StreamerPipeline"
