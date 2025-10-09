@@ -163,7 +163,7 @@ internal class VideoInput(
 
     private var isReleaseRequested = AtomicBoolean(false)
 
-    private val videoSourceMutex = Mutex()
+    private val sourceMutex = Mutex()
 
     override var processor: ISurfaceProcessorInternal =
         surfaceProcessorFactory.create(dynamicRangeProfileHint, dispatcherProvider)
@@ -215,7 +215,7 @@ internal class VideoInput(
         }
 
         withContext(dispatcherProvider.default) {
-            videoSourceMutex.withLock {
+            sourceMutex.withLock {
                 val previousVideoSource = sourceInternalFlow.value
                 val isStreaming = previousVideoSource?.isStreamingFlow?.value ?: false
 
@@ -332,9 +332,12 @@ internal class VideoInput(
         }
 
         withContext(dispatcherProvider.default) {
-            videoSourceMutex.withLock {
+            sourceMutex.withLock {
                 if (sourceConfig == newVideoSourceConfig) {
-                    Logger.i(TAG, "Video source configuration is the same, skipping configuration")
+                    Logger.i(
+                        TAG,
+                        "Video source configuration is the same, skipping configuration"
+                    )
                     return@withContext
                 }
                 require(!isStreamingFlow.value) { "Can't change video source configuration while streaming" }
@@ -418,7 +421,7 @@ internal class VideoInput(
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
-        return withContext(dispatcherProvider.default) {
+        return startStreamForBlock {
             suspendCoroutine { continuation ->
                 val listener = processor.snapshot(rotationDegrees)
                 try {
@@ -444,10 +447,49 @@ internal class VideoInput(
 
     suspend fun removeOutputSurface(output: Surface) {
         outputMutex.withLock {
-            surfaceOutput.firstOrNull { it.descriptor.surface == output }?.let {
+            surfaceOutput.firstOrNull { it.surface == output }?.let {
                 surfaceOutput.remove(it)
             }
             processor.removeOutputSurface(output)
+        }
+    }
+
+    private suspend fun startStreamUnsafe() {
+        val source =
+            requireNotNull(source) { "Video source must be set before starting stream" }
+        if (isStreamingFlow.value) {
+            Logger.w(TAG, "Stream is already running")
+            return
+        }
+        if (!withConfig) {
+            Logger.w(TAG, "Video source config is not set")
+        }
+        source.startStream()
+    }
+
+    /**
+     * Starts the stream, executes the given block, then stops the stream.
+     *
+     * If the stream was already running, it will not be stopped after the block.
+     */
+    private suspend fun <T> startStreamForBlock(block: suspend () -> T): T {
+        if (isReleaseRequested.get()) {
+            throw IllegalStateException("Input is released")
+        }
+        return withContext(dispatcherProvider.default) {
+            sourceMutex.withLock {
+                val wasStreaming = isStreamingFlow.value
+                if (!wasStreaming) {
+                    startStreamUnsafe()
+                }
+                try {
+                    block()
+                } finally {
+                    if (!wasStreaming) {
+                        stopStreamUnsafe()
+                    }
+                }
+            }
         }
     }
 
@@ -456,19 +498,18 @@ internal class VideoInput(
             throw IllegalStateException("Input is released")
         }
         withContext(dispatcherProvider.default) {
-            videoSourceMutex.withLock {
-                val source =
-                    requireNotNull(source) { "Video source must be set before starting stream" }
-                if (isStreamingFlow.value) {
-                    Logger.w(TAG, "Stream is already running")
-                    return@withContext
-                }
-                if (!withConfig) {
-                    Logger.w(TAG, "Video source config is not set")
-                }
-                source.startStream()
+            sourceMutex.withLock {
+                startStreamUnsafe()
                 _isStreamingFlow.emit(true)
             }
+        }
+    }
+
+    private suspend fun stopStreamUnsafe() {
+        try {
+            source?.stopStream()
+        } catch (t: Throwable) {
+            Logger.w(TAG, "stopStream: Can't stop video source: ${t.message}")
         }
     }
 
@@ -477,13 +518,9 @@ internal class VideoInput(
             throw IllegalStateException("Input is released")
         }
         withContext(dispatcherProvider.default) {
-            videoSourceMutex.withLock {
+            sourceMutex.withLock {
                 _isStreamingFlow.emit(false)
-                try {
-                    source?.stopStream()
-                } catch (t: Throwable) {
-                    Logger.w(TAG, "stopStream: Can't stop video source: ${t.message}")
-                }
+                stopStreamUnsafe()
             }
         }
     }
@@ -510,12 +547,15 @@ internal class VideoInput(
         }
 
         withContext(dispatcherProvider.default) {
-            videoSourceMutex.withLock {
+            sourceMutex.withLock {
                 _isStreamingFlow.emit(false)
                 try {
                     releaseSurfaceProcessor()
                 } catch (t: Throwable) {
-                    Logger.w(TAG, "release: Can't release surface processor: ${t.message}")
+                    Logger.w(
+                        TAG,
+                        "release: Can't release surface processor: ${t.message}"
+                    )
                 }
                 val videoSource = sourceInternalFlow.value
                 if (videoSource is ISurfaceSourceInternal) {
@@ -531,7 +571,10 @@ internal class VideoInput(
                 try {
                     videoSource?.release()
                 } catch (t: Throwable) {
-                    Logger.w(TAG, "release: Can't release video source: ${t.message}")
+                    Logger.w(
+                        TAG,
+                        "release: Can't release video source: ${t.message}"
+                    )
                 }
 
                 isStreamingJob.cancel()
