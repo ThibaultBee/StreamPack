@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:enableZoomOnPinch="true"
-            app:layout_constraintBottom_toTopOf="@+id/liveButton"
+            app:layout_constraintBottom_toTopOf="@+id/liveLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -56,16 +56,29 @@
 
         </LinearLayout>
 
-        <ToggleButton
-            android:id="@+id/liveButton"
+        <LinearLayout
+            android:id="@+id/liveLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/live"
-            android:textOff="@string/live"
-            android:textOn="@string/stop"
+            android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent">
+
+            <ToggleButton
+                android:id="@+id/liveButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/live"
+                android:textOff="@string/live"
+                android:textOn="@string/stop" />
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="@{() -> viewmodel.takePhoto()}"
+                android:src="@drawable/ic_baseline_camera_24" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="200dp"

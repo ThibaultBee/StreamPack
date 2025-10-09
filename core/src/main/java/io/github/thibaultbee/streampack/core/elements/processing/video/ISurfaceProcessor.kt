@@ -15,8 +15,11 @@
  */
 package io.github.thibaultbee.streampack.core.elements.processing.video
 
+import android.graphics.Bitmap
 import android.util.Size
 import android.view.Surface
+import androidx.annotation.IntRange
+import com.google.common.util.concurrent.ListenableFuture
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
@@ -44,6 +47,8 @@ interface ISurfaceProcessorInternal : ISurfaceProcessor, Releasable {
     fun removeOutputSurface(surface: Surface)
 
     fun removeAllOutputSurfaces()
+
+    fun snapshot(@IntRange(from = 0, to = 359) rotationDegrees: Int): ListenableFuture<Bitmap>
 
     /**
      * Factory interface for creating instances of [ISurfaceProcessorInternal].
