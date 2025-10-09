@@ -18,7 +18,10 @@ package io.github.thibaultbee.streampack.core.elements.processing.video.outputs
 import android.graphics.Rect
 import android.graphics.RectF
 import android.opengl.Matrix
+import android.util.Size
+import android.view.Surface
 import androidx.annotation.IntRange
+import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.SurfaceOutput.TransformationInfo
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ViewPortUtils.calculateViewportRect
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.TransformUtils
@@ -29,14 +32,27 @@ import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
 import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
 
+fun SurfaceOutput(
+    descriptor: SurfaceDescriptor,
+    isStreaming: () -> Boolean,
+    transformationInfo: TransformationInfo
+) =
+    SurfaceOutput(
+        descriptor.surface,
+        descriptor.resolution,
+        isStreaming,
+        transformationInfo
+    )
+
 class SurfaceOutput(
-    override val descriptor: SurfaceDescriptor,
-    override val isStreaming: () -> Boolean,
+    override val surface: Surface,
+    override val resolution: Size,
+    val isStreaming: () -> Boolean,
     private val transformationInfo: TransformationInfo
 ) :
     ISurfaceOutput {
-    private val resolution = descriptor.resolution
-    
+    override val type = ISurfaceOutput.OutputType.INTERNAL
+
     private val infoProvider: ISourceInfoProvider
         get() = transformationInfo.infoProvider
 
@@ -52,7 +68,7 @@ class SurfaceOutput(
     private val additionalTransform = FloatArray(16)
     private val invertedTextureTransform = FloatArray(16)
 
-    override val viewportRect = calculateViewportRect(
+    val viewportRect = calculateViewportRect(
         transformationInfo.aspectRatioMode,
         transformationInfo.infoProvider.getSurfaceSize(resolution),
         resolution
