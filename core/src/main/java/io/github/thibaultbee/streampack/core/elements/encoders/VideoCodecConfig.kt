@@ -17,7 +17,6 @@ package io.github.thibaultbee.streampack.core.elements.encoders
 
 import android.content.Context
 import android.media.MediaCodecInfo
-import android.media.MediaCodecInfo.CodecProfileLevel
 import android.media.MediaCodecInfo.CodecProfileLevel.APVProfile422_10
 import android.media.MediaCodecInfo.CodecProfileLevel.AV1ProfileMain8
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline
@@ -35,11 +34,11 @@ import android.media.MediaFormat.KEY_PRIORITY
 import android.os.Build
 import android.util.Size
 import androidx.annotation.IntRange
-import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig.Companion.DEFAULT_FPS
-import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig.Companion.DEFAULT_RESOLUTION
-import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig.Companion.getBestBitrate
+import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig.Companion.getBestLevel
+import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig.Companion.getBestProfile
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecHelper
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
+import io.github.thibaultbee.streampack.core.elements.utils.SdrColorStandardValue
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isVideo
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotateFromNaturalOrientation
@@ -48,65 +47,10 @@ import java.security.InvalidParameterException
 import kotlin.math.roundToInt
 
 /**
- * Creates a [VideoCodecConfig] with a [CodecProfileLevel]
- *
- * @return the [VideoCodecConfig]
- */
-fun VideoCodecConfig(
-    /**
-     * Video encoder mime type.
-     * Only [MediaFormat.MIMETYPE_VIDEO_AVC], [MediaFormat.MIMETYPE_VIDEO_HEVC], [MediaFormat.MIMETYPE_VIDEO_VP9] and [MediaFormat.MIMETYPE_VIDEO_AV1] are supported yet.
-     *
-     * **See Also:** [MediaFormat MIMETYPE_VIDEO_*](https://developer.android.com/reference/android/media/MediaFormat)
-     */
-    mimeType: String = MediaFormat.MIMETYPE_VIDEO_AVC,
-    /**
-     * Video output resolution in pixel.
-     */
-    resolution: Size = DEFAULT_RESOLUTION,
-    /**
-     * Video encoder bitrate in bits/s.
-     */
-    startBitrate: Int = getBestBitrate(resolution),
-    /**
-     * Video framerate.
-     * This is a best effort as few camera can not generate a fixed framerate.
-     */
-    fps: Int = DEFAULT_FPS,
-    /**
-     * Video encoder profile/level. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile.
-     * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
-     */
-    profileLevel: CodecProfileLevel,
-    /**
-     * Video encoder I-frame interval in seconds.
-     * This is a best effort as few camera can not generate a fixed framerate.
-     * For live streaming, I-frame interval should be really low. For recording, I-frame interval should be higher.
-     */
-    gopDurationInS: Float = 1f,  // 1s between I frames
-    /**
-     * A callback to be invoked when the media format is generated.
-     * This is a dangerous callback as a wrong media format can make some encoders fail, also
-     * don't change existing keys as it can break your streaming.
-     * Also, don't block the thread.
-     */
-    customize: MediaFormatCustomHandler = {}
-) = VideoCodecConfig(
-    mimeType,
-    startBitrate,
-    resolution,
-    fps,
-    profileLevel.profile,
-    profileLevel.level,
-    gopDurationInS,
-    customize
-)
-
-/**
  * Video configuration class.
  * If you don't know how to set class members, [Video encoding recommendations](https://developer.android.com/guide/topics/media/media-formats#video-encoding) should give you hints.
  */
-class VideoCodecConfig(
+class VideoCodecConfig internal constructor(
     /**
      * Video encoder mime type.
      * Only [MediaFormat.MIMETYPE_VIDEO_AVC], [MediaFormat.MIMETYPE_VIDEO_HEVC],
@@ -129,19 +73,6 @@ class VideoCodecConfig(
      */
     val fps: Int = DEFAULT_FPS,
     /**
-     * Video encoder profile. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile.
-     * If not set, profile is always a 8 bit profile. StreamPack try to apply the highest profile available.
-     * If the decoder does not support the profile, you should explicitly set the profile to a lower
-     * value such as [AVCProfileBaseline] for AVC, [HEVCProfileMain] for HEVC, [VP9Profile0] for VP9.
-     * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
-     */
-    profile: Int = getBestProfile(mimeType),
-    /**
-     * Video encoder level. Encoders may not support requested level. In this case, StreamPack fallbacks to default level.
-     * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
-     */
-    val level: Int = getBestLevel(mimeType, profile),
-    /**
      * Video encoder I-frame interval in seconds.
      * This is a best effort as few camera can not generate a fixed frame rate.
      * For live streaming, I-frame interval should be really low. For recording, I-frame interval should be higher.
@@ -150,34 +81,131 @@ class VideoCodecConfig(
      */
     val gopDurationInS: Float = 1f,  // 1s between I frames
     /**
+     * Video profile level with color information.
+     */
+    private val profileLevelColor: VideoProfileLevelColor,
+    /**
      * A callback to be invoked when the media format is generated.
      * This is a dangerous callback as a wrong media format can make some encoders fail, also
      * don't change existing keys as it can break your streaming.
      * Also, don't block the thread.
      */
     private val customize: MediaFormatCustomHandler = {}
-) : CodecConfig(mimeType, startBitrate, profile) {
-    init {
-        require(mimeType.isVideo) { "MimeType must be video" }
-        require(startBitrate > 0) { "Bitrate must be > 0" }
-        require(resolution.width > 0 && resolution.height > 0) { "Resolution width and height must be > 0" }
-        require(fps > 0) { "FPS must be > 0" }
-        require(gopDurationInS >= 0f) { "GOP duration must be >= 0" }
-    }
+) : CodecConfig(mimeType, startBitrate, profileLevelColor.profile) {
+    /**
+     * Instantiates a [VideoCodecConfig] instance from profile and level.
+     *
+     * If you don't know how to set profile and level, use [VideoCodecConfig] without profile and level parameters.
+     *
+     * @param mimeType Video encoder mime type.
+     * @param startBitrate Video encoder bitrate in bits/s.
+     * @param resolution Video output resolution in pixel.
+     * @param fps Video framerate.
+     * @param gopDurationInS Video encoder I-frame interval in seconds.
+     * @param profile Video encoder profile. Encoders may not support requested profile. In this case, StreamPack fallbacks to encoder default profile.
+     * @param level Video encoder level. Encoders may not support requested level. In this case, StreamPack fallbacks to encoder default level.
+     * @param customize A callback to be invoked when the media format is generated.
+     */
+    constructor(
+        mimeType: String = MediaFormat.MIMETYPE_VIDEO_AVC,
+        startBitrate: Int = 2_000_000,
+        resolution: Size = DEFAULT_RESOLUTION,
+        fps: Int = DEFAULT_FPS,
+        gopDurationInS: Float = 1f,  // 1s between I frames
+        profile: Int,
+        level: Int = getBestLevel(mimeType, profile),
+        customize: MediaFormatCustomHandler = {}
+    ) : this(
+        mimeType,
+        startBitrate,
+        resolution,
+        fps,
+        gopDurationInS,
+        {
+            this.profile = profile
+            this.level = level
+        },
+        customize
+    )
+
+    /**
+     * Instantiates a [VideoCodecConfig] instance from [VideoProfileLevelColor.Builder].
+     *
+     * @param mimeType Video encoder mime type.
+     * @param startBitrate Video encoder bitrate in bits/s.
+     * @param resolution Video output resolution in pixel.
+     * @param fps Video framerate.
+     * @param gopDurationInS Video encoder I-frame interval in seconds.
+     * @param profileLevelColorBuilder A builder to create [VideoProfileLevelColor].
+     * @param customize A callback to be invoked when the media format is generated.
+     */
+    constructor(
+        mimeType: String = MediaFormat.MIMETYPE_VIDEO_AVC,
+        startBitrate: Int = 2_000_000,
+        resolution: Size = DEFAULT_RESOLUTION,
+        fps: Int = DEFAULT_FPS,
+        gopDurationInS: Float = 1f,  // 1s between I frames
+        profileLevelColorBuilder: VideoProfileLevelColor.Builder.() -> Unit = {},
+        customize: MediaFormatCustomHandler = {}
+    ) : this(
+        mimeType,
+        startBitrate,
+        resolution,
+        fps,
+        gopDurationInS,
+        VideoProfileLevelColor.Builder(mimeType).apply {
+            this.profileLevelColorBuilder()
+        }.build(),
+        customize
+    )
+
+    /**
+     * Video encoder level. Encoders may not support requested level. In this case, StreamPack fallbacks to default level.
+     * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
+     */
+    val level: Int = profileLevelColor.level
 
     /**
      * The dynamic range profile.
      * It is deduced from the [profile].
      * **See Also:** [DynamicRangeProfiles](https://developer.android.com/reference/android/hardware/camera2/params/DynamicRangeProfiles)
      */
-    val dynamicRangeProfile by lazy { DynamicRangeProfile.fromProfile(mimeType, profile) }
+    val dynamicRangeProfile = profileLevelColor.dynamicRangeProfile
 
     /**
      * Whether the configuration is HDR or not.
      *
      * @return true if the configuration is HDR
      */
-    val isHdr by lazy { dynamicRangeProfile != DynamicRangeProfile.sdr }
+    val isHdr = profileLevelColor.isHdr
+
+    init {
+        require(mimeType.isVideo) { "MimeType must be video" }
+        require(startBitrate > 0) { "Bitrate must be > 0" }
+        require(resolution.width > 0 && resolution.height > 0) { "Resolution width and height must be > 0" }
+        require(fps > 0) { "FPS must be > 0" }
+        require(gopDurationInS >= 0f) { "GOP duration must be >= 0" }
+        if (isHdr) {
+            require(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                "HDR encoding is only supported on Android 13+"
+            }
+            require(profileLevelColor.colorStandard == MediaFormat.COLOR_STANDARD_BT2020) {
+                "Color standard must be COLOR_STANDARD_BT2020 for HDR profile"
+            }
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                val colorStandard = profileLevelColor.colorStandard
+                require(
+                    colorStandard == 0 ||  // 0 is unspecified
+                            colorStandard == MediaFormat.COLOR_STANDARD_BT709 ||
+                            colorStandard == MediaFormat.COLOR_STANDARD_BT601_PAL ||
+                            colorStandard == MediaFormat.COLOR_STANDARD_BT601_NTSC
+                ) {
+                    "Color standard must be COLOR_STANDARD_BT709, COLOR_STANDARD_BT601_PAL or COLOR_STANDARD_BT601_NTSC for SDR profile"
+                }
+            }
+        }
+    }
 
     /**
      * Get the media format from the video configuration
@@ -206,14 +234,17 @@ class VideoCodecConfig(
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                format.setInteger(
+                    MediaFormat.KEY_COLOR_STANDARD, profileLevelColor.colorStandard
+                )
+                format.setInteger(
+                    MediaFormat.KEY_COLOR_RANGE,
+                    profileLevelColor.dynamicRangeProfile.colorRange
+                )
+                format.setInteger(
+                    MediaFormat.KEY_COLOR_TRANSFER, dynamicRangeProfile.transferFunction
+                )
                 if (isHdr) {
-                    format.setInteger(
-                        MediaFormat.KEY_COLOR_STANDARD, MediaFormat.COLOR_STANDARD_BT2020
-                    )
-                    format.setInteger(MediaFormat.KEY_COLOR_RANGE, MediaFormat.COLOR_RANGE_FULL)
-                    format.setInteger(
-                        MediaFormat.KEY_COLOR_TRANSFER, dynamicRangeProfile.transferFunction
-                    )
                     format.setFeatureEnabled(
                         MediaCodecInfo.CodecCapabilities.FEATURE_HdrEditing, true
                     )
@@ -238,14 +269,21 @@ class VideoCodecConfig(
         startBitrate: Int = this.startBitrate,
         resolution: Size = this.resolution,
         fps: Int = this.fps,
-        profile: Int = this.profile,
-        level: Int = this.level,
-        gopDuration: Float = this.gopDurationInS,
+        gopDurationInS: Float = this.gopDurationInS,
+        profileLevelColor: VideoProfileLevelColor = this.profileLevelColor,
         customize: MediaFormatCustomHandler = this.customize
-    ) = VideoCodecConfig(mimeType, startBitrate, resolution, fps, profile, level, gopDuration, customize)
+    ) = VideoCodecConfig(
+        mimeType,
+        startBitrate,
+        resolution,
+        fps,
+        gopDurationInS,
+        profileLevelColor,
+        customize
+    )
 
     override fun toString() =
-        "VideoConfig(mimeType='$mimeType', startBitrate=$startBitrate, resolution=$resolution, fps=$fps, profile=$profile, level=$level)"
+        "VideoConfig(mimeType='$mimeType', startBitrate=$startBitrate, resolution=$resolution, fps=$fps, profileLevelColor=$profileLevelColor, gopDurationInS=$gopDurationInS)"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -390,3 +428,119 @@ fun VideoCodecConfig.rotateDegreesFromNaturalOrientation(
     }
 }
 
+/**
+ * Video profile level with color information.
+ */
+sealed class VideoProfileLevelColor(
+    /**
+     * Video encoder profile. Encoders may not support requested profile. In this case, StreamPack fallbacks to default profile.
+     * If not set, profile is always a 8 bit profile. StreamPack try to apply the highest profile available.
+     * If the decoder does not support the profile, you should explicitly set the profile to a lower
+     * value such as [AVCProfileBaseline] for AVC, [HEVCProfileMain] for HEVC, [VP9Profile0] for VP9.
+     * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
+     */
+    val profile: Int,
+    /**
+     * Video encoder level. Encoders may not support requested level. In this case, StreamPack fallbacks to default level.
+     * ** See ** [MediaCodecInfo.CodecProfileLevel](https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel)
+     */
+    val level: Int,
+
+    /**
+     * The color standard.
+     * Default is [MediaFormat.COLOR_STANDARD_BT709].
+     * **See Also:** [MediaFormat COLOR_STANDARD_*](https://developer.android.com/reference/android/media/MediaFormat)
+     */
+    val colorStandard: Int,
+    /**
+     * The dynamic range profile.
+     * It is deduced from the [profile].
+     * **See Also:** [DynamicRangeProfiles](https://developer.android.com/reference/android/hardware/camera2/params/DynamicRangeProfiles)
+     */
+    val dynamicRangeProfile: DynamicRangeProfile
+) {
+    /**
+     * Whether the configuration is HDR or not.
+     *
+     * @return true if the configuration is HDR
+     */
+    val isHdr by lazy { dynamicRangeProfile != DynamicRangeProfile.sdr }
+
+    companion object {
+        internal class Sdr(
+            profile: Int,
+            level: Int,
+            @SdrColorStandardValue colorStandard: Int
+        ) : VideoProfileLevelColor(
+            profile,
+            level,
+            colorStandard,
+            DynamicRangeProfile.sdr
+        ) {
+            override fun toString(): String {
+                return "VideoProfileLevelColor.Sdr(profile=$profile, level=$level, colorStandard=$colorStandard)"
+            }
+        }
+
+        internal class Hdr(
+            profile: Int,
+            level: Int,
+            dynamicRangeProfile: DynamicRangeProfile
+        ) :
+            VideoProfileLevelColor(
+                profile,
+                level,
+                MediaFormat.COLOR_STANDARD_BT2020,
+                dynamicRangeProfile
+            ) {
+            override fun toString(): String {
+                return "VideoProfileLevelColor.Hdr(profile=$profile, level=$level, dynamicRangeProfile=$dynamicRangeProfile)"
+            }
+        }
+    }
+
+    /**
+     * Builder for [VideoProfileLevelColor].
+     *
+     * @param mimeType Video encoder mime type.
+     */
+    class Builder internal constructor(private val mimeType: String) {
+        /**
+         * The encoder profile.
+         */
+        var profile: Int? = null
+
+        /**
+         * The encoder level.
+         */
+        var level: Int? = null
+
+        /**
+         * The color standard.
+         * Only applicable for SDR profile.
+         * Default is [MediaFormat.COLOR_STANDARD_BT709].
+         * **See Also:** [MediaFormat COLOR_STANDARD_*](https://developer.android.com/reference/android/media/MediaFormat)
+         */
+        @SdrColorStandardValue
+        var sdrColorStandard: Int = 0 // 0 is unspecified
+
+        fun build(): VideoProfileLevelColor {
+            val profile = profile ?: getBestProfile(mimeType)
+            val level = level ?: getBestLevel(mimeType, profile)
+            val dynamicRangeProfile = try {
+                DynamicRangeProfile.fromProfile(mimeType, profile)
+            } catch (_: Throwable) {
+                // Fallback to SDR if no dynamic range profile found
+                DynamicRangeProfile.sdr
+            }
+            return if (dynamicRangeProfile == DynamicRangeProfile.sdr) {
+                Sdr(profile, level, sdrColorStandard)
+            } else {
+                require(sdrColorStandard == 0) {
+                    "Color standard can only be set for SDR profile"
+                }
+                Hdr(profile, level, dynamicRangeProfile)
+            }
+        }
+    }
+}
