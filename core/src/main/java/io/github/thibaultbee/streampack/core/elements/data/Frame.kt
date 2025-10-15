@@ -23,35 +23,14 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.removePre
 import java.io.Closeable
 import java.nio.ByteBuffer
 
-interface ICloseableFrame : Closeable {
-    /**
-     * Contains an audio or video frame data.
-     */
-    val rawBuffer: ByteBuffer
-
-    /**
-     * A callback to call when frame is closed.
-     */
-    val onClosed: (ICloseableFrame) -> Unit
-
-    override fun close() {
-        try {
-            onClosed(this)
-        } catch (_: Throwable) {
-            // Nothing to do
-        }
-    }
-}
-
 /**
  * A raw frame internal representation.
  */
 data class RawFrame(
-
     /**
      * Contains an audio or video frame data.
      */
-    override val rawBuffer: ByteBuffer,
+    val rawBuffer: ByteBuffer,
 
     /**
      * Presentation timestamp in µs
@@ -61,17 +40,23 @@ data class RawFrame(
     /**
      * A callback to call when frame is closed.
      */
-    override val onClosed: (ICloseableFrame) -> Unit = {}
-) : ICloseableFrame
+    val onClosed: (RawFrame) -> Unit = {}
+) : Closeable {
+    override fun close() {
+        try {
+            onClosed(this)
+        } catch (_: Throwable) {
+            // Nothing to do
+        }
+    }
+}
 
-/**
- * Frame internal representation.
- */
+
 data class Frame(
     /**
      * Contains an audio or video frame data.
      */
-    override val rawBuffer: ByteBuffer,
+    val rawBuffer: ByteBuffer,
 
     /**
      * Presentation timestamp in µs
@@ -81,23 +66,18 @@ data class Frame(
     /**
      * Decoded timestamp in µs (not used).
      */
-    var dtsInUs: Long? = null,
+    var dtsInUs: Long?,
 
     /**
      * [Boolean.true] if frame is a key frame (I-frame for AVC/HEVC and audio frames)
      */
-    val isKeyFrame: Boolean = false,
+    val isKeyFrame: Boolean,
 
     /**
      * Contains frame format..
      */
-    val format: MediaFormat,
-
-    /**
-     * A callback to call when frame is closed.
-     */
-    override val onClosed: (ICloseableFrame) -> Unit = {}
-) : ICloseableFrame {
+    val format: MediaFormat
+) {
     /**
      * Frame mime type
      */
@@ -124,7 +104,7 @@ data class Frame(
         } else {
             null
         }
-    } catch (t: Throwable) {
+    } catch (_: Throwable) {
         null
     }
 
@@ -135,5 +115,63 @@ data class Frame(
         rawBuffer.removePrefixes(extra)
     } else {
         rawBuffer
+    }
+}
+
+
+fun CloseableFrame(
+    /**
+     * Contains an audio or video frame data.
+     */
+    rawBuffer: ByteBuffer,
+
+    /**
+     * Presentation timestamp in µs
+     */
+    ptsInUs: Long,
+
+    /**
+     * Decoded timestamp in µs (not used).
+     */
+    dtsInUs: Long?,
+
+    /**
+     * [Boolean.true] if frame is a key frame (I-frame for AVC/HEVC and audio frames)
+     */
+    isKeyFrame: Boolean,
+
+    /**
+     * Contains frame format..
+     */
+    format: MediaFormat,
+
+    /**
+     * A callback to call when frame is closed.
+     */
+    onClosed: (CloseableFrame) -> Unit,
+) = CloseableFrame(
+    Frame(
+        rawBuffer,
+        ptsInUs,
+        dtsInUs,
+        isKeyFrame,
+        format
+    ),
+    onClosed
+)
+
+/**
+ * Frame internal representation.
+ */
+data class CloseableFrame(
+    val frame: Frame,
+    val onClosed: (CloseableFrame) -> Unit
+) : Closeable {
+    override fun close() {
+        try {
+            onClosed(this)
+        } catch (_: Throwable) {
+            // Nothing to do
+        }
     }
 }

@@ -118,9 +118,12 @@ class AVTagsFactory(
     ): ByteBufferWriter {
         return when (config.mimeType) {
             MediaFormat.MIMETYPE_VIDEO_AVC -> {
+                val extra = requireNotNull(frame.extra) {
+                    "AVC sequence header without SPS and PPS is not supported"
+                }
                 AVCDecoderConfigurationRecord.fromParameterSets(
-                    frame.extra!![0],
-                    frame.extra[1]
+                    extra[0],
+                    extra[1]
                 )
             }
 
