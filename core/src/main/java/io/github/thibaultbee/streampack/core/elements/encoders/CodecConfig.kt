@@ -42,11 +42,14 @@ sealed class CodecConfig(
     val profile: Int = 0
 ) {
     /**
-     * Get the media format from the configuration
+     * Gets the media format from the configuration
      *
+     * If the preferred format is not supported by the device encoder, a fallback format will be requested if [requestFallback] is true.
+     *
+     * @param requestFallback whether to request a fallback format if the preferred one is not supported
      * @return the corresponding media format
      */
-    internal open fun getFormat(withProfileLevel: Boolean = true): MediaFormat {
+    internal open fun getFormat(requestFallback: Boolean): MediaFormat {
         return MediaFormat().apply {
             setString(MediaFormat.KEY_MIME, mimeType)
             setInteger(MediaFormat.KEY_BIT_RATE, startBitrate)
@@ -54,33 +57,25 @@ sealed class CodecConfig(
     }
 
     /**
-     * Check if this configuration is supported by the default encoder.
+     * Whether configuration is supported by the default encoder.
      * If format is not supported, it won't be possible to start a stream.
      *
+     * @param requestFallback whether to request a fallback format if the preferred one is not supported
      * @return true if format is supported, otherwise false
      */
-    val isFormatSupported: Boolean by lazy {
-        if (MediaCodecHelper.isFormatSupported(getFormat(true))) {
-            true
-        } else {
-            MediaCodecHelper.isFormatSupported(getFormat(false))
-        }
-    }
+    fun isFormatSupportedForEncoder(requestFallback: Boolean = false) =
+        MediaCodecHelper.isFormatSupported(getFormat(requestFallback))
 
     /**
      * Check if this configuration is supported by the specified encoder.
      * If format is not supported, it won't be possible to start a stream.
      *
      * @param name the encoder name
+     * @param requestFallback whether to request a fallback format if the preferred one is not supported
      * @return true if format is supported, otherwise false
      */
-    fun isFormatSupportedForEncoder(name: String): Boolean {
-        return if (MediaCodecHelper.isFormatSupported(getFormat(true), name)) {
-            true
-        } else {
-            MediaCodecHelper.isFormatSupported(getFormat(false), name)
-        }
-    }
+    fun isFormatSupportedForEncoder(name: String, requestFallback: Boolean = false) =
+        MediaCodecHelper.isFormatSupported(getFormat(requestFallback), name)
 
     /**
      * Get default encoder name.

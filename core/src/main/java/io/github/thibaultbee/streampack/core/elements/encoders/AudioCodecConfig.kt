@@ -28,7 +28,7 @@ import java.security.InvalidParameterException
  * Audio configuration class.
  * If you don't know how to set class members, [Video encoding recommendations](https://developer.android.com/guide/topics/media/media-formats#video-encoding) should give you hints.
  */
-open class AudioCodecConfig(
+class AudioCodecConfig(
     /**
      * Audio encoder mime type.
      *
@@ -102,9 +102,10 @@ open class AudioCodecConfig(
     /**
      * Get the media format from the audio configuration
      *
+     * @param requestFallback whether to request a fallback format if the preferred one is not supported
      * @return the corresponding audio media format
      */
-    override fun getFormat(withProfileLevel: Boolean): MediaFormat {
+    override fun getFormat(requestFallback: Boolean): MediaFormat {
         val format = MediaFormat.createAudioFormat(
             mimeType, sampleRate, getNumberOfChannels(channelConfig)
         )
@@ -117,7 +118,7 @@ open class AudioCodecConfig(
         }
         format.setInteger(MediaFormat.KEY_BIT_RATE, startBitrate)
 
-        if (withProfileLevel) {
+        if (!requestFallback) {
             if (mimeType == MediaFormat.MIMETYPE_AUDIO_AAC) {
                 format.setInteger(
                     MediaFormat.KEY_AAC_PROFILE, profile

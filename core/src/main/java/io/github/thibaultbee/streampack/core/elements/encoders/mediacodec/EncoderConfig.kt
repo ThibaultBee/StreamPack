@@ -31,10 +31,10 @@ sealed class EncoderConfig<T : CodecConfig>(val config: T, val mode: EncoderMode
 
     /**
      * Get media format for the encoder
-     * @param withProfileLevel true if profile and level should be used
+     * @param requestFallback whether to request a fallback format if the preferred one is not supported
      * @return MediaFormat
      */
-    abstract fun buildFormat(withProfileLevel: Boolean): MediaFormat
+    abstract fun buildFormat(requestFallback: Boolean): MediaFormat
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -61,8 +61,8 @@ class VideoEncoderConfig(
 ) {
     override val isVideo = true
 
-    override fun buildFormat(withProfileLevel: Boolean): MediaFormat {
-        val format = config.getFormat(withProfileLevel)
+    override fun buildFormat(requestFallback: Boolean): MediaFormat {
+        val format = config.getFormat(requestFallback)
         if (mode == EncoderMode.SURFACE) {
             format.setInteger(
                 MediaFormat.KEY_COLOR_FORMAT,
@@ -115,8 +115,8 @@ class AudioEncoderConfig(audioConfig: AudioCodecConfig, mode: EncoderMode) :
         }
     }
 
-    override fun buildFormat(withProfileLevel: Boolean) =
-        config.getFormat(withProfileLevel)
+    override fun buildFormat(requestFallback: Boolean) =
+        config.getFormat(requestFallback)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

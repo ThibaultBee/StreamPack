@@ -93,7 +93,7 @@ fun VideoCodecConfig(
  * Video configuration class.
  * If you don't know how to set class members, [Video encoding recommendations](https://developer.android.com/guide/topics/media/media-formats#video-encoding) should give you hints.
  */
-open class VideoCodecConfig(
+class VideoCodecConfig(
     /**
      * Video encoder mime type.
      * Only [MediaFormat.MIMETYPE_VIDEO_AVC], [MediaFormat.MIMETYPE_VIDEO_HEVC],
@@ -162,9 +162,10 @@ open class VideoCodecConfig(
     /**
      * Get the media format from the video configuration
      *
+     * @param requestFallback whether to request a fallback format if the preferred one is not supported
      * @return the corresponding video media format
      */
-    override fun getFormat(withProfileLevel: Boolean): MediaFormat {
+    override fun getFormat(requestFallback: Boolean): MediaFormat {
         val format = MediaFormat.createVideoFormat(
             mimeType, resolution.width, resolution.height
         )
@@ -178,7 +179,7 @@ open class VideoCodecConfig(
             format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, gopDurationInS.roundToInt())
         }
 
-        if (withProfileLevel) {
+        if (!requestFallback) {
             format.setInteger(MediaFormat.KEY_PROFILE, profile)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 format.setInteger(MediaFormat.KEY_LEVEL, level)

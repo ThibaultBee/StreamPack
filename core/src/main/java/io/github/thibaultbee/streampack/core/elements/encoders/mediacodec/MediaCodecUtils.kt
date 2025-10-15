@@ -17,10 +17,10 @@ internal object MediaCodecUtils {
     internal fun createCodec(encoderConfig: EncoderConfig<*>): MediaCodecWithFormat {
         return try {
             try {
-                createCodec(encoderConfig, true)
-            } catch (t: Throwable) {
-                Logger.i(TAG, "Fallback without profile and level (reason: $t)")
                 createCodec(encoderConfig, false)
+            } catch (t: Throwable) {
+                Logger.i(TAG, "Request fallback encoder configuration (reason: $t)")
+                createCodec(encoderConfig, true)
             }
         } catch (t: Throwable) {
             Logger.e(TAG, "Failed to create encoder for ${encoderConfig.config}")
@@ -30,13 +30,18 @@ internal object MediaCodecUtils {
 
     private fun createCodec(
         encoderConfig: EncoderConfig<*>,
-        withProfileLevel: Boolean
+        requestFallback: Boolean
     ): MediaCodecWithFormat {
-        val format = encoderConfig.buildFormat(withProfileLevel)
+        val format = encoderConfig.buildFormat(requestFallback)
 
-        val encoderName = MediaCodecHelper.findEncoder(format)
-        Logger.i(TAG, "Selected encoder $encoderName")
-        return MediaCodecWithFormat(MediaCodec.createByCodecName(encoderName), format)
+        try {
+            val encoderName = MediaCodecHelper.findEncoder(format)
+            Logger.i(TAG, "Selected encoder $encoderName")
+            return MediaCodecWithFormat(MediaCodec.createByCodecName(encoderName), format)
+        } catch (t: Throwable) {
+            Logger.e(TAG, "No encoder found for format $format")
+            throw t
+        }
     }
 
     internal data class MediaCodecWithFormat(val mediaCodec: MediaCodec, val format: MediaFormat)

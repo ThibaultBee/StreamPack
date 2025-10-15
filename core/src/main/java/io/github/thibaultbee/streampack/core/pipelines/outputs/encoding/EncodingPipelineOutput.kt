@@ -303,8 +303,13 @@ internal class EncodingPipelineOutput(
 
         audioConfigEventListener?.onSetAudioSourceConfig(audioCodecConfig.sourceConfig)
 
-        applyAudioCodecConfig(audioCodecConfig)
-        _audioCodecConfigFlow.emit(audioCodecConfig)
+        try {
+            applyAudioCodecConfig(audioCodecConfig)
+            _audioCodecConfigFlow.emit(audioCodecConfig)
+        } catch (t: Throwable) {
+            _audioCodecConfigFlow.emit(null)
+            throw t
+        }
     }
 
     private suspend fun applyAudioCodecConfig(audioConfig: AudioCodecConfig) {
@@ -375,9 +380,13 @@ internal class EncodingPipelineOutput(
 
         videoConfigEventListener?.onSetVideoSourceConfig(videoCodecConfig.sourceConfig)
 
-        applyVideoCodecConfig(videoCodecConfig)
-
-        _videoCodecConfigFlow.emit(videoCodecConfig)
+        try {
+            applyVideoCodecConfig(videoCodecConfig)
+            _videoCodecConfigFlow.emit(videoCodecConfig)
+        } catch (t: Throwable) {
+            _videoCodecConfigFlow.emit(null)
+            throw t
+        }
     }
 
     private suspend fun applyVideoCodecConfig(videoConfig: VideoCodecConfig) {
@@ -400,8 +409,7 @@ internal class EncodingPipelineOutput(
 
         // Release codec instance
         videoEncoderInternal?.let { encoder ->
-            val input = encoder.input
-            if (input is MediaCodecEncoder.SurfaceInput) {
+            if (encoder.input is MediaCodecEncoder.SurfaceInput) {
                 _surfaceFlow.tryEmit(null)
             }
             encoder.release()
