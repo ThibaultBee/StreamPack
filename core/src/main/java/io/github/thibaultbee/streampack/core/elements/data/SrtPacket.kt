@@ -38,9 +38,4 @@ class SrtPacket(
      * Frame timestamp in µs.
      */
     ts: Long, // in µs
-
-    /**
-     * Packet data type
-     */
-    type: PacketType = PacketType.UNKNOWN,
-) : Packet(buffer, ts, type)
+) : Packet(buffer, ts)

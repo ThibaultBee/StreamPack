@@ -17,7 +17,6 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxe
 
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.data.Packet
-import io.github.thibaultbee.streampack.core.elements.data.PacketType
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.tags.AVTagsFactory
@@ -41,7 +40,7 @@ class FlvMuxer(
 
     override val streamConfigs: List<CodecConfig>
         get() = streams.map { it.config }
-    
+
     override fun write(frame: Frame, streamPid: Int) {
         synchronized(this) {
             if (!hasFirstFrame) {
@@ -76,13 +75,7 @@ class FlvMuxer(
         val flvTags = AVTagsFactory(frame, stream.config, sendHeader).build()
         flvTags.forEach {
             listener?.onOutputFrame(
-                Packet(
-                    it.write(), frame.ptsInUs, if (frame.isVideo) {
-                        PacketType.VIDEO
-                    } else {
-                        PacketType.AUDIO
-                    }
-                )
+                Packet(it.write(), frame.ptsInUs)
             )
         }
     }
