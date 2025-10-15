@@ -1,6 +1,7 @@
 package io.github.thibaultbee.streampack.core.elements.utils
 
 import android.media.AudioFormat
+import android.media.MediaFormat
 import android.view.Surface
 import androidx.annotation.IntDef
 
@@ -32,3 +33,16 @@ annotation class ChannelConfigValue
     AnnotationRetention.SOURCE
 )
 annotation class ByteFormatValue
+
+/**
+ * SDR color standard
+ */
+@IntDef(
+    0, // Unspecified
+    MediaFormat.COLOR_STANDARD_BT601_PAL,
+    MediaFormat.COLOR_STANDARD_BT601_NTSC,
+    MediaFormat.COLOR_STANDARD_BT709
+)
+@Retention(AnnotationRetention.SOURCE)
+annotation class SdrColorStandardValue
+
