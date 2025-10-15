@@ -27,7 +27,6 @@ fun CodecConfig.createTypeMediaHeaderBox(): TypeMediaHeaderBox {
     return when (this) {
         is AudioCodecConfig -> SoundMediaHeaderBox()
         is VideoCodecConfig -> VideoMediaHeaderBox()
-        else -> throw IllegalArgumentException("Unsupported config")
     }
 }
 
@@ -35,6 +34,5 @@ fun CodecConfig.createHandlerBox(): HandlerBox {
     return when (this) {
         is AudioCodecConfig -> HandlerBox(HandlerBox.HandlerType.SOUND, "SoundHandler")
         is VideoCodecConfig -> HandlerBox(HandlerBox.HandlerType.VIDEO, "VideoHandler")
-        else -> throw IllegalArgumentException("Unsupported config")
     }
 }

@@ -240,7 +240,6 @@ class TrackChunks(
         val resolution = when (config) {
             is AudioCodecConfig -> Size(0, 0)
             is VideoCodecConfig -> format.resolution
-            else -> throw IllegalArgumentException("Unsupported config")
         }
         val volume = when (config) {
             is AudioCodecConfig -> 1.0f

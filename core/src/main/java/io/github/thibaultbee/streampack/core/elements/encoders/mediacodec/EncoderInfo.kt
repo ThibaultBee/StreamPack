@@ -28,7 +28,9 @@ sealed class EncoderInfo(codecInfo: MediaCodecInfo, mimeType: String) : IEncoder
 
 class VideoEncoderInfo(codecInfo: MediaCodecInfo, mimeType: String) :
     EncoderInfo(codecInfo, mimeType) {
-    private val videoCapabilities = codecCapabilities.videoCapabilities
+    private val videoCapabilities = requireNotNull(codecCapabilities.videoCapabilities) {
+        "Video capabilities are null for encoder $name and mime type $mimeType"
+    }
 
     val supportedWidths = videoCapabilities.supportedWidths
     val supportedHeights = videoCapabilities.supportedHeights
@@ -38,7 +40,9 @@ class VideoEncoderInfo(codecInfo: MediaCodecInfo, mimeType: String) :
 
 class AudioEncoderInfo(codecInfo: MediaCodecInfo, mimeType: String) :
     EncoderInfo(codecInfo, mimeType) {
-    private val audioCapabilities = codecCapabilities.audioCapabilities
+    private val audioCapabilities = requireNotNull(codecCapabilities.audioCapabilities) {
+        "Audio capabilities are null for encoder $name and mime type $mimeType"
+    }
 
     val supportedSampleRates = audioCapabilities.supportedSampleRates
     val supportedBitrates = audioCapabilities.bitrateRange
