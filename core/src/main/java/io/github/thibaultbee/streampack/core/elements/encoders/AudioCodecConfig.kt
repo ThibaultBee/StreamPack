@@ -74,6 +74,14 @@ class AudioCodecConfig(
      * @see [MediaCodecInfo.CodecProfileLevel.AACObjectHE]
      */
     profile: Int = getDefaultProfile(mimeType),
+
+    /**
+     * A callback to be invoked when the media format is generated.
+     * This is a dangerous callback as a wrong media format can make some encoders fail, also
+     * don't change existing keys as it can break your streaming.
+     * Also, don't block the thread.
+     */
+    private val customize: MediaFormatCustomHandler = {}
 ) : CodecConfig(mimeType, startBitrate, profile) {
     init {
         require(mimeType.isAudio) { "MimeType must be audio" }
@@ -128,6 +136,8 @@ class AudioCodecConfig(
 
         format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 0)
 
+        format.customize(requestFallback)
+        
         return format
     }
 
@@ -140,8 +150,9 @@ class AudioCodecConfig(
         sampleRate: Int = this.sampleRate,
         channelConfig: Int = this.channelConfig,
         byteFormat: Int = this.byteFormat,
-        profile: Int = this.profile
-    ) = AudioCodecConfig(mimeType, startBitrate, sampleRate, channelConfig, byteFormat, profile)
+        profile: Int = this.profile,
+        customize: MediaFormatCustomHandler = this.customize
+    ) = AudioCodecConfig(mimeType, startBitrate, sampleRate, channelConfig, byteFormat, profile, customize)
 
     override fun toString() =
         "AudioConfig(mimeType=$mimeType, startBitrate=$startBitrate, sampleRate=$sampleRate, channelConfig=$channelConfig, byteFormat=$byteFormat, profile=$profile)"

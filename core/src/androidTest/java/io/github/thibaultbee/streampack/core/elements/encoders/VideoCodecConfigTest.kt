@@ -25,8 +25,14 @@ class VideoCodecConfigTest {
         Assert.assertNotEquals(
             videoConfig,
             VideoCodecConfig(profile = 1234, level = videoConfig.level)
-        ) // Level is inferred from profile
-        Assert.assertNotEquals(videoConfig, VideoCodecConfig(level = 1234))
+        )
+        Assert.assertNotEquals(
+            videoConfig,
+            VideoCodecConfig(
+                profile = videoConfig.profile,
+                level = 1234
+            )
+        )
         Assert.assertNotEquals(videoConfig, VideoCodecConfig(gopDurationInS = 1234f))
     }
 }

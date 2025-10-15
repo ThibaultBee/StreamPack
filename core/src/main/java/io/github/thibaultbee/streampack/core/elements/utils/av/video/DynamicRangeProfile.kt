@@ -33,7 +33,11 @@ import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile3HDR10Plus
 import android.media.MediaFormat
 import android.os.Build
 
-data class DynamicRangeProfile(val dynamicRange: Long, val transferFunction: Int) {
+data class DynamicRangeProfile(
+    val dynamicRange: Long,
+    val transferFunction: Int,
+    val colorRange: Int
+) {
     val isHdr = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         dynamicRange != DynamicRangeProfiles.STANDARD
     } else {
@@ -42,12 +46,28 @@ data class DynamicRangeProfile(val dynamicRange: Long, val transferFunction: Int
 
     companion object {
         val sdr =
-            DynamicRangeProfile(DynamicRangeProfiles.STANDARD, MediaFormat.COLOR_TRANSFER_SDR_VIDEO)
-        val hdr = DynamicRangeProfile(DynamicRangeProfiles.HLG10, MediaFormat.COLOR_TRANSFER_HLG)
+            DynamicRangeProfile(
+                DynamicRangeProfiles.STANDARD,
+                MediaFormat.COLOR_TRANSFER_SDR_VIDEO,
+                MediaFormat.COLOR_RANGE_LIMITED
+            )
+        val hdr = DynamicRangeProfile(
+            DynamicRangeProfiles.HLG10,
+            MediaFormat.COLOR_TRANSFER_HLG,
+            MediaFormat.COLOR_RANGE_FULL
+        )
         val hdr10 =
-            DynamicRangeProfile(DynamicRangeProfiles.HDR10, MediaFormat.COLOR_TRANSFER_ST2084)
+            DynamicRangeProfile(
+                DynamicRangeProfiles.HDR10,
+                MediaFormat.COLOR_TRANSFER_ST2084,
+                MediaFormat.COLOR_RANGE_FULL
+            )
         val hdr10Plus =
-            DynamicRangeProfile(DynamicRangeProfiles.HDR10_PLUS, MediaFormat.COLOR_TRANSFER_ST2084)
+            DynamicRangeProfile(
+                DynamicRangeProfiles.HDR10_PLUS,
+                MediaFormat.COLOR_TRANSFER_ST2084,
+                MediaFormat.COLOR_RANGE_FULL
+            )
 
         private val avcProfilesMap = mapOf(
             AVCProfileBaseline to sdr,
