@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.core.elements.encoders
 
 import android.view.Surface
-import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.CloseableFrame
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamable
@@ -77,7 +77,7 @@ interface IEncoderInternal : SuspendStreamable, Releasable,
         /**
          * A channel where the encoder will send encoded frames.
          */
-        val outputChannel: SendChannel<Frame>
+        val outputChannel: SendChannel<CloseableFrame>
     }
 
     /**

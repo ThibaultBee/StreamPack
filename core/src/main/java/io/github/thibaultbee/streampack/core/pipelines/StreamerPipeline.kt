@@ -17,7 +17,6 @@ package io.github.thibaultbee.streampack.core.pipelines
 
 import android.content.Context
 import android.graphics.Rect
-import io.github.thibaultbee.streampack.core.elements.data.ICloseableFrame
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
@@ -78,6 +77,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.io.Closeable
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -248,7 +248,7 @@ open class StreamerPipeline(
                 } else {
                     // Hook to close frame when all outputs have processed it
                     var numOfClosed = 0
-                    val onClosed = { frame: ICloseableFrame ->
+                    val onClosed = { frame: Closeable ->
                         numOfClosed++
                         if (numOfClosed == audioStreamingOutput.size) {
                             frame.close()

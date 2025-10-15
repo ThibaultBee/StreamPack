@@ -22,7 +22,7 @@ import android.media.MediaFormat
 import android.os.Bundle
 import android.util.Log
 import android.view.Surface
-import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.CloseableFrame
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.EncoderMode
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal
@@ -593,7 +593,7 @@ internal constructor(
          */
         fun frame(
             index: Int, outputFormat: MediaFormat, info: BufferInfo, tag: String
-        ): Frame {
+        ): CloseableFrame {
             var pts = info.presentationTimeUs
             if (pts <= previousPresentationTimestamp) {
                 pts = previousPresentationTimestamp + 1
@@ -618,9 +618,9 @@ internal constructor(
          */
         private fun Frame(
             codec: MediaCodec, index: Int, outputFormat: MediaFormat, info: BufferInfo, tag: String
-        ): Frame {
+        ): CloseableFrame {
             val buffer = requireNotNull(codec.getOutputBuffer(index))
-            return Frame(
+            return CloseableFrame(
                 buffer, info.presentationTimeUs, // pts
                 null, // dts
                 info.isKeyFrame, outputFormat, onClosed = {
