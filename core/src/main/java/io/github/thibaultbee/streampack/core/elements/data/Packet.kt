@@ -31,33 +31,8 @@ open class Packet(
      * Frame timestamp in µs.
      */
     val ts: Long, // in µs
-
-    /**
-     * Packet data type
-     */
-    val type: PacketType = PacketType.UNKNOWN,
 ) {
-    val isVideo by lazy { type == PacketType.VIDEO }
-    val isAudio by lazy { type == PacketType.AUDIO }
-
     override fun toString(): String {
-        return "Packet(buffer=$buffer, ts=$ts, type=$type)"
+        return "Packet(buffer=$buffer, ts=$ts)"
     }
-}
-
-enum class PacketType {
-    /**
-     * Video packet.
-     */
-    VIDEO,
-
-    /**
-     * Audio packet.
-     */
-    AUDIO,
-
-    /**
-     * Unknown packet.
-     */
-    UNKNOWN
 }
