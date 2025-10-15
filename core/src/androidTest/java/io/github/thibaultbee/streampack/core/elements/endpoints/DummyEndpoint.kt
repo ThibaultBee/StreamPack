@@ -63,13 +63,14 @@ class DummyEndpoint : IEndpointInternal {
         _isOpenFlow.emit(false)
     }
 
-    override suspend fun write(frame: Frame, streamPid: Int) {
+    override suspend fun write(frame: Frame, streamPid: Int, onFrameProcessed: (() -> Unit)) {
         Log.i(TAG, "write: $frame")
         _frameFlow.emit(frame)
         when {
             frame.isAudio -> numOfAudioFramesWritten++
             frame.isVideo -> numOfVideoFramesWritten++
         }
+        onFrameProcessed()
     }
 
     override fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {

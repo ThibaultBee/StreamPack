@@ -140,40 +140,47 @@ class MediaMuxerEndpoint(
     }
 
     override suspend fun write(
-        frame: Frame, streamPid: Int
+        frame: Frame, streamPid: Int, onFrameProcessed: () -> Unit
     ) = withContext(ioDispatcher) {
         mutex.withLock {
-            if (state != State.STARTED && state != State.PENDING_START) {
-                Logger.w(TAG, "Trying to write while not started. Current state: $state")
-                return@withContext
-            }
-
-            val mediaMuxer = requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
-
-            if ((state == State.PENDING_START) && (streamIdToTrackId.size < numOfStreams)) {
-                addTrack(mediaMuxer, streamPid, frame.format)
-                if (streamIdToTrackId.size == numOfStreams) {
-                    mediaMuxer.start()
-                    setState(State.STARTED)
+            try {
+                if (state != State.STARTED && state != State.PENDING_START) {
+                    Logger.w(TAG, "Trying to write while not started. Current state: $state")
+                    return@withContext
                 }
-            }
 
-            if (state == State.STARTED) {
-                val trackId = streamIdToTrackId[streamPid]
-                    ?: throw IllegalStateException("Could not find trackId for streamPid $streamPid: ${frame.format}")
-                val info = BufferInfo().apply {
-                    set(
-                        0,
-                        frame.buffer.remaining(),
-                        frame.ptsInUs,
-                        if (frame.isKeyFrame) BUFFER_FLAG_KEY_FRAME else 0
-                    )
+                val mediaMuxer = requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
+
+                if ((state == State.PENDING_START) && (streamIdToTrackId.size < numOfStreams)) {
+                    addTrack(mediaMuxer, streamPid, frame.format)
+                    if (streamIdToTrackId.size == numOfStreams) {
+                        mediaMuxer.start()
+                        setState(State.STARTED)
+                    }
                 }
-                try {
-                    mediaMuxer.writeSampleData(trackId, frame.buffer, info)
-                } catch (e: IllegalStateException) {
-                    Logger.w(TAG, "MediaMuxer is in an illegal state. ${e.message}")
+
+                if (state == State.STARTED) {
+                    val trackId = streamIdToTrackId[streamPid]
+                        ?: throw IllegalStateException("Could not find trackId for streamPid $streamPid: ${frame.format}")
+                    val info = BufferInfo().apply {
+                        set(
+                            0,
+                            frame.buffer.remaining(),
+                            frame.ptsInUs,
+                            if (frame.isKeyFrame) BUFFER_FLAG_KEY_FRAME else 0
+                        )
+                    }
+                    try {
+                        mediaMuxer.writeSampleData(trackId, frame.buffer, info)
+                    } catch (e: IllegalStateException) {
+                        Logger.w(TAG, "MediaMuxer is in an illegal state. ${e.message}")
+                    }
                 }
+            } catch (t: Throwable) {
+                Logger.e(TAG, "Error while writing frame: ${t.message}")
+                throw t
+            } finally {
+                onFrameProcessed()
             }
         }
     }

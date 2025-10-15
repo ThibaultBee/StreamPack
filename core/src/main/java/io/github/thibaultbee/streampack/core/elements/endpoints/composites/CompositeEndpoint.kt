@@ -76,8 +76,9 @@ class CompositeEndpoint(
 
     override suspend fun write(
         frame: Frame,
-        streamPid: Int
-    ) = muxer.write(frame, streamPid)
+        streamPid: Int,
+        onFrameProcessed: (() -> Unit)
+    ) = muxer.write(frame, streamPid, onFrameProcessed)
 
     override fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
         mutex.tryLock()

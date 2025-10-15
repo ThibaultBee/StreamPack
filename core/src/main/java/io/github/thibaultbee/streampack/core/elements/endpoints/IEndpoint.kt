@@ -39,12 +39,18 @@ interface IEndpointInternal : IEndpoint, SuspendStreamable,
     /**
      * Writes a [Frame] to the [IEndpointInternal].
      *
+     * The [onFrameProcessed] callback must be called when the frame has been processed and the [Frame.rawBuffer] is not used anymore.
+     * The [IEndpointInternal] must called [onFrameProcessed] even if the frame is dropped or it somehow crashes.
+     * Also, once [onFrameProcessed] is called, the [Frame.rawBuffer] must not be used anymore by the [IEndpointInternal].
+     *
      * @param frame the [Frame] to write
      * @param streamPid the stream id the [Frame] belongs to
+     * @param onFrameProcessed a callback called when the [Frame.rawBuffer] is not used anymore
      */
     suspend fun write(
         frame: Frame,
-        streamPid: Int
+        streamPid: Int,
+        onFrameProcessed: (() -> Unit)
     )
 
     /**

@@ -23,15 +23,24 @@ import io.github.thibaultbee.streampack.core.elements.utils.combineStates
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.intersect
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutputDispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.utils.MultiThrowable
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 
 /**
  * Combines multiple endpoints into one.
  *
  * @param endpoints Endpoints to combine
+ * @param coroutineDispatcher Coroutine dispatcher to use for frame writing
  */
-fun CombineEndpoint(vararg endpoints: IEndpointInternal) = CombineEndpoint(endpoints.toList())
+fun CombineEndpoint(vararg endpoints: IEndpointInternal, coroutineDispatcher: CoroutineDispatcher) =
+    CombineEndpoint(endpoints.toList(), coroutineDispatcher)
 
 /**
  * Combines multiple endpoints into one.
@@ -42,9 +51,17 @@ fun CombineEndpoint(vararg endpoints: IEndpointInternal) = CombineEndpoint(endpo
  *
  * For specific behavior like reconnecting your remote endpoint, you can create a custom endpoint that
  * inherits from [CombineEndpoint] and override [open], [close], [startStream], [stopStream].
+ *
+ * @param endpointInternals List of endpoints to combine
+ * @param coroutineDispatcher Coroutine dispatcher to use for frame writing
  */
-open class CombineEndpoint(protected val endpointInternals: List<IEndpointInternal>) :
+open class CombineEndpoint(
+    protected val endpointInternals: List<IEndpointInternal>,
+    coroutineDispatcher: CoroutineDispatcher
+) :
     IEndpointInternal {
+    private val coroutineScope = CoroutineScope(SupervisorJob() + coroutineDispatcher)
+
     /**
      * Internal map of endpoint streamId to real streamIds
      */
@@ -185,31 +202,36 @@ open class CombineEndpoint(protected val endpointInternals: List<IEndpointIntern
      *
      * If all endpoints write fails, it throws the exception of the first endpoint that failed.
      */
-    override suspend fun write(frame: Frame, streamPid: Int) {
-        val currentBufferPos = frame.buffer.position()
-        var numOfThrowable = 0
-        var throwable: Throwable? = null
+    override suspend fun write(frame: Frame, streamPid: Int, onFrameProcessed: (() -> Unit)) {
+        val throwables = mutableListOf<Throwable>()
 
-        endpointInternals.forEach { endpoint ->
+        /**
+         * Track the number of frames written and processed to call onFrameProcessed only once
+         * when all endpoints have processed the frame.
+         */
+        val deferreds = mutableListOf<Deferred<*>>()
+
+        endpointInternals.filter { it.isOpenFlow.value }.forEach { endpoint ->
             try {
-                if (endpoint.isOpenFlow.value) {
-                    val endpointStreamId = endpointsToStreamIdsMap[Pair(endpoint, streamPid)]!!
-                    endpoint.write(frame, endpointStreamId)
+                val deferred = CompletableDeferred<Unit>()
+                val duplicatedFrame = frame.copy(rawBuffer = frame.rawBuffer.duplicate())
+                val endpointStreamId = endpointsToStreamIdsMap[Pair(endpoint, streamPid)]!!
 
-                    // Reset buffer position to write frame to next endpoint
-                    frame.buffer.position(currentBufferPos)
-                }
+                deferreds += deferred
+                endpoint.write(duplicatedFrame, endpointStreamId, { deferred.complete(Unit) })
             } catch (t: Throwable) {
-                Logger.e(TAG, "Failed to write frame to endpoint $endpoint", t)
-                if (throwable == null) {
-                    throwable = t
-                }
-                numOfThrowable++
+                Logger.e(TAG, "Failed to get stream id for endpoint $endpoint", t)
+                throwables += t
             }
         }
 
-        if (numOfThrowable == endpointInternals.size) {
-            throw throwable!!
+        coroutineScope.launch {
+            deferreds.forEach { it.await() }
+            onFrameProcessed()
+        }
+
+        if (throwables.isNotEmpty()) {
+            throw MultiThrowable(throwables)
         }
     }
 
@@ -245,7 +267,8 @@ class CombineEndpointFactory(private val endpointFactory: List<IEndpointInternal
         dispatcherProvider: EncodingPipelineOutputDispatcherProvider
     ): IEndpointInternal {
         return CombineEndpoint(
-            endpointFactory.map { it.create(context, dispatcherProvider) }
+            endpointFactory.map { it.create(context, dispatcherProvider) },
+            dispatcherProvider.defaultDispatcher
         )
     }
 }

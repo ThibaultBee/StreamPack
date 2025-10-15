@@ -243,12 +243,13 @@ internal class EncodingPipelineOutput(
                 audioEncoderListener.outputChannel.consumeEach { closeableFrame ->
                     try {
                         audioStreamId?.let {
-                            endpointInternal.write(closeableFrame.frame, it)
+                            endpointInternal.write(
+                                closeableFrame.frame,
+                                it,
+                                { closeableFrame.close() })
                         } ?: Logger.w(TAG, "Audio frame received but audio stream is not set")
                     } catch (t: Throwable) {
                         onInternalError(t)
-                    } finally {
-                        closeableFrame.close()
                     }
                 }
             }
@@ -259,12 +260,13 @@ internal class EncodingPipelineOutput(
                 videoEncoderListener.outputChannel.consumeEach { closeableFrame ->
                     try {
                         videoStreamId?.let {
-                            endpointInternal.write(closeableFrame.frame, it)
+                            endpointInternal.write(
+                                closeableFrame.frame,
+                                it,
+                                { closeableFrame.close() })
                         } ?: Logger.w(TAG, "Video frame received but video stream is not set")
                     } catch (t: Throwable) {
                         onInternalError(t)
-                    } finally {
-                        closeableFrame.close()
                     }
                 }
             }

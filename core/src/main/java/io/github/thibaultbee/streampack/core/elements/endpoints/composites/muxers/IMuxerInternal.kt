@@ -32,7 +32,7 @@ interface IMuxerInternal :
         fun onOutputFrame(packet: Packet)
     }
 
-    fun write(frame: Frame, streamPid: Int)
+    fun write(frame: Frame, streamPid: Int, onFrameProcessed: () -> Unit)
 
     fun addStreams(streamsConfig: List<CodecConfig>): Map<CodecConfig, Int>
 

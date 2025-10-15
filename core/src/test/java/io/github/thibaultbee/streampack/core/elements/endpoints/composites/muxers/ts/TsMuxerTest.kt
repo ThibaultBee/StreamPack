@@ -22,6 +22,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.TSConst
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.Utils.createFakeServiceInfo
 import io.github.thibaultbee.streampack.core.elements.utils.FakeFrames
+import io.github.thibaultbee.streampack.core.elements.utils.MockUtils
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -29,22 +30,19 @@ import org.junit.Assert.fail
 import org.junit.Test
 
 class TsMuxerTest {
-    class MockMuxerListener :
-        io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal.IMuxerListener {
-        override fun onOutputFrame(packet: io.github.thibaultbee.streampack.core.elements.data.Packet) {}
-    }
-
     @Test
     fun `add streams test`() {
         val vStreamConfig1 =
             VideoCodecConfig(
                 mimeType = MediaFormat.MIMETYPE_VIDEO_AVC,
+                resolution = MockUtils.mockSize(1280, 720),
                 profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                 level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
             )
         val vStreamConfig2 =
             VideoCodecConfig(
                 mimeType = MediaFormat.MIMETYPE_VIDEO_HEVC,
+                resolution = MockUtils.mockSize(1280, 720),
                 profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                 level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
             )
@@ -75,11 +73,13 @@ class TsMuxerTest {
         val vStreamConfig1 =
             VideoCodecConfig(
                 mimeType = MediaFormat.MIMETYPE_VIDEO_AVC,
+                resolution = MockUtils.mockSize(1280, 720),
                 profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                 level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
             )
         val vStreamConfig2 =
             VideoCodecConfig(
+                resolution = MockUtils.mockSize(1280, 720),
                 mimeType = MediaFormat.MIMETYPE_VIDEO_HEVC,
                 profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                 level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
@@ -114,12 +114,14 @@ class TsMuxerTest {
         val vStreamConfig1 =
             VideoCodecConfig(
                 mimeType = MediaFormat.MIMETYPE_VIDEO_AVC,
+                resolution = MockUtils.mockSize(1280, 720),
                 profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                 level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
             )
         val vStreamConfig2 =
             VideoCodecConfig(
                 mimeType = MediaFormat.MIMETYPE_VIDEO_HEVC,
+                resolution = MockUtils.mockSize(1280, 720),
                 profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                 level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
             )
@@ -155,12 +157,14 @@ class TsMuxerTest {
         val vStreamConfig1 =
             VideoCodecConfig(
                 mimeType = MediaFormat.MIMETYPE_VIDEO_AVC,
+                resolution = MockUtils.mockSize(1280, 720),
                 profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                 level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
             )
         val vStreamConfig2 =
             VideoCodecConfig(
                 mimeType = MediaFormat.MIMETYPE_VIDEO_HEVC,
+                resolution = MockUtils.mockSize(1280, 720),
                 profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                 level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
             )
@@ -188,7 +192,7 @@ class TsMuxerTest {
     fun `encode without streams test`() {
         val tsMux = TsMuxer()
         try {
-            tsMux.write(FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), -1)
+            tsMux.write(FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), -1, {})
             fail()
         } catch (_: Throwable) {
         }
@@ -199,7 +203,7 @@ class TsMuxerTest {
         val tsMux = TsMuxer()
         try {
             tsMux.write(
-                FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), -1
+                FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), -1, {}
             )
             fail()
         } catch (_: Throwable) {
@@ -210,6 +214,7 @@ class TsMuxerTest {
     fun `encode h264 frame test`() {
         val config = VideoCodecConfig(
             mimeType = MediaFormat.MIMETYPE_VIDEO_AVC,
+            resolution = MockUtils.mockSize(1280, 720),
             profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
             level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
         )
@@ -222,11 +227,11 @@ class TsMuxerTest {
             tsMux.addStreams(service, listOf(config))[config]!!
 
         tsMux.write(
-            FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), streamPid
+            FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), streamPid, {}
         )
 
         tsMux.write(
-            FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), streamPid
+            FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), streamPid, {}
         )
     }
 
@@ -242,10 +247,10 @@ class TsMuxerTest {
             tsMux.addStreams(createFakeServiceInfo(), listOf(config))[config]!!
 
         tsMux.write(
-            FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC), streamPid
+            FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC), streamPid, {}
         )
         tsMux.write(
-            FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC), streamPid
+            FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC), streamPid, {}
         )
     }
 }
