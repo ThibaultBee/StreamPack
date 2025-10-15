@@ -56,13 +56,17 @@ class Mp4Muxer(
 
     override val streamConfigs: List<CodecConfig>
         get() = tracks.map { it.config }
-    
-    override fun write(frame: Frame, streamPid: Int) {
+
+    override fun write(frame: Frame, streamPid: Int, onFrameProcessed: () -> Unit) {
         synchronized(this) {
-            if (segmenter!!.mustWriteSegment(frame)) {
-                writeSegment()
+            try {
+                if (segmenter!!.mustWriteSegment(frame)) {
+                    writeSegment()
+                }
+                currentSegment!!.add(frame, streamPid)
+            } finally {
+                onFrameProcessed()
             }
-            currentSegment!!.add(frame, streamPid)
         }
     }
 

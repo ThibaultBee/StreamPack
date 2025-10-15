@@ -84,7 +84,7 @@ class DynamicEndpointTest {
     fun `test write to non open endpoint`() = runTest {
         val dynamicEndpoint = DynamicEndpoint(context, Dispatchers.Default, Dispatchers.IO)
         try {
-            dynamicEndpoint.write(FakeFrames.generate(MediaFormat.MIMETYPE_AUDIO_AAC), 0)
+            dynamicEndpoint.write(FakeFrames.generate(MediaFormat.MIMETYPE_AUDIO_AAC), 0, {})
             fail("Throwable expected")
         } catch (_: Throwable) {
             assertFalse(dynamicEndpoint.isOpenFlow.value)

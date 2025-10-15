@@ -98,7 +98,8 @@ open class DynamicEndpoint(
 
     override fun addStream(streamConfig: CodecConfig) = endpoint.addStream(streamConfig)
 
-    override suspend fun write(frame: Frame, streamPid: Int) = endpoint.write(frame, streamPid)
+    override suspend fun write(frame: Frame, streamPid: Int, onFrameProcessed: () -> Unit) =
+        endpoint.write(frame, streamPid, onFrameProcessed)
 
     override suspend fun startStream() = endpoint.startStream()
 

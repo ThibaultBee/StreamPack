@@ -61,7 +61,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.Encoding
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
-import io.github.thibaultbee.streampack.core.pipelines.utils.MultiException
+import io.github.thibaultbee.streampack.core.pipelines.utils.MultiThrowable
 import io.github.thibaultbee.streampack.core.pipelines.utils.SourceConfigUtils
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -804,7 +804,7 @@ open class StreamerPipeline(
             if (exceptions.size == 1) {
                 throw exceptions.first()
             } else {
-                throw MultiException(exceptions)
+                throw MultiThrowable(exceptions)
             }
         }
     }

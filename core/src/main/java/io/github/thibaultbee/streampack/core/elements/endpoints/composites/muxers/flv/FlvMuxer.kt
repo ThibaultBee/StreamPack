@@ -41,42 +41,46 @@ class FlvMuxer(
     override val streamConfigs: List<CodecConfig>
         get() = streams.map { it.config }
 
-    override fun write(frame: Frame, streamPid: Int) {
+    override fun write(frame: Frame, streamPid: Int, onFrameProcessed: () -> Unit) {
         synchronized(this) {
-            if (!hasFirstFrame) {
-                /**
-                 * Wait for first video frame to start (only if video is present)
-                 */
-                if (hasVideo) {
-                    // Expected first video key frame
-                    if (frame.isVideo && frame.isKeyFrame) {
+            try {
+                if (!hasFirstFrame) {
+                    /**
+                     * Wait for first video frame to start (only if video is present)
+                     */
+                    if (hasVideo) {
+                        // Expected first video key frame
+                        if (frame.isVideo && frame.isKeyFrame) {
+                            startUpTime = frame.ptsInUs
+                            hasFirstFrame = true
+                        } else {
+                            // Drop
+                            return
+                        }
+                    } else {
+                        // Audio only
                         startUpTime = frame.ptsInUs
                         hasFirstFrame = true
-                    } else {
-                        // Drop
-                        return
                     }
-                } else {
-                    // Audio only
-                    startUpTime = frame.ptsInUs
-                    hasFirstFrame = true
                 }
+
+                if (frame.ptsInUs < startUpTime!!) {
+                    return
+                }
+
+                frame.ptsInUs -= startUpTime!!
+                val stream = streams[streamPid]
+                val sendHeader = stream.sendHeader
+                stream.sendHeader = false
+                val flvTags = AVTagsFactory(frame, stream.config, sendHeader).build()
+                flvTags.forEach {
+                    listener?.onOutputFrame(
+                        Packet(it.write(), frame.ptsInUs)
+                    )
+                }
+            } finally {
+                onFrameProcessed()
             }
-        }
-
-        if (frame.ptsInUs < startUpTime!!) {
-            return
-        }
-
-        frame.ptsInUs -= startUpTime!!
-        val stream = streams[streamPid]
-        val sendHeader = stream.sendHeader
-        stream.sendHeader = false
-        val flvTags = AVTagsFactory(frame, stream.config, sendHeader).build()
-        flvTags.forEach {
-            listener?.onOutputFrame(
-                Packet(it.write(), frame.ptsInUs)
-            )
         }
     }
 

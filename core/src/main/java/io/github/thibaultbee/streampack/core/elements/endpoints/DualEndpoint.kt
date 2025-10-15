@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.core.elements.endpoints
 import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutputDispatcherProvider
+import kotlinx.coroutines.CoroutineDispatcher
 
 /**
  * An implementation of [CombineEndpoint] that combines two endpoints.
@@ -29,11 +30,15 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.Encoding
  *
  * @param mainEndpoint the main endpoint
  * @param secondEndpoint the second endpoint
+ * @param coroutineDispatcher the coroutine dispatcher
  */
 open class DualEndpoint(
-    private val mainEndpoint: IEndpointInternal, private val secondEndpoint: IEndpointInternal
+    private val mainEndpoint: IEndpointInternal,
+    private val secondEndpoint: IEndpointInternal,
+    coroutineDispatcher: CoroutineDispatcher
 ) : CombineEndpoint(
-    listOf(secondEndpoint, mainEndpoint)
+    listOf(secondEndpoint, mainEndpoint),
+    coroutineDispatcher
 ) {
     /**
      * Opens the [mainEndpoint].
@@ -91,7 +96,8 @@ class DualEndpointFactory(
     ): IEndpointInternal {
         return DualEndpoint(
             mainEndpointFactory.create(context, dispatcherProvider),
-            secondEndpointFactory.create(context, dispatcherProvider)
+            secondEndpointFactory.create(context, dispatcherProvider),
+            dispatcherProvider.defaultDispatcher
         )
     }
 }

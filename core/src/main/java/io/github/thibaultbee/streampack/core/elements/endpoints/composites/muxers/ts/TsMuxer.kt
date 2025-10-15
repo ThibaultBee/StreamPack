@@ -75,83 +75,90 @@ class TsMuxer : IMuxerInternal {
      * @param streamPid Pid of frame stream. Throw a NoSuchElementException if streamPid refers to an unknown stream
      */
     override fun write(
-        frame: Frame, streamPid: Int
+        frame: Frame, streamPid: Int, onFrameProcessed: () -> Unit
     ) {
-        val pes = getPes(streamPid.toShort())
-        val newFrame = when {
-            frame.mimeType == MediaFormat.MIMETYPE_VIDEO_AVC -> {
-                // Copy sps & pps before buffer
-                if (frame.isKeyFrame) {
-                    if (frame.extra == null) {
-                        throw MissingFormatArgumentException("Missing extra for AVC")
-                    }
-                    val buffer =
-                        ByteBuffer.allocate(6 + frame.extra.sumOf { it.limit() } + frame.buffer.limit())
-                    // Add access unit delimiter (AUD) before the AVC access unit
-                    buffer.putInt(0x00000001)
-                    buffer.put(0x09.toByte())
-                    buffer.put(0xf0.toByte())
-                    frame.extra.forEach { buffer.put(it) }
-                    buffer.put(frame.buffer)
-                    buffer.rewind()
-                    frame.copy(rawBuffer = buffer)
-                } else {
-                    frame
-                }
-            }
-
-            frame.mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC -> {
-                // Copy sps & pps & vps before buffer
-                if (frame.isKeyFrame) {
-                    if (frame.extra == null) {
-                        throw MissingFormatArgumentException("Missing extra for HEVC")
-                    }
-                    val buffer =
-                        ByteBuffer.allocate(7 + frame.extra.sumOf { it.limit() } + frame.buffer.limit())
-                    // Add access unit delimiter (AUD) before the HEVC access unit
-                    buffer.putInt(0x00000001)
-                    buffer.put(0x46.toByte())
-                    buffer.put(0x01.toByte())
-                    buffer.put(0x50.toByte())
-                    frame.extra.forEach { buffer.put(it) }
-                    buffer.put(frame.buffer)
-                    buffer.rewind()
-                    frame.copy(rawBuffer = buffer)
-                } else {
-                    frame
-                }
-            }
-
-            AudioCodecConfig.isAacMimeType(frame.mimeType) -> {
-                frame.copy(
-                    rawBuffer = if (pes.stream.config.profile == MediaCodecInfo.CodecProfileLevel.AACObjectLC) {
-                        ADTSFrameWriter.fromAudioConfig(
-                            frame.buffer, pes.stream.config as AudioCodecConfig
-                        ).toByteBuffer()
+        try {
+            val pes = getPes(streamPid.toShort())
+            val newFrame = when {
+                frame.mimeType == MediaFormat.MIMETYPE_VIDEO_AVC -> {
+                    // Copy sps & pps before buffer
+                    if (frame.isKeyFrame) {
+                        if (frame.extra == null) {
+                            throw MissingFormatArgumentException("Missing extra for AVC")
+                        }
+                        val buffer =
+                            ByteBuffer.allocate(6 + frame.extra.sumOf { it.limit() } + frame.buffer.limit())
+                        // Add access unit delimiter (AUD) before the AVC access unit
+                        buffer.putInt(0x00000001)
+                        buffer.put(0x09.toByte())
+                        buffer.put(0xf0.toByte())
+                        frame.extra.forEach { buffer.put(it) }
+                        buffer.put(frame.buffer)
+                        buffer.rewind()
+                        frame.copy(rawBuffer = buffer)
                     } else {
-                        LATMFrameWriter.fromDecoderSpecificInfo(frame.buffer, frame.extra!!.first())
-                            .toByteBuffer()
+                        frame
                     }
-                )
+                }
+
+                frame.mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC -> {
+                    // Copy sps & pps & vps before buffer
+                    if (frame.isKeyFrame) {
+                        if (frame.extra == null) {
+                            throw MissingFormatArgumentException("Missing extra for HEVC")
+                        }
+                        val buffer =
+                            ByteBuffer.allocate(7 + frame.extra.sumOf { it.limit() } + frame.buffer.limit())
+                        // Add access unit delimiter (AUD) before the HEVC access unit
+                        buffer.putInt(0x00000001)
+                        buffer.put(0x46.toByte())
+                        buffer.put(0x01.toByte())
+                        buffer.put(0x50.toByte())
+                        frame.extra.forEach { buffer.put(it) }
+                        buffer.put(frame.buffer)
+                        buffer.rewind()
+                        frame.copy(rawBuffer = buffer)
+                    } else {
+                        frame
+                    }
+                }
+
+                AudioCodecConfig.isAacMimeType(frame.mimeType) -> {
+                    frame.copy(
+                        rawBuffer = if (pes.stream.config.profile == MediaCodecInfo.CodecProfileLevel.AACObjectLC) {
+                            ADTSFrameWriter.fromAudioConfig(
+                                frame.buffer, pes.stream.config as AudioCodecConfig
+                            ).toByteBuffer()
+                        } else {
+                            LATMFrameWriter.fromDecoderSpecificInfo(
+                                frame.buffer,
+                                frame.extra!!.first()
+                            )
+                                .toByteBuffer()
+                        }
+                    )
+                }
+
+                frame.mimeType == MediaFormat.MIMETYPE_AUDIO_OPUS -> {
+                    val payloadSize = frame.buffer.remaining()
+                    val controlHeader = OpusControlHeader(
+                        payloadSize = payloadSize
+                    )
+                    val buffer = ByteBuffer.allocate(controlHeader.size + payloadSize)
+                    controlHeader.write(buffer)
+                    buffer.put(frame.buffer)
+                    buffer.rewind()
+                    frame.copy(rawBuffer = buffer)
+                }
+
+                else -> throw IllegalArgumentException("Unsupported mimeType ${frame.mimeType}")
             }
 
-            frame.mimeType == MediaFormat.MIMETYPE_AUDIO_OPUS -> {
-                val payloadSize = frame.buffer.remaining()
-                val controlHeader = OpusControlHeader(
-                    payloadSize = payloadSize
-                )
-                val buffer = ByteBuffer.allocate(controlHeader.size + payloadSize)
-                controlHeader.write(buffer)
-                buffer.put(frame.buffer)
-                buffer.rewind()
-                frame.copy(rawBuffer = buffer)
+            synchronized(this) {
+                generateStreams(newFrame, pes)
             }
-
-            else -> throw IllegalArgumentException("Unsupported mimeType ${frame.mimeType}")
-        }
-
-        synchronized(this) {
-            generateStreams(newFrame, pes)
+        } finally {
+            onFrameProcessed()
         }
     }
 
