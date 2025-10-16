@@ -56,7 +56,9 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoCallbackPip
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoSurfacePipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingOutputDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutputDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
@@ -373,7 +375,7 @@ open class StreamerPipeline(
      * @param withVideo whether the output has video. If the [StreamerPipeline] does not have video, it will be ignored.
      * @param endpointFactory the endpoint factory to add the output to
      * @param targetRotation the target rotation of the output
-     * @param coroutineDispatcher the coroutine dispatcher to create the output on.
+     * @param dispatcherProvider the dispatcher provider for the encoding output
      *
      * @return the [EncodingPipelineOutput] created
      */
@@ -382,7 +384,7 @@ open class StreamerPipeline(
         withVideo: Boolean = this.withVideo,
         endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
         @RotationValue targetRotation: Int = context.displayRotation,
-        coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
+        dispatcherProvider: EncodingPipelineOutputDispatcherProvider = EncodingOutputDispatcherProvider()
     ): IConfigurableAudioVideoEncodingPipelineOutput =
         withContext(this@StreamerPipeline.coroutineDispatcher) {
             if (isReleaseRequested.get()) {
@@ -407,7 +409,7 @@ open class StreamerPipeline(
                     withVideoCorrected,
                     endpointFactory,
                     targetRotation,
-                    coroutineDispatcher
+                    dispatcherProvider
                 )
             addOutput(output)
         }

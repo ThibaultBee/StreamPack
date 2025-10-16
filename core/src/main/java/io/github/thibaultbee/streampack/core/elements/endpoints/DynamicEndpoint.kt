@@ -29,6 +29,8 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
 import io.github.thibaultbee.streampack.core.elements.utils.DerivedStateFlow
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutputDispatcherProvider
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,7 +43,9 @@ import kotlinx.coroutines.flow.flatMapLatest
  * @param context The application context
  */
 open class DynamicEndpoint(
-    private val context: Context
+    private val context: Context,
+    private val defaultDispatcher: CoroutineDispatcher,
+    private val ioDispatcher: CoroutineDispatcher
 ) : IEndpointInternal {
     // Current endpoint
     private var _endpointFlow: MutableStateFlow<IEndpointInternal?> = MutableStateFlow(null)
@@ -148,7 +152,7 @@ open class DynamicEndpoint(
 
     private fun getMediaMuxerEndpoint(): IEndpointInternal {
         if (mediaMuxerEndpoint == null) {
-            mediaMuxerEndpoint = MediaMuxerEndpoint(context)
+            mediaMuxerEndpoint = MediaMuxerEndpoint(context, ioDispatcher)
         }
         return mediaMuxerEndpoint!!
     }
@@ -179,7 +183,7 @@ open class DynamicEndpoint(
         if (tsFileEndpoint == null) {
             tsFileEndpoint = CompositeEndpoint(
                 TsMuxer(),
-                FileSink()
+                FileSink(ioDispatcher)
             )
         }
         return tsFileEndpoint!!
@@ -196,14 +200,14 @@ open class DynamicEndpoint(
 
     private fun getSrtEndpoint(): IEndpointInternal {
         if (srtEndpoint == null) {
-            srtEndpoint = CompositeEndpoints.createSrtEndpoint(null)
+            srtEndpoint = CompositeEndpoints.createSrtEndpoint(null, ioDispatcher)
         }
         return srtEndpoint!!
     }
 
     private fun getRtmpEndpoint(): IEndpointInternal {
         if (rtmpEndpoint == null) {
-            rtmpEndpoint = CompositeEndpoints.createRtmpEndpoint()
+            rtmpEndpoint = CompositeEndpoints.createRtmpEndpoint(ioDispatcher)
         }
         return rtmpEndpoint!!
     }
@@ -217,5 +221,12 @@ open class DynamicEndpoint(
  * A factory to build a [DynamicEndpoint].
  */
 class DynamicEndpointFactory : IEndpointInternal.Factory {
-    override fun create(context: Context): IEndpointInternal = DynamicEndpoint(context)
+    override fun create(
+        context: Context,
+        dispatcherProvider: EncodingPipelineOutputDispatcherProvider
+    ): IEndpointInternal = DynamicEndpoint(
+        context,
+        dispatcherProvider.defaultDispatcher,
+        dispatcherProvider.ioDispatcher
+    )
 }

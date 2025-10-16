@@ -21,6 +21,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TsMuxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ISinkInternal
+import kotlinx.coroutines.CoroutineDispatcher
 
 /**
  * An [IEndpointInternal] implementation that combines a [IMuxerInternal] and a [ISinkInternal].
@@ -29,8 +30,11 @@ object CompositeEndpoints {
     /**
      * Creates an endpoint for SRT (with a TS muxer)
      */
-    internal fun createSrtEndpoint(serviceInfo: TSServiceInfo?): IEndpointInternal {
-        val sink = createSrtSink()
+    internal fun createSrtEndpoint(
+        serviceInfo: TSServiceInfo?,
+        coroutineDispatcher: CoroutineDispatcher
+    ): IEndpointInternal {
+        val sink = createSrtSink(coroutineDispatcher)
         val muxer = TsMuxer()
         if (serviceInfo != null) {
             muxer.addService(serviceInfo)
@@ -41,8 +45,8 @@ object CompositeEndpoints {
     /**
      * Creates an endpoint for RTMP (with a FLV muxer)
      */
-    internal fun createRtmpEndpoint(): IEndpointInternal {
-        val sink = createRtmpSink()
+    internal fun createRtmpEndpoint(coroutineDispatcher: CoroutineDispatcher): IEndpointInternal {
+        val sink = createRtmpSink(coroutineDispatcher)
         return CompositeEndpoint(
             FlvMuxer(
                 isForFile = false
@@ -50,11 +54,12 @@ object CompositeEndpoints {
         )
     }
 
-    private fun createRtmpSink(): ISinkInternal {
+    private fun createRtmpSink(coroutineDispatcher: CoroutineDispatcher): ISinkInternal {
         return try {
             val clazz =
                 Class.forName("io.github.thibaultbee.streampack.ext.rtmp.elements.endpoints.composites.sinks.RtmpSink")
-            clazz.getConstructor().newInstance() as ISinkInternal
+            clazz.getConstructor(CoroutineDispatcher::class.java)
+                .newInstance(coroutineDispatcher) as ISinkInternal
         } catch (e: ClassNotFoundException) {
             // Expected if the app was built without the RTMP extension.
             throw ClassNotFoundException(
@@ -67,11 +72,12 @@ object CompositeEndpoints {
         }
     }
 
-    private fun createSrtSink(): ISinkInternal {
+    private fun createSrtSink(coroutineDispatcher: CoroutineDispatcher): ISinkInternal {
         return try {
             val clazz =
                 Class.forName("io.github.thibaultbee.streampack.ext.srt.elements.endpoints.composites.sinks.SrtSink")
-            clazz.getConstructor().newInstance() as ISinkInternal
+            clazz.getConstructor(CoroutineDispatcher::class.java)
+                .newInstance(coroutineDispatcher) as ISinkInternal
         } catch (e: ClassNotFoundException) {
             // Expected if the app was built without the SRT extension.
             throw ClassNotFoundException(

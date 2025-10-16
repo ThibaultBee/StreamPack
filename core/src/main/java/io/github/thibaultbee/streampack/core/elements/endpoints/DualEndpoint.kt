@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.core.elements.endpoints
 
 import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutputDispatcherProvider
 
 /**
  * An implementation of [CombineEndpoint] that combines two endpoints.
@@ -80,26 +81,17 @@ suspend fun DualEndpoint.startStreamSecond(descriptor: MediaDescriptor) {
 /**
  * A factory to build a [DualEndpoint].
  */
-fun DualEndpointFactory(
-    context: Context,
-    mainEndpointFactory: IEndpointInternal.Factory,
-    secondEndpointFactory: IEndpointInternal.Factory
-) = DualEndpointFactory(
-    mainEndpointFactory.create(context),
-    secondEndpointFactory.create(context)
-)
-
-/**
- * A factory to build a [DualEndpoint].
- */
 class DualEndpointFactory(
-    private val mainEndpoint: IEndpointInternal,
-    private val secondEndpoint: IEndpointInternal
+    private val mainEndpointFactory: IEndpointInternal.Factory,
+    private val secondEndpointFactory: IEndpointInternal.Factory
 ) : IEndpointInternal.Factory {
-    override fun create(context: Context): IEndpointInternal {
+    override fun create(
+        context: Context,
+        dispatcherProvider: EncodingPipelineOutputDispatcherProvider
+    ): IEndpointInternal {
         return DualEndpoint(
-            mainEndpoint,
-            secondEndpoint
+            mainEndpointFactory.create(context, dispatcherProvider),
+            secondEndpointFactory.create(context, dispatcherProvider)
         )
     }
 }

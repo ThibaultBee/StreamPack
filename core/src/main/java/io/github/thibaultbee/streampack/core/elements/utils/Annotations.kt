@@ -35,7 +35,7 @@ annotation class ChannelConfigValue
 annotation class ByteFormatValue
 
 /**
- * Valid process priority values
+ * Valid process thread priority values
  */
 @IntDef(
     Process.THREAD_PRIORITY_AUDIO,
@@ -54,3 +54,16 @@ annotation class ByteFormatValue
     AnnotationRetention.SOURCE
 )
 annotation class ProcessThreadPriorityValue
+
+/**
+ * Valid thread priority values
+ */
+@IntDef(
+    Thread.MIN_PRIORITY,
+    Thread.NORM_PRIORITY,
+    Thread.MAX_PRIORITY
+)
+@Retention(
+    AnnotationRetention.SOURCE
+)
+annotation class ThreadPriorityValue
