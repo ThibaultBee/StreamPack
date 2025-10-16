@@ -1,6 +1,7 @@
 package io.github.thibaultbee.streampack.core.elements.utils
 
 import android.media.AudioFormat
+import android.os.Process
 import android.view.Surface
 import androidx.annotation.IntDef
 
@@ -32,3 +33,24 @@ annotation class ChannelConfigValue
     AnnotationRetention.SOURCE
 )
 annotation class ByteFormatValue
+
+/**
+ * Valid process priority values
+ */
+@IntDef(
+    Process.THREAD_PRIORITY_AUDIO,
+    Process.THREAD_PRIORITY_BACKGROUND,
+    Process.THREAD_PRIORITY_DEFAULT,
+    Process.THREAD_PRIORITY_DISPLAY,
+    Process.THREAD_PRIORITY_FOREGROUND,
+    Process.THREAD_PRIORITY_LESS_FAVORABLE,
+    Process.THREAD_PRIORITY_LOWEST,
+    Process.THREAD_PRIORITY_MORE_FAVORABLE,
+    Process.THREAD_PRIORITY_URGENT_AUDIO,
+    Process.THREAD_PRIORITY_URGENT_DISPLAY,
+    Process.THREAD_PRIORITY_VIDEO
+)
+@Retention(
+    AnnotationRetention.SOURCE
+)
+annotation class ProcessThreadPriorityValue

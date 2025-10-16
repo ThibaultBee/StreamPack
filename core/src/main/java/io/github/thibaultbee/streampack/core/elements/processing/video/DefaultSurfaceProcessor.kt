@@ -1,21 +1,25 @@
 package io.github.thibaultbee.streampack.core.elements.processing.video
 
 import android.graphics.SurfaceTexture
+import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
+import android.os.Process
 import android.util.Size
 import android.view.Surface
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import com.google.common.util.concurrent.ListenableFuture
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils
+import io.github.thibaultbee.streampack.core.elements.utils.ProcessThreadPriorityValue
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
 import java.util.concurrent.atomic.AtomicBoolean
 
 
 private class DefaultSurfaceProcessor(
-    private val dynamicRangeProfile: DynamicRangeProfile
+    private val dynamicRangeProfile: DynamicRangeProfile,
+    @ProcessThreadPriorityValue private val threadPriority: Int,
 ) : ISurfaceProcessorInternal, SurfaceTexture.OnFrameAvailableListener {
     private val renderer = OpenGlRenderer()
 
@@ -29,7 +33,7 @@ private class DefaultSurfaceProcessor(
     private val surfaceInputs: MutableList<SurfaceInput> = mutableListOf()
     private val surfaceInputsTimestampInNsMap: MutableMap<SurfaceTexture, Long> = hashMapOf()
 
-    private val glThread = HandlerThread("GL Thread").apply {
+    private val glThread = HandlerThread("GL Thread", threadPriority).apply {
         start()
     }
     private val glHandler = Handler(glThread.looper)
@@ -245,8 +249,18 @@ private class DefaultSurfaceProcessor(
     private data class SurfaceInput(val surface: Surface, val surfaceTexture: SurfaceTexture)
 }
 
-class DefaultSurfaceProcessorFactory : ISurfaceProcessorInternal.Factory {
+class DefaultSurfaceProcessorFactory(@ProcessThreadPriorityValue private val threadPriority: Int = defaultPriorityValue) :
+    ISurfaceProcessorInternal.Factory {
     override fun create(dynamicRangeProfile: DynamicRangeProfile): ISurfaceProcessorInternal {
-        return DefaultSurfaceProcessor(dynamicRangeProfile)
+        return DefaultSurfaceProcessor(dynamicRangeProfile, threadPriority)
+    }
+
+    companion object {
+        private val defaultPriorityValue =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                Process.THREAD_PRIORITY_VIDEO
+            } else {
+                Process.THREAD_PRIORITY_DEFAULT
+            }
     }
 }
