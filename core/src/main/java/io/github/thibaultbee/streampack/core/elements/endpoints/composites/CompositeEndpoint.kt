@@ -26,6 +26,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ISinkInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutputDispatcherProvider
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -138,7 +139,10 @@ class CompositeEndpointFactory(
     val muxer: IMuxerInternal,
     val sink: ISinkInternal
 ) : IEndpointInternal.Factory {
-    override fun create(context: Context): IEndpointInternal {
+    override fun create(
+        context: Context,
+        dispatcherProvider: EncodingPipelineOutputDispatcherProvider
+    ): IEndpointInternal {
         return CompositeEndpoint(muxer, sink)
     }
 }

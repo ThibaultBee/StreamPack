@@ -35,7 +35,7 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -52,9 +52,10 @@ internal class MediaCodecEncoder
 internal constructor(
     private val encoderConfig: EncoderConfig<*>,
     private val listener: IEncoderInternal.IListener,
-    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val defaultDispatcher: CoroutineDispatcher,
+    private val processDispatcher: CoroutineDispatcher
 ) : IEncoderInternal {
-    private val coroutineScope = CoroutineScope(SupervisorJob() + coroutineDispatcher)
+    private val coroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
     private val mutex = Mutex()
 
     private val mediaCodec: MediaCodec
@@ -257,7 +258,7 @@ internal constructor(
             withMutexContext {
                 releaseUnsafe()
             }
-            coroutineScope.coroutineContext.cancelChildren()
+            coroutineScope.cancel()
         }
     }
 
@@ -321,7 +322,7 @@ internal constructor(
     }
 
     private suspend fun withMutexContext(block: suspend () -> Unit) {
-        withContext(coroutineDispatcher) {
+        withContext(defaultDispatcher) {
             mutex.withLock {
                 block()
             }

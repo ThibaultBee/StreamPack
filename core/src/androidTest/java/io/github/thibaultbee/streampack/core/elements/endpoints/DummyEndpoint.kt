@@ -20,6 +20,7 @@ import android.util.Log
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutputDispatcherProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
@@ -102,7 +103,10 @@ class DummyEndpoint : IEndpointInternal {
  * The factory to create [DummyEndpoint].
  */
 class DummyEndpointFactory : IEndpointInternal.Factory {
-    override fun create(context: Context): IEndpointInternal {
+    override fun create(
+        context: Context,
+        dispatcherProvider: EncodingPipelineOutputDispatcherProvider
+    ): IEndpointInternal {
         return DummyEndpoint()
     }
 }
@@ -111,7 +115,10 @@ class DummyEndpointFactory : IEndpointInternal.Factory {
  * The factory to create [DummyEndpoint].
  */
 class DummyEndpointDummyFactory(val dummyEndpoint: DummyEndpoint) : IEndpointInternal.Factory {
-    override fun create(context: Context): IEndpointInternal {
+    override fun create(
+        context: Context,
+        dispatcherProvider: EncodingPipelineOutputDispatcherProvider
+    ): IEndpointInternal {
         return dummyEndpoint
     }
 }

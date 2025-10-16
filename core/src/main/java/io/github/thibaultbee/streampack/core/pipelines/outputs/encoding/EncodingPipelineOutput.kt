@@ -30,11 +30,9 @@ import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.AudioE
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecEncoder
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.VideoEncoderConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.rotateFromNaturalOrientation
-import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.flush
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.sourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.mapState
@@ -48,9 +46,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoSurfacePipe
 import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
@@ -73,19 +69,20 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @param withVideo whether the output has video.
  * @param endpointFactory The endpoint factory implementation
  * @param defaultRotation The default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
- * @param coroutineDispatcher The coroutine dispatcher to use. By default, it is [Dispatchers.Default]
+ * @param dispatcherProvider The dispatcher provider to use for coroutine dispatching
  */
 internal class EncodingPipelineOutput(
     private val context: Context,
-    override val withAudio: Boolean = true,
-    override val withVideo: Boolean = true,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
-    @RotationValue defaultRotation: Int = context.displayRotation,
-    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
+    override val withAudio: Boolean,
+    override val withVideo: Boolean,
+    endpointFactory: IEndpointInternal.Factory,
+    @RotationValue defaultRotation: Int,
+    private val dispatcherProvider: EncodingPipelineOutputDispatcherProvider
 ) : IConfigurableAudioVideoEncodingPipelineOutput, IEncodingPipelineOutputInternal,
     IVideoSurfacePipelineOutputInternal, IAudioSyncPipelineOutputInternal,
     IAudioCallbackPipelineOutputInternal {
-    private val coroutineScope = CoroutineScope(coroutineDispatcher)
+    private val coroutineScope = CoroutineScope(dispatcherProvider.defaultDispatcher)
+    private val coroutineDispatcher = dispatcherProvider.defaultDispatcher
 
     /**
      * Mutex to avoid concurrent start/stop operations.
@@ -128,9 +125,9 @@ internal class EncodingPipelineOutput(
         get() = videoEncoderInternal
 
     // ENDPOINT
-    private val endpointInternal: IEndpointInternal = endpointFactory.create(context)
-    override val endpoint: IEndpoint
-        get() = endpointInternal
+    private val endpointInternal: IEndpointInternal =
+        endpointFactory.create(context, dispatcherProvider)
+    override val endpoint: IEndpoint = endpointInternal
 
     /**
      * Keep the target rotation if it can't be applied immediately.
@@ -239,7 +236,7 @@ internal class EncodingPipelineOutput(
 
     init {
         if (withAudio) {
-            coroutineScope.launch {
+            coroutineScope.launch(dispatcherProvider.audioDispatcher) {
                 // Audio
                 audioEncoderListener.outputChannel.consumeEach { frame ->
                     try {
@@ -255,7 +252,7 @@ internal class EncodingPipelineOutput(
             }
         }
         if (withVideo) {
-            coroutineScope.launch {
+            coroutineScope.launch(dispatcherProvider.videoDispatcher) {
                 // Video
                 videoEncoderListener.outputChannel.consumeEach { frame ->
                     try {
@@ -336,7 +333,8 @@ internal class EncodingPipelineOutput(
                 audioConfig, encoderMode
             ),
             audioEncoderListener,
-            coroutineDispatcher
+            dispatcherProvider.defaultDispatcher,
+            dispatcherProvider.audioDispatcher
         )
 
         when (audioEncoder.input) {
@@ -428,7 +426,8 @@ internal class EncodingPipelineOutput(
                 EncoderMode.SURFACE
             ),
             videoEncoderListener,
-            coroutineDispatcher
+            dispatcherProvider.defaultDispatcher,
+            dispatcherProvider.videoDispatcher
         )
 
         when (videoEncoder.input) {

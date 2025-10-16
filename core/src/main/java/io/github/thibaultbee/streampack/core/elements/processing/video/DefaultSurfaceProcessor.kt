@@ -1,10 +1,8 @@
 package io.github.thibaultbee.streampack.core.elements.processing.video
 
 import android.graphics.SurfaceTexture
-import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
-import android.os.Process
 import android.util.Size
 import android.view.Surface
 import androidx.concurrent.futures.CallbackToFutureAdapter
@@ -14,6 +12,7 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLU
 import io.github.thibaultbee.streampack.core.elements.utils.ProcessThreadPriorityValue
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.pipelines.utils.ThreadUtils
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -249,18 +248,9 @@ private class DefaultSurfaceProcessor(
     private data class SurfaceInput(val surface: Surface, val surfaceTexture: SurfaceTexture)
 }
 
-class DefaultSurfaceProcessorFactory(@ProcessThreadPriorityValue private val threadPriority: Int = defaultPriorityValue) :
+class DefaultSurfaceProcessorFactory(@ProcessThreadPriorityValue private val threadPriority: Int = ThreadUtils.defaultVideoPriorityValue) :
     ISurfaceProcessorInternal.Factory {
     override fun create(dynamicRangeProfile: DynamicRangeProfile): ISurfaceProcessorInternal {
         return DefaultSurfaceProcessor(dynamicRangeProfile, threadPriority)
-    }
-
-    companion object {
-        private val defaultPriorityValue =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                Process.THREAD_PRIORITY_VIDEO
-            } else {
-                Process.THREAD_PRIORITY_DEFAULT
-            }
     }
 }

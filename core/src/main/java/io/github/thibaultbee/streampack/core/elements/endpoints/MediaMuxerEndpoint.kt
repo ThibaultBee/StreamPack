@@ -27,11 +27,14 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.Media
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutputDispatcherProvider
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.security.InvalidParameterException
 
 /**
@@ -39,6 +42,7 @@ import java.security.InvalidParameterException
  */
 class MediaMuxerEndpoint(
     private val context: Context,
+    private val ioDispatcher: CoroutineDispatcher
 ) : IEndpointInternal {
     private var mediaMuxer: MediaMuxer? = null
     private val mutex = Mutex()
@@ -92,10 +96,7 @@ class MediaMuxerEndpoint(
         require((descriptor.type.sinkType == MediaSinkType.FILE) || (descriptor.type.sinkType == MediaSinkType.CONTENT)) { "MediaDescriptor must have a path" }
         val containerType = descriptor.type.containerType
         require(
-            (containerType == MediaContainerType.MP4) ||
-                    (containerType == MediaContainerType.THREEGP) ||
-                    (containerType == MediaContainerType.WEBM) ||
-                    (containerType == MediaContainerType.OGG)
+            (containerType == MediaContainerType.MP4) || (containerType == MediaContainerType.THREEGP) || (containerType == MediaContainerType.WEBM) || (containerType == MediaContainerType.OGG)
         ) {
             "Unsupported container type: $containerType"
         }
@@ -106,27 +107,22 @@ class MediaMuxerEndpoint(
                 MediaSinkType.FILE -> {
                     val path = descriptor.uri.path
                         ?: throw IllegalStateException("Could not get path from uri: ${descriptor.uri}")
-                    mediaMuxer =
-                        MediaMuxer(path, containerType.outputFormat)
+                    mediaMuxer = MediaMuxer(path, containerType.outputFormat)
                 }
 
                 MediaSinkType.CONTENT -> {
-                    fileDescriptor =
-                        context.contentResolver.openFileDescriptor(
-                            descriptor.uri,
-                            "w"
-                        )?.apply {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                mediaMuxer =
-                                    MediaMuxer(
-                                        this.fileDescriptor,
-                                        containerType.outputFormat
-                                    )
-                            } else {
-                                throw IllegalStateException("Using content sink for API < 26 is not supported. Use file sink instead.")
-                            }
+                    fileDescriptor = context.contentResolver.openFileDescriptor(
+                        descriptor.uri, "w"
+                    )?.apply {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            mediaMuxer = MediaMuxer(
+                                this.fileDescriptor, containerType.outputFormat
+                            )
+                        } else {
+                            throw IllegalStateException("Using content sink for API < 26 is not supported. Use file sink instead.")
                         }
-                            ?: throw IllegalStateException("Could not open file descriptor for uri: ${descriptor.uri}")
+                    }
+                        ?: throw IllegalStateException("Could not open file descriptor for uri: ${descriptor.uri}")
                 }
 
                 else -> throw InvalidParameterException("Unsupported sink type: ${descriptor.type.sinkType}")
@@ -144,13 +140,12 @@ class MediaMuxerEndpoint(
     }
 
     override suspend fun write(
-        frame: Frame,
-        streamPid: Int
-    ) {
+        frame: Frame, streamPid: Int
+    ) = withContext(ioDispatcher) {
         mutex.withLock {
             if (state != State.STARTED && state != State.PENDING_START) {
                 Logger.w(TAG, "Trying to write while not started. Current state: $state")
-                return
+                return@withContext
             }
 
             val mediaMuxer = requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
@@ -358,8 +353,7 @@ class MediaMuxerEndpoint(
             object : IEndpoint.IEndpointInfo.IAudioEndpointInfo {
                 override val supportedEncoders by lazy {
                     listOf(
-                        MediaFormat.MIMETYPE_AUDIO_VORBIS,
-                        MediaFormat.MIMETYPE_AUDIO_OPUS
+                        MediaFormat.MIMETYPE_AUDIO_VORBIS, MediaFormat.MIMETYPE_AUDIO_OPUS
                     )
                 }
                 override val supportedSampleRates = null
@@ -401,8 +395,7 @@ class MediaMuxerEndpoint(
             object : IEndpoint.IEndpointInfo.IVideoEndpointInfo {
                 override val supportedEncoders by lazy {
                     mutableListOf(
-                        MediaFormat.MIMETYPE_VIDEO_H263,
-                        MediaFormat.MIMETYPE_VIDEO_AVC
+                        MediaFormat.MIMETYPE_VIDEO_H263, MediaFormat.MIMETYPE_VIDEO_AVC
                     ).apply {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                             add(MediaFormat.MIMETYPE_VIDEO_VP9)
@@ -419,8 +412,7 @@ class MediaMuxerEndpoint(
             object : IEndpoint.IEndpointInfo.IAudioEndpointInfo {
                 override val supportedEncoders by lazy {
                     listOf(
-                        MediaFormat.MIMETYPE_AUDIO_VORBIS,
-                        MediaFormat.MIMETYPE_AUDIO_OPUS
+                        MediaFormat.MIMETYPE_AUDIO_VORBIS, MediaFormat.MIMETYPE_AUDIO_OPUS
                     )
                 }
                 override val supportedSampleRates = null
@@ -457,19 +449,17 @@ class MediaMuxerEndpoint(
     companion object {
         private const val TAG = "MediaMuxerEndpoint"
 
-        private fun getInfo(descriptor: MediaDescriptor) =
-            getInfo(descriptor.type.containerType)
+        private fun getInfo(descriptor: MediaDescriptor) = getInfo(descriptor.type.containerType)
 
         private fun getInfo(type: MediaDescriptor.Type) = getInfo(type.containerType)
 
-        private fun getInfo(containerType: MediaContainerType) =
-            when (containerType) {
-                MediaContainerType.MP4 -> Mp4EndpointInfo
-                MediaContainerType.THREEGP -> ThreeGPEndpointInfo
-                MediaContainerType.WEBM -> WebMEndpointInfo
-                MediaContainerType.OGG -> OggEndpointInfo
-                else -> throw IllegalArgumentException("Unsupported container type: $containerType")
-            }
+        private fun getInfo(containerType: MediaContainerType) = when (containerType) {
+            MediaContainerType.MP4 -> Mp4EndpointInfo
+            MediaContainerType.THREEGP -> ThreeGPEndpointInfo
+            MediaContainerType.WEBM -> WebMEndpointInfo
+            MediaContainerType.OGG -> OggEndpointInfo
+            else -> throw IllegalArgumentException("Unsupported container type: $containerType")
+        }
     }
 
     private enum class State {
@@ -500,7 +490,9 @@ class MediaMuxerEndpoint(
  * Factory for [MediaMuxerEndpoint].
  */
 class MediaMuxerEndpointFactory : IEndpointInternal.Factory {
-    override fun create(context: Context): IEndpointInternal {
-        return MediaMuxerEndpoint(context)
+    override fun create(
+        context: Context, dispatcherProvider: EncodingPipelineOutputDispatcherProvider
+    ): IEndpointInternal {
+        return MediaMuxerEndpoint(context, dispatcherProvider.ioDispatcher)
     }
 }
