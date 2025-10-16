@@ -138,6 +138,7 @@ internal class CameraSource(
 
     @RequiresPermission(Manifest.permission.CAMERA)
     override suspend fun setPreview(surface: Surface) {
+        Logger.e(TAG, "setPreview: $surface")
         if (isPreviewingFlow.value) {
             Logger.w(TAG, "Trying to set preview while previewing")
         }
@@ -146,13 +147,19 @@ internal class CameraSource(
 
     @SuppressLint("MissingPermission")
     override suspend fun resetPreviewImpl() {
+        Logger.e(TAG, "removePrview")
         controller.removeOutput(PREVIEW_NAME)
     }
 
-    override suspend fun getOutput() = controller.getOutput(STREAM_NAME)?.surface
+    override suspend fun getOutput(): Surface? {
+        val surface = controller.getOutput(STREAM_NAME)?.surface
+        Logger.e(TAG, "getOutput: $surface")
+        return surface
+    }
 
     @RequiresPermission(Manifest.permission.CAMERA)
     override suspend fun setOutput(surface: Surface) {
+        Logger.e(TAG, "setOutput: $surface")
         if (isStreamingFlow.value) {
             Logger.w(TAG, "Trying to set output while streaming")
         }
@@ -161,6 +168,7 @@ internal class CameraSource(
 
     @SuppressLint("MissingPermission")
     override suspend fun resetOutputImpl() {
+        Logger.e(TAG, "removeOutput")
         executeIfCameraPermission {
             controller.removeOutput(STREAM_NAME)
         }
@@ -222,6 +230,7 @@ internal class CameraSource(
      */
     @RequiresPermission(Manifest.permission.CAMERA)
     override suspend fun startPreview(previewSurface: Surface) = previewMutex.withLock {
+        Logger.d(TAG, "Starting preview")
         if (isPreviewingFlow.value) {
             Logger.w(TAG, "Camera is already previewing")
             return
@@ -251,6 +260,7 @@ internal class CameraSource(
 
     @RequiresPermission(Manifest.permission.CAMERA)
     override suspend fun startStream() = streamMutex.withLock {
+        Logger.d(TAG, "Starting stream")
         if (isStreamingFlow.value) {
             Logger.w(TAG, "Camera is already streaming")
             return
@@ -263,7 +273,7 @@ internal class CameraSource(
 
     @SuppressLint("MissingPermission")
     override suspend fun stopStream() = streamMutex.withLock {
-        Logger.d(TAG, "stopStream")
+        Logger.d(TAG, "stopping stream")
         if (!isStreamingFlow.value) {
             Logger.w(TAG, "Camera is not streaming")
             return

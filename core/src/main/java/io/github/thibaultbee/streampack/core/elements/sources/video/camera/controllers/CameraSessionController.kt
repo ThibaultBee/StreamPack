@@ -303,6 +303,7 @@ internal class CameraSessionController private constructor(
         // Close current session
         close()
 
+        Logger.e(TAG, "Recreate with outputs $outputs and target $targets")
         val isClosedFlow = MutableStateFlow(false)
         val newCaptureSession =
             CameraUtils.createCaptureSession(
