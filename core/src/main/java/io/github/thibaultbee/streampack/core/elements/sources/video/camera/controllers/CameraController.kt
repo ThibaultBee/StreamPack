@@ -83,6 +83,7 @@ internal class CameraController(
         require(output.surface.isValid) { "Output is invalid: $output" }
         outputsMutex.withLock {
             if (outputs.values.contains(output)) {
+                Logger.e(TAG, "Output is already in the current session: $output")
                 return
             }
             val needRestart = isActiveFlow.value
@@ -130,6 +131,7 @@ internal class CameraController(
      */
     @RequiresPermission(Manifest.permission.CAMERA)
     private suspend fun getSessionController(): CameraSessionController {
+        Logger.e(TAG, "get session controllers with output $outputs")
         return if (sessionController == null) {
             val deviceController = getDeviceController()
             CameraSessionController.create(
@@ -184,6 +186,7 @@ internal class CameraController(
     @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun restartSession() {
         controllerMutex.withLock {
+            Logger.e(TAG, "restart session: outputs=$outputs")
             val sessionController = sessionController
             if (sessionController == null) {
                 Logger.i(TAG, "SessionController is null, nothing to restart")

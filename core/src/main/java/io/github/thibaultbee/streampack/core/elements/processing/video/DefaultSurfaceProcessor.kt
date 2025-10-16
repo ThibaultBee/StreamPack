@@ -90,6 +90,8 @@ private class DefaultSurfaceProcessor(
 
         val surfaceInput = future.get()
         surfaceInputs.add(surfaceInput)
+
+        Logger.e(TAG, "Created input surface of size $surfaceSize, $surfaceInput")
         return surfaceInput.surface
     }
 
