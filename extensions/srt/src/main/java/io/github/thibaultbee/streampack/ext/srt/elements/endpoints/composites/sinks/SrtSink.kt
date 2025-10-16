@@ -31,11 +31,12 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ClosedException
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
 import io.github.thibaultbee.streampack.ext.srt.configuration.mediadescriptor.SrtMediaDescriptor
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
 
-class SrtSink : AbstractSink() {
+class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSink() {
     override val supportedSinkTypes: List<MediaSinkType> = listOf(MediaSinkType.SRT)
 
     private var socket: CoroutineSrtSocket? = null
@@ -72,7 +73,7 @@ class SrtSink : AbstractSink() {
             require(mediaDescriptor.srtUrl.transtype == Transtype.LIVE)
         }
 
-        socket = CoroutineSrtSocket()
+        socket = CoroutineSrtSocket(coroutineDispatcher)
         socket?.let {
             // Forces this value. Only works if they are null in [srtUrl]
             it.setSockFlag(SockOpt.PAYLOADSIZE, PAYLOAD_SIZE)

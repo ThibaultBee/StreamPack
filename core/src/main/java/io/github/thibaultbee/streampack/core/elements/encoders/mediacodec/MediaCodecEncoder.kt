@@ -52,7 +52,7 @@ internal class MediaCodecEncoder
 internal constructor(
     private val encoderConfig: EncoderConfig<*>,
     private val listener: IEncoderInternal.IListener,
-    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val coroutineDispatcher: CoroutineDispatcher
 ) : IEncoderInternal {
     private val coroutineScope = CoroutineScope(SupervisorJob() + coroutineDispatcher)
     private val mutex = Mutex()

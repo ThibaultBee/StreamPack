@@ -5,12 +5,13 @@ import android.net.Uri
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import junit.framework.TestCase.fail
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class MediaMuxerEndpointTest {
     private val context: Context = InstrumentationRegistry.getInstrumentation().context
-    private val mediaMuxerEndpoint = MediaMuxerEndpoint(context)
+    private val mediaMuxerEndpoint = MediaMuxerEndpoint(context, Dispatchers.IO)
 
     @Test
     fun releaseMustNotThrow() {

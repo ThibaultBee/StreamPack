@@ -7,6 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.utils.DescriptorUtils
 import io.github.thibaultbee.streampack.core.elements.utils.FakeFrames
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -20,7 +21,7 @@ class DynamicEndpointTest {
 
     @Test
     fun `isOpenFlow test`() = runTest {
-        val dynamicEndpoint = DynamicEndpoint(context)
+        val dynamicEndpoint = DynamicEndpoint(context, Dispatchers.Default, Dispatchers.IO)
         assertFalse(dynamicEndpoint.isOpenFlow.value)
         dynamicEndpoint.open(DescriptorUtils.createFileDescriptor("dynamic.ts"))
         assertTrue(dynamicEndpoint.isOpenFlow.value)
@@ -29,7 +30,7 @@ class DynamicEndpointTest {
 
     @Test
     fun `test open mp4 file descriptor`() = runTest {
-        val dynamicEndpoint = DynamicEndpoint(context)
+        val dynamicEndpoint = DynamicEndpoint(context, Dispatchers.Default, Dispatchers.IO)
         dynamicEndpoint.open(DescriptorUtils.createFileDescriptor("dynamic.mp4"))
         assertTrue(dynamicEndpoint.isOpenFlow.value)
         dynamicEndpoint.close()
@@ -37,7 +38,7 @@ class DynamicEndpointTest {
 
     @Test
     fun `test open ts file descriptor`() = runTest {
-        val dynamicEndpoint = DynamicEndpoint(context)
+        val dynamicEndpoint = DynamicEndpoint(context, Dispatchers.Default, Dispatchers.IO)
         dynamicEndpoint.open(DescriptorUtils.createFileDescriptor("dynamic.ts"))
         assertTrue(dynamicEndpoint.isOpenFlow.value)
         dynamicEndpoint.close()
@@ -45,7 +46,7 @@ class DynamicEndpointTest {
 
     @Test
     fun `test open flv file descriptor`() = runTest {
-        val dynamicEndpoint = DynamicEndpoint(context)
+        val dynamicEndpoint = DynamicEndpoint(context, Dispatchers.Default, Dispatchers.IO)
         dynamicEndpoint.open(DescriptorUtils.createFileDescriptor("dynamic.flv"))
         assertTrue(dynamicEndpoint.isOpenFlow.value)
         dynamicEndpoint.close()
@@ -53,11 +54,11 @@ class DynamicEndpointTest {
 
     @Test
     fun `test open unknown file extension`() = runTest {
-        val dynamicEndpoint = DynamicEndpoint(context)
+        val dynamicEndpoint = DynamicEndpoint(context, Dispatchers.Default, Dispatchers.IO)
         try {
             dynamicEndpoint.open(DescriptorUtils.createFileDescriptor("dynamic.unknown"))
             fail("IllegalArgumentException expected")
-        } catch (e: Throwable) {
+        } catch (_: Throwable) {
             assertFalse(dynamicEndpoint.isOpenFlow.value)
         } finally {
             dynamicEndpoint.close()
@@ -66,7 +67,7 @@ class DynamicEndpointTest {
 
     @Test
     fun `test open flv content descriptor`() = runTest {
-        val dynamicEndpoint = DynamicEndpoint(context)
+        val dynamicEndpoint = DynamicEndpoint(context, Dispatchers.Default, Dispatchers.IO)
         dynamicEndpoint.open(
             UriMediaDescriptor(
                 DescriptorUtils.createContentUri(
@@ -81,11 +82,11 @@ class DynamicEndpointTest {
 
     @Test
     fun `test write to non open endpoint`() = runTest {
-        val dynamicEndpoint = DynamicEndpoint(context)
+        val dynamicEndpoint = DynamicEndpoint(context, Dispatchers.Default, Dispatchers.IO)
         try {
             dynamicEndpoint.write(FakeFrames.generate(MediaFormat.MIMETYPE_AUDIO_AAC), 0)
             fail("Throwable expected")
-        } catch (e: Throwable) {
+        } catch (_: Throwable) {
             assertFalse(dynamicEndpoint.isOpenFlow.value)
         } finally {
             dynamicEndpoint.close()

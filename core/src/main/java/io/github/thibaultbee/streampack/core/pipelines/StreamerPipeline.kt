@@ -56,8 +56,10 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoCallbackPip
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoSurfacePipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.DefaultEncodingOutputDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioVideoEncodingPipelineOutput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.pipelines.utils.MultiException
@@ -382,7 +384,7 @@ open class StreamerPipeline(
         withVideo: Boolean = this.withVideo,
         endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
         @RotationValue targetRotation: Int = context.displayRotation,
-        coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
+        dispatcherProvider: IEncodingPipelineOutputDispatcherProvider = DefaultEncodingOutputDispatcherProvider()
     ): IConfigurableAudioVideoEncodingPipelineOutput =
         withContext(this@StreamerPipeline.coroutineDispatcher) {
             if (isReleaseRequested.get()) {
@@ -407,7 +409,7 @@ open class StreamerPipeline(
                     withVideoCorrected,
                     endpointFactory,
                     targetRotation,
-                    coroutineDispatcher
+                    dispatcherProvider
                 )
             addOutput(output)
         }

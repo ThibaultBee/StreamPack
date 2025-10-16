@@ -18,15 +18,16 @@ package io.github.thibaultbee.streampack.ext.rtmp.elements.endpoints.composites
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.FlvMuxer
 import io.github.thibaultbee.streampack.ext.rtmp.elements.endpoints.composites.sinks.RtmpSink
+import kotlinx.coroutines.CoroutineDispatcher
 
 /**
  * The RTMP endpoint factory.
  *
  * It returns a [CompositeEndpointFactory] with a [FlvMuxer] and a [RtmpSink]
  */
-fun RtmpEndpointFactory() =
+fun RtmpEndpointFactory(coroutineDispatcher: CoroutineDispatcher) =
     CompositeEndpointFactory(
         FlvMuxer(
             isForFile = false
-        ), RtmpSink()
+        ), RtmpSink(coroutineDispatcher)
     )

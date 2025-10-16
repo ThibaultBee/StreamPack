@@ -24,16 +24,14 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import video.api.rtmpdroid.Rtmp
-import java.util.concurrent.Executors
 
 class RtmpSink(
-    private val dispatcher: CoroutineDispatcher = Executors.newSingleThreadExecutor()
-        .asCoroutineDispatcher()
+    private val coroutineDispatcher: CoroutineDispatcher
 ) : AbstractSink() {
     override val supportedSinkTypes: List<MediaSinkType> = listOf(MediaSinkType.RTMP)
 
@@ -54,7 +52,7 @@ class RtmpSink(
     }
 
     override suspend fun openImpl(mediaDescriptor: MediaDescriptor) {
-        withContext(dispatcher) {
+        withContext(coroutineDispatcher) {
             isOnError = false
             socket = Rtmp().apply {
                 /**
@@ -71,7 +69,7 @@ class RtmpSink(
     }
 
     override suspend fun write(packet: Packet) =
-        withContext(dispatcher) {
+        withContext(coroutineDispatcher) {
             if (isOnError) {
                 return@withContext -1
             }
@@ -94,7 +92,7 @@ class RtmpSink(
         }
 
     override suspend fun startStream() {
-        withContext(dispatcher) {
+        withContext(coroutineDispatcher) {
             val socket = requireNotNull(socket) { "Socket is not initialized" }
             socket.connectStream()
         }
@@ -105,7 +103,7 @@ class RtmpSink(
     }
 
     override suspend fun close() {
-        withContext(dispatcher) {
+        withContext(coroutineDispatcher) {
             socket?.close()
             _isOpenFlow.emit(false)
         }
