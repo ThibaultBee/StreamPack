@@ -34,7 +34,6 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.put
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
@@ -64,7 +63,7 @@ internal constructor(
     private val frameFactory by lazy { FrameFactory(mediaCodec) }
 
     private val isVideo = encoderConfig.isVideo
-    private val tag = if (isVideo) "VideoEncoder" else "AudioEncoder" + "(${this.hashCode()})"
+    private val tag = if (isVideo) VIDEO_ENCODER_TAG else AUDIO_ENCODER_TAG + "(${this.hashCode()})"
 
 
     private var state = State.IDLE
@@ -606,6 +605,9 @@ internal constructor(
     }
 
     companion object {
+        private const val AUDIO_ENCODER_TAG = "AudioEncoder"
+        private const val VIDEO_ENCODER_TAG = "VideoEncoder"
+
         /**
          * Create a [Frame] from a [MediaCodec] output buffer
          *
