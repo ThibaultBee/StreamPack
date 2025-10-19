@@ -7,13 +7,14 @@ import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.CameraCaptureSessionCompatBuilder
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSurface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestBuilderWithTargets
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -27,13 +28,14 @@ import kotlinx.coroutines.sync.withLock
  */
 internal class CameraController(
     private val manager: CameraManager,
+    private val dispatcherProvider: CameraDispatcherProvider,
     val cameraId: String,
     val dynamicRangeBuilder: DynamicRangeConfig.() -> Unit = {},
     val captureRequestBuilder: CaptureRequestBuilderWithTargets.() -> Unit = {}
 ) {
-    private val sessionCompat = CameraCaptureSessionCompatBuilder.build()
+    private val sessionCompat = CameraCaptureSessionCompatBuilder.build(dispatcherProvider)
 
-    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+    private val coroutineScope = CoroutineScope(dispatcherProvider.default)
     private var isActiveJob: Job? = null
 
     private var deviceController: CameraDeviceController? = null
@@ -44,8 +46,8 @@ internal class CameraController(
     private val outputs = mutableMapOf<String, CameraSurface>()
     private val outputsMutex = Mutex()
 
-    private val _isAvailableFlow = MutableStateFlow(false)
-    val isActiveFlow = _isAvailableFlow.asStateFlow()
+    private val _isActiveFlow = MutableStateFlow(false)
+    val isActiveFlow = _isActiveFlow.asStateFlow()
 
     /**
      * Whether the current capture session has the given output.
@@ -159,7 +161,7 @@ internal class CameraController(
                             Logger.d(TAG, "Session controller recreated")
                         }
                 } catch (t: Throwable) {
-                    _isAvailableFlow.tryEmit(false)
+                    _isActiveFlow.tryEmit(false)
                     throw t
                 }
             }
@@ -171,7 +173,7 @@ internal class CameraController(
 
         isActiveJob = coroutineScope.launch {
             sessionController.isClosedFlow.collect {
-                _isAvailableFlow.emit(!it)
+                _isActiveFlow.emit(!it)
             }
         }
     }
@@ -340,6 +342,7 @@ internal class CameraController(
         }
         outputs.clear()
         sessionCompat.release()
+        coroutineScope.cancel()
     }
 
     fun muteVibrationAndSound() {

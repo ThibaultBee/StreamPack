@@ -21,7 +21,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
-import android.util.Log
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.RequiresPermission
@@ -32,6 +31,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.contr
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameras
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getAutoFocusModes
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFrameRateSupported
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSizes
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSurface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraTimestampHelper
@@ -40,7 +40,6 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -50,9 +49,14 @@ import kotlinx.coroutines.sync.withLock
 /**
  * Creates a [CameraSource] from a [Context].
  */
-internal fun CameraSource(context: Context, cameraId: String) =
+internal fun CameraSource(
+    context: Context,
+    dispatcherProvider: CameraDispatcherProvider,
+    cameraId: String
+) =
     CameraSource(
         context,
+        dispatcherProvider,
         context.getSystemService(Context.CAMERA_SERVICE) as CameraManager,
         cameraId
     )
@@ -65,11 +69,13 @@ internal fun CameraSource(context: Context, cameraId: String) =
  */
 internal class CameraSource(
     private val context: Context,
-    private val manager: CameraManager, override val cameraId: String
+    private val dispatcherProvider: CameraDispatcherProvider,
+    private val manager: CameraManager,
+    override val cameraId: String
 ) : ICameraSourceInternal, ICameraSource, AbstractPreviewableSource() {
-    private val coroutineScope = CoroutineScope(Dispatchers.Default)
+    private val coroutineScope = CoroutineScope(dispatcherProvider.default)
 
-    private val controller = CameraController(manager, cameraId, {
+    private val controller = CameraController(manager, dispatcherProvider, cameraId, {
         dynamicRangeProfile.dynamicRange
     }, {
         defaultCaptureRequest(this)

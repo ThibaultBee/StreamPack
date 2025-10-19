@@ -178,7 +178,7 @@ internal class VideoInput(
                 }
 
                 // Prepare new video source
-                val newVideoSource = videoSourceFactory.create(context)
+                val newVideoSource = videoSourceFactory.create(context, dispatcherProvider)
 
                 sourceConfig?.let {
                     newVideoSource.configure(it)

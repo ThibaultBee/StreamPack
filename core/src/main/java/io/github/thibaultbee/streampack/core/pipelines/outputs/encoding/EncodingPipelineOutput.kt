@@ -37,8 +37,8 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.flush
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.sourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.mapState
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_ENCODER
-import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_ENCODING_OUTPUT
+import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_ENCODER_PREFIX
+import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_ENCODING_OUTPUT_PREFIX
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IAudioCallbackPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IAudioSyncPipelineOutputInternal
@@ -116,9 +116,9 @@ internal class EncodingPipelineOutput(
     private var audioInput: IEncoderInternal.ISyncByteBufferInput? = null
 
     private val audioOutputDispatcher =
-        dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_ENCODING_OUTPUT)
+        dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_ENCODING_OUTPUT_PREFIX)
     private val audioEncoderDispatcher =
-        dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_ENCODER)
+        dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_ENCODER_PREFIX)
 
     private var audioEncoderInternal: IEncoderInternal? = null
         set(value) {
@@ -129,9 +129,9 @@ internal class EncodingPipelineOutput(
         get() = audioEncoderInternal
 
     private val videoOutputDispatcher =
-        dispatcherProvider.createVideoDispatcher(1, THREAD_NAME_ENCODING_OUTPUT)
+        dispatcherProvider.createVideoDispatcher(1, THREAD_NAME_ENCODING_OUTPUT_PREFIX)
     private val videoEncoderDispatcher =
-        dispatcherProvider.createVideoDispatcher(1, THREAD_NAME_ENCODER)
+        dispatcherProvider.createVideoDispatcher(1, THREAD_NAME_ENCODER_PREFIX)
 
     private var videoEncoderInternal: IEncoderInternal? = null
     override val videoEncoder: IEncoder?

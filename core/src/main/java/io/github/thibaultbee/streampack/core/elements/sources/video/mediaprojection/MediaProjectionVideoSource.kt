@@ -19,8 +19,6 @@ import android.content.Context
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.projection.MediaProjection
-import android.os.Handler
-import android.os.HandlerThread
 import android.util.Size
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
@@ -37,6 +35,9 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.portraiti
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.screenRect
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.size
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_VIRTUAL_DISPLAY
+import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.utils.HandlerThreadExecutor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
@@ -44,6 +45,7 @@ import kotlinx.coroutines.runBlocking
 internal class MediaProjectionVideoSource(
     private val context: Context,
     override val mediaProjection: MediaProjection,
+    private val handlerThreadExecutor: HandlerThreadExecutor,
     @RotationValue private val overrideRotation: Int? = null,
 ) : IVideoSourceInternal, ISurfaceSourceInternal, IMediaProjectionSource {
     override val timestampOffsetInNs = 0L
@@ -62,8 +64,7 @@ internal class MediaProjectionVideoSource(
 
     private var virtualDisplay: VirtualDisplay? = null
 
-    private val virtualDisplayThread = HandlerThread("VirtualDisplayThread").apply { start() }
-    private val virtualDisplayHandler = Handler(virtualDisplayThread.looper)
+    private val virtualDisplayHandler = handlerThreadExecutor.handler
     private val virtualDisplayCallback = object : VirtualDisplay.Callback() {
         override fun onPaused() {
             super.onPaused()
@@ -129,12 +130,7 @@ internal class MediaProjectionVideoSource(
     }
 
     override fun release() {
-        virtualDisplayThread.quitSafely()
-        try {
-            virtualDisplayThread.join()
-        } catch (e: InterruptedException) {
-            e.printStackTrace()
-        }
+        handlerThreadExecutor.quit()
     }
 
     private fun getMediaProjectionSurfaceSize(): Size {
@@ -178,8 +174,16 @@ class MediaProjectionVideoSourceFactory(
     @RotationValue private val overrideRotation: Int? = null
 ) :
     IVideoSourceInternal.Factory {
-    override suspend fun create(context: Context): IVideoSourceInternal {
-        val source = MediaProjectionVideoSource(context, mediaProjection, overrideRotation)
+    override suspend fun create(
+        context: Context,
+        dispatcherProvider: IVideoDispatcherProvider
+    ): IVideoSourceInternal {
+        val source = MediaProjectionVideoSource(
+            context,
+            mediaProjection,
+            dispatcherProvider.createVideoHandlerExecutor(THREAD_NAME_VIRTUAL_DISPLAY),
+            overrideRotation
+        )
         return source
     }
 

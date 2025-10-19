@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat
 
 import android.os.Build
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
 
 
 class CameraCaptureSessionCompatBuilder {
@@ -25,11 +26,11 @@ class CameraCaptureSessionCompatBuilder {
          *
          * @return [ICameraCaptureSessionCompat]
          */
-        internal fun build(): ICameraCaptureSessionCompat {
+        internal fun build(dispatcherProvider: CameraDispatcherProvider): ICameraCaptureSessionCompat {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                CameraExecutorCaptureSessionCompat()
+                CameraExecutorCaptureSessionCompat(dispatcherProvider)
             } else {
-                CameraHandlerCaptureSessionCompat()
+                CameraHandlerCaptureSessionCompat(dispatcherProvider)
             }
         }
     }

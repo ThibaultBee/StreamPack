@@ -20,6 +20,9 @@ import android.content.Context
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_CAMERA
+import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 
 /**
  * A factory to create a [CameraSource].
@@ -28,8 +31,16 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
  */
 class CameraSourceFactory(val cameraId: String? = null) : IVideoSourceInternal.Factory {
     @RequiresPermission(Manifest.permission.CAMERA)
-    override suspend fun create(context: Context): IVideoSourceInternal {
-        return CameraSource(context, cameraId ?: context.defaultCameraId)
+    override suspend fun create(
+        context: Context,
+        dispatcherProvider: IVideoDispatcherProvider
+    ): IVideoSourceInternal {
+        val cameraDispatcherProvider = CameraDispatcherProvider(
+            dispatcherProvider.default,
+            { dispatcherProvider.createVideoHandlerExecutor(THREAD_NAME_CAMERA) },
+            { dispatcherProvider.createVideoExecutor(1, THREAD_NAME_CAMERA) }
+        )
+        return CameraSource(context, cameraDispatcherProvider, cameraId ?: context.defaultCameraId)
     }
 
     override fun isSourceEquals(source: IVideoSourceInternal?): Boolean {

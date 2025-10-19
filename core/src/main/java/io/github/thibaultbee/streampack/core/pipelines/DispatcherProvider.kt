@@ -1,12 +1,16 @@
 package io.github.thibaultbee.streampack.core.pipelines
 
+import android.os.Handler
 import android.os.Process
 import io.github.thibaultbee.streampack.core.elements.utils.ProcessThreadPriorityValue
+import io.github.thibaultbee.streampack.core.pipelines.utils.HandlerThreadExecutor
 import io.github.thibaultbee.streampack.core.pipelines.utils.ThreadUtils
 import io.github.thibaultbee.streampack.core.pipelines.utils.ThreadUtils.defaultVideoPriorityValue
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
+import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
 
 /**
  * Provides [CoroutineDispatcher]s for audio elements.
@@ -40,11 +44,29 @@ interface IVideoDispatcherProvider {
 
     /**
      * Creates a [CoroutineDispatcher] for video processing.
+     *
      * @param numOfThread number of threads in the pool
      * @param componentName name of the component using the dispatcher
      * @return the created [CoroutineDispatcher]
      */
     fun createVideoDispatcher(numOfThread: Int, componentName: String): CoroutineDispatcher
+
+    /**
+     * Creates an [Executor] for video processing.
+     *
+     * @param numOfThread number of threads in the pool
+     * @param componentName name of the component using the dispatcher
+     * @return the created [Executor]
+     */
+    fun createVideoExecutor(numOfThread: Int, componentName: String): ExecutorService
+
+    /**
+     * Creates an [Handler] for video processing.
+     *
+     * @param componentName name of the component using the dispatcher
+     * @return the created [Handler]
+     */
+    fun createVideoHandlerExecutor(componentName: String): HandlerThreadExecutor
 }
 
 /**
@@ -70,7 +92,7 @@ data class DispatcherProvider(
     override val io = Dispatchers.IO
 
     /**
-     * Creates a [CoroutineDispatcher] for audio processing.
+     * Creates a [CoroutineDispatcher] for audio processing with [audioThreadPriority].
      *
      * @param numOfThread number of threads in the pool
      * @param componentName name of the component using the dispatcher
@@ -84,21 +106,45 @@ data class DispatcherProvider(
         ).asCoroutineDispatcher()
 
     /**
-     * Creates a [CoroutineDispatcher] for video processing.
+     * Creates a [CoroutineDispatcher] for video processing with [videoThreadPriority].
      *
      * @param numOfThread number of threads in the pool
      * @param componentName name of the component using the dispatcher
      * @return the created [CoroutineDispatcher]
      */
     override fun createVideoDispatcher(numOfThread: Int, componentName: String) =
+        createVideoExecutor(numOfThread, componentName).asCoroutineDispatcher()
+
+
+    /**
+     * Creates an [Executor] for video processing with [videoThreadPriority].
+     *
+     * @param numOfThread number of threads in the pool
+     * @param componentName name of the component using the dispatcher
+     * @return the created [Executor]
+     */
+    override fun createVideoExecutor(numOfThread: Int, componentName: String) =
         ThreadUtils.newFixedThreadPool(
             numOfThread,
             ThreadUtils.THREAD_NAME_VIDEO_PREFIX + componentName,
             videoThreadPriority
-        ).asCoroutineDispatcher()
+        )
+
+    /**
+     * Creates an [Handler] for video processing with [videoThreadPriority].
+     *
+     * @param componentName name of the component using the dispatcher
+     * @return the created [Handler]
+     */
+    override fun createVideoHandlerExecutor(componentName: String) = HandlerThreadExecutor(
+        ThreadUtils.THREAD_NAME_VIDEO_PREFIX + componentName, videoThreadPriority
+    )
 
     companion object {
-        internal const val THREAD_NAME_ENCODER = "encoder-"
-        internal const val THREAD_NAME_ENCODING_OUTPUT = "encoding-output-"
+        internal const val THREAD_NAME_ENCODER_PREFIX = "encoder-"
+        internal const val THREAD_NAME_ENCODING_OUTPUT_PREFIX = "encoding-output-"
+        internal const val THREAD_NAME_CAMERA = "camera"
+        internal const val THREAD_NAME_GL = "gl"
+        internal const val THREAD_NAME_VIRTUAL_DISPLAY = "virtual-display"
     }
 }
