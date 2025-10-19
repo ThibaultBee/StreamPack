@@ -55,15 +55,12 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoCallbackPip
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoSurfacePipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingOutputDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutput
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutputDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.pipelines.utils.MultiThrowable
 import io.github.thibaultbee.streampack.core.pipelines.utils.SourceConfigUtils
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -96,9 +93,10 @@ open class StreamerPipeline(
     val withVideo: Boolean = true,
     private val audioOutputMode: AudioOutputMode = AudioOutputMode.PUSH,
     surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
-    protected val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
+    protected val dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ) : IWithVideoSource, IWithVideoRotation, IWithAudioSource, IStreamer {
-    private val coroutineScope: CoroutineScope = CoroutineScope(coroutineDispatcher)
+    private val coroutineScope: CoroutineScope =
+        CoroutineScope(dispatcherProvider.default)
     private val isReleaseRequested = AtomicBoolean(false)
 
     private val _throwableFlow = MutableStateFlow<Throwable?>(null)
@@ -108,8 +106,17 @@ open class StreamerPipeline(
     private val inputMutex = Mutex()
     private val _audioInput = if (withAudio) {
         when (audioOutputMode) {
-            AudioOutputMode.PUSH -> AudioInput(context, AudioInput.PushConfig(::queueAudioFrame))
-            AudioOutputMode.CALLBACK -> AudioInput(context, AudioInput.CallbackConfig())
+            AudioOutputMode.PUSH -> AudioInput(
+                context,
+                AudioInput.PushConfig(::queueAudioFrame),
+                dispatcherProvider
+            )
+
+            AudioOutputMode.CALLBACK -> AudioInput(
+                context,
+                AudioInput.CallbackConfig(),
+                dispatcherProvider
+            )
         }
     } else {
         null
@@ -117,7 +124,7 @@ open class StreamerPipeline(
     override val audioInput: IAudioInput? = _audioInput
 
     private val _videoInput = if (withVideo) {
-        VideoInput(context, surfaceProcessorFactory)
+        VideoInput(context, surfaceProcessorFactory, dispatcherProvider)
     } else {
         null
     }
@@ -383,10 +390,9 @@ open class StreamerPipeline(
         withAudio: Boolean = this.withAudio,
         withVideo: Boolean = this.withVideo,
         endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
-        @RotationValue targetRotation: Int = context.displayRotation,
-        dispatcherProvider: EncodingPipelineOutputDispatcherProvider = EncodingOutputDispatcherProvider()
+        @RotationValue targetRotation: Int = context.displayRotation
     ): IConfigurableAudioVideoEncodingPipelineOutput =
-        withContext(this@StreamerPipeline.coroutineDispatcher) {
+        withContext(dispatcherProvider.default) {
             if (isReleaseRequested.get()) {
                 throw IllegalStateException("Pipeline is released")
             }
@@ -722,26 +728,27 @@ open class StreamerPipeline(
      *
      * It will stop the stream.
      */
-    suspend fun removeOutput(output: IPipelineOutput) = withContext(coroutineDispatcher) {
-        safeOutputCall { outputs ->
-            if (!outputs.contains(output)) {
-                Logger.w(TAG, "Output $output not found")
-                return@safeOutputCall
+    suspend fun removeOutput(output: IPipelineOutput) =
+        withContext(dispatcherProvider.default) {
+            safeOutputCall { outputs ->
+                if (!outputs.contains(output)) {
+                    Logger.w(TAG, "Output $output not found")
+                    return@safeOutputCall
+                }
+                outputs[output]?.forEach { it.cancel() }
+                outputs.remove(output)
             }
-            outputs[output]?.forEach { it.cancel() }
-            outputs.remove(output)
-        }
 
-        inputMutex.withLock {
-            stopStreamInputsIfNeededUnsafe(output)
-        }
+            inputMutex.withLock {
+                stopStreamInputsIfNeededUnsafe(output)
+            }
 
-        try {
-            detachOutput(output)
-        } catch (t: Throwable) {
-            Logger.w(TAG, "removeOutput: Can't detach output $output: ${t.message}")
+            try {
+                detachOutput(output)
+            } catch (t: Throwable) {
+                Logger.w(TAG, "removeOutput: Can't detach output $output: ${t.message}")
+            }
         }
-    }
 
     private suspend fun startInputStreamsUnsafe(output: IPipelineOutput) {
         if (output.withAudio) {
@@ -779,7 +786,7 @@ open class StreamerPipeline(
      * If an [IEncodingPipelineOutput] is not opened, it won't start the stream and will throw an
      * exception. But the other outputs will be started.
      */
-    override suspend fun startStream() = withContext(coroutineDispatcher) {
+    override suspend fun startStream() = withContext(dispatcherProvider.default) {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Pipeline is released")
         }
@@ -906,7 +913,7 @@ open class StreamerPipeline(
      *
      * It stops audio and video sources and calls [IPipelineOutput.stopStream] on all outputs.
      */
-    override suspend fun stopStream() = withContext(coroutineDispatcher) {
+    override suspend fun stopStream() = withContext(dispatcherProvider.default) {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Pipeline is released")
         }
@@ -957,7 +964,7 @@ open class StreamerPipeline(
      * It releases the audio and video sources and the processors.
      * It also calls [IPipelineOutput.release] on all outputs.
      */
-    override suspend fun release() = withContext(coroutineDispatcher) {
+    override suspend fun release() = withContext(dispatcherProvider.default) {
         if (isReleaseRequested.getAndSet(true)) {
             Logger.w(TAG, "Already released")
             return@withContext
@@ -981,7 +988,7 @@ open class StreamerPipeline(
     }
 
     private suspend fun <T> safeOutputCall(block: suspend (MutableMap<IPipelineOutput, List<Job>>) -> T) =
-        withContext(coroutineDispatcher) {
+        withContext(dispatcherProvider.default) {
             outputMapMutex.withLock {
                 block(outputsToJobsMap)
             }
@@ -997,7 +1004,7 @@ open class StreamerPipeline(
      * Executes a block with the [coroutineDispatcher] and the [inputMutex] locked.
      */
     private suspend fun <T> withContextInputMutex(block: suspend () -> T): T =
-        withContext(coroutineDispatcher) {
+        withContext(dispatcherProvider.default) {
             if (isReleaseRequested.get()) {
                 throw IllegalStateException("Pipeline is released")
             }

@@ -31,6 +31,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceC
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.interfaces.startStream
+import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableAudioPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineEventOutputInternal
@@ -82,7 +83,7 @@ class EncodingPipelineOutputTest {
             withVideo = withVideo,
             endpointFactory = endpointFactory,
             defaultRotation = context.displayRotation,
-            dispatcherProvider = EncodingOutputDispatcherProvider()
+            dispatcherProvider = DispatcherProvider()
         )
     }
 

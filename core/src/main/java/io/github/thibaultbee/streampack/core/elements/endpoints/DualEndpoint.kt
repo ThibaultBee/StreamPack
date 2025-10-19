@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.core.elements.endpoints
 
 import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutputDispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.CoroutineDispatcher
 
 /**
@@ -92,12 +92,12 @@ class DualEndpointFactory(
 ) : IEndpointInternal.Factory {
     override fun create(
         context: Context,
-        dispatcherProvider: EncodingPipelineOutputDispatcherProvider
+        dispatcherProvider: IDispatcherProvider
     ): IEndpointInternal {
         return DualEndpoint(
             mainEndpointFactory.create(context, dispatcherProvider),
             secondEndpointFactory.create(context, dispatcherProvider),
-            dispatcherProvider.defaultDispatcher
+            dispatcherProvider.default
         )
     }
 }

@@ -21,7 +21,7 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.Media
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaContainerType
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingOutputDispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 
 class StreamerInfoFactory(
@@ -31,7 +31,7 @@ class StreamerInfoFactory(
     // TODO: find an other way to provide protocol specific info
     private val endpoint = DynamicEndpointFactory().create(
         context,
-        EncodingOutputDispatcherProvider()
+        DispatcherProvider()
     )
 
     fun build(): CameraStreamerConfigurationInfo {

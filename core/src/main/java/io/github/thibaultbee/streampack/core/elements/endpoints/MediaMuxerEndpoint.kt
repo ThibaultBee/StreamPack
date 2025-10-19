@@ -27,7 +27,7 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.Media
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutputDispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -498,8 +498,8 @@ class MediaMuxerEndpoint(
  */
 class MediaMuxerEndpointFactory : IEndpointInternal.Factory {
     override fun create(
-        context: Context, dispatcherProvider: EncodingPipelineOutputDispatcherProvider
+        context: Context, dispatcherProvider: IDispatcherProvider
     ): IEndpointInternal {
-        return MediaMuxerEndpoint(context, dispatcherProvider.ioDispatcher)
+        return MediaMuxerEndpoint(context, dispatcherProvider.io)
     }
 }

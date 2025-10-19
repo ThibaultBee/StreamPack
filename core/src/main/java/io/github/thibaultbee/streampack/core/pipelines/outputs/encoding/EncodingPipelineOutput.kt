@@ -37,6 +37,9 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.flush
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.sourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.mapState
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_ENCODER
+import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_ENCODING_OUTPUT
+import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IAudioCallbackPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IAudioSyncPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableAudioPipelineOutputInternal
@@ -77,12 +80,12 @@ internal class EncodingPipelineOutput(
     override val withVideo: Boolean,
     endpointFactory: IEndpointInternal.Factory,
     @RotationValue defaultRotation: Int,
-    private val dispatcherProvider: EncodingPipelineOutputDispatcherProvider
+    private val dispatcherProvider: IDispatcherProvider
 ) : IConfigurableAudioVideoEncodingPipelineOutput, IEncodingPipelineOutputInternal,
     IVideoSurfacePipelineOutputInternal, IAudioSyncPipelineOutputInternal,
     IAudioCallbackPipelineOutputInternal {
-    private val coroutineScope = CoroutineScope(dispatcherProvider.defaultDispatcher)
-    private val coroutineDispatcher = dispatcherProvider.defaultDispatcher
+    private val coroutineScope = CoroutineScope(dispatcherProvider.default)
+    private val coroutineDispatcher = dispatcherProvider.default
 
     /**
      * Mutex to avoid concurrent start/stop operations.
@@ -112,6 +115,11 @@ internal class EncodingPipelineOutput(
     // ENCODERS
     private var audioInput: IEncoderInternal.ISyncByteBufferInput? = null
 
+    private val audioOutputDispatcher =
+        dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_ENCODING_OUTPUT)
+    private val audioEncoderDispatcher =
+        dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_ENCODER)
+
     private var audioEncoderInternal: IEncoderInternal? = null
         set(value) {
             audioInput = value?.input as? IEncoderInternal.ISyncByteBufferInput
@@ -119,6 +127,11 @@ internal class EncodingPipelineOutput(
         }
     override val audioEncoder: IEncoder?
         get() = audioEncoderInternal
+
+    private val videoOutputDispatcher =
+        dispatcherProvider.createVideoDispatcher(1, THREAD_NAME_ENCODING_OUTPUT)
+    private val videoEncoderDispatcher =
+        dispatcherProvider.createVideoDispatcher(1, THREAD_NAME_ENCODER)
 
     private var videoEncoderInternal: IEncoderInternal? = null
     override val videoEncoder: IEncoder?
@@ -238,7 +251,7 @@ internal class EncodingPipelineOutput(
 
     init {
         if (withAudio) {
-            coroutineScope.launch(dispatcherProvider.audioDispatcher) {
+            coroutineScope.launch(audioOutputDispatcher) {
                 // Audio
                 audioEncoderListener.outputChannel.consumeEach { closeableFrame ->
                     try {
@@ -255,7 +268,7 @@ internal class EncodingPipelineOutput(
             }
         }
         if (withVideo) {
-            coroutineScope.launch(dispatcherProvider.videoDispatcher) {
+            coroutineScope.launch(videoOutputDispatcher) {
                 // Video
                 videoEncoderListener.outputChannel.consumeEach { closeableFrame ->
                     try {
@@ -337,8 +350,8 @@ internal class EncodingPipelineOutput(
                 audioConfig, encoderMode
             ),
             audioEncoderListener,
-            dispatcherProvider.defaultDispatcher,
-            dispatcherProvider.audioDispatcher
+            dispatcherProvider.default,
+            audioEncoderDispatcher
         )
 
         when (audioEncoder.input) {
@@ -430,8 +443,8 @@ internal class EncodingPipelineOutput(
                 EncoderMode.SURFACE
             ),
             videoEncoderListener,
-            dispatcherProvider.defaultDispatcher,
-            dispatcherProvider.videoDispatcher
+            dispatcherProvider.default,
+            videoEncoderDispatcher
         )
 
         when (videoEncoder.input) {
@@ -692,6 +705,12 @@ internal class EncodingPipelineOutput(
         } catch (t: Throwable) {
             Logger.w(TAG, "Can't release endpoint: ${t.message}")
         }
+
+        audioOutputDispatcher.cancel()
+        audioEncoderDispatcher.cancel()
+        videoOutputDispatcher.cancel()
+        videoEncoderDispatcher.cancel()
+
         coroutineScope.cancel()
     }
 

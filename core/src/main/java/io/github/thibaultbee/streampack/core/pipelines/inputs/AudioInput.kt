@@ -29,10 +29,9 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
 import io.github.thibaultbee.streampack.core.elements.utils.pool.IRawFrameFactory
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.pipelines.IAudioDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.inputs.AudioInput.PushConfig
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -68,12 +67,6 @@ interface IAudioInput {
         }
 
     /**
-     * Whether the pipeline has an audio source.
-     */
-    val withSource: Boolean
-        get() = sourceFlow.value != null
-
-    /**
      * The audio source
      */
     val sourceFlow: StateFlow<IAudioSource?>
@@ -98,14 +91,20 @@ interface IAudioInput {
 }
 
 /**
+ * Whether the pipeline has an audio source.
+ */
+val IAudioInput.withSource: Boolean
+    get() = sourceFlow.value != null
+
+/**
  * A internal class that manages an audio source and an audio processor.
  */
 internal class AudioInput(
     private val context: Context,
     config: Config,
-    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val dispatcherProvider: IAudioDispatcherProvider
 ) : IAudioInput {
-    private val coroutineScope = CoroutineScope(coroutineDispatcher)
+    private val coroutineScope = CoroutineScope(dispatcherProvider.default)
     private var isStreamingJob = ConflatedJob()
 
     private var isReleaseRequested = AtomicBoolean(false)
@@ -173,7 +172,7 @@ internal class AudioInput(
             throw IllegalStateException("Input is released")
         }
 
-        withContext(coroutineDispatcher) {
+        withContext(dispatcherProvider.default) {
             audioSourceMutex.withLock {
                 val previousAudioSource = sourceInternalFlow.value
                 val isStreaming = previousAudioSource?.isStreamingFlow?.value ?: false
@@ -230,7 +229,7 @@ internal class AudioInput(
             throw IllegalStateException("Pipeline is released")
         }
 
-        withContext(coroutineDispatcher) {
+        withContext(dispatcherProvider.default) {
             audioSourceMutex.withLock {
                 if (sourceConfig == newAudioSourceConfig) {
                     Logger.i(TAG, "Audio source configuration is the same, skipping configuration")
@@ -269,7 +268,7 @@ internal class AudioInput(
             throw IllegalStateException("Input is released")
         }
 
-        withContext(coroutineDispatcher) {
+        withContext(dispatcherProvider.default) {
             audioSourceMutex.withLock {
                 val source = requireNotNull(sourceInternalFlow.value) {
                     "Audio source is not set yet"
@@ -299,7 +298,7 @@ internal class AudioInput(
             throw IllegalStateException("Input is released")
         }
 
-        withContext(coroutineDispatcher) {
+        withContext(dispatcherProvider.default) {
             audioSourceMutex.withLock {
                 _isStreamingFlow.emit(false)
                 try {
@@ -322,7 +321,7 @@ internal class AudioInput(
             return
         }
 
-        withContext(coroutineDispatcher) {
+        withContext(dispatcherProvider.default) {
             audioSourceMutex.withLock {
                 _isStreamingFlow.emit(false)
                 try {

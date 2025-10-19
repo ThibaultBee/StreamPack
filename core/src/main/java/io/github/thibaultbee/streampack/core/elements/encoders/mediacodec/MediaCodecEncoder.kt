@@ -329,8 +329,8 @@ internal constructor(
         }
     }
 
-    private fun launchMutex(block: suspend () -> Unit) {
-        coroutineScope.launch {
+    private fun launchProcessingMutex(block: suspend () -> Unit) {
+        coroutineScope.launch(processDispatcher) {
             mutex.withLock {
                 block()
             }
@@ -393,22 +393,22 @@ internal constructor(
         override fun onOutputBufferAvailable(
             codec: MediaCodec, index: Int, info: BufferInfo
         ) {
-            launchMutex {
+            launchProcessingMutex {
                 processOutputFrameUnsafe(codec, index, info)
             }
         }
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
-            launchMutex {
+            launchProcessingMutex {
                 when {
                     !state.isRunning -> {
                         Logger.w(tag, "Receives input frame after codec is not running: $state.")
-                        return@launchMutex
+                        return@launchProcessingMutex
                     }
 
                     input !is IEncoderInternal.IAsyncByteBufferInput -> {
                         Logger.w(tag, "Input buffer is only available for byte buffer input")
-                        return@launchMutex
+                        return@launchProcessingMutex
                     }
 
                     else -> {
@@ -420,7 +420,7 @@ internal constructor(
                             mediaCodec.queueInputBuffer(
                                 index, 0, 0, 0, 0
                             )
-                            return@launchMutex
+                            return@launchProcessingMutex
                         }
 
                         try {
@@ -531,10 +531,10 @@ internal constructor(
         }
 
         override fun queueInputFrame(frame: RawFrame) {
-            launchMutex {
+            launchProcessingMutex {
                 if (!state.isRunning) {
                     Logger.w(tag, "Receives input frame after codec is not running: $state.")
-                    return@launchMutex
+                    return@launchProcessingMutex
                 }
 
                 try {

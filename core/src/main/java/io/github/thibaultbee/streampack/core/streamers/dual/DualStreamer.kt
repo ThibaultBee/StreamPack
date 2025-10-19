@@ -38,12 +38,12 @@ import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.combineStates
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.interfaces.setCameraId
+import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 
@@ -188,7 +188,7 @@ suspend fun DualStreamer(
  * @param secondEndpointFactory the [IEndpointInternal] implementation of the second output. By default, it is a [DynamicEndpoint].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation to use to create the video processor. By default, it is a [DefaultSurfaceProcessorFactory].
- * @param coroutineDispatcher the [CoroutineDispatcher] to use for suspending functions. By default, it is [Dispatchers.Default].
+ * @param dispatcherProvider the [DispatcherProvider] to use for coroutine dispatching.
  */
 open class DualStreamer(
     protected val context: Context,
@@ -198,18 +198,18 @@ open class DualStreamer(
     secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
-    coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
+    dispatcherProvider: IDispatcherProvider = DispatcherProvider(),
 ) : IDualStreamer, IAudioDualStreamer, IVideoDualStreamer {
     private val pipeline = StreamerPipeline(
         context,
         withAudio,
         withVideo,
         surfaceProcessorFactory = surfaceProcessorFactory,
-        coroutineDispatcher = coroutineDispatcher
+        dispatcherProvider = dispatcherProvider
     )
 
     private val firstPipelineOutput: IEncodingPipelineOutputInternal =
-        runBlocking(coroutineDispatcher) {
+        runBlocking(dispatcherProvider.default) {
             pipeline.createEncodingOutput(
                 withAudio, withVideo, firstEndpointFactory, defaultRotation
             ) as IEncodingPipelineOutputInternal
@@ -222,7 +222,7 @@ open class DualStreamer(
     override val first = firstPipelineOutput as IConfigurableAudioVideoEncodingPipelineOutput
 
     private val secondPipelineOutput: IEncodingPipelineOutputInternal =
-        runBlocking(coroutineDispatcher) {
+        runBlocking(dispatcherProvider.default) {
             pipeline.createEncodingOutput(
                 withAudio, withVideo, secondEndpointFactory, defaultRotation
             ) as IEncodingPipelineOutputInternal

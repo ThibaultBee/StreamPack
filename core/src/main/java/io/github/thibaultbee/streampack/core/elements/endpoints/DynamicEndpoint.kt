@@ -29,7 +29,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
 import io.github.thibaultbee.streampack.core.elements.utils.DerivedStateFlow
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutputDispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -224,10 +224,10 @@ open class DynamicEndpoint(
 class DynamicEndpointFactory : IEndpointInternal.Factory {
     override fun create(
         context: Context,
-        dispatcherProvider: EncodingPipelineOutputDispatcherProvider
+        dispatcherProvider: IDispatcherProvider
     ): IEndpointInternal = DynamicEndpoint(
         context,
-        dispatcherProvider.defaultDispatcher,
-        dispatcherProvider.ioDispatcher
+        dispatcherProvider.default,
+        dispatcherProvider.io
     )
 }
