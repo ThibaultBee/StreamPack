@@ -174,6 +174,9 @@ internal class CameraSource(
             controller.setSetting(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
         }
 
+        fps = config.fps
+        dynamicRangeProfile = config.dynamicRangeProfile
+
         if (needRestart) {
             if (controller.isActiveFlow.value) {
                 Logger.d(TAG, "Restarting camera session to apply new configuration")
@@ -182,9 +185,6 @@ internal class CameraSource(
                 Logger.d(TAG, "Camera is not active, no need to restart session")
             }
         }
-
-        fps = config.fps
-        dynamicRangeProfile = config.dynamicRangeProfile
     }
 
 
