@@ -20,6 +20,7 @@ import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendConfigurable
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamable
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
+import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -53,7 +54,10 @@ interface IVideoSourceInternal : IVideoSource,
          * @param context the application context
          * @return an [IVideoSourceInternal]
          */
-        suspend fun create(context: Context): IVideoSourceInternal
+        suspend fun create(
+            context: Context,
+            dispatcherProvider: IVideoDispatcherProvider
+        ): IVideoSourceInternal
 
         /**
          * Whether the source that will be created by [create] is equal to another source.

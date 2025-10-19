@@ -9,6 +9,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoFrameS
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.pool.IReadOnlyRawFrameFactory
+import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,7 +28,10 @@ class StubVideoSurfaceSource(override val timestampOffsetInNs: Long = 0) : StubV
     }
 
     class Factory(val timestampOffsetInNs: Long = 0) : IVideoSourceInternal.Factory {
-        override suspend fun create(context: Context): IVideoSourceInternal {
+        override suspend fun create(
+            context: Context,
+            dispatcherProvider: IVideoDispatcherProvider
+        ): IVideoSourceInternal {
             return StubVideoSurfaceSource(timestampOffsetInNs)
         }
 
@@ -42,7 +46,10 @@ class StubVideoFrameSource : StubVideoSource(), IVideoFrameSourceInternal {
         frameFactory.create(8192, 0L)
 
     class Factory : IVideoSourceInternal.Factory {
-        override suspend fun create(context: Context): IVideoSourceInternal {
+        override suspend fun create(
+            context: Context,
+            dispatcherProvider: IVideoDispatcherProvider
+        ): IVideoSourceInternal {
             return StubVideoFrameSource()
         }
 

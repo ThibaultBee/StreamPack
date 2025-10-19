@@ -26,13 +26,14 @@ import android.os.Build
 import android.view.Surface
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
-import java.util.concurrent.Executors
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
 
 /**
  * A [ICameraCaptureSessionCompat] that manages camera API >= 28.
  */
-internal class CameraExecutorCaptureSessionCompat : ICameraCaptureSessionCompat {
-    private val cameraExecutor = Executors.newSingleThreadExecutor()
+internal class CameraExecutorCaptureSessionCompat(dispatcherProvider: CameraDispatcherProvider) :
+    ICameraCaptureSessionCompat {
+    private val executor = dispatcherProvider.cameraExecutor
 
     @RequiresApi(Build.VERSION_CODES.P)
     @RequiresPermission(Manifest.permission.CAMERA)
@@ -41,7 +42,7 @@ internal class CameraExecutorCaptureSessionCompat : ICameraCaptureSessionCompat 
         cameraId: String,
         callback: CameraDevice.StateCallback
     ) {
-        manager.openCamera(cameraId, cameraExecutor, callback)
+        manager.openCamera(cameraId, executor, callback)
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
@@ -63,7 +64,7 @@ internal class CameraExecutorCaptureSessionCompat : ICameraCaptureSessionCompat 
         SessionConfiguration(
             SessionConfiguration.SESSION_REGULAR,
             outputConfigurations,
-            cameraExecutor,
+            executor,
             callback
         ).also { sessionConfig ->
             camera.createCaptureSession(sessionConfig)
@@ -76,7 +77,7 @@ internal class CameraExecutorCaptureSessionCompat : ICameraCaptureSessionCompat 
         captureRequest: CaptureRequest,
         callback: CameraCaptureSession.CaptureCallback
     ): Int {
-        return captureSession.setSingleRepeatingRequest(captureRequest, cameraExecutor, callback)
+        return captureSession.setSingleRepeatingRequest(captureRequest, executor, callback)
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
@@ -85,11 +86,11 @@ internal class CameraExecutorCaptureSessionCompat : ICameraCaptureSessionCompat 
         captureRequests: List<CaptureRequest>,
         callback: CameraCaptureSession.CaptureCallback
     ): Int {
-        return captureSession.captureBurstRequests(captureRequests, cameraExecutor, callback)
+        return captureSession.captureBurstRequests(captureRequests, executor, callback)
     }
 
     override fun release() {
         // Potential source of java.util.concurrent.RejectedExecutionException
-        //cameraExecutor.shutdown()
+        //executor.shutdown()
     }
 }

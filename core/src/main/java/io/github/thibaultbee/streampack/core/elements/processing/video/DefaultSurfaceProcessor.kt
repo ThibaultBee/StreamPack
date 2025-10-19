@@ -1,25 +1,23 @@
 package io.github.thibaultbee.streampack.core.elements.processing.video
 
 import android.graphics.SurfaceTexture
-import android.os.Handler
-import android.os.HandlerThread
 import android.util.Size
 import android.view.Surface
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import com.google.common.util.concurrent.ListenableFuture
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils
-import io.github.thibaultbee.streampack.core.elements.utils.ProcessThreadPriorityValue
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_GL
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
-import io.github.thibaultbee.streampack.core.pipelines.utils.ThreadUtils.THREAD_NAME_VIDEO_PREFIX
+import io.github.thibaultbee.streampack.core.pipelines.utils.HandlerThreadExecutor
 import java.util.concurrent.atomic.AtomicBoolean
 
 
 private class DefaultSurfaceProcessor(
     private val dynamicRangeProfile: DynamicRangeProfile,
-    @ProcessThreadPriorityValue private val threadPriority: Int,
+    private val glThread: HandlerThreadExecutor,
 ) : ISurfaceProcessorInternal, SurfaceTexture.OnFrameAvailableListener {
     private val renderer = OpenGlRenderer()
 
@@ -33,10 +31,7 @@ private class DefaultSurfaceProcessor(
     private val surfaceInputs: MutableList<SurfaceInput> = mutableListOf()
     private val surfaceInputsTimestampInNsMap: MutableMap<SurfaceTexture, Long> = hashMapOf()
 
-    private val glThread = HandlerThread(THREAD_NAME_VIDEO_PREFIX + "GL", threadPriority).apply {
-        start()
-    }
-    private val glHandler = Handler(glThread.looper)
+    private val glHandler = glThread.handler
 
     init {
         val future = submitSafely {
@@ -255,6 +250,9 @@ class DefaultSurfaceProcessorFactory :
         dynamicRangeProfile: DynamicRangeProfile,
         dispatcherProvider: IVideoDispatcherProvider
     ): ISurfaceProcessorInternal {
-        return DefaultSurfaceProcessor(dynamicRangeProfile, dispatcherProvider.videoThreadPriority)
+        return DefaultSurfaceProcessor(
+            dynamicRangeProfile,
+            dispatcherProvider.createVideoHandlerExecutor(THREAD_NAME_GL)
+        )
     }
 }

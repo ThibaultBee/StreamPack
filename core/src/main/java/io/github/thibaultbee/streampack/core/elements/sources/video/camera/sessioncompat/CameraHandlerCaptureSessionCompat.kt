@@ -23,18 +23,19 @@ import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.params.OutputConfiguration
 import android.os.Build
 import android.os.Handler
-import android.os.HandlerThread
 import android.view.Surface
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
 
 /**
  * As camera API that support a [Handler] are deprecated since API >= 30.
  * Is is a [ICameraCaptureSessionCompat] that manages camera API < 30.
  */
-internal class CameraHandlerCaptureSessionCompat : ICameraCaptureSessionCompat {
-    private var cameraThread = HandlerThread("CameraThread").apply { start() }
-    private var cameraHandler = Handler(cameraThread.looper)
+internal class CameraHandlerCaptureSessionCompat(dispatcherProvider: CameraDispatcherProvider) :
+    ICameraCaptureSessionCompat {
+    private val handlerExecutor = dispatcherProvider.cameraHandler
+    private val handler = handlerExecutor.handler
 
     @RequiresPermission(Manifest.permission.CAMERA)
     override fun openCamera(
@@ -42,7 +43,7 @@ internal class CameraHandlerCaptureSessionCompat : ICameraCaptureSessionCompat {
         cameraId: String,
         callback: CameraDevice.StateCallback
     ) {
-        manager.openCamera(cameraId, callback, cameraHandler)
+        manager.openCamera(cameraId, callback, handler)
     }
 
     override fun createCaptureSession(
@@ -51,7 +52,7 @@ internal class CameraHandlerCaptureSessionCompat : ICameraCaptureSessionCompat {
         callback: CameraCaptureSession.StateCallback
     ) {
         @Suppress("deprecation")
-        camera.createCaptureSession(targets, callback, cameraHandler)
+        camera.createCaptureSession(targets, callback, handler)
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -64,7 +65,7 @@ internal class CameraHandlerCaptureSessionCompat : ICameraCaptureSessionCompat {
         camera.createCaptureSessionByOutputConfigurations(
             outputConfigurations,
             callback,
-            cameraHandler
+            handler
         )
     }
 
@@ -73,7 +74,7 @@ internal class CameraHandlerCaptureSessionCompat : ICameraCaptureSessionCompat {
         captureRequest: CaptureRequest,
         callback: CameraCaptureSession.CaptureCallback
     ): Int {
-        return captureSession.setRepeatingRequest(captureRequest, callback, cameraHandler)
+        return captureSession.setRepeatingRequest(captureRequest, callback, handler)
     }
 
     override fun captureBurstRequests(
@@ -81,15 +82,10 @@ internal class CameraHandlerCaptureSessionCompat : ICameraCaptureSessionCompat {
         captureRequests: List<CaptureRequest>,
         callback: CameraCaptureSession.CaptureCallback
     ): Int {
-        return captureSession.captureBurst(captureRequests, callback, cameraHandler)
+        return captureSession.captureBurst(captureRequests, callback, handler)
     }
 
     override fun release() {
-        cameraThread.quitSafely()
-        try {
-            cameraThread.join()
-        } catch (e: InterruptedException) {
-            e.printStackTrace()
-        }
+        handlerExecutor.quit()
     }
 }
