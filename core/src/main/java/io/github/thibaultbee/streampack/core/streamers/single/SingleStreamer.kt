@@ -42,6 +42,8 @@ import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.combineStates
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.interfaces.setCameraId
+import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
@@ -186,7 +188,7 @@ open class SingleStreamer(
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
-    coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
+    dispatcherProvider: IDispatcherProvider = DispatcherProvider(),
 ) : ISingleStreamer, IAudioSingleStreamer, IVideoSingleStreamer {
     private val pipeline = StreamerPipeline(
         context,
@@ -194,16 +196,17 @@ open class SingleStreamer(
         withVideo,
         audioOutputMode = StreamerPipeline.AudioOutputMode.CALLBACK,
         surfaceProcessorFactory,
-        coroutineDispatcher
+        dispatcherProvider
     )
-    private val pipelineOutput: IEncodingPipelineOutputInternal = runBlocking(coroutineDispatcher) {
-        pipeline.createEncodingOutput(
-            withAudio,
-            withVideo,
-            endpointFactory,
-            defaultRotation
-        ) as IEncodingPipelineOutputInternal
-    }
+    private val pipelineOutput: IEncodingPipelineOutputInternal =
+        runBlocking(dispatcherProvider.default) {
+            pipeline.createEncodingOutput(
+                withAudio,
+                withVideo,
+                endpointFactory,
+                defaultRotation
+            ) as IEncodingPipelineOutputInternal
+        }
 
     override val throwableFlow: StateFlow<Throwable?> =
         combineStates(pipeline.throwableFlow, pipelineOutput.throwableFlow) { throwableArray ->

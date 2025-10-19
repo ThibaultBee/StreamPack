@@ -23,7 +23,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendCloseable
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamable
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutputDispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 
@@ -90,12 +90,12 @@ interface IEndpointInternal : IEndpoint, SuspendStreamable,
          * for processing frames.
          *
          * @param context the application context
-         * @param dispatcherProvider the [EncodingPipelineOutputDispatcherProvider] to use
+         * @param dispatcherProvider the [IDispatcherProvider] to use
          * @return an [IEndpointInternal]
          */
         fun create(
             context: Context,
-            dispatcherProvider: EncodingPipelineOutputDispatcherProvider
+            dispatcherProvider: IDispatcherProvider
         ): IEndpointInternal
     }
 }

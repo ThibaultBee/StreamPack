@@ -83,24 +83,6 @@ internal object ThreadUtils {
         baseName: String,
         @ProcessThreadPriorityValue priority: Int
     ): ExecutorService {
-        /* val t ThreadFactory { runnable ->
-             val javaPriority = androidToJavaPriority(androidPriority)
-             val thread: Thread =
-                 this.newThread {
-                     // Set the Android thread priority once the thread actually starts running.
-                     Process.setThreadPriority(androidPriority)
-                     runnable.run()
-                 }
- 
-             // Setting java priority internally sets the android priority, but not vice versa.
-             // By setting the java priority here, we ensure that the priority is set to the same or
-             // higher priority when the thread starts so that it is scheduled quickly. When the
-             // runnable executes, the Android priority, which is more fine grained, is set before
-             // the wrapped runnable executes.
-             thread.priority = javaPriority
-             thread
-         }*/
-
         val threadFactory = object : ThreadFactory {
             private val counter = AtomicInteger(0)
 
@@ -111,7 +93,7 @@ internal object ThreadUtils {
                         runnable.run()
                     }
                 }
-                 
+
                 // Setting java priority internally sets the android priority, but not vice versa.
                 // By setting the java priority here, we ensure that the priority is set to the same or
                 // higher priority when the thread starts so that it is scheduled quickly. When the

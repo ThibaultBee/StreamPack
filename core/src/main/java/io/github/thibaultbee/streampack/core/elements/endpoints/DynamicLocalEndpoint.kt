@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.core.elements.endpoints
 
 import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutputDispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.CoroutineDispatcher
 
 /**
@@ -45,12 +45,12 @@ class DynamicLocalEndpoint(
 class DynamicLocalEndpointFactory : IEndpointInternal.Factory {
     override fun create(
         context: Context,
-        dispatcherProvider: EncodingPipelineOutputDispatcherProvider
+        dispatcherProvider: IDispatcherProvider
     ): IEndpointInternal {
         return DynamicLocalEndpoint(
             context,
-            dispatcherProvider.defaultDispatcher,
-            dispatcherProvider.ioDispatcher
+            dispatcherProvider.default,
+            dispatcherProvider.io
         )
     }
 }

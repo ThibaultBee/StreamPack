@@ -12,7 +12,8 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLU
 import io.github.thibaultbee.streampack.core.elements.utils.ProcessThreadPriorityValue
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.pipelines.utils.ThreadUtils
+import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.utils.ThreadUtils.THREAD_NAME_VIDEO_PREFIX
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -32,7 +33,7 @@ private class DefaultSurfaceProcessor(
     private val surfaceInputs: MutableList<SurfaceInput> = mutableListOf()
     private val surfaceInputsTimestampInNsMap: MutableMap<SurfaceTexture, Long> = hashMapOf()
 
-    private val glThread = HandlerThread("GL Thread", threadPriority).apply {
+    private val glThread = HandlerThread(THREAD_NAME_VIDEO_PREFIX + "GL", threadPriority).apply {
         start()
     }
     private val glHandler = Handler(glThread.looper)
@@ -248,9 +249,12 @@ private class DefaultSurfaceProcessor(
     private data class SurfaceInput(val surface: Surface, val surfaceTexture: SurfaceTexture)
 }
 
-class DefaultSurfaceProcessorFactory(@ProcessThreadPriorityValue private val threadPriority: Int = ThreadUtils.defaultVideoPriorityValue) :
+class DefaultSurfaceProcessorFactory :
     ISurfaceProcessorInternal.Factory {
-    override fun create(dynamicRangeProfile: DynamicRangeProfile): ISurfaceProcessorInternal {
-        return DefaultSurfaceProcessor(dynamicRangeProfile, threadPriority)
+    override fun create(
+        dynamicRangeProfile: DynamicRangeProfile,
+        dispatcherProvider: IVideoDispatcherProvider
+    ): ISurfaceProcessorInternal {
+        return DefaultSurfaceProcessor(dynamicRangeProfile, dispatcherProvider.videoThreadPriority)
     }
 }

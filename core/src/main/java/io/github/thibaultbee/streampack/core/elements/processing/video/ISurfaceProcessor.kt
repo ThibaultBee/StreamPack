@@ -20,6 +20,7 @@ import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
+import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 
 interface ISurfaceProcessor
 
@@ -48,6 +49,9 @@ interface ISurfaceProcessorInternal : ISurfaceProcessor, Releasable {
      * Factory interface for creating instances of [ISurfaceProcessorInternal].
      */
     interface Factory {
-        fun create(dynamicRangeProfile: DynamicRangeProfile): ISurfaceProcessorInternal
+        fun create(
+            dynamicRangeProfile: DynamicRangeProfile,
+            dispatcherProvider: IVideoDispatcherProvider
+        ): ISurfaceProcessorInternal
     }
 }

@@ -30,9 +30,8 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.Camer
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
-import kotlinx.coroutines.CoroutineDispatcher
+import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -53,12 +52,6 @@ interface IVideoInput {
      * Whether the video input is streaming.
      */
     val isStreamingFlow: StateFlow<Boolean>
-
-    /**
-     * Whether the pipeline has a video source.
-     */
-    val withSource: Boolean
-        get() = sourceFlow.value != null
 
     /**
      * The video source
@@ -85,15 +78,21 @@ interface IVideoInput {
 }
 
 /**
+ * Whether the pipeline has a video source.
+ */
+val IVideoInput.withSource: Boolean
+    get() = sourceFlow.value != null
+
+/**
  * A internal class that manages a video source and a video processor.
  */
 internal class VideoInput(
     private val context: Context,
     private val surfaceProcessorFactory: ISurfaceProcessorInternal.Factory,
-    dynamicRangeProfileHint: DynamicRangeProfile = DynamicRangeProfile.sdr,
-    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val dispatcherProvider: IVideoDispatcherProvider,
+    dynamicRangeProfileHint: DynamicRangeProfile = DynamicRangeProfile.sdr
 ) : IVideoInput {
-    private val coroutineScope = CoroutineScope(coroutineDispatcher)
+    private val coroutineScope = CoroutineScope(dispatcherProvider.default)
     private var isStreamingJob = ConflatedJob()
     private var infoProviderJob = ConflatedJob()
 
@@ -102,7 +101,7 @@ internal class VideoInput(
     private val videoSourceMutex = Mutex()
 
     override var processor: ISurfaceProcessorInternal =
-        surfaceProcessorFactory.create(dynamicRangeProfileHint)
+        surfaceProcessorFactory.create(dynamicRangeProfileHint, dispatcherProvider)
         private set
 
     // SOURCE
@@ -150,7 +149,7 @@ internal class VideoInput(
             throw IllegalStateException("Input is released")
         }
 
-        withContext(coroutineDispatcher) {
+        withContext(dispatcherProvider.default) {
             videoSourceMutex.withLock {
                 val previousVideoSource = sourceInternalFlow.value
                 val isStreaming = previousVideoSource?.isStreamingFlow?.value ?: false
@@ -267,7 +266,7 @@ internal class VideoInput(
             throw IllegalStateException("Input is released")
         }
 
-        withContext(coroutineDispatcher) {
+        withContext(dispatcherProvider.default) {
             videoSourceMutex.withLock {
                 if (sourceConfig == newVideoSourceConfig) {
                     Logger.i(TAG, "Video source configuration is the same, skipping configuration")
@@ -337,7 +336,10 @@ internal class VideoInput(
         videoSourceConfig: VideoSourceConfig
     ): ISurfaceProcessorInternal {
         val newSurfaceProcessor =
-            surfaceProcessorFactory.create(videoSourceConfig.dynamicRangeProfile)
+            surfaceProcessorFactory.create(
+                videoSourceConfig.dynamicRangeProfile,
+                dispatcherProvider
+            )
         addSourceSurface(videoSourceConfig, newSurfaceProcessor)
 
         outputMutex.withLock {
@@ -371,7 +373,7 @@ internal class VideoInput(
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
-        withContext(coroutineDispatcher) {
+        withContext(dispatcherProvider.default) {
             videoSourceMutex.withLock {
                 val source =
                     requireNotNull(source) { "Video source must be set before starting stream" }
@@ -392,7 +394,7 @@ internal class VideoInput(
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
-        withContext(coroutineDispatcher) {
+        withContext(dispatcherProvider.default) {
             videoSourceMutex.withLock {
                 _isStreamingFlow.emit(false)
                 try {
@@ -425,7 +427,7 @@ internal class VideoInput(
             return
         }
 
-        withContext(coroutineDispatcher) {
+        withContext(dispatcherProvider.default) {
             videoSourceMutex.withLock {
                 _isStreamingFlow.emit(false)
                 try {

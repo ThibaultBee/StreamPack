@@ -22,7 +22,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.utils.combineStates
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.intersect
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutputDispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.utils.MultiThrowable
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
@@ -264,11 +264,11 @@ class CombineEndpointFactory(private val endpointFactory: List<IEndpointInternal
     IEndpointInternal.Factory {
     override fun create(
         context: Context,
-        dispatcherProvider: EncodingPipelineOutputDispatcherProvider
+        dispatcherProvider: IDispatcherProvider
     ): IEndpointInternal {
         return CombineEndpoint(
             endpointFactory.map { it.create(context, dispatcherProvider) },
-            dispatcherProvider.defaultDispatcher
+            dispatcherProvider.default
         )
     }
 }
