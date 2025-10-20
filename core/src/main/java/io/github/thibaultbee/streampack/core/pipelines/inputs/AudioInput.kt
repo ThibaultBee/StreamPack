@@ -353,7 +353,7 @@ internal class AudioInput(
 
     internal sealed class Config
 
-    internal class PushConfig(val onFrame: (RawFrame) -> Unit) : Config()
+    internal class PushConfig(val onFrame: suspend (RawFrame) -> Unit) : Config()
     internal class CallbackConfig : Config()
 }
 

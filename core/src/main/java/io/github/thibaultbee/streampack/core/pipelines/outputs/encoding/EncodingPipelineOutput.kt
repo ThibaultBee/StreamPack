@@ -301,7 +301,12 @@ internal class EncodingPipelineOutput(
     }
 
     override suspend fun queueAudioFrame(frame: RawFrame) = mutex.withLock {
-        val input = requireNotNull(audioInput) { "Audio input is null" }
+        val input = try {
+            requireNotNull(audioInput) { "Audio input is null" }
+        } catch (t: Throwable) {
+            frame.close()
+            throw t
+        }
         input.queueInputFrame(
             frame
         )
