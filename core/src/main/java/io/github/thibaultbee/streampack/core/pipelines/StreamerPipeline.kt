@@ -172,7 +172,11 @@ open class StreamerPipeline(
                         return@collect
                     }
 
-                    resetSurfaceProcessorOutputSurface()
+                    try {
+                        resetSurfaceProcessorOutputSurface()
+                    } catch (t: Throwable) {
+                        Logger.e(TAG, "Error while resetting surface processor output surfaces: $t")
+                    }
                 }
             }
             coroutineScope.launch {
@@ -633,15 +637,19 @@ open class StreamerPipeline(
                         Logger.w(TAG, "Pipeline is released, dropping new surface")
                         return@collect
                     }
-                    newSurfaceDescriptor?.let {
-                        Logger.i(TAG, "Adding new surface: $newSurfaceDescriptor")
-                        input.addOutputSurface(
-                            buildSurfaceOutput(
-                                it,
-                                output::isStreaming,
-                                input.infoProviderFlow.value
+                    try {
+                        newSurfaceDescriptor?.let {
+                            Logger.i(TAG, "Adding new surface: $newSurfaceDescriptor")
+                            input.addOutputSurface(
+                                buildSurfaceOutput(
+                                    it,
+                                    output::isStreaming,
+                                    input.infoProviderFlow.value
+                                )
                             )
-                        )
+                        }
+                    } catch (t: Throwable) {
+                        Logger.e(TAG, "Error while adding new surface: $newSurfaceDescriptor: $t")
                     }
                 }
         }
