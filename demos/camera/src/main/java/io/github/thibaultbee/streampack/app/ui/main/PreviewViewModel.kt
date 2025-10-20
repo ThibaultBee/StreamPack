@@ -19,6 +19,7 @@ import android.Manifest
 import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.hardware.camera2.CaptureResult
 import android.util.Log
@@ -67,6 +68,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.io.FileOutputStream
 
 class PreviewViewModel(private val application: Application) : ObservableViewModel() {
     private val storageRepository = DataStoreRepository(application, application.dataStore)
@@ -294,6 +296,23 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
             }
         }
     }
+
+    fun takePhoto() {
+        viewModelScope.launch {
+            try {
+                val bitmap = streamer.videoInput?.takeSnapshot() ?: return@launch
+                val path = application.getExternalFilesDir(null)?.absolutePath +
+                        "/photo_${System.currentTimeMillis()}.jpg"
+                val outJpeg = FileOutputStream(path)
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outJpeg)
+                Log.i(TAG, "Photo saved to $path")
+            } catch (e: Throwable) {
+                Log.e(TAG, "takePhoto failed", e)
+                _streamerErrorLiveData.postValue("takePhoto: ${e.message ?: "Unknown error"}")
+            }
+        }
+    }
+
 
     fun setMute(isMuted: Boolean) {
         streamer.audioInput?.isMuted = isMuted
