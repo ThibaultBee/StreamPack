@@ -19,16 +19,23 @@ import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.utils.pool.IRawFrameFactory
 import io.github.thibaultbee.streampack.core.elements.utils.pool.RawFrameFactory
 import io.github.thibaultbee.streampack.core.logger.Logger
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.atomic.AtomicBoolean
 
 fun RawFramePullPush(
     frameProcessor: IFrameProcessor<RawFrame>,
     onFrame: (RawFrame) -> Unit,
+    processDispatcher: CoroutineDispatcher,
     isDirect: Boolean = true
-) = RawFramePullPush(frameProcessor, onFrame, RawFrameFactory(isDirect))
+) = RawFramePullPush(frameProcessor, onFrame, RawFrameFactory(isDirect), processDispatcher)
 
 /**
  * A component that pull a frame from an input and push it to [onFrame] output.
@@ -36,29 +43,38 @@ fun RawFramePullPush(
  * @param frameProcessor the frame processor
  * @param onFrame the output frame callback
  * @param frameFactory the frame factory to create frames
+ * @param processDispatcher the dispatcher to process frames on
  */
 class RawFramePullPush(
     private val frameProcessor: IFrameProcessor<RawFrame>,
     val onFrame: (RawFrame) -> Unit,
-    private val frameFactory: IRawFrameFactory
+    private val frameFactory: IRawFrameFactory,
+    private val processDispatcher: CoroutineDispatcher,
 ) {
-    private val processExecutor = Executors.newSingleThreadExecutor()
+    private val coroutineScope = CoroutineScope(SupervisorJob() + processDispatcher)
+    private val mutex = Mutex()
 
-    private var getFrame: ((frameFactory: IRawFrameFactory) -> RawFrame)? = null
+    private var getFrame: (suspend (frameFactory: IRawFrameFactory) -> RawFrame)? = null
 
-    private val isRunning = AtomicBoolean(false)
     private val isReleaseRequested = AtomicBoolean(false)
-    private var executorTask: Future<*>? = null
 
-    fun setInput(getFrame: (frameFactory: IRawFrameFactory) -> RawFrame) {
-        synchronized(this) {
+    private var job: Job? = null
+
+    fun setInput(getFrame: suspend (frameFactory: IRawFrameFactory) -> RawFrame) {
+        mutex.tryLock()
+        try {
             this.getFrame = getFrame
+        } finally {
+            mutex.unlock()
         }
     }
 
     fun removeInput() {
-        synchronized(this) {
+        mutex.tryLock()
+        try {
             this.getFrame = null
+        } finally {
+            mutex.unlock()
         }
     }
 
@@ -67,14 +83,10 @@ class RawFramePullPush(
             Logger.w(TAG, "Already released")
             return
         }
-        if (isRunning.getAndSet(true)) {
-            Logger.w(TAG, "Stream is already running")
-            return
-        }
-        executorTask = processExecutor.submit {
-            while (isRunning.get()) {
-                val rawFrame = synchronized(this) {
-                    val listener = getFrame ?: return@synchronized null
+        job = coroutineScope.launch {
+            while (isActive) {
+                val rawFrame = mutex.withLock {
+                    val listener = getFrame ?: return@withLock null
                     try {
                         listener(frameFactory)
                     } catch (t: Throwable) {
@@ -92,6 +104,7 @@ class RawFramePullPush(
                 // Store for outputs
                 onFrame(processedFrame)
             }
+            Logger.e(TAG, "Processing loop ended")
         }
     }
 
@@ -100,11 +113,9 @@ class RawFramePullPush(
             Logger.w(TAG, "Already released")
             return
         }
-        if (!isRunning.getAndSet(false)) {
-            return
-        }
-        executorTask?.get()
-        executorTask = null
+        job?.cancel()
+        job = null
+
         frameFactory.clear()
     }
 
@@ -116,8 +127,7 @@ class RawFramePullPush(
             return
         }
 
-        processExecutor.shutdown()
-        processExecutor.awaitTermination(500, TimeUnit.MILLISECONDS)
+        coroutineScope.cancel()
         frameFactory.close()
     }
 

@@ -146,5 +146,6 @@ data class DispatcherProvider(
         internal const val THREAD_NAME_CAMERA = "camera"
         internal const val THREAD_NAME_GL = "gl"
         internal const val THREAD_NAME_VIRTUAL_DISPLAY = "virtual-display"
+        internal const val THREAD_NAME_AUDIO_PREPROCESSING = "preprocessing"
     }
 }
