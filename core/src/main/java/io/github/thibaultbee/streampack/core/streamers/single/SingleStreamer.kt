@@ -179,7 +179,7 @@ suspend fun SingleStreamer(
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
- * @param coroutineDispatcher the [CoroutineDispatcher] to use for internal operations. By default, it is [Dispatchers.Default].
+ * @param dispatcherProvider the [CoroutineDispatcher] to use for internal operations. By default, it is [Dispatchers.Default].
  */
 open class SingleStreamer(
     protected val context: Context,
