@@ -29,6 +29,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
 import io.github.thibaultbee.streampack.core.elements.utils.pool.IRawFrameFactory
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_AUDIO_PREPROCESSING
 import io.github.thibaultbee.streampack.core.pipelines.IAudioDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.inputs.AudioInput.PushConfig
 import kotlinx.coroutines.CoroutineScope
@@ -136,9 +137,9 @@ internal class AudioInput(
     private val frameProcessorInternal = AudioFrameProcessor()
     override val processor: IAudioFrameProcessor = frameProcessorInternal
     private val port = if (config is PushConfig) {
-        PushAudioPort(frameProcessorInternal, config)
+        PushAudioPort(frameProcessorInternal, config, dispatcherProvider)
     } else {
-        CallbackAudioPort(frameProcessorInternal)
+        CallbackAudioPort(frameProcessorInternal) // No threading needed, called from encoder thread
     }
 
     // CONFIG
@@ -364,8 +365,13 @@ private sealed interface IAudioPort<T> : Streamable, Releasable {
 private class PushAudioPort(
     audioFrameProcessor: AudioFrameProcessor,
     config: PushConfig,
+    dispatcherProvider: IAudioDispatcherProvider
 ) : IAudioPort<(frameFactory: IRawFrameFactory) -> RawFrame> {
-    private val audioPullPush = RawFramePullPush(audioFrameProcessor, config.onFrame)
+    private val audioPullPush = RawFramePullPush(
+        audioFrameProcessor,
+        config.onFrame,
+        dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_AUDIO_PREPROCESSING)
+    )
 
     override fun setInput(getFrame: (frameFactory: IRawFrameFactory) -> RawFrame) {
         audioPullPush.setInput(getFrame)
