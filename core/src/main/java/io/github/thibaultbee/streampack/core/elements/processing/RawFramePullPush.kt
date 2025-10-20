@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 fun RawFramePullPush(
     frameProcessor: IFrameProcessor<RawFrame>,
-    onFrame: (RawFrame) -> Unit,
+    onFrame: suspend (RawFrame) -> Unit,
     processDispatcher: CoroutineDispatcher,
     isDirect: Boolean = true
 ) = RawFramePullPush(frameProcessor, onFrame, RawFrameFactory(isDirect), processDispatcher)
@@ -47,7 +47,7 @@ fun RawFramePullPush(
  */
 class RawFramePullPush(
     private val frameProcessor: IFrameProcessor<RawFrame>,
-    val onFrame: (RawFrame) -> Unit,
+    val onFrame: suspend (RawFrame) -> Unit,
     private val frameFactory: IRawFrameFactory,
     private val processDispatcher: CoroutineDispatcher,
 ) {
@@ -99,7 +99,12 @@ class RawFramePullPush(
                 }
 
                 // Process buffer with effects
-                val processedFrame = frameProcessor.processFrame(rawFrame)
+                val processedFrame = try {
+                    frameProcessor.processFrame(rawFrame)
+                } catch (t: Throwable) {
+                    Logger.e(TAG, "Failed to pre-process frame: ${t.message}")
+                    continue
+                }
 
                 // Store for outputs
                 onFrame(processedFrame)

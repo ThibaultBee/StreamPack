@@ -242,30 +242,30 @@ open class StreamerPipeline(
         input.setSourceConfig(value)
     }
 
-    private fun queueAudioFrame(frame: RawFrame) {
-        /**
-         *  Using `runBlocking` to avoid to dispatch the frame to another thread.
-         *  It is possible because the [RawFramePullPush] has an output thread.
-         */
-        runBlocking {
-            safeStreamingOutputCall { streamingOutputs ->
-                val audioStreamingOutput =
-                    streamingOutputs.keys.filterIsInstance<IAudioSyncPipelineOutputInternal>()
-                if (audioStreamingOutput.isEmpty()) {
-                    Logger.w(TAG, "No audio streaming output to process the frame")
-                    frame.close()
-                } else if (audioStreamingOutput.size == 1) {
+    private suspend fun queueAudioFrame(frame: RawFrame) {
+        safeStreamingOutputCall { streamingOutputs ->
+            val audioStreamingOutput =
+                streamingOutputs.keys.filterIsInstance<IAudioSyncPipelineOutputInternal>()
+            if (audioStreamingOutput.isEmpty()) {
+                Logger.w(TAG, "No audio streaming output to process the frame")
+                frame.close()
+            } else if (audioStreamingOutput.size == 1) {
+                try {
                     audioStreamingOutput.first().queueAudioFrame(frame)
-                } else {
-                    // Hook to close frame when all outputs have processed it
-                    var numOfClosed = 0
-                    val onClosed = { frame: Closeable ->
-                        numOfClosed++
-                        if (numOfClosed == audioStreamingOutput.size) {
-                            frame.close()
-                        }
+                } catch (t: Throwable) {
+                    Logger.e(TAG, "Error while queueing audio frame to output: $t")
+                }
+            } else {
+                // Hook to close frame when all outputs have processed it
+                var numOfClosed = 0
+                val onClosed = { frame: Closeable ->
+                    numOfClosed++
+                    if (numOfClosed == audioStreamingOutput.size) {
+                        frame.close()
                     }
-                    audioStreamingOutput.forEachIndexed { index, output ->
+                }
+                audioStreamingOutput.forEachIndexed { index, output ->
+                    try {
                         output.queueAudioFrame(
                             frame.copy(
                                 rawBuffer = if (index == audioStreamingOutput.lastIndex) {
@@ -276,6 +276,8 @@ open class StreamerPipeline(
                                 onClosed = onClosed
                             )
                         )
+                    } catch (t: Throwable) {
+                        Logger.e(TAG, "Error while queueing audio frame to output $output: $t")
                     }
                 }
             }

@@ -237,7 +237,8 @@ interface IAudioSyncPipelineOutputInternal : IAudioPipelineOutputInternal {
      * frame, you should create a new [ByteBuffer] and copy the data from the original frame. Do not
      * modify the original [RawFrame.rawBuffer].
      *
-     * You must call [RawFrame.close] when you are done with the frame to release resources.
+     * You must call [RawFrame.close] when you are done with the frame to release resources. The [IPipelineOutput]
+     * is responsible for closing even if an error occurs.
      *
      * Also, to avoid blocking other outputs, you should execute this method in another thread than
      * the calling thread.
