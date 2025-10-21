@@ -17,8 +17,8 @@ package io.github.thibaultbee.streampack.core.elements.endpoints
 
 import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
@@ -30,6 +30,13 @@ import kotlinx.coroutines.runBlocking
 
 interface IEndpointInternal : IEndpoint, SuspendStreamable,
     SuspendCloseable, Releasable {
+
+    /**
+     * An asynchronous error that occurred during streaming.
+     * Synchronous errors must be thrown directly by the functions.
+     */
+    val throwableFlow: StateFlow<Throwable?>
+
     /**
      * Opens the endpoint.
      * The endpoint must check if the [MediaDescriptor] is supported and if it is not already opened.
