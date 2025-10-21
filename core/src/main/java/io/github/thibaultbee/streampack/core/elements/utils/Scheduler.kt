@@ -15,13 +15,19 @@
  */
 package io.github.thibaultbee.streampack.core.elements.utils
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class Scheduler(
     private val delayTimeInMs: Long,
-    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    coroutineDispatcher: CoroutineDispatcher,
     private val action: suspend CoroutineScope.() -> Unit
 ) {
+    private val coroutineScope: CoroutineScope = CoroutineScope(coroutineDispatcher)
     private var job: Job? = null
 
     fun start() {
@@ -39,5 +45,6 @@ class Scheduler(
     fun stop() {
         job?.cancel()
         job = null
+        coroutineScope.cancel()
     }
 }

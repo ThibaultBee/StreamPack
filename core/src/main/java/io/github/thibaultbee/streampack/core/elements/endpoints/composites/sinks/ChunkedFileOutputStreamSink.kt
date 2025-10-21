@@ -19,6 +19,7 @@ import androidx.core.net.toFile
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.utils.ChunkedFileOutputStream
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.OutputStream
@@ -26,9 +27,10 @@ import java.io.OutputStream
 /**
  * Sink to write data to an [ChunkedFileOutputStream]
  */
-class ChunkedFileOutputStreamSink(private val chunkSize: Int) : OutputStreamSink() {
+class ChunkedFileOutputStreamSink(private val chunkSize: Int, ioDispatcher: CoroutineDispatcher) :
+    OutputStreamSink(ioDispatcher) {
     override val supportedSinkTypes: List<MediaSinkType> = listOf(MediaSinkType.FILE)
-    
+
     private val listeners = mutableListOf<ChunkedFileOutputStream.Listener>()
 
     init {
@@ -49,7 +51,7 @@ class ChunkedFileOutputStreamSink(private val chunkSize: Int) : OutputStreamSink
         require(filesDir.canWrite()) { "Cannot write in directory" }
 
         if (!filesDir.exists()) {
-            require(withContext(Dispatchers.IO) {
+            require(withContext(coroutineDispatcher) {
                 filesDir.mkdirs()
             })
         }

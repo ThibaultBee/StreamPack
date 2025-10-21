@@ -17,12 +17,13 @@ package io.github.thibaultbee.streampack.ext.srt.regulator.controllers
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioEncodingPipelineOutput
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.regulator.controllers.BitrateRegulatorController
 import io.github.thibaultbee.streampack.core.regulator.controllers.DummyBitrateRegulatorController
 import io.github.thibaultbee.streampack.ext.srt.regulator.DefaultSrtBitrateRegulator
 import io.github.thibaultbee.streampack.ext.srt.regulator.SrtBitrateRegulator
+import kotlinx.coroutines.CoroutineDispatcher
 
 /**
  * A [DummyBitrateRegulatorController] implementation for a [SrtSink].
@@ -33,7 +34,10 @@ class DefaultSrtBitrateRegulatorController {
         private val bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
         private val delayTimeInMs: Long = 500
     ) : BitrateRegulatorController.Factory() {
-        override fun newBitrateRegulatorController(pipelineOutput: IEncodingPipelineOutput): DummyBitrateRegulatorController {
+        override fun newBitrateRegulatorController(
+            pipelineOutput: IEncodingPipelineOutput,
+            coroutineDispatcher: CoroutineDispatcher
+        ): DummyBitrateRegulatorController {
             require(pipelineOutput is IConfigurableVideoEncodingPipelineOutput) {
                 "Pipeline output must be an video encoding output"
             }
@@ -52,6 +56,7 @@ class DefaultSrtBitrateRegulatorController {
                 videoEncoder,
                 pipelineOutput.endpoint,
                 bitrateRegulatorFactory,
+                coroutineDispatcher,
                 bitrateRegulatorConfig,
                 delayTimeInMs
             )

@@ -25,6 +25,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceC
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
@@ -83,9 +84,10 @@ interface IPipelineEventOutputInternal : IPipelineOutput {
  *
  * @see [IPipelineOutput.release]
  */
-fun IPipelineOutput.releaseBlocking() = runBlocking(Dispatchers.Default) {
-    release()
-}
+fun IPipelineOutput.releaseBlocking(dispatcher: CoroutineDispatcher = Dispatchers.Default) =
+    runBlocking(dispatcher) {
+        release()
+    }
 
 interface IConfigurableAudioPipelineOutput {
     /**

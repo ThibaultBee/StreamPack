@@ -28,7 +28,7 @@ import kotlinx.coroutines.withContext
 import java.io.RandomAccessFile
 import kotlin.coroutines.CoroutineContext
 
-class FileSink(private val coroutineContext: CoroutineContext = Dispatchers.IO) : AbstractSink() {
+class FileSink(private val coroutineContext: CoroutineContext) : AbstractSink() {
     override val supportedSinkTypes: List<MediaSinkType> = listOf(MediaSinkType.FILE)
 
     private var file: RandomAccessFile? = null

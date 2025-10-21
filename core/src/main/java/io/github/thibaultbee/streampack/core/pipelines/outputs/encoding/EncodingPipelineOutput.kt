@@ -723,7 +723,7 @@ internal class EncodingPipelineOutput(
         } catch (t: Throwable) {
             Logger.w(TAG, "Can't release endpoint: ${t.message}")
         }
-        
+
         audioOutputDispatcher.cancel()
         audioEncoderDispatcher.cancel()
         videoOutputDispatcher.cancel()
@@ -756,19 +756,20 @@ internal class EncodingPipelineOutput(
         }
         bitrateRegulatorController?.stop()
         bitrateRegulatorController =
-            controllerFactory.newBitrateRegulatorController(this).apply {
-                mutex.tryLock()
-                try {
-                    if (isStreaming) {
-                        this.start()
+            controllerFactory.newBitrateRegulatorController(this, dispatcherProvider.default)
+                .apply {
+                    mutex.tryLock()
+                    try {
+                        if (isStreaming) {
+                            this.start()
+                        }
+                        Logger.d(
+                            TAG, "Bitrate regulator controller added: ${this.javaClass.simpleName}"
+                        )
+                    } finally {
+                        mutex.unlock()
                     }
-                    Logger.d(
-                        TAG, "Bitrate regulator controller added: ${this.javaClass.simpleName}"
-                    )
-                } finally {
-                    mutex.unlock()
                 }
-            }
     }
 
     /**

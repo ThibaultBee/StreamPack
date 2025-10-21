@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.core.regulator.controllers
 
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
+import kotlinx.coroutines.CoroutineDispatcher
 
 /**
  * Interface to implement a bitrate regulator controller.
@@ -37,11 +38,13 @@ interface IBitrateRegulatorController {
          * Creates a [IBitrateRegulatorController] object from given parameters
          *
          * @param pipelineOutput the [IEncodingPipelineOutput] implementation.
+         * @param coroutineDispatcher the [CoroutineDispatcher] to run the controller on.
          *
          * @return a [IBitrateRegulatorController] object
          */
         fun newBitrateRegulatorController(
-            pipelineOutput: IEncodingPipelineOutput
+            pipelineOutput: IEncodingPipelineOutput,
+            coroutineDispatcher: CoroutineDispatcher
         ): IBitrateRegulatorController
     }
 }

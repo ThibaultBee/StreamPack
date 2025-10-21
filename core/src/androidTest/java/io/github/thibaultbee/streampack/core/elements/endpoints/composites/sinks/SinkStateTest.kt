@@ -26,14 +26,15 @@ class SinkStateTest(private val endpoint: ISinkInternal) {
         )
         fun getMediaDescriptor(): Iterable<ISinkInternal> {
             val context = InstrumentationRegistry.getInstrumentation().context
+            val ioDispatcher = Dispatchers.IO
 
             return arrayListOf(
-                FileSink(),
-                ContentSink(context),
-                ChunkedFileOutputStreamSink(1000),
+                FileSink(ioDispatcher),
+                ContentSink(context, ioDispatcher),
+                ChunkedFileOutputStreamSink(1000, ioDispatcher),
                 FakeSink(),
-                SrtSink(Dispatchers.IO),
-                RtmpSink(Dispatchers.IO)
+                SrtSink(ioDispatcher),
+                RtmpSink(ioDispatcher)
             )
         }
     }
