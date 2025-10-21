@@ -119,7 +119,7 @@ data class Frame(
 }
 
 
-fun CloseableFrame(
+fun FrameWithCloseable(
     /**
      * Contains an audio or video frame data.
      */
@@ -148,8 +148,8 @@ fun CloseableFrame(
     /**
      * A callback to call when frame is closed.
      */
-    onClosed: (CloseableFrame) -> Unit,
-) = CloseableFrame(
+    onClosed: (FrameWithCloseable) -> Unit,
+) = FrameWithCloseable(
     Frame(
         rawBuffer,
         ptsInUs,
@@ -163,9 +163,9 @@ fun CloseableFrame(
 /**
  * Frame internal representation.
  */
-data class CloseableFrame(
+data class FrameWithCloseable(
     val frame: Frame,
-    val onClosed: (CloseableFrame) -> Unit
+    val onClosed: (FrameWithCloseable) -> Unit
 ) : Closeable {
     override fun close() {
         try {
@@ -174,4 +174,11 @@ data class CloseableFrame(
             // Nothing to do
         }
     }
+}
+
+/**
+ * Uses the resource and unwraps the [Frame] to pass it to the given block.
+ */
+inline fun <T> FrameWithCloseable.useAndUnwrap(block: (Frame) -> T) = use {
+    block(frame)
 }

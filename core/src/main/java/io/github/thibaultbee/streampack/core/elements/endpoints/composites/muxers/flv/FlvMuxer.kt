@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv
 
-import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.data.Packet
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
@@ -41,7 +41,8 @@ class FlvMuxer(
     override val streamConfigs: List<CodecConfig>
         get() = streams.map { it.config }
 
-    override fun write(frame: Frame, streamPid: Int, onFrameProcessed: () -> Unit) {
+    override fun write(closeableFrame: FrameWithCloseable, streamPid: Int) {
+        val frame = closeableFrame.frame
         synchronized(this) {
             try {
                 if (!hasFirstFrame) {
@@ -79,7 +80,7 @@ class FlvMuxer(
                     )
                 }
             } finally {
-                onFrameProcessed()
+                closeableFrame.close()
             }
         }
     }

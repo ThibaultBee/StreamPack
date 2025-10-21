@@ -6,7 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.utils.DescriptorUtils
-import io.github.thibaultbee.streampack.core.elements.utils.FakeFrames
+import io.github.thibaultbee.streampack.core.elements.utils.FakeFramesWithCloseable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertFalse
@@ -84,7 +84,10 @@ class DynamicEndpointTest {
     fun `test write to non open endpoint`() = runTest {
         val dynamicEndpoint = DynamicEndpoint(context, Dispatchers.Default, Dispatchers.IO)
         try {
-            dynamicEndpoint.write(FakeFrames.generate(MediaFormat.MIMETYPE_AUDIO_AAC), 0, {})
+            dynamicEndpoint.write(
+                FakeFramesWithCloseable.create(MediaFormat.MIMETYPE_AUDIO_AAC),
+                0
+            )
             fail("Throwable expected")
         } catch (_: Throwable) {
             assertFalse(dynamicEndpoint.isOpenFlow.value)

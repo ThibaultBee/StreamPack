@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.pipelines.outputs.encoding
 import android.content.Context
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.elements.data.CloseableFrame
+import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
@@ -236,7 +236,7 @@ internal class EncodingPipelineOutput(
         }
 
         override val outputChannel =
-            Channel<CloseableFrame>(Channel.UNLIMITED, onUndeliveredElement = {
+            Channel<FrameWithCloseable>(Channel.UNLIMITED, onUndeliveredElement = {
                 it.close()
             })
     }
@@ -247,7 +247,7 @@ internal class EncodingPipelineOutput(
         }
 
         override val outputChannel =
-            Channel<CloseableFrame>(Channel.UNLIMITED, onUndeliveredElement = {
+            Channel<FrameWithCloseable>(Channel.UNLIMITED, onUndeliveredElement = {
                 it.close()
             })
     }
@@ -260,9 +260,9 @@ internal class EncodingPipelineOutput(
                     try {
                         audioStreamId?.let {
                             endpointInternal.write(
-                                closeableFrame.frame,
-                                it,
-                                { closeableFrame.close() })
+                                closeableFrame,
+                                it
+                            )
                         } ?: Logger.w(TAG, "Audio frame received but audio stream is not set")
                     } catch (t: Throwable) {
                         onInternalError(t)
@@ -277,9 +277,9 @@ internal class EncodingPipelineOutput(
                     try {
                         videoStreamId?.let {
                             endpointInternal.write(
-                                closeableFrame.frame,
-                                it,
-                                { closeableFrame.close() })
+                                closeableFrame,
+                                it
+                            )
                         } ?: Logger.w(TAG, "Video frame received but video stream is not set")
                     } catch (t: Throwable) {
                         onInternalError(t)

@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.elements.endpoints
 import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.createDefaultTsServiceInfo
-import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoints
@@ -131,8 +131,8 @@ open class DynamicEndpoint(
         }
     }
 
-    override suspend fun write(frame: Frame, streamPid: Int, onFrameProcessed: () -> Unit) =
-        safeEndpoint { endpoint -> endpoint.write(frame, streamPid, onFrameProcessed) }
+    override suspend fun write(closeableFrame: FrameWithCloseable, streamPid: Int) =
+        safeEndpoint { endpoint -> endpoint.write(closeableFrame, streamPid) }
 
     override suspend fun startStream() = safeEndpoint { endpoint -> endpoint.startStream() }
 

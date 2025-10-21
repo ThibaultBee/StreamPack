@@ -54,7 +54,7 @@ class PesTest {
         MockUtils.mockTimeUtils(1433034)
 
         val rawData = ResourcesUtils.readByteBuffer(TEST_SAMPLES_DIR + "pes-video1/raw")
-        val frame = FakeFrames.generate(
+        val frame = FakeFrames.create(
             buffer = rawData,
             pts = 1433334,
             dts = 1400000,
@@ -83,7 +83,7 @@ class PesTest {
         MockUtils.mockTimeUtils(700000)
 
         val rawData = ResourcesUtils.readByteBuffer(TEST_SAMPLES_DIR + "pes-audio1/raw.aac")
-        val frame = FakeFrames.generate(
+        val frame = FakeFrames.create(
             buffer = rawData,
             pts = 1400000,
             dts = null,
@@ -107,7 +107,7 @@ class PesTest {
         MockUtils.mockTimeUtils(700000)
 
         val rawData = ResourcesUtils.readByteBuffer(TEST_SAMPLES_DIR + "pes-audio2/raw.aac")
-        val frame = FakeFrames.generate(
+        val frame = FakeFrames.create(
             buffer = rawData,
             pts = 1400000,
             dts = null,

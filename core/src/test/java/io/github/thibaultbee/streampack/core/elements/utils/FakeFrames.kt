@@ -17,11 +17,12 @@ package io.github.thibaultbee.streampack.core.elements.utils
 
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import java.nio.ByteBuffer
 import kotlin.random.Random
 
 object FakeFrames {
-    fun generate(
+    fun create(
         mimeType: String,
         buffer: ByteBuffer = ByteBuffer.wrap(Random.nextBytes(1024)),
         pts: Long = Random.nextLong(),
@@ -58,4 +59,23 @@ object FakeFrames {
             format = format
         )
     }
+}
+
+object FakeFramesWithCloseable {
+    fun create(
+        mimeType: String,
+        buffer: ByteBuffer = ByteBuffer.wrap(Random.nextBytes(1024)),
+        pts: Long = Random.nextLong(),
+        dts: Long? = null,
+        isKeyFrame: Boolean = false
+    ) = FrameWithCloseable(
+        FakeFrames.create(
+            mimeType,
+            buffer,
+            pts,
+            dts,
+            isKeyFrame
+        ),
+        {/* Nothing to do */ }
+    )
 }

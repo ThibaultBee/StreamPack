@@ -21,7 +21,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.TSConst
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.Utils.createFakeServiceInfo
-import io.github.thibaultbee.streampack.core.elements.utils.FakeFrames
+import io.github.thibaultbee.streampack.core.elements.utils.FakeFramesWithCloseable
 import io.github.thibaultbee.streampack.core.elements.utils.MockUtils
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -192,7 +192,10 @@ class TsMuxerTest {
     fun `encode without streams test`() {
         val tsMux = TsMuxer()
         try {
-            tsMux.write(FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), -1, {})
+            tsMux.write(
+                FakeFramesWithCloseable.create(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC),
+                -1
+            )
             fail()
         } catch (_: Throwable) {
         }
@@ -203,7 +206,8 @@ class TsMuxerTest {
         val tsMux = TsMuxer()
         try {
             tsMux.write(
-                FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), -1, {}
+                FakeFramesWithCloseable.create(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC),
+                -1
             )
             fail()
         } catch (_: Throwable) {
@@ -227,11 +231,11 @@ class TsMuxerTest {
             tsMux.addStreams(service, listOf(config))[config]!!
 
         tsMux.write(
-            FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), streamPid, {}
+            FakeFramesWithCloseable.create(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), streamPid
         )
 
         tsMux.write(
-            FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), streamPid, {}
+            FakeFramesWithCloseable.create(mimeType = MediaFormat.MIMETYPE_VIDEO_AVC), streamPid
         )
     }
 
@@ -247,10 +251,10 @@ class TsMuxerTest {
             tsMux.addStreams(createFakeServiceInfo(), listOf(config))[config]!!
 
         tsMux.write(
-            FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC), streamPid, {}
+            FakeFramesWithCloseable.create(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC), streamPid
         )
         tsMux.write(
-            FakeFrames.generate(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC), streamPid, {}
+            FakeFramesWithCloseable.create(mimeType = MediaFormat.MIMETYPE_AUDIO_AAC), streamPid
         )
     }
 }

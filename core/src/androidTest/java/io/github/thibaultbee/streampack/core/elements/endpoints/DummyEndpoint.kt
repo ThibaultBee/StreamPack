@@ -19,6 +19,7 @@ import android.content.Context
 import android.util.Log
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,14 +64,15 @@ class DummyEndpoint : IEndpointInternal {
         _isOpenFlow.emit(false)
     }
 
-    override suspend fun write(frame: Frame, streamPid: Int, onFrameProcessed: (() -> Unit)) {
+    override suspend fun write(closeableFrame: FrameWithCloseable, streamPid: Int) {
+        val frame = closeableFrame.frame
         Log.i(TAG, "write: $frame")
         _frameFlow.emit(frame)
         when {
             frame.isAudio -> numOfAudioFramesWritten++
             frame.isVideo -> numOfVideoFramesWritten++
         }
-        onFrameProcessed()
+        closeableFrame.close()
     }
 
     override fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {

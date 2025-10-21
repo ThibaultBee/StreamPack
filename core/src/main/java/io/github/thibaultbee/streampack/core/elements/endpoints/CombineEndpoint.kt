@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.core.elements.endpoints
 
 import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.intersect
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -209,7 +209,8 @@ open class CombineEndpoint(
      *
      * If all endpoints write fails, it throws the exception of the first endpoint that failed.
      */
-    override suspend fun write(frame: Frame, streamPid: Int, onFrameProcessed: (() -> Unit)) {
+    override suspend fun write(closeableFrame: FrameWithCloseable, streamPid: Int) {
+        val frame = closeableFrame.frame
         val throwables = mutableListOf<Throwable>()
 
         /**
@@ -221,11 +222,13 @@ open class CombineEndpoint(
         endpointInternals.filter { it.isOpenFlow.value }.forEach { endpoint ->
             try {
                 val deferred = CompletableDeferred<Unit>()
-                val duplicatedFrame = frame.copy(rawBuffer = frame.rawBuffer.duplicate())
-                val endpointStreamId = endpointsToStreamIdsMap[Pair(endpoint, streamPid)]!!
+                val duplicatedFrame = FrameWithCloseable(
+                    frame.copy(rawBuffer = frame.rawBuffer.duplicate()),
+                    { deferred.complete(Unit) })
 
+                val endpointStreamId = endpointsToStreamIdsMap[Pair(endpoint, streamPid)]!!
                 deferreds += deferred
-                endpoint.write(duplicatedFrame, endpointStreamId, { deferred.complete(Unit) })
+                endpoint.write(duplicatedFrame, endpointStreamId)
             } catch (t: Throwable) {
                 Logger.e(TAG, "Failed to get stream id for endpoint $endpoint", t)
                 throwables += t
@@ -234,7 +237,7 @@ open class CombineEndpoint(
 
         coroutineScope.launch {
             deferreds.forEach { it.await() }
-            onFrameProcessed()
+            closeableFrame.close()
         }
 
         if (throwables.isNotEmpty()) {

@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites
 
 import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.data.Packet
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
@@ -75,10 +75,9 @@ class CompositeEndpoint(
     }
 
     override suspend fun write(
-        frame: Frame,
-        streamPid: Int,
-        onFrameProcessed: (() -> Unit)
-    ) = muxer.write(frame, streamPid, onFrameProcessed)
+        closeableFrame: FrameWithCloseable,
+        streamPid: Int
+    ) = muxer.write(closeableFrame, streamPid)
 
     override fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
         mutex.tryLock()

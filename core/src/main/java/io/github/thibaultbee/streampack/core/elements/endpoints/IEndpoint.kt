@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.core.elements.endpoints
 
 import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
@@ -39,18 +40,15 @@ interface IEndpointInternal : IEndpoint, SuspendStreamable,
     /**
      * Writes a [Frame] to the [IEndpointInternal].
      *
-     * The [onFrameProcessed] callback must be called when the frame has been processed and the [Frame.rawBuffer] is not used anymore.
-     * The [IEndpointInternal] must called [onFrameProcessed] even if the frame is dropped or it somehow crashes.
-     * Also, once [onFrameProcessed] is called, the [Frame.rawBuffer] must not be used anymore by the [IEndpointInternal].
+     * The [FrameWithCloseable.close] must be called when the frame has been processed and the [Frame.rawBuffer] is not used anymore.
+     * The [IEndpointInternal] must called [FrameWithCloseable.close] even if the frame is dropped or it somehow crashes.
      *
-     * @param frame the [Frame] to write
+     * @param closeableFrame the [Frame] to write
      * @param streamPid the stream id the [Frame] belongs to
-     * @param onFrameProcessed a callback called when the [Frame.rawBuffer] is not used anymore
      */
     suspend fun write(
-        frame: Frame,
+        closeableFrame: FrameWithCloseable,
         streamPid: Int,
-        onFrameProcessed: (() -> Unit)
     )
 
     /**

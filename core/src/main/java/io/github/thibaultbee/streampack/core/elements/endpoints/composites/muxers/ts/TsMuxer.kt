@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxe
 
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
+import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
@@ -71,12 +72,13 @@ class TsMuxer : IMuxerInternal {
     /**
      * Encodes a frame to MPEG-TS format.
      * Each audio frames and each video key frames must come with an extra buffer containing sps, pps,...
-     * @param frame frame to mux
+     * @param closeableFrame frame to mux
      * @param streamPid Pid of frame stream. Throw a NoSuchElementException if streamPid refers to an unknown stream
      */
     override fun write(
-        frame: Frame, streamPid: Int, onFrameProcessed: () -> Unit
+        closeableFrame: FrameWithCloseable, streamPid: Int
     ) {
+        val frame = closeableFrame.frame
         try {
             val pes = getPes(streamPid.toShort())
             val newFrame = when {
@@ -158,7 +160,7 @@ class TsMuxer : IMuxerInternal {
                 generateStreams(newFrame, pes)
             }
         } finally {
-            onFrameProcessed()
+            closeableFrame.close()
         }
     }
 

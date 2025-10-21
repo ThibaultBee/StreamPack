@@ -24,7 +24,7 @@ import android.media.MediaMuxer.OutputFormat
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
@@ -140,8 +140,9 @@ class MediaMuxerEndpoint(
     }
 
     override suspend fun write(
-        frame: Frame, streamPid: Int, onFrameProcessed: () -> Unit
+        closeableFrame: FrameWithCloseable, streamPid: Int
     ) = withContext(ioDispatcher) {
+        val frame = closeableFrame.frame
         mutex.withLock {
             try {
                 if (state != State.STARTED && state != State.PENDING_START) {
@@ -180,7 +181,7 @@ class MediaMuxerEndpoint(
                 Logger.e(TAG, "Error while writing frame: ${t.message}")
                 throw t
             } finally {
-                onFrameProcessed()
+                closeableFrame.close()
             }
         }
     }
