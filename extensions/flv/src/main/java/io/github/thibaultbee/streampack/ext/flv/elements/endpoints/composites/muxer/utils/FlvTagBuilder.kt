@@ -15,13 +15,14 @@
  */
 package io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils
 
-import io.github.thibaultbee.krtmp.flv.tags.FLVData
+import io.github.thibaultbee.krtmp.flv.tags.FLVTag
 import io.github.thibaultbee.krtmp.flv.tags.script.Metadata
 import io.github.thibaultbee.krtmp.logger.KrtmpLogger
-import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
+import io.github.thibaultbee.streampack.core.elements.utils.ChannelWithCloseableData
 
 /**
  * Handles FLV streams and creates FLV data from frames.
@@ -30,7 +31,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
  *
  * Internal FLV frames handler for FLV based processing (RTMP and FLV files).
  */
-class FlvDataBuilder {
+class FlvTagBuilder(val channel: ChannelWithCloseableData<FLVTag>) {
     private var audioStream: AudioFlvStream? = null
     private var videoStream: VideoFlvStream? = null
 
@@ -87,11 +88,13 @@ class FlvDataBuilder {
         videoStream = null
     }
 
-    fun write(
-        frame: Frame,
+    suspend fun write(
+        closeableFrame: FrameWithCloseable,
+        ts: Int,
         streamPid: Int
-    ): List<FLVData> {
-        return when (streamPid) {
+    ) {
+        val frame = closeableFrame.frame
+        val flvDatas = when (streamPid) {
             AUDIO_STREAM_PID -> audioStream?.create(frame)
                 ?: throw IllegalStateException("Audio stream not added")
 
@@ -99,6 +102,14 @@ class FlvDataBuilder {
                 ?: throw IllegalStateException("Video stream not added")
 
             else -> throw IllegalArgumentException("Invalid stream PID $streamPid for frame $frame")
+        }
+        flvDatas.forEachIndexed { index, flvData ->
+            if (index == flvDatas.lastIndex) {
+                // Pass the close callback on the last element
+                channel.send(FLVTag(ts, flvData), { closeableFrame.close() })
+            } else {
+                channel.send(FLVTag(ts, flvData))
+            }
         }
     }
 
