@@ -33,9 +33,11 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -72,6 +74,13 @@ open class DynamicEndpoint(
     private val isOpenFlows = endpointFlow.map { it?.isOpenFlow }
     private val _isOpenFlow = MutableStateFlow(false)
     override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow.asStateFlow()
+
+    private val throwableFlows = endpointFlow.map { it?.throwableFlow }
+    override val throwableFlow: StateFlow<Throwable?> = throwableFlows.map { it?.value }.stateIn(
+        coroutineScope,
+        started = SharingStarted.Eagerly,
+        initialValue = null
+    )
 
     /**
      * Only available when the endpoint is opened.
@@ -244,7 +253,7 @@ open class DynamicEndpoint(
 
     private fun getRtmpEndpoint(): IEndpointInternal {
         if (rtmpEndpoint == null) {
-            rtmpEndpoint = Endpoints.createRtmpEndpoint(ioDispatcher)
+            rtmpEndpoint = Endpoints.createRtmpEndpoint(defaultDispatcher, ioDispatcher)
         }
         return rtmpEndpoint!!
     }

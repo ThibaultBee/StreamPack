@@ -57,6 +57,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -259,10 +260,7 @@ internal class EncodingPipelineOutput(
                 audioEncoderListener.outputChannel.consumeEach { closeableFrame ->
                     try {
                         audioStreamId?.let {
-                            endpointInternal.write(
-                                closeableFrame,
-                                it
-                            )
+                            endpointInternal.write(closeableFrame, it)
                         } ?: Logger.w(TAG, "Audio frame received but audio stream is not set")
                     } catch (t: Throwable) {
                         onInternalError(t)
@@ -276,15 +274,18 @@ internal class EncodingPipelineOutput(
                 videoEncoderListener.outputChannel.consumeEach { closeableFrame ->
                     try {
                         videoStreamId?.let {
-                            endpointInternal.write(
-                                closeableFrame,
-                                it
-                            )
+                            endpointInternal.write(closeableFrame, it)
                         } ?: Logger.w(TAG, "Video frame received but video stream is not set")
                     } catch (t: Throwable) {
                         onInternalError(t)
                     }
                 }
+            }
+        }
+
+        coroutineScope.launch {
+            endpointInternal.throwableFlow.filterNotNull().collect { throwable ->
+                onInternalError(throwable)
             }
         }
     }
