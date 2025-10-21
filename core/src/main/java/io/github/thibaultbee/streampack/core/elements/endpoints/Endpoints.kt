@@ -31,12 +31,15 @@ object Endpoints {
     /**
      * Creates an endpoint for FLV File
      */
-    internal fun createFlvFileEndpoint(coroutineDispatcher: CoroutineDispatcher): IEndpointInternal {
+    internal fun createFlvFileEndpoint(
+        defaultDispatcher: CoroutineDispatcher,
+        ioDispatcher: CoroutineDispatcher
+    ): IEndpointInternal {
         return try {
             val clazz =
                 Class.forName("io.github.thibaultbee.streampack.ext.flv.elements.endpoints.FlvFileEndpoint")
-            clazz.getConstructor(CoroutineDispatcher::class.java)
-                .newInstance(coroutineDispatcher) as IEndpointInternal
+            clazz.getConstructor(CoroutineDispatcher::class.java, CoroutineDispatcher::class.java)
+                .newInstance(defaultDispatcher, ioDispatcher) as IEndpointInternal
         } catch (e: ClassNotFoundException) {
             // Expected if the app was built without the FLV extension.
             throw ClassNotFoundException(
@@ -55,13 +58,18 @@ object Endpoints {
      */
     internal fun createFlvContentEndpoint(
         context: Context,
-        coroutineDispatcher: CoroutineDispatcher
+        defaultDispatcher: CoroutineDispatcher,
+        ioDispatcher: CoroutineDispatcher
     ): IEndpointInternal {
         return try {
             val clazz =
                 Class.forName("io.github.thibaultbee.streampack.ext.flv.elements.endpoints.FlvContentEndpoint")
-            clazz.getConstructor(Context::class.java, CoroutineDispatcher::class.java)
-                .newInstance(context, coroutineDispatcher) as IEndpointInternal
+            clazz.getConstructor(
+                Context::class.java,
+                CoroutineDispatcher::class.java,
+                CoroutineDispatcher::class.java
+            )
+                .newInstance(context, defaultDispatcher, ioDispatcher) as IEndpointInternal
         } catch (e: ClassNotFoundException) {
             // Expected if the app was built without the FLV extension.
             throw ClassNotFoundException(
