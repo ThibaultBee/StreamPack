@@ -18,12 +18,13 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites.sink
 import androidx.core.net.toFile
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
+import kotlinx.coroutines.Dispatchers
 import java.io.OutputStream
 
 /**
  * [OutputStreamSink] tests on a [File].
  */
-class OutputStreamSinkFileTest : AbstractLocalSinkTest(object : OutputStreamSink() {
+class OutputStreamSinkFileTest : AbstractLocalSinkTest(object : OutputStreamSink(Dispatchers.IO) {
     override suspend fun openOutputStream(mediaDescriptor: MediaDescriptor): OutputStream {
         return mediaDescriptor.uri.toFile().outputStream()
     }

@@ -74,6 +74,7 @@ class PreviewView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
 ) : FrameLayout(context, attrs, defStyle) {
     private val viewfinder = CameraViewfinder(context, attrs, defStyle)
+    private val coroutineDispatcher = Dispatchers.Default
 
     private var viewfinderSurfaceRequest: ViewfinderSurfaceRequest? = null
 
@@ -312,7 +313,7 @@ class PreviewView @JvmOverloads constructor(
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
 
-        coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default).apply {
+        coroutineScope = CoroutineScope(SupervisorJob() + coroutineDispatcher).apply {
             collectState(this)
         }
     }

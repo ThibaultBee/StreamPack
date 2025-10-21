@@ -61,6 +61,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodin
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.pipelines.utils.MultiThrowable
 import io.github.thibaultbee.streampack.core.pipelines.utils.SourceConfigUtils
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -1048,6 +1049,6 @@ open class StreamerPipeline(
  *
  * @see [StreamerPipeline.release]
  */
-fun StreamerPipeline.releaseBlocking() = runBlocking(Dispatchers.Default) {
+fun StreamerPipeline.releaseBlocking(dispatcher: CoroutineDispatcher = Dispatchers.Default) = runBlocking(dispatcher) {
     release()
 }

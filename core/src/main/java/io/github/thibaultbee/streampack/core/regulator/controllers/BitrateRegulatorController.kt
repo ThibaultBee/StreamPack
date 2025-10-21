@@ -20,6 +20,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
+import kotlinx.coroutines.CoroutineDispatcher
 
 /**
  * The [BitrateRegulatorController] triggers [IBitrateRegulator.update].
@@ -44,6 +45,9 @@ abstract class BitrateRegulatorController(
          * @param pipelineOutput the [IEncodingPipelineOutput] implementation.
          * @return a [IBitrateRegulatorController] object
          */
-        abstract override fun newBitrateRegulatorController(pipelineOutput: IEncodingPipelineOutput): IBitrateRegulatorController
+        abstract override fun newBitrateRegulatorController(
+            pipelineOutput: IEncodingPipelineOutput,
+            coroutineDispatcher: CoroutineDispatcher
+        ): IBitrateRegulatorController
     }
 }

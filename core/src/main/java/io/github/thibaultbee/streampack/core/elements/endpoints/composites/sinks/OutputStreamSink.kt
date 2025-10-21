@@ -18,18 +18,16 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites.sink
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.Packet
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.toByteArray
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import java.io.OutputStream
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Sink to write data to an [OutputStream]
  */
-abstract class OutputStreamSink(private val coroutineContext: CoroutineContext = Dispatchers.IO) :
+abstract class OutputStreamSink(protected val coroutineDispatcher: CoroutineDispatcher) :
     AbstractSink() {
     protected var outputStream: OutputStream? = null
 
@@ -42,7 +40,9 @@ abstract class OutputStreamSink(private val coroutineContext: CoroutineContext =
     abstract suspend fun openOutputStream(mediaDescriptor: MediaDescriptor): OutputStream
 
     override suspend fun openImpl(mediaDescriptor: MediaDescriptor) {
-        outputStream = openOutputStream(mediaDescriptor)
+        withContext(coroutineDispatcher) {
+            outputStream = openOutputStream(mediaDescriptor)
+        }
         _isOpenFlow.emit(true)
     }
 
@@ -55,7 +55,7 @@ abstract class OutputStreamSink(private val coroutineContext: CoroutineContext =
     override suspend fun write(packet: Packet): Int {
         val outputStream = requireNotNull(outputStream) { "Open the sink before writing" }
 
-        return withContext(coroutineContext) {
+        return withContext(coroutineDispatcher) {
             val byteWritten = packet.buffer.remaining()
             outputStream.write(packet.buffer.toByteArray())
             byteWritten
@@ -63,7 +63,7 @@ abstract class OutputStreamSink(private val coroutineContext: CoroutineContext =
     }
 
     override suspend fun stopStream() {
-        withContext(coroutineContext) {
+        withContext(coroutineDispatcher) {
             outputStream?.flush()
         }
     }
@@ -71,7 +71,7 @@ abstract class OutputStreamSink(private val coroutineContext: CoroutineContext =
     override suspend fun close() {
         stopStream()
         try {
-            withContext(coroutineContext) {
+            withContext(coroutineDispatcher) {
                 outputStream?.close()
             }
         } catch (_: Throwable) {

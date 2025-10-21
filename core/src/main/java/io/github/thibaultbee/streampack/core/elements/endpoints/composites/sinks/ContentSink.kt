@@ -19,12 +19,14 @@ import android.content.Context
 import android.net.Uri
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
+import kotlinx.coroutines.CoroutineDispatcher
 import java.io.OutputStream
 
 /**
  * An [OutputStreamSink] to write data to a content://.
  */
-class ContentSink(private val context: Context) : OutputStreamSink() {
+class ContentSink(private val context: Context, ioDispatcher: CoroutineDispatcher) :
+    OutputStreamSink(ioDispatcher) {
     override val supportedSinkTypes: List<MediaSinkType> = listOf(MediaSinkType.CONTENT)
 
     override suspend fun openOutputStream(mediaDescriptor: MediaDescriptor): OutputStream {
