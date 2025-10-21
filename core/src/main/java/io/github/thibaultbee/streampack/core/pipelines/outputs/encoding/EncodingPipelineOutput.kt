@@ -259,10 +259,7 @@ internal class EncodingPipelineOutput(
                 audioEncoderListener.outputChannel.consumeEach { closeableFrame ->
                     try {
                         audioStreamId?.let {
-                            endpointInternal.write(
-                                closeableFrame,
-                                it
-                            )
+                            endpointInternal.write(closeableFrame, it)
                         } ?: Logger.w(TAG, "Audio frame received but audio stream is not set")
                     } catch (t: Throwable) {
                         onInternalError(t)
@@ -276,14 +273,19 @@ internal class EncodingPipelineOutput(
                 videoEncoderListener.outputChannel.consumeEach { closeableFrame ->
                     try {
                         videoStreamId?.let {
-                            endpointInternal.write(
-                                closeableFrame,
-                                it
-                            )
+                            endpointInternal.write(closeableFrame, it)
                         } ?: Logger.w(TAG, "Video frame received but video stream is not set")
                     } catch (t: Throwable) {
                         onInternalError(t)
                     }
+                }
+            }
+        }
+
+        coroutineScope.launch {
+            endpointInternal.throwableFlow.collect { t ->
+                t?.let {
+                    onInternalError(it)
                 }
             }
         }
