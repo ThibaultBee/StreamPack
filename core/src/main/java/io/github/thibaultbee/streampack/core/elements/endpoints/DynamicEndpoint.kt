@@ -213,14 +213,15 @@ open class DynamicEndpoint(
 
     private fun getFlvFileEndpoint(): IEndpointInternal {
         if (flvFileEndpoint == null) {
-            flvFileEndpoint = Endpoints.createFlvFileEndpoint(ioDispatcher)
+            flvFileEndpoint = Endpoints.createFlvFileEndpoint(defaultDispatcher, ioDispatcher)
         }
         return flvFileEndpoint!!
     }
 
     private fun getFlvContentEndpoint(): IEndpointInternal {
         if (flvContentEndpoint == null) {
-            flvContentEndpoint = Endpoints.createFlvContentEndpoint(context, ioDispatcher)
+            flvContentEndpoint =
+                Endpoints.createFlvContentEndpoint(context, defaultDispatcher, ioDispatcher)
         }
         return flvContentEndpoint!!
     }

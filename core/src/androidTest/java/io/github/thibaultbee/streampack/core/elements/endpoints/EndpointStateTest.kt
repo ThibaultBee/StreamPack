@@ -30,12 +30,13 @@ class EndpointStateTest(private val endpoint: IEndpointInternal) {
         )
         fun getMediaDescriptor(): Iterable<IEndpointInternal> {
             val context = InstrumentationRegistry.getInstrumentation().context
+            val defaultDispatcher = Dispatchers.Default
             val ioDispatcher = Dispatchers.IO
 
             return arrayListOf(
-                DynamicEndpoint(context, Dispatchers.Default, ioDispatcher),
+                DynamicEndpoint(context, defaultDispatcher, ioDispatcher),
                 MediaMuxerEndpoint(context, ioDispatcher),
-                FlvFileEndpoint(ioDispatcher)
+                FlvFileEndpoint(defaultDispatcher, ioDispatcher)
             )
         }
     }

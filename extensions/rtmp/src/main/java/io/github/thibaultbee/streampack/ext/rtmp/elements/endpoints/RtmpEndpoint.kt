@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.ext.rtmp.elements.endpoints
 
 import android.content.Context
-import io.github.thibaultbee.krtmp.flv.tags.FLVData
+import io.github.thibaultbee.krtmp.flv.tags.FLVTag
 import io.github.thibaultbee.krtmp.rtmp.RtmpConnectionBuilder
 import io.github.thibaultbee.krtmp.rtmp.client.RtmpClient
 import io.github.thibaultbee.krtmp.rtmp.connect
@@ -28,16 +28,19 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint.EndpointInfo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ClosedException
+import io.github.thibaultbee.streampack.core.elements.utils.ChannelWithCloseableData
+import io.github.thibaultbee.streampack.core.elements.utils.useConsumeEach
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.FlvMuxerInfo
-import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.FlvDataBuilder
+import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.FlvTagBuilder
 import io.ktor.network.selector.SelectorManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -53,13 +56,19 @@ class RtmpEndpoint internal constructor(
     ioDispatcher: CoroutineDispatcher
 ) :
     IEndpointInternal {
-    private val flvDataBuilder = FlvDataBuilder()
     private val coroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
+    private val mutex = Mutex()
+
+    private val flvTagChannel = ChannelWithCloseableData<FLVTag>(
+        10 /* Arbitrary buffer size. TODO: add a parameter to set it */,
+        BufferOverflow.DROP_OLDEST
+    )
+    private val flvTagBuilder = FlvTagBuilder(flvTagChannel)
 
     private val selectorManager = SelectorManager(ioDispatcher)
     private val connectionBuilder = RtmpConnectionBuilder(selectorManager)
     private var rtmpClient: RtmpClient? = null
-    private val mutex = Mutex()
+
 
     private var startUpTimestamp = INVALID_TIMESTAMP
     private val timestampMutex = Mutex()
@@ -76,6 +85,14 @@ class RtmpEndpoint internal constructor(
 
     private val _throwableFlow = MutableStateFlow<Throwable?>(null)
     override val throwableFlow: StateFlow<Throwable?> = _throwableFlow.asStateFlow()
+
+    init {
+        coroutineScope.launch {
+            flvTagChannel.useConsumeEach { flvTag ->
+                write(flvTag)
+            }
+        }
+    }
 
     private suspend fun <T> safeClient(block: suspend (RtmpClient) -> T): T {
         val rtmpClient = requireNotNull(rtmpClient) { "Not opened" }
@@ -108,62 +125,42 @@ class RtmpEndpoint internal constructor(
         startUpTimestamp
     }
 
-    private suspend fun write(flvData: FLVData, ts: Long) {
-        safeClient { rtmpClient ->
-            rtmpClient.write(
-                flvData,
-                ts.toInt(),
-            )
+    private suspend fun write(flvTag: FLVTag) {
+        try {
+            safeClient { rtmpClient ->
+                rtmpClient.write(flvTag)
+            }
+        } catch (_: TimeoutCancellationException) {
+            Logger.w(TAG, "Frame dropped due to timeout")
+        } catch (t: Throwable) {
+            Logger.e(TAG, "Error while writing RTMP data: $t")
+            if (isOpenFlow.value) {
+                _throwableFlow.emit(ClosedException(t))
+                close()
+            }
         }
-        if (flvData is AutoCloseable) {
-            flvData.close()
+        try {
+            // Close FLVTag data if needed
+            (flvTag.data as AutoCloseable?)?.close()
+        } catch (t: Throwable) {
+            Logger.e(TAG, "Error while closing FLVTag data: $t")
         }
     }
 
-    override suspend fun write(closeableFrame: FrameWithCloseable, streamPid: Int) {
+    override suspend fun write(
+        closeableFrame: FrameWithCloseable, streamPid: Int
+    ) {
         val frame = closeableFrame.frame
         val startUpTimestamp = getStartUpTimestamp(frame.ptsInUs)
         val ts = (frame.ptsInUs - startUpTimestamp) / 1000
-        if (ts < 0) {
-            Logger.w(TAG, "Negative timestamp, dropping frame")
-            closeableFrame.close()
-            return
-        }
-        val flvDatas = try {
-            flvDataBuilder.write(frame, streamPid)
-        } catch (t: Throwable) {
-            Logger.e(TAG, "Error while creating FLV data", t)
-            closeableFrame.close()
-            return
-        }
-
-        coroutineScope.launch {
-            try {
-                flvDatas.forEach { flvData ->
-                    try {
-                        write(flvData, ts)
-                    } catch (_: TimeoutCancellationException) {
-                        Logger.w(TAG, "Frame dropped due to timeout")
-                    } catch (t: Throwable) {
-                        Logger.e(TAG, "Error while writing RTMP data: $t")
-                        if (isOpenFlow.value) {
-                            _throwableFlow.emit(ClosedException(t))
-                            close()
-                        }
-                    }
-                }
-            } finally {
-                Logger.i(TAG, "Frame ${frame.hashCode()} written")
-                closeableFrame.close()
-            }
-        }
+        flvTagBuilder.write(closeableFrame, ts.toInt(), streamPid)
     }
 
     override fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
         require(streamConfigs.isNotEmpty()) { "At least one stream must be provided" }
         mutex.tryLock()
         return try {
-            flvDataBuilder.addStreams(streamConfigs)
+            flvTagBuilder.addStreams(streamConfigs)
         } finally {
             mutex.unlock()
         }
@@ -172,7 +169,7 @@ class RtmpEndpoint internal constructor(
     override fun addStream(streamConfig: CodecConfig): Int {
         mutex.tryLock()
         return try {
-            flvDataBuilder.addStream(streamConfig)
+            flvTagBuilder.addStream(streamConfig)
         } finally {
             mutex.unlock()
         }
@@ -184,7 +181,7 @@ class RtmpEndpoint internal constructor(
             rtmpClient.publish(StreamPublishType.LIVE)
 
             rtmpClient.writeSetDataFrame(
-                flvDataBuilder.metadata
+                flvTagBuilder.metadata
             )
         }
     }
@@ -198,7 +195,7 @@ class RtmpEndpoint internal constructor(
             } catch (t: Throwable) {
                 Logger.w(TAG, "Error while stopping stream: $t")
             } finally {
-                flvDataBuilder.clearStreams()
+                flvTagBuilder.clearStreams()
             }
         }
         timestampMutex.withLock {

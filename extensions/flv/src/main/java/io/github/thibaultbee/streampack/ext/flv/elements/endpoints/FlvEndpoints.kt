@@ -23,30 +23,41 @@ import io.github.thibaultbee.krtmp.flv.tags.FLVTag
 import io.github.thibaultbee.krtmp.flv.tags.script.OnMetadata
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
-import io.github.thibaultbee.streampack.core.elements.data.useAndUnwrap
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint.EndpointInfo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ContentSink
+import io.github.thibaultbee.streampack.core.elements.utils.ChannelWithCloseableData
+import io.github.thibaultbee.streampack.core.elements.utils.useConsumeEach
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.FlvMuxerInfo
-import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.FlvDataBuilder
+import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.FlvTagBuilder
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 /**
  * Writes FLV Data to a file or content.
  */
-sealed class FlvEndpoint(private val coroutineDispatcher: CoroutineDispatcher) : IEndpointInternal {
-    private val flvDataBuilder = FlvDataBuilder()
-    private var flvMuxer: FLVMuxer? = null
+sealed class FlvEndpoint(
+    defaultDispatcher: CoroutineDispatcher,
+    private val ioDispatcher: CoroutineDispatcher
+) : IEndpointInternal {
+    private val coroutineScope = CoroutineScope(defaultDispatcher)
     private val mutex = Mutex()
+
+    private val flvTagChannel = ChannelWithCloseableData<FLVTag>(20, BufferOverflow.DROP_OLDEST)
+    private val flvTagBuilder = FlvTagBuilder(flvTagChannel)
+    private var flvMuxer: FLVMuxer? = null
 
     private var startUpTimestamp = INVALID_TIMESTAMP
     private val timestampMutex = Mutex()
@@ -63,9 +74,21 @@ sealed class FlvEndpoint(private val coroutineDispatcher: CoroutineDispatcher) :
 
     override fun getInfo(type: MediaDescriptor.Type) = info
 
+    init {
+        coroutineScope.launch {
+            flvTagChannel.useConsumeEach { flvTag ->
+                try {
+                    write(flvTag)
+                } catch (t: Throwable) {
+                    Logger.e(TAG, "Error while writing FLV data: $t")
+                }
+            }
+        }
+    }
+
     private suspend fun safeMuxer(block: suspend (FLVMuxer) -> Unit) {
         val flvMuxer = requireNotNull(flvMuxer) { "Not opened" }
-        mutex.withLock { block(flvMuxer) }
+        mutex.withLock { withContext(ioDispatcher) { block(flvMuxer) } }
     }
 
     abstract suspend fun openImpl(descriptor: MediaDescriptor): FLVMuxer
@@ -89,25 +112,28 @@ sealed class FlvEndpoint(private val coroutineDispatcher: CoroutineDispatcher) :
         startUpTimestamp
     }
 
+    private suspend fun write(flvTag: FLVTag) {
+        safeMuxer { flvMuxer ->
+            flvMuxer.encode(flvTag)
+        }
+        // Close FLVTag data if needed
+        (flvTag.data as AutoCloseable?)?.close()
+    }
+
     override suspend fun write(
         closeableFrame: FrameWithCloseable, streamPid: Int
     ) {
-        closeableFrame.useAndUnwrap { frame ->
-            val startUpTimestamp = getStartUpTimestamp(frame.ptsInUs)
-            val ts = (frame.ptsInUs - startUpTimestamp) / 1000
-            flvDataBuilder.write(frame, streamPid).forEach {
-                safeMuxer { flvMuxer ->
-                    flvMuxer.encode(FLVTag(ts.toInt(), it))
-                }
-            }
-        }
+        val frame = closeableFrame.frame
+        val startUpTimestamp = getStartUpTimestamp(frame.ptsInUs)
+        val ts = (frame.ptsInUs - startUpTimestamp) / 1000
+        flvTagBuilder.write(closeableFrame, ts.toInt(), streamPid)
     }
 
     override fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
         require(streamConfigs.isNotEmpty()) { "At least one stream must be provided" }
         mutex.tryLock()
         return try {
-            flvDataBuilder.addStreams(streamConfigs)
+            flvTagBuilder.addStreams(streamConfigs)
         } finally {
             mutex.unlock()
         }
@@ -116,7 +142,7 @@ sealed class FlvEndpoint(private val coroutineDispatcher: CoroutineDispatcher) :
     override fun addStream(streamConfig: CodecConfig): Int {
         mutex.tryLock()
         return try {
-            flvDataBuilder.addStream(streamConfig)
+            flvTagBuilder.addStream(streamConfig)
         } finally {
             mutex.unlock()
         }
@@ -124,19 +150,21 @@ sealed class FlvEndpoint(private val coroutineDispatcher: CoroutineDispatcher) :
 
     override suspend fun startStream() {
         safeMuxer { flvMuxer ->
-            flvMuxer.encodeFLVHeader(flvDataBuilder.hasAudio, flvDataBuilder.hasVideo)
-            flvMuxer.encode(0, OnMetadata(flvDataBuilder.metadata))
+            flvMuxer.encodeFLVHeader(flvTagBuilder.hasAudio, flvTagBuilder.hasVideo)
+            flvMuxer.encode(0, OnMetadata(flvTagBuilder.metadata))
         }
     }
 
     override suspend fun stopStream() {
         mutex.withLock {
             try {
-                flvMuxer?.flush()
+                withContext(ioDispatcher) {
+                    flvMuxer?.flush()
+                }
             } catch (t: Throwable) {
                 Logger.w(TAG, "Error while flushing FLV muxer: $t")
             } finally {
-                flvDataBuilder.clearStreams()
+                flvTagBuilder.clearStreams()
             }
         }
         timestampMutex.withLock {
@@ -155,6 +183,10 @@ sealed class FlvEndpoint(private val coroutineDispatcher: CoroutineDispatcher) :
         }
     }
 
+    override fun release() {
+        flvTagChannel.cancel()
+    }
+
     companion object {
         private const val TAG = "FlvEndpoint"
 
@@ -166,8 +198,12 @@ sealed class FlvEndpoint(private val coroutineDispatcher: CoroutineDispatcher) :
 /**
  * Writes FLV Data to a content.
  */
-class FlvContentEndpoint(private val context: Context, coroutineDispatcher: CoroutineDispatcher) :
-    FlvEndpoint(coroutineDispatcher) {
+class FlvContentEndpoint(
+    private val context: Context,
+    defaultDispatcher: CoroutineDispatcher,
+    ioDispatcher: CoroutineDispatcher
+) :
+    FlvEndpoint(defaultDispatcher, ioDispatcher) {
     override suspend fun openImpl(descriptor: MediaDescriptor): FLVMuxer {
         require(descriptor.type.sinkType == MediaSinkType.CONTENT) { "Descriptor type must be ${MediaSinkType.CONTENT}" }
         return FLVMuxer(ContentSink.openContent(context, descriptor.uri), AmfVersion.AMF0)
@@ -181,14 +217,18 @@ class FlvContentEndpointFactory : IEndpointInternal.Factory {
     override fun create(
         context: Context,
         dispatcherProvider: IDispatcherProvider
-    ): IEndpointInternal = FlvContentEndpoint(context, dispatcherProvider.io)
+    ): IEndpointInternal =
+        FlvContentEndpoint(context, dispatcherProvider.default, dispatcherProvider.io)
 }
 
 
 /**
  * Writes FLV Data to a file.
  */
-class FlvFileEndpoint(coroutineDispatcher: CoroutineDispatcher) : FlvEndpoint(coroutineDispatcher) {
+class FlvFileEndpoint(
+    defaultDispatcher: CoroutineDispatcher,
+    ioDispatcher: CoroutineDispatcher
+) : FlvEndpoint(defaultDispatcher, ioDispatcher) {
     override suspend fun openImpl(descriptor: MediaDescriptor): FLVMuxer {
         require(descriptor.type.sinkType == MediaSinkType.FILE) { "Descriptor type must be ${MediaSinkType.FILE}" }
         return FLVMuxer(descriptor.uri.path!!, AmfVersion.AMF0)
@@ -202,7 +242,7 @@ class FlvFileEndpointFactory : IEndpointInternal.Factory {
     override fun create(
         context: Context,
         dispatcherProvider: IDispatcherProvider
-    ): IEndpointInternal = FlvFileEndpoint(dispatcherProvider.io)
+    ): IEndpointInternal = FlvFileEndpoint(dispatcherProvider.default, dispatcherProvider.io)
 }
 
 
