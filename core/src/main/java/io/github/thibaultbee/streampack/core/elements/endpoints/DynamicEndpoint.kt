@@ -21,8 +21,6 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.creat
 import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoints
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.FlvMuxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TsMuxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ContentSink
@@ -33,9 +31,11 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -71,6 +71,13 @@ open class DynamicEndpoint(
     private val isOpenFlows = endpointFlow.map { it?.isOpenFlow }
     private val _isOpenFlow = MutableStateFlow(false)
     override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow.asStateFlow()
+
+    private val throwableFlows = endpointFlow.map { it?.throwableFlow }
+    override val throwableFlow: StateFlow<Throwable?> = throwableFlows.map { it?.value }.stateIn(
+        coroutineScope,
+        started = SharingStarted.Eagerly,
+        initialValue = null
+    )
 
     /**
      * Only available when the endpoint is opened.
@@ -205,22 +212,15 @@ open class DynamicEndpoint(
 
     private fun getFlvFileEndpoint(): IEndpointInternal {
         if (flvFileEndpoint == null) {
-            flvFileEndpoint = CompositeEndpoint(
-                FlvMuxer(
-                    isForFile = true
-                ), FileSink(ioDispatcher)
-            )
+            flvFileEndpoint = Endpoints.createFlvFileEndpoint(defaultDispatcher, ioDispatcher)
         }
         return flvFileEndpoint!!
     }
 
     private fun getFlvContentEndpoint(): IEndpointInternal {
         if (flvContentEndpoint == null) {
-            flvContentEndpoint = CompositeEndpoint(
-                FlvMuxer(
-                    isForFile = true
-                ), ContentSink(context, ioDispatcher)
-            )
+            flvContentEndpoint =
+                Endpoints.createFlvContentEndpoint(context, defaultDispatcher, ioDispatcher)
         }
         return flvContentEndpoint!!
     }
@@ -246,14 +246,14 @@ open class DynamicEndpoint(
 
     private fun getSrtEndpoint(): IEndpointInternal {
         if (srtEndpoint == null) {
-            srtEndpoint = CompositeEndpoints.createSrtEndpoint(null, ioDispatcher)
+            srtEndpoint = Endpoints.createSrtEndpoint(null, ioDispatcher)
         }
         return srtEndpoint!!
     }
 
     private fun getRtmpEndpoint(): IEndpointInternal {
         if (rtmpEndpoint == null) {
-            rtmpEndpoint = CompositeEndpoints.createRtmpEndpoint(ioDispatcher)
+            rtmpEndpoint = Endpoints.createRtmpEndpoint(defaultDispatcher, ioDispatcher)
         }
         return rtmpEndpoint!!
     }

@@ -34,7 +34,7 @@ class ContentSink(private val context: Context, ioDispatcher: CoroutineDispatche
     }
 
     companion object {
-        private fun openContent(context: Context, uri: Uri): OutputStream {
+        fun openContent(context: Context, uri: Uri): OutputStream {
             return context.contentResolver.openOutputStream(uri)
                 ?: throw Exception("Cannot open content: $uri")
         }

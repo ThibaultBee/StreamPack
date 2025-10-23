@@ -324,7 +324,7 @@ fun ByteBuffer.removePrefixes(prefixes: List<ByteBuffer>): ByteBuffer {
         }
     }
 
-    return this.slice()
+    return this.slice().order(this.order())
 }
 
 /**

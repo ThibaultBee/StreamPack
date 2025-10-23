@@ -27,7 +27,9 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ISinkInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -65,6 +67,8 @@ class CompositeEndpoint(
 
     override val isOpenFlow: StateFlow<Boolean>
         get() = sink.isOpenFlow
+
+    override val throwableFlow: StateFlow<Throwable?> = MutableStateFlow(null).asStateFlow()
 
     override suspend fun open(descriptor: MediaDescriptor) {
         sink.open(descriptor)
