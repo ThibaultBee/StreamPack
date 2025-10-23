@@ -1,6 +1,10 @@
 package io.github.thibaultbee.streampack.core.elements.endpoints
 
 import android.content.Context
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoints
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TsMuxer
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import kotlinx.coroutines.CoroutineDispatcher
 
 object Endpoints {
@@ -80,5 +84,20 @@ object Endpoints {
             // The FLV extension is present, but instantiation failed.
             throw RuntimeException("Error instantiating FLV content extension", t)
         }
+    }
+
+    /**
+     * Creates an endpoint for SRT (with a TS muxer)
+     */
+    internal fun createSrtEndpoint(
+        serviceInfo: TSServiceInfo?,
+        coroutineDispatcher: CoroutineDispatcher
+    ): IEndpointInternal {
+        val sink = CompositeEndpoints.createSrtSink(coroutineDispatcher)
+        val muxer = TsMuxer()
+        if (serviceInfo != null) {
+            muxer.addService(serviceInfo)
+        }
+        return CompositeEndpoint(muxer, sink)
     }
 }
