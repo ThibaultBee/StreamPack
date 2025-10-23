@@ -17,8 +17,6 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites
 
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TsMuxer
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ISinkInternal
 import kotlinx.coroutines.CoroutineDispatcher
 
@@ -26,22 +24,7 @@ import kotlinx.coroutines.CoroutineDispatcher
  * An [IEndpointInternal] implementation that combines a [IMuxerInternal] and a [ISinkInternal].
  */
 object CompositeEndpoints {
-    /**
-     * Creates an endpoint for SRT (with a TS muxer)
-     */
-    internal fun createSrtEndpoint(
-        serviceInfo: TSServiceInfo?,
-        coroutineDispatcher: CoroutineDispatcher
-    ): IEndpointInternal {
-        val sink = createSrtSink(coroutineDispatcher)
-        val muxer = TsMuxer()
-        if (serviceInfo != null) {
-            muxer.addService(serviceInfo)
-        }
-        return CompositeEndpoint(muxer, sink)
-    }
-
-    private fun createSrtSink(coroutineDispatcher: CoroutineDispatcher): ISinkInternal {
+    internal fun createSrtSink(coroutineDispatcher: CoroutineDispatcher): ISinkInternal {
         return try {
             val clazz =
                 Class.forName("io.github.thibaultbee.streampack.ext.srt.elements.endpoints.composites.sinks.SrtSink")

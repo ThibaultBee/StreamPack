@@ -21,7 +21,6 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.creat
 import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoints
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TsMuxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ContentSink
@@ -247,7 +246,7 @@ open class DynamicEndpoint(
 
     private fun getSrtEndpoint(): IEndpointInternal {
         if (srtEndpoint == null) {
-            srtEndpoint = CompositeEndpoints.createSrtEndpoint(null, ioDispatcher)
+            srtEndpoint = Endpoints.createSrtEndpoint(null, ioDispatcher)
         }
         return srtEndpoint!!
     }
