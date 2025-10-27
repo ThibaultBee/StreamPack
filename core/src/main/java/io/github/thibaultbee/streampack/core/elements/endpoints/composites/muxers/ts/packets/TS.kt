@@ -25,14 +25,14 @@ import java.nio.ByteBuffer
 import java.security.InvalidParameterException
 
 open class TS(
-     byteBufferPool: ByteBufferPool,
+    private val byteBufferPool: ByteBufferPool,
     listener: IMuxerInternal.IMuxerListener? = null,
     val pid: Short,
     private val transportErrorIndicator: Boolean = false,
     private val transportPriority: Boolean = false,
     private val transportScramblingControl: Byte = 0, // Not scrambled
     private var continuityCounter: Byte = 0,
-) : TSOutputCallback(byteBufferPool, listener) {
+) : TSOutputCallback(listener) {
 
     companion object {
         const val SYNC_BYTE: Byte = 0x47
@@ -145,5 +145,6 @@ open class TS(
 
             packetIndicator++
         }
+        byteBufferPool.put(buffer)
     }
 }

@@ -17,15 +17,10 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxe
 
 import io.github.thibaultbee.streampack.core.elements.data.SrtPacket
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
-import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
 
-open class TSOutputCallback(
-    protected val byteBufferPool: ByteBufferPool,
-    var listener: IMuxerInternal.IMuxerListener? = null
-) {
+open class TSOutputCallback(var listener: IMuxerInternal.IMuxerListener? = null) {
     protected fun writePacket(packet: SrtPacket) {
         packet.buffer.rewind()
         listener?.onOutputFrame(packet)
-        byteBufferPool.put(packet.buffer)
     }
 }
