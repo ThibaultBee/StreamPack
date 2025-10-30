@@ -137,23 +137,27 @@ fun ByteBuffer.indicesOf(prefix: ByteArray): List<Int> {
  * Get all [ByteBuffer] occurrences that start with [prefix].
  */
 fun ByteBuffer.slices(prefix: ByteArray): List<ByteBuffer> {
-    val slices = mutableListOf<Pair<Int, Int>>()
-
     // Get all occurrence of prefix in buffer
     val indexes = this.indicesOf(prefix)
-    // Get slices
-    indexes.forEachIndexed { index, i ->
-        val nextPosition = if (indexes.indices.contains(index + 1)) {
+    if (indexes.isEmpty()) {
+        return emptyList()
+    }
+    
+    val result = mutableListOf<ByteBuffer>()
+    val array = this.array()
+    val limit = this.limit()
+    val indexCount = indexes.size
+    
+    for (index in 0 until indexCount) {
+        val startPos = indexes[index]
+        val endPos = if (index + 1 < indexCount) {
             indexes[index + 1] - 1
         } else {
-            this.limit() - 1
+            limit - 1
         }
-        slices.add(Pair(i, nextPosition))
+        result.add(ByteBuffer.wrap(array.sliceArray(IntRange(startPos, endPos))))
     }
-    val array = this.array()
-    return slices.map {
-        ByteBuffer.wrap(array.sliceArray(IntRange(it.first, it.second)))
-    }
+    return result
 }
 
 /**
@@ -163,7 +167,8 @@ fun ByteBuffer.startsWith(
     prefix: ByteArray,
     prefixSkip: Int = 0
 ): Boolean {
-    val size = minOf(remaining(), prefix.size - prefixSkip)
+    val prefixSize = prefix.size - prefixSkip
+    val size = minOf(remaining(), prefixSize)
     if (size <= 0) return false
 
     val position = position()
@@ -183,7 +188,8 @@ fun ByteBuffer.startsWith(
     prefix: ByteBuffer,
     prefixSkip: Int = 0
 ): Boolean {
-    val size = minOf(remaining(), prefix.remaining() - prefixSkip)
+    val prefixRemaining = prefix.remaining() - prefixSkip
+    val size = minOf(remaining(), prefixRemaining)
     if (size <= 0) return false
 
     val position = position()
