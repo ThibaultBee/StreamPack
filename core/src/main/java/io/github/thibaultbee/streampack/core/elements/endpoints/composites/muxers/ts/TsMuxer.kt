@@ -88,15 +88,15 @@ class TsMuxer : IMuxerInternal {
                         if (frame.extra == null) {
                             throw MissingFormatArgumentException("Missing extra for AVC")
                         }
-                        val buffer =
-                            ByteBuffer.allocate(6 + frame.extra.sumOf { it.limit() } + frame.buffer.limit())
+                        val bufferSize = 6 + frame.extra.sumOf { it.limit() } + frame.buffer.limit()
+                        val buffer = byteBufferPool.get(bufferSize)
                         // Add access unit delimiter (AUD) before the AVC access unit
                         buffer.putInt(0x00000001)
                         buffer.put(0x09.toByte())
                         buffer.put(0xf0.toByte())
                         frame.extra.forEach { buffer.put(it) }
                         buffer.put(frame.buffer)
-                        buffer.rewind()
+                        buffer.flip()
                         frame.copy(rawBuffer = buffer)
                     } else {
                         frame
@@ -109,8 +109,8 @@ class TsMuxer : IMuxerInternal {
                         if (frame.extra == null) {
                             throw MissingFormatArgumentException("Missing extra for HEVC")
                         }
-                        val buffer =
-                            ByteBuffer.allocate(7 + frame.extra.sumOf { it.limit() } + frame.buffer.limit())
+                        val bufferSize = 7 + frame.extra.sumOf { it.limit() } + frame.buffer.limit()
+                        val buffer = byteBufferPool.get(bufferSize)
                         // Add access unit delimiter (AUD) before the HEVC access unit
                         buffer.putInt(0x00000001)
                         buffer.put(0x46.toByte())
@@ -118,7 +118,7 @@ class TsMuxer : IMuxerInternal {
                         buffer.put(0x50.toByte())
                         frame.extra.forEach { buffer.put(it) }
                         buffer.put(frame.buffer)
-                        buffer.rewind()
+                        buffer.flip()
                         frame.copy(rawBuffer = buffer)
                     } else {
                         frame
@@ -146,10 +146,10 @@ class TsMuxer : IMuxerInternal {
                     val controlHeader = OpusControlHeader(
                         payloadSize = payloadSize
                     )
-                    val buffer = ByteBuffer.allocate(controlHeader.size + payloadSize)
+                    val buffer = byteBufferPool.get(controlHeader.size + payloadSize)
                     controlHeader.write(buffer)
                     buffer.put(frame.buffer)
-                    buffer.rewind()
+                    buffer.flip()
                     frame.copy(rawBuffer = buffer)
                 }
 

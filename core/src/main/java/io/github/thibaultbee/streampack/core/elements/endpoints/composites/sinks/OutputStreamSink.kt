@@ -56,8 +56,16 @@ abstract class OutputStreamSink(protected val coroutineDispatcher: CoroutineDisp
         val outputStream = requireNotNull(outputStream) { "Open the sink before writing" }
 
         return withContext(coroutineDispatcher) {
-            val byteWritten = packet.buffer.remaining()
-            outputStream.write(packet.buffer.toByteArray())
+            val buffer = packet.buffer
+            val byteWritten = buffer.remaining()
+            
+            // Optimize: Write directly from backing array when available
+            if (buffer.hasArray() && !buffer.isDirect) {
+                val offset = buffer.position() + buffer.arrayOffset()
+                outputStream.write(buffer.array(), offset, byteWritten)
+            } else {
+                outputStream.write(buffer.toByteArray())
+            }
             byteWritten
         }
     }

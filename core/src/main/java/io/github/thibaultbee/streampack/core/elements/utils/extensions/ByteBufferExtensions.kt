@@ -101,14 +101,15 @@ fun ByteBuffer.getString(size: Int = this.remaining()): String {
 }
 
 fun ByteBuffer.getLong(isLittleEndian: Boolean): Long {
-    if (isLittleEndian) {
+    return if (isLittleEndian) {
+        val originalOrder = order()
         order(ByteOrder.LITTLE_ENDIAN)
+        val value = long
+        order(originalOrder)
+        value
+    } else {
+        long
     }
-    val value = long
-    if (isLittleEndian) {
-        order(ByteOrder.BIG_ENDIAN)
-    }
-    return value
 }
 
 fun ByteBuffer.indicesOf(prefix: ByteArray): List<Int> {
@@ -117,9 +118,12 @@ fun ByteBuffer.indicesOf(prefix: ByteArray): List<Int> {
     }
 
     val indices = mutableListOf<Int>()
+    val limit = this.limit()
+    val prefixSize = prefix.size
+    val searchLimit = limit - prefixSize + 1
 
-    outer@ for (i in 0 until this.limit() - prefix.size + 1) {
-        for (j in prefix.indices) {
+    outer@ for (i in 0 until searchLimit) {
+        for (j in 0 until prefixSize) {
             if (this.get(i + j) != prefix[j]) {
                 continue@outer
             }
@@ -222,14 +226,18 @@ fun ByteBuffer.toByteArray(): ByteArray {
     return if (this.hasArray() && !isDirect) {
         val offset = position() + arrayOffset()
         val array = array()
-        if (offset == 0 && array.size == remaining()) {
+        val remaining = remaining()
+        if (offset == 0 && array.size == remaining) {
             array
         } else {
-            array.copyOfRange(offset, offset + remaining())
+            array.copyOfRange(offset, offset + remaining)
         }
     } else {
-        val byteArray = ByteArray(this.remaining())
+        val remaining = this.remaining()
+        val byteArray = ByteArray(remaining)
+        val pos = position()
         get(byteArray)
+        position(pos)  // Restore position to avoid side effects
         byteArray
     }
 }
@@ -283,17 +291,19 @@ fun ByteBuffer.removeStartCode(): ByteBuffer {
 
 fun ByteBuffer.extractRbsp(headerLength: Int): ByteBuffer {
     val rbsp = ByteBuffer.allocateDirect(this.remaining())
+    val startCode = this.startCodeSize
+    val limit = this.limit()
 
     val indices = this.indicesOf(byteArrayOf(0x00, 0x00, 0x03))
 
-    rbsp.put(this, this.startCodeSize, headerLength)
+    rbsp.put(this, startCode, headerLength)
 
     var previous = this.position()
-    indices.forEach {
-        rbsp.put(this, previous, it + 2 - previous)
-        previous = it + 3 // skip emulation_prevention_three_byte
+    for (index in indices) {
+        rbsp.put(this, previous, index + 2 - previous)
+        previous = index + 3 // skip emulation_prevention_three_byte
     }
-    rbsp.put(this, previous, this.limit() - previous)
+    rbsp.put(this, previous, limit - previous)
 
     rbsp.limit(rbsp.position())
     rbsp.rewind()

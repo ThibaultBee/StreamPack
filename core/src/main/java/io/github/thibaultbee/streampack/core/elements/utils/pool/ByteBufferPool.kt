@@ -43,10 +43,13 @@ class ByteBufferPool(private val isDirect: Boolean) : IBufferPool<ByteBuffer>, C
         }
 
         val buffer = synchronized(buffers) {
-            buffers.tailMap(
-                capacity,
-                true
-            ).values.firstNotNullOfOrNull(ArrayDeque<ByteBuffer>::removeFirstOrNull)
+            val tailMap = buffers.tailMap(capacity, true)
+            var result: ByteBuffer? = null
+            for (queue in tailMap.values) {
+                result = queue.removeFirstOrNull()
+                if (result != null) break
+            }
+            result
         }
         return if (buffer != null) {
             buffer.clear().limit(capacity)
@@ -60,12 +63,13 @@ class ByteBufferPool(private val isDirect: Boolean) : IBufferPool<ByteBuffer>, C
         if (isClosed.get()) {
             throw IllegalStateException("ByteBufferPool is closed")
         }
+        val bufferCapacity = buffer.capacity()
         synchronized(buffers) {
-            val queue = buffers[buffer.capacity()]
+            val queue = buffers[bufferCapacity]
             if (queue != null) {
                 queue.add(buffer)
             } else {
-                buffers[buffer.capacity()] = ArrayDeque<ByteBuffer>(3).apply { addLast(buffer) }
+                buffers[bufferCapacity] = ArrayDeque<ByteBuffer>(3).apply { addLast(buffer) }
             }
         }
     }
