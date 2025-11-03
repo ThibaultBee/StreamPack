@@ -124,7 +124,7 @@ interface IEncoderInternal : SuspendStreamable, Releasable,
              *
              * @param buffer the buffer where to write the frame
              */
-            fun onFrameRequested(buffer: ByteBuffer): RawFrame
+            suspend fun onFrameRequested(buffer: ByteBuffer): RawFrame
         }
     }
 

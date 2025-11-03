@@ -60,21 +60,15 @@ class RawFramePullPush(
 
     private var job: Job? = null
 
-    fun setInput(getFrame: suspend (frameFactory: IRawFrameFactory) -> RawFrame) {
-        mutex.tryLock()
-        try {
+    suspend fun setInput(getFrame: suspend (frameFactory: IRawFrameFactory) -> RawFrame) {
+        mutex.withLock {
             this.getFrame = getFrame
-        } finally {
-            mutex.unlock()
         }
     }
 
-    fun removeInput() {
-        mutex.tryLock()
-        try {
+    suspend fun removeInput() {
+        mutex.withLock {
             this.getFrame = null
-        } finally {
-            mutex.unlock()
         }
     }
 

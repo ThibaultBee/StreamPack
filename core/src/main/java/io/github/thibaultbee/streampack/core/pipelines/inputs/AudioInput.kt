@@ -358,8 +358,8 @@ internal class AudioInput(
 }
 
 private sealed interface IAudioPort<T> : Streamable, Releasable {
-    fun setInput(getFrame: T)
-    fun removeInput()
+    suspend fun setInput(getFrame: T)
+    suspend fun removeInput()
 }
 
 private class PushAudioPort(
@@ -373,11 +373,11 @@ private class PushAudioPort(
         dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_AUDIO_PREPROCESSING)
     )
 
-    override fun setInput(getFrame: (frameFactory: IRawFrameFactory) -> RawFrame) {
+    override suspend fun setInput(getFrame: (frameFactory: IRawFrameFactory) -> RawFrame) {
         audioPullPush.setInput(getFrame)
     }
 
-    override fun removeInput() {
+    override suspend fun removeInput() {
         audioPullPush.removeInput()
     }
 
@@ -397,26 +397,29 @@ private class PushAudioPort(
 private class CallbackAudioPort(private val audioFrameProcessor: AudioFrameProcessor) :
     IAudioPort<(frame: RawFrame) -> RawFrame> {
     private var getFrame: ((frame: RawFrame) -> RawFrame)? = null
+    private val mutex = Mutex()
 
     var audioFrameRequestedListener: OnFrameRequestedListener =
         object : OnFrameRequestedListener {
-            override fun onFrameRequested(buffer: ByteBuffer): RawFrame {
-                val getFrame = requireNotNull(getFrame) {
-                    "Audio frame requested listener is not set yet"
+            override suspend fun onFrameRequested(buffer: ByteBuffer): RawFrame {
+                val frame = mutex.withLock {
+                    val getFrame = requireNotNull(getFrame) {
+                        "Audio frame requested listener is not set yet"
+                    }
+                    getFrame(RawFrame(buffer, 0))
                 }
-                val frame = getFrame(RawFrame(buffer, 0))
                 return audioFrameProcessor.processFrame(frame)
             }
         }
 
-    override fun setInput(getFrame: (frame: RawFrame) -> RawFrame) {
-        synchronized(this) {
+    override suspend fun setInput(getFrame: (frame: RawFrame) -> RawFrame) {
+        mutex.withLock {
             this.getFrame = getFrame
         }
     }
 
-    override fun removeInput() {
-        synchronized(this) {
+    override suspend fun removeInput() {
+        mutex.withLock {
             this.getFrame = null
         }
     }
