@@ -225,7 +225,7 @@ internal class AudioInput(
     }
 
 
-    suspend fun setSourceConfig(newAudioSourceConfig: AudioSourceConfig) {
+    internal suspend fun setSourceConfig(newAudioSourceConfig: AudioSourceConfig) {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Pipeline is released")
         }
@@ -264,7 +264,7 @@ internal class AudioInput(
         audioSource.configure(audioConfig)
     }
 
-    suspend fun startStream() {
+    internal suspend fun startStream() {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
@@ -294,7 +294,7 @@ internal class AudioInput(
         }
     }
 
-    suspend fun stopStream() {
+    internal suspend fun stopStream() {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
@@ -316,7 +316,7 @@ internal class AudioInput(
         }
     }
 
-    suspend fun release() {
+    internal suspend fun release() {
         if (isReleaseRequested.getAndSet(true)) {
             Logger.w(TAG, "Already released")
             return

@@ -261,7 +261,7 @@ internal class VideoInput(
     }
 
 
-    suspend fun setSourceConfig(newVideoSourceConfig: VideoSourceConfig) {
+    internal suspend fun setSourceConfig(newVideoSourceConfig: VideoSourceConfig) {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
@@ -349,7 +349,7 @@ internal class VideoInput(
         return newSurfaceProcessor
     }
 
-    suspend fun addOutputSurface(output: ISurfaceOutput) {
+    internal suspend fun addOutputSurface(output: ISurfaceOutput) {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
@@ -360,7 +360,7 @@ internal class VideoInput(
         }
     }
 
-    suspend fun removeOutputSurface(output: Surface) {
+    internal suspend fun removeOutputSurface(output: Surface) {
         outputMutex.withLock {
             surfaceOutput.firstOrNull { it.descriptor.surface == output }?.let {
                 surfaceOutput.remove(it)
@@ -369,7 +369,7 @@ internal class VideoInput(
         }
     }
 
-    suspend fun startStream() {
+    internal suspend fun startStream() {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
@@ -390,7 +390,7 @@ internal class VideoInput(
         }
     }
 
-    suspend fun stopStream() {
+    internal suspend fun stopStream() {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
@@ -421,7 +421,7 @@ internal class VideoInput(
         processor.release()
     }
 
-    suspend fun release() {
+    internal suspend fun release() {
         if (isReleaseRequested.getAndSet(true)) {
             Logger.w(TAG, "Already released")
             return
