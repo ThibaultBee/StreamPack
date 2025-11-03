@@ -24,7 +24,6 @@ import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.runBlocking
 
 class DummyEndpoint : IEndpointInternal {
     private val _isOpenFlow = MutableStateFlow(false)
@@ -75,17 +74,13 @@ class DummyEndpoint : IEndpointInternal {
         closeableFrame.close()
     }
 
-    override fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
-        runBlocking {
-            streamConfigs.forEach { _configFlow.emit(it) }
-        }
+    override suspend fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
+        streamConfigs.forEach { _configFlow.emit(it) }
         return streamConfigs.associateWith { it.hashCode() }
     }
 
-    override fun addStream(streamConfig: CodecConfig): Int {
-        runBlocking {
-            _configFlow.emit(streamConfig)
-        }
+    override suspend fun addStream(streamConfig: CodecConfig): Int {
+        _configFlow.emit(streamConfig)
         return streamConfig.hashCode()
     }
 

@@ -122,7 +122,7 @@ open class CombineEndpoint(
         return i
     }
 
-    override fun addStream(streamConfig: CodecConfig): Int {
+    override suspend fun addStream(streamConfig: CodecConfig): Int {
         val streamId = createNewStreamId()
         endpointInternals.forEach { endpoint ->
             endpointsToStreamIdsMap[Pair(endpoint, streamId)] = endpoint.addStream(streamConfig)
@@ -130,7 +130,7 @@ open class CombineEndpoint(
         return streamId
     }
 
-    override fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
+    override suspend fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
         val streamIds = mutableMapOf<CodecConfig, Int>()
         streamConfigs.forEach { streamConfig ->
             val streamId = createNewStreamId()

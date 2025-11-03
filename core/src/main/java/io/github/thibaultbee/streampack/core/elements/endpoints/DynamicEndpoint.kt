@@ -110,25 +110,17 @@ open class DynamicEndpoint(
         }
     }
 
-    override fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
+    override suspend fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
         require(streamConfigs.isNotEmpty()) { "At least one stream config must be provided" }
-        mutex.tryLock()
-        return try {
+        return mutex.withLock {
             val endpoint = endpoint ?: throw IllegalStateException("Endpoint is not opened")
             endpoint.addStreams(streamConfigs)
-        } finally {
-            mutex.unlock()
         }
     }
 
-    override fun addStream(streamConfig: CodecConfig): Int {
-        mutex.tryLock()
-        return try {
-            val endpoint = endpoint ?: throw IllegalStateException("Endpoint is not opened")
-            endpoint.addStream(streamConfig)
-        } finally {
-            mutex.unlock()
-        }
+    override suspend fun addStream(streamConfig: CodecConfig) = mutex.withLock {
+        val endpoint = endpoint ?: throw IllegalStateException("Endpoint is not opened")
+        endpoint.addStream(streamConfig)
     }
 
     override suspend fun write(closeableFrame: FrameWithCloseable, streamPid: Int) =

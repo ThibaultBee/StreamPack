@@ -758,17 +758,12 @@ internal class EncodingPipelineOutput(
         bitrateRegulatorController =
             controllerFactory.newBitrateRegulatorController(this, dispatcherProvider.default)
                 .apply {
-                    mutex.tryLock()
-                    try {
-                        if (isStreaming) {
-                            this.start()
-                        }
-                        Logger.d(
-                            TAG, "Bitrate regulator controller added: ${this.javaClass.simpleName}"
-                        )
-                    } finally {
-                        mutex.unlock()
+                    if (isStreaming) {
+                        this.start()
                     }
+                    Logger.d(
+                        TAG, "Bitrate regulator controller added: ${this.javaClass.simpleName}"
+                    )
                 }
     }
 

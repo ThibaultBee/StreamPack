@@ -57,7 +57,7 @@ interface IEndpointInternal : IEndpoint, SuspendStreamable,
      * @param streamConfigs the list of [Config] to register
      * @return the map of [Config] to their corresponding stream id
      */
-    fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int>
+    suspend fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int>
 
     /**
      * Registers a new stream to the [IEndpointInternal].
@@ -65,7 +65,7 @@ interface IEndpointInternal : IEndpoint, SuspendStreamable,
      * @param streamConfig the [Config] to register
      * @return the stream id
      */
-    fun addStream(streamConfig: CodecConfig): Int
+    suspend fun addStream(streamConfig: CodecConfig): Int
 
     /**
      * Releases an [IEndpointInternal].

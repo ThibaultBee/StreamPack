@@ -186,37 +186,37 @@ class MediaMuxerEndpoint(
         }
     }
 
-    override fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
-        mutex.tryLock()
-        require(state != State.RELEASED) { "Muxer is released" }
-        return try {
-            requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
-            /**
-             * We can't addTrack here because we don't have the codec specific data.
-             * We will add it when we receive the first frame.
-             */
-            streamConfigs.associateWith { numOfStreams++ }
-        } finally {
-            setState(State.CONFIGURED)
-            mutex.unlock()
+    override suspend fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
+        require(streamConfigs.isNotEmpty()) { "At least one stream config must be provided" }
+        return mutex.withLock {
+            require(state != State.RELEASED) { "Muxer is released" }
+            try {
+                requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
+                /**
+                 * We can't addTrack here because we don't have the codec specific data.
+                 * We will add it when we receive the first frame.
+                 */
+                streamConfigs.associateWith { numOfStreams++ }
+            } finally {
+                setState(State.CONFIGURED)
+            }
         }
     }
 
-    override fun addStream(streamConfig: CodecConfig): Int {
-        mutex.tryLock()
-        require(state != State.RELEASED) { "Muxer is released" }
-        return try {
-            requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
-            /**
-             * We can't addTrack here because we don't have the codec specific data.
-             * We will add it when we receive the first frame.
-             */
-            numOfStreams++
-        } finally {
-            setState(State.CONFIGURED)
-            mutex.unlock()
+    override suspend fun addStream(streamConfig: CodecConfig) =
+        mutex.withLock {
+            require(state != State.RELEASED) { "Muxer is released" }
+            try {
+                requireNotNull(mediaMuxer) { "MediaMuxer is not initialized" }
+                /**
+                 * We can't addTrack here because we don't have the codec specific data.
+                 * We will add it when we receive the first frame.
+                 */
+                numOfStreams++
+            } finally {
+                setState(State.CONFIGURED)
+            }
         }
-    }
 
     override suspend fun startStream() {
         mutex.withLock {
