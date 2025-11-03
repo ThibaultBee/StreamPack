@@ -156,23 +156,15 @@ class RtmpEndpoint internal constructor(
         flvTagBuilder.write(closeableFrame, ts.toInt(), streamPid)
     }
 
-    override fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
+    override suspend fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
         require(streamConfigs.isNotEmpty()) { "At least one stream must be provided" }
-        mutex.tryLock()
-        return try {
+        return mutex.withLock {
             flvTagBuilder.addStreams(streamConfigs)
-        } finally {
-            mutex.unlock()
         }
     }
 
-    override fun addStream(streamConfig: CodecConfig): Int {
-        mutex.tryLock()
-        return try {
-            flvTagBuilder.addStream(streamConfig)
-        } finally {
-            mutex.unlock()
-        }
+    override suspend fun addStream(streamConfig: CodecConfig) = mutex.withLock {
+        flvTagBuilder.addStream(streamConfig)
     }
 
     override suspend fun startStream() {
