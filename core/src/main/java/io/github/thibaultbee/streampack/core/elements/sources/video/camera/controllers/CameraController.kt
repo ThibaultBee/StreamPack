@@ -28,7 +28,7 @@ import kotlinx.coroutines.sync.withLock
  */
 internal class CameraController(
     private val manager: CameraManager,
-    private val dispatcherProvider: CameraDispatcherProvider,
+    dispatcherProvider: CameraDispatcherProvider,
     val cameraId: String,
     val dynamicRangeBuilder: DynamicRangeConfig.() -> Unit = {},
     val captureRequestBuilder: CaptureRequestBuilderWithTargets.() -> Unit = {}
@@ -83,15 +83,15 @@ internal class CameraController(
     @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun addOutput(output: CameraSurface) {
         require(output.surface.isValid) { "Output is invalid: $output" }
-        outputsMutex.withLock {
+        val needRestart = outputsMutex.withLock {
             if (outputs.values.contains(output)) {
                 return
             }
-            val needRestart = isActiveFlow.value
             outputs[output.name] = output
-            if (needRestart) {
-                restartSession()
-            }
+            isActiveFlow.value
+        }
+        if (needRestart) {
+            restartSession()
         }
     }
 
@@ -102,14 +102,15 @@ internal class CameraController(
      */
     @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun removeOutput(name: String): Boolean {
-        return outputsMutex.withLock {
-            val needsRestart = outputs.containsKey(name) && isActiveFlow.value
+        val needRestart = outputsMutex.withLock {
+            val needRestart = outputs.containsKey(name) && isActiveFlow.value
             outputs.remove(name) != null
-            if (needsRestart) {
-                restartSession()
-            }
-            needsRestart
+            needRestart
         }
+        if (needRestart) {
+            restartSession()
+        }
+        return needRestart
     }
 
     /**
@@ -134,32 +135,34 @@ internal class CameraController(
     private suspend fun getSessionController(): CameraSessionController {
         return if (sessionController == null) {
             val deviceController = getDeviceController()
-            CameraSessionController.create(
-                sessionCompat,
-                deviceController,
-                outputs.values.toList(),
-                dynamicRange = DynamicRangeConfig().apply(dynamicRangeBuilder).dynamicRange,
-                captureRequestBuilder
-            )
-                .apply {
+            outputsMutex.withLock {
+                CameraSessionController.create(
+                    sessionCompat,
+                    deviceController,
+                    outputs.values.toList(),
+                    dynamicRange = DynamicRangeConfig().apply(dynamicRangeBuilder).dynamicRange,
+                    captureRequestBuilder
+                ).apply {
                     applySessionController(this)
                     Logger.d(TAG, "Session controller created")
                 }
+            }
         } else {
             if (!sessionController!!.isClosed) {
                 sessionController!!
             } else {
                 try {
                     val deviceController = getDeviceController()
-                    sessionController!!.recreate(
-                        deviceController,
-                        outputs.values.toList(),
-                        dynamicRange = DynamicRangeConfig().apply(dynamicRangeBuilder).dynamicRange
-                    )
-                        .apply {
+                    outputsMutex.withLock {
+                        sessionController!!.recreate(
+                            deviceController,
+                            outputs.values.toList(),
+                            dynamicRange = DynamicRangeConfig().apply(dynamicRangeBuilder).dynamicRange
+                        ).apply {
                             applySessionController(this)
                             Logger.d(TAG, "Session controller recreated")
                         }
+                    }
                 } catch (t: Throwable) {
                     _isActiveFlow.tryEmit(false)
                     throw t
@@ -195,13 +198,15 @@ internal class CameraController(
             isActiveJob?.cancel()
             isActiveJob = null
 
-            sessionController.recreate(
-                getDeviceController(),
-                outputs.values.toList(),
-                dynamicRange = DynamicRangeConfig().apply(dynamicRangeBuilder).dynamicRange,
-            ).apply {
-                applySessionController(this)
-                Logger.d(TAG, "Session controller restarted")
+            outputsMutex.withLock {
+                sessionController.recreate(
+                    getDeviceController(),
+                    outputs.values.toList(),
+                    dynamicRange = DynamicRangeConfig().apply(dynamicRangeBuilder).dynamicRange,
+                ).apply {
+                    applySessionController(this)
+                    Logger.d(TAG, "Session controller restarted")
+                }
             }
         }
     }
