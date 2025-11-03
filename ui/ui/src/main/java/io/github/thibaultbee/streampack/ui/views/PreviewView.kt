@@ -433,6 +433,14 @@ class PreviewView @JvmOverloads constructor(
                 videoSource.stopPreview()
                 videoSource.resetPreview()
                 val surface = requestSurface(viewfinderBuilder)
+                
+                // Check if surface is valid before using it
+                if (!surface.isValid) {
+                    Logger.w(TAG, "Surface is not valid, skipping preview start")
+                    listener?.onPreviewFailed(IllegalStateException("Surface is not valid"))
+                    return@withLock
+                }
+                
                 videoSource.startPreview(surface)
             }
             Logger.d(TAG, "Preview started")
