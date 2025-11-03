@@ -16,6 +16,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.processing.video
 
+import android.graphics.Bitmap
 import android.graphics.Rect
 import android.opengl.EGL14
 import android.opengl.EGLConfig
@@ -29,10 +30,13 @@ import android.util.Log
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.WorkerThread
+import androidx.core.graphics.createBitmap
 import androidx.core.util.Pair
+import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.SurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils.EMPTY_ATTRIBS
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils.InputFormat
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils.NO_OUTPUT_SURFACE
+import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils.PIXEL_STRIDE
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils.Program2D
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils.SamplerShaderProgram
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils.checkEglErrorOrLog
@@ -308,6 +312,29 @@ class OpenGlRenderer {
             )
             removeOutputSurfaceInternal(surface, false)
         }
+    }
+
+    /**
+     * Takes a snapshot of the current external texture and returns a Bitmap.
+     *
+     * @param size             the size of the output [Bitmap].
+     * @param textureTransform the transformation matrix.
+     * See: [SurfaceOutput.updateTransformMatrix]
+     */
+    fun snapshot(size: Size, textureTransform: FloatArray): Bitmap {
+        // Allocate buffer.
+        val byteBuffer = ByteBuffer.allocateDirect(
+            size.width * size.height * PIXEL_STRIDE
+        )
+
+        // Take a snapshot.
+        snapshot(byteBuffer, size, textureTransform)
+        byteBuffer.rewind()
+
+        // Create a Bitmap and copy the bytes over.
+        val bitmap = createBitmap(size.width, size.height, Bitmap.Config.ARGB_8888)
+        bitmap.copyPixelsFromBuffer(byteBuffer)
+        return bitmap
     }
 
     /**
