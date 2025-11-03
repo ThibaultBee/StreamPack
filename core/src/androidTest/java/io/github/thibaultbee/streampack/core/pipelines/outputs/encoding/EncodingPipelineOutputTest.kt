@@ -101,7 +101,7 @@ class EncodingPipelineOutputTest {
         output = createOutput(endpointFactory = DummyEndpointFactory())
         assertNull(output.audioSourceConfigFlow.value)
 
-        suspendCoroutine { continuation ->
+        val sourceConfig = suspendCoroutine { continuation ->
             val listener = object : IConfigurableAudioPipelineOutputInternal.Listener {
                 override suspend fun onSetAudioSourceConfig(newAudioSourceConfig: AudioSourceConfig) {
                     continuation.resume(newAudioSourceConfig)
@@ -113,7 +113,7 @@ class EncodingPipelineOutputTest {
                 output.setAudioCodecConfig(AudioCodecConfig())
             }
         }
-        assertNotNull(output.audioSourceConfigFlow.value)
+        assertNotNull(output.audioSourceConfigFlow.first { it == sourceConfig })
     }
 
     @Test
@@ -138,7 +138,7 @@ class EncodingPipelineOutputTest {
         output = createOutput(endpointFactory = DummyEndpointFactory())
         assertNull(output.videoCodecConfigFlow.value)
 
-        suspendCoroutine { continuation ->
+        val sourceConfig = suspendCoroutine { continuation ->
             val listener = object : IConfigurableVideoPipelineOutputInternal.Listener {
                 override suspend fun onSetVideoSourceConfig(newVideoSourceConfig: VideoSourceConfig) {
                     continuation.resume(newVideoSourceConfig)
@@ -150,7 +150,7 @@ class EncodingPipelineOutputTest {
                 output.setVideoCodecConfig(VideoCodecConfig())
             }
         }
-        assertNotNull(output.videoCodecConfigFlow.value)
+        assertNotNull(output.videoSourceConfigFlow.first { it == sourceConfig })
     }
 
     @Test
