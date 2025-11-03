@@ -98,7 +98,7 @@ internal class VideoInput(
 
     private var isReleaseRequested = AtomicBoolean(false)
 
-    private val videoSourceMutex = Mutex()
+    private val sourceMutex = Mutex()
 
     override var processor: ISurfaceProcessorInternal =
         surfaceProcessorFactory.create(dynamicRangeProfileHint, dispatcherProvider)
@@ -150,7 +150,7 @@ internal class VideoInput(
         }
 
         withContext(dispatcherProvider.default) {
-            videoSourceMutex.withLock {
+            sourceMutex.withLock {
                 val previousVideoSource = sourceInternalFlow.value
                 val isStreaming = previousVideoSource?.isStreamingFlow?.value ?: false
 
@@ -267,7 +267,7 @@ internal class VideoInput(
         }
 
         withContext(dispatcherProvider.default) {
-            videoSourceMutex.withLock {
+            sourceMutex.withLock {
                 if (sourceConfig == newVideoSourceConfig) {
                     Logger.i(TAG, "Video source configuration is the same, skipping configuration")
                     return@withContext
@@ -374,7 +374,7 @@ internal class VideoInput(
             throw IllegalStateException("Input is released")
         }
         withContext(dispatcherProvider.default) {
-            videoSourceMutex.withLock {
+            sourceMutex.withLock {
                 val source =
                     requireNotNull(source) { "Video source must be set before starting stream" }
                 if (isStreamingFlow.value) {
@@ -395,7 +395,7 @@ internal class VideoInput(
             throw IllegalStateException("Input is released")
         }
         withContext(dispatcherProvider.default) {
-            videoSourceMutex.withLock {
+            sourceMutex.withLock {
                 _isStreamingFlow.emit(false)
                 try {
                     source?.stopStream()
@@ -428,7 +428,7 @@ internal class VideoInput(
         }
 
         withContext(dispatcherProvider.default) {
-            videoSourceMutex.withLock {
+            sourceMutex.withLock {
                 _isStreamingFlow.emit(false)
                 try {
                     releaseSurfaceProcessor()

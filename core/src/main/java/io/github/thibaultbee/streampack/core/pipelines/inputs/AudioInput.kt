@@ -110,7 +110,7 @@ internal class AudioInput(
 
     private var isReleaseRequested = AtomicBoolean(false)
 
-    private val audioSourceMutex = Mutex()
+    private val sourceMutex = Mutex()
 
     // SOURCE
     private var sourceInternalFlow = MutableStateFlow<IAudioSourceInternal?>(null)
@@ -174,7 +174,7 @@ internal class AudioInput(
         }
 
         withContext(dispatcherProvider.default) {
-            audioSourceMutex.withLock {
+            sourceMutex.withLock {
                 val previousAudioSource = sourceInternalFlow.value
                 val isStreaming = previousAudioSource?.isStreamingFlow?.value ?: false
 
@@ -231,7 +231,7 @@ internal class AudioInput(
         }
 
         withContext(dispatcherProvider.default) {
-            audioSourceMutex.withLock {
+            sourceMutex.withLock {
                 if (sourceConfig == newAudioSourceConfig) {
                     Logger.i(TAG, "Audio source configuration is the same, skipping configuration")
                     return@withContext
@@ -270,7 +270,7 @@ internal class AudioInput(
         }
 
         withContext(dispatcherProvider.default) {
-            audioSourceMutex.withLock {
+            sourceMutex.withLock {
                 val source = requireNotNull(sourceInternalFlow.value) {
                     "Audio source is not set yet"
                 }
@@ -300,7 +300,7 @@ internal class AudioInput(
         }
 
         withContext(dispatcherProvider.default) {
-            audioSourceMutex.withLock {
+            sourceMutex.withLock {
                 _isStreamingFlow.emit(false)
                 try {
                     port.stopStream()
@@ -323,7 +323,7 @@ internal class AudioInput(
         }
 
         withContext(dispatcherProvider.default) {
-            audioSourceMutex.withLock {
+            sourceMutex.withLock {
                 _isStreamingFlow.emit(false)
                 try {
                     port.removeInput()
