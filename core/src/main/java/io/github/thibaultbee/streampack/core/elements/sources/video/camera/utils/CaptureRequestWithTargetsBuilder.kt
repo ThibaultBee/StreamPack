@@ -27,7 +27,7 @@ import kotlinx.coroutines.sync.withLock
 /**
  * A class to store for [CaptureRequest] with targets
  */
-internal class CaptureRequestBuilderWithTargets private constructor(
+internal class CaptureRequestWithTargetsBuilder private constructor(
     private val captureRequestBuilder: Builder
 ) {
     private val mutableTargets = mutableSetOf<CameraSurface>()
@@ -148,9 +148,9 @@ internal class CaptureRequestBuilderWithTargets private constructor(
          * @param cameraDeviceController The camera device controller
          * @param template The template to use
          */
-        fun create(
+        suspend fun create(
             cameraDeviceController: CameraDeviceController,
             template: Int = CameraDevice.TEMPLATE_RECORD,
-        ) = CaptureRequestBuilderWithTargets(cameraDeviceController.createCaptureRequest(template))
+        ) = CaptureRequestWithTargetsBuilder(cameraDeviceController.createCaptureRequest(template))
     }
 }

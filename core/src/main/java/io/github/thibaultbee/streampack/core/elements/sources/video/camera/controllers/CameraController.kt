@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2025 Thibault B.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers
 
 import android.Manifest
@@ -5,11 +20,13 @@ import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
+import android.util.Range
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.CameraCaptureSessionCompatBuilder
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSurface
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestBuilderWithTargets
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraUtils
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestWithTargetsBuilder
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineScope
@@ -22,7 +39,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-
 /**
  * Encapsulates device controller and session controller.
  */
@@ -30,8 +46,7 @@ internal class CameraController(
     private val manager: CameraManager,
     dispatcherProvider: CameraDispatcherProvider,
     val cameraId: String,
-    val dynamicRangeBuilder: DynamicRangeConfig.() -> Unit = {},
-    val captureRequestBuilder: CaptureRequestBuilderWithTargets.() -> Unit = {}
+    val captureRequestBuilder: CaptureRequestWithTargetsBuilder.() -> Unit = {}
 ) {
     private val sessionCompat = CameraCaptureSessionCompatBuilder.build(dispatcherProvider)
 
@@ -48,6 +63,11 @@ internal class CameraController(
 
     private val _isActiveFlow = MutableStateFlow(false)
     val isActiveFlow = _isActiveFlow.asStateFlow()
+
+    private val fpsRange: Range<Int>
+        get() = CameraUtils.getClosestFpsRange(manager, cameraId, fps)
+    private var fps: Int = 30
+    private var dynamicRangeProfile: DynamicRangeProfile = DynamicRangeProfile.sdr
 
     /**
      * Whether the current capture session has the given output.
@@ -140,7 +160,8 @@ internal class CameraController(
                     sessionCompat,
                     deviceController,
                     outputs.values.toList(),
-                    dynamicRange = DynamicRangeConfig().apply(dynamicRangeBuilder).dynamicRange,
+                    dynamicRange = dynamicRangeProfile.dynamicRange,
+                    fpsRange = fpsRange,
                     captureRequestBuilder
                 ).apply {
                     applySessionController(this)
@@ -157,7 +178,8 @@ internal class CameraController(
                         sessionController!!.recreate(
                             deviceController,
                             outputs.values.toList(),
-                            dynamicRange = DynamicRangeConfig().apply(dynamicRangeBuilder).dynamicRange
+                            dynamicRange = dynamicRangeProfile.dynamicRange,
+                            fpsRange = fpsRange
                         ).apply {
                             applySessionController(this)
                             Logger.d(TAG, "Session controller recreated")
@@ -187,7 +209,7 @@ internal class CameraController(
      * The current capture session is closed and a new one is created with the same outputs.
      */
     @RequiresPermission(Manifest.permission.CAMERA)
-    suspend fun restartSession() {
+    private suspend fun restartSession() {
         controllerMutex.withLock {
             val sessionController = sessionController
             if (sessionController == null) {
@@ -202,7 +224,8 @@ internal class CameraController(
                 sessionController.recreate(
                     getDeviceController(),
                     outputs.values.toList(),
-                    dynamicRange = DynamicRangeConfig().apply(dynamicRangeBuilder).dynamicRange,
+                    dynamicRange = dynamicRangeProfile.dynamicRange,
+                    fpsRange = fpsRange
                 ).apply {
                     applySessionController(this)
                     Logger.d(TAG, "Session controller restarted")
@@ -319,6 +342,46 @@ internal class CameraController(
     }
 
     /**
+     * Sets the fps to the current capture request.
+     *
+     * @param fpsRange The fps range
+     */
+    suspend fun setFps(fps: Int) {
+        controllerMutex.withLock {
+            if (this.fps == fps) {
+                return
+            }
+
+            this.fps = fps
+
+            if (isActiveFlow.value) {
+                setSetting(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
+            }
+        }
+    }
+
+    /**
+     * Sets the dynamic range profile to the current capture request.
+     *
+     * @param dynamicRangeProfile The dynamic range profile
+     */
+    @RequiresPermission(Manifest.permission.CAMERA)
+    suspend fun setDynamicRangeProfile(dynamicRangeProfile: DynamicRangeProfile) {
+        val needRestart = controllerMutex.withLock {
+            if (this.dynamicRangeProfile == dynamicRangeProfile) {
+                return
+            }
+            Logger.d(TAG, "Setting dynamic range profile to $dynamicRangeProfile")
+
+            this.dynamicRangeProfile = dynamicRangeProfile
+            isActiveFlow.value
+        }
+        if (needRestart) {
+            restartSession()
+        }
+    }
+
+    /**
      * Sets a repeating session with the current capture request.
      */
     suspend fun setRepeatingSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
@@ -361,8 +424,4 @@ internal class CameraController(
     companion object {
         private const val TAG = "CameraController"
     }
-
-    internal class DynamicRangeConfig(
-        var dynamicRange: Long = DynamicRangeProfile.sdr.dynamicRange
-    )
 }

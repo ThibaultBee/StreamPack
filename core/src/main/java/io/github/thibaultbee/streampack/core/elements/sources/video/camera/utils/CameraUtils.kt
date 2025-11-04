@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2025 Thibault B.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils
 
 import android.Manifest
@@ -13,13 +28,11 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.Camer
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraDeviceController
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraFps
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.ICameraCaptureSessionCompat
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.resumeIfActive
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.resumeWithExceptionIfActive
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 internal object CameraUtils {
     private const val TAG = "CameraUtils"
@@ -29,31 +42,40 @@ internal object CameraUtils {
         sessionCompat: ICameraCaptureSessionCompat,
         manager: CameraManager,
         cameraId: String,
-        isClosedFlow: MutableStateFlow<Boolean>
-    ): CameraDevice = suspendCancellableCoroutine { continuation ->
+        isClosedFlow: MutableStateFlow<Boolean>,
+        throwableFlow: MutableStateFlow<Throwable?>
+    ): CameraDevice = suspendCoroutine { continuation ->
         val callbacks = object : CameraDevice.StateCallback() {
-            override fun onOpened(device: CameraDevice) = continuation.resumeIfActive(device)
+            override fun onOpened(device: CameraDevice) = continuation.resume(device)
 
             override fun onDisconnected(camera: CameraDevice) {
-                isClosedFlow.tryEmit(true)
+                try {
+                    continuation.resumeWithException(RuntimeException("Camera has been disconnected"))
+                } catch (_: IllegalStateException) {
+                    // Ignore if the continuation has already been resumed
+                }
                 Logger.w(TAG, "Camera ${camera.id} has been disconnected")
-                continuation.resumeWithExceptionIfActive(RuntimeException("Camera has been disconnected"))
+                camera.close()
             }
 
             override fun onError(camera: CameraDevice, error: Int) {
-                isClosedFlow.tryEmit(true)
                 Logger.e(TAG, "Camera ${camera.id} is in error $error")
 
                 val exception = when (error) {
                     ERROR_CAMERA_IN_USE -> CameraException("Camera already in use")
                     ERROR_MAX_CAMERAS_IN_USE -> CameraException("Max cameras in use")
-
                     ERROR_CAMERA_DISABLED -> CameraException("Camera has been disabled")
                     ERROR_CAMERA_DEVICE -> CameraException("Camera device has crashed")
                     ERROR_CAMERA_SERVICE -> CameraException("Camera service has crashed")
                     else -> CameraException("Unknown error")
                 }
-                continuation.resumeWithException(exception)
+                try {
+                    continuation.resumeWithException(exception)
+                } catch (_: IllegalStateException) {
+                    // Ignore if the continuation has already been resumed
+                }
+                camera.close()
+                throwableFlow.tryEmit(exception)
             }
 
             override fun onClosed(camera: CameraDevice) {
@@ -61,7 +83,11 @@ internal object CameraUtils {
                 Logger.i(TAG, "Camera ${camera.id} has been closed")
             }
         }
-        sessionCompat.openCamera(manager, cameraId, callbacks)
+        try {
+            sessionCompat.openCamera(manager, cameraId, callbacks)
+        } catch (_: Throwable) {
+            isClosedFlow.tryEmit(true)
+        }
     }
 
     internal suspend fun createCaptureSession(
@@ -69,11 +95,16 @@ internal object CameraUtils {
         outputs: List<Surface>,
         dynamicRange: Long,
         isClosedFlow: MutableStateFlow<Boolean>
-    ): CameraCaptureSession = suspendCancellableCoroutine { continuation ->
+    ): CameraCaptureSession = suspendCoroutine { continuation ->
         val cameraId = cameraDeviceController.id
         val callbacks = object : CameraCaptureSession.StateCallback() {
-            override fun onConfigured(session: CameraCaptureSession) =
+            override fun onConfigured(session: CameraCaptureSession) {
+                Logger.i(
+                    TAG,
+                    "Camera session configured for camera $cameraId and outputs $outputs"
+                )
                 continuation.resume(session)
+            }
 
             override fun onConfigureFailed(session: CameraCaptureSession) {
                 isClosedFlow.tryEmit(true)
@@ -81,7 +112,11 @@ internal object CameraUtils {
                     TAG,
                     "Camera session configuration failed for camera $cameraId and outputs $outputs"
                 )
-                continuation.resumeWithExceptionIfActive(CameraException("Camera: failed to configure the capture session for camera $cameraId and outputs $outputs"))
+                try {
+                    continuation.resumeWithException(CameraException("Camera: failed to configure the capture session for camera $cameraId and outputs $outputs"))
+                } catch (_: IllegalStateException) {
+                    // Ignore if the continuation has already been resumed
+                }
             }
 
             override fun onClosed(session: CameraCaptureSession) {
@@ -93,22 +128,26 @@ internal object CameraUtils {
             }
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val outputConfigurations = outputs.map {
-                OutputConfiguration(it).apply {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        dynamicRangeProfile = dynamicRange
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                val outputConfigurations = outputs.map {
+                    OutputConfiguration(it).apply {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            dynamicRangeProfile = dynamicRange
+                        }
                     }
                 }
-            }
 
-            cameraDeviceController.createCaptureSessionByOutputConfiguration(
-                outputConfigurations, callbacks
-            )
-        } else {
-            cameraDeviceController.createCaptureSession(
-                outputs, callbacks
-            )
+                cameraDeviceController.createCaptureSessionByOutputConfiguration(
+                    outputConfigurations, callbacks
+                )
+            } else {
+                cameraDeviceController.createCaptureSession(
+                    outputs, callbacks
+                )
+            }
+        } catch (_: Throwable) {
+            isClosedFlow.tryEmit(true)
         }
     }
 

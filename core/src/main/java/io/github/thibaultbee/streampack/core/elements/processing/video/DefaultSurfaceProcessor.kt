@@ -50,6 +50,8 @@ private class DefaultSurfaceProcessor(
     private val glHandler = glThread.handler
 
     init {
+        Logger.d(TAG, "Setting dynamic range profile to $dynamicRangeProfile")
+
         val future = submitSafely {
             renderer.init(dynamicRangeProfile)
         }

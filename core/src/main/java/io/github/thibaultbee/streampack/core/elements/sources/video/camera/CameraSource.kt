@@ -35,9 +35,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSizes
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSurface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraTimestampHelper
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraUtils
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestBuilderWithTargets
-import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestWithTargetsBuilder
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -69,17 +67,18 @@ internal fun CameraSource(
  */
 internal class CameraSource(
     private val context: Context,
-    private val dispatcherProvider: CameraDispatcherProvider,
+    dispatcherProvider: CameraDispatcherProvider,
     private val manager: CameraManager,
     override val cameraId: String
 ) : ICameraSourceInternal, ICameraSource, AbstractPreviewableSource() {
     private val coroutineScope = CoroutineScope(dispatcherProvider.default)
 
-    private val controller = CameraController(manager, dispatcherProvider, cameraId, {
-        dynamicRangeProfile.dynamicRange
-    }, {
-        defaultCaptureRequest(this)
-    })
+    private val controller = CameraController(
+        manager, dispatcherProvider, cameraId,
+        captureRequestBuilder = {
+            defaultCaptureRequest(this)
+        }
+    )
 
     override val settings by lazy { CameraSettings(manager, controller) }
 
@@ -98,9 +97,6 @@ internal class CameraSource(
     private val previewMutex = Mutex()
     private val streamMutex = Mutex()
 
-    // Configuration
-    private var fps: Int = 30
-    private var dynamicRangeProfile: DynamicRangeProfile = DynamicRangeProfile.sdr
 
     init {
         val deviceCameras = manager.cameras
@@ -121,10 +117,8 @@ internal class CameraSource(
     }
 
     private fun defaultCaptureRequest(
-        captureRequest: CaptureRequestBuilderWithTargets
+        captureRequest: CaptureRequestWithTargetsBuilder
     ) {
-        val fpsRange = CameraUtils.getClosestFpsRange(manager, cameraId, fps)
-        captureRequest.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
         if (manager.getAutoFocusModes(cameraId)
                 .contains(CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO)
         ) {
@@ -172,34 +166,15 @@ internal class CameraSource(
             Logger.w(TAG, "Camera $cameraId does not support ${config.fps} fps")
         }
 
-        var needRestart = false
-        if ((dynamicRangeProfile != config.dynamicRangeProfile)) {
-            needRestart = true
-        } else if (fps != config.fps) {
-            if (controller.isActiveFlow.value) {
-                val fpsRange = CameraUtils.getClosestFpsRange(manager, cameraId, config.fps)
-                try {
-                    controller.setSetting(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
-                } catch (e: Exception) {
-                    Logger.w(TAG, "Failed to set fps range: $fpsRange", e)
-                }
-            }
+        try {
+            controller.setDynamicRangeProfile(config.dynamicRangeProfile)
+        } catch (t: Throwable) {
+            Logger.w(TAG, "Failed to set dynamic range profile: ${t.message}")
         }
-
-        fps = config.fps
-        dynamicRangeProfile = config.dynamicRangeProfile
-
-        if (needRestart) {
-            if (controller.isActiveFlow.value) {
-                Logger.d(TAG, "Restarting camera session to apply new configuration")
-                try {
-                    controller.restartSession()
-                } catch (e: Exception) {
-                    Logger.w(TAG, "Failed to restart camera session", e)
-                }
-            } else {
-                Logger.d(TAG, "Camera is not active, no need to restart session")
-            }
+        try {
+            controller.setFps(config.fps)
+        } catch (t: Throwable) {
+            Logger.w(TAG, "Failed to set fps: ${t.message}")
         }
     }
 

@@ -1,13 +1,29 @@
+/*
+ * Copyright (C) 2025 Thibault B.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers
 
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
+import android.util.Range
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.ICameraCaptureSessionCompat
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSurface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraUtils
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestBuilderWithTargets
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestWithTargetsBuilder
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +34,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 internal class CameraSessionController private constructor(
-    private val captureRequestBuilder: CaptureRequestBuilderWithTargets,
+    private val captureRequestBuilder: CaptureRequestWithTargetsBuilder,
     private val sessionCompat: ICameraCaptureSessionCompat,
     private val captureSession: CameraCaptureSession,
     private val outputs: List<CameraSurface>,
@@ -187,11 +203,14 @@ internal class CameraSessionController private constructor(
                 Logger.w(TAG, "Session already closed")
                 return@runBlocking
             }
-            captureSession.close()
-            if (!isClosedFlow.value) {
-                runBlocking {
+            try {
+                captureSession.close()
+
+                if (!isClosedFlow.value) {
                     isClosedFlow.first { it }
                 }
+            } catch (t: Throwable) {
+                Logger.w(TAG, "Error closing camera session: $t")
             }
         }
     }
@@ -283,7 +302,8 @@ internal class CameraSessionController private constructor(
     suspend fun recreate(
         cameraDeviceController: CameraDeviceController,
         outputs: List<CameraSurface>,
-        dynamicRange: Long
+        dynamicRange: Long,
+        fpsRange: Range<Int>
     ): CameraSessionController = requestTargetMutex.withLock {
         require(outputs.isNotEmpty()) { "At least one output is required" }
         require(outputs.all { it.surface.isValid }) { "All outputs $outputs must be valid but ${outputs.filter { !it.surface.isValid }} is invalid" }
@@ -299,6 +319,7 @@ internal class CameraSessionController private constructor(
         }
         captureRequestBuilder.clearTargets()
         captureRequestBuilder.addTargets(targets)
+        captureRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
 
         // Close current session
         close()
@@ -336,7 +357,8 @@ internal class CameraSessionController private constructor(
             cameraDeviceController: CameraDeviceController,
             outputs: List<CameraSurface>,
             dynamicRange: Long,
-            defaultRequestBuilder: CaptureRequestBuilderWithTargets.() -> Unit = {}
+            fpsRange: Range<Int>,
+            defaultRequestBuilder: CaptureRequestWithTargetsBuilder.() -> Unit = {}
         ): CameraSessionController {
             require(outputs.isNotEmpty()) { "At least one output is required" }
             require(outputs.all { it.surface.isValid }) { "All outputs $outputs must be valid but ${outputs.filter { !it.surface.isValid }} is invalid" }
@@ -351,9 +373,10 @@ internal class CameraSessionController private constructor(
                 )
 
             val captureRequestBuilder =
-                CaptureRequestBuilderWithTargets.create(
+                CaptureRequestWithTargetsBuilder.create(
                     cameraDeviceController
                 ).apply {
+                    set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
                     defaultRequestBuilder()
                 }
             return CameraSessionController(

@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.streamer.single.state
 
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
@@ -36,6 +37,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import kotlin.time.Duration.Companion.minutes
 
 @RunWith(Parameterized::class)
 class CameraSingleStreamerStateTest(descriptor: MediaDescriptor) :
@@ -107,6 +109,24 @@ class CameraSingleStreamerStateTest(descriptor: MediaDescriptor) :
         )
         streamer.startPreview(SurfaceUtils.getSurfaceView(activityScenarioRule.scenario))
         streamer.stopStream()
+    }
+
+    @Test
+    override fun multipleStartStreamStopStreamTest() = runTest(timeout = 4.minutes) {
+        streamer.setConfig(
+            audioConfig, videoConfig
+        )
+        (0..100).forEachIndexed { index, _ ->
+            Log.e(TAG, "Running iteration $index")
+            try {
+                streamer.startStream(descriptor)
+            } catch (t: Throwable) {
+                Log.e(TAG, "Error on iteration $index", t)
+                throw t
+            }
+            streamer.stopStream()
+            streamer.close()
+        }
     }
 
     @Test

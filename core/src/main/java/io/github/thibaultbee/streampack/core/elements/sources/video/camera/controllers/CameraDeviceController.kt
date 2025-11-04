@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2025 Thibault B.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers
 
 import android.Manifest
@@ -8,7 +23,6 @@ import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.params.OutputConfiguration
 import android.os.Build
 import android.view.Surface
-import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.ICameraCaptureSessionCompat
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraUtils
@@ -31,9 +45,9 @@ import java.io.Closeable
 internal class CameraDeviceController private constructor(
     private val cameraDevice: CameraDevice,
     private val sessionCompat: ICameraCaptureSessionCompat,
-    val isClosedFlow: StateFlow<Boolean>
-) :
-    Closeable {
+    val isClosedFlow: StateFlow<Boolean>,
+    val throwableFlow: StateFlow<Throwable?>
+) : Closeable {
     private val mutex = Mutex()
 
     val isClosed: Boolean
@@ -41,61 +55,32 @@ internal class CameraDeviceController private constructor(
 
     val id = cameraDevice.id
 
-    private var cameraAudioRestriction: Int
-        @RequiresApi(Build.VERSION_CODES.R)
-        get() = cameraDevice.cameraAudioRestriction
-        @RequiresApi(Build.VERSION_CODES.R)
-        set(value) {
-            cameraDevice.cameraAudioRestriction = value
-        }
-
     fun createCaptureRequest(
         templateType: Int
-    ): CaptureRequest.Builder = runBlocking {
-        mutex.withLock {
-            if (isClosed) {
-                throw IllegalStateException("Camera $id is closed")
-            }
-        }
-        return@runBlocking cameraDevice.createCaptureRequest(templateType)
+    ): CaptureRequest.Builder {
+        return cameraDevice.createCaptureRequest(templateType)
     }
 
     fun createCaptureSession(
-        targets: List<Surface>,
-        callback: CameraCaptureSession.StateCallback
-    ) = runBlocking {
-        mutex.withLock {
-            if (isClosed) {
-                Logger.w(TAG, "Camera $id is closed")
-                return@runBlocking
-            }
-            sessionCompat.createCaptureSession(cameraDevice, targets, callback)
-        }
+        targets: List<Surface>, callback: CameraCaptureSession.StateCallback
+    ) {
+        sessionCompat.createCaptureSession(cameraDevice, targets, callback)
     }
 
 
     fun createCaptureSessionByOutputConfiguration(
         outputConfigurations: List<OutputConfiguration>,
         callback: CameraCaptureSession.StateCallback
-    ) = runBlocking {
-        mutex.withLock {
-            if (isClosed) {
-                Logger.w(TAG, "Camera $id is closed")
-                return@runBlocking
-            }
-            sessionCompat.createCaptureSessionByOutputConfiguration(
-                cameraDevice,
-                outputConfigurations,
-                callback
-            )
-        }
+    ) {
+        sessionCompat.createCaptureSessionByOutputConfiguration(
+            cameraDevice, outputConfigurations, callback
+        )
     }
 
     fun muteVibrationAndSound() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             try {
-                cameraDevice.cameraAudioRestriction =
-                    CameraDevice.AUDIO_RESTRICTION_VIBRATION_SOUND
+                cameraDevice.cameraAudioRestriction = CameraDevice.AUDIO_RESTRICTION_VIBRATION_SOUND
             } catch (t: Throwable) {
                 Logger.w(TAG, "Failed to mute vibration and sound $t")
             }
@@ -121,9 +106,7 @@ internal class CameraDeviceController private constructor(
                 }
                 cameraDevice.close()
                 if (!isClosedFlow.value) {
-                    runBlocking {
-                        isClosedFlow.first { it }
-                    }
+                    isClosedFlow.first { it }
                 }
             }
         }
@@ -139,18 +122,14 @@ internal class CameraDeviceController private constructor(
             cameraId: String,
         ): CameraDeviceController {
             val isClosedFlow = MutableStateFlow(false)
+            val throwableFlow = MutableStateFlow<Throwable?>(null)
 
             val cameraDevice = CameraUtils.openCamera(
-                sessionCompat,
-                manager,
-                cameraId,
-                isClosedFlow
+                sessionCompat, manager, cameraId, isClosedFlow, throwableFlow
             )
 
             return CameraDeviceController(
-                cameraDevice,
-                sessionCompat,
-                isClosedFlow
+                cameraDevice, sessionCompat, isClosedFlow, throwableFlow
             )
         }
     }
