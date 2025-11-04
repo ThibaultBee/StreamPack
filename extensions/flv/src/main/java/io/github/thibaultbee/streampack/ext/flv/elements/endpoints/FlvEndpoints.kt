@@ -20,7 +20,9 @@ import io.github.thibaultbee.krtmp.amf.AmfVersion
 import io.github.thibaultbee.krtmp.flv.FLVMuxer
 import io.github.thibaultbee.krtmp.flv.encode
 import io.github.thibaultbee.krtmp.flv.tags.FLVTag
+import io.github.thibaultbee.krtmp.flv.tags.audio.AudioData
 import io.github.thibaultbee.krtmp.flv.tags.script.OnMetadata
+import io.github.thibaultbee.krtmp.flv.tags.video.VideoData
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
@@ -117,7 +119,15 @@ sealed class FlvEndpoint(
             flvMuxer.encode(flvTag)
         }
         // Close FLVTag data if needed
-        (flvTag.data as AutoCloseable?)?.close()
+        try {
+            if (flvTag.data is AudioData) {
+                (flvTag.data as AudioData).body.close()
+            } else if (flvTag.data is VideoData) {
+                (flvTag.data as VideoData).body.close()
+            }
+        } catch (t: Throwable) {
+            Logger.e(TAG, "Error while closing FLVTag data: $t")
+        }
     }
 
     override suspend fun write(
@@ -126,6 +136,11 @@ sealed class FlvEndpoint(
         val frame = closeableFrame.frame
         val startUpTimestamp = getStartUpTimestamp(frame.ptsInUs)
         val ts = (frame.ptsInUs - startUpTimestamp) / 1000
+        if (ts < 0) {
+            Logger.w(TAG, "Frame dropped due to negative timestamp")
+            closeableFrame.close()
+            return
+        }
         flvTagBuilder.write(closeableFrame, ts.toInt(), streamPid)
     }
 
