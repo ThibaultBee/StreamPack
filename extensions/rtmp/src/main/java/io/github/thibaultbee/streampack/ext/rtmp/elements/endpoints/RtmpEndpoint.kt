@@ -17,6 +17,8 @@ package io.github.thibaultbee.streampack.ext.rtmp.elements.endpoints
 
 import android.content.Context
 import io.github.thibaultbee.krtmp.flv.tags.FLVTag
+import io.github.thibaultbee.krtmp.flv.tags.audio.AudioData
+import io.github.thibaultbee.krtmp.flv.tags.video.VideoData
 import io.github.thibaultbee.krtmp.rtmp.RtmpConnectionBuilder
 import io.github.thibaultbee.krtmp.rtmp.client.RtmpClient
 import io.github.thibaultbee.krtmp.rtmp.connect
@@ -140,8 +142,11 @@ class RtmpEndpoint internal constructor(
             }
         }
         try {
-            // Close FLVTag data if needed
-            (flvTag.data as AutoCloseable?)?.close()
+            if (flvTag.data is AudioData) {
+                (flvTag.data as AudioData).body.close()
+            } else if (flvTag.data is VideoData) {
+                (flvTag.data as VideoData).body.close()
+            }
         } catch (t: Throwable) {
             Logger.e(TAG, "Error while closing FLVTag data: $t")
         }
@@ -153,6 +158,14 @@ class RtmpEndpoint internal constructor(
         val frame = closeableFrame.frame
         val startUpTimestamp = getStartUpTimestamp(frame.ptsInUs)
         val ts = (frame.ptsInUs - startUpTimestamp) / 1000
+        if (ts < 0) {
+            Logger.w(
+                TAG,
+                "Negative timestamp $ts for frame $frame. Frame will be dropped."
+            )
+            closeableFrame.close()
+            return
+        }
         flvTagBuilder.write(closeableFrame, ts.toInt(), streamPid)
     }
 
