@@ -32,7 +32,6 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRo
  * @param context The application context
  */
 class SensorRotationProvider(val context: Context) : RotationProvider() {
-    private val lock = Any()
     private var _rotation = context.displayRotation
 
     private val eventListener by lazy {
@@ -46,10 +45,7 @@ class SensorRotationProvider(val context: Context) : RotationProvider() {
 
                 if (_rotation != newRotation) {
                     _rotation = newRotation
-
-                    synchronized(lock) {
-                        listeners.forEach { it.onOrientationChanged(newRotation) }
-                    }
+                    notifyListeners(newRotation)
                 }
             }
         }
@@ -58,20 +54,12 @@ class SensorRotationProvider(val context: Context) : RotationProvider() {
     override val rotation: Int
         get() = _rotation
 
-    override fun addListener(listener: IRotationProvider.Listener) {
-        synchronized(lock) {
-            super.addListener(listener)
-            eventListener.enable()
-        }
+    override fun onFirstListenerAdded() {
+        eventListener.enable()
     }
 
-    override fun removeListener(listener: IRotationProvider.Listener) {
-        synchronized(lock) {
-            super.removeListener(listener)
-            if (listeners.isEmpty()) {
-                eventListener.disable()
-            }
-        }
+    override fun onLastListenerRemoved() {
+        eventListener.disable()
     }
 
     companion object {

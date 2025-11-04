@@ -29,13 +29,47 @@ interface IRotationProvider {
 
 abstract class RotationProvider : IRotationProvider {
     protected val listeners = mutableSetOf<IRotationProvider.Listener>()
+    protected val lock = Any()
+
+    /**
+     * Called when the first listener is added.
+     * Subclasses should override this to start listening to rotation changes.
+     */
+    protected open fun onFirstListenerAdded() {}
+
+    /**
+     * Called when the last listener is removed.
+     * Subclasses should override this to stop listening to rotation changes.
+     */
+    protected open fun onLastListenerRemoved() {}
 
     override fun addListener(listener: IRotationProvider.Listener) {
-        listeners.add(listener)
+        synchronized(lock) {
+            val wasEmpty = listeners.isEmpty()
+            listeners.add(listener)
+            if (wasEmpty && listeners.isNotEmpty()) {
+                onFirstListenerAdded()
+            }
+        }
     }
 
     override fun removeListener(listener: IRotationProvider.Listener) {
-        listeners.remove(listener)
+        synchronized(lock) {
+            listeners.remove(listener)
+            if (listeners.isEmpty()) {
+                onLastListenerRemoved()
+            }
+        }
+    }
+
+    /**
+     * Notifies all listeners of a rotation change.
+     * Should be called by subclasses when rotation changes.
+     */
+    protected fun notifyListeners(@RotationValue rotation: Int) {
+        synchronized(lock) {
+            listeners.forEach { it.onOrientationChanged(rotation) }
+        }
     }
 }
 

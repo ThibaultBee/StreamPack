@@ -30,7 +30,6 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRo
  * @param context The application context
  */
 class DisplayRotationProvider(val context: Context) : RotationProvider() {
-    private val lock = Any()
     private val displayManager = context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
     private var _rotation = context.displayRotation
 
@@ -42,10 +41,7 @@ class DisplayRotationProvider(val context: Context) : RotationProvider() {
 
             if (_rotation != newRotation) {
                 _rotation = newRotation
-
-                synchronized(lock) {
-                    listeners.forEach { it.onOrientationChanged(newRotation) }
-                }
+                notifyListeners(newRotation)
             }
         }
     }
@@ -53,22 +49,11 @@ class DisplayRotationProvider(val context: Context) : RotationProvider() {
     override val rotation: Int
         get() = _rotation
 
-    override fun addListener(listener: IRotationProvider.Listener) {
-        synchronized(lock) {
-            val mustRegister = listeners.isEmpty()
-            super.addListener(listener)
-            if (mustRegister) {
-                displayManager.registerDisplayListener(displayListener, null)
-            }
-        }
+    override fun onFirstListenerAdded() {
+        displayManager.registerDisplayListener(displayListener, null)
     }
 
-    override fun removeListener(listener: IRotationProvider.Listener) {
-        synchronized(lock) {
-            super.removeListener(listener)
-            if (listeners.isEmpty()) {
-                displayManager.unregisterDisplayListener(displayListener)
-            }
-        }
+    override fun onLastListenerRemoved() {
+        displayManager.unregisterDisplayListener(displayListener)
     }
 }

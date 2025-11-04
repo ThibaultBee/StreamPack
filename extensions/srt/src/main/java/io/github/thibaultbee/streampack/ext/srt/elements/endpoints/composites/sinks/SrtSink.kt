@@ -27,21 +27,18 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.Media
 import io.github.thibaultbee.streampack.core.elements.data.Packet
 import io.github.thibaultbee.streampack.core.elements.data.SrtPacket
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.AbstractSink
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.AbstractStatefulSink
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ClosedException
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
 import io.github.thibaultbee.streampack.ext.srt.configuration.mediadescriptor.SrtMediaDescriptor
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
 
-class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSink() {
+class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractStatefulSink() {
     override val supportedSinkTypes: List<MediaSinkType> = listOf(MediaSinkType.SRT)
 
     private var socket: CoroutineSrtSocket? = null
     private var completionException: Throwable? = null
-    private var isOnError: Boolean = false
 
     private var bitrate = 0L
 
@@ -51,9 +48,6 @@ class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSi
     override val metrics: Stats
         get() = socket?.bistats(clear = true, instantaneous = true)
             ?: throw IllegalStateException("Socket is not initialized")
-
-    private val _isOpenFlow = MutableStateFlow(false)
-    override val isOpenFlow = _isOpenFlow.asStateFlow()
 
     override fun configure(config: SinkConfiguration) {
         bitrate = config.streamConfigs.sumOf { it.startBitrate.toLong() }

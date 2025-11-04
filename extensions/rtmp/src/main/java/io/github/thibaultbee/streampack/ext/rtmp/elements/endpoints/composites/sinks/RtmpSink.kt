@@ -19,29 +19,23 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.Media
 import io.github.thibaultbee.streampack.core.elements.data.Packet
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.AbstractSink
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.AbstractStatefulSink
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ClosedException
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import video.api.rtmpdroid.Rtmp
 
 class RtmpSink(
     private val coroutineDispatcher: CoroutineDispatcher
-) : AbstractSink() {
+) : AbstractStatefulSink() {
     override val supportedSinkTypes: List<MediaSinkType> = listOf(MediaSinkType.RTMP)
 
     private var socket: Rtmp? = null
-    private var isOnError = false
 
     private val supportedVideoCodecs = mutableListOf<String>()
-
-    private val _isOpenFlow = MutableStateFlow(false)
-    override val isOpenFlow = _isOpenFlow.asStateFlow()
 
     override fun configure(config: SinkConfiguration) {
         val videoConfig = config.streamConfigs.firstOrNull { it is VideoCodecConfig }

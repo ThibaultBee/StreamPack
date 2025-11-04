@@ -3,6 +3,9 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites.sink
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.logger.Logger
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Abstract class to write data to a sink
@@ -36,4 +39,15 @@ abstract class AbstractSink : ISinkInternal {
     companion object {
         const val TAG = "AbstractSink"
     }
+}
+
+/**
+ * Abstract base class for sinks that manage their open/close state with a StateFlow.
+ * This provides common state management for network-based sinks.
+ */
+abstract class AbstractStatefulSink : AbstractSink() {
+    protected val _isOpenFlow = MutableStateFlow(false)
+    override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow.asStateFlow()
+    
+    protected var isOnError = false
 }
