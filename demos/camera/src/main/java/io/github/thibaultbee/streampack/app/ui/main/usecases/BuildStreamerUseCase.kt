@@ -1,10 +1,11 @@
 package io.github.thibaultbee.streampack.app.ui.main.usecases
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.app.data.storage.DataStoreRepository
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 
 class BuildStreamerUseCase(
     private val context: Context,
@@ -15,17 +16,33 @@ class BuildStreamerUseCase(
      *
      * Only create a new streamer if the previous one is not the same type.
      *
+     * It releases the previous streamer if a new one is created.
+     *
      * @param previousStreamer Previous streamer to check if we need to create a new one.
      */
-    operator fun invoke(previousStreamer: SingleStreamer? = null): SingleStreamer {
-        val isAudioEnable = runBlocking {
-            dataStoreRepository.isAudioEnableFlow.first()
-        }
-
-        if (previousStreamer == null) {
-            return SingleStreamer(context, isAudioEnable)
-        } else if ((previousStreamer.audioInput?.sourceFlow?.value == null) != !isAudioEnable) {
-            return SingleStreamer(context, isAudioEnable)
+    suspend operator fun invoke(
+        previousStreamer: SingleStreamer,
+        isAudioEnable: Boolean
+    ): SingleStreamer {
+        if (previousStreamer.withAudio != isAudioEnable) {
+            return SingleStreamer(context, isAudioEnable).apply {
+                // Get previous streamer config if any
+                val audioConfig = previousStreamer.audioConfigFlow.value
+                val videoConfig = previousStreamer.videoConfigFlow.value
+                if ((audioConfig != null && isAudioEnable)) {
+                    if (ActivityCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.RECORD_AUDIO
+                        ) == PackageManager.PERMISSION_GRANTED
+                    ) {
+                        setAudioConfig(audioConfig)
+                    }
+                }
+                if (videoConfig != null) {
+                    setVideoConfig(videoConfig)
+                }
+                previousStreamer.release()
+            }
         }
         return previousStreamer
     }

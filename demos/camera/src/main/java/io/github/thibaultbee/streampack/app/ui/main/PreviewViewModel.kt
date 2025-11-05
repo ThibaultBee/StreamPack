@@ -65,6 +65,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -74,7 +75,12 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
 
     private val buildStreamerUseCase = BuildStreamerUseCase(application, storageRepository)
 
-    private val streamerFlow = MutableStateFlow(buildStreamerUseCase())
+    private val streamerFlow =
+        MutableStateFlow(
+            SingleStreamer(
+                application,
+                runBlocking { storageRepository.isAudioEnableFlow.first() }) // TODO avoid runBlocking
+        )
     private val streamer: SingleStreamer
         get() = streamerFlow.value
     val streamerLiveData = streamerFlow.asLiveData()
@@ -119,8 +125,9 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     val endpointErrorLiveData: LiveData<String> = _endpointErrorLiveData
 
     // Streamer states
+    private val _isStreamingFlow = MutableStateFlow(false)
     val isStreamingLiveData: LiveData<Boolean>
-        get() = streamer.isStreamingFlow.asLiveData()
+        get() = _isStreamingFlow.asLiveData()
     private val _isTryingConnectionLiveData = MutableLiveData<Boolean>()
     val isTryingConnectionLiveData: LiveData<Boolean> = _isTryingConnectionLiveData
 
@@ -148,6 +155,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                     Log.i(TAG, "Video source is disabled")
                 }
 
+                // TODO: cancel jobs linked to previous streamer
                 viewModelScope.launch {
                     streamer.videoInput?.sourceFlow?.collect {
                         notifySourceChanged()
@@ -174,8 +182,9 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                 }
                 viewModelScope.launch {
                     streamer.isStreamingFlow
-                        .collect {
-                            Log.i(TAG, "Streamer is streaming: $it")
+                        .collect { isStreaming ->
+                            _isStreamingFlow.emit(isStreaming)
+                            Log.i(TAG, "Streamer is streaming: $isStreaming")
                         }
                 }
             }
@@ -190,34 +199,30 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         viewModelScope.launch {
             storageRepository.isAudioEnableFlow.combine(storageRepository.isVideoEnableFlow) { isAudioEnable, isVideoEnable ->
                 Pair(isAudioEnable, isVideoEnable)
-            }.drop(1).collect { (_, _) ->
-                val previousStreamer = streamer
-                streamerFlow.emit(buildStreamerUseCase(previousStreamer))
-                if (previousStreamer != streamer) {
-                    previousStreamer.release()
-                }
+            }.drop(1).collect { (isAudioEnable, _) ->
+                streamerFlow.emit(buildStreamerUseCase(streamer, isAudioEnable))
             }
         }
         viewModelScope.launch {
-            storageRepository.audioConfigFlow
+            storageRepository.audioConfigFlow.filterNotNull()
                 .collect { config ->
+                    if (!streamer.withAudio) {
+                        Log.i(TAG, "Audio is disabled. Skip setting audio config")
+                        return@collect
+                    }
                     if (ActivityCompat.checkSelfPermission(
                             application,
                             Manifest.permission.RECORD_AUDIO
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
-                        config?.let {
-                            streamer.setAudioConfig(it)
-                        } ?: Log.i(TAG, "Audio is disabled")
+                        streamer.setAudioConfig(config)
                     }
                 }
         }
         viewModelScope.launch {
-            storageRepository.videoConfigFlow
+            storageRepository.videoConfigFlow.filterNotNull()
                 .collect { config ->
-                    config?.let {
-                        streamer.setVideoConfig(it)
-                    } ?: Log.i(TAG, "Video is disabled")
+                    streamer.setVideoConfig(config)
                 }
         }
     }

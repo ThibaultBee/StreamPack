@@ -43,6 +43,7 @@ import kotlinx.coroutines.launch
 
 class PreviewFragment : Fragment(R.layout.main_fragment) {
     private lateinit var binding: MainFragmentBinding
+    private var previousStreamerLifecycleObserver: StreamerViewModelLifeCycleObserver? = null
 
     private val previewViewModel: PreviewViewModel by viewModels {
         PreviewViewModelFactory(requireActivity().application)
@@ -107,8 +108,14 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
 
         previewViewModel.streamerLiveData.observe(viewLifecycleOwner) { streamer ->
             if (streamer is IStreamer) {
-                // TODO: Remove this observer when streamer is released
-                lifecycle.addObserver(StreamerViewModelLifeCycleObserver(streamer))
+                if (previousStreamerLifecycleObserver != null) {
+                    lifecycle.removeObserver(previousStreamerLifecycleObserver!!)
+                }
+                val newObserver = StreamerViewModelLifeCycleObserver(streamer).apply {
+                    previousStreamerLifecycleObserver = this
+                }
+                lifecycle.addObserver(newObserver)
+
             } else {
                 Log.e(TAG, "Streamer is not a ICoroutineStreamer")
             }
