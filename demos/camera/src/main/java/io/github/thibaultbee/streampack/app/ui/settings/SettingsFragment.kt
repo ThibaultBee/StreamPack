@@ -191,6 +191,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
         videoEncoderListPreference.setOnPreferenceChangeListener { _, newValue ->
             loadVideoSettings(newValue as String)
+            videoProfileListPreference.value = VideoConfig.getBestProfile(newValue).toString()
             true
         }
 
