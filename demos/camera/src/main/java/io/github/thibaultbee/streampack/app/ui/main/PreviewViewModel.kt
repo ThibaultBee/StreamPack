@@ -215,14 +215,24 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                             Manifest.permission.RECORD_AUDIO
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
-                        streamer.setAudioConfig(config)
+                        try {
+                            streamer.setAudioConfig(config)
+                        } catch (t: Throwable) {
+                            Log.e(TAG, "setAudioConfig failed", t)
+                            _streamerErrorLiveData.postValue("setAudioConfig: ${t.message ?: "Unknown error"}")
+                        }
                     }
                 }
         }
         viewModelScope.launch {
             storageRepository.videoConfigFlow.filterNotNull()
                 .collect { config ->
-                    streamer.setVideoConfig(config)
+                    try {
+                        streamer.setVideoConfig(config)
+                    } catch (t: Throwable) {
+                        Log.e(TAG, "setVideoConfig failed", t)
+                        _streamerErrorLiveData.postValue("setVideoConfig: ${t.message ?: "Unknown error"}")
+                    }
                 }
         }
     }
