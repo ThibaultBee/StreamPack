@@ -16,13 +16,13 @@
 package io.github.thibaultbee.streampack.ext.flv.elements.endpoints
 
 import android.content.Context
-import io.github.thibaultbee.krtmp.amf.AmfVersion
-import io.github.thibaultbee.krtmp.flv.FLVMuxer
-import io.github.thibaultbee.krtmp.flv.encode
-import io.github.thibaultbee.krtmp.flv.tags.FLVTag
-import io.github.thibaultbee.krtmp.flv.tags.audio.AudioData
-import io.github.thibaultbee.krtmp.flv.tags.script.OnMetadata
-import io.github.thibaultbee.krtmp.flv.tags.video.VideoData
+import io.github.komedia.komuxer.amf.AmfVersion
+import io.github.komedia.komuxer.flv.FLVMuxer
+import io.github.komedia.komuxer.flv.encode
+import io.github.komedia.komuxer.flv.tags.FLVTag
+import io.github.komedia.komuxer.flv.tags.audio.AudioData
+import io.github.komedia.komuxer.flv.tags.script.OnMetadata
+import io.github.komedia.komuxer.flv.tags.video.VideoData
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig

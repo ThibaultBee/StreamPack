@@ -15,9 +15,9 @@
  */
 package io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils
 
-import io.github.thibaultbee.krtmp.flv.tags.FLVTag
-import io.github.thibaultbee.krtmp.flv.tags.script.Metadata
-import io.github.thibaultbee.krtmp.logger.KrtmpLogger
+import io.github.komedia.komuxer.flv.tags.FLVTag
+import io.github.komedia.komuxer.flv.tags.script.Metadata
+import io.github.komedia.komuxer.logger.KomuxerLogger
 import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
@@ -118,7 +118,7 @@ class FlvTagBuilder(val channel: ChannelWithCloseableData<FLVTag>) {
         private const val VIDEO_STREAM_PID = 1
 
         init {
-            KrtmpLogger.logger = StreamPackLogger()
+            KomuxerLogger.logger = KomuxerLoggerImpl()
         }
     }
 }

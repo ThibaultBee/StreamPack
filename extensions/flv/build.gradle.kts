@@ -22,7 +22,8 @@ android {
 dependencies {
     implementation(project(":streampack-core"))
 
-    implementation(libs.krtmp.flv)
+    implementation(libs.komedia.komuxer.flv)
+    implementation(libs.komedia.komuxer.avutil)
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.io.core)

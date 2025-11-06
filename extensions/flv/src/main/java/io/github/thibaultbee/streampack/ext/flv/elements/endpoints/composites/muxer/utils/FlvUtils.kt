@@ -17,10 +17,10 @@ package io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.m
 
 import android.media.AudioFormat
 import android.media.MediaFormat
-import io.github.thibaultbee.krtmp.flv.config.AudioMediaType
-import io.github.thibaultbee.krtmp.flv.config.SoundSize
-import io.github.thibaultbee.krtmp.flv.config.SoundType
-import io.github.thibaultbee.krtmp.flv.config.VideoMediaType
+import io.github.komedia.komuxer.flv.config.AudioMediaType
+import io.github.komedia.komuxer.flv.config.SoundSize
+import io.github.komedia.komuxer.flv.config.SoundType
+import io.github.komedia.komuxer.flv.config.VideoMediaType
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import java.io.IOException
 

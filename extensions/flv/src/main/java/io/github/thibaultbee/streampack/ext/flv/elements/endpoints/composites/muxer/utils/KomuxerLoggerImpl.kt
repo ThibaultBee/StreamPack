@@ -15,10 +15,10 @@
  */
 package io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils
 
-import io.github.thibaultbee.krtmp.logger.IKrtmpLogger
+import io.github.komedia.komuxer.logger.IKomuxerLogger
 import io.github.thibaultbee.streampack.core.logger.Logger
 
-internal class StreamPackLogger : IKrtmpLogger {
+internal class KomuxerLoggerImpl : IKomuxerLogger {
     override fun e(tag: String, message: String, tr: Throwable?) = Logger.e(tag, message, tr)
 
     override fun w(tag: String, message: String, tr: Throwable?) = Logger.w(tag, message, tr)
