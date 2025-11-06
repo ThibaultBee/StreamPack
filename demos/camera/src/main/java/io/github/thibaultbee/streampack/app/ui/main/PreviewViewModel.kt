@@ -57,6 +57,8 @@ import io.github.thibaultbee.streampack.core.interfaces.startStream
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrtBitrateRegulatorController
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.drop
@@ -132,6 +134,8 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     val isTryingConnectionLiveData: LiveData<Boolean> = _isTryingConnectionLiveData
 
     private val videoSourceMutex = Mutex()
+
+    private var startStreamJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -271,7 +275,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     }
 
     fun startStream() {
-        viewModelScope.launch {
+        startStreamJob = viewModelScope.launch {
             _isTryingConnectionLiveData.postValue(true)
             try {
                 val descriptor = storageRepository.endpointDescriptorFlow.first()
@@ -289,9 +293,12 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                         )
                     }
                 }
-            } catch (e: Throwable) {
-                Log.e(TAG, "startStream failed", e)
-                _streamerErrorLiveData.postValue("startStream: ${e.message ?: "Unknown error"}")
+            } catch (e: CancellationException) {
+                Log.i(TAG, "startStream cancelled", e)
+                _streamerErrorLiveData.postValue("startStream cancelled")
+            } catch (t: Throwable) {
+                Log.e(TAG, "startStream failed", t)
+                _streamerErrorLiveData.postValue("startStream: ${t.message ?: "Unknown error"}")
             } finally {
                 _isTryingConnectionLiveData.postValue(false)
             }
@@ -299,6 +306,9 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     }
 
     fun stopStream() {
+        startStreamJob?.cancel()
+        startStreamJob = null
+
         viewModelScope.launch {
             try {
                 streamer.stopStream()
