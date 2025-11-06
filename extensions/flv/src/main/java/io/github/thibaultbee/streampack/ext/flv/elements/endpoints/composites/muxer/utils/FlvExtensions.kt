@@ -15,8 +15,8 @@
  */
 package io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils
 
-import io.github.thibaultbee.krtmp.flv.config.FLVAudioConfig
-import io.github.thibaultbee.krtmp.flv.config.FLVVideoConfig
+import io.github.komedia.komuxer.flv.config.FLVAudioConfig
+import io.github.komedia.komuxer.flv.config.FLVVideoConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 
