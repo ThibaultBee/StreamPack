@@ -16,13 +16,13 @@
 package io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils
 
 import android.media.MediaFormat
-import io.github.thibaultbee.krtmp.flv.config.AudioFourCC
-import io.github.thibaultbee.krtmp.flv.config.SoundSize
-import io.github.thibaultbee.krtmp.flv.tags.audio.AACAudioDataFactory
-import io.github.thibaultbee.krtmp.flv.tags.audio.AudioData
-import io.github.thibaultbee.krtmp.flv.tags.audio.ExtendedAudioDataFactory
-import io.github.thibaultbee.krtmp.flv.tags.audio.codedFrame
-import io.github.thibaultbee.krtmp.flv.tags.audio.sequenceStart
+import io.github.komedia.komuxer.flv.config.AudioFourCC
+import io.github.komedia.komuxer.flv.config.SoundSize
+import io.github.komedia.komuxer.flv.tags.audio.AACAudioDataFactory
+import io.github.komedia.komuxer.flv.tags.audio.AudioData
+import io.github.komedia.komuxer.flv.tags.audio.ExtendedAudioDataFactory
+import io.github.komedia.komuxer.flv.tags.audio.codedFrame
+import io.github.komedia.komuxer.flv.tags.audio.sequenceStart
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.utils.av.audio.opus.OpusCsdParser

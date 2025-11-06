@@ -16,13 +16,13 @@
 package io.github.thibaultbee.streampack.ext.rtmp.elements.endpoints
 
 import android.content.Context
-import io.github.thibaultbee.krtmp.flv.tags.FLVTag
-import io.github.thibaultbee.krtmp.flv.tags.audio.AudioData
-import io.github.thibaultbee.krtmp.flv.tags.video.VideoData
-import io.github.thibaultbee.krtmp.rtmp.RtmpConnectionBuilder
-import io.github.thibaultbee.krtmp.rtmp.client.RtmpClient
-import io.github.thibaultbee.krtmp.rtmp.connect
-import io.github.thibaultbee.krtmp.rtmp.messages.command.StreamPublishType
+import io.github.komedia.komuxer.flv.tags.FLVTag
+import io.github.komedia.komuxer.flv.tags.audio.AudioData
+import io.github.komedia.komuxer.flv.tags.video.VideoData
+import io.github.komedia.komuxer.rtmp.RtmpConnectionBuilder
+import io.github.komedia.komuxer.rtmp.client.RtmpClient
+import io.github.komedia.komuxer.rtmp.connect
+import io.github.komedia.komuxer.rtmp.messages.command.StreamPublishType
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
