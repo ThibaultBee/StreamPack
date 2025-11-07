@@ -27,6 +27,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ContentSink
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
+import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.CoroutineDispatcher
@@ -68,6 +69,7 @@ open class DynamicEndpoint(
     private var srtEndpoint: IEndpointInternal? = null
     private var rtmpEndpoint: IEndpointInternal? = null
 
+    private val isOpenJob = ConflatedJob()
     private val isOpenFlows = endpointFlow.map { it?.isOpenFlow }
     private val _isOpenFlow = MutableStateFlow(false)
     override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow.asStateFlow()
@@ -86,7 +88,13 @@ open class DynamicEndpoint(
     init {
         coroutineScope.launch {
             isOpenFlows.collect { isOpenFlow ->
-                _isOpenFlow.emit(isOpenFlow?.value == true)
+                if (isOpenFlow == null) {
+                    isOpenJob.cancel()
+                } else {
+                    isOpenJob += isOpenFlow.collect { isOpen ->
+                        _isOpenFlow.emit(isOpen)
+                    }
+                }
             }
         }
     }
