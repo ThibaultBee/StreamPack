@@ -17,6 +17,8 @@ package io.github.thibaultbee.streampack.core.elements.sources.video.bitmap
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.Paint
 import android.util.Size
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
@@ -32,6 +34,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 /**
  * Video source that streams a [Bitmap].
@@ -136,15 +139,76 @@ internal class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSo
     override suspend fun release() {
         outputExecutor.shutdown()
         previewExecutor.shutdown()
+        // Recycle pre-composited bitmaps if they exist
+        compositedBitmaps.forEach { it.recycle() }
+        compositedBitmaps.clear()
+    }
+
+    // Pre-composited bitmaps (source + noise combined) for maximum performance
+    // Single drawBitmap call per frame instead of two
+    private val compositedBitmaps = mutableListOf<Bitmap>()
+    private var frameIndex = 0
+    // Number of pre-composited frames to cycle through
+    private val frameCount = 4
+    
+    private val noisePaint = Paint().apply {
+        alpha = 255 // Full opacity noise for maximum entropy
+        strokeWidth = 3f // Draw larger points for more visual noise
+    }
+    
+    /**
+     * Generate pre-composited bitmaps (source bitmap + heavy noise overlay).
+     * Heavy noise is intentional to prevent encoder from compressing too efficiently,
+     * which keeps bitrate closer to target. This helps avoid OBS scene switchers
+     * that detect "offline" streams when bitrate drops too low on static content.
+     */
+    private fun ensureCompositedBitmapsGenerated() {
+        if (compositedBitmaps.isNotEmpty()) return
+        
+        val width = bitmap.width
+        val height = bitmap.height
+        // Use 10,000 noise points - fast to generate
+        // With strokeWidth=3, each point covers ~9 pixels for decent coverage
+        val noisePointCount = 10000
+        
+        for (i in 0 until frameCount) {
+            // Create a copy of the source bitmap with noise baked in
+            val composited = bitmap.copy(Bitmap.Config.ARGB_8888, true) ?: continue
+            val canvas = android.graphics.Canvas(composited)
+            
+            // Draw noise points directly onto the copy
+            // Using full color range for maximum entropy
+            for (j in 0 until noisePointCount) {
+                val x = Random.nextInt(width).toFloat()
+                val y = Random.nextInt(height).toFloat()
+                // Full RGB noise for more entropy
+                val r = Random.nextInt(256)
+                val g = Random.nextInt(256)
+                val b = Random.nextInt(256)
+                noisePaint.color = Color.rgb(r, g, b)
+                canvas.drawPoint(x, y, noisePaint)
+            }
+            
+            compositedBitmaps.add(composited)
+        }
     }
 
     private fun drawOutput() {
-        outputSurface?.let {
-            bitmap.let { bitmap ->
-                val canvas = it.lockCanvas(null)
+        outputSurface?.let { surface ->
+            ensureCompositedBitmapsGenerated()
+            
+            val canvas = surface.lockCanvas(null)
+            
+            // Single drawBitmap call - source and noise pre-composited
+            if (compositedBitmaps.isNotEmpty()) {
+                canvas.drawBitmap(compositedBitmaps[frameIndex % compositedBitmaps.size], 0f, 0f, null)
+                frameIndex++
+            } else {
+                // Fallback if compositing failed
                 canvas.drawBitmap(bitmap, 0f, 0f, null)
-                it.unlockCanvasAndPost(canvas)
             }
+            
+            surface.unlockCanvasAndPost(canvas)
         }
     }
 
