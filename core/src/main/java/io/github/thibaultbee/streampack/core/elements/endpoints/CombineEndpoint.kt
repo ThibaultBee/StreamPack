@@ -241,7 +241,15 @@ open class CombineEndpoint(
         }
 
         if (throwables.isNotEmpty()) {
-            throw MultiThrowable(throwables)
+            if (endpoints.none { it.isOpenFlow.value }) {
+                /**
+                 * If no endpoint is opened, the exception is thrown directly to stop the pipeline.
+                 */
+                if (throwables.size == 1) {
+                    throw throwables.first()
+                }
+                throw MultiThrowable(throwables)
+            }
         }
     }
 
