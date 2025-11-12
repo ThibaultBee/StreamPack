@@ -16,7 +16,11 @@
 package io.github.thibaultbee.streampack.core.elements.endpoints
 
 import android.content.Context
+import android.net.Uri
+import androidx.core.net.toUri
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.interfaces.open
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.CoroutineDispatcher
 
@@ -76,11 +80,63 @@ open class DualEndpoint(
 }
 
 /**
- * Opens the [secondEndpoint] and starts the stream.
+ * Opens the second endpoint.
+ *
+ * @param uri The uri to open
+ */
+suspend fun DualEndpoint.openSecond(uri: Uri) =
+    openSecond(UriMediaDescriptor(uri))
+
+/**
+ * Opens the second endpoint.
+ *
+ * @param uriString The uri to open
+ */
+suspend fun DualEndpoint.openSecond(uriString: String) =
+    openSecond(UriMediaDescriptor(uriString.toUri()))
+
+/**
+ * Starts audio/video stream for the second endpoint.
+ *
+ * @param descriptor The media descriptor to open
  */
 suspend fun DualEndpoint.startStreamSecond(descriptor: MediaDescriptor) {
     openSecond(descriptor)
     startStreamSecond()
+}
+
+/**
+ * Starts audio/video stream for the second endpoint.
+ *
+ * Same as doing [open] and [startStream].
+ *
+ * @param uri The uri to open
+ */
+suspend fun DualEndpoint.startStreamSecond(uri: Uri) {
+    openSecond(uri)
+    try {
+        startStreamSecond()
+    } catch (t: Throwable) {
+        close()
+        throw t
+    }
+}
+
+/**
+ * Starts audio/video stream for the second endpoint.
+ *
+ * Same as doing [open] and [startStream].
+ *
+ * @param uriString The uri to open
+ */
+suspend fun DualEndpoint.startStreamSecond(uriString: String) {
+    openSecond(uriString)
+    try {
+        startStreamSecond()
+    } catch (t: Throwable) {
+        close()
+        throw t
+    }
 }
 
 /**
