@@ -26,14 +26,24 @@ is started by the streamer.
 
 ```kotlin
 val dualEndpointFactory = DualEndpointFactory(
-    mainEndpoint = MediaMuxerEndpoint(context),
-    secondEndpoint = SrtEndpoint()
+    mainEndpointFactory = MediaMuxerEndpointFactory(),
+    secondEndpointFactory = SrtEndpointFactory() // SRT package is required for SrtEndpointFactory
 )
 
 val streamer = SingleStreamer(
     context,
     endpointFactory = dualEndpointFactory
 )
+```
+
+You have to open all the endpoints before calling `startStream` on the streamer:
+
+```kotlin
+streamer.open("rtmp/serverip:1935/s/streamKey") // open the main endpoint
+val endpoint = streamer.endpoint as DualEndpoint
+endpoint.openSecond("file:///path.to.file.mp4") // open the second endpoint
+streamer.startStream() // start the streamer and the first endpoint
+endpoint.startStreamSecond() // start the second endpoint
 ```
 
 ## Dual streamer
