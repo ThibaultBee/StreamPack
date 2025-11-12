@@ -30,6 +30,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.AbstractSink
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ClosedException
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
+import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.ext.srt.configuration.mediadescriptor.SrtMediaDescriptor
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -129,6 +130,13 @@ class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSi
         }
 
         val socket = requireNotNull(socket) { "SrtEndpoint is not initialized" }
+        if ((packet.ts != 0L) && (socket.connectionTime > packet.ts)) {
+            Logger.w(
+                TAG,
+                "Packet ts (${packet.ts} ms) is lower than connection time (${socket.connectionTime} ms). Dropping packet."
+            )
+            return -1
+        }
 
         try {
             return socket.send(packet.buffer, buildMsgCtrl(packet))
