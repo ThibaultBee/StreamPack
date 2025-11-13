@@ -586,11 +586,16 @@ open class StreamerPipeline(
         return jobs
     }
 
-    private suspend fun buildAudioSourceConfig(newAudioSourceConfig: AudioSourceConfig? = null): AudioSourceConfig {
+    private suspend fun buildAudioSourceConfig(
+        currentOutput: IConfigurableAudioPipelineOutputInternal? = null,
+        newAudioSourceConfig: AudioSourceConfig? = null
+    ): AudioSourceConfig {
         val audioSourceConfigs = safeOutputCall { streamingOutputs ->
-            streamingOutputs.keys.filterIsInstance<IAudioPipelineOutputInternal>().mapNotNull {
-                (it as? IConfigurableAudioPipelineOutputInternal)?.audioSourceConfigFlow?.value
-            }.toMutableSet()
+            streamingOutputs.keys.filterIsInstance<IAudioPipelineOutputInternal>()
+                .filter { it != currentOutput }
+                .mapNotNull {
+                    (it as? IConfigurableAudioPipelineOutputInternal)?.audioSourceConfigFlow?.value
+                }.toMutableSet()
         }
         newAudioSourceConfig?.let { audioSourceConfigs.add(it) }
         return SourceConfigUtils.buildAudioSourceConfig(audioSourceConfigs)
@@ -621,7 +626,7 @@ open class StreamerPipeline(
             object : IConfigurableAudioPipelineOutputInternal.Listener {
                 override suspend fun onSetAudioSourceConfig(newAudioSourceConfig: AudioSourceConfig) =
                     withContextInputMutex {
-                        setAudioSourceConfig(buildAudioSourceConfig(newAudioSourceConfig))
+                        setAudioSourceConfig(buildAudioSourceConfig(output, newAudioSourceConfig))
                     }
             }
     }
@@ -683,11 +688,15 @@ open class StreamerPipeline(
         return job
     }
 
-    private suspend fun buildVideoSourceConfig(newVideoSourceConfig: VideoSourceConfig? = null): VideoSourceConfig {
+    private suspend fun buildVideoSourceConfig(
+        currentOutput: IConfigurableVideoPipelineOutputInternal? = null,
+        newVideoSourceConfig: VideoSourceConfig? = null
+    ): VideoSourceConfig {
         val videoSourceConfigs =
             safeOutputCall { streamingOutputs ->
                 streamingOutputs.keys.filterIsInstance<IVideoPipelineOutputInternal>()
                     .filterIsInstance<IConfigurableVideoPipelineOutputInternal>()
+                    .filter { it != currentOutput }
                     .mapNotNull { it.videoSourceConfigFlow.value }.toMutableSet()
             }
         newVideoSourceConfig?.let { videoSourceConfigs.add(it) }
@@ -705,7 +714,7 @@ open class StreamerPipeline(
             object : IConfigurableVideoPipelineOutputInternal.Listener {
                 override suspend fun onSetVideoSourceConfig(newVideoSourceConfig: VideoSourceConfig) =
                     withContextInputMutex {
-                        setVideoSourceConfig(buildVideoSourceConfig(newVideoSourceConfig))
+                        setVideoSourceConfig(buildVideoSourceConfig(output, newVideoSourceConfig))
                     }
             }
     }
@@ -1085,6 +1094,7 @@ open class StreamerPipeline(
  *
  * @see [StreamerPipeline.release]
  */
-fun StreamerPipeline.releaseBlocking(dispatcher: CoroutineDispatcher = Dispatchers.Default) = runBlocking(dispatcher) {
-    release()
-}
+fun StreamerPipeline.releaseBlocking(dispatcher: CoroutineDispatcher = Dispatchers.Default) =
+    runBlocking(dispatcher) {
+        release()
+    }
