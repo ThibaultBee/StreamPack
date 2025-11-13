@@ -56,7 +56,6 @@ io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord
 io.github.thibaultbee.streampack.core.elements.sources.video
 io.github.thibaultbee.streampack.core.elements.sources.video.bitmap
 io.github.thibaultbee.streampack.core.elements.sources.video.camera
-io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers
 io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions
 io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat
 io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils
@@ -101,7 +100,7 @@ module:streampack-services
 io.github.thibaultbee.streampack.services
 io.github.thibaultbee.streampack.services.utils
 module:streampack-srt
-io.github.thibaultbee.streampack.ext.srt.data.mediadescriptor
+io.github.thibaultbee.streampack.ext.srt.configuration.mediadescriptor
 io.github.thibaultbee.streampack.ext.srt.elements.endpoints.composites
 io.github.thibaultbee.streampack.ext.srt.elements.endpoints.composites.sinks
 io.github.thibaultbee.streampack.ext.srt.regulator
