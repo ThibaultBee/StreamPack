@@ -1,6 +1,27 @@
 Changelog
 ==========
 
+Version 3.0.1
+----------------
+
+## Features:
+
+- Render correct preview size for non-camera video sources in `PreviewView`.
+  See [#238](https://github.com/ThibaultBee/StreamPack/issues/238)
+- Add an API to set color format in `VideoConfig`.
+  See [#235](https://github.com/ThibaultBee/StreamPack/issues/235)
+- Add an API to customize audio and video `MediaFormat` in `AudioConfig` and `VideoConfig`.
+- Add an API to set threads, handler and dispatcher for streamers.
+- Replace most of internal executor services with coroutines.
+
+## Bug fixes:
+
+- Fix usage of the camera in background.
+  See [#231](https://github.com/ThibaultBee/StreamPack/issues/231)
+- Fix multithreading issues in pipeline, encoding output,...
+- Fix fps and dynamic range in camera `configure` API.
+- And other bug fixes.
+
 Version 3.0.0
 ----------------
 
