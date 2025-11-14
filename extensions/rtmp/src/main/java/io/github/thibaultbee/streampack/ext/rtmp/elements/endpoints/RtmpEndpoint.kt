@@ -17,8 +17,6 @@ package io.github.thibaultbee.streampack.ext.rtmp.elements.endpoints
 
 import android.content.Context
 import io.github.komedia.komuxer.flv.tags.FLVTag
-import io.github.komedia.komuxer.flv.tags.audio.AudioData
-import io.github.komedia.komuxer.flv.tags.video.VideoData
 import io.github.komedia.komuxer.rtmp.RtmpConnectionBuilder
 import io.github.komedia.komuxer.rtmp.client.RtmpClient
 import io.github.komedia.komuxer.rtmp.connect
@@ -36,6 +34,7 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.FlvMuxerInfo
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.FlvTagBuilder
+import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.close
 import io.ktor.network.selector.SelectorManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -54,16 +53,13 @@ import kotlinx.coroutines.sync.withLock
  * An endpoint that send frame to an RTMP server.
  */
 class RtmpEndpoint internal constructor(
-    defaultDispatcher: CoroutineDispatcher,
-    ioDispatcher: CoroutineDispatcher
-) :
-    IEndpointInternal {
+    defaultDispatcher: CoroutineDispatcher, ioDispatcher: CoroutineDispatcher
+) : IEndpointInternal {
     private val coroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
     private val mutex = Mutex()
 
     private val flvTagChannel = ChannelWithCloseableData<FLVTag>(
-        10 /* Arbitrary buffer size. TODO: add a parameter to set it */,
-        BufferOverflow.DROP_OLDEST
+        10 /* Arbitrary buffer size. TODO: add a parameter to set it */, BufferOverflow.DROP_OLDEST
     )
     private val flvTagBuilder = FlvTagBuilder(flvTagChannel)
 
@@ -112,8 +108,16 @@ class RtmpEndpoint internal constructor(
             rtmpClient = connectionBuilder.connect(descriptor.uri.toString()).apply {
                 _isOpenFlow.emit(true)
 
-                socketContext.invokeOnCompletion {
+                socketContext.invokeOnCompletion { throwable ->
+                    rtmpClient = null
+
                     _isOpenFlow.tryEmit(false)
+                    if (throwable != null) {
+                        Logger.e(TAG, "RTMP connection closed with error: $throwable")
+                        _throwableFlow.tryEmit(ClosedException(throwable))
+                    } else {
+                        Logger.i(TAG, "RTMP connection closed")
+                    }
                 }
             }
         }
@@ -130,23 +134,19 @@ class RtmpEndpoint internal constructor(
     private suspend fun write(flvTag: FLVTag) {
         try {
             safeClient { rtmpClient ->
+                if (rtmpClient.isClosed) {
+                    return@safeClient
+                }
                 rtmpClient.write(flvTag)
             }
         } catch (_: TimeoutCancellationException) {
             Logger.w(TAG, "Frame dropped due to timeout")
         } catch (t: Throwable) {
-            Logger.e(TAG, "Error while writing RTMP data: $t")
-            if (isOpenFlow.value) {
-                _throwableFlow.emit(ClosedException(t))
-                close()
-            }
+            Logger.w(TAG, "Error while writing FLV data: $t")
+            // Socket is closed automatically on error
         }
         try {
-            if (flvTag.data is AudioData) {
-                (flvTag.data as AudioData).body.close()
-            } else if (flvTag.data is VideoData) {
-                (flvTag.data as VideoData).body.close()
-            }
+            flvTag.data.close()
         } catch (t: Throwable) {
             Logger.e(TAG, "Error while closing FLVTag data: $t")
         }
@@ -158,14 +158,6 @@ class RtmpEndpoint internal constructor(
         val frame = closeableFrame.frame
         val startUpTimestamp = getStartUpTimestamp(frame.ptsInUs)
         val ts = (frame.ptsInUs - startUpTimestamp) / 1000
-        if (ts < 0) {
-            Logger.w(
-                TAG,
-                "Negative timestamp $ts for frame $frame. Frame will be dropped."
-            )
-            closeableFrame.close()
-            return
-        }
         flvTagBuilder.write(closeableFrame, ts.toInt(), streamPid)
     }
 
@@ -235,7 +227,6 @@ class RtmpEndpoint internal constructor(
  */
 class RtmpEndpointFactory : IEndpointInternal.Factory {
     override fun create(
-        context: Context,
-        dispatcherProvider: IDispatcherProvider
+        context: Context, dispatcherProvider: IDispatcherProvider
     ): IEndpointInternal = RtmpEndpoint(dispatcherProvider.default, dispatcherProvider.io)
 }

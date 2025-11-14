@@ -57,11 +57,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -220,7 +221,7 @@ internal class EncodingPipelineOutput(
      */
     private fun onInternalError(t: Throwable) {
         try {
-            runBlocking {
+            coroutineScope.launch {
                 stopStream()
             }
         } catch (t: Throwable) {
@@ -284,8 +285,14 @@ internal class EncodingPipelineOutput(
         }
 
         coroutineScope.launch {
+            endpointInternal.isOpenFlow.filter { !it }.drop(1).collect { isOpen ->
+                coroutineScope.launch { stopStream() }
+            }
+        }
+
+        coroutineScope.launch {
             endpointInternal.throwableFlow.filterNotNull().collect { throwable ->
-                onInternalError(throwable)
+                _throwableFlow.tryEmit(throwable)
             }
         }
     }
