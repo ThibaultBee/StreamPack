@@ -21,6 +21,8 @@ import android.view.Surface
 import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
+import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.SurfaceOutput
+import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
@@ -33,6 +35,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -434,7 +437,52 @@ internal class VideoInput(
         }
     }
 
-    suspend fun addOutputSurface(output: ISurfaceOutput) {
+    /**
+     * Creates a surface output for the given surface.
+     *
+     * Use it for additional processing.
+     *
+     * @param surfaceDescriptor the encoder surface
+     * @param isMirroringRequired whether mirroring is required
+     * @param isStreaming a lambda to check if the surface is streaming
+     */
+    private fun buildSurfaceOutput(
+        surfaceDescriptor: SurfaceDescriptor,
+        isMirroringRequired: Boolean,
+        isStreaming: () -> Boolean
+    ): ISurfaceOutput {
+        val infoProvider = infoProviderFlow.value ?: DefaultSourceInfoProvider()
+        val sourceResolution = infoProvider.getSurfaceSize(
+            sourceConfig!!.resolution // build surface output is only called after config is set
+        )
+        return SurfaceOutput(
+            surfaceDescriptor,
+            isStreaming,
+            sourceResolution,
+            isMirroringRequired,
+            infoProvider
+        )
+    }
+
+    internal suspend fun addOutputSurface(
+        surfaceDescriptor: SurfaceDescriptor,
+        isMirroringRequired: Boolean,
+        isStreaming: () -> Boolean
+    ) {
+        if (isReleaseRequested.get()) {
+            throw IllegalStateException("Input is released")
+        }
+
+        addOutputSurface(
+            buildSurfaceOutput(
+                surfaceDescriptor,
+                isMirroringRequired,
+                isStreaming
+            )
+        )
+    }
+
+    internal suspend fun addOutputSurface(output: ISurfaceOutput) {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
@@ -445,9 +493,9 @@ internal class VideoInput(
         }
     }
 
-    suspend fun removeOutputSurface(output: Surface) {
+    internal suspend fun removeOutputSurface(output: Surface) {
         outputMutex.withLock {
-            surfaceOutput.firstOrNull { it.surface == output }?.let {
+            surfaceOutput.firstOrNull { it.targetSurface == output }?.let {
                 surfaceOutput.remove(it)
             }
             processor.removeOutputSurface(output)

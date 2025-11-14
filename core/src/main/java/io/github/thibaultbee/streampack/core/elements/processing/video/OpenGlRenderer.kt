@@ -17,7 +17,6 @@
 package io.github.thibaultbee.streampack.core.elements.processing.video
 
 import android.graphics.Bitmap
-import android.graphics.Rect
 import android.opengl.EGL14
 import android.opengl.EGLConfig
 import android.opengl.EGLContext
@@ -53,6 +52,7 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLU
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils.deleteTexture
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils.generateFbo
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils.generateTexture
+import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils.getSurfaceSize
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils.glVersionNumber
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GraphicDeviceInfo
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.OutputSurface
@@ -250,8 +250,7 @@ class OpenGlRenderer {
     fun render(
         timestampNs: Long,
         textureTransform: FloatArray,
-        surface: Surface,
-        viewportRect: Rect
+        surface: Surface
     ) {
         checkInitializedOrThrow(mInitialized, true)
         checkGlThreadOrThrow(mGlThread)
@@ -260,7 +259,7 @@ class OpenGlRenderer {
 
         // Workaround situations that out surface is failed to create or needs to be recreated.
         if (outputSurface === NO_OUTPUT_SURFACE) {
-            outputSurface = createOutputSurfaceInternal(surface, viewportRect)
+            outputSurface = createOutputSurfaceInternal(surface)
             if (outputSurface == null) {
                 return
             }
@@ -608,8 +607,7 @@ class OpenGlRenderer {
     }
 
     protected fun createOutputSurfaceInternal(
-        surface: Surface,
-        viewportRect: Rect
+        surface: Surface
     ): OutputSurface? {
         val eglSurface = try {
             createWindowSurface(
@@ -623,8 +621,8 @@ class OpenGlRenderer {
             Logger.w(TAG, "Failed to create EGL surface: " + e.message, e)
             return null
         }
-
-        return OutputSurface(eglSurface, viewportRect)
+        val size = getSurfaceSize(mEglDisplay, eglSurface)
+        return OutputSurface(eglSurface, size.width, size.height)
     }
 
     protected fun removeOutputSurfaceInternal(surface: Surface, unregister: Boolean) {

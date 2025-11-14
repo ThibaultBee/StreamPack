@@ -120,7 +120,7 @@ private class DefaultSurfaceProcessor(
 
         executeSafely {
             if (!surfaceOutputs.contains(surfaceOutput)) {
-                renderer.registerOutputSurface(surfaceOutput.surface)
+                renderer.registerOutputSurface(surfaceOutput.targetSurface)
                 surfaceOutputs.add(surfaceOutput)
             } else {
                 Logger.w(TAG, "Surface already added")
@@ -130,7 +130,7 @@ private class DefaultSurfaceProcessor(
 
     private fun removeOutputSurfaceInternal(surfaceOutput: ISurfaceOutput) {
         if (surfaceOutputs.contains(surfaceOutput)) {
-            renderer.unregisterOutputSurface(surfaceOutput.surface)
+            renderer.unregisterOutputSurface(surfaceOutput.targetSurface)
             surfaceOutputs.remove(surfaceOutput)
         } else {
             Logger.w(TAG, "Surface not found")
@@ -154,7 +154,7 @@ private class DefaultSurfaceProcessor(
 
         executeSafely {
             val surfaceOutput =
-                surfaceOutputs.firstOrNull { it.surface == surface }
+                surfaceOutputs.firstOrNull { it.targetSurface == surface }
             if (surfaceOutput != null) {
                 removeOutputSurfaceInternal(surfaceOutput)
             } else {
@@ -165,7 +165,7 @@ private class DefaultSurfaceProcessor(
 
     private fun removeAllOutputSurfacesInternal() {
         surfaceOutputs.forEach { surfaceOutput ->
-            renderer.unregisterOutputSurface(surfaceOutput.surface)
+            renderer.unregisterOutputSurface(surfaceOutput.targetSurface)
         }
         surfaceOutputs.clear()
     }
@@ -234,8 +234,7 @@ private class DefaultSurfaceProcessor(
                     renderer.render(
                         timestamp,
                         surfaceOutputMatrix,
-                        it.surface,
-                        it.viewportRect
+                        it.targetSurface
                     )
                 }
             } catch (t: Throwable) {
@@ -247,13 +246,13 @@ private class DefaultSurfaceProcessor(
         if (pendingSnapshots.isNotEmpty()) {
             try {
                 val bitmapSurface =
-                    surfaceOutputs.maxByOrNull { it.resolution.width * it.resolution.height }
+                    surfaceOutputs.maxByOrNull { it.targetResolution.width * it.targetResolution.height }
                         ?: throw IllegalStateException(
                             "No output surface available for snapshot"
                         )
 
                 // Execute all pending snapshots.
-                takeSnapshot(bitmapSurface.resolution, surfaceOutputMatrix.clone())
+                takeSnapshot(bitmapSurface.targetResolution, surfaceOutputMatrix.clone())
             } catch (e: RuntimeException) {
                 // Propagates error back to the app if failed to take snapshot.
                 failAllPendingSnapshots(e)

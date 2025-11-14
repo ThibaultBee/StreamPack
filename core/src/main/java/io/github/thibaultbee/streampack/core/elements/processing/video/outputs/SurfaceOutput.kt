@@ -15,14 +15,10 @@
  */
 package io.github.thibaultbee.streampack.core.elements.processing.video.outputs
 
-import android.graphics.Rect
-import android.graphics.RectF
 import android.opengl.Matrix
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.IntRange
-import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.SurfaceOutput.TransformationInfo
-import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ViewPortUtils.calculateViewportRect
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.TransformUtils
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.preRotate
@@ -35,50 +31,51 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
 fun SurfaceOutput(
     descriptor: SurfaceDescriptor,
     isStreaming: () -> Boolean,
-    transformationInfo: TransformationInfo
+    sourceResolution: Size,
+    needMirroring: Boolean,
+    sourceInfoProvider: ISourceInfoProvider
 ) =
     SurfaceOutput(
         descriptor.surface,
         descriptor.resolution,
+        descriptor.targetRotation,
         isStreaming,
-        transformationInfo
+        sourceResolution,
+        needMirroring,
+        sourceInfoProvider
     )
 
 class SurfaceOutput(
-    override val surface: Surface,
-    override val resolution: Size,
+    override val targetSurface: Surface,
+    override val targetResolution: Size,
+    @RotationValue val targetRotation: Int,
     val isStreaming: () -> Boolean,
-    private val transformationInfo: TransformationInfo
+    sourceResolution: Size,
+    val needMirroring: Boolean,
+    sourceInfoProvider: ISourceInfoProvider
 ) :
     ISurfaceOutput {
     override val type = ISurfaceOutput.OutputType.INTERNAL
 
-    private val infoProvider: ISourceInfoProvider
-        get() = transformationInfo.infoProvider
-
     @IntRange(from = 0, to = 359)
-    val rotationDegrees = infoProvider.getRelativeRotationDegrees(
-        transformationInfo.targetRotation,
-        transformationInfo.needMirroring
+    val rotationDegrees = sourceInfoProvider.getRelativeRotationDegrees(
+        targetRotation,
+        needMirroring
     )
 
     @IntRange(from = 0, to = 359)
-    val sourceRotationDegrees = infoProvider.rotationDegrees
+    val sourceRotationDegrees = sourceInfoProvider.rotationDegrees
+
+    private val sourceResolutionRectF = sourceResolution.toRectF()
 
     private val additionalTransform = FloatArray(16)
     private val invertedTextureTransform = FloatArray(16)
-
-    val viewportRect = calculateViewportRect(
-        transformationInfo.aspectRatioMode,
-        transformationInfo.infoProvider.getSurfaceSize(resolution),
-        resolution
-    )
 
     init {
         calculateAdditionalTransform(
             additionalTransform,
             invertedTextureTransform,
-            transformationInfo.infoProvider
+            sourceInfoProvider
         )
     }
 
@@ -128,31 +125,35 @@ class SurfaceOutput(
         additionalTransform.preRotate(rotationDegrees.toFloat(), 0.5f, 0.5f)
 
         // Mirroring
-        if (transformationInfo.needMirroring) {
+        if (needMirroring) {
             Matrix.translateM(additionalTransform, 0, 1f, 0f, 0f)
             Matrix.scaleM(additionalTransform, 0, -1f, 1f, 1f)
         }
 
         // Crop
         // Rotate the size and cropRect, and mirror the cropRect.
-        val rotatedSize = resolution.rotate(
+        val rotatedTargetResolution = targetResolution.rotate(
             rotationDegrees
         )
+        val rotatedTargetResolutionRectF = rotatedTargetResolution.toRectF()
         val imageTransform = TransformUtils.getRectToRect(
-            resolution.toRectF(),
-            rotatedSize.toRectF(),
+            sourceResolutionRectF,
+            rotatedTargetResolutionRectF,
             rotationDegrees,
             sourceInfoProvider.isMirror
         )
-        val rotatedCroppedRect = RectF(transformationInfo.cropRect)
+        val rotatedCroppedRect = TransformUtils.calculateViewfinder(
+            rotatedTargetResolutionRectF,
+            sourceResolutionRectF
+        )
         imageTransform.mapRect(rotatedCroppedRect)
         // According to the rotated size and cropRect, compute the normalized offset and the scale
         // of X and Y.
-        val offsetX: Float = rotatedCroppedRect.left / rotatedSize.width
-        val offsetY: Float = ((rotatedSize.height - rotatedCroppedRect.height()
-                - rotatedCroppedRect.top)) / rotatedSize.height
-        val scaleX: Float = rotatedCroppedRect.width() / rotatedSize.width
-        val scaleY: Float = rotatedCroppedRect.height() / rotatedSize.height
+        val offsetX: Float = rotatedCroppedRect.left / rotatedTargetResolution.width
+        val offsetY: Float = ((rotatedTargetResolution.height - rotatedCroppedRect.height()
+                - rotatedCroppedRect.top)) / rotatedTargetResolution.height
+        val scaleX: Float = rotatedCroppedRect.width() / rotatedTargetResolution.width
+        val scaleY: Float = rotatedCroppedRect.height() / rotatedTargetResolution.height
         // Move to the new left-bottom position and apply the scale.
         Matrix.translateM(additionalTransform, 0, offsetX, offsetY, 0f)
         Matrix.scaleM(additionalTransform, 0, scaleX, scaleY, 1f)
@@ -201,12 +202,4 @@ class SurfaceOutput(
         // Invert the matrix so it can be used to "undo" the SurfaceTexture#getTransformMatrix.
         Matrix.invertM(invertedTextureTransform, 0, invertedTextureTransform, 0)
     }
-
-    data class TransformationInfo(
-        val aspectRatioMode: AspectRatioMode,
-        @RotationValue val targetRotation: Int,
-        val cropRect: Rect,
-        val needMirroring: Boolean,
-        val infoProvider: ISourceInfoProvider
-    )
 }

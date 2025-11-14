@@ -16,17 +16,11 @@
 package io.github.thibaultbee.streampack.core.pipelines
 
 import android.content.Context
-import android.graphics.Rect
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.processing.video.DefaultSurfaceProcessorFactory
 import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal
-import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.AspectRatioMode
-import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
-import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.SurfaceOutput
-import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
-import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
@@ -54,7 +48,6 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoCallbackPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoSurfacePipelineOutputInternal
-import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
@@ -315,50 +308,12 @@ open class StreamerPipeline(
         Logger.i(TAG, "Updating transformation")
         videoOutput.surfaceFlow.value?.let { surfaceDescriptor ->
             _videoInput?.removeOutputSurface(surfaceDescriptor.surface)
-            _videoInput?.let { input ->
-                input.addOutputSurface(
-                    buildSurfaceOutput(
-                        surfaceDescriptor,
-                        videoOutput::isStreaming,
-                        input.infoProviderFlow.value
-                    )
-                )
-            }
-        }
-    }
-
-    /**
-     * Creates a surface output for the given surface.
-     *
-     * Use it for additional processing.
-     *
-     * @param surfaceDescriptor the encoder surface
-     * @param isStreaming a lambda to check if the surface is streaming
-     * @param infoProvider the source info provider for internal processing
-     */
-    private fun buildSurfaceOutput(
-        surfaceDescriptor: SurfaceDescriptor,
-        isStreaming: () -> Boolean,
-        infoProvider: ISourceInfoProvider?
-    ): ISurfaceOutput {
-        val cropRect =
-            Rect(0, 0, surfaceDescriptor.resolution.width, surfaceDescriptor.resolution.height)
-        return SurfaceOutput(
-            surfaceDescriptor, isStreaming, SurfaceOutput.TransformationInfo(
-                getAspectRatioMode(),
-                surfaceDescriptor.targetRotation,
-                cropRect,
+            _videoInput?.addOutputSurface(
+                surfaceDescriptor,
                 isMirroringRequired(),
-                infoProvider ?: DefaultSourceInfoProvider()
+                videoOutput::isStreaming
             )
-        )
-    }
-
-    /**
-     * Gets the aspect ratio mode to calculate the viewport rectangle.
-     */
-    protected open fun getAspectRatioMode(): AspectRatioMode {
-        return AspectRatioMode.PRESERVE
+        }
     }
 
     /**
@@ -656,11 +611,9 @@ open class StreamerPipeline(
                         newSurfaceDescriptor?.let {
                             Logger.i(TAG, "Adding new surface: $newSurfaceDescriptor")
                             input.addOutputSurface(
-                                buildSurfaceOutput(
-                                    it,
-                                    output::isStreaming,
-                                    input.infoProviderFlow.value
-                                )
+                                it,
+                                isMirroringRequired(),
+                                output::isStreaming
                             )
                         }
                     } catch (t: Throwable) {

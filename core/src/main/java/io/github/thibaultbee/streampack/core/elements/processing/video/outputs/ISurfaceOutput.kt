@@ -4,8 +4,8 @@ import android.util.Size
 import android.view.Surface
 
 interface ISurfaceOutput {
-    val surface: Surface
-    val resolution: Size
+    val targetSurface: Surface
+    val targetResolution: Size
     val type: OutputType
 
     fun updateTransformMatrix(output: FloatArray, input: FloatArray)

@@ -4,6 +4,7 @@ import android.graphics.Matrix
 import android.graphics.RectF
 import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.normalized
+import kotlin.math.abs
 
 
 object TransformUtils {
@@ -31,15 +32,50 @@ object TransformUtils {
         mirroring: Boolean
     ): Matrix {
         // Map source to normalized space.
-        val matrix = Matrix()
-        matrix.setRectToRect(source, NORMALIZED_RECT, Matrix.ScaleToFit.FILL)
-        // Add rotation.
-        matrix.postRotate(rotationDegrees.toFloat())
-        if (mirroring) {
-            matrix.postScale(-1f, 1f)
+        return Matrix().apply {
+            setRectToRect(source, NORMALIZED_RECT, Matrix.ScaleToFit.FILL)
+            postRotate(rotationDegrees.toFloat())
+            if (mirroring) {
+                postScale(-1f, 1f)
+            }
+            postConcat(target.normalized)
         }
-        // Restore the normalized space to target's coordinates.
-        matrix.postConcat(target.normalized)
-        return matrix
+    }
+
+    fun calculateViewfinder(
+        source: RectF,
+        target: RectF
+    ): RectF {
+        val sourceAspectRatio = abs(source.width() / source.height())
+        val targetAspectRatio = abs(target.width() / target.height())
+
+        return when {
+            sourceAspectRatio == targetAspectRatio -> {
+                // Same aspect ratio, no need to adjust
+                RectF(target)
+            }
+            sourceAspectRatio > targetAspectRatio -> {
+                // Source is wider than target, fit width
+                val scaledHeight = target.width() / sourceAspectRatio
+                val top = target.centerY() - scaledHeight / 2f
+                RectF(
+                    target.left,
+                    top,
+                    target.right,
+                    top + scaledHeight
+                )
+            }
+            else -> {
+                // Source is taller than target, fit height
+                val scaledWidth = target.height() * sourceAspectRatio
+                val left = target.centerX() - scaledWidth / 2f
+                RectF(
+                    left,
+                    target.top,
+                    left + scaledWidth,
+                    target.bottom
+                )
+            }
+        }
     }
 }
