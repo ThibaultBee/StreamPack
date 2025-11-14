@@ -23,6 +23,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.utils.ChannelWithCloseableData
+import io.github.thibaultbee.streampack.core.logger.Logger
 
 /**
  * Handles FLV streams and creates FLV data from frames.
@@ -93,6 +94,15 @@ class FlvTagBuilder(val channel: ChannelWithCloseableData<FLVTag>) {
         ts: Int,
         streamPid: Int
     ) {
+        if (ts < 0) {
+            Logger.w(
+                TAG,
+                "Negative timestamp $ts for frame ${closeableFrame.frame}. Frame will be dropped."
+            )
+            closeableFrame.close()
+            return
+        }
+
         val frame = closeableFrame.frame
         val flvDatas = when (streamPid) {
             AUDIO_STREAM_PID -> audioStream?.create(frame)
@@ -114,6 +124,8 @@ class FlvTagBuilder(val channel: ChannelWithCloseableData<FLVTag>) {
     }
 
     companion object Companion {
+        private const val TAG = "FlvTagBuilder"
+
         private const val AUDIO_STREAM_PID = 0
         private const val VIDEO_STREAM_PID = 1
 
