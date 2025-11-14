@@ -32,11 +32,9 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -74,12 +72,10 @@ open class DynamicEndpoint(
     private val _isOpenFlow = MutableStateFlow(false)
     override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow.asStateFlow()
 
+    private val throwableJob = ConflatedJob()
     private val throwableFlows = endpointFlow.map { it?.throwableFlow }
-    override val throwableFlow: StateFlow<Throwable?> = throwableFlows.map { it?.value }.stateIn(
-        coroutineScope,
-        started = SharingStarted.Eagerly,
-        initialValue = null
-    )
+    private val _throwableFlow = MutableStateFlow<Throwable?>(null)
+    override val throwableFlow: StateFlow<Throwable?> = _throwableFlow.asStateFlow()
 
     /**
      * Only available when the endpoint is opened.
@@ -100,6 +96,19 @@ open class DynamicEndpoint(
                 } else {
                     isOpenJob += isOpenFlow.collect { isOpen ->
                         _isOpenFlow.emit(isOpen)
+                    }
+                }
+            }
+        }
+        coroutineScope.launch {
+            throwableFlows.collect { throwableFlow ->
+                if (throwableFlow == null) {
+                    throwableJob.cancel()
+                } else {
+                    throwableJob += launch {
+                        throwableFlow.collect { throwable ->
+                            _throwableFlow.emit(throwable)
+                        }
                     }
                 }
             }

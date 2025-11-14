@@ -20,9 +20,7 @@ import io.github.komedia.komuxer.amf.AmfVersion
 import io.github.komedia.komuxer.flv.FLVMuxer
 import io.github.komedia.komuxer.flv.encode
 import io.github.komedia.komuxer.flv.tags.FLVTag
-import io.github.komedia.komuxer.flv.tags.audio.AudioData
 import io.github.komedia.komuxer.flv.tags.script.OnMetadata
-import io.github.komedia.komuxer.flv.tags.video.VideoData
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
@@ -36,6 +34,7 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.FlvMuxerInfo
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.FlvTagBuilder
+import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.close
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
@@ -120,11 +119,7 @@ sealed class FlvEndpoint(
         }
         // Close FLVTag data if needed
         try {
-            if (flvTag.data is AudioData) {
-                (flvTag.data as AudioData).body.close()
-            } else if (flvTag.data is VideoData) {
-                (flvTag.data as VideoData).body.close()
-            }
+            flvTag.data.close()
         } catch (t: Throwable) {
             Logger.e(TAG, "Error while closing FLVTag data: $t")
         }
@@ -136,11 +131,6 @@ sealed class FlvEndpoint(
         val frame = closeableFrame.frame
         val startUpTimestamp = getStartUpTimestamp(frame.ptsInUs)
         val ts = (frame.ptsInUs - startUpTimestamp) / 1000
-        if (ts < 0) {
-            Logger.w(TAG, "Frame dropped due to negative timestamp")
-            closeableFrame.close()
-            return
-        }
         flvTagBuilder.write(closeableFrame, ts.toInt(), streamPid)
     }
 

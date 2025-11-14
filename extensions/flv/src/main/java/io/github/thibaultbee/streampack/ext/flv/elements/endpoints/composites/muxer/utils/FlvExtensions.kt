@@ -17,6 +17,9 @@ package io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.m
 
 import io.github.komedia.komuxer.flv.config.FLVAudioConfig
 import io.github.komedia.komuxer.flv.config.FLVVideoConfig
+import io.github.komedia.komuxer.flv.tags.FLVData
+import io.github.komedia.komuxer.flv.tags.audio.AudioData
+import io.github.komedia.komuxer.flv.tags.video.VideoData
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 
@@ -44,4 +47,15 @@ internal fun VideoCodecConfig.toFLVConfig(): FLVVideoConfig {
         resolution.height,
         fps
     )
+}
+
+/**
+ * Closes the body of the FLVData if it's closeable.
+ */
+fun FLVData.close() {
+    if (this is AudioData) {
+        body.close()
+    } else if (this is VideoData) {
+        body.close()
+    }
 }
