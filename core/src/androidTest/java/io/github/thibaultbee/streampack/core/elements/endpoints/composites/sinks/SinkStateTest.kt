@@ -1,7 +1,6 @@
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks
 
 import androidx.test.platform.app.InstrumentationRegistry
-import io.github.thibaultbee.streampack.ext.rtmp.elements.endpoints.composites.sinks.RtmpSink
 import io.github.thibaultbee.streampack.ext.srt.elements.endpoints.composites.sinks.SrtSink
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
@@ -33,8 +32,7 @@ class SinkStateTest(private val endpoint: ISinkInternal) {
                 ContentSink(context, ioDispatcher),
                 ChunkedFileOutputStreamSink(1000, ioDispatcher),
                 FakeSink(),
-                SrtSink(ioDispatcher),
-                RtmpSink(ioDispatcher)
+                SrtSink(ioDispatcher)
             )
         }
     }

@@ -32,6 +32,7 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combineTransform
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -90,6 +91,14 @@ open class CombineEndpoint(
             SharingStarted.Eagerly,
             false
         )
+
+    override val throwableFlow: StateFlow<Throwable?> = merge(
+        *endpointInternals.map { it.throwableFlow }.toTypedArray()
+    ).stateIn(
+        coroutineScope,
+        started = SharingStarted.Eagerly,
+        initialValue = null
+    )
 
     /**
      * The union of all endpoints' [IEndpoint.IEndpointInfo].
