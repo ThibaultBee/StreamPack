@@ -15,18 +15,13 @@
  */
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks
 
+import java.io.IOException
+
 /**
  * Class that encapsulates closed errors
  */
-class ClosedException(cause: Throwable) : Exception(cause) {
-    /**
-     * @param message the error message
-     * @param cause the error cause
-     */
-    constructor(message: String, cause: Throwable) : this(Exception(message, cause))
-
-    /**
-     * @param message the error message
-     */
-    constructor(message: String) : this(Exception(message))
+class ClosedException(message: String? = null, cause: Throwable? = null) :
+    IOException(message, cause) {
+    constructor(message: String) : this(message, null)
+    constructor(cause: Throwable) : this(null, cause)
 }
