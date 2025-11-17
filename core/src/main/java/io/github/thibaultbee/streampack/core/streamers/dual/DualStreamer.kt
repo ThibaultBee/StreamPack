@@ -43,7 +43,10 @@ import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline.AudioOutputMode
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.utils.MultiThrowable
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
+import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
+import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.SharingStarted
@@ -302,19 +305,25 @@ open class DualStreamer(
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override suspend fun setAudioConfig(audioConfig: DualStreamerAudioConfig) {
-        var throwable: Throwable? = null
+        val throwables = mutableListOf<Throwable>()
 
         try {
             firstPipelineOutput.setAudioCodecConfig(audioConfig.firstAudioConfig)
-        } catch (e: Throwable) {
-            throwable = e
+        } catch (t: Throwable) {
+            throwables += t
         }
         try {
             audioConfig.secondAudioConfig.let { secondPipelineOutput.setAudioCodecConfig(it) }
-        } catch (e: Throwable) {
-            throwable = e
+        } catch (t: Throwable) {
+            throwables += t
         }
-        throwable?.let { throw it }
+        if (throwables.isNotEmpty()) {
+            if (throwables.size == 1) {
+                throw throwables.first()
+            } else {
+                throw MultiThrowable(throwables)
+            }
+        }
     }
 
     /**
@@ -329,18 +338,24 @@ open class DualStreamer(
      * @param videoConfig the video configuration to set
      */
     override suspend fun setVideoConfig(videoConfig: DualStreamerVideoConfig) {
-        var throwable: Throwable? = null
+        val throwables = mutableListOf<Throwable>()
         try {
             firstPipelineOutput.setVideoCodecConfig(videoConfig.firstVideoConfig)
-        } catch (e: Throwable) {
-            throwable = e
+        } catch (t: Throwable) {
+            throwables += t
         }
         try {
             secondPipelineOutput.setVideoCodecConfig(videoConfig.secondVideoConfig)
-        } catch (e: Throwable) {
-            throwable = e
+        } catch (t: Throwable) {
+            throwables += t
         }
-        throwable?.let { throw it }
+        if (throwables.isNotEmpty()) {
+            if (throwables.size == 1) {
+                throw throwables.first()
+            } else {
+                throw MultiThrowable(throwables)
+            }
+        }
     }
 
     /**
@@ -377,3 +392,29 @@ open class DualStreamer(
         coroutineScope.cancel()
     }
 }
+
+/**
+ * Sets audio configuration.
+ *
+ * It is a shortcut for [IConfigurableAudioVideoEncodingPipelineOutput.setAudioCodecConfig] when both
+ * outputs use the same audio configuration.
+ *
+ * @param audioConfig the audio configuration to set
+ */
+@RequiresPermission(Manifest.permission.RECORD_AUDIO)
+suspend fun DualStreamer.setAudioConfig(audioConfig: AudioConfig) {
+    setAudioConfig(DualStreamerAudioConfig(audioConfig))
+}
+
+/**
+ * Sets video configuration.
+ *
+ * It is a shortcut for [IConfigurableAudioVideoEncodingPipelineOutput.setVideoCodecConfig] when both
+ * outputs use the same video configuration.
+ *
+ * @param videoConfig the video configuration to set
+ */
+suspend fun DualStreamer.setVideoConfig(videoConfig: VideoConfig) {
+    setVideoConfig(DualStreamerVideoConfig(videoConfig))
+}
+
