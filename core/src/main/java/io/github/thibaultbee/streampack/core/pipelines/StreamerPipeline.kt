@@ -89,8 +89,7 @@ open class StreamerPipeline(
     surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
     protected val dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ) : IWithVideoSource, IWithVideoRotation, IWithAudioSource, IStreamer {
-    private val coroutineScope: CoroutineScope =
-        CoroutineScope(dispatcherProvider.default)
+    private val coroutineScope = CoroutineScope(dispatcherProvider.default)
     private val isReleaseRequested = AtomicBoolean(false)
 
     private val _throwableFlow = MutableStateFlow<Throwable?>(null)
@@ -160,9 +159,9 @@ open class StreamerPipeline(
 
         _videoInput?.let { input ->
             coroutineScope.launch {
-                input.infoProviderFlow.collect {
+                input.inputConfigChanged.collect {
                     if (isReleaseRequested.get()) {
-                        Logger.w(TAG, "Pipeline is released, dropping info provider update")
+                        Logger.w(TAG, "Pipeline is released, dropping video input config changed")
                         return@collect
                     }
 

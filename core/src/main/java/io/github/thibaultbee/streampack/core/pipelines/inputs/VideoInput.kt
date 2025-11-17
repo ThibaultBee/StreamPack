@@ -23,7 +23,6 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceP
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.SurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
-import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
@@ -184,8 +183,8 @@ internal class VideoInput(
     private val source: IVideoSourceInternal?
         get() = sourceInternalFlow.value
 
-    private val _infoProviderFlow = MutableStateFlow<ISourceInfoProvider?>(null)
-    val infoProviderFlow = _infoProviderFlow.asStateFlow()
+    private val _inputConfigChanged = MutableStateFlow(Unit)
+    val inputConfigChanged: StateFlow<Unit> = _inputConfigChanged.asStateFlow()
 
     // CONFIG
     private val _sourceConfigFlow = MutableStateFlow<VideoSourceConfig?>(null)
@@ -207,10 +206,6 @@ internal class VideoInput(
      */
     private val _isStreamingFlow = MutableStateFlow(false)
     override val isStreamingFlow = _isStreamingFlow.asStateFlow()
-
-    // OUTPUT
-    private val outputMutex = Mutex()
-    private val surfaceOutput = mutableListOf<ISurfaceOutput>()
 
     override suspend fun setSource(videoSourceFactory: IVideoSourceInternal.Factory) {
         if (isReleaseRequested.get()) {
@@ -261,7 +256,7 @@ internal class VideoInput(
 
                 infoProviderJob += coroutineScope.launch {
                     newVideoSource.infoProviderFlow.collect {
-                        _infoProviderFlow.emit(it)
+                        _inputConfigChanged.emit(Unit)
                     }
                 }
 
@@ -375,6 +370,7 @@ internal class VideoInput(
                     videoSourceInternal.resetOutput()
                 }
                 currentSurfaceProcessor.removeInputSurface(it)
+                _inputConfigChanged.emit(Unit)
                 addSourceSurface(
                     videoConfig,
                     currentSurfaceProcessor,
@@ -403,9 +399,7 @@ internal class VideoInput(
         }
     }
 
-    private suspend fun buildSurfaceProcessor(
-        videoSourceConfig: VideoSourceConfig
-    ): ISurfaceProcessorInternal {
+    private suspend fun buildSurfaceProcessor(videoSourceConfig: VideoSourceConfig): ISurfaceProcessorInternal {
         val newSurfaceProcessor =
             surfaceProcessorFactory.create(
                 videoSourceConfig.dynamicRangeProfile,
@@ -413,9 +407,8 @@ internal class VideoInput(
             )
         addSourceSurface(videoSourceConfig, newSurfaceProcessor)
 
-        outputMutex.withLock {
-            surfaceOutput.forEach { newSurfaceProcessor.addOutputSurface(it) }
-        }
+        // Re-adds output surfaces
+        _inputConfigChanged.emit(Unit)
 
         return newSurfaceProcessor
     }
@@ -451,7 +444,7 @@ internal class VideoInput(
         isMirroringRequired: Boolean,
         isStreaming: () -> Boolean
     ): ISurfaceOutput {
-        val infoProvider = infoProviderFlow.value ?: DefaultSourceInfoProvider()
+        val infoProvider = source?.infoProviderFlow?.value ?: DefaultSourceInfoProvider()
         val sourceResolution = infoProvider.getSurfaceSize(
             sourceConfig!!.resolution // build surface output is only called after config is set
         )
@@ -482,24 +475,16 @@ internal class VideoInput(
         )
     }
 
-    internal suspend fun addOutputSurface(output: ISurfaceOutput) {
+    internal fun addOutputSurface(output: ISurfaceOutput) {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
 
-        outputMutex.withLock {
-            surfaceOutput.add(output)
-            processor.addOutputSurface(output)
-        }
+        processor.addOutputSurface(output)
     }
 
-    internal suspend fun removeOutputSurface(output: Surface) {
-        outputMutex.withLock {
-            surfaceOutput.firstOrNull { it.targetSurface == output }?.let {
-                surfaceOutput.remove(it)
-            }
-            processor.removeOutputSurface(output)
-        }
+    internal fun removeOutputSurface(output: Surface) {
+        processor.removeOutputSurface(output)
     }
 
     private suspend fun startStreamUnsafe() {
@@ -580,11 +565,7 @@ internal class VideoInput(
                 processor.removeInputSurface(it)
             }
         }
-        outputMutex.withLock {
-            surfaceOutput.clear()
-            processor.removeAllOutputSurfaces()
-        }
-
+        processor.removeAllOutputSurfaces()
         processor.release()
     }
 
