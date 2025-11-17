@@ -122,7 +122,7 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
             if (streamer is IWithVideoSource) {
                 inflateStreamerPreview(streamer)
             } else {
-                Log.e(TAG, "Can't start preview, streamer is not a IVideoStreamer")
+                Log.e(TAG, "Can't start preview, streamer is not a video streamer")
             }
         }
     }
@@ -173,15 +173,15 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
     @RequiresPermission(Manifest.permission.CAMERA)
     private fun inflateStreamerPreview() {
         val streamer = previewViewModel.streamerLiveData.value
-        if (streamer is SingleStreamer) {
+        if (streamer is IWithVideoSource) {
             inflateStreamerPreview(streamer)
         } else {
-            Log.e(TAG, "Can't start preview, streamer is not a SingleStreamer")
+            Log.e(TAG, "Can't start preview, streamer is not a video streamer")
         }
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    private fun inflateStreamerPreview(streamer: SingleStreamer) {
+    private fun inflateStreamerPreview(streamer: IWithVideoSource) {
         val preview = binding.preview
         // Set camera settings button when camera is started
         preview.listener = object : PreviewView.Listener {
