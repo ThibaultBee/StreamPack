@@ -307,18 +307,6 @@ internal class EncodingPipelineOutput(
         }
     }
 
-    override suspend fun queueAudioFrame(frame: RawFrame) = mutex.withLock {
-        val input = try {
-            requireNotNull(audioInput) { "Audio input is null" }
-        } catch (t: Throwable) {
-            frame.close()
-            throw t
-        }
-        input.queueInputFrame(
-            frame
-        )
-    }
-
     private suspend fun setAudioCodecConfigUnsafe(audioCodecConfig: AudioCodecConfig) {
         require(!isStreaming) { "Can't change audio configuration while streaming" }
 
@@ -382,6 +370,36 @@ internal class EncodingPipelineOutput(
 
         return audioEncoder
     }
+
+    override suspend fun invalidateAudioCodecConfig() {
+        if (!withAudio) {
+            return
+        }
+        withContextMutex {
+            require(!isStreaming) { "Can't invalidate audio configuration while streaming" }
+
+            _audioCodecConfigFlow.emit(null)
+            try {
+                audioEncoderInternal?.release()
+            } catch (t: Throwable) {
+                Logger.w(TAG, "Can't release audio encoder: ${t.message}")
+            }
+            audioEncoderInternal = null
+        }
+    }
+
+    override suspend fun queueAudioFrame(frame: RawFrame) = mutex.withLock {
+        val input = try {
+            requireNotNull(audioInput) { "Audio input is null" }
+        } catch (t: Throwable) {
+            frame.close()
+            throw t
+        }
+        input.queueInputFrame(
+            frame
+        )
+    }
+
 
     private val _videoCodecConfigFlow = MutableStateFlow<VideoCodecConfig?>(null)
     override val videoCodecConfigFlow = _videoCodecConfigFlow.asStateFlow()
@@ -488,6 +506,24 @@ internal class EncodingPipelineOutput(
         }
 
         return videoEncoder
+    }
+
+    override suspend fun invalidateVideoCodecConfig() {
+        if (!withVideo) {
+            return
+        }
+        withContextMutex {
+            require(!isStreaming) { "Can't invalidate video configuration while streaming" }
+
+            _videoCodecConfigFlow.emit(null)
+            try {
+                videoEncoderInternal?.release()
+            } catch (t: Throwable) {
+                Logger.w(TAG, "Can't release video encoder: ${t.message}")
+            }
+            videoEncoderInternal = null
+            _surfaceFlow.emit(null)
+        }
     }
 
     /**

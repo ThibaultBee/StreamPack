@@ -37,8 +37,11 @@ import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -183,8 +186,8 @@ internal class VideoInput(
     private val source: IVideoSourceInternal?
         get() = sourceInternalFlow.value
 
-    private val _inputConfigChanged = MutableStateFlow(Unit)
-    val inputConfigChanged: StateFlow<Unit> = _inputConfigChanged.asStateFlow()
+    private val _inputConfigChanged = MutableSharedFlow<Unit>()
+    val inputConfigChanged: SharedFlow<Unit> = _inputConfigChanged.asSharedFlow()
 
     // CONFIG
     private val _sourceConfigFlow = MutableStateFlow<VideoSourceConfig?>(null)
@@ -466,16 +469,18 @@ internal class VideoInput(
             throw IllegalStateException("Input is released")
         }
 
-        addOutputSurface(
-            buildSurfaceOutput(
-                surfaceDescriptor,
-                isMirroringRequired,
-                isStreaming
+        sourceMutex.withLock {
+            addOutputSurfaceUnsafe(
+                buildSurfaceOutput(
+                    surfaceDescriptor,
+                    isMirroringRequired,
+                    isStreaming
+                )
             )
-        )
+        }
     }
 
-    internal fun addOutputSurface(output: ISurfaceOutput) {
+    internal fun addOutputSurfaceUnsafe(output: ISurfaceOutput) {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }

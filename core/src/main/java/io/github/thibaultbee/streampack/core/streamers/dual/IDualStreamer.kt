@@ -31,6 +31,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig.
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig.Companion.getBestProfile
 import io.github.thibaultbee.streampack.core.elements.utils.ByteFormatValue
 import io.github.thibaultbee.streampack.core.elements.utils.ChannelConfigValue
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.isCompatibleWith
 import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.streamers.IAudioStreamer
@@ -50,38 +51,23 @@ fun DualStreamerAudioConfig(config: AudioConfig) = DualStreamerAudioConfig(
 
 /**
  * Creates a [DualStreamerAudioConfig] with different configuration for each audio stream.
+ *
+ * @param firstAudioCodecConfig the first audio output codec configuration
+ * @param secondAudioCodecConfig the second audio output codec configuration
+ * @param sampleRate audio capture sample rate in Hz. From [AudioRecord API](https://developer.android.com/reference/android/media/AudioRecord?hl=en#AudioRecord(int,%20int,%20int,%20int,%20int)): "44100Hz is currently the only rate that is guaranteed to work on all devices, but other rates such as 22050, 16000, and 11025 may work on some devices."
+ * @param channelConfig Audio channel configuration. From [AudioRecord API](https://developer.android.com/reference/android/media/AudioRecord?hl=en#AudioRecord(int,%20int,%20int,%20int,%20int)): " AudioFormat#CHANNEL_IN_MONO is guaranteed to work on all devices."
+ * @param byteFormat Audio byte format.
  */
 fun DualStreamerAudioConfig(
     firstAudioCodecConfig: DualStreamerAudioCodecConfig = DualStreamerAudioCodecConfig(),
     secondAudioCodecConfig: DualStreamerAudioCodecConfig = DualStreamerAudioCodecConfig(),
-
-    /**
-     * Audio capture sample rate in Hz.
-     * From [AudioRecord API](https://developer.android.com/reference/android/media/AudioRecord?hl=en#AudioRecord(int,%20int,%20int,%20int,%20int)): "44100Hz is currently the only rate that is guaranteed to work on all devices, but other rates such as 22050, 16000, and 11025 may work on some devices."
-     */
     sampleRate: Int = DualStreamerAudioCodecConfig.getDefaultSampleRate(
         listOf(
             firstAudioCodecConfig.mimeType,
             secondAudioCodecConfig.mimeType
         )
     ),
-
-    /**
-     * Audio channel configuration.
-     * From [AudioRecord API](https://developer.android.com/reference/android/media/AudioRecord?hl=en#AudioRecord(int,%20int,%20int,%20int,%20int)): " AudioFormat#CHANNEL_IN_MONO is guaranteed to work on all devices."
-     *
-     * @see [AudioFormat.CHANNEL_IN_MONO]
-     * @see [AudioFormat.CHANNEL_IN_STEREO]
-     */
     @ChannelConfigValue channelConfig: Int = AudioFormat.CHANNEL_IN_STEREO,
-
-    /**
-     * Audio byte format.
-     *
-     * @see [AudioFormat.ENCODING_PCM_8BIT]
-     * @see [AudioFormat.ENCODING_PCM_16BIT]
-     * @see [AudioFormat.ENCODING_PCM_FLOAT]
-     */
     @ByteFormatValue byteFormat: Int = AudioFormat.ENCODING_PCM_16BIT,
 ) = DualStreamerAudioConfig(
     firstAudioCodecConfig.toAudioCodecConfig(sampleRate, channelConfig, byteFormat),
@@ -164,12 +150,12 @@ fun DualStreamerVideoConfig(
 
 /**
  * Creates a [DualStreamerVideoConfig] with different configuration for each video stream.
+ *
+ * @param fps the video framerate in frames per second.
+ * @param firstVideoCodecConfig the first video output codec configuration
+ * @param secondVideoCodecConfig the second video output codec configuration
  */
 fun DualStreamerVideoConfig(
-    /**
-     * Video framerate.
-     * This is a best effort as few camera can not generate a fixed framerate.
-     */
     fps: Int = DEFAULT_FPS,
     firstVideoCodecConfig: DualStreamerVideoCodecConfig = DualStreamerVideoCodecConfig(),
     secondVideoCodecConfig: DualStreamerVideoCodecConfig = DualStreamerVideoCodecConfig()
@@ -231,11 +217,31 @@ data class DualStreamerVideoCodecConfig(
     )
 }
 
+/**
+ * A data class that holds video specific codec data for [DualStreamer]
+ */
 class DualStreamerVideoConfig
 internal constructor(
     val firstVideoConfig: VideoCodecConfig,
     val secondVideoConfig: VideoCodecConfig
-)
+) {
+    init {
+        require(firstVideoConfig.isCompatibleWith(secondVideoConfig)) {
+            "Both video configurations must be compatible. " +
+                    "Got first: $firstVideoConfig and second: $secondVideoConfig"
+        }
+    }
+
+    /**
+     * Video framerate in frames per second.
+     */
+    val fps = firstVideoConfig.fps
+
+    /**
+     * Video dynamic range profile.
+     */
+    val dynamicRangeProfile = firstVideoConfig.dynamicRangeProfile
+}
 
 interface IAudioDualStreamer : IAudioStreamer<DualStreamerAudioConfig>
 

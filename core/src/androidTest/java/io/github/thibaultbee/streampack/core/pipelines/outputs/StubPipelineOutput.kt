@@ -216,6 +216,10 @@ internal class StubAudioSyncConfigurableEncodingPipelineOutputInternal :
         _audioCodecConfigFlow.emit(audioCodecConfig)
     }
 
+    override suspend fun invalidateAudioCodecConfig() {
+        _audioCodecConfigFlow.emit(null)
+    }
+
     override val endpoint: IEndpoint
         get() = TODO("Not yet implemented")
 
@@ -259,6 +263,10 @@ internal class StubVideoSurfaceConfigurableEncodingPipelineOutputInternal :
     override suspend fun setVideoCodecConfig(videoCodecConfig: VideoCodecConfig) {
         videoConfigEventListener?.onSetVideoSourceConfig(videoCodecConfig.sourceConfig)
         _videoCodecConfigFlow.emit(videoCodecConfig)
+    }
+
+    override suspend fun invalidateVideoCodecConfig() {
+        _videoCodecConfigFlow.emit(null)
     }
 
     override val endpoint: IEndpoint

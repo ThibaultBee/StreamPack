@@ -81,7 +81,7 @@ class SourceConfigUtilsTest {
             SourceConfigUtils.buildVideoSourceConfig(videoSourceConfigs)
             fail("All video source configs must have the same fps")
         } catch (e: IllegalArgumentException) {
-            assertEquals("All video source configs must have the same fps", e.message)
+            assertEquals("All video source configs must have the same fps but [30, 25]", e.message)
         }
     }
 }

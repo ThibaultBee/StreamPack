@@ -31,10 +31,10 @@ object SourceConfigUtils {
         require(videoSourceConfigs.isNotEmpty()) { "No video source config provided" }
         val maxResolution =
             videoSourceConfigs.map { it.resolution }.maxWith(compareBy({ it.width }, { it.height }))
-        val fps = videoSourceConfigs.first().fps
-        require(videoSourceConfigs.all { it.fps == fps }) { "All video source configs must have the same fps" }
-        val dynamicRangeProfile = videoSourceConfigs.first().dynamicRangeProfile
-        require(videoSourceConfigs.all { it.dynamicRangeProfile == dynamicRangeProfile }) { "All video source configs must have the same dynamic range profile" }
-        return VideoSourceConfig(maxResolution, fps, dynamicRangeProfile)
+        val fps = videoSourceConfigs.map { it.fps }.distinct()
+        require(fps.distinct().size == 1) { "All video source configs must have the same fps but $fps" }
+        val dynamicRangeProfiles = videoSourceConfigs.map { it.dynamicRangeProfile }.distinct()
+        require(dynamicRangeProfiles.size == 1) { "All video source configs must have the same dynamic range profile but $dynamicRangeProfiles" }
+        return VideoSourceConfig(maxResolution, fps.first(), dynamicRangeProfiles.first())
     }
 }

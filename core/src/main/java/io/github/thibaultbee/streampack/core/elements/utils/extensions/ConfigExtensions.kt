@@ -45,6 +45,18 @@ fun AudioCodecConfig.isCompatibleWith(sourceConfig: AudioSourceConfig): Boolean 
 }
 
 /**
+ * Whether [AudioCodecConfig] is compatible with [AudioCodecConfig].
+ *
+ * @param codecConfig [AudioCodecConfig] to compare with
+ * @return `true` if [AudioCodecConfig] is compatible with [AudioCodecConfig], `false` otherwise
+ */
+fun AudioCodecConfig.isCompatibleWith(codecConfig: AudioCodecConfig): Boolean {
+    return (channelConfig == codecConfig.channelConfig)
+            && (sampleRate == codecConfig.sampleRate)
+            && (byteFormat == codecConfig.byteFormat)
+}
+
+/**
  * Converts [AudioCodecConfig] to [AudioSourceConfig].
  *
  * @return [AudioSourceConfig] from [AudioCodecConfig]
@@ -67,13 +79,23 @@ fun VideoSourceConfig.isCompatibleWith(sourceConfig: VideoSourceConfig): Boolean
 }
 
 /**
- * Whether [VideoCodecConfig] is compatible with [VideoCodecConfig].
+ * Whether [VideoCodecConfig] is compatible with [VideoSourceConfig].
  *
- * @param sourceConfig [VideoCodecConfig] to compare with
- * @return `true` if [VideoCodecConfig] is compatible with [VideoCodecConfig], `false` otherwise
+ * @param sourceConfig [VideoSourceConfig] to compare with
+ * @return `true` if [VideoSourceConfig] is compatible with [VideoSourceConfig], `false` otherwise
  */
 fun VideoCodecConfig.isCompatibleWith(sourceConfig: VideoSourceConfig): Boolean {
     return (fps == sourceConfig.fps) && (dynamicRangeProfile == sourceConfig.dynamicRangeProfile)
+}
+
+/**
+ * Whether [VideoCodecConfig] is compatible with [VideoCodecConfig].
+ *
+ * @param codecConfig [VideoCodecConfig] to compare with
+ * @return `true` if [VideoCodecConfig] is compatible with [VideoCodecConfig], `false` otherwise
+ */
+fun VideoCodecConfig.isCompatibleWith(codecConfig: VideoCodecConfig): Boolean {
+    return (fps == codecConfig.fps) && (dynamicRangeProfile == codecConfig.dynamicRangeProfile)
 }
 
 /**

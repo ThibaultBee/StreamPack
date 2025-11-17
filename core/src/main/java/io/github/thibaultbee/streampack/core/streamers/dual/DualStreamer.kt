@@ -36,6 +36,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.isCompatibleWith
 import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
@@ -307,6 +308,18 @@ open class DualStreamer(
     override suspend fun setAudioConfig(audioConfig: DualStreamerAudioConfig) {
         val throwables = mutableListOf<Throwable>()
 
+        val firstAudioCodecConfig = firstPipelineOutput.audioCodecConfigFlow.value
+        if ((firstAudioCodecConfig != null) && (!firstAudioCodecConfig.isCompatibleWith(audioConfig.firstAudioConfig))) {
+            firstPipelineOutput.invalidateAudioCodecConfig()
+        }
+        val secondAudioCodecConfig = secondPipelineOutput.audioCodecConfigFlow.value
+        if ((secondAudioCodecConfig != null) && (!secondAudioCodecConfig.isCompatibleWith(
+                audioConfig.secondAudioConfig
+            ))
+        ) {
+            secondPipelineOutput.invalidateAudioCodecConfig()
+        }
+
         try {
             firstPipelineOutput.setAudioCodecConfig(audioConfig.firstAudioConfig)
         } catch (t: Throwable) {
@@ -339,6 +352,17 @@ open class DualStreamer(
      */
     override suspend fun setVideoConfig(videoConfig: DualStreamerVideoConfig) {
         val throwables = mutableListOf<Throwable>()
+
+        val firstVideoCodecConfig = firstPipelineOutput.videoCodecConfigFlow.value
+        if ((firstVideoCodecConfig != null) && (!firstVideoCodecConfig.isCompatibleWith(videoConfig.firstVideoConfig))) {
+            firstPipelineOutput.invalidateVideoCodecConfig()
+        }
+
+        val secondVideoCodecConfig = secondPipelineOutput.videoCodecConfigFlow.value
+        if ((secondVideoCodecConfig != null) && (!secondVideoCodecConfig.isCompatibleWith(videoConfig.secondVideoConfig))) {
+            secondPipelineOutput.invalidateVideoCodecConfig()
+        }
+
         try {
             firstPipelineOutput.setVideoCodecConfig(videoConfig.firstVideoConfig)
         } catch (t: Throwable) {

@@ -73,6 +73,13 @@ interface IConfigurableAudioEncodingPipelineOutput : IEncodingPipelineOutput,
      * @throws [Throwable] if configuration can not be applied.
      */
     suspend fun setAudioCodecConfig(audioCodecConfig: AudioCodecConfig)
+
+    /**
+     * Invalidates current audio codec configuration.
+     *
+     * You should call [setAudioCodecConfig] after this to set a new configuration.
+     */
+    suspend fun invalidateAudioCodecConfig()
 }
 
 /**
@@ -98,6 +105,13 @@ interface IConfigurableVideoEncodingPipelineOutput : IEncodingPipelineOutput,
      * @throws [Throwable] if configuration can not be applied.
      */
     suspend fun setVideoCodecConfig(videoCodecConfig: VideoCodecConfig)
+
+    /**
+     * Invalidates current video codec configuration.
+     *
+     * You should call [setVideoCodecConfig] after this to set a new configuration.
+     */
+    suspend fun invalidateVideoCodecConfig()
 }
 
 interface IConfigurableAudioVideoEncodingPipelineOutput :

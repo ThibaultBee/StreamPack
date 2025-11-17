@@ -62,6 +62,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -517,7 +518,7 @@ open class StreamerPipeline(
                     )
                 }
                 if (output is IConfigurableAudioPipelineOutputInternal) {
-                    addEncodingAudioOutput(output)
+                    jobs += addConfigurableAudioOutput(output)
                 }
             } else {
                 Logger.w(TAG, "Pipeline has no audio")
@@ -530,7 +531,7 @@ open class StreamerPipeline(
                     jobs += it
                 }
                 if (output is IConfigurableVideoPipelineOutputInternal) {
-                    addEncodingVideoOutput(output)
+                    addConfigurableVideoOutput(output)
                 }
             } else {
                 Logger.w(TAG, "Pipeline has no video")
@@ -569,10 +570,28 @@ open class StreamerPipeline(
         output.audioFrameRequestedListener = audioInput.frameRequestedListener
     }
 
-    private fun addEncodingAudioOutput(
+    private fun addConfigurableAudioOutput(
         output: IConfigurableAudioPipelineOutputInternal
-    ) {
+    ): Job {
         require(output.audioSourceConfigFlow.value == null) { "Output $output already have an audio source config" }
+
+        // Catch the config invalidation
+        val job = coroutineScope.launch {
+            output.audioSourceConfigFlow.drop(1).collect { sourceConfig ->
+                if (sourceConfig == null) {
+                    withContextInputMutex {
+                        try {
+                            setAudioSourceConfig(buildAudioSourceConfig(output))
+                        } catch (t: Throwable) {
+                            Logger.e(
+                                TAG,
+                                "Error while setting audio source config after invalidation for output $output: $t"
+                            )
+                        }
+                    }
+                }
+            }
+        }
 
         // Apply future audio source config
         require(output.audioConfigEventListener == null) { "Output $output already have an audio listener" }
@@ -583,6 +602,8 @@ open class StreamerPipeline(
                         setAudioSourceConfig(buildAudioSourceConfig(output, newAudioSourceConfig))
                     }
             }
+
+        return job
     }
 
     private fun addVideoSurfaceOutputIfNeeded(
@@ -655,10 +676,27 @@ open class StreamerPipeline(
         return SourceConfigUtils.buildVideoSourceConfig(videoSourceConfigs)
     }
 
-    private fun addEncodingVideoOutput(
+    private fun addConfigurableVideoOutput(
         output: IConfigurableVideoPipelineOutputInternal
     ) {
         require(output.videoSourceConfigFlow.value == null) { "Output $output already have a video source config" }
+        // Catch the config invalidation
+        coroutineScope.launch {
+            output.videoSourceConfigFlow.drop(1).collect { sourceConfig ->
+                if (sourceConfig == null) {
+                    withContextInputMutex {
+                        try {
+                            setVideoSourceConfig(buildVideoSourceConfig(output))
+                        } catch (t: Throwable) {
+                            Logger.e(
+                                TAG,
+                                "Error while setting video source config after invalidation for output $output: $t"
+                            )
+                        }
+                    }
+                }
+            }
+        }
 
         // Apply future video source config
         require(output.videoConfigEventListener == null) { "Output $output already have a video listener" }
@@ -676,7 +714,7 @@ open class StreamerPipeline(
      *
      * It will stop the stream.
      */
-    private suspend fun detachOutput(output: IPipelineOutput) {
+    private fun detachOutput(output: IPipelineOutput) {
         Logger.i(TAG, "Detaching output $output")
 
         // Clean streamer output
