@@ -48,6 +48,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.io.EOFException
+import java.io.IOException
 
 /**
  * An endpoint that send frame to an RTMP server.
@@ -114,7 +116,16 @@ class RtmpEndpoint internal constructor(
                     _isOpenFlow.tryEmit(false)
                     if (throwable != null) {
                         Logger.e(TAG, "RTMP connection closed with error: $throwable")
-                        _throwableFlow.tryEmit(ClosedException(throwable))
+                        if (throwable !is EOFException) {
+                            _throwableFlow.tryEmit(ClosedException(throwable))
+                        } else {
+                            _throwableFlow.tryEmit(
+                                ClosedException(
+                                    "Connection lost",
+                                    IOException(throwable)
+                                )
+                            )
+                        }
                     } else {
                         Logger.i(TAG, "RTMP connection closed")
                     }
