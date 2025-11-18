@@ -23,6 +23,7 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceP
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.SurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
+import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
@@ -37,12 +38,10 @@ import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -160,7 +159,8 @@ internal class VideoInput(
     private val context: Context,
     private val surfaceProcessorFactory: ISurfaceProcessorInternal.Factory,
     private val dispatcherProvider: IVideoDispatcherProvider,
-    dynamicRangeProfileHint: DynamicRangeProfile = DynamicRangeProfile.sdr
+    dynamicRangeProfileHint: DynamicRangeProfile = DynamicRangeProfile.sdr,
+    private val onUpdateOutputSurface: suspend () -> List<Triple<SurfaceDescriptor, Boolean, () -> Boolean>>
 ) : IVideoInput {
     private val coroutineScope = CoroutineScope(dispatcherProvider.default)
     private var isStreamingJob = ConflatedJob()
@@ -185,9 +185,6 @@ internal class VideoInput(
 
     private val source: IVideoSourceInternal?
         get() = sourceInternalFlow.value
-
-    private val _inputConfigChanged = MutableSharedFlow<Unit>()
-    val inputConfigChanged: SharedFlow<Unit> = _inputConfigChanged.asSharedFlow()
 
     // CONFIG
     private val _sourceConfigFlow = MutableStateFlow<VideoSourceConfig?>(null)
@@ -258,8 +255,18 @@ internal class VideoInput(
                 )
 
                 infoProviderJob += coroutineScope.launch {
-                    newVideoSource.infoProviderFlow.collect {
-                        _inputConfigChanged.emit(Unit)
+                    /**
+                     * First emission is the current value, we skip it.
+                     */
+                    newVideoSource.infoProviderFlow.drop(1).collect { infoProvider ->
+                        try {
+                            updateOutputSurfaces(infoProvider)
+                        } catch (t: Throwable) {
+                            Logger.w(
+                                TAG,
+                                "setVideoSource: Can't update output surfaces after info provider changed: ${t.message}"
+                            )
+                        }
                     }
                 }
 
@@ -275,6 +282,8 @@ internal class VideoInput(
                         )
                     }
 
+                    updateOutputSurfacesUnsafe(newVideoSource.infoProviderFlow.value)
+
                     try {
                         newVideoSource.startStream()
                     } catch (t: Throwable) {
@@ -284,6 +293,8 @@ internal class VideoInput(
                         )
                         throw t
                     }
+                } else {
+                    updateOutputSurfacesUnsafe(newVideoSource.infoProviderFlow.value)
                 }
 
                 isStreamingJob += coroutineScope.launch {
@@ -297,9 +308,16 @@ internal class VideoInput(
 
                 // Gets and resets output surface from previous video source.
                 if (previousVideoSource is ISurfaceSourceInternal) {
-                    val surface = previousVideoSource.getOutput()
-                    previousVideoSource.resetOutput()
-                    surface?.let { processor.removeInputSurface(surface) }
+                    try {
+                        val surface = previousVideoSource.getOutput()
+                        previousVideoSource.resetOutput()
+                        surface?.let { processor.removeInputSurface(surface) }
+                    } catch (t: Throwable) {
+                        Logger.w(
+                            TAG,
+                            "setVideoSource: Can't reset previous video source output surface: ${t.message}"
+                        )
+                    }
                 }
 
                 val isPreviewing =
@@ -373,7 +391,7 @@ internal class VideoInput(
                     videoSourceInternal.resetOutput()
                 }
                 currentSurfaceProcessor.removeInputSurface(it)
-                _inputConfigChanged.emit(Unit)
+                updateOutputSurfacesUnsafe()
                 addSourceSurface(
                     videoConfig,
                     currentSurfaceProcessor,
@@ -408,15 +426,21 @@ internal class VideoInput(
                 videoSourceConfig.dynamicRangeProfile,
                 dispatcherProvider
             )
+        // Re-adds source surface
         addSourceSurface(videoSourceConfig, newSurfaceProcessor)
 
         // Re-adds output surfaces
-        _inputConfigChanged.emit(Unit)
+        addOutputSurfacesUnsafe()
 
         return newSurfaceProcessor
     }
 
-    override suspend fun takeSnapshot(@IntRange(from = 0, to = 359) rotationDegrees: Int): Bitmap {
+    override suspend fun takeSnapshot(
+        @IntRange(
+            from = 0,
+            to = 359
+        ) rotationDegrees: Int
+    ): Bitmap {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
@@ -438,16 +462,18 @@ internal class VideoInput(
      *
      * Use it for additional processing.
      *
+     * @param infoProvider the source info provider
      * @param surfaceDescriptor the encoder surface
      * @param isMirroringRequired whether mirroring is required
      * @param isStreaming a lambda to check if the surface is streaming
      */
     private fun buildSurfaceOutput(
+        infoProvider: ISourceInfoProvider?,
         surfaceDescriptor: SurfaceDescriptor,
         isMirroringRequired: Boolean,
         isStreaming: () -> Boolean
     ): ISurfaceOutput {
-        val infoProvider = source?.infoProviderFlow?.value ?: DefaultSourceInfoProvider()
+        val infoProvider = infoProvider ?: DefaultSourceInfoProvider()
         val sourceResolution = infoProvider.getSurfaceSize(
             sourceConfig!!.resolution // build surface output is only called after config is set
         )
@@ -472,6 +498,7 @@ internal class VideoInput(
         sourceMutex.withLock {
             addOutputSurfaceUnsafe(
                 buildSurfaceOutput(
+                    source?.infoProviderFlow?.value,
                     surfaceDescriptor,
                     isMirroringRequired,
                     isStreaming
@@ -486,6 +513,54 @@ internal class VideoInput(
         }
 
         processor.addOutputSurface(output)
+    }
+
+
+    private suspend fun addOutputSurfaces(infoProvider: ISourceInfoProvider? = source?.infoProviderFlow?.value) {
+        if (isReleaseRequested.get()) {
+            throw IllegalStateException("Input is released")
+        }
+
+        sourceMutex.withLock {
+            addOutputSurfacesUnsafe(infoProvider)
+        }
+    }
+
+    private suspend fun addOutputSurfacesUnsafe(infoProvider: ISourceInfoProvider? = source?.infoProviderFlow?.value) {
+        if (isReleaseRequested.get()) {
+            throw IllegalStateException("Input is released")
+        }
+
+        val surfaces = onUpdateOutputSurface()
+        surfaces.forEach { (surfaceDescriptor, isMirroringRequired, isStreaming) ->
+            addOutputSurfaceUnsafe(
+                buildSurfaceOutput(
+                    infoProvider,
+                    surfaceDescriptor,
+                    isMirroringRequired,
+                    isStreaming
+                )
+            )
+        }
+    }
+
+    private suspend fun updateOutputSurfacesUnsafe(infoProvider: ISourceInfoProvider? = source?.infoProviderFlow?.value) {
+        if (isReleaseRequested.get()) {
+            throw IllegalStateException("Input is released")
+        }
+
+        processor.removeAllOutputSurfaces()
+        addOutputSurfacesUnsafe(infoProvider)
+    }
+
+    private suspend fun updateOutputSurfaces(infoProvider: ISourceInfoProvider? = source?.infoProviderFlow?.value) {
+        if (isReleaseRequested.get()) {
+            throw IllegalStateException("Input is released")
+        }
+
+        sourceMutex.withLock {
+            updateOutputSurfacesUnsafe(infoProvider)
+        }
     }
 
     internal fun removeOutputSurface(output: Surface) {

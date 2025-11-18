@@ -48,6 +48,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoCallbackPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoSurfacePipelineOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
@@ -118,7 +119,9 @@ open class StreamerPipeline(
     override val audioInput: IAudioInput? = _audioInput
 
     private val _videoInput = if (withVideo) {
-        VideoInput(context, surfaceProcessorFactory, dispatcherProvider)
+        VideoInput(context, surfaceProcessorFactory, dispatcherProvider) {
+            getOutputSurfaces()
+        }
     } else {
         null
     }
@@ -159,20 +162,6 @@ open class StreamerPipeline(
         require(withAudio || withVideo) { "At least one of audio or video must be set" }
 
         _videoInput?.let { input ->
-            coroutineScope.launch {
-                input.inputConfigChanged.collect {
-                    if (isReleaseRequested.get()) {
-                        Logger.w(TAG, "Pipeline is released, dropping video input config changed")
-                        return@collect
-                    }
-
-                    try {
-                        resetSurfaceProcessorOutputSurface()
-                    } catch (t: Throwable) {
-                        Logger.e(TAG, "Error while resetting surface processor output surfaces: $t")
-                    }
-                }
-            }
             coroutineScope.launch {
                 input.isStreamingFlow.collect { isStreaming ->
                     if (isReleaseRequested.get()) {
@@ -289,30 +278,18 @@ open class StreamerPipeline(
      * Updates the transformation of the surface output.
      * To be called when the source info provider or [isMirroringRequired] is updated.
      */
-    private suspend fun resetSurfaceProcessorOutputSurface() {
-        Logger.d(TAG, "Resetting surface processor output surface")
-        safeOutputCall { outputs ->
+    private suspend fun getOutputSurfaces(): List<Triple<SurfaceDescriptor, Boolean, () -> Boolean>> {
+        return safeOutputCall { outputs ->
             outputs.keys.filterIsInstance<IVideoSurfacePipelineOutputInternal>()
-                .filter { it.surfaceFlow.value != null }.forEach {
-                    resetSurfaceProcessorOutputSurface(it)
+                .mapNotNull {
+                    it.surfaceFlow.value?.let { surfaceDescriptor ->
+                        Triple(
+                            surfaceDescriptor,
+                            isMirroringRequired(),
+                            it::isStreaming
+                        )
+                    }
                 }
-        }
-    }
-
-    /**
-     * Updates the transformation of the surface output.
-     */
-    private suspend fun resetSurfaceProcessorOutputSurface(
-        videoOutput: IVideoSurfacePipelineOutputInternal
-    ) {
-        Logger.i(TAG, "Updating transformation")
-        videoOutput.surfaceFlow.value?.let { surfaceDescriptor ->
-            _videoInput?.removeOutputSurface(surfaceDescriptor.surface)
-            _videoInput?.addOutputSurface(
-                surfaceDescriptor,
-                isMirroringRequired(),
-                videoOutput::isStreaming
-            )
         }
     }
 
