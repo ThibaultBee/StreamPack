@@ -251,10 +251,10 @@ internal class AudioInput(
                         TAG,
                         "setAudioSourceConfig: Audio source is not set yet"
                     )
-                } catch (t: Throwable) {
-                    throw t
-                } finally {
                     _sourceConfigFlow.emit(newAudioSourceConfig)
+                } catch (t: Throwable) {
+                    _sourceConfigFlow.emit(null)
+                    throw t
                 }
             }
         }

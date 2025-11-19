@@ -361,13 +361,15 @@ internal class VideoInput(
                 }
                 require(!isStreamingFlow.value) { "Can't change video source configuration while streaming" }
 
-                val previousVideoConfig = sourceConfig
                 try {
-                    applySourceConfig(previousVideoConfig, newVideoSourceConfig)
-                } catch (t: Throwable) {
-                    throw t
-                } finally {
+                    applySourceConfig(
+                        sourceConfig,
+                        newVideoSourceConfig
+                    )
                     _sourceConfigFlow.emit(newVideoSourceConfig)
+                } catch (t: Throwable) {
+                    _sourceConfigFlow.emit(null)
+                    throw t
                 }
             }
         }
@@ -378,9 +380,9 @@ internal class VideoInput(
     ) {
         val videoSourceInternal = sourceInternalFlow.value
         videoSourceInternal?.configure(videoConfig)
+
         val outputSurface =
             if (videoSourceInternal is ISurfaceSourceInternal) videoSourceInternal.getOutput() else null
-
         val currentSurfaceProcessor = processor
         if (previousVideoConfig?.dynamicRangeProfile != videoConfig.dynamicRangeProfile) {
             releaseSurfaceProcessor()
