@@ -22,7 +22,6 @@ import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.SurfaceOutput
-import io.github.thibaultbee.streampack.core.elements.processing.video.source.DefaultSourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
@@ -393,7 +392,7 @@ internal class VideoInput(
                     videoSourceInternal.resetOutput()
                 }
                 currentSurfaceProcessor.removeInputSurface(it)
-                updateOutputSurfacesUnsafe()
+                updateOutputSurfacesUnsafe(videoSourceConfig = videoConfig)
                 addSourceSurface(
                     videoConfig,
                     currentSurfaceProcessor,
@@ -432,7 +431,7 @@ internal class VideoInput(
         addSourceSurface(videoSourceConfig, newSurfaceProcessor)
 
         // Re-adds output surfaces
-        addOutputSurfacesUnsafe()
+        addOutputSurfacesUnsafe(videoSourceConfig = videoSourceConfig)
 
         return newSurfaceProcessor
     }
@@ -465,19 +464,21 @@ internal class VideoInput(
      * Use it for additional processing.
      *
      * @param infoProvider the source info provider
+     * @param videoSourceConfig the source configuration
      * @param surfaceDescriptor the encoder surface
      * @param isMirroringRequired whether mirroring is required
      * @param isStreaming a lambda to check if the surface is streaming
      */
     private fun buildSurfaceOutput(
-        infoProvider: ISourceInfoProvider?,
+        infoProvider: ISourceInfoProvider,
+        videoSourceConfig: VideoSourceConfig,
         surfaceDescriptor: SurfaceDescriptor,
         isMirroringRequired: Boolean,
         isStreaming: () -> Boolean
     ): ISurfaceOutput {
-        val infoProvider = infoProvider ?: DefaultSourceInfoProvider()
+        val infoProvider = infoProvider
         val sourceResolution = infoProvider.getSurfaceSize(
-            sourceConfig!!.resolution // build surface output is only called after config is set
+            videoSourceConfig.resolution // build surface output is only called after config is set
         )
         return SurfaceOutput(
             surfaceDescriptor,
@@ -498,12 +499,22 @@ internal class VideoInput(
         }
 
         sourceMutex.withLock {
+            val sourceConfig = sourceConfig
+            val infoProvider = source?.infoProviderFlow?.value
+            if ((sourceConfig == null) || (infoProvider == null)) {
+                Logger.w(
+                    TAG,
+                    "Video source configuration or info provider is not set, can't add output surface"
+                )
+                return
+            }
             addOutputSurfaceUnsafe(
                 buildSurfaceOutput(
-                    source?.infoProviderFlow?.value,
-                    surfaceDescriptor,
-                    isMirroringRequired,
-                    isStreaming
+                    infoProvider,
+                    sourceConfig,
+                    surfaceDescriptor = surfaceDescriptor,
+                    isMirroringRequired = isMirroringRequired,
+                    isStreaming = isStreaming
                 )
             )
         }
@@ -517,20 +528,20 @@ internal class VideoInput(
         processor.addOutputSurface(output)
     }
 
-
-    private suspend fun addOutputSurfaces(infoProvider: ISourceInfoProvider? = source?.infoProviderFlow?.value) {
+    private suspend fun addOutputSurfacesUnsafe(
+        infoProvider: ISourceInfoProvider? = source?.infoProviderFlow?.value,
+        videoSourceConfig: VideoSourceConfig? = sourceConfig
+    ) {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
 
-        sourceMutex.withLock {
-            addOutputSurfacesUnsafe(infoProvider)
-        }
-    }
-
-    private suspend fun addOutputSurfacesUnsafe(infoProvider: ISourceInfoProvider? = source?.infoProviderFlow?.value) {
-        if (isReleaseRequested.get()) {
-            throw IllegalStateException("Input is released")
+        if ((videoSourceConfig == null) || (infoProvider == null)) {
+            Logger.w(
+                TAG,
+                "Video source configuration or info provider is not set, can't add output surface"
+            )
+            return
         }
 
         val surfaces = onUpdateOutputSurface()
@@ -538,6 +549,7 @@ internal class VideoInput(
             addOutputSurfaceUnsafe(
                 buildSurfaceOutput(
                     infoProvider,
+                    videoSourceConfig,
                     surfaceDescriptor,
                     isMirroringRequired,
                     isStreaming
@@ -546,22 +558,28 @@ internal class VideoInput(
         }
     }
 
-    private suspend fun updateOutputSurfacesUnsafe(infoProvider: ISourceInfoProvider? = source?.infoProviderFlow?.value) {
+    private suspend fun updateOutputSurfacesUnsafe(
+        infoProvider: ISourceInfoProvider? = source?.infoProviderFlow?.value,
+        videoSourceConfig: VideoSourceConfig? = sourceConfig
+    ) {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
 
         processor.removeAllOutputSurfaces()
-        addOutputSurfacesUnsafe(infoProvider)
+        addOutputSurfacesUnsafe(infoProvider, videoSourceConfig)
     }
 
-    private suspend fun updateOutputSurfaces(infoProvider: ISourceInfoProvider? = source?.infoProviderFlow?.value) {
+    private suspend fun updateOutputSurfaces(
+        infoProvider: ISourceInfoProvider? = source?.infoProviderFlow?.value,
+        videoSourceConfig: VideoSourceConfig? = sourceConfig
+    ) {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }
 
         sourceMutex.withLock {
-            updateOutputSurfacesUnsafe(infoProvider)
+            updateOutputSurfacesUnsafe(infoProvider, videoSourceConfig)
         }
     }
 
