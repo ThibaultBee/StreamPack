@@ -1,6 +1,21 @@
 Changelog
 ==========
 
+Version 3.0.2
+----------------
+
+## Features:
+
+- `DualStreamer`: improve the set audio/video configuration API.
+- Add an API to invalidate the configuration of a configurable output.
+
+## Bug fixes:
+
+- Fix a crash when trying to change the FPS of a configurable output
+- Fix video aspect ratio when using multiple outputs with different aspect ratios.
+- Do not emit audio/video source changed events when the configuration failed to be applied.
+
+
 Version 3.0.1
 ----------------
 
