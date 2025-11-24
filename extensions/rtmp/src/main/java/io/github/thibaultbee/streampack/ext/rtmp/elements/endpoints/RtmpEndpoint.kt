@@ -27,7 +27,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint.EndpointInfo
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ClosedException
+import io.github.thibaultbee.streampack.core.elements.endpoints.ClosedException
 import io.github.thibaultbee.streampack.core.elements.utils.ChannelWithCloseableData
 import io.github.thibaultbee.streampack.core.elements.utils.useConsumeEach
 import io.github.thibaultbee.streampack.core.logger.Logger
