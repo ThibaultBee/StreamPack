@@ -24,6 +24,8 @@ import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.utils.ChannelWithCloseableData
 import io.github.thibaultbee.streampack.core.logger.Logger
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * Handles FLV streams and creates FLV data from frames.
@@ -33,6 +35,8 @@ import io.github.thibaultbee.streampack.core.logger.Logger
  * Internal FLV frames handler for FLV based processing (RTMP and FLV files).
  */
 class FlvTagBuilder(val channel: ChannelWithCloseableData<FLVTag>) {
+    private val mutex = Mutex()
+
     private var audioStream: AudioFlvStream? = null
     private var videoStream: VideoFlvStream? = null
 
@@ -49,22 +53,12 @@ class FlvTagBuilder(val channel: ChannelWithCloseableData<FLVTag>) {
         get() = Metadata(audioStream?.flvConfig, videoStream?.flvConfig)
 
     /**
-     * Adds multiple streams to the filter.
-     *
-     * @param streamConfigs The list of stream configurations.
-     * @return A map of stream configurations to their corresponding stream PIDs.
-     */
-    fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
-        return streamConfigs.associateWith { addStream(it) }
-    }
-
-    /**
      * Adds a stream to the filter.
      *
      * @param streamConfig The stream configuration.
      * @return The stream PID. 0 for audio, 1 for video.
      */
-    fun addStream(streamConfig: CodecConfig): Int {
+    private fun addStreamUnsafe(streamConfig: CodecConfig): Int {
         return when (streamConfig) {
             is AudioCodecConfig -> {
                 if (audioStream != null) {
@@ -84,9 +78,31 @@ class FlvTagBuilder(val channel: ChannelWithCloseableData<FLVTag>) {
         }
     }
 
-    fun clearStreams() {
-        audioStream = null
-        videoStream = null
+    /**
+     * Adds multiple streams to the filter.
+     *
+     * @param streamConfigs The list of stream configurations.
+     * @return A map of stream configurations to their corresponding stream PIDs.
+     */
+    suspend fun addStreams(streamConfigs: List<CodecConfig>) = mutex.withLock {
+        streamConfigs.associateWith { addStreamUnsafe(it) }
+    }
+
+    /**
+     * Adds a stream to the filter.
+     *
+     * @param streamConfig The stream configuration.
+     * @return The stream PID. 0 for audio, 1 for video.
+     */
+    suspend fun addStream(streamConfig: CodecConfig) = mutex.withLock {
+        addStreamUnsafe(streamConfig)
+    }
+
+    suspend fun clearStreams() {
+        mutex.withLock {
+            audioStream = null
+            videoStream = null
+        }
     }
 
     suspend fun write(

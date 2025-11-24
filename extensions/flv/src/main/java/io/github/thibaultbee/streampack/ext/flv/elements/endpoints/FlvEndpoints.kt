@@ -136,12 +136,11 @@ sealed class FlvEndpoint(
 
     override suspend fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
         require(streamConfigs.isNotEmpty()) { "At least one stream must be provided" }
-        return mutex.withLock { flvTagBuilder.addStreams(streamConfigs) }
+        return flvTagBuilder.addStreams(streamConfigs)
     }
 
-    override suspend fun addStream(streamConfig: CodecConfig) = mutex.withLock {
+    override suspend fun addStream(streamConfig: CodecConfig) =
         flvTagBuilder.addStream(streamConfig)
-    }
 
     override suspend fun startStream() {
         safeMuxer { flvMuxer ->
@@ -151,19 +150,19 @@ sealed class FlvEndpoint(
     }
 
     override suspend fun stopStream() {
-        mutex.withLock {
-            try {
+        try {
+            mutex.withLock {
                 withContext(ioDispatcher) {
                     flvMuxer?.flush()
                 }
-            } catch (t: Throwable) {
-                Logger.w(TAG, "Error while flushing FLV muxer: $t")
-            } finally {
-                flvTagBuilder.clearStreams()
             }
-        }
-        timestampMutex.withLock {
-            startUpTimestamp = INVALID_TIMESTAMP
+        } catch (t: Throwable) {
+            Logger.w(TAG, "Error while flushing FLV muxer: $t")
+        } finally {
+            flvTagBuilder.clearStreams()
+            timestampMutex.withLock {
+                startUpTimestamp = INVALID_TIMESTAMP
+            }
         }
     }
 
