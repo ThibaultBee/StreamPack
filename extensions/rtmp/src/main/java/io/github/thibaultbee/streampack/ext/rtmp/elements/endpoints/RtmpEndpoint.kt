@@ -24,10 +24,10 @@ import io.github.komedia.komuxer.rtmp.messages.command.StreamPublishType
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
+import io.github.thibaultbee.streampack.core.elements.endpoints.ClosedException
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint.EndpointInfo
-import io.github.thibaultbee.streampack.core.elements.endpoints.ClosedException
 import io.github.thibaultbee.streampack.core.elements.utils.ChannelWithCloseableData
 import io.github.thibaultbee.streampack.core.elements.utils.useConsumeEach
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -145,9 +145,6 @@ class RtmpEndpoint internal constructor(
     private suspend fun write(flvTag: FLVTag) {
         try {
             safeClient { rtmpClient ->
-                if (rtmpClient.isClosed) {
-                    return@safeClient
-                }
                 rtmpClient.write(flvTag)
             }
         } catch (_: TimeoutCancellationException) {
@@ -174,14 +171,11 @@ class RtmpEndpoint internal constructor(
 
     override suspend fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
         require(streamConfigs.isNotEmpty()) { "At least one stream must be provided" }
-        return mutex.withLock {
-            flvTagBuilder.addStreams(streamConfigs)
-        }
+        return flvTagBuilder.addStreams(streamConfigs)
     }
 
-    override suspend fun addStream(streamConfig: CodecConfig) = mutex.withLock {
+    override suspend fun addStream(streamConfig: CodecConfig) =
         flvTagBuilder.addStream(streamConfig)
-    }
 
     override suspend fun startStream() {
         safeClient { rtmpClient ->
@@ -195,19 +189,19 @@ class RtmpEndpoint internal constructor(
     }
 
     override suspend fun stopStream() {
-        mutex.withLock {
-            try {
+        try {
+            mutex.withLock {
                 if (rtmpClient?.isClosed == false) {
                     rtmpClient?.deleteStream()
                 }
-            } catch (t: Throwable) {
-                Logger.w(TAG, "Error while stopping stream: $t")
-            } finally {
-                flvTagBuilder.clearStreams()
             }
-        }
-        timestampMutex.withLock {
-            startUpTimestamp = INVALID_TIMESTAMP
+        } catch (t: Throwable) {
+            Logger.w(TAG, "Error while stopping stream: $t")
+        } finally {
+            flvTagBuilder.clearStreams()
+            timestampMutex.withLock {
+                startUpTimestamp = INVALID_TIMESTAMP
+            }
         }
     }
 
