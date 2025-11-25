@@ -21,6 +21,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.TSOutputCallback
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.toInt
 import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
+import io.github.thibaultbee.streampack.core.logger.Logger
 import java.nio.ByteBuffer
 import java.security.InvalidParameterException
 
@@ -33,12 +34,6 @@ open class TS(
     private val transportScramblingControl: Byte = 0, // Not scrambled
     private var continuityCounter: Byte = 0,
 ) : TSOutputCallback(listener) {
-
-    companion object {
-        const val SYNC_BYTE: Byte = 0x47
-        const val PACKET_SIZE = 188
-    }
-
     protected fun write(
         payload: ByteBuffer? = null,
         adaptationField: ByteBuffer? = null,
@@ -132,6 +127,13 @@ open class TS(
 
             val isLastPacket = payload?.let { !it.hasRemaining() } ?: true
             if (buffer.limit() == buffer.capacity() || isLastPacket) {
+                if (isLastPacket) {
+                    buffer.limit(buffer.capacity())
+                    // stuff with null packet
+                    while (buffer.hasRemaining()) {
+                        writeNullPacket(buffer)
+                    }
+                }
                 writePacket(
                     SrtPacket(
                         buffer,
@@ -146,5 +148,28 @@ open class TS(
             packetIndicator++
         }
         byteBufferPool.put(buffer)
+    }
+
+    companion object {
+        const val SYNC_BYTE: Byte = 0x47
+        const val PACKET_SIZE = 188
+
+        private val nullPacket: ByteBuffer by lazy {
+            val buffer = ByteBuffer.allocate(PACKET_SIZE)
+            buffer.put(SYNC_BYTE)
+            buffer.put(0x1F.toByte())
+            buffer.put(0xFF.toByte())
+            buffer.put(0x10.toByte()) // No adaptation field, no payload
+            while (buffer.hasRemaining()) {
+                buffer.put(0xFF.toByte())
+            }
+            buffer.rewind()
+            buffer
+        }
+
+        private fun writeNullPacket(buffer: ByteBuffer) {
+            buffer.put(nullPacket)
+            nullPacket.rewind()
+        }
     }
 }
