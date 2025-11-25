@@ -224,6 +224,10 @@ class RtmpEndpoint internal constructor(
         private const val TAG = "RtmpEndpoint"
 
         private const val INVALID_TIMESTAMP = -1L
+
+        init {
+            System.setProperty("kotlinx.io.pool.size.bytes", "4194304") // 4MB
+        }
     }
 }
 
