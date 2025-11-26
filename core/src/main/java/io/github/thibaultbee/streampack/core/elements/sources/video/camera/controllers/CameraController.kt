@@ -389,12 +389,6 @@ internal class CameraController(
         sessionController.setRepeatingSession(cameraCaptureCallback)
     }
 
-    suspend fun setBurstSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
-        val sessionController =
-            requireNotNull(sessionController) { "SessionController is null" }
-        sessionController.setBurstSession(cameraCaptureCallback)
-    }
-
     private fun closeControllers() {
         sessionController?.close()
         deviceController?.close()

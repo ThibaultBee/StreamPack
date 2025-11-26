@@ -148,11 +148,6 @@ class CameraSettings internal constructor(
      */
     fun applyRepeatingSession() = runBlocking { cameraController.setRepeatingSession() }
 
-    /**
-     * Applies settings to the camera burst.
-     */
-    fun applyBurstSession() = runBlocking { cameraController.setBurstSession() }
-
     class Flash(
         private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings
@@ -841,7 +836,7 @@ class CameraSettings internal constructor(
                     CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_CANCEL
                 )
             }
-            cameraSettings.applyBurstSession()
+            cameraSettings.applyRepeatingSession()
         }
 
         @Suppress("UNCHECKED_CAST")
@@ -893,7 +888,7 @@ class CameraSettings internal constructor(
                 CameraMetadata.CONTROL_AF_TRIGGER_START
             )
             cameraSettings.set(CaptureRequest.CONTROL_AE_MODE, aeMode)
-            cameraSettings.applyBurstSession()
+            cameraSettings.applyRepeatingSession()
         }
 
         private fun startFocusAndMetering(
@@ -1050,7 +1045,6 @@ class CameraSettings internal constructor(
             disableAutoCancel()
 
             cancelAfAeTrigger()
-            cameraSettings.applyRepeatingSession()
         }
 
         companion object {
