@@ -16,9 +16,7 @@
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers
 
 import android.Manifest
-import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraManager
-import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
 import android.util.Range
 import androidx.annotation.RequiresPermission
@@ -309,18 +307,6 @@ internal class CameraController(
     }
 
     /**
-     * A default capture callback that logs the failure reason.
-     */
-    private val captureCallback = object : CameraCaptureSession.CaptureCallback() {
-        override fun onCaptureFailed(
-            session: CameraCaptureSession, request: CaptureRequest, failure: CaptureFailure
-        ) {
-            super.onCaptureFailed(session, request, failure)
-            Logger.e(TAG, "Capture failed with code ${failure.reason}")
-        }
-    }
-
-    /**
      * Gets a setting from the current capture request.
      */
     fun <T> getSetting(key: CaptureRequest.Key<T?>): T? {
@@ -384,15 +370,17 @@ internal class CameraController(
     /**
      * Sets a repeating session with the current capture request.
      */
-    suspend fun setRepeatingSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
+    suspend fun setRepeatingSession(tag: Any? = null) {
         val sessionController = requireNotNull(sessionController) { "SessionController is null" }
-        sessionController.setRepeatingSession(cameraCaptureCallback)
+        sessionController.setRepeatingSession(tag)
     }
 
-    suspend fun setBurstSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
+    suspend fun setBurstSession(
+        tag: Any? = null
+    ) {
         val sessionController =
             requireNotNull(sessionController) { "SessionController is null" }
-        sessionController.setBurstSession(cameraCaptureCallback)
+        sessionController.setBurstSession(tag)
     }
 
     private fun closeControllers() {

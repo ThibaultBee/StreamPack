@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.core.elements.sources.video.camera.cont
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
+import android.hardware.camera2.TotalCaptureResult
 import android.util.Range
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.ICameraCaptureSessionCompat
@@ -32,6 +33,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 internal class CameraSessionController private constructor(
     private val captureRequestBuilder: CaptureRequestWithTargetsBuilder,
@@ -58,6 +61,25 @@ internal class CameraSessionController private constructor(
             super.onCaptureFailed(session, request, failure)
             Logger.e(TAG, "Capture failed with code ${failure.reason}")
         }
+
+        override fun onCaptureCompleted(
+            session: CameraCaptureSession,
+            request: CaptureRequest,
+            result: TotalCaptureResult
+        ) {
+            super.onCaptureCompleted(session, request, result)
+            Logger.e(TAG, "Capture completed for ${request.tag}")
+        }
+
+        override fun onCaptureSequenceCompleted(
+            session: CameraCaptureSession,
+            sequenceId: Int,
+            frameNumber: Long
+        ) {
+            super.onCaptureSequenceCompleted(session, sequenceId, frameNumber)
+            Logger.d(TAG, "Capture sequence $sequenceId completed at frame $frameNumber")
+        }
+
     }
 
     val isEmpty: Boolean
@@ -215,10 +237,36 @@ internal class CameraSessionController private constructor(
         }
     }
 
+    private suspend fun setRepeatingSessionByTag(tag: Any) = suspendCoroutine { continuation ->
+        val captureCallback = object : CameraCaptureSession.CaptureCallback() {
+            override fun onCaptureCompleted(
+                session: CameraCaptureSession,
+                request: CaptureRequest,
+                result: TotalCaptureResult
+            ) {
+                super.onCaptureCompleted(session, request, result)
+                if (request.tag == tag) {
+                    captureRequestBuilder.setTag(null)
+                    sessionCompat.setRepeatingSingleRequest(
+                        captureSession, captureRequestBuilder.build(), captureCallback
+                    )
+                    try {
+                        continuation.resume(Unit)
+                    } catch (_: IllegalStateException) {
+                        // Ignore if the continuation has already been resumed
+                    }
+                }
+            }
+        }
+        sessionCompat.setRepeatingSingleRequest(
+            captureSession, captureRequestBuilder.build(), captureCallback
+        )
+    }
+
     /**
      * Sets a repeating session with the current capture request.
      */
-    suspend fun setRepeatingSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
+    suspend fun setRepeatingSession(tag: Any? = null) {
         if (captureRequestBuilder.isEmpty) {
             Logger.w(TAG, "Capture request is empty")
             return
@@ -229,13 +277,21 @@ internal class CameraSessionController private constructor(
                 return
             }
 
-            sessionCompat.setRepeatingSingleRequest(
-                captureSession, captureRequestBuilder.build(), cameraCaptureCallback
-            )
+            captureRequestBuilder.setTag(tag)
+            if (tag == null) {
+                sessionCompat.setRepeatingSingleRequest(
+                    captureSession, captureRequestBuilder.build(), captureCallback
+                )
+            } else {
+                setRepeatingSessionByTag(tag)
+            }
         }
     }
 
-    suspend fun setBurstSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
+    suspend fun setBurstSession(
+        tag: Any? = null,
+        cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback
+    ) {
         if (captureRequestBuilder.isEmpty) {
             Logger.w(TAG, "Capture request is empty")
             return
@@ -245,6 +301,8 @@ internal class CameraSessionController private constructor(
                 Logger.w(TAG, "Camera session controller is released")
                 return
             }
+
+            captureRequestBuilder.setTag(tag)
 
             sessionCompat.captureBurstRequests(
                 captureSession, listOf(captureRequestBuilder.build()), cameraCaptureCallback

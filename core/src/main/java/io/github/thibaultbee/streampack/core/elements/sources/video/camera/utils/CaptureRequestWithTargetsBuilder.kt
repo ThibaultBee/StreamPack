@@ -130,7 +130,7 @@ internal class CaptureRequestWithTargetsBuilder private constructor(
     /**
      * Same as [CaptureRequest.Builder.setTag]
      */
-    fun setTag(tag: Any) = captureRequestBuilder.setTag(tag)
+    fun setTag(tag: Any?) = captureRequestBuilder.setTag(tag)
 
     /**
      * Same as [CaptureRequest.Builder.build]

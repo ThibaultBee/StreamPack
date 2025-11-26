@@ -52,6 +52,9 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.isNormali
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.normalize
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
 import io.github.thibaultbee.streampack.core.logger.Logger
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
@@ -145,6 +148,8 @@ class CameraSettings internal constructor(
      * Applies settings to the camera repeatedly.
      */
     fun applyRepeatingSession() = runBlocking { cameraController.setRepeatingSession() }
+
+    suspend fun applyRepeatingSessionWithTag(tag: Any) = cameraController.setRepeatingSession(tag)
 
     class Flash(
         private val cameraManager: CameraManager,
@@ -900,7 +905,10 @@ class CameraSettings internal constructor(
                 CameraMetadata.CONTROL_AF_TRIGGER_START
             )
             cameraSettings.set(CaptureRequest.CONTROL_AE_MODE, aeMode)
-            cameraSettings.applyRepeatingSession()
+            CoroutineScope(Dispatchers.IO).launch {
+                cameraSettings.applyRepeatingSessionWithTag("focus")
+                cancelAfAeTrigger()
+            }
         }
 
         private fun startFocusAndMetering(
