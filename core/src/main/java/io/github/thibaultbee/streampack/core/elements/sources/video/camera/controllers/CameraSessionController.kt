@@ -235,23 +235,6 @@ internal class CameraSessionController private constructor(
         }
     }
 
-    suspend fun setBurstSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
-        if (captureRequestBuilder.isEmpty) {
-            Logger.w(TAG, "Capture request is empty")
-            return
-        }
-        captureSessionMutex.withLock {
-            if (isClosed) {
-                Logger.w(TAG, "Camera session controller is released")
-                return
-            }
-
-            sessionCompat.captureBurstRequests(
-                captureSession, listOf(captureRequestBuilder.build()), cameraCaptureCallback
-            )
-        }
-    }
-
     private suspend fun stopRepeatingSession() {
         captureSessionMutex.withLock {
             if (isClosed) {
