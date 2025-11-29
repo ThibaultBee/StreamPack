@@ -68,6 +68,7 @@ class PesTest {
             AssertEqualsBuffersMockMuxerListener(expectedBuffers),
             Stream(
                 VideoCodecConfig(
+                    resolution = MockUtils.mockSize(640, 480),
                     profile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline,
                     level = MediaCodecInfo.CodecProfileLevel.AVCLevel31
                 ), 256
