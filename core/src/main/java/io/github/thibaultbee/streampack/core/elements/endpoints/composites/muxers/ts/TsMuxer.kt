@@ -17,8 +17,8 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxe
 
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
@@ -81,21 +81,22 @@ class TsMuxer : IMuxerInternal {
         val frame = closeableFrame.frame
         try {
             val pes = getPes(streamPid.toShort())
+            val mimeType = pes.stream.config.mimeType
             val newFrame = when {
-                frame.mimeType == MediaFormat.MIMETYPE_VIDEO_AVC -> {
+                mimeType == MediaFormat.MIMETYPE_VIDEO_AVC -> {
                     // Copy sps & pps before buffer
                     if (frame.isKeyFrame) {
                         if (frame.extra == null) {
                             throw MissingFormatArgumentException("Missing extra for AVC")
                         }
                         val buffer =
-                            ByteBuffer.allocate(6 + frame.extra.sumOf { it.limit() } + frame.buffer.limit())
+                            ByteBuffer.allocate(6 + frame.extra.sumOf { it.limit() } + frame.rawBuffer.limit())
                         // Add access unit delimiter (AUD) before the AVC access unit
                         buffer.putInt(0x00000001)
                         buffer.put(0x09.toByte())
                         buffer.put(0xf0.toByte())
                         frame.extra.forEach { buffer.put(it) }
-                        buffer.put(frame.buffer)
+                        buffer.put(frame.rawBuffer)
                         buffer.rewind()
                         frame.copy(rawBuffer = buffer)
                     } else {
@@ -103,21 +104,21 @@ class TsMuxer : IMuxerInternal {
                     }
                 }
 
-                frame.mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC -> {
+                mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC -> {
                     // Copy sps & pps & vps before buffer
                     if (frame.isKeyFrame) {
                         if (frame.extra == null) {
                             throw MissingFormatArgumentException("Missing extra for HEVC")
                         }
                         val buffer =
-                            ByteBuffer.allocate(7 + frame.extra.sumOf { it.limit() } + frame.buffer.limit())
+                            ByteBuffer.allocate(7 + frame.extra.sumOf { it.limit() } + frame.rawBuffer.limit())
                         // Add access unit delimiter (AUD) before the HEVC access unit
                         buffer.putInt(0x00000001)
                         buffer.put(0x46.toByte())
                         buffer.put(0x01.toByte())
                         buffer.put(0x50.toByte())
                         frame.extra.forEach { buffer.put(it) }
-                        buffer.put(frame.buffer)
+                        buffer.put(frame.rawBuffer)
                         buffer.rewind()
                         frame.copy(rawBuffer = buffer)
                     } else {
@@ -125,15 +126,15 @@ class TsMuxer : IMuxerInternal {
                     }
                 }
 
-                AudioCodecConfig.isAacMimeType(frame.mimeType) -> {
+                AudioCodecConfig.isAacMimeType(mimeType) -> {
                     frame.copy(
                         rawBuffer = if (pes.stream.config.profile == MediaCodecInfo.CodecProfileLevel.AACObjectLC) {
                             ADTSFrameWriter.fromAudioConfig(
-                                frame.buffer, pes.stream.config as AudioCodecConfig
+                                frame.rawBuffer, pes.stream.config as AudioCodecConfig
                             ).toByteBuffer()
                         } else {
                             LATMFrameWriter.fromDecoderSpecificInfo(
-                                frame.buffer,
+                                frame.rawBuffer,
                                 frame.extra!!.first()
                             )
                                 .toByteBuffer()
@@ -141,19 +142,19 @@ class TsMuxer : IMuxerInternal {
                     )
                 }
 
-                frame.mimeType == MediaFormat.MIMETYPE_AUDIO_OPUS -> {
-                    val payloadSize = frame.buffer.remaining()
+                mimeType == MediaFormat.MIMETYPE_AUDIO_OPUS -> {
+                    val payloadSize = frame.rawBuffer.remaining()
                     val controlHeader = OpusControlHeader(
                         payloadSize = payloadSize
                     )
                     val buffer = ByteBuffer.allocate(controlHeader.size + payloadSize)
                     controlHeader.write(buffer)
-                    buffer.put(frame.buffer)
+                    buffer.put(frame.rawBuffer)
                     buffer.rewind()
                     frame.copy(rawBuffer = buffer)
                 }
 
-                else -> throw IllegalArgumentException("Unsupported mimeType ${frame.mimeType}")
+                else -> throw IllegalArgumentException("Unsupported mimeType $mimeType")
             }
 
             synchronized(this) {
@@ -172,7 +173,7 @@ class TsMuxer : IMuxerInternal {
     private fun generateStreams(
         frame: Frame, pes: Pes
     ) {
-        retransmitPsi(frame.isVideo and frame.isKeyFrame)
+        retransmitPsi(pes.stream.isVideo and frame.isKeyFrame)
         pes.write(frame)
     }
 

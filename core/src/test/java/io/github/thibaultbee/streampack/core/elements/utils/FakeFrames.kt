@@ -56,6 +56,11 @@ object FakeFrames {
             pts,
             dts,
             isKeyFrame,
+            listOf(
+                ByteBuffer.wrap(
+                    Random.nextBytes(10)
+                )
+            ),
             format = format
         )
     }

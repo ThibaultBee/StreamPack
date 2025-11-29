@@ -336,7 +336,8 @@ class EncodingPipelineOutputTest {
             )
         )
 
-        assertTrue(dummyEndpoint.frameFlow.filterNotNull().first().isAudio)
+        // Wait for frame to be received
+        assertNotNull(dummyEndpoint.frameFlow.filterNotNull().first())
     }
 
     companion object {

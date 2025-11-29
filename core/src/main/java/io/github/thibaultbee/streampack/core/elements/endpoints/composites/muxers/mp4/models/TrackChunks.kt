@@ -175,7 +175,7 @@ class TrackChunks(
         }
 
         val frameCopy =
-            frame.copy(rawBuffer = frame.buffer.clone()) // Do not keep mediacodec buffer
+            frame.copy(rawBuffer = frame.rawBuffer.clone()) // Do not keep mediacodec buffer
         chunks.last().add(frameId, frameCopy)
         frameId++
     }
@@ -186,30 +186,30 @@ class TrackChunks(
                 when (track.config.mimeType) {
                     MediaFormat.MIMETYPE_VIDEO_HEVC,
                     MediaFormat.MIMETYPE_VIDEO_AVC -> {
-                        if (frame.buffer.isAnnexB) {
+                        if (frame.rawBuffer.isAnnexB) {
                             // Replace start code with size (from Annex B to AVCC)
-                            val noStartCodeBuffer = frame.buffer.removeStartCode()
+                            val noStartCodeBuffer = frame.rawBuffer.removeStartCode()
                             val sizeBuffer = ByteBuffer.allocate(4)
                             sizeBuffer.putInt(0, noStartCodeBuffer.remaining())
                             onNewSample(sizeBuffer)
                             onNewSample(noStartCodeBuffer)
-                        } else if (frame.buffer.isAvcc) {
-                            onNewSample(frame.buffer)
+                        } else if (frame.rawBuffer.isAvcc) {
+                            onNewSample(frame.rawBuffer)
                         } else {
                             throw IllegalArgumentException(
                                 "Unsupported buffer format: buffer start with 0x${
-                                    frame.buffer.get(
+                                    frame.rawBuffer.get(
                                         0
                                     ).toString(16)
-                                }, 0x${frame.buffer.get(1).toString(16)}, 0x${
-                                    frame.buffer.get(2).toString(16)
-                                }, 0x${frame.buffer.get(3).toString(16)}"
+                                }, 0x${frame.rawBuffer.get(1).toString(16)}, 0x${
+                                    frame.rawBuffer.get(2).toString(16)
+                                }, 0x${frame.rawBuffer.get(3).toString(16)}"
                             )
                         }
                     }
 
                     else -> {
-                        onNewSample(frame.buffer)
+                        onNewSample(frame.rawBuffer)
                     } // Nothing
                 }
             }

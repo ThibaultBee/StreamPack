@@ -169,13 +169,13 @@ class MediaMuxerEndpoint(
                     val info = BufferInfo().apply {
                         set(
                             0,
-                            frame.buffer.remaining(),
+                            frame.rawBuffer.remaining(),
                             frame.ptsInUs,
                             if (frame.isKeyFrame) BUFFER_FLAG_KEY_FRAME else 0
                         )
                     }
                     try {
-                        mediaMuxer.writeSampleData(trackId, frame.buffer, info)
+                        mediaMuxer.writeSampleData(trackId, frame.rawBuffer, info)
                     } catch (e: IllegalStateException) {
                         Logger.w(TAG, "MediaMuxer is in an illegal state. ${e.message}")
                     }

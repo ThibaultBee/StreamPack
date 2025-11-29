@@ -1,5 +1,7 @@
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.models
 
+import io.github.thibaultbee.streampack.core.elements.data.Frame
+
 /**
  * A class that is responsible to decide when to write a segment.
  */
@@ -10,7 +12,7 @@ abstract class MP4Segmenter(
     protected val isAudioOnly = hasAudio && !hasVideo
     protected val isVideoOnly = hasVideo && !hasAudio
 
-    abstract fun mustWriteSegment(frame: io.github.thibaultbee.streampack.core.elements.data.Frame): Boolean
+    abstract fun mustWriteSegment(frame: Frame): Boolean
 }
 
 /**
@@ -28,7 +30,7 @@ class DefaultMP4Segmenter(
     private var audioFrameCounter = 0
     private var isFirstVideoFrame = true
 
-    override fun mustWriteSegment(frame: io.github.thibaultbee.streampack.core.elements.data.Frame): Boolean {
+    override fun mustWriteSegment(frame: Frame): Boolean {
         return if (isAudioOnly) {
             audioFrameCounter++
             if (audioFrameCounter == numOfAudioSampleInSegment) {
@@ -38,7 +40,7 @@ class DefaultMP4Segmenter(
                 false
             }
         } else {
-            if (frame.isVideo && frame.isKeyFrame) {
+            if (frame.isKeyFrame) {
                 if (isFirstVideoFrame) {
                     isFirstVideoFrame = false
                     false

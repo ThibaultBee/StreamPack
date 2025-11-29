@@ -27,28 +27,9 @@ import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.utils.av.audio.opus.OpusCsdParser
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.AudioFlvMuxerInfo
+import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.FlvAudioDataFactory.FlvAacAudioDataFactory
+import java.nio.ByteBuffer
 
-
-internal interface IFlvAudioDataFactory {
-    fun create(
-        frame: Frame, withSequenceHeader: Boolean = false
-    ): List<AudioData>
-
-    companion object {
-        fun createFactory(codecConfig: AudioCodecConfig): IFlvAudioDataFactory {
-            return if (AudioFlvMuxerInfo.isLegacyConfig(codecConfig)
-            ) {
-                if (AudioCodecConfig.isAacMimeType(codecConfig.mimeType)) {
-                    FlvAacAudioDataFactory(codecConfig)
-                } else {
-                    throw IllegalArgumentException("Audio codec is not implemented in legacy FLV: ${codecConfig.mimeType}")
-                }
-            } else {
-                FlvExtendedAudioDataFactory()
-            }
-        }
-    }
-}
 
 /**
  * Creates a FLV audio data factory for AAC audio.
@@ -70,113 +51,124 @@ internal fun FlvAacAudioDataFactory(
     )
 )
 
-/**
- * Internal factory to create FLV AAC audio data from StreamPack [Frame]s.
- */
-internal class FlvAacAudioDataFactory(private val aacAudioDataFactory: AACAudioDataFactory) :
-    IFlvAudioDataFactory {
+internal class FlvAudioDataFactory {
+    internal interface IAudioDataFactory {
+        fun create(
+            frame: Frame, withSequenceStart: Boolean = false
+        ): List<AudioData>
+    }
+
     /**
-     * Create FLV video data from a [Frame].
+     * Internal factory to create FLV AAC audio data from StreamPack [Frame]s.
      */
-    override fun create(
-        frame: Frame, withSequenceHeader: Boolean
-    ): List<AudioData> {
-        val flvDatas = mutableListOf<AudioData>()
+    internal class FlvAacAudioDataFactory(private val aacAudioDataFactory: AACAudioDataFactory) :
+        IAudioDataFactory {
+        /**
+         * Create FLV video data from a [Frame].
+         */
+        override fun create(
+            frame: Frame, withSequenceStart: Boolean
+        ): List<AudioData> {
+            val flvDatas = mutableListOf<AudioData>()
 
-        if (withSequenceHeader) {
-            val decoderConfigurationRecordBuffer = frame.extra!![0]
-            flvDatas.add(
-                aacAudioDataFactory.sequenceStart(
-                    decoderConfigurationRecordBuffer
+            if (withSequenceStart) {
+                val decoderConfigurationRecordBuffer = frame.extra!![0]
+                flvDatas.add(
+                    aacAudioDataFactory.sequenceStart(
+                        decoderConfigurationRecordBuffer
+                    )
                 )
-            )
-        }
-        flvDatas.add(
-            aacAudioDataFactory.codedFrame(frame.buffer)
-        )
-        return flvDatas
-    }
-}
-
-/**
- * Internal factory to create extended audio FLV data from StreamPack [Frame]s.
- */
-internal class FlvExtendedAudioDataFactory : IFlvAudioDataFactory {
-    private fun getAacAudioDataFactory(): ExtendedAudioDataFactory {
-        return aacDataFactory ?: ExtendedAudioDataFactory(AudioFourCC.AAC).also {
-            aacDataFactory = it
-        }
-    }
-
-    private fun createAacData(frame: Frame, withSequenceHeader: Boolean): List<AudioData> {
-        val flvDatas = mutableListOf<AudioData>()
-        val dataFactory = getAacAudioDataFactory()
-
-        if (withSequenceHeader) {
-            val decoderConfigurationRecordBuffer = frame.extra!![0]
+            }
             flvDatas.add(
-                dataFactory.sequenceStart(
-                    decoderConfigurationRecordBuffer
-                )
+                aacAudioDataFactory.codedFrame(frame.rawBuffer)
             )
-        }
-
-        flvDatas.add(
-            dataFactory.codedFrame(
-                frame.buffer
-            )
-        )
-        return flvDatas
-    }
-
-    private fun getOpusAudioDataFactory(): ExtendedAudioDataFactory {
-        return opusDataFactory ?: ExtendedAudioDataFactory(AudioFourCC.OPUS).also {
-            opusDataFactory = it
+            return flvDatas
         }
     }
 
-    private fun createOpusData(frame: Frame, withSequenceHeader: Boolean): List<AudioData> {
-        val flvDatas = mutableListOf<AudioData>()
-        val dataFactory = getOpusAudioDataFactory()
+    /**
+     * Internal factory to create extended audio FLV data from StreamPack [Frame]s.
+     */
+    internal class FlvExtendedAudioDataFactory(
+        private val factory: ExtendedAudioDataFactory,
+        private val onSequenceStart: (Frame) -> ByteBuffer?,
+    ) : IAudioDataFactory {
+        override fun create(frame: Frame, withSequenceStart: Boolean): List<AudioData> {
+            val flvDatas = mutableListOf<AudioData>()
 
-        if (withSequenceHeader) {
-            frame.extra?.let {
-                val identificationHeader = OpusCsdParser.findIdentificationHeader(it[0])
-                if (identificationHeader != null) {
+            if (withSequenceStart) {
+                val sequenceStart = onSequenceStart(frame)
+                sequenceStart?.let {
                     flvDatas.add(
-                        dataFactory.sequenceStart(identificationHeader)
+                        factory.sequenceStart(
+                            it
+                        )
                     )
                 }
             }
-        }
 
-        flvDatas.add(
-            dataFactory.codedFrame(
-                frame.buffer
+            flvDatas.add(
+                factory.codedFrame(
+                    frame.rawBuffer
+                )
             )
-        )
-        return flvDatas
-    }
-
-    override fun create(frame: Frame, withSequenceHeader: Boolean): List<AudioData> {
-        // Currently only AVC is supported
-        return when {
-            frame.mimeType == MediaFormat.MIMETYPE_AUDIO_OPUS -> createOpusData(
-                frame,
-                withSequenceHeader
-            )
-
-            AudioCodecConfig.isAacMimeType(frame.mimeType) -> createAacData(
-                frame,
-                withSequenceHeader
-            )
-
-            else -> throw IllegalArgumentException("Unsupported audio mime type: ${frame.mimeType}")
+            return flvDatas
         }
     }
 
     companion object {
-        private var opusDataFactory: ExtendedAudioDataFactory? = null
-        private var aacDataFactory: ExtendedAudioDataFactory? = null
+        private var aacLegacyDataFactory: IAudioDataFactory? = null
+        private var aacExtendedDataFactory: IAudioDataFactory? = null
+        private var opusDataFactory: IAudioDataFactory? = null
+
+        private fun getLegacyAacAudioDataFactory(codecConfig: AudioCodecConfig): IAudioDataFactory {
+            return aacLegacyDataFactory ?: FlvAacAudioDataFactory(codecConfig).also {
+                aacLegacyDataFactory = it
+            }
+        }
+
+        private fun getExtendedAacAudioDataFactory(): IAudioDataFactory {
+            return aacExtendedDataFactory ?: createExtendedAacFactory().also {
+                aacExtendedDataFactory = it
+            }
+        }
+
+        private fun getOpusAudioDataFactory(): IAudioDataFactory {
+            return opusDataFactory ?: createOpusFactory().also {
+                opusDataFactory = it
+            }
+        }
+
+        fun createFactory(codecConfig: AudioCodecConfig): IAudioDataFactory {
+            return when {
+                AudioCodecConfig.isAacMimeType(codecConfig.mimeType) && AudioFlvMuxerInfo.isLegacyConfig(
+                    codecConfig
+                ) -> getLegacyAacAudioDataFactory(codecConfig)
+
+                AudioCodecConfig.isAacMimeType(codecConfig.mimeType) -> getExtendedAacAudioDataFactory()
+                codecConfig.mimeType == MediaFormat.MIMETYPE_AUDIO_OPUS -> createOpusFactory()
+                else -> throw IllegalArgumentException("Audio codec is not implemented in FLV: ${codecConfig.mimeType}")
+            }
+        }
+
+        private fun createExtendedAacFactory(): IAudioDataFactory {
+            return FlvExtendedAudioDataFactory(
+                ExtendedAudioDataFactory(AudioFourCC.AAC),
+                onSequenceStart = { frame ->
+                    frame.extra!![0]
+                }
+            )
+        }
+
+        private fun createOpusFactory(): IAudioDataFactory {
+            return FlvExtendedAudioDataFactory(
+                ExtendedAudioDataFactory(AudioFourCC.OPUS),
+                onSequenceStart = { frame ->
+                    frame.extra?.let {
+                        OpusCsdParser.findIdentificationHeader(it[0])
+                    }
+                }
+            )
+        }
     }
 }

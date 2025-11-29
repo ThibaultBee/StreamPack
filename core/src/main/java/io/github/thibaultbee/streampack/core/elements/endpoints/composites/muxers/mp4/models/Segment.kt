@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.models
 
+import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.boxes.MediaDataBox
 import java.nio.ByteBuffer
 
@@ -47,7 +48,7 @@ class Segment(
         return trackSegment.firstTimestamp
     }
 
-    fun add(frame: io.github.thibaultbee.streampack.core.elements.data.Frame, streamPid: Int) {
+    fun add(frame: Frame, streamPid: Int) {
         val trackSegment = getTrackSegment(streamPid)
         trackSegment.add(frame)
     }

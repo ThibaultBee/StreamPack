@@ -28,6 +28,7 @@ import io.github.komedia.komuxer.flv.tags.video.VideoFrameType
 import io.github.komedia.komuxer.flv.tags.video.codedFrame
 import io.github.komedia.komuxer.flv.tags.video.sequenceStart
 import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.avc.AVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.hevc.HEVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.vpx.VPCodecConfigurationRecord
@@ -38,145 +39,171 @@ import java.nio.ByteBuffer
  * Internal factory to create FLV data from StreamPack [Frame]s.
  */
 internal class FlvVideoDataFactory {
-
-    private fun getAvcVideoDataFactory(): AVCVideoDataFactory {
-        return avcDataFactory ?: AVCVideoDataFactory().also {
-            avcDataFactory = it
-        }
-    }
-
-    private fun createAVCData(frame: Frame, withSequenceHeader: Boolean): List<VideoData> {
-        val flvDatas = mutableListOf<VideoData>()
-        val videoDataFactory = getAvcVideoDataFactory()
-
-        val videoFrameType = if (frame.isKeyFrame) {
-            VideoFrameType.KEY
-        } else {
-            VideoFrameType.INTER
-        }
-        if (frame.isKeyFrame && withSequenceHeader) {
-            val decoderConfigurationRecordBuffer =
-                AVCDecoderConfigurationRecord.fromParameterSets(
-                    frame.extra!![0],
-                    frame.extra!![1]
-                ).toByteBuffer()
-            flvDatas.add(
-                videoDataFactory.sequenceStart(
-                    decoderConfigurationRecordBuffer
-                )
-            )
-        }
-        val source = transformToAVCC(frame.buffer)
-        flvDatas.add(
-            videoDataFactory.codedFrame(
-                videoFrameType,
-                source.first,
-                source.second
-            )
-        )
-        return flvDatas
+    /**
+     * Interface for FLV video data factory.
+     */
+    internal interface IVideoDataFactory {
+        fun create(
+            frame: Frame,
+            withSequenceStart: Boolean = false
+        ): List<VideoData>
     }
 
     /**
-     * Create FLV video data from a [Frame].
+     * Factory to create legacy FLV AVC video data from a [Frame].
      */
-    private fun createExtendedData(
-        factory: CommonExtendedVideoDataFactory,
-        frame: Frame,
-        withSequenceHeader: Boolean,
-        onDecoderConfigurationRecord: () -> ByteBuffer,
-    ): List<VideoData> {
-        val flvDatas = mutableListOf<VideoData>()
+    private class AVCFlvVideoDataFactory : IVideoDataFactory {
+        private val factory = AVCVideoDataFactory()
 
-        val videoFrameType = if (frame.isKeyFrame) {
-            VideoFrameType.KEY
-        } else {
-            VideoFrameType.INTER
-        }
-        if (frame.isKeyFrame && withSequenceHeader) {
-            val decoderConfigurationRecordBuffer =
-                onDecoderConfigurationRecord()
+        override fun create(frame: Frame, withSequenceStart: Boolean): List<VideoData> {
+            val flvDatas = mutableListOf<VideoData>()
+
+            val videoFrameType = if (frame.isKeyFrame) {
+                VideoFrameType.KEY
+            } else {
+                VideoFrameType.INTER
+            }
+            if (frame.isKeyFrame && withSequenceStart) {
+                val decoderConfigurationRecordBuffer =
+                    AVCDecoderConfigurationRecord.fromParameterSets(
+                        frame.extra!![0],
+                        frame.extra!![1]
+                    ).toByteBuffer()
+                flvDatas.add(
+                    factory.sequenceStart(
+                        decoderConfigurationRecordBuffer
+                    )
+                )
+            }
+            val source = transformToAVCC(frame.rawBuffer)
             flvDatas.add(
-                factory.sequenceStart(
-                    decoderConfigurationRecordBuffer
+                factory.codedFrame(
+                    videoFrameType,
+                    source.first,
+                    source.second
                 )
             )
+            return flvDatas
         }
-        flvDatas.add(
-            when (factory) {
-                is AVCHEVCExtendedVideoDataFactory -> {
-                    val source = transformToAVCC(frame.buffer)
-                    factory.codedFrameX(
-                        videoFrameType,
-                        source.first,
-                        source.second
-                    )
-                }
+    }
 
-                is ExtendedVideoDataFactory -> {
-                    factory.codedFrame(
-                        videoFrameType,
-                        frame.buffer
-                    )
-                }
+    private class FlvExtendedVideoDataFactory(
+        private val factory: CommonExtendedVideoDataFactory,
+        private val onSequenceStart: (Frame) -> ByteBuffer,
+    ) : IVideoDataFactory {
+        /**
+         * Create FLV video data from a [Frame].
+         */
+        override fun create(
+            frame: Frame,
+            withSequenceStart: Boolean
+        ): List<VideoData> {
+            val flvDatas = mutableListOf<VideoData>()
+
+            val videoFrameType = if (frame.isKeyFrame) {
+                VideoFrameType.KEY
+            } else {
+                VideoFrameType.INTER
             }
-        )
-        return flvDatas
-    }
+            factory is AVCHEVCExtendedVideoDataFactory
+            if (frame.isKeyFrame && withSequenceStart) {
+                val decoderConfigurationRecordBuffer =
+                    onSequenceStart(frame)
+                flvDatas.add(
+                    factory.sequenceStart(
+                        decoderConfigurationRecordBuffer
+                    )
+                )
+            }
+            flvDatas.add(
+                when (factory) {
+                    is AVCHEVCExtendedVideoDataFactory -> {
+                        val source = transformToAVCC(frame.rawBuffer)
+                        factory.codedFrameX(
+                            videoFrameType,
+                            source.first,
+                            source.second
+                        )
+                    }
 
-    private fun getHevcVideoDataFactory(): HEVCExtendedVideoDataFactory {
-        return hevcDataFactory ?: HEVCExtendedVideoDataFactory().also {
-            hevcDataFactory = it
-        }
-    }
-
-    private fun createHEVCData(frame: Frame, withSequenceHeader: Boolean) =
-        createExtendedData(getHevcVideoDataFactory(), frame, withSequenceHeader) {
-            HEVCDecoderConfigurationRecord.fromParameterSets(
-                frame.extra!![0],
-                frame.extra!![1],
-                frame.extra!![2]
-            ).toByteBuffer()
-        }
-
-    private fun getAv1VideoDataFactory(): ExtendedVideoDataFactory {
-        return av1DataFactory ?: ExtendedVideoDataFactory(VideoFourCC.AV1).also {
-            av1DataFactory = it
-        }
-    }
-
-    private fun createAV1Data(frame: Frame, withSequenceHeader: Boolean) =
-        createExtendedData(getAv1VideoDataFactory(), frame, withSequenceHeader) {
-            // Extra is AV1CodecConfigurationRecord
-            frame.extra!![0]
-        }
-
-    private fun getVp9VideoDataFactory(): ExtendedVideoDataFactory {
-        return vp9DataFactory ?: ExtendedVideoDataFactory(VideoFourCC.VP9).also {
-            vp9DataFactory = it
-        }
-    }
-
-    private fun createVP9Data(frame: Frame, withSequenceHeader: Boolean) =
-        createExtendedData(getVp9VideoDataFactory(), frame, withSequenceHeader) {
-            VPCodecConfigurationRecord.fromMediaFormat(frame.format).toByteBuffer()
-        }
-
-    fun create(frame: Frame, withSequenceHeader: Boolean): List<VideoData> {
-        // Currently only AVC is supported
-        return when (frame.mimeType) {
-            MediaFormat.MIMETYPE_VIDEO_AVC -> createAVCData(frame, withSequenceHeader)
-            MediaFormat.MIMETYPE_VIDEO_HEVC -> createHEVCData(frame, withSequenceHeader)
-            MediaFormat.MIMETYPE_VIDEO_AV1 -> createAV1Data(frame, withSequenceHeader)
-            MediaFormat.MIMETYPE_VIDEO_VP9 -> createVP9Data(frame, withSequenceHeader)
-            else -> throw IllegalArgumentException("Unsupported video mime type: ${frame.mimeType}")
+                    is ExtendedVideoDataFactory -> {
+                        factory.codedFrame(
+                            videoFrameType,
+                            frame.rawBuffer
+                        )
+                    }
+                }
+            )
+            return flvDatas
         }
     }
 
     companion object {
-        private var avcDataFactory: AVCVideoDataFactory? = null
-        private var hevcDataFactory: HEVCExtendedVideoDataFactory? = null
-        private var av1DataFactory: ExtendedVideoDataFactory? = null
-        private var vp9DataFactory: ExtendedVideoDataFactory? = null
+        private var avcDataFactory: IVideoDataFactory? = null
+        private var hevcDataFactory: IVideoDataFactory? = null
+        private var av1DataFactory: IVideoDataFactory? = null
+        private var vp9DataFactory: IVideoDataFactory? = null
+
+        private fun getAvcDataFactory(): IVideoDataFactory {
+            return avcDataFactory ?: AVCFlvVideoDataFactory().also {
+                avcDataFactory = it
+            }
+        }
+
+        private fun getHevcVideoDataFactory(): IVideoDataFactory {
+            return hevcDataFactory ?: createHEVCFactory().also {
+                hevcDataFactory = it
+            }
+        }
+
+        private fun getAv1DataFactory(): IVideoDataFactory {
+            return av1DataFactory ?: createAV1Factory().also {
+                av1DataFactory = it
+            }
+        }
+
+        private fun getVp9DataFactory(): IVideoDataFactory {
+            return vp9DataFactory ?: createVP9Factory().also {
+                vp9DataFactory = it
+            }
+        }
+
+        /**
+         * Create a FLV video data factory for the given [codecConfig].
+         */
+        fun createFactory(codecConfig: VideoCodecConfig): IVideoDataFactory {
+            // Currently only AVC is supported
+            return when (codecConfig.mimeType) {
+                MediaFormat.MIMETYPE_VIDEO_AVC -> getAvcDataFactory()
+                MediaFormat.MIMETYPE_VIDEO_HEVC -> getHevcVideoDataFactory()
+                MediaFormat.MIMETYPE_VIDEO_AV1 -> getAv1DataFactory()
+                MediaFormat.MIMETYPE_VIDEO_VP9 -> getVp9DataFactory()
+                else -> throw IllegalArgumentException("Unsupported video mime type: ${codecConfig.mimeType}")
+            }
+        }
+
+        private fun createHEVCFactory(): IVideoDataFactory {
+            return FlvExtendedVideoDataFactory(HEVCExtendedVideoDataFactory()) { frame ->
+                // Extra is VPS, SPS, PPS
+                HEVCDecoderConfigurationRecord.fromParameterSets(
+                    frame.extra!![0],
+                    frame.extra!![1],
+                    frame.extra!![2]
+                ).toByteBuffer()
+            }
+        }
+
+        private fun createAV1Factory(): IVideoDataFactory {
+            return FlvExtendedVideoDataFactory(ExtendedVideoDataFactory(VideoFourCC.AV1)) { frame ->
+                // Extra is AV1CodecConfigurationRecord
+                frame.extra!![0]
+            }
+        }
+
+        private fun createVP9Factory(): IVideoDataFactory {
+            return FlvExtendedVideoDataFactory(ExtendedVideoDataFactory(VideoFourCC.VP9)) { frame ->
+                VPCodecConfigurationRecord.fromMediaFormat(frame.format).toByteBuffer()
+            }
+        }
     }
 }

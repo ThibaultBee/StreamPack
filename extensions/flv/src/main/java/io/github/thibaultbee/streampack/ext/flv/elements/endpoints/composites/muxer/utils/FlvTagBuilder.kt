@@ -120,6 +120,7 @@ class FlvTagBuilder(val channel: ChannelWithCloseableData<FLVTag>) {
         }
 
         val frame = closeableFrame.frame
+
         val flvDatas = when (streamPid) {
             AUDIO_STREAM_PID -> audioStream?.create(frame)
                 ?: throw IllegalStateException("Audio stream not added")
