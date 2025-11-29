@@ -16,9 +16,6 @@
 package io.github.thibaultbee.streampack.core.elements.data
 
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.extra
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.isAudio
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.isVideo
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.removePrefixes
 import java.io.Closeable
 import java.nio.ByteBuffer
@@ -74,44 +71,33 @@ data class Frame(
     val isKeyFrame: Boolean,
 
     /**
-     * Contains frame format..
-     */
-    val format: MediaFormat
-) {
-    /**
-     * Frame mime type
-     */
-    val mimeType by lazy { format.getString(MediaFormat.KEY_MIME)!! }
-
-    /**
-     * [Boolean.true] if frame is a video frame.
-     */
-    val isVideo: Boolean = mimeType.isVideo
-
-    /**
-     * [Boolean.true] if frame is an audio frame.
-     */
-    val isAudio: Boolean = mimeType.isAudio
-
-    /**
      * Contains csd buffers for key frames and audio frames only.
      * Could be (SPS, PPS, VPS, etc.) for key video frames, null for non-key video frames.
      * ESDS for AAC frames,...
      */
-    val extra = try {
-        if (isKeyFrame || mimeType.isAudio) {
-            format.extra
-        } else {
-            null
-        }
-    } catch (_: Throwable) {
-        null
-    }
+    val extra: List<ByteBuffer>?,
 
     /**
-     * Returns a buffer without prefix csd buffers.
+     * Contains frame format..
+     * TODO: to remove
      */
-    val buffer = if (extra != null) {
+    val format: MediaFormat
+) {
+    init {
+        removePrefixes()
+    }
+}
+
+/**
+ * Removes the [extra] prefixes from the [rawBuffer].
+ *
+ * With MediaCodec, the encoded frames may contain prefixes like SPS, PPS for H264/H265 key frames.
+ * It also modifies the position of the [rawBuffer] to skip the prefixes.s
+ *
+ * @return A [ByteBuffer] without prefixes.
+ */
+fun Frame.removePrefixes(): ByteBuffer {
+    return if (extra != null) {
         rawBuffer.removePrefixes(extra)
     } else {
         rawBuffer
@@ -141,6 +127,13 @@ fun FrameWithCloseable(
     isKeyFrame: Boolean,
 
     /**
+     * Contains csd buffers for key frames and audio frames only.
+     * Could be (SPS, PPS, VPS, etc.) for key video frames, null for non-key video frames.
+     * ESDS for AAC frames,...
+     */
+    extra: List<ByteBuffer>?,
+
+    /**
      * Contains frame format..
      */
     format: MediaFormat,
@@ -155,6 +148,7 @@ fun FrameWithCloseable(
         ptsInUs,
         dtsInUs,
         isKeyFrame,
+        extra,
         format
     ),
     onClosed

@@ -26,10 +26,10 @@ import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.EncoderMode
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal
-import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecEncoder.Companion.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.hasEndOfStreamFlag
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.isKeyFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.isValid
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.extra
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.put
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
@@ -61,7 +61,7 @@ internal constructor(
     private val mediaCodec: MediaCodec
     private val format: MediaFormat
     private var outputFormat: MediaFormat? = null
-    private val frameFactory by lazy { FrameFactory(mediaCodec) }
+    private val frameFactory by lazy { FrameFactory(mediaCodec, isVideo) }
 
     private val isVideo = encoderConfig.isVideo
     private val tag = if (isVideo) VIDEO_ENCODER_TAG else AUDIO_ENCODER_TAG + "(${this.hashCode()})"
@@ -582,8 +582,14 @@ internal constructor(
     /**
      * A workaround to address the fact that some AAC encoders do not provide frame with `presentationTimeUs` in order.
      * If a frame is received with a timestamp lower or equal to the previous one, it is corrected by adding 1 to the previous timestamp.
+     *
+     * @param codec the [MediaCodec] instance
+     * @param isVideo true if the codec is a video codec, false otherwise
      */
-    class FrameFactory(private val codec: MediaCodec) {
+    class FrameFactory(
+        private val codec: MediaCodec,
+        private val isVideo: Boolean
+    ) {
         private var previousPresentationTimestamp = 0L
 
         /**
@@ -601,13 +607,8 @@ internal constructor(
             }
             info.presentationTimeUs = pts
             previousPresentationTimestamp = pts
-            return Frame(codec, index, outputFormat, info, tag)
+            return createFrame(codec, index, outputFormat, info, tag)
         }
-    }
-
-    companion object {
-        private const val AUDIO_ENCODER_TAG = "AudioEncoder"
-        private const val VIDEO_ENCODER_TAG = "VideoEncoder"
 
         /**
          * Create a [Frame] from a [MediaCodec] output buffer
@@ -616,14 +617,27 @@ internal constructor(
          * @param index the buffer index
          * @param info the buffer info
          */
-        private fun Frame(
+        private fun createFrame(
             codec: MediaCodec, index: Int, outputFormat: MediaFormat, info: BufferInfo, tag: String
         ): FrameWithCloseable {
             val buffer = requireNotNull(codec.getOutputBuffer(index))
+            val isKeyFrame = info.isKeyFrame
             return FrameWithCloseable(
-                buffer, info.presentationTimeUs, // pts
+                buffer,
+                info.presentationTimeUs, // pts
                 null, // dts
-                info.isKeyFrame, outputFormat, onClosed = {
+                isKeyFrame,
+                try {
+                    if (isKeyFrame || !isVideo) {
+                        outputFormat.extra
+                    } else {
+                        null
+                    }
+                } catch (_: Throwable) {
+                    null
+                },
+                outputFormat,
+                onClosed = {
                     try {
                         codec.releaseOutputBuffer(index, false)
                     } catch (t: Throwable) {
@@ -631,6 +645,12 @@ internal constructor(
                     }
                 })
         }
+
+    }
+
+    companion object {
+        private const val AUDIO_ENCODER_TAG = "AudioEncoder"
+        private const val VIDEO_ENCODER_TAG = "VideoEncoder"
     }
 
 

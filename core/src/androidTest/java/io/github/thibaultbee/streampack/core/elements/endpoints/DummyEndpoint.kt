@@ -33,13 +33,6 @@ class DummyEndpoint : IEndpointInternal {
     private val _frameFlow = MutableStateFlow<Frame?>(null)
     val frameFlow = _frameFlow.asStateFlow()
 
-    var numOfAudioFramesWritten = 0
-        private set
-    var numOfVideoFramesWritten = 0
-        private set
-    val numOfFramesWritten: Int
-        get() = numOfAudioFramesWritten + numOfVideoFramesWritten
-
     private val _isStreamingFlow = MutableStateFlow(false)
     val isStreamingFlow = _isStreamingFlow.asStateFlow()
 
@@ -69,10 +62,6 @@ class DummyEndpoint : IEndpointInternal {
         val frame = closeableFrame.frame
         Log.i(TAG, "write: $frame")
         _frameFlow.emit(frame)
-        when {
-            frame.isAudio -> numOfAudioFramesWritten++
-            frame.isVideo -> numOfVideoFramesWritten++
-        }
         closeableFrame.close()
     }
 

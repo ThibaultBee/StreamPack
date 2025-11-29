@@ -30,7 +30,7 @@ class Chunk(val id: Int) {
         get() = samples.size
 
     private val dataSize: Int
-        get() = samples.sumOf { it.frame.buffer.remaining() }
+        get() = samples.sumOf { it.frame.rawBuffer.remaining() }
 
     val firstTimestamp: Long
         get() = samples.minOf { it.frame.ptsInUs }
@@ -48,7 +48,7 @@ class Chunk(val id: Int) {
         get() = samples.filter { it.frame.isKeyFrame }.map { it.id }
 
     private val sampleSizes: List<Int>
-        get() = samples.map { it.frame.buffer.remaining() }
+        get() = samples.map { it.frame.rawBuffer.remaining() }
 
     val extra: List<List<ByteBuffer>>
         get() = samples.mapNotNull { it.frame.extra }.unzip()
@@ -66,11 +66,11 @@ class Chunk(val id: Int) {
     }
 
     fun getDataSize(process: (ByteBuffer) -> Int): Int {
-        return samples.sumOf { process(it.frame.buffer) }
+        return samples.sumOf { process(it.frame.rawBuffer) }
     }
 
     fun getSampleSizes(process: (ByteBuffer) -> Int): List<Int> {
-        return samples.map { process(it.frame.buffer) }
+        return samples.map { process(it.frame.rawBuffer) }
     }
 
     fun writeTo(action: (Frame) -> Unit) {
@@ -78,7 +78,7 @@ class Chunk(val id: Int) {
     }
 
     fun write(output: ByteBuffer) {
-        samples.forEach { output.put(it.frame.buffer) }
+        samples.forEach { output.put(it.frame.rawBuffer) }
     }
 
     class IndexedFrame(

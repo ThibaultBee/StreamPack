@@ -39,7 +39,7 @@ internal sealed class FlvStream {
 }
 
 internal class AudioFlvStream(codecConfig: AudioCodecConfig) : FlvStream() {
-    private val frameFactory = IFlvAudioDataFactory.createFactory(codecConfig)
+    private val frameFactory = FlvAudioDataFactory.createFactory(codecConfig)
 
     override val flvConfig: FLVAudioConfig = codecConfig.toFLVConfig()
 
@@ -58,6 +58,8 @@ internal class AudioFlvStream(codecConfig: AudioCodecConfig) : FlvStream() {
 internal class VideoFlvStream(codecConfig: VideoCodecConfig) : FlvStream() {
     override val flvConfig: FLVVideoConfig = codecConfig.toFLVConfig()
 
+    private val frameFactory = FlvVideoDataFactory.createFactory(codecConfig)
+
     override fun createImpl(frame: Frame): List<FLVData> {
         var withSequenceStart = false
         if ((!sentSequenceStart) && (frame.isKeyFrame)) {
@@ -65,16 +67,6 @@ internal class VideoFlvStream(codecConfig: VideoCodecConfig) : FlvStream() {
             withSequenceStart = true
             sentSequenceStart = true
         }
-        return getFlvVideoDataFactory().create(frame, withSequenceStart)
-    }
-
-    private fun getFlvVideoDataFactory(): FlvVideoDataFactory {
-        return frameFactory ?: FlvVideoDataFactory().also {
-            frameFactory = it
-        }
-    }
-
-    companion object {
-        private var frameFactory: FlvVideoDataFactory? = null
+        return frameFactory.create(frame, withSequenceStart)
     }
 }
