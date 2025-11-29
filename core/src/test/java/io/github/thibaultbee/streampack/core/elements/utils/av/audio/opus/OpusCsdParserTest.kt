@@ -24,15 +24,15 @@ class OpusCsdParserTest {
     fun `parse csd syntax`() {
         val expectedBuffer = ResourcesUtils.readByteBuffer(TEST_SAMPLES_DIR + "opus.csd")
 
-        val triple = OpusCsdParser.parse(expectedBuffer)
+        val identificationHeader = OpusCsdParser.parse(expectedBuffer)
 
-        Assert.assertEquals(1.toByte(), triple.first.version)
-        Assert.assertEquals(2.toByte(), triple.first.channelCount)
-        Assert.assertEquals(312.toShort(), triple.first.preSkip)
-        Assert.assertEquals(48000, triple.first.inputSampleRate)
-        Assert.assertEquals(0.toShort(), triple.first.outputGain)
-        Assert.assertEquals(0.toByte(), triple.first.channelMappingFamily)
-        Assert.assertNull(triple.first.channelMapping)
+        Assert.assertEquals(1.toByte(), identificationHeader.version)
+        Assert.assertEquals(2.toByte(), identificationHeader.channelCount)
+        Assert.assertEquals(312.toShort(), identificationHeader.preSkip)
+        Assert.assertEquals(48000, identificationHeader.inputSampleRate)
+        Assert.assertEquals(0.toShort(), identificationHeader.outputGain)
+        Assert.assertEquals(0.toByte(), identificationHeader.channelMappingFamily)
+        Assert.assertNull(identificationHeader.channelMapping)
     }
 
     companion object {

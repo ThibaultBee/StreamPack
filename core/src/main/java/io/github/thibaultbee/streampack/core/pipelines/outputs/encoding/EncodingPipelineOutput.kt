@@ -57,10 +57,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -219,7 +221,7 @@ internal class EncodingPipelineOutput(
      */
     private fun onInternalError(t: Throwable) {
         try {
-            runBlocking {
+            coroutineScope.launch {
                 stopStream()
             }
         } catch (t: Throwable) {
@@ -259,10 +261,7 @@ internal class EncodingPipelineOutput(
                 audioEncoderListener.outputChannel.consumeEach { closeableFrame ->
                     try {
                         audioStreamId?.let {
-                            endpointInternal.write(
-                                closeableFrame,
-                                it
-                            )
+                            endpointInternal.write(closeableFrame, it)
                         } ?: Logger.w(TAG, "Audio frame received but audio stream is not set")
                     } catch (t: Throwable) {
                         onInternalError(t)
@@ -276,15 +275,24 @@ internal class EncodingPipelineOutput(
                 videoEncoderListener.outputChannel.consumeEach { closeableFrame ->
                     try {
                         videoStreamId?.let {
-                            endpointInternal.write(
-                                closeableFrame,
-                                it
-                            )
+                            endpointInternal.write(closeableFrame, it)
                         } ?: Logger.w(TAG, "Video frame received but video stream is not set")
                     } catch (t: Throwable) {
                         onInternalError(t)
                     }
                 }
+            }
+        }
+
+        coroutineScope.launch {
+            endpointInternal.isOpenFlow.filter { !it }.drop(1).collect { isOpen ->
+                coroutineScope.launch { stopStream() }
+            }
+        }
+
+        coroutineScope.launch {
+            endpointInternal.throwableFlow.filterNotNull().collect { throwable ->
+                _throwableFlow.tryEmit(throwable)
             }
         }
     }

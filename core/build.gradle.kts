@@ -26,6 +26,10 @@ dependencies {
     implementation(libs.androidx.window)
     implementation(libs.androidx.concurrent.futures)
 
+    testImplementation(project(":streampack-srt"))
+    testImplementation(project(":streampack-flv"))
+    testImplementation(project(":streampack-rtmp"))
+
     testImplementation(libs.androidx.test.rules)
     testImplementation(libs.androidx.test.core.ktx)
     testImplementation(libs.androidx.test.ext.junit.ktx)
@@ -35,6 +39,7 @@ dependencies {
     testImplementation(libs.robolectric)
 
     androidTestImplementation(project(":streampack-srt"))
+    androidTestImplementation(project(":streampack-flv"))
     androidTestImplementation(project(":streampack-rtmp"))
 
     androidTestImplementation(libs.androidx.test.core.ktx)

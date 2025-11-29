@@ -23,6 +23,7 @@ import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class DummyEndpoint : IEndpointInternal {
@@ -54,6 +55,7 @@ class DummyEndpoint : IEndpointInternal {
 
     override val metrics: Any
         get() = TODO("Not yet implemented")
+    override val throwableFlow: StateFlow<Throwable?> = MutableStateFlow(null).asStateFlow()
 
     override suspend fun open(descriptor: MediaDescriptor) {
         _isOpenFlow.emit(true)

@@ -50,6 +50,7 @@ dependencies {
     implementation(project(":streampack-services"))
     implementation(project(":streampack-rtmp"))
     implementation(project(":streampack-srt"))
+    implementation(project(":streampack-flv"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

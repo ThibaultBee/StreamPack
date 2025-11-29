@@ -28,7 +28,7 @@ import io.github.thibaultbee.streampack.core.elements.data.Packet
 import io.github.thibaultbee.streampack.core.elements.data.SrtPacket
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.AbstractSink
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ClosedException
+import io.github.thibaultbee.streampack.core.elements.endpoints.ClosedException
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.ext.srt.configuration.mediadescriptor.SrtMediaDescriptor
