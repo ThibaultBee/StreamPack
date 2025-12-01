@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils
 
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.Packet
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.packets.TS
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.toByteArray
 import org.junit.Assert
@@ -26,7 +27,7 @@ import java.nio.ByteBuffer
  */
 class AssertEqualsSingleBufferMockMuxerListener(private val expectedBuffer: ByteBuffer) :
     io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal.IMuxerListener {
-    override fun onOutputFrame(packet: io.github.thibaultbee.streampack.core.elements.data.Packet) {
+    override fun onOutputFrame(packet: Packet) {
         Assert.assertEquals(expectedBuffer, packet.buffer)
     }
 }
@@ -39,7 +40,7 @@ class AssertEqualsBuffersMockMuxerListener(private val expectedBuffers: List<Byt
     io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal.IMuxerListener {
     var expectedBufferIndex = 0
 
-    override fun onOutputFrame(packet: io.github.thibaultbee.streampack.core.elements.data.Packet) {
+    override fun onOutputFrame(packet: Packet) {
         val actualArray = packet.buffer.toByteArray()
         var i = 0
         while (i < MuxerConst.MAX_OUTPUT_PACKET_NUMBER) {

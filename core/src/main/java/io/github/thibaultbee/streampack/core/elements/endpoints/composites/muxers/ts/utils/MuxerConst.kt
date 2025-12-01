@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils
 
-import io.github.thibaultbee.streampack.core.elements.data.Packet
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.Packet
 
 object MuxerConst {
     const val PAT_PACKET_PERIOD = 40

@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4
 
 import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
-import io.github.thibaultbee.streampack.core.elements.data.Packet
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.Packet
 import io.github.thibaultbee.streampack.core.elements.data.useAndUnwrap
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal

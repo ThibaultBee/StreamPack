@@ -24,8 +24,8 @@ import io.github.thibaultbee.srtdroid.core.models.Stats
 import io.github.thibaultbee.srtdroid.ktx.CoroutineSrtSocket
 import io.github.thibaultbee.srtdroid.ktx.connect
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.elements.data.Packet
-import io.github.thibaultbee.streampack.core.elements.data.SrtPacket
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.Packet
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.SrtPacket
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.AbstractSink
 import io.github.thibaultbee.streampack.core.elements.endpoints.ClosedException
