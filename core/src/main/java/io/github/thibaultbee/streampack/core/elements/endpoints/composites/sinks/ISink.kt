@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks
 
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.elements.data.Packet
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.Packet
 import io.github.thibaultbee.streampack.core.elements.interfaces.Configurable
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendCloseable
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamable

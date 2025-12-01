@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Thibault B.
+ * Copyright (C) 2022 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.elements.data
+package io.github.thibaultbee.streampack.core.elements.endpoints.composites.data
 
 import java.nio.ByteBuffer
 
 /**
- * Packet internal representation.
- * A [Frame] is composed by multiple packets.
+ * SRT Packet internal representation.
  */
-open class Packet(
+class SrtPacket(
     /**
      * Contains data.
      */
-    val buffer: ByteBuffer,
-
+    buffer: ByteBuffer,
+    /**
+     * [Boolean.true] if this is the first packet that describes a frame.
+     */
+    val isFirstPacketFrame: Boolean,
+    /**
+     * [Boolean.true] if this is the last packet that describes a frame.
+     */
+    val isLastPacketFrame: Boolean,
     /**
      * Frame timestamp in µs.
      */
-    val ts: Long, // in µs
-) {
-    override fun toString(): String {
-        return "Packet(buffer=$buffer, ts=$ts)"
-    }
-}
+    ts: Long, // in µs
+) : Packet(buffer, ts)

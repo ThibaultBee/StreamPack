@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers
 
 import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
-import io.github.thibaultbee.streampack.core.elements.data.Packet
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.Packet
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.interfaces.Streamable

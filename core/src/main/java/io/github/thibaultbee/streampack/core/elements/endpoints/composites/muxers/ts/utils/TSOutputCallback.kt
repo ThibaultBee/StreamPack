@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils
 
-import io.github.thibaultbee.streampack.core.elements.data.SrtPacket
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.SrtPacket
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
 
 open class TSOutputCallback(var listener: IMuxerInternal.IMuxerListener? = null) {

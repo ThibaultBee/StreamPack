@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites.sink
 
 import androidx.core.net.toUri
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
-import io.github.thibaultbee.streampack.core.elements.data.Packet
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.Packet
 import io.github.thibaultbee.streampack.core.elements.utils.StubLogger
 import io.github.thibaultbee.streampack.core.elements.utils.FileUtils
 import io.github.thibaultbee.streampack.core.elements.utils.Utils
