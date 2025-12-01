@@ -642,8 +642,16 @@ internal class EncodingPipelineOutput(
      *
      * @see [startStream]
      */
-    override suspend fun stopStream() = withContextMutex {
-        stopStreamUnsafe()
+    override suspend fun stopStream() {
+        withContext(coroutineDispatcher) {
+            mutex.withLock {
+                if (isReleaseRequested.get()) {
+                    Logger.w(TAG, "Output is released")
+                    return@withLock
+                }
+                stopStreamUnsafe()
+            }
+        }
     }
 
     /**
