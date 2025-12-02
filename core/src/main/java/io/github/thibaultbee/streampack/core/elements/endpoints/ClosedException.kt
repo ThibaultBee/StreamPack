@@ -8,5 +8,5 @@ import java.io.IOException
 class ClosedException(message: String? = null, cause: Throwable? = null) :
     IOException(message, cause) {
     constructor(message: String) : this(message, null)
-    constructor(cause: Throwable) : this(null, cause)
+    constructor(cause: Throwable) : this(cause.message, cause)
 }
