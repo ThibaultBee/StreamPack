@@ -29,8 +29,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.AbstractPrev
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraController
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameras
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getAutoFocusModes
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFrameRateSupported
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFpsSupported
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSizes
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSurface
@@ -45,31 +44,15 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
- * Creates a [CameraSource] from a [Context].
- */
-internal fun CameraSource(
-    context: Context,
-    dispatcherProvider: CameraDispatcherProvider,
-    cameraId: String
-) =
-    CameraSource(
-        context,
-        dispatcherProvider,
-        context.getSystemService(Context.CAMERA_SERVICE) as CameraManager,
-        cameraId
-    )
-
-
-/**
  * Camera source implementation.
  *
  * Based on Camera2 API.
  */
 internal class CameraSource(
     private val context: Context,
-    dispatcherProvider: CameraDispatcherProvider,
     private val manager: CameraManager,
-    override val cameraId: String
+    override val cameraId: String,
+    dispatcherProvider: CameraDispatcherProvider,
 ) : ICameraSourceInternal, ICameraSource, AbstractPreviewableSource() {
     private val coroutineScope = CoroutineScope(dispatcherProvider.default)
 
@@ -80,7 +63,12 @@ internal class CameraSource(
         }
     )
 
-    override val settings by lazy { CameraSettings(manager, controller) }
+    override val settings by lazy {
+        CameraSettings(
+            manager.getCameraCharacteristics(cameraId),
+            controller
+        )
+    }
 
     override val timestampOffsetInNs =
         CameraTimestampHelper.getTimeOffsetInNsToMonoClock(manager, cameraId)
@@ -119,8 +107,7 @@ internal class CameraSource(
     private fun defaultCaptureRequest(
         captureRequest: CaptureRequestWithTargetsBuilder
     ) {
-        if (manager.getAutoFocusModes(cameraId)
-                .contains(CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO)
+        if (settings.focus.availableAutoModes.contains(CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO)
         ) {
             captureRequest.set(
                 CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO
@@ -162,7 +149,7 @@ internal class CameraSource(
 
     @RequiresPermission(Manifest.permission.CAMERA)
     override suspend fun configure(config: VideoSourceConfig) {
-        if (!manager.isFrameRateSupported(cameraId, config.fps)) {
+        if (!settings.characteristics.isFpsSupported(config.fps)) {
             Logger.w(TAG, "Camera $cameraId does not support ${config.fps} fps")
         }
 

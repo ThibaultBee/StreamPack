@@ -27,6 +27,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import io.github.thibaultbee.streampack.app.ApplicationConstants.userPrefName
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.backCameras
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameraManager
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameras
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.frontCameras
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isBackCamera
@@ -35,7 +36,7 @@ import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun IWithVideoSource.setNextCameraId(context: Context) {
-    val cameras = context.cameras
+    val cameras = context.cameraManager.cameras
     val videoSource = videoInput?.sourceFlow?.value
 
     val newCameraId = if (videoSource is ICameraSource) {
@@ -50,15 +51,16 @@ suspend fun IWithVideoSource.setNextCameraId(context: Context) {
 
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun IWithVideoSource.toggleBackToFront(context: Context) {
+    val cameraManager = context.cameraManager
     val videoSource = videoInput?.sourceFlow?.value
     val cameras = if (videoSource is ICameraSource) {
-        if (context.isBackCamera(videoSource.cameraId)) {
-            context.frontCameras
+        if (cameraManager.isBackCamera(videoSource.cameraId)) {
+            cameraManager.frontCameras
         } else {
-            context.backCameras
+            cameraManager.backCameras
         }
     } else {
-        context.frontCameras
+        cameraManager.frontCameras
     }
 
     if (cameras.isNotEmpty()) {

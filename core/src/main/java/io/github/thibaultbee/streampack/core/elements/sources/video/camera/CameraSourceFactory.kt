@@ -19,6 +19,7 @@ import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameraManager
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_CAMERA
@@ -40,7 +41,13 @@ class CameraSourceFactory(val cameraId: String? = null) : IVideoSourceInternal.F
             { dispatcherProvider.createVideoHandlerExecutor(THREAD_NAME_CAMERA) },
             { dispatcherProvider.createVideoExecutor(1, THREAD_NAME_CAMERA) }
         )
-        return CameraSource(context, cameraDispatcherProvider, cameraId ?: context.defaultCameraId)
+        val cameraManager = context.cameraManager
+        return CameraSource(
+            context,
+            cameraManager,
+            cameraId ?: cameraManager.defaultCameraId,
+            cameraDispatcherProvider
+        )
     }
 
     override fun isSourceEquals(source: IVideoSourceInternal?): Boolean {

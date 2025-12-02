@@ -19,7 +19,6 @@ import android.content.Context
 import android.graphics.PointF
 import android.graphics.Rect
 import android.hardware.camera2.CameraCharacteristics
-import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.CaptureResult
@@ -32,20 +31,21 @@ import android.util.Rational
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresApi
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraController
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getAutoExposureModes
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getAutoFocusModes
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getAutoWhiteBalanceModes
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getExposureMaxMeteringRegionsSupported
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getExposureRange
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getExposureStep
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getFocusMaxMeteringRegionsSupported
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getLensDistanceRange
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getScalerMaxZoom
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getSensitivityRange
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getWhiteBalanceMeteringRegionsSupported
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getZoomRatioRange
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.autoExposureModes
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.autoFocusModes
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.autoWhiteBalanceModes
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.exposureRange
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.exposureStep
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFlashAvailable
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFrontCamera
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isOpticalStabilizationAvailable
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.lensDistanceRange
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.maxNumberOfExposureMeteringRegions
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.maxNumberOfFocusMeteringRegions
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.maxNumberOfWhiteBalanceMeteringRegions
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.scalerMaxZoom
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.sensitivityRange
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.zoomRatioRange
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.clamp
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isApplicationPortrait
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isNormalized
@@ -61,9 +61,11 @@ import java.util.concurrent.TimeUnit
 /**
  * Use to change camera settings.
  * This object is returned by [ICameraSource.settings].
+ *
+ * @param characteristics Camera characteristics of the current camera.
  */
 class CameraSettings internal constructor(
-    cameraManager: CameraManager, private val cameraController: CameraController
+    val characteristics: CameraCharacteristics, private val cameraController: CameraController
 ) {
     /**
      * Current camera id.
@@ -79,48 +81,48 @@ class CameraSettings internal constructor(
     /**
      * Current camera flash API.
      */
-    val flash = Flash(cameraManager, this)
+    val flash = Flash(characteristics, this)
 
     /**
      * Current camera white balance API.
      */
-    val whiteBalance = WhiteBalance(cameraManager, this)
+    val whiteBalance = WhiteBalance(characteristics, this)
 
     /**
      * Current camera ISO API.
      */
-    val iso = Iso(cameraManager, this)
+    val iso = Iso(characteristics, this)
 
     /**
      * Current camera color correction API.
      */
-    val colorCorrection = ColorCorrection(cameraManager, this)
+    val colorCorrection = ColorCorrection(characteristics, this)
 
     /**
      * Current camera exposure API.
      */
-    val exposure = Exposure(cameraManager, this)
+    val exposure = Exposure(characteristics, this)
 
     /**
      * Current camera zoom API.
      */
-    val zoom = Zoom.build(cameraManager, this)
+    val zoom = Zoom.build(characteristics, this)
 
     /**
      * Current focus API.
      */
-    val focus = Focus(cameraManager, this)
+    val focus = Focus(characteristics, this)
 
     /**
      * Current stabilization API.
      */
-    val stabilization = Stabilization(cameraManager, this)
+    val stabilization = Stabilization(characteristics, this)
 
     /**
      * Current focus metering API.
      */
     val focusMetering =
-        FocusMetering(cameraManager, this, zoom, focus, exposure, whiteBalance)
+        FocusMetering(characteristics, this, zoom, focus, exposure, whiteBalance)
 
     /**
      * Directly gets a [CaptureRequest] from the camera.
@@ -152,7 +154,7 @@ class CameraSettings internal constructor(
     fun applyBurstSession() = runBlocking { cameraController.setBurstSession() }
 
     class Flash(
-        private val cameraManager: CameraManager,
+        private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings
     ) {
         /**
@@ -161,7 +163,7 @@ class CameraSettings internal constructor(
          * @return [Boolean.true] if camera has a flash device, [Boolean.false] otherwise.
          */
         val isAvailable: Boolean
-            get() = cameraManager.isFlashAvailable(cameraSettings.cameraId)
+            get() = characteristics.isFlashAvailable
 
         /**
          * Enables or disables flash.
@@ -194,7 +196,7 @@ class CameraSettings internal constructor(
     }
 
     class WhiteBalance(
-        private val cameraManager: CameraManager,
+        private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings
     ) {
         /**
@@ -203,7 +205,7 @@ class CameraSettings internal constructor(
          * @return list of supported white balance modes.
          */
         val availableAutoModes: List<Int>
-            get() = cameraManager.getAutoWhiteBalanceModes(cameraSettings.cameraId)
+            get() = characteristics.autoWhiteBalanceModes
 
         /**
          * Set or get auto white balance mode.
@@ -233,9 +235,7 @@ class CameraSettings internal constructor(
          * Get maximum number of available white balance metering regions.
          */
         val maxNumOfMeteringRegions: Int
-            get() = cameraManager.getWhiteBalanceMeteringRegionsSupported(
-                cameraSettings.cameraId
-            ) ?: 0
+            get() = characteristics.maxNumberOfWhiteBalanceMeteringRegions
 
         /**
          * Set/get white balance metering regions.
@@ -263,7 +263,7 @@ class CameraSettings internal constructor(
 
 
     class Iso(
-        private val cameraManager: CameraManager,
+        private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings
     ) {
         /**
@@ -274,8 +274,7 @@ class CameraSettings internal constructor(
          * @see [sensorSensitivity]
          */
         val availableSensorSensitivityRange: Range<Int>
-            get() = cameraManager.getSensitivityRange(cameraSettings.cameraId)
-                ?: DEFAULT_SENSITIVITY_RANGE
+            get() = characteristics.sensitivityRange ?: DEFAULT_SENSITIVITY_RANGE
 
         /**
          * Set or get lens focus distance.
@@ -312,7 +311,7 @@ class CameraSettings internal constructor(
 
 
     class ColorCorrection(
-        private val cameraManager: CameraManager,
+        private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings
     ) {
         /**
@@ -322,8 +321,7 @@ class CameraSettings internal constructor(
          */
         val isAvailable: Boolean
             get() {
-                return cameraManager.getCameraCharacteristics(cameraSettings.cameraId)
-                    .get(CameraCharacteristics.COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES)
+                return characteristics[CameraCharacteristics.COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES]
                     ?.contains(CaptureRequest.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX) == true
             }
 
@@ -362,7 +360,7 @@ class CameraSettings internal constructor(
     }
 
     class Exposure(
-        private val cameraManager: CameraManager,
+        private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings
     ) {
         /**
@@ -373,7 +371,7 @@ class CameraSettings internal constructor(
          * @see [autoMode]
          */
         val availableAutoModes: List<Int>
-            get() = cameraManager.getAutoExposureModes(cameraSettings.cameraId)
+            get() = characteristics.autoExposureModes
 
 
         /**
@@ -408,7 +406,7 @@ class CameraSettings internal constructor(
          * @see [compensation]
          */
         val availableCompensationRange: Range<Int>
-            get() = cameraManager.getExposureRange(cameraSettings.cameraId)
+            get() = characteristics.exposureRange
                 ?: DEFAULT_COMPENSATION_RANGE
 
         /**
@@ -424,7 +422,7 @@ class CameraSettings internal constructor(
          * @see [compensation]
          */
         val availableCompensationStep: Rational
-            get() = cameraManager.getExposureStep(cameraSettings.cameraId)
+            get() = characteristics.exposureStep
                 ?: DEFAULT_COMPENSATION_STEP_RATIONAL
 
         /**
@@ -458,9 +456,7 @@ class CameraSettings internal constructor(
          * Get maximum number of available exposure metering regions.
          */
         val maxNumOfMeteringRegions: Int
-            get() = cameraManager.getExposureMaxMeteringRegionsSupported(
-                cameraSettings.cameraId
-            ) ?: 0
+            get() = characteristics.maxNumberOfExposureMeteringRegions
 
         /**
          * Set/get exposure metering regions.
@@ -495,7 +491,7 @@ class CameraSettings internal constructor(
     }
 
     sealed class Zoom(
-        protected val cameraManager: CameraManager,
+        protected val characteristics: CameraCharacteristics,
         protected val cameraSettings: CameraSettings
     ) {
         abstract val availableRatioRange: Range<Float>
@@ -523,15 +519,16 @@ class CameraSettings internal constructor(
         }
 
         class CropScalerRegionZoom(
-            cameraManager: CameraManager, cameraSettings: CameraSettings
-        ) : Zoom(cameraManager, cameraSettings) {
+            characteristics: CameraCharacteristics,
+            cameraSettings: CameraSettings
+        ) : Zoom(characteristics, cameraSettings) {
             // Keep the zoomRatio
             private var persistentZoomRatio = 1f
             private var currentCropRect: Rect? = null
 
             override val availableRatioRange: Range<Float>
                 get() = Range(
-                    DEFAULT_ZOOM_RATIO, cameraManager.getScalerMaxZoom(cameraSettings.cameraId)
+                    DEFAULT_ZOOM_RATIO, characteristics.scalerMaxZoom
                 )
 
             override var zoomRatio: Float
@@ -542,7 +539,7 @@ class CameraSettings internal constructor(
                     synchronized(this) {
                         val clampedValue = value.clamp(availableRatioRange)
                         currentCropRect = getCropRegion(
-                            cameraManager.getCameraCharacteristics(cameraSettings.cameraId),
+                            characteristics,
                             clampedValue
                         )
                         cameraSettings.set(
@@ -559,9 +556,7 @@ class CameraSettings internal constructor(
                         return if (currentCropRect != null) {
                             currentCropRect!!
                         } else {
-                            val cameraId = cameraSettings.cameraId
-                            return cameraManager.getCameraCharacteristics(cameraId)
-                                .get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)!!
+                            return characteristics[CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE]!!
                         }
                     }
                 }
@@ -599,10 +594,10 @@ class CameraSettings internal constructor(
         }
 
         @RequiresApi(Build.VERSION_CODES.R)
-        class RZoom(cameraManager: CameraManager, cameraSettings: CameraSettings) :
-            Zoom(cameraManager, cameraSettings) {
+        class RZoom(characteristics: CameraCharacteristics, cameraSettings: CameraSettings) :
+            Zoom(characteristics, cameraSettings) {
             override val availableRatioRange: Range<Float>
-                get() = cameraManager.getZoomRatioRange(cameraSettings.cameraId)
+                get() = characteristics.zoomRatioRange
                     ?: DEFAULT_ZOOM_RATIO_RANGE
 
             override var zoomRatio: Float
@@ -616,11 +611,7 @@ class CameraSettings internal constructor(
                 }
 
             override val cropSensorRegion: Rect
-                get() {
-                    val cameraId = cameraSettings.cameraId
-                    return cameraManager.getCameraCharacteristics(cameraId)
-                        .get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)!!
-                }
+                get() = characteristics[CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE]!!
         }
 
         companion object {
@@ -628,13 +619,13 @@ class CameraSettings internal constructor(
             val DEFAULT_ZOOM_RATIO_RANGE = Range(DEFAULT_ZOOM_RATIO, DEFAULT_ZOOM_RATIO)
 
             fun build(
-                cameraManager: CameraManager,
+                characteristics: CameraCharacteristics,
                 cameraSettings: CameraSettings
             ): Zoom {
                 return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    RZoom(cameraManager, cameraSettings)
+                    RZoom(characteristics, cameraSettings)
                 } else {
-                    CropScalerRegionZoom(cameraManager, cameraSettings)
+                    CropScalerRegionZoom(characteristics, cameraSettings)
                 }
             }
         }
@@ -642,7 +633,7 @@ class CameraSettings internal constructor(
 
 
     class Focus(
-        private val cameraManager: CameraManager,
+        private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings
     ) {
         /**
@@ -653,7 +644,7 @@ class CameraSettings internal constructor(
          * @see [autoMode]
          */
         val availableAutoModes: List<Int>
-            get() = cameraManager.getAutoFocusModes(cameraSettings.cameraId)
+            get() = characteristics.autoFocusModes
 
         /**
          * Set or get auto focus mode.
@@ -686,7 +677,7 @@ class CameraSettings internal constructor(
          * @see [lensDistance]
          */
         val availableLensDistanceRange: Range<Float>
-            get() = cameraManager.getLensDistanceRange(cameraSettings.cameraId)
+            get() = characteristics.lensDistanceRange
 
         /**
          * Set or get lens focus distance.
@@ -719,9 +710,8 @@ class CameraSettings internal constructor(
          * Get maximum number of available focus metering regions.
          */
         val maxNumOfMeteringRegions: Int
-            get() = cameraManager.getFocusMaxMeteringRegionsSupported(
-                cameraSettings.cameraId
-            ) ?: DEFAULT_MAX_NUM_OF_METERING_REGION
+            get() = characteristics.maxNumberOfFocusMeteringRegions
+                ?: DEFAULT_MAX_NUM_OF_METERING_REGION
 
         /**
          * Set/get focus metering regions.
@@ -745,7 +735,7 @@ class CameraSettings internal constructor(
     }
 
     class Stabilization(
-        private val cameraManager: CameraManager,
+        private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings
     ) {
         /**
@@ -788,9 +778,7 @@ class CameraSettings internal constructor(
          * @see [enableOptical]
          */
         val isOpticalAvailable: Boolean
-            get() = cameraManager.isOpticalStabilizationAvailable(
-                cameraSettings.cameraId
-            )
+            get() = characteristics.isOpticalStabilizationAvailable
 
 
         /**
@@ -829,7 +817,7 @@ class CameraSettings internal constructor(
     }
 
     class FocusMetering(
-        private val cameraManager: CameraManager,
+        private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings,
         private val zoom: Zoom,
         private val focus: Focus,
@@ -863,7 +851,7 @@ class CameraSettings internal constructor(
             awbRects: List<MeteringRectangle>
         ) {
             val afMode = getPreferredAFMode(
-                cameraManager, cameraSettings.cameraId, CaptureRequest.CONTROL_AF_MODE_AUTO
+                characteristics, CaptureRequest.CONTROL_AF_MODE_AUTO
             )
 
             // Add new regions
@@ -898,7 +886,7 @@ class CameraSettings internal constructor(
         @Suppress("UNCHECKED_CAST")
         private fun triggerAf() {
             val aeMode = getPreferredAEMode(
-                cameraManager, cameraSettings.cameraId, CaptureRequest.CONTROL_AE_MODE_ON
+                characteristics, CaptureRequest.CONTROL_AE_MODE_ON
             )
             cameraSettings.set(
                 CaptureRequest.CONTROL_AF_TRIGGER,
@@ -967,21 +955,19 @@ class CameraSettings internal constructor(
          */
         @IntRange(from = 0, to = 359)
         private fun getSensorRotationDegrees(
-            cameraManager: CameraManager,
+            characteristics: CameraCharacteristics,
             cameraId: String,
             @IntRange(from = 0, to = 359) surfaceRotationDegrees: Int = 0
         ): Int {
-            val characteristics = cameraManager.getCameraCharacteristics(cameraId)
             val sensorOrientationDegrees =
-                characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
+                characteristics[CameraCharacteristics.SENSOR_ORIENTATION]
 
             requireNotNull(sensorOrientationDegrees) {
                 "Camera $cameraId has no defined sensor orientation."
             }
 
             // Reverse device orientation for back-facing cameras.
-            val isFacingFront =
-                characteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT
+            val isFacingFront = characteristics.isFrontCamera
 
             // Calculate desired orientation relative to camera orientation to make
             // the image upright relative to the device orientation.
@@ -1043,7 +1029,7 @@ class CameraSettings internal constructor(
         ) {
             val cameraId = cameraSettings.cameraId
             val relativeRotation =
-                getSensorRotationDegrees(cameraManager, cameraId, fovRotationDegree)
+                getSensorRotationDegrees(characteristics, cameraId, fovRotationDegree)
 
             startFocusAndMetering(
                 afPoints.map { normalizePoint(it, fovRect, relativeRotation) },
@@ -1076,9 +1062,9 @@ class CameraSettings internal constructor(
             private const val DEFAULT_AUTO_CANCEL_DURATION_MS = 5000L
 
             private fun getPreferredAFMode(
-                cameraManager: CameraManager, cameraId: String, preferredMode: Int
+                characteristics: CameraCharacteristics, preferredMode: Int
             ): Int {
-                val supportedAFModes = cameraManager.getAutoFocusModes(cameraId)
+                val supportedAFModes = characteristics.autoFocusModes
 
                 if (supportedAFModes.contains(preferredMode)) {
                     return preferredMode
@@ -1094,9 +1080,9 @@ class CameraSettings internal constructor(
             }
 
             private fun getPreferredAEMode(
-                cameraManager: CameraManager, cameraId: String, preferredMode: Int
+                characteristics: CameraCharacteristics, preferredMode: Int
             ): Int {
-                val supportedAEModes = cameraManager.getAutoExposureModes(cameraId)
+                val supportedAEModes = characteristics.autoExposureModes
 
                 if (supportedAEModes.isEmpty()) {
                     return CaptureRequest.CONTROL_AE_MODE_OFF

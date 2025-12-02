@@ -38,9 +38,10 @@ import io.github.thibaultbee.streampack.app.utils.ProfileLevelDisplay
 import io.github.thibaultbee.streampack.app.utils.StreamerInfoFactory
 import io.github.thibaultbee.streampack.app.utils.dataStore
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecHelper
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameraManager
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameras
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFrameRateSupported
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFpsSupported
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
@@ -219,8 +220,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
         videoFpsListPreference.setOnPreferenceChangeListener { _, newValue ->
             val fps = (newValue as String).toInt()
-            val unsupportedCameras = requireContext().cameras.filter {
-                !requireContext().isFrameRateSupported(it, fps)
+            val cameraManager = requireContext().cameraManager
+            val unsupportedCameras = cameraManager.cameras.filter {
+                cameraManager.getCameraCharacteristics(it).isFpsSupported(fps)
             }
             if (unsupportedCameras.isNotEmpty()) {
                 DialogUtils.showAlertDialog(

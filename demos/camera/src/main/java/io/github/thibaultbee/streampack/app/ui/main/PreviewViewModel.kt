@@ -50,7 +50,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.IBitm
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFrameRateSupported
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFpsSupported
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.interfaces.startStream
@@ -329,7 +329,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         /**
          * If video frame rate is not supported by the new camera, streamer will throw an
          * exception instead of crashing. You can either catch the exception or check if the
-         * configuration is valid for the new camera with [Context.isFrameRateSupported].
+         * configuration is valid for the new camera with [Context.isFpsSupported].
          */
         val videoSource = streamer.videoInput?.sourceFlow?.value
         if (videoSource is ICameraSource) {
@@ -345,7 +345,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         /**
          * If video frame rate is not supported by the new camera, streamer will throw an
          * exception instead of crashing. You can either catch the exception or check if the
-         * configuration is valid for the new camera with [Context.isFrameRateSupported].
+         * configuration is valid for the new camera with [Context.isFpsSupported].
          */
         viewModelScope.launch {
             videoSourceMutex.withLock {

@@ -1,5 +1,6 @@
 package io.github.thibaultbee.streampack.core.elements.utils
 
+import android.hardware.camera2.CameraCharacteristics
 import android.media.AudioFormat
 import android.media.MediaFormat
 import android.os.Process
@@ -81,4 +82,18 @@ annotation class ProcessThreadPriorityValue
     AnnotationRetention.SOURCE
 )
 annotation class ThreadPriorityValue
+
+
+/**
+ * Valid thread priority values
+ */
+@IntDef(
+    CameraCharacteristics.LENS_FACING_BACK,
+    CameraCharacteristics.LENS_FACING_FRONT,
+    CameraCharacteristics.LENS_FACING_EXTERNAL
+)
+@Retention(
+    AnnotationRetention.SOURCE
+)
+annotation class Camera2FacingDirectionValue
 

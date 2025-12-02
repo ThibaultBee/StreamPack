@@ -19,11 +19,13 @@ import android.content.Context
 import android.util.Range
 import android.util.Size
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameraManager
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.dynamicRangeProfiles
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraCharacteristics
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraOutputStreamSizes
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.targetFps
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.streamers.single.cameraSingleStreamer
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.get10BitSupportedProfiles
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraFps
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraOutputStreamSizes
 
 /**
  * Configuration infos\ for [cameraSingleStreamer].
@@ -48,7 +50,8 @@ class VideoCameraStreamerConfigurationInfo(videoEndpointInfo: IEndpoint.IEndpoin
         val codecSupportedWidths = pair.first
         val codecSupportedHeights = pair.second
 
-        return context.getCameraOutputStreamSizes().filter {
+
+        return context.cameraManager.getCameraOutputStreamSizes().filter {
             codecSupportedWidths.contains(it.width) && codecSupportedHeights.contains(it.height)
         }
     }
@@ -67,7 +70,11 @@ class VideoCameraStreamerConfigurationInfo(videoEndpointInfo: IEndpoint.IEndpoin
         cameraId: String
     ): List<Range<Int>> {
         val encoderFpsRange = super.getSupportedFramerate(mimeType)
-        return context.getCameraFps(cameraId).filter { encoderFpsRange.contains(it) }
+        return context.getCameraCharacteristics(cameraId).targetFps.filter {
+            encoderFpsRange.contains(
+                it
+            )
+        }
     }
 
     /**
@@ -83,7 +90,8 @@ class VideoCameraStreamerConfigurationInfo(videoEndpointInfo: IEndpoint.IEndpoin
         mimeType: String,
         cameraId: String
     ): List<Int> {
-        val supportedDynamicRangeProfiles = context.get10BitSupportedProfiles(cameraId)
+        val supportedDynamicRangeProfiles =
+            context.getCameraCharacteristics(cameraId).dynamicRangeProfiles
 
         // If device doesn't support 10-bit, return all supported 8-bit profiles
         return super.getSupportedAllProfiles(mimeType).filter {

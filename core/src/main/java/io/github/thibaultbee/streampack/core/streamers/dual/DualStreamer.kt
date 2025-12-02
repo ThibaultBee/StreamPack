@@ -359,7 +359,10 @@ open class DualStreamer(
         }
 
         val secondVideoCodecConfig = secondPipelineOutput.videoCodecConfigFlow.value
-        if ((secondVideoCodecConfig != null) && (!secondVideoCodecConfig.isCompatibleWith(videoConfig.secondVideoConfig))) {
+        if ((secondVideoCodecConfig != null) && (!secondVideoCodecConfig.isCompatibleWith(
+                videoConfig.secondVideoConfig
+            ))
+        ) {
             secondPipelineOutput.invalidateVideoCodecConfig()
         }
 

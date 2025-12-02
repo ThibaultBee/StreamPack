@@ -26,7 +26,7 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraException
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraDeviceController
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraFps
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.targetFps
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.ICameraCaptureSessionCompat
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -156,7 +156,7 @@ internal object CameraUtils {
         cameraId: String,
         fps: Int
     ): Range<Int> {
-        var fpsRangeList = cameraManager.getCameraFps(cameraId)
+        var fpsRangeList = cameraManager.getCameraCharacteristics(cameraId).targetFps
         Logger.i(TAG, "Supported FPS range list: $fpsRangeList")
 
         // Get range that contains FPS

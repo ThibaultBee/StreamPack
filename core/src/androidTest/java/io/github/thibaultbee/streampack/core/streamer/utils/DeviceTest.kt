@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.core.utils
 import android.Manifest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameraManager
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameras
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -28,6 +29,9 @@ open class DeviceTest(
     private val withMicrophone: Boolean = true
 ) {
     protected val context = InstrumentationRegistry.getInstrumentation().context
+    private val cameraManager by lazy {
+        context.cameraManager
+    }
 
     @get:Rule
     val runtimePermissionRule: GrantPermissionRule = run {
@@ -44,7 +48,7 @@ open class DeviceTest(
     @Before
     open fun setUp() {
         if (withCamera) {
-            assumeTrue(context.cameras.isNotEmpty())
+            assumeTrue(cameraManager.cameras.isNotEmpty())
         }
     }
 }
