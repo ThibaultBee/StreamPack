@@ -1,22 +1,13 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     id(libs.plugins.android.library.get().pluginId)
-    alias(libs.plugins.kotlin.android)
+    id(libs.plugins.kotlin.android.get().pluginId)
+    id("android-library-convention")
 }
 
 description = "StreamPack core library"
 
-configureAndroidLibrary()
-configurePublication()
-
 android {
     namespace = "io.github.thibaultbee.streampack.core"
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
-        }
-    }
 }
 
 dependencies {

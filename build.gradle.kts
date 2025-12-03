@@ -1,11 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-import org.jetbrains.dokka.DokkaConfiguration.Visibility
-import org.jetbrains.dokka.gradle.DokkaTaskPartial
-import java.net.URL
-
 plugins {
-    alias(libs.plugins.dokka)
-    alias(libs.plugins.kotlin.android) apply false
+    id(libs.plugins.kotlin.android.get().pluginId) apply false
+    id(libs.plugins.dokka.get().pluginId)
 }
 
 allprojects {
@@ -16,32 +12,16 @@ allprojects {
     version = "$versionName-SNAPSHOT"
 }
 
-subprojects {
-    apply(plugin = "org.jetbrains.dokka")
+dependencies {
+    dokkaPlugin(libs.android.documentation.plugin)
 
-    tasks.withType<DokkaTaskPartial>().configureEach {
-        dokkaSourceSets.configureEach {
-            documentedVisibilities.set(
-                setOf(
-                    Visibility.PUBLIC,
-                    Visibility.PROTECTED
-                )
-            )
+    // Core modules
+    dokka(project(":streampack-core"))
+    dokka(project(":streampack-ui"))
+    dokka(project(":streampack-services"))
 
-            sourceLink {
-                localDirectory.set(projectDir.resolve("src"))
-                remoteUrl.set(URL("https://github.com/ThibaultBee/StreamPack/${project.name}/src"))
-                remoteLineSuffix.set("#L")
-            }
-
-            includeNonPublic.set(false)
-            skipEmptyPackages.set(true)
-
-            // Remove internal package
-            perPackageOption {
-                matchingRegex.set(".*\\.internal.*")
-                suppress.set(true)
-            }
-        }
-    }
+    // Extensions
+    dokka(project(":streampack-flv"))
+    dokka(project(":streampack-rtmp"))
+    dokka(project(":streampack-srt"))
 }

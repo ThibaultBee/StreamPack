@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.0"
+agp = "8.13.1"
 concurrentFutures = "1.3.0"
 datastorePreference = "1.1.7"
 guava = "33.5.0-android"
@@ -18,7 +18,7 @@ androidxNavigation = "2.9.6"
 androidxPreference = "1.2.1"
 androidxTest = "1.7.0"
 androidxWindow = "1.4.0"
-dokka = "2.0.0"
+dokka = "2.1.0"
 junit = "4.13.2"
 kotlin = "2.2.21"
 kotlinxCoroutines = "1.10.2"
@@ -31,9 +31,11 @@ srtdroid = "1.9.5"
 junitKtx = "1.3.0"
 
 [libraries]
+android-documentation-plugin = { module = "org.jetbrains.dokka:android-documentation-plugin", version.ref = "dokka" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastorePreference" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreference" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 video-api-client = { module = "video.api:android-api-client", version.ref = "videoApiClient" }
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 android-material = { module = "com.google.android.material:material", version.ref = "material" }
@@ -57,6 +59,7 @@ androidx-test-core-ktx = { group = "androidx.test", name = "core-ktx", version.r
 androidx-test-rules = { module = "androidx.test:rules", version.ref = "androidxTest" }
 androidx-test-ext-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junitKtx" }
 androidx-window = { group = "androidx.window", name = "window", version.ref = "androidxWindow" }
+dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 junit = { module = "junit:junit", version.ref = "junit" }
 komedia-komuxer-rtmp = { module = "io.github.komedia.komuxer:rtmp", version.ref = "komuxer" }
 komedia-komuxer-flv = { module = "io.github.komedia.komuxer:flv", version.ref = "komuxer" }
@@ -74,5 +77,4 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
-
 

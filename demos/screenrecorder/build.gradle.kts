@@ -1,9 +1,8 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     id(libs.plugins.android.application.get().pluginId)
-    alias(libs.plugins.kotlin.android)
+    id(libs.plugins.kotlin.android.get().pluginId)
     id(libs.plugins.kotlin.kapt.get().pluginId)
+    id("android-application-convention")
 }
 
 android {
@@ -11,33 +10,6 @@ android {
 
     defaultConfig {
         applicationId = "io.github.thibaultbee.streampack.screenrecorder"
-
-        minSdk = AndroidVersions.MIN_SDK
-        targetSdk = AndroidVersions.TARGET_SDK
-        compileSdk = AndroidVersions.COMPILE_SDK
-
-        versionCode = extra.get("versionCode") as Int
-        versionName = "$version"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-    buildTypes {
-        release {
-            isMinifyEnabled = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
-        }
     }
     buildFeatures {
         viewBinding = true

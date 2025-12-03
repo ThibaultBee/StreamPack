@@ -1,3 +1,8 @@
+package utils
+
+import Property
+
+
 object AndroidVersions {
     const val MIN_SDK = 21
     const val TARGET_SDK = 36
@@ -36,9 +41,6 @@ object Publication {
     }
 
     object Signing {
-        val hasKey: Boolean
-            get() = key != null && keyId != null && password != null
-
         val key: String?
             get() = Property.get(Property.GpgKey)
         val password: String?

@@ -1,22 +1,13 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     id(libs.plugins.android.library.get().pluginId)
-    alias(libs.plugins.kotlin.android)
+    id(libs.plugins.kotlin.android.get().pluginId)
+    id("android-library-convention")
 }
 
 description = "RTMP extension for StreamPack."
 
-configureAndroidLibrary()
-configurePublication()
-
 android {
     namespace = "io.github.thibaultbee.streampack.ext.rtmp"
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
-        }
-    }
 }
 
 dependencies {
