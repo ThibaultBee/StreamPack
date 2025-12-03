@@ -9,11 +9,11 @@ plugins {
 }
 
 allprojects {
-    val versionCode by extra { 3_000_002 }
-    val versionName by extra { "3.0.2" }
+    val versionCode by extra { 3_001_000 }
+    val versionName by extra { "3.1.0" }
 
     group = "io.github.thibaultbee.streampack"
-    version = versionName
+    version = "$versionName-SNAPSHOT"
 }
 
 subprojects {
