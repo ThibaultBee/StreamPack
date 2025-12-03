@@ -21,8 +21,11 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.toByteArr
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.OutputStream
+import java.nio.ByteBuffer
 
 /**
  * Sink to write data to an [OutputStream]
@@ -30,6 +33,8 @@ import java.io.OutputStream
 abstract class OutputStreamSink(protected val coroutineDispatcher: CoroutineDispatcher) :
     AbstractSink() {
     protected var outputStream: OutputStream? = null
+        private set
+    private val mutex = Mutex()
 
     private val _isOpenFlow = MutableStateFlow(false)
     override val isOpenFlow = _isOpenFlow.asStateFlow()
@@ -41,44 +46,68 @@ abstract class OutputStreamSink(protected val coroutineDispatcher: CoroutineDisp
 
     override suspend fun openImpl(mediaDescriptor: MediaDescriptor) {
         withContext(coroutineDispatcher) {
-            outputStream = openOutputStream(mediaDescriptor)
+            mutex.withLock {
+                if (outputStream != null) {
+                    throw IllegalStateException("Sink is already opened")
+                }
+                outputStream = openOutputStream(mediaDescriptor)
+                _isOpenFlow.emit(true)
+            }
         }
-        _isOpenFlow.emit(true)
     }
 
     override fun configure(config: SinkConfiguration) {} // Nothing to configure
 
     override suspend fun startStream() {
-        requireNotNull(outputStream) { "Open the sink before starting the stream" }
+        mutex.withLock {
+            requireNotNull(outputStream) { "Open the sink before starting the stream" }
+        }
+    }
+
+    protected open fun writeImpl(outputStream: OutputStream, buffer: ByteBuffer): Int {
+        val byteWritten = buffer.remaining()
+        outputStream.write(buffer.toByteArray())
+        return byteWritten
     }
 
     override suspend fun write(packet: Packet): Int {
-        val outputStream = requireNotNull(outputStream) { "Open the sink before writing" }
-
         return withContext(coroutineDispatcher) {
-            val byteWritten = packet.buffer.remaining()
-            outputStream.write(packet.buffer.toByteArray())
-            byteWritten
+            mutex.withLock {
+                val outputStream = requireNotNull(outputStream) { "Open the sink before writing" }
+                writeImpl(outputStream, packet.buffer)
+            }
         }
     }
 
     override suspend fun stopStream() {
         withContext(coroutineDispatcher) {
-            outputStream?.flush()
+            mutex.withLock {
+                try {
+                    outputStream?.flush()
+                } catch (_: Throwable) {
+                    // Ignore
+                }
+            }
         }
     }
 
     override suspend fun close() {
-        stopStream()
-        try {
-            withContext(coroutineDispatcher) {
-                outputStream?.close()
+        withContext(coroutineDispatcher) {
+            mutex.withLock {
+                try {
+                    outputStream?.flush()
+                } catch (_: Throwable) {
+                    // Ignore
+                }
+                try {
+                    outputStream?.close()
+                } catch (_: Throwable) {
+                    // Ignore
+                } finally {
+                    outputStream = null
+                    _isOpenFlow.emit(false)
+                }
             }
-        } catch (_: Throwable) {
-            // Ignore
-        } finally {
-            outputStream = null
-            _isOpenFlow.emit(false)
         }
     }
 
