@@ -36,6 +36,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.autoWhiteBalanceModes
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.exposureRange
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.exposureStep
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isBackCamera
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFlashAvailable
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFrontCamera
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isOpticalStabilizationAvailable
@@ -53,6 +54,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.normalize
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.runBlocking
+import java.lang.Thread.sleep
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -962,12 +964,12 @@ class CameraSettings internal constructor(
             }
 
             // Reverse device orientation for back-facing cameras.
-            val isFacingFront = characteristics.isFrontCamera
+            val isOppositeFacing = characteristics.isBackCamera
 
             // Calculate desired orientation relative to camera orientation to make
             // the image upright relative to the device orientation.
             return getRelativeRotationDegrees(
-                sensorOrientationDegrees, surfaceRotationDegrees, isFacingFront
+                sensorOrientationDegrees, surfaceRotationDegrees, isOppositeFacing
             )
         }
 
@@ -975,12 +977,12 @@ class CameraSettings internal constructor(
         private fun getRelativeRotationDegrees(
             @IntRange(from = 0, to = 359) sourceRotationDegrees: Int,
             @IntRange(from = 0, to = 359) destRotationDegrees: Int,
-            isFacingFront: Boolean
+            isOppositeFacing: Boolean
         ): Int {
-            return if (isFacingFront) {
-                (sourceRotationDegrees + destRotationDegrees + 360) % 360
-            } else {
+            return if (isOppositeFacing) {
                 (sourceRotationDegrees - destRotationDegrees + 360) % 360
+            } else {
+                (sourceRotationDegrees + destRotationDegrees) % 360
             }
         }
 
