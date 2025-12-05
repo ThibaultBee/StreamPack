@@ -38,7 +38,6 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.exposureStep
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isBackCamera
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFlashAvailable
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFrontCamera
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isOpticalStabilizationAvailable
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.lensDistanceRange
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.maxNumberOfExposureMeteringRegions
@@ -52,9 +51,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.isApplica
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isNormalized
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.normalize
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
-import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.runBlocking
-import java.lang.Thread.sleep
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -851,12 +848,7 @@ class CameraSettings internal constructor(
                 characteristics, CaptureRequest.CONTROL_AF_MODE_AUTO
             )
 
-            // Add new regions
             cameraSettings.set(CaptureRequest.CONTROL_AF_MODE, afMode)
-            cameraSettings.set(
-                CaptureRequest.CONTROL_AF_TRIGGER,
-                CameraMetadata.CONTROL_AF_TRIGGER_START
-            )
 
             if (afRects.isNotEmpty()) {
                 cameraSettings.set(
@@ -876,46 +868,60 @@ class CameraSettings internal constructor(
                     awbRects.toTypedArray()
                 )
             }
-
-            cameraSettings.applyRepeatingSession()
         }
 
         @Suppress("UNCHECKED_CAST")
-        private fun triggerAf() {
-            val aeMode = getPreferredAEMode(
-                characteristics, CaptureRequest.CONTROL_AE_MODE_ON
-            )
+        private fun triggerAf(overrideAeMode: Boolean) {
             cameraSettings.set(
                 CaptureRequest.CONTROL_AF_TRIGGER,
                 CameraMetadata.CONTROL_AF_TRIGGER_START
             )
-            cameraSettings.set(CaptureRequest.CONTROL_AE_MODE, aeMode)
+            if (overrideAeMode) {
+                val aeMode = getPreferredAEMode(
+                    characteristics, CaptureRequest.CONTROL_AE_MODE_ON
+                )
+                cameraSettings.set(CaptureRequest.CONTROL_AE_MODE, aeMode)
+            }
             cameraSettings.applyRepeatingSession()
+        }
+
+        private fun executeMetering(
+            afRectangles: List<MeteringRectangle>,
+            aeRectangles: List<MeteringRectangle>,
+            awbRectangles: List<MeteringRectangle>,
+            timeoutDurationMs: Long
+        ) {
+            disableAutoCancel()
+
+            addFocusMetering(afRectangles, aeRectangles, awbRectangles)
+            if (afRectangles.isNotEmpty()) {
+                triggerAf(true)
+            } else {
+                cameraSettings.applyRepeatingSession()
+            }
+
+            // Auto cancel AF trigger after timeoutDurationMs
+            if (timeoutDurationMs > 0) {
+                autoCancelHandle = scheduler.schedule(
+                    { cancelFocusAndMetering() },
+                    timeoutDurationMs,
+                    TimeUnit.MILLISECONDS
+                )
+            }
         }
 
         private fun startFocusAndMetering(
             afPoints: List<PointF>,
             aePoints: List<PointF>,
             awbPoints: List<PointF>,
-            fovAspectRatio: Rational
+            fovAspectRatio: Rational,
+            timeoutDurationMs: Long
         ) {
-            if (afPoints.isEmpty() && aePoints.isEmpty() && awbPoints.isEmpty()) {
-                Logger.e(TAG, "No focus/metering points provided")
-                return
-            }
-
             val cropRegion = zoom.cropSensorRegion
-
-            disableAutoCancel()
 
             val maxAFRegion = focus.maxNumOfMeteringRegions
             val maxAERegion = exposure.maxNumOfMeteringRegions
             val maxWbRegion = whiteBalance.maxNumOfMeteringRegions
-
-            if (maxAFRegion == 0 && maxAERegion == 0 && maxWbRegion == 0) {
-                Logger.w(TAG, "No metering regions available")
-                return
-            }
 
             val afRectangles = getMeteringRectangles(
                 afPoints, DEFAULT_AF_SIZE, maxAFRegion, cropRegion, fovAspectRatio
@@ -927,20 +933,17 @@ class CameraSettings internal constructor(
                 awbPoints, DEFAULT_AF_SIZE, maxWbRegion, cropRegion, fovAspectRatio
             )
 
-            addFocusMetering(afRectangles, aeRectangles, awbRectangles)
-            triggerAf()
+            require(afRectangles.isNotEmpty() || aeRectangles.isNotEmpty() || awbRectangles.isNotEmpty()) {
+                "At least one of AF, AE, AWB points must be non empty"
+            }
 
-            // Auto cancel AF trigger after DEFAULT_AUTO_CANCEL_DURATION_MS
-            autoCancelHandle = scheduler.schedule(
-                { cancelFocusAndMetering() }, DEFAULT_AUTO_CANCEL_DURATION_MS, TimeUnit.MILLISECONDS
-            )
+            executeMetering(afRectangles, aeRectangles, awbRectangles, timeoutDurationMs)
         }
 
         private fun disableAutoCancel() {
             autoCancelHandle?.cancel(true)
             autoCancelHandle = null
         }
-
 
         /**
          * Computes rotation required to transform the camera sensor output orientation to the
@@ -998,10 +1001,25 @@ class CameraSettings internal constructor(
          * @param point the point to focus on in [fovRect] coordinate system
          * @param fovRect the field of view rectangle
          * @param fovRotationDegree the orientation of the field of view
+         * @param timeoutDurationMs duration in milliseconds after which the focus and metering will be cancelled automatically
          */
-        fun onTap(context: Context, point: PointF, fovRect: Rect, fovRotationDegree: Int) {
+        fun onTap(
+            context: Context,
+            point: PointF,
+            fovRect: Rect,
+            fovRotationDegree: Int,
+            timeoutDurationMs: Long = DEFAULT_AUTO_CANCEL_DURATION_MS
+        ) {
             val points = listOf(point)
-            return onTap(context, points, points, emptyList(), fovRect, fovRotationDegree)
+            return onTap(
+                context,
+                points,
+                points,
+                emptyList(),
+                fovRect,
+                fovRotationDegree,
+                timeoutDurationMs
+            )
         }
 
         /**
@@ -1015,14 +1033,16 @@ class CameraSettings internal constructor(
          * @param awbPoints the points where the white balance is done in [fovRect] coordinate system
          * @param fovRect the field of view rectangle
          * @param fovRotationDegree the orientation of the field of view
+         * @param timeoutDurationMs duration in milliseconds after which the focus and metering will be cancelled automatically
          */
         fun onTap(
             context: Context,
-            afPoints: List<PointF> = emptyList(),
-            aePoints: List<PointF> = emptyList(),
-            awbPoints: List<PointF> = emptyList(),
+            afPoints: List<PointF>,
+            aePoints: List<PointF>,
+            awbPoints: List<PointF>,
             fovRect: Rect,
-            fovRotationDegree: Int
+            fovRotationDegree: Int,
+            timeoutDurationMs: Long = DEFAULT_AUTO_CANCEL_DURATION_MS
         ) {
             val cameraId = cameraSettings.cameraId
             val relativeRotation =
@@ -1036,7 +1056,8 @@ class CameraSettings internal constructor(
                     Rational(fovRect.height(), fovRect.width())
                 } else {
                     Rational(fovRect.width(), fovRect.height())
-                }
+                },
+                timeoutDurationMs
             )
         }
 
@@ -1055,7 +1076,7 @@ class CameraSettings internal constructor(
             private const val DEFAULT_AF_SIZE = 1.0f / 6.0f
             private const val DEFAULT_AE_SIZE = DEFAULT_AF_SIZE * 1.5f
             private const val DEFAULT_METERING_WEIGHT_MAX = MeteringRectangle.METERING_WEIGHT_MAX
-            private const val DEFAULT_AUTO_CANCEL_DURATION_MS = 5000L
+            const val DEFAULT_AUTO_CANCEL_DURATION_MS = 5000L
 
             private fun getPreferredAFMode(
                 characteristics: CameraCharacteristics, preferredMode: Int

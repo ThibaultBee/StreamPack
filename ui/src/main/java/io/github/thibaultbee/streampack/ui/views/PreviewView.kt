@@ -37,6 +37,7 @@ import androidx.camera.viewfinder.core.populateFromCharacteristics
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION_MS
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraCharacteristics
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
@@ -94,6 +95,11 @@ class PreviewView @JvmOverloads constructor(
      * Enables tap to focus.
      */
     var enableTapToFocus: Boolean
+
+    /**
+     * The duration in milliseconds after which the focus area set by tap-to-focus is cleared.
+     */
+    var onTapToFocusTimeoutMs = DEFAULT_AUTO_CANCEL_DURATION_MS
 
     /**
      * The position of the [PreviewView] within its container.
@@ -370,7 +376,8 @@ class PreviewView @JvmOverloads constructor(
                     context,
                     PointF(x, y),
                     Rect(this.x.toInt(), this.y.toInt(), width, height),
-                    OrientationUtils.getSurfaceRotationDegrees(display.rotation)
+                    OrientationUtils.getSurfaceRotationDegrees(display.rotation),
+                    onTapToFocusTimeoutMs
                 )
             } catch (t: Throwable) {
                 Logger.e(TAG, "Failed to focus at $x, $y", t)
