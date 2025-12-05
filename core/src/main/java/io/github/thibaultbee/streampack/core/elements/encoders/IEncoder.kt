@@ -58,6 +58,12 @@ interface IEncoder {
      * Force the encoder to generate a key frame.
      */
     fun requestKeyFrame()
+
+    /**
+     * Get current encoder statistics.
+     * Returns stats like output FPS.
+     */
+    fun getStats(): EncoderStats
 }
 
 interface IEncoderInternal : SuspendStreamable, SuspendReleasable,

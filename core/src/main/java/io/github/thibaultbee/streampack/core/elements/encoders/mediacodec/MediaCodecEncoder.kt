@@ -26,6 +26,7 @@ import io.github.thibaultbee.streampack.core.elements.data.Extra
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.EncoderMode
+import io.github.thibaultbee.streampack.core.elements.encoders.EncoderStats
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.hasEndOfStreamFlag
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.isKeyFrame
@@ -92,6 +93,13 @@ internal constructor(
 
     private val encoderCallback = EncoderCallback()
 
+    // Stats tracking
+    private var outputFrameCount = 0L
+    private var outputFramesInWindow = 0
+    private var windowStartTimeMs = 0L
+    private var currentOutputFps = 0f
+    private val statsWindowMs = 1000L // 1 second window for FPS calculation
+
     init {
         val mediaCodecWithFormat = MediaCodecUtils.createCodec(encoderConfig)
         mediaCodec = mediaCodecWithFormat.mediaCodec
@@ -112,6 +120,39 @@ internal constructor(
         val bundle = Bundle()
         bundle.putInt(MediaCodec.PARAMETER_KEY_REQUEST_SYNC_FRAME, 0)
         mediaCodec.setParameters(bundle)
+    }
+
+    /**
+     * Get current encoder statistics
+     */
+    override fun getStats(): EncoderStats {
+        return EncoderStats(
+            outputFrameCount = outputFrameCount,
+            outputFps = currentOutputFps
+        )
+    }
+
+    private fun trackOutputFrame() {
+        val now = System.currentTimeMillis()
+        outputFrameCount++
+        outputFramesInWindow++
+        
+        if (windowStartTimeMs == 0L) {
+            windowStartTimeMs = now
+        }
+        val elapsed = now - windowStartTimeMs
+        if (elapsed >= statsWindowMs) {
+            currentOutputFps = outputFramesInWindow * 1000f / elapsed
+            outputFramesInWindow = 0
+            windowStartTimeMs = now
+        }
+    }
+
+    private fun resetStats() {
+        outputFrameCount = 0
+        outputFramesInWindow = 0
+        windowStartTimeMs = 0
+        currentOutputFps = 0f
     }
 
     private fun configureUnsafe() {
@@ -175,6 +216,7 @@ internal constructor(
             State.CONFIGURED -> {
                 setState(State.PENDING_START)
                 try {
+                    resetStats()
                     mediaCodec.start()
                     setState(State.STARTED)
                 } catch (e: CodecException) {
@@ -358,6 +400,7 @@ internal constructor(
                     )
                     try {
                         listener.outputChannel.send(frame)
+                        trackOutputFrame()
                     } catch (t: Throwable) {
                         if (state.isRunning) {
                             handleErrorUnsafe(t)
