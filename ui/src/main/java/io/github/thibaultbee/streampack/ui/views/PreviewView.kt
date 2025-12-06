@@ -37,6 +37,7 @@ import androidx.camera.viewfinder.core.populateFromCharacteristics
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION_MS
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraCharacteristics
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
@@ -54,6 +55,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
@@ -94,6 +96,11 @@ class PreviewView @JvmOverloads constructor(
      * Enables tap to focus.
      */
     var enableTapToFocus: Boolean
+
+    /**
+     * The duration in milliseconds after which the focus area set by tap-to-focus is cleared.
+     */
+    var onTapToFocusTimeoutMs = DEFAULT_AUTO_CANCEL_DURATION_MS
 
     /**
      * The position of the [PreviewView] within its container.
@@ -365,16 +372,19 @@ class PreviewView @JvmOverloads constructor(
             // touchUpEvent == null means it's an accessibility click. Focus at the center instead.
             val x = touchUpEvent?.x ?: (width / 2f)
             val y = touchUpEvent?.y ?: (height / 2f)
-            try {
-                cameraSource.settings.focusMetering.onTap(
-                    context,
-                    PointF(x, y),
-                    Rect(this.x.toInt(), this.y.toInt(), width, height),
-                    OrientationUtils.getSurfaceRotationDegrees(display.rotation)
-                )
-            } catch (t: Throwable) {
-                Logger.e(TAG, "Failed to focus at $x, $y", t)
-            }
+            coroutineScope?.launch {
+                try {
+                    cameraSource.settings.focusMetering.onTap(
+                        context,
+                        PointF(x, y),
+                        Rect(this@PreviewView.x.toInt(), this@PreviewView.y.toInt(), width, height),
+                        OrientationUtils.getSurfaceRotationDegrees(display.rotation),
+                        onTapToFocusTimeoutMs
+                    )
+                } catch (t: Throwable) {
+                    Logger.e(TAG, "Failed to focus at $x, $y", t)
+                }
+            } ?: Logger.e(TAG, "CoroutineScope is not available")
         }
     }
 
@@ -584,8 +594,10 @@ class PreviewView @JvmOverloads constructor(
             val source = streamer?.videoInput?.sourceFlow?.value
             if (source is ICameraSource) {
                 val zoom = source.settings.zoom
-                zoom.onPinch(detector.scaleFactor)
-                listener?.onZoomRationOnPinchChanged(zoom.zoomRatio)
+                runBlocking(coroutineDispatcher) {
+                    zoom.onPinch(detector.scaleFactor)
+                    listener?.onZoomRationOnPinchChanged(zoom.getZoomRatio())
+                }
                 return true
             } else {
                 return false

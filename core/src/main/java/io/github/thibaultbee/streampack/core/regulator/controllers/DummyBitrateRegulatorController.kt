@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.regulator.controllers
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.core.elements.utils.Scheduler
+import io.github.thibaultbee.streampack.core.elements.utils.CoroutineScheduler
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
@@ -64,7 +64,7 @@ open class DummyBitrateRegulatorController(
     /**
      * Scheduler for bitrate regulation
      */
-    private val scheduler = Scheduler(delayTimeInMs, coroutineDispatcher) {
+    private val scheduler = CoroutineScheduler(delayTimeInMs, coroutineDispatcher) {
         bitrateRegulator.update(
             endpoint.metrics,
             videoEncoder.bitrate,

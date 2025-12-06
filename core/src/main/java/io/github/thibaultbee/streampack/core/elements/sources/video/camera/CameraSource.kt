@@ -65,6 +65,7 @@ internal class CameraSource(
 
     override val settings by lazy {
         CameraSettings(
+            coroutineScope,
             manager.getCameraCharacteristics(cameraId),
             controller
         )

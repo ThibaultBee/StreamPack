@@ -36,8 +36,8 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.autoWhiteBalanceModes
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.exposureRange
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.exposureStep
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isBackCamera
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFlashAvailable
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFrontCamera
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isOpticalStabilizationAvailable
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.lensDistanceRange
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.maxNumberOfExposureMeteringRegions
@@ -49,13 +49,14 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.clamp
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isApplicationPortrait
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isNormalized
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.launchIn
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.normalize
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
-import io.github.thibaultbee.streampack.core.logger.Logger
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledFuture
-import java.util.concurrent.TimeUnit
 
 
 /**
@@ -65,7 +66,9 @@ import java.util.concurrent.TimeUnit
  * @param characteristics Camera characteristics of the current camera.
  */
 class CameraSettings internal constructor(
-    val characteristics: CameraCharacteristics, private val cameraController: CameraController
+    val coroutineScope: CoroutineScope,
+    val characteristics: CameraCharacteristics,
+    private val cameraController: CameraController
 ) {
     /**
      * Current camera id.
@@ -122,7 +125,7 @@ class CameraSettings internal constructor(
      * Current focus metering API.
      */
     val focusMetering =
-        FocusMetering(characteristics, this, zoom, focus, exposure, whiteBalance)
+        FocusMetering(coroutineScope, characteristics, this, zoom, focus, exposure, whiteBalance)
 
     /**
      * Directly gets a [CaptureRequest] from the camera.
@@ -146,12 +149,7 @@ class CameraSettings internal constructor(
     /**
      * Applies settings to the camera repeatedly.
      */
-    fun applyRepeatingSession() = runBlocking { cameraController.setRepeatingSession() }
-
-    /**
-     * Applies settings to the camera burst.
-     */
-    fun applyBurstSession() = runBlocking { cameraController.setBurstSession() }
+    suspend fun applyRepeatingSession() = cameraController.setRepeatingSession()
 
     class Flash(
         private val characteristics: CameraCharacteristics,
@@ -170,26 +168,36 @@ class CameraSettings internal constructor(
          *
          * @see [isAvailable]
          */
-        var enable: Boolean
+        val isEnable: Boolean
             /**
              * @return [Boolean.true] if flash is already on, otherwise [Boolean.false]
              */
             get() = getFlash() == CaptureResult.FLASH_MODE_TORCH
-            /**
-             * @param value [Boolean.true] to switch on flash, [Boolean.false] to switch off flash
-             */
-            set(value) {
-                if (value) {
-                    setFlash(CaptureResult.FLASH_MODE_TORCH)
-                } else {
-                    setFlash(CaptureResult.FLASH_MODE_OFF)
-                }
-            }
 
         private fun getFlash(): Int =
             cameraSettings.get(CaptureRequest.FLASH_MODE) ?: CaptureResult.FLASH_MODE_OFF
 
-        private fun setFlash(mode: Int) {
+        /**
+         * Enable or disable the flash.
+         *
+         * @param isEnable [Boolean.true] to enable flash, otherwise [Boolean.false]
+         */
+        suspend fun setIsEnable(isEnable: Boolean) {
+            if (isEnable) {
+                setFlash(CaptureRequest.FLASH_MODE_TORCH)
+            } else {
+                setFlash(CaptureRequest.FLASH_MODE_OFF)
+            }
+        }
+
+        /**
+         * Set flash mode.
+         *
+         * **See Also:** [FLASH_MODE](https://developer.android.com/reference/android/hardware/camera2/CaptureRequest#FLASH_MODE)
+         *
+         * @param mode flash mode
+         */
+        private suspend fun setFlash(mode: Int) {
             cameraSettings.set(CaptureRequest.FLASH_MODE, mode)
             cameraSettings.applyRepeatingSession()
         }
@@ -208,28 +216,30 @@ class CameraSettings internal constructor(
             get() = characteristics.autoWhiteBalanceModes
 
         /**
-         * Set or get auto white balance mode.
+         * Gets the auto white balance mode.
          *
          * **See Also:** [CONTROL_AWB_MODE](https://developer.android.com/reference/android/hardware/camera2/CaptureRequest#CONTROL_AWB_MODE)
          * @see [availableAutoModes]
          */
-        var autoMode: Int
+        val autoMode: Int
             /**
-             * Get auto white balance mode.
+             * Gets auto white balance mode.
              *
-             * @return current camera audo white balance mode
+             * @return current camera auto white balance mode
              */
             get() = cameraSettings.get(CaptureRequest.CONTROL_AWB_MODE)
                 ?: CaptureResult.CONTROL_AWB_MODE_OFF
-            /**
-             * Get auto white balance mode.
-             *
-             * @param value auto white balance mode
-             */
-            set(value) {
-                cameraSettings.set(CaptureRequest.CONTROL_AWB_MODE, value)
-                cameraSettings.applyRepeatingSession()
-            }
+
+        /**
+         * Sets auto white balance mode.
+         *
+         * @param autoMode auto white balance mode
+         * @see [availableAutoModes]
+         */
+        suspend fun setAutoMode(autoMode: Int) {
+            cameraSettings.set(CaptureRequest.CONTROL_AWB_MODE, autoMode)
+            cameraSettings.applyRepeatingSession()
+        }
 
         /**
          * Get maximum number of available white balance metering regions.
@@ -238,29 +248,38 @@ class CameraSettings internal constructor(
             get() = characteristics.maxNumberOfWhiteBalanceMeteringRegions
 
         /**
-         * Set/get white balance metering regions.
+         * Gets the white balance metering regions.
          */
-        var meteringRegions: List<MeteringRectangle>
+        val meteringRegions: List<MeteringRectangle>
             get() = cameraSettings.get(CaptureRequest.CONTROL_AWB_REGIONS)?.toList()
                 ?: emptyList()
-            set(value) {
-                cameraSettings.set(
-                    CaptureRequest.CONTROL_AWB_REGIONS, value.toTypedArray()
-                )
-                cameraSettings.applyRepeatingSession()
-            }
 
         /**
-         * Gets or sets auto white balance lock.
+         * Sets the white balance metering regions.
          */
-        var lock: Boolean
-            get() = cameraSettings.get(CaptureRequest.CONTROL_AWB_LOCK) ?: false
-            set(value) {
-                cameraSettings.set(CaptureRequest.CONTROL_AWB_LOCK, value)
-                cameraSettings.applyRepeatingSession()
-            }
-    }
+        suspend fun setMeteringRegions(value: List<MeteringRectangle>) {
+            cameraSettings.set(
+                CaptureRequest.CONTROL_AWB_REGIONS, value.toTypedArray()
+            )
+            cameraSettings.applyRepeatingSession()
+        }
 
+        /**
+         * Gets the auto white balance lock state.
+         */
+        val isLocked: Boolean
+            get() = cameraSettings.get(CaptureRequest.CONTROL_AWB_LOCK) ?: false
+
+        /**
+         * Sets the auto white balance lock state.
+         *
+         * @param isLocked the lock state. [Boolean.true] to lock auto white balance, otherwise [Boolean.false]
+         */
+        suspend fun setIsLocked(isLocked: Boolean) {
+            cameraSettings.set(CaptureRequest.CONTROL_AWB_LOCK, isLocked)
+            cameraSettings.applyRepeatingSession()
+        }
+    }
 
     class Iso(
         private val characteristics: CameraCharacteristics,
@@ -277,38 +296,38 @@ class CameraSettings internal constructor(
             get() = characteristics.sensitivityRange ?: DEFAULT_SENSITIVITY_RANGE
 
         /**
-         * Set or get lens focus distance.
+         * Gets lens focus distance.
          *
          * @see [availableSensorSensitivityRange]
          */
-        var sensorSensitivity: Int
+        val sensorSensitivity: Int
             /**
-             * Get the sensitivity
+             * Gets the sensitivity
              *
              * @return the sensitivity
              */
             get() = cameraSettings.get(CaptureRequest.SENSOR_SENSITIVITY)
                 ?: DEFAULT_SENSITIVITY
-            /**
-             * Set the sensitivity
-             *
-             * Only set lens focus distance if [Exposure.autoMode] == [CaptureResult.CONTROL_AE_MODE_OFF].
-             *
-             * @param value lens focus distance
-             */
-            set(value) {
-                cameraSettings.set(
-                    CaptureRequest.SENSOR_SENSITIVITY, value.clamp(availableSensorSensitivityRange)
-                )
-                cameraSettings.applyRepeatingSession()
-            }
+
+
+        /**
+         * Sets the sensitivity
+         *
+         * @param sensorSensitivity the sensitivity
+         */
+        suspend fun setSensorSensitivity(sensorSensitivity: Int) {
+            cameraSettings.set(
+                CaptureRequest.SENSOR_SENSITIVITY,
+                sensorSensitivity.clamp(availableSensorSensitivityRange)
+            )
+            cameraSettings.applyRepeatingSession()
+        }
 
         companion object {
             const val DEFAULT_SENSITIVITY = 100
             val DEFAULT_SENSITIVITY_RANGE = Range(DEFAULT_SENSITIVITY, DEFAULT_SENSITIVITY)
         }
     }
-
 
     class ColorCorrection(
         private val characteristics: CameraCharacteristics,
@@ -326,37 +345,43 @@ class CameraSettings internal constructor(
             }
 
         /**
-         * Sets or gets color correction gain.
-         *
-         * It will disable auto white balance mode if set.
+         * Gets color correction gain.
          *
          * @return the color correction gain or null if not set
          * @see [isAvailable]
          * @see [WhiteBalance.autoMode]
          */
-        var rggbChannelVector: RggbChannelVector?
+        val rggbChannelVector: RggbChannelVector?
             get() = cameraSettings.get(CaptureRequest.COLOR_CORRECTION_GAINS)
-            set(value) {
-                cameraSettings.set(
-                    CaptureRequest.CONTROL_AWB_MODE,
-                    CaptureRequest.CONTROL_AWB_MODE_OFF
-                )
-                cameraSettings.set(
-                    CaptureRequest.COLOR_CORRECTION_MODE,
-                    CaptureRequest.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX
-                )
-                // 3*3 identity matrix represented in numerator, denominator format
-                val identityMatrix =
-                    intArrayOf(1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1)
-                cameraSettings.set(
-                    CaptureRequest.COLOR_CORRECTION_TRANSFORM,
-                    ColorSpaceTransform(identityMatrix)
-                )
-                cameraSettings.set(
-                    CaptureRequest.COLOR_CORRECTION_GAINS, value
-                )
-                cameraSettings.applyRepeatingSession()
-            }
+
+        /**
+         * Sets color correction gain.
+         *
+         * It will disable auto white balance mode if set.
+         *
+         * @param rggbChannelVector the color correction gain
+         */
+        suspend fun setRggbChannelVector(rggbChannelVector: RggbChannelVector) {
+            cameraSettings.set(
+                CaptureRequest.CONTROL_AWB_MODE,
+                CaptureRequest.CONTROL_AWB_MODE_OFF
+            )
+            cameraSettings.set(
+                CaptureRequest.COLOR_CORRECTION_MODE,
+                CaptureRequest.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX
+            )
+            // 3*3 identity matrix represented in numerator, denominator format
+            val identityMatrix =
+                intArrayOf(1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1)
+            cameraSettings.set(
+                CaptureRequest.COLOR_CORRECTION_TRANSFORM,
+                ColorSpaceTransform(identityMatrix)
+            )
+            cameraSettings.set(
+                CaptureRequest.COLOR_CORRECTION_GAINS, rggbChannelVector
+            )
+            cameraSettings.applyRepeatingSession()
+        }
     }
 
     class Exposure(
@@ -375,30 +400,31 @@ class CameraSettings internal constructor(
 
 
         /**
-         * Set or get auto exposure mode.
+         * Gets auto exposure mode.
          *
          * @see [availableAutoModes]
          */
-        var autoMode: Int
+        val autoMode: Int
             /**
-             * Get the auto exposure mode.
+             * Gets the auto exposure mode.
              *
-             * @return auto exposure mode
+             * @return the auto exposure mode
              */
             get() = cameraSettings.get(CaptureRequest.CONTROL_AE_MODE)
                 ?: CaptureResult.CONTROL_AE_MODE_OFF
-            /**
-             * Set the auto exposure mode.
-             *
-             * @param value auto exposure mode
-             */
-            set(value) {
-                cameraSettings.set(CaptureRequest.CONTROL_AE_MODE, value)
-                cameraSettings.applyRepeatingSession()
-            }
 
         /**
-         * Get current camera exposure range.
+         * Sets the auto exposure mode.
+         *
+         * @param autoMode the exposure auto mode
+         */
+        suspend fun setAutoMode(autoMode: Int) {
+            cameraSettings.set(CaptureRequest.CONTROL_AE_MODE, autoMode)
+            cameraSettings.applyRepeatingSession()
+        }
+
+        /**
+         * Gets current camera exposure range.
          *
          * @return exposure range.
          *
@@ -410,7 +436,7 @@ class CameraSettings internal constructor(
                 ?: DEFAULT_COMPENSATION_RANGE
 
         /**
-         * Get current camera exposure compensation step.
+         * Gets current camera exposure compensation step.
          *
          * This is the unit for [getExposureRange]. For example, if this key has a value of 1/2, then a
          * setting of -2 for  [getExposureRange] means that the target EV offset for the auto-exposure
@@ -426,31 +452,32 @@ class CameraSettings internal constructor(
                 ?: DEFAULT_COMPENSATION_STEP_RATIONAL
 
         /**
-         * Set or get exposure compensation.
+         * Gets exposure compensation.
          *
          * @see [availableCompensationRange]
          * @see [availableCompensationStep]
          */
-        var compensation: Int
+        val compensation: Int
             /**
-             * Get the exposure compensation.
+             * Gets the exposure compensation.
              *
-             * @return exposure compensation
+             * @return the exposure compensation
              */
             get() = cameraSettings.get(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION)
                 ?: DEFAULT_COMPENSATION
-            /**
-             * Set the exposure compensation.
-             *
-             * @param value exposure compensation
-             */
-            set(value) {
-                cameraSettings.set(
-                    CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION,
-                    value.clamp(availableCompensationRange)
-                )
-                cameraSettings.applyRepeatingSession()
-            }
+
+        /**
+         * Sets the exposure compensation.
+         *
+         * @param compensation the exposure compensation
+         */
+        suspend fun setCompensation(compensation: Int) {
+            cameraSettings.set(
+                CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION,
+                compensation.clamp(availableCompensationRange)
+            )
+            cameraSettings.applyRepeatingSession()
+        }
 
         /**
          * Get maximum number of available exposure metering regions.
@@ -459,29 +486,43 @@ class CameraSettings internal constructor(
             get() = characteristics.maxNumberOfExposureMeteringRegions
 
         /**
-         * Set/get exposure metering regions.
+         * Gets the exposure metering regions.
          */
-        var meteringRegions: List<MeteringRectangle>
+        val meteringRegions: List<MeteringRectangle>
             get() = cameraSettings.get(CaptureRequest.CONTROL_AE_REGIONS)?.toList()
                 ?: emptyList()
-            set(value) {
-                cameraSettings.set(
-                    CaptureRequest.CONTROL_AE_REGIONS, value.toTypedArray()
-                )
-                cameraSettings.applyRepeatingSession()
-            }
 
         /**
-         * Gets or sets auto exposure lock.
+         * Sets the exposure metering regions.
+         *
+         * @param meteringRegions the metering regions
          */
-        var lock: Boolean
+        suspend fun setMeteringRegions(meteringRegions: List<MeteringRectangle>) {
+            cameraSettings.set(
+                CaptureRequest.CONTROL_AE_REGIONS, meteringRegions.toTypedArray()
+            )
+            cameraSettings.applyRepeatingSession()
+        }
+
+        /**
+         * Gets auto exposure lock.
+         *
+         * @return the auto exposure lock state
+         */
+        val isLocked: Boolean
             get() = cameraSettings.get(CaptureRequest.CONTROL_AE_LOCK) ?: false
-            set(value) {
-                cameraSettings.set(
-                    CaptureRequest.CONTROL_AE_LOCK, value
-                )
-                cameraSettings.applyRepeatingSession()
-            }
+
+        /**
+         * Sets the auto exposure lock.
+         *
+         * @param isLocked the lock state. [Boolean.true] to lock auto exposure, otherwise [Boolean.false]
+         */
+        suspend fun setIsLocked(isLocked: Boolean) {
+            cameraSettings.set(
+                CaptureRequest.CONTROL_AE_LOCK, isLocked
+            )
+            cameraSettings.applyRepeatingSession()
+        }
 
         companion object {
             const val DEFAULT_COMPENSATION = 0
@@ -495,19 +536,20 @@ class CameraSettings internal constructor(
         protected val cameraSettings: CameraSettings
     ) {
         abstract val availableRatioRange: Range<Float>
-        internal abstract val cropSensorRegion: Rect
+        internal abstract suspend fun getCropSensorRegion(): Rect
 
-        abstract var zoomRatio: Float
+        abstract suspend fun getZoomRatio(): Float
+        abstract suspend fun setZoomRatio(zoomRatio: Float)
 
         /**
          * Sets the zoom on pinch scale gesture.
          *
          * @param scale the scale factor
          */
-        fun onPinch(scale: Float) {
-            val scaledRatio: Float = zoomRatio * speedUpZoomByX(scale, 2)
+        suspend fun onPinch(scale: Float) {
+            val scaledRatio: Float = getZoomRatio() * speedUpZoomByX(scale, 2)
             // Clamp the ratio with the zoom range.
-            zoomRatio = scaledRatio.clamp(availableRatioRange.lower, availableRatioRange.upper)
+            setZoomRatio(scaledRatio.clamp(availableRatioRange.lower, availableRatioRange.upper))
         }
 
         private fun speedUpZoomByX(scaleFactor: Float, ratio: Int): Float {
@@ -522,6 +564,8 @@ class CameraSettings internal constructor(
             characteristics: CameraCharacteristics,
             cameraSettings: CameraSettings
         ) : Zoom(characteristics, cameraSettings) {
+            private val mutex = Mutex()
+
             // Keep the zoomRatio
             private var persistentZoomRatio = 1f
             private var currentCropRect: Rect? = null
@@ -531,35 +575,32 @@ class CameraSettings internal constructor(
                     DEFAULT_ZOOM_RATIO, characteristics.scalerMaxZoom
                 )
 
-            override var zoomRatio: Float
-                get() = synchronized(this) {
-                    persistentZoomRatio
-                }
-                set(value) {
-                    synchronized(this) {
-                        val clampedValue = value.clamp(availableRatioRange)
-                        currentCropRect = getCropRegion(
-                            characteristics,
-                            clampedValue
-                        )
-                        cameraSettings.set(
-                            CaptureRequest.SCALER_CROP_REGION, currentCropRect
-                        )
-                        cameraSettings.applyRepeatingSession()
-                        persistentZoomRatio = clampedValue
-                    }
-                }
+            override suspend fun getZoomRatio(): Float = mutex.withLock {
+                persistentZoomRatio
+            }
 
-            override val cropSensorRegion: Rect
-                get() {
-                    synchronized(this) {
-                        return if (currentCropRect != null) {
-                            currentCropRect!!
-                        } else {
-                            return characteristics[CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE]!!
-                        }
-                    }
+            override suspend fun setZoomRatio(zoomRatio: Float) {
+                mutex.withLock {
+                    val clampedValue = zoomRatio.clamp(availableRatioRange)
+                    currentCropRect = getCropRegion(
+                        characteristics,
+                        clampedValue
+                    )
+                    cameraSettings.set(
+                        CaptureRequest.SCALER_CROP_REGION, currentCropRect
+                    )
+                    cameraSettings.applyRepeatingSession()
+                    persistentZoomRatio = clampedValue
                 }
+            }
+
+            override suspend fun getCropSensorRegion(): Rect = mutex.withLock {
+                return if (currentCropRect != null) {
+                    currentCropRect!!
+                } else {
+                    return characteristics[CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE]!!
+                }
+            }
 
             companion object {
                 /**
@@ -600,18 +641,21 @@ class CameraSettings internal constructor(
                 get() = characteristics.zoomRatioRange
                     ?: DEFAULT_ZOOM_RATIO_RANGE
 
-            override var zoomRatio: Float
-                get() = cameraSettings.get(CaptureRequest.CONTROL_ZOOM_RATIO)
+            override suspend fun getZoomRatio(): Float {
+                return cameraSettings.get(CaptureRequest.CONTROL_ZOOM_RATIO)
                     ?: DEFAULT_ZOOM_RATIO
-                set(value) {
-                    cameraSettings.set(
-                        CaptureRequest.CONTROL_ZOOM_RATIO, value.clamp(availableRatioRange)
-                    )
-                    cameraSettings.applyRepeatingSession()
-                }
+            }
 
-            override val cropSensorRegion: Rect
-                get() = characteristics[CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE]!!
+            override suspend fun setZoomRatio(zoomRatio: Float) {
+                cameraSettings.set(
+                    CaptureRequest.CONTROL_ZOOM_RATIO, zoomRatio.clamp(availableRatioRange)
+                )
+                cameraSettings.applyRepeatingSession()
+            }
+
+            override suspend fun getCropSensorRegion(): Rect {
+                return characteristics[CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE]!!
+            }
         }
 
         companion object {
@@ -647,30 +691,31 @@ class CameraSettings internal constructor(
             get() = characteristics.autoFocusModes
 
         /**
-         * Set or get auto focus mode.
+         * Gets the auto focus mode.
          *
          * @see [availableAutoModes]
          */
-        var autoMode: Int
+        val autoMode: Int
             /**
-             * Get the auto focus mode.
+             * Gets the auto focus mode.
              *
-             * @return auto focus mode
+             * @return the auto focus mode
              */
             get() = cameraSettings.get(CaptureRequest.CONTROL_AF_MODE)
                 ?: CaptureResult.CONTROL_AF_MODE_OFF
-            /**
-             * Set the auto focus mode.
-             *
-             * @param value auto focus mode
-             */
-            set(value) {
-                cameraSettings.set(CaptureRequest.CONTROL_AF_MODE, value)
-                cameraSettings.applyRepeatingSession()
-            }
 
         /**
-         * Get current camera lens distance range.
+         * Sets the auto focus mode.
+         *
+         * @param autoMode the auto focus mode
+         */
+        suspend fun setAutoMode(autoMode: Int) {
+            cameraSettings.set(CaptureRequest.CONTROL_AF_MODE, autoMode)
+            cameraSettings.applyRepeatingSession()
+        }
+
+        /**
+         * Gets current camera lens distance range.
          *
          * @return camera lens distance range
          *
@@ -680,31 +725,32 @@ class CameraSettings internal constructor(
             get() = characteristics.lensDistanceRange
 
         /**
-         * Set or get lens focus distance.
+         * Gets the lens focus distance.
          *
          * @see [availableLensDistanceRange]
          */
-        var lensDistance: Float
+        val lensDistance: Float
             /**
              * Get the lens focus distance.
              *
-             * @return lens focus distance
+             * @return the lens focus distance
              */
             get() = cameraSettings.get(CaptureRequest.LENS_FOCUS_DISTANCE)
                 ?: DEFAULT_LENS_DISTANCE
-            /**
-             * Set the lens focus distance
-             *
-             * Only set lens focus distance if [autoMode] == [CaptureResult.CONTROL_AF_MODE_OFF].
-             *
-             * @param value lens focus distance
-             */
-            set(value) {
-                cameraSettings.set(
-                    CaptureRequest.LENS_FOCUS_DISTANCE, value.clamp(availableLensDistanceRange)
-                )
-                cameraSettings.applyRepeatingSession()
-            }
+
+        /**
+         * Sets the lens focus distance
+         *
+         * Only set lens focus distance if [autoMode] == [CaptureResult.CONTROL_AF_MODE_OFF].
+         *
+         * @param lensDistance the lens focus distance
+         */
+        suspend fun setLensDistance(lensDistance: Float) {
+            cameraSettings.set(
+                CaptureRequest.LENS_FOCUS_DISTANCE, lensDistance.clamp(availableLensDistanceRange)
+            )
+            cameraSettings.applyRepeatingSession()
+        }
 
         /**
          * Get maximum number of available focus metering regions.
@@ -714,17 +760,23 @@ class CameraSettings internal constructor(
                 ?: DEFAULT_MAX_NUM_OF_METERING_REGION
 
         /**
-         * Set/get focus metering regions.
+         * Gets the focus metering regions.
          */
-        var meteringRegions: List<MeteringRectangle>
+        val meteringRegions: List<MeteringRectangle>
             get() = cameraSettings.get(CaptureRequest.CONTROL_AF_REGIONS)?.toList()
                 ?: emptyList()
-            set(value) {
-                cameraSettings.set(
-                    CaptureRequest.CONTROL_AF_REGIONS, value.toTypedArray()
-                )
-                cameraSettings.applyRepeatingSession()
-            }
+
+        /**
+         * Sets the focus metering regions.
+         *
+         * @param meteringRegions the metering regions
+         */
+        suspend fun setMeteringRegions(meteringRegions: List<MeteringRectangle>) {
+            cameraSettings.set(
+                CaptureRequest.CONTROL_AF_REGIONS, meteringRegions.toTypedArray()
+            )
+            cameraSettings.applyRepeatingSession()
+        }
 
         companion object {
             const val DEFAULT_LENS_DISTANCE = 0f
@@ -739,84 +791,87 @@ class CameraSettings internal constructor(
         private val cameraSettings: CameraSettings
     ) {
         /**
-         * Enable or disable video stabilization.
+         * Whether the video stabilization is enabled.
          *
-         * Do not enable both [enableVideo] and [enableOptical] at the same time.
+         * Do not enable both [isEnableVideo] and [isEnableOptical] at the same time.
          */
-        var enableVideo: Boolean
+        val isEnableVideo: Boolean
             /**
              * Whether the video stabilization is enabled.
              *
              * @return [Boolean.true] if video stabilization is enabled, otherwise [Boolean.false]
              */
             get() = cameraSettings.get(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE) == CaptureResult.CONTROL_VIDEO_STABILIZATION_MODE_ON
-            /**
-             * Enable or disable the video stabilization.
-             *
-             * @param value [Boolean.true] to enable video stabilization, otherwise [Boolean.false]
-             */
-            set(value) {
-                if (value) {
-                    cameraSettings.set(
-                        CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
-                        CaptureResult.CONTROL_VIDEO_STABILIZATION_MODE_ON
-                    )
-                } else {
-                    cameraSettings.set(
-                        CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
-                        CaptureResult.CONTROL_VIDEO_STABILIZATION_MODE_OFF
-                    )
-                    cameraSettings.applyRepeatingSession()
-                }
+
+        /**
+         * Enables or disables the video stabilization.
+         *
+         * @param isEnableVideo [Boolean.true] to enable video stabilization, otherwise [Boolean.false]
+         */
+        suspend fun setIsEnableVideo(isEnableVideo: Boolean) {
+            if (isEnableVideo) {
+                cameraSettings.set(
+                    CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
+                    CaptureResult.CONTROL_VIDEO_STABILIZATION_MODE_ON
+                )
+            } else {
+                cameraSettings.set(
+                    CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
+                    CaptureResult.CONTROL_VIDEO_STABILIZATION_MODE_OFF
+                )
+                cameraSettings.applyRepeatingSession()
             }
+        }
 
         /**
          * Whether the optical video stabilization is available.
          *
          * @return [Boolean.true] if optical video stabilization is supported, otherwise [Boolean.false]
          *
-         * @see [enableOptical]
+         * @see [isEnableOptical]
          */
         val isOpticalAvailable: Boolean
             get() = characteristics.isOpticalStabilizationAvailable
 
 
         /**
-         * Enable or disable optical video stabilization.
+         * Whether the optical video stabilization is enabled.
          *
-         * Do not enable both [enableVideo] and [enableOptical] at the same time.
+         * Do not enable both [isEnableVideo] and [isEnableOptical] at the same time.
          *
          * @see [isOpticalAvailable]
          */
-        var enableOptical: Boolean
+        val isEnableOptical: Boolean
             /**
              * Whether the optical video stabilization is enabled.
              *
              * @return [Boolean.true] if optical video stabilization is enabled, otherwise [Boolean.false]
              */
             get() = cameraSettings.get(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE) == CaptureResult.LENS_OPTICAL_STABILIZATION_MODE_ON
-            /**
-             * Enable or disable the optical video stabilization.
-             *
-             * @param value [Boolean.true] to enable optical video stabilization, otherwise [Boolean.false]
-             */
-            set(value) {
-                if (value) {
-                    cameraSettings.set(
-                        CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE,
-                        CaptureResult.LENS_OPTICAL_STABILIZATION_MODE_ON
-                    )
-                } else {
-                    cameraSettings.set(
-                        CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE,
-                        CaptureResult.LENS_OPTICAL_STABILIZATION_MODE_OFF
-                    )
-                }
-                cameraSettings.applyRepeatingSession()
+
+        /**
+         * Enable or disable the optical video stabilization.
+         *
+         * @param isEnableOptical [Boolean.true] to enable optical video stabilization, otherwise [Boolean.false]
+         */
+        suspend fun setIsEnableOptical(isEnableOptical: Boolean) {
+            if (isEnableOptical) {
+                cameraSettings.set(
+                    CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE,
+                    CaptureResult.LENS_OPTICAL_STABILIZATION_MODE_ON
+                )
+            } else {
+                cameraSettings.set(
+                    CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE,
+                    CaptureResult.LENS_OPTICAL_STABILIZATION_MODE_OFF
+                )
             }
+            cameraSettings.applyRepeatingSession()
+        }
     }
 
     class FocusMetering(
+        private val coroutineScope: CoroutineScope,
         private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings,
         private val zoom: Zoom,
@@ -825,10 +880,10 @@ class CameraSettings internal constructor(
         private val whiteBalance: WhiteBalance
     ) {
         private val scheduler = Executors.newSingleThreadScheduledExecutor()
-        private var autoCancelHandle: ScheduledFuture<*>? = null
+        private var autoCancelHandle: Job? = null
 
         @Suppress("UNCHECKED_CAST")
-        private fun cancelAfAeTrigger() {
+        private suspend fun cancelAfAeTrigger() {
             // Cancel previous AF trigger
             cameraSettings.set(
                 CaptureRequest.CONTROL_AF_TRIGGER,
@@ -841,7 +896,7 @@ class CameraSettings internal constructor(
                     CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_CANCEL
                 )
             }
-            cameraSettings.applyBurstSession()
+            cameraSettings.applyRepeatingSession()
         }
 
         @Suppress("UNCHECKED_CAST")
@@ -854,12 +909,7 @@ class CameraSettings internal constructor(
                 characteristics, CaptureRequest.CONTROL_AF_MODE_AUTO
             )
 
-            // Add new regions
             cameraSettings.set(CaptureRequest.CONTROL_AF_MODE, afMode)
-            cameraSettings.set(
-                CaptureRequest.CONTROL_AF_TRIGGER,
-                CameraMetadata.CONTROL_AF_TRIGGER_START
-            )
 
             if (afRects.isNotEmpty()) {
                 cameraSettings.set(
@@ -879,46 +929,57 @@ class CameraSettings internal constructor(
                     awbRects.toTypedArray()
                 )
             }
-
-            cameraSettings.applyRepeatingSession()
         }
 
         @Suppress("UNCHECKED_CAST")
-        private fun triggerAf() {
-            val aeMode = getPreferredAEMode(
-                characteristics, CaptureRequest.CONTROL_AE_MODE_ON
-            )
+        private suspend fun triggerAf(overrideAeMode: Boolean) {
             cameraSettings.set(
                 CaptureRequest.CONTROL_AF_TRIGGER,
                 CameraMetadata.CONTROL_AF_TRIGGER_START
             )
-            cameraSettings.set(CaptureRequest.CONTROL_AE_MODE, aeMode)
-            cameraSettings.applyBurstSession()
+            if (overrideAeMode) {
+                val aeMode = getPreferredAEMode(
+                    characteristics, CaptureRequest.CONTROL_AE_MODE_ON
+                )
+                cameraSettings.set(CaptureRequest.CONTROL_AE_MODE, aeMode)
+            }
+            cameraSettings.applyRepeatingSession()
         }
 
-        private fun startFocusAndMetering(
+        private suspend fun executeMetering(
+            afRectangles: List<MeteringRectangle>,
+            aeRectangles: List<MeteringRectangle>,
+            awbRectangles: List<MeteringRectangle>,
+            timeoutDurationMs: Long
+        ) {
+            disableAutoCancel()
+
+            addFocusMetering(afRectangles, aeRectangles, awbRectangles)
+            if (afRectangles.isNotEmpty()) {
+                triggerAf(true)
+            } else {
+                cameraSettings.applyRepeatingSession()
+            }
+
+            // Auto cancel AF trigger after timeoutDurationMs
+            if (timeoutDurationMs > 0) {
+                autoCancelHandle = coroutineScope.launchIn(timeoutDurationMs)
+                { cancelFocusAndMetering() }
+            }
+        }
+
+        private suspend fun startFocusAndMetering(
             afPoints: List<PointF>,
             aePoints: List<PointF>,
             awbPoints: List<PointF>,
-            fovAspectRatio: Rational
+            fovAspectRatio: Rational,
+            timeoutDurationMs: Long
         ) {
-            if (afPoints.isEmpty() && aePoints.isEmpty() && awbPoints.isEmpty()) {
-                Logger.e(TAG, "No focus/metering points provided")
-                return
-            }
-
-            val cropRegion = zoom.cropSensorRegion
-
-            disableAutoCancel()
+            val cropRegion = zoom.getCropSensorRegion()
 
             val maxAFRegion = focus.maxNumOfMeteringRegions
             val maxAERegion = exposure.maxNumOfMeteringRegions
             val maxWbRegion = whiteBalance.maxNumOfMeteringRegions
-
-            if (maxAFRegion == 0 && maxAERegion == 0 && maxWbRegion == 0) {
-                Logger.w(TAG, "No metering regions available")
-                return
-            }
 
             val afRectangles = getMeteringRectangles(
                 afPoints, DEFAULT_AF_SIZE, maxAFRegion, cropRegion, fovAspectRatio
@@ -930,20 +991,17 @@ class CameraSettings internal constructor(
                 awbPoints, DEFAULT_AF_SIZE, maxWbRegion, cropRegion, fovAspectRatio
             )
 
-            addFocusMetering(afRectangles, aeRectangles, awbRectangles)
-            triggerAf()
+            require(afRectangles.isNotEmpty() || aeRectangles.isNotEmpty() || awbRectangles.isNotEmpty()) {
+                "At least one of AF, AE, AWB points must be non empty"
+            }
 
-            // Auto cancel AF trigger after DEFAULT_AUTO_CANCEL_DURATION_MS
-            autoCancelHandle = scheduler.schedule(
-                { cancelFocusAndMetering() }, DEFAULT_AUTO_CANCEL_DURATION_MS, TimeUnit.MILLISECONDS
-            )
+            executeMetering(afRectangles, aeRectangles, awbRectangles, timeoutDurationMs)
         }
 
         private fun disableAutoCancel() {
-            autoCancelHandle?.cancel(true)
+            autoCancelHandle?.cancel()
             autoCancelHandle = null
         }
-
 
         /**
          * Computes rotation required to transform the camera sensor output orientation to the
@@ -967,12 +1025,12 @@ class CameraSettings internal constructor(
             }
 
             // Reverse device orientation for back-facing cameras.
-            val isFacingFront = characteristics.isFrontCamera
+            val isOppositeFacing = characteristics.isBackCamera
 
             // Calculate desired orientation relative to camera orientation to make
             // the image upright relative to the device orientation.
             return getRelativeRotationDegrees(
-                sensorOrientationDegrees, surfaceRotationDegrees, isFacingFront
+                sensorOrientationDegrees, surfaceRotationDegrees, isOppositeFacing
             )
         }
 
@@ -980,12 +1038,12 @@ class CameraSettings internal constructor(
         private fun getRelativeRotationDegrees(
             @IntRange(from = 0, to = 359) sourceRotationDegrees: Int,
             @IntRange(from = 0, to = 359) destRotationDegrees: Int,
-            isFacingFront: Boolean
+            isOppositeFacing: Boolean
         ): Int {
-            return if (isFacingFront) {
-                (sourceRotationDegrees + destRotationDegrees + 360) % 360
-            } else {
+            return if (isOppositeFacing) {
                 (sourceRotationDegrees - destRotationDegrees + 360) % 360
+            } else {
+                (sourceRotationDegrees + destRotationDegrees) % 360
             }
         }
 
@@ -1001,10 +1059,25 @@ class CameraSettings internal constructor(
          * @param point the point to focus on in [fovRect] coordinate system
          * @param fovRect the field of view rectangle
          * @param fovRotationDegree the orientation of the field of view
+         * @param timeoutDurationMs duration in milliseconds after which the focus and metering will be cancelled automatically
          */
-        fun onTap(context: Context, point: PointF, fovRect: Rect, fovRotationDegree: Int) {
+        suspend fun onTap(
+            context: Context,
+            point: PointF,
+            fovRect: Rect,
+            fovRotationDegree: Int,
+            timeoutDurationMs: Long = DEFAULT_AUTO_CANCEL_DURATION_MS
+        ) {
             val points = listOf(point)
-            return onTap(context, points, points, emptyList(), fovRect, fovRotationDegree)
+            return onTap(
+                context,
+                points,
+                points,
+                emptyList(),
+                fovRect,
+                fovRotationDegree,
+                timeoutDurationMs
+            )
         }
 
         /**
@@ -1018,14 +1091,16 @@ class CameraSettings internal constructor(
          * @param awbPoints the points where the white balance is done in [fovRect] coordinate system
          * @param fovRect the field of view rectangle
          * @param fovRotationDegree the orientation of the field of view
+         * @param timeoutDurationMs duration in milliseconds after which the focus and metering will be cancelled automatically
          */
-        fun onTap(
+        suspend fun onTap(
             context: Context,
-            afPoints: List<PointF> = emptyList(),
-            aePoints: List<PointF> = emptyList(),
-            awbPoints: List<PointF> = emptyList(),
+            afPoints: List<PointF>,
+            aePoints: List<PointF>,
+            awbPoints: List<PointF>,
             fovRect: Rect,
-            fovRotationDegree: Int
+            fovRotationDegree: Int,
+            timeoutDurationMs: Long = DEFAULT_AUTO_CANCEL_DURATION_MS
         ) {
             val cameraId = cameraSettings.cameraId
             val relativeRotation =
@@ -1039,18 +1114,18 @@ class CameraSettings internal constructor(
                     Rational(fovRect.height(), fovRect.width())
                 } else {
                     Rational(fovRect.width(), fovRect.height())
-                }
+                },
+                timeoutDurationMs
             )
         }
 
         /**
          * Cancel the focus and metering.
          */
-        fun cancelFocusAndMetering() {
+        suspend fun cancelFocusAndMetering() {
             disableAutoCancel()
 
             cancelAfAeTrigger()
-            cameraSettings.applyRepeatingSession()
         }
 
         companion object {
@@ -1059,7 +1134,7 @@ class CameraSettings internal constructor(
             private const val DEFAULT_AF_SIZE = 1.0f / 6.0f
             private const val DEFAULT_AE_SIZE = DEFAULT_AF_SIZE * 1.5f
             private const val DEFAULT_METERING_WEIGHT_MAX = MeteringRectangle.METERING_WEIGHT_MAX
-            private const val DEFAULT_AUTO_CANCEL_DURATION_MS = 5000L
+            const val DEFAULT_AUTO_CANCEL_DURATION_MS = 5000L
 
             private fun getPreferredAFMode(
                 characteristics: CameraCharacteristics, preferredMode: Int
