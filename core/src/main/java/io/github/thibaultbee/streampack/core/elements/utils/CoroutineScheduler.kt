@@ -22,7 +22,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class Scheduler(
+class CoroutineScheduler(
     private val delayTimeInMs: Long,
     coroutineDispatcher: CoroutineDispatcher,
     private val action: suspend CoroutineScope.() -> Unit
