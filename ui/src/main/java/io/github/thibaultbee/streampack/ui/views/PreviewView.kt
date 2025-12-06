@@ -55,6 +55,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
@@ -371,17 +372,19 @@ class PreviewView @JvmOverloads constructor(
             // touchUpEvent == null means it's an accessibility click. Focus at the center instead.
             val x = touchUpEvent?.x ?: (width / 2f)
             val y = touchUpEvent?.y ?: (height / 2f)
-            try {
-                cameraSource.settings.focusMetering.onTap(
-                    context,
-                    PointF(x, y),
-                    Rect(this.x.toInt(), this.y.toInt(), width, height),
-                    OrientationUtils.getSurfaceRotationDegrees(display.rotation),
-                    onTapToFocusTimeoutMs
-                )
-            } catch (t: Throwable) {
-                Logger.e(TAG, "Failed to focus at $x, $y", t)
-            }
+            coroutineScope?.launch {
+                try {
+                    cameraSource.settings.focusMetering.onTap(
+                        context,
+                        PointF(x, y),
+                        Rect(this@PreviewView.x.toInt(), this@PreviewView.y.toInt(), width, height),
+                        OrientationUtils.getSurfaceRotationDegrees(display.rotation),
+                        onTapToFocusTimeoutMs
+                    )
+                } catch (t: Throwable) {
+                    Logger.e(TAG, "Failed to focus at $x, $y", t)
+                }
+            } ?: Logger.e(TAG, "CoroutineScope is not available")
         }
     }
 
@@ -591,8 +594,10 @@ class PreviewView @JvmOverloads constructor(
             val source = streamer?.videoInput?.sourceFlow?.value
             if (source is ICameraSource) {
                 val zoom = source.settings.zoom
-                zoom.onPinch(detector.scaleFactor)
-                listener?.onZoomRationOnPinchChanged(zoom.zoomRatio)
+                runBlocking(coroutineDispatcher) {
+                    zoom.onPinch(detector.scaleFactor)
+                    listener?.onZoomRationOnPinchChanged(zoom.getZoomRatio())
+                }
                 return true
             } else {
                 return false

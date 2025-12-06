@@ -50,7 +50,6 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.IBitm
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFpsSupported
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.interfaces.startStream
@@ -387,7 +386,9 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     val isFlashAvailable = MutableLiveData(false)
     fun toggleFlash() {
         cameraSettings?.let {
-            it.flash.enable = !it.flash.enable
+            viewModelScope.launch {
+                it.flash.setIsEnable(!it.flash.isEnable)
+            }
         } ?: Log.e(TAG, "Camera settings is not accessible")
     }
 
@@ -396,7 +397,9 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         cameraSettings?.let { settings ->
             val awbModes = settings.whiteBalance.availableAutoModes
             val index = awbModes.indexOf(settings.whiteBalance.autoMode)
-            settings.whiteBalance.autoMode = awbModes[(index + 1) % awbModes.size]
+            viewModelScope.launch {
+                settings.whiteBalance.setAutoMode(awbModes[(index + 1) % awbModes.size])
+            }
         } ?: Log.e(TAG, "Camera settings is not accessible")
     }
 
@@ -420,10 +423,12 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         set(value) {
             cameraSettings?.let { settings ->
                 settings.exposure.let {
-                    if (settings.isActiveFlow.value) {
-                        it.compensation = (value / it.availableCompensationStep.toFloat()).toInt()
+                    viewModelScope.launch {
+                        if (settings.isActiveFlow.value) {
+                            it.setCompensation((value / it.availableCompensationStep.toFloat()).toInt())
+                        }
+                        notifyPropertyChanged(BR.exposureCompensation)
                     }
-                    notifyPropertyChanged(BR.exposureCompensation)
                 }
             } ?: Log.e(TAG, "Camera settings is not accessible")
         }
@@ -439,17 +444,21 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         @Bindable get() {
             val settings = cameraSettings
             return if (settings != null && settings.isActiveFlow.value) {
-                settings.zoom.zoomRatio
+                runBlocking {
+                    settings.zoom.getZoomRatio()
+                }
             } else {
                 1f
             }
         }
         set(value) {
             cameraSettings?.let { settings ->
-                if (settings.isActiveFlow.value) {
-                    settings.zoom.zoomRatio = value
+                viewModelScope.launch {
+                    if (settings.isActiveFlow.value) {
+                        settings.zoom.setZoomRatio(value)
+                    }
+                    notifyPropertyChanged(BR.zoomRatio)
                 }
-                notifyPropertyChanged(BR.zoomRatio)
             } ?: Log.e(TAG, "Camera settings is not accessible")
         }
 
@@ -458,11 +467,13 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         cameraSettings?.let {
             val afModes = it.focus.availableAutoModes
             val index = afModes.indexOf(it.focus.autoMode)
-            it.focus.autoMode = afModes[(index + 1) % afModes.size]
-            if (it.focus.autoMode == CaptureResult.CONTROL_AF_MODE_OFF) {
-                showLensDistanceSlider.postValue(true)
-            } else {
-                showLensDistanceSlider.postValue(false)
+            viewModelScope.launch {
+                it.focus.setAutoMode(afModes[(index + 1) % afModes.size])
+                if (it.focus.autoMode == CaptureResult.CONTROL_AF_MODE_OFF) {
+                    showLensDistanceSlider.postValue(true)
+                } else {
+                    showLensDistanceSlider.postValue(false)
+                }
             }
         } ?: Log.e(TAG, "Camera settings is not accessible")
     }
@@ -483,10 +494,12 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         set(value) {
             cameraSettings?.let { settings ->
                 settings.focus.let {
-                    if (settings.isActiveFlow.value) {
-                        it.lensDistance = value
+                    viewModelScope.launch {
+                        if (settings.isActiveFlow.value) {
+                            it.setLensDistance(value)
+                        }
+                        notifyPropertyChanged(BR.lensDistance)
                     }
-                    notifyPropertyChanged(BR.lensDistance)
                 }
             } ?: Log.e(TAG, "Camera settings is not accessible")
         }
@@ -509,10 +522,12 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         // Set optical stabilization first
         // Do not set both video and optical stabilization at the same time
         if (settings.isActiveFlow.value) {
-            if (settings.stabilization.isOpticalAvailable) {
-                settings.stabilization.enableOptical = true
-            } else {
-                settings.stabilization.enableVideo = true
+            viewModelScope.launch {
+                if (settings.stabilization.isOpticalAvailable) {
+                    settings.stabilization.setIsEnableOptical(true)
+                } else {
+                    settings.stabilization.setIsEnableVideo(true)
+                }
             }
         }
 
