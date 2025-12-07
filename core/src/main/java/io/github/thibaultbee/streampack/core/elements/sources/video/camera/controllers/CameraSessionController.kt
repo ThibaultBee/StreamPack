@@ -16,8 +16,10 @@
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers
 
 import android.hardware.camera2.CameraCaptureSession
+import android.hardware.camera2.CameraCaptureSession.CaptureCallback
 import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
+import android.hardware.camera2.TotalCaptureResult
 import android.util.Range
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.ICameraCaptureSessionCompat
@@ -25,15 +27,21 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraUtils
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestWithTargetsBuilder
 import io.github.thibaultbee.streampack.core.logger.Logger
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.atomic.AtomicLong
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 internal class CameraSessionController private constructor(
+    private val coroutineScope: CoroutineScope,
     private val captureRequestBuilder: CaptureRequestWithTargetsBuilder,
     private val sessionCompat: ICameraCaptureSessionCompat,
     private val captureSession: CameraCaptureSession,
@@ -48,10 +56,12 @@ internal class CameraSessionController private constructor(
 
     private val requestTargetMutex = Mutex()
 
+    private val nextSessionUpdateId = AtomicLong(0)
+
     /**
      * A default capture callback that logs the failure reason.
      */
-    private val captureCallback = object : CameraCaptureSession.CaptureCallback() {
+    private val captureCallback = object : CaptureCallback() {
         override fun onCaptureFailed(
             session: CameraCaptureSession, request: CaptureRequest, failure: CaptureFailure
         ) {
@@ -59,6 +69,11 @@ internal class CameraSessionController private constructor(
             Logger.e(TAG, "Capture failed with code ${failure.reason}")
         }
     }
+
+    private val sessionCallback = CameraControlSessionCallback(coroutineScope)
+
+    private val captureCallbacks =
+        mutableSetOf<CaptureCallback>(captureCallback, sessionCallback)
 
     val isEmpty: Boolean
         get() = runBlocking { requestTargetMutex.withLock { captureRequestBuilder.isEmpty } }
@@ -215,10 +230,68 @@ internal class CameraSessionController private constructor(
         }
     }
 
+    suspend fun removeCaptureCallback(
+        cameraCaptureCallback: CaptureCallback
+    ) {
+        captureSessionMutex.withLock {
+            if (isClosed) {
+                Logger.w(TAG, "Camera session controller is released")
+                return
+            }
+
+            captureCallbacks.remove(cameraCaptureCallback)
+        }
+    }
+
     /**
      * Sets a repeating session with the current capture request.
      */
-    suspend fun setRepeatingSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
+    suspend fun setRepeatingSessionSync() {
+        if (captureRequestBuilder.isEmpty) {
+            Logger.w(TAG, "Capture request is empty")
+            return
+        }
+        captureSessionMutex.withLock {
+            if (isClosed) {
+                Logger.w(TAG, "Camera session controller is released")
+                return
+            }
+
+            suspendCoroutine { continuation ->
+                val nextSessionId = nextSessionUpdateId.getAndIncrement()
+
+                val captureCallback = object : CaptureResultListener {
+                    override fun onCaptureResult(result: TotalCaptureResult): Boolean {
+                        val tag = result.request.tag as? TagBundle
+                        val keyId = tag?.keyId ?: return false
+                        if (keyId >= nextSessionId) {
+                            continuation.resume(Unit)
+                            return true
+                        }
+                        return false
+                    }
+                }
+
+                sessionCallback.addListener(captureCallback)
+
+                captureRequestBuilder.setTag(
+                    TagBundle().apply {
+                        keyId = nextSessionId
+                    }
+                )
+                sessionCompat.setRepeatingSingleRequest(
+                    captureSession,
+                    captureRequestBuilder.build(),
+                    MultiCaptureCallback(captureCallbacks)
+                )
+            }
+        }
+    }
+
+    /**
+     * Sets a repeating session with the current capture request.
+     */
+    suspend fun setRepeatingSession() {
         if (captureRequestBuilder.isEmpty) {
             Logger.w(TAG, "Capture request is empty")
             return
@@ -230,7 +303,9 @@ internal class CameraSessionController private constructor(
             }
 
             sessionCompat.setRepeatingSingleRequest(
-                captureSession, captureRequestBuilder.build(), cameraCaptureCallback
+                captureSession,
+                captureRequestBuilder.build(),
+                MultiCaptureCallback(captureCallbacks)
             )
         }
     }
@@ -260,17 +335,6 @@ internal class CameraSessionController private constructor(
      * @param value The setting value
      */
     fun <T> setSetting(key: CaptureRequest.Key<T>, value: T) = captureRequestBuilder.set(key, value)
-
-    /**
-     * Sets a setting to the current capture request and apply it.
-     *
-     * @param key The setting key
-     * @param value The setting value
-     */
-    suspend fun <T> setRepeatingSetting(key: CaptureRequest.Key<T>, value: T) {
-        captureRequestBuilder.set(key, value)
-        setRepeatingSession()
-    }
 
     /**
      * Creates a new capture session with the given outputs.
@@ -317,6 +381,7 @@ internal class CameraSessionController private constructor(
             )
 
         val controller = CameraSessionController(
+            coroutineScope,
             captureRequestBuilder,
             sessionCompat,
             newCaptureSession,
@@ -336,6 +401,7 @@ internal class CameraSessionController private constructor(
         private const val TAG = "CameraSessionController"
 
         internal suspend fun create(
+            coroutineScope: CoroutineScope,
             sessionCompat: ICameraCaptureSessionCompat,
             cameraDeviceController: CameraDeviceController,
             outputs: List<CameraSurface>,
@@ -355,14 +421,14 @@ internal class CameraSessionController private constructor(
                     isClosedFlow
                 )
 
-            val captureRequestBuilder =
-                CaptureRequestWithTargetsBuilder.create(
-                    cameraDeviceController
-                ).apply {
-                    set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
-                    defaultRequestBuilder()
-                }
+            val captureRequestBuilder = CaptureRequestWithTargetsBuilder.create(
+                cameraDeviceController
+            ).apply {
+                set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
+                defaultRequestBuilder()
+            }
             return CameraSessionController(
+                coroutineScope,
                 captureRequestBuilder,
                 sessionCompat,
                 captureSession,
@@ -370,6 +436,108 @@ internal class CameraSessionController private constructor(
                 dynamicRange,
                 isClosedFlow.asStateFlow()
             )
+        }
+    }
+
+    private class MultiCaptureCallback(
+        private val callbacks: Set<CaptureCallback>
+    ) : CaptureCallback() {
+        override fun onCaptureStarted(
+            session: CameraCaptureSession,
+            request: CaptureRequest,
+            timestamp: Long,
+            frameNumber: Long
+        ) {
+            super.onCaptureStarted(session, request, timestamp, frameNumber)
+            callbacks.forEach {
+                it.onCaptureStarted(session, request, timestamp, frameNumber)
+            }
+        }
+
+        override fun onCaptureCompleted(
+            session: CameraCaptureSession,
+            request: CaptureRequest,
+            result: TotalCaptureResult
+        ) {
+            super.onCaptureCompleted(session, request, result)
+            callbacks.forEach {
+                it.onCaptureCompleted(session, request, result)
+            }
+        }
+
+        override fun onCaptureFailed(
+            session: CameraCaptureSession,
+            request: CaptureRequest,
+            failure: CaptureFailure
+        ) {
+            super.onCaptureFailed(session, request, failure)
+            callbacks.forEach {
+                it.onCaptureFailed(session, request, failure)
+            }
+        }
+    }
+
+    private class TagBundle {
+        private val tagMap = mutableMapOf<String, Any?>()
+
+        var keyId: Long?
+            get() = tagMap[TAG_KEY_ID] as? Long
+            set(value) {
+                tagMap[TAG_KEY_ID] = value
+            }
+
+        val keys: Set<String>
+            get() = tagMap.keys
+
+        fun setTag(key: String, value: Any?) {
+            tagMap[key] = value
+        }
+
+        companion object {
+            private const val TAG_KEY_ID = "TAG_KEY_ID"
+        }
+    }
+
+    interface CaptureResultListener {
+        /**
+         * Called when a capture result is received.
+         *
+         * @param result The capture result.
+         * @return true if the listener is finished and should be removed, false otherwise.
+         */
+        fun onCaptureResult(result: TotalCaptureResult): Boolean
+    }
+
+    private class CameraControlSessionCallback(private val coroutineScope: CoroutineScope) :
+        CaptureCallback() {
+        /* synthetic accessor */
+        private val resultListeners = mutableSetOf<CaptureResultListener>()
+
+        fun addListener(listener: CaptureResultListener) {
+            resultListeners.add(listener)
+        }
+
+        fun removeListener(listener: CaptureResultListener) {
+            resultListeners.remove(listener)
+        }
+
+        override fun onCaptureCompleted(
+            session: CameraCaptureSession,
+            request: CaptureRequest,
+            result: TotalCaptureResult
+        ) {
+            coroutineScope.launch {
+                val removeSet = mutableSetOf<CaptureResultListener>()
+                for (listener in resultListeners) {
+                    val isFinished: Boolean = listener.onCaptureResult(result)
+                    if (isFinished) {
+                        removeSet.add(listener)
+                    }
+                }
+                if (!removeSet.isEmpty()) {
+                    resultListeners.removeAll(removeSet)
+                }
+            }
         }
     }
 }

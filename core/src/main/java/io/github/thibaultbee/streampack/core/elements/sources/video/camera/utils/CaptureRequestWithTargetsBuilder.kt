@@ -148,7 +148,7 @@ internal class CaptureRequestWithTargetsBuilder private constructor(
          * @param cameraDeviceController The camera device controller
          * @param template The template to use
          */
-        suspend fun create(
+        fun create(
             cameraDeviceController: CameraDeviceController,
             template: Int = CameraDevice.TEMPLATE_RECORD,
         ) = CaptureRequestWithTargetsBuilder(cameraDeviceController.createCaptureRequest(template))
