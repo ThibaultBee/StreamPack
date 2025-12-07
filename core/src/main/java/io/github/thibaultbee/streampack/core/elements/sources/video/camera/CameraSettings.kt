@@ -147,6 +147,13 @@ class CameraSettings internal constructor(
         cameraController.setSetting(key, value)
 
     /**
+     * Applies settings to the camera repeatedly in a synchronized way.
+     *
+     * This method returns when the capture callback is received with the passed request.
+     */
+    suspend fun applyRepeatingSessionSync() = cameraController.setRepeatingSessionSync()
+
+    /**
      * Applies settings to the camera repeatedly.
      */
     suspend fun applyRepeatingSession() = cameraController.setRepeatingSession()
@@ -879,7 +886,6 @@ class CameraSettings internal constructor(
         private val exposure: Exposure,
         private val whiteBalance: WhiteBalance
     ) {
-        private val scheduler = Executors.newSingleThreadScheduledExecutor()
         private var autoCancelHandle: Job? = null
 
         @Suppress("UNCHECKED_CAST")
@@ -954,11 +960,25 @@ class CameraSettings internal constructor(
         ) {
             disableAutoCancel()
 
+            /**
+             * Cancel previous AF/AE trigger.
+             * Otherwise, some devices may ignore the new AF/AE trigger request.
+             */
+            cameraSettings.set(
+                CaptureRequest.CONTROL_AF_TRIGGER,
+                CameraMetadata.CONTROL_AF_TRIGGER_IDLE
+            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                cameraSettings.set(
+                    CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER,
+                    CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_IDLE
+                )
+            }
+            cameraSettings.applyRepeatingSessionSync()
+
             addFocusMetering(afRectangles, aeRectangles, awbRectangles)
             if (afRectangles.isNotEmpty()) {
                 triggerAf(true)
-            } else {
-                cameraSettings.applyRepeatingSession()
             }
 
             // Auto cancel AF trigger after timeoutDurationMs

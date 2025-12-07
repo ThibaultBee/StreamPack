@@ -157,6 +157,7 @@ internal class CameraController(
             val deviceController = getDeviceController()
             outputsMutex.withLock {
                 CameraSessionController.create(
+                    coroutineScope,
                     sessionCompat,
                     deviceController,
                     outputs.values.toList(),
@@ -382,11 +383,21 @@ internal class CameraController(
     }
 
     /**
+     * Sets a repeating session sync with the current capture request.
+     *
+     * It returns only when the capture callback has been called for the first time.
+     */
+    suspend fun setRepeatingSessionSync() {
+        val sessionController = requireNotNull(sessionController) { "SessionController is null" }
+        sessionController.setRepeatingSessionSync()
+    }
+
+    /**
      * Sets a repeating session with the current capture request.
      */
-    suspend fun setRepeatingSession(cameraCaptureCallback: CameraCaptureSession.CaptureCallback = captureCallback) {
+    suspend fun setRepeatingSession() {
         val sessionController = requireNotNull(sessionController) { "SessionController is null" }
-        sessionController.setRepeatingSession(cameraCaptureCallback)
+        sessionController.setRepeatingSession()
     }
 
     private fun closeControllers() {
