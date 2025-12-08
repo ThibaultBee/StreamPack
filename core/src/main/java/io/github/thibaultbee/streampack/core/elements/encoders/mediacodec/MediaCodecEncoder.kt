@@ -590,7 +590,7 @@ internal constructor(
         private val codec: MediaCodec,
         private val isVideo: Boolean
     ) {
-        private var previousPresentationTimestamp = 0L
+        private var previousPresentationTimeUs = 0L
 
         /**
          * Create a [Frame] from a [RawFrame]
@@ -601,13 +601,12 @@ internal constructor(
             index: Int, outputFormat: MediaFormat, info: BufferInfo, tag: String
         ): FrameWithCloseable {
             var pts = info.presentationTimeUs
-            if (pts <= previousPresentationTimestamp) {
-                pts = previousPresentationTimestamp + 1
-                Logger.w(tag, "Correcting timestamp: $pts <= $previousPresentationTimestamp")
+            if (pts <= previousPresentationTimeUs) {
+                pts = previousPresentationTimeUs + 1
+                Logger.w(tag, "Correcting timestamp: $pts <= $previousPresentationTimeUs")
             }
-            info.presentationTimeUs = pts
-            previousPresentationTimestamp = pts
-            return createFrame(codec, index, outputFormat, info, tag)
+            previousPresentationTimeUs = pts
+            return createFrame(codec, index, outputFormat, pts, info.isKeyFrame, tag)
         }
 
         /**
@@ -618,13 +617,17 @@ internal constructor(
          * @param info the buffer info
          */
         private fun createFrame(
-            codec: MediaCodec, index: Int, outputFormat: MediaFormat, info: BufferInfo, tag: String
+            codec: MediaCodec,
+            index: Int,
+            outputFormat: MediaFormat,
+            ptsInUs: Long,
+            isKeyFrame: Boolean,
+            tag: String
         ): FrameWithCloseable {
             val buffer = requireNotNull(codec.getOutputBuffer(index))
-            val isKeyFrame = info.isKeyFrame
             return FrameWithCloseable(
                 buffer,
-                info.presentationTimeUs, // pts
+                ptsInUs, // pts
                 null, // dts
                 isKeyFrame,
                 try {
