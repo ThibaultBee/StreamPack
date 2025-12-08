@@ -30,6 +30,7 @@ import android.util.Range
 import android.util.Rational
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresApi
+import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.is90or270
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraController
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.autoExposureModes
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.autoFocusModes
@@ -38,6 +39,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.exposureStep
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isBackCamera
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFlashAvailable
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFrontCamera
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isOpticalStabilizationAvailable
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.lensDistanceRange
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.maxNumberOfExposureMeteringRegions
@@ -1078,6 +1080,38 @@ class CameraSettings internal constructor(
             return normalizedPoint.rotate(relativeRotation)
         }
 
+        private fun normalizePoint(
+            point: PointF,
+            fovRect: Rect,
+            relativeRotation: Int,
+            isFrontCamera: Boolean
+        ): PointF {
+            val normalizedPoint = normalizePoint(point, fovRect, relativeRotation)
+            return if (isFrontCamera) {
+                if (relativeRotation.is90or270) {
+                    // If the rotation is 90/270, the Point should be flipped vertically.
+                    //   +---+     90 +---+  270 +---+
+                    //   | ^ | -->    | < |      | > |
+                    //   +---+        +---+      +---+
+                    PointF(
+                        normalizedPoint.x,
+                        1f - normalizedPoint.y
+                    )
+                } else {
+                    // If the rotation is 0/180, the Point should be flipped horizontally.
+                    //   +---+      0 +---+  180 +---+
+                    //   | ^ | -->    | ^ |      | v |
+                    //   +---+        +---+      +---+
+                    PointF(
+                        1f - normalizedPoint.x,
+                        normalizedPoint.y
+                    )
+                }
+            } else {
+                normalizedPoint
+            }
+        }
+
         /**
          * Sets the focus on tap.
          *
@@ -1135,10 +1169,11 @@ class CameraSettings internal constructor(
                     fovRotationDegree
                 )
 
+            val isFrontCamera = characteristics.isFrontCamera
             startFocusAndMetering(
-                afPoints.map { normalizePoint(it, fovRect, relativeRotation) },
-                aePoints.map { normalizePoint(it, fovRect, relativeRotation) },
-                awbPoints.map { normalizePoint(it, fovRect, relativeRotation) },
+                afPoints.map { normalizePoint(it, fovRect, relativeRotation, isFrontCamera) },
+                aePoints.map { normalizePoint(it, fovRect, relativeRotation, isFrontCamera) },
+                awbPoints.map { normalizePoint(it, fovRect, relativeRotation, isFrontCamera) },
                 if (context.isApplicationPortrait) {
                     Rational(fovRect.height(), fovRect.width())
                 } else {
@@ -1160,7 +1195,8 @@ class CameraSettings internal constructor(
         companion object {
             private const val DEFAULT_AF_SIZE = 1.0f / 6.0f
             private const val DEFAULT_AE_SIZE = DEFAULT_AF_SIZE * 1.5f
-            private const val DEFAULT_METERING_WEIGHT_MAX = MeteringRectangle.METERING_WEIGHT_MAX
+            private const val DEFAULT_METERING_WEIGHT_MAX =
+                MeteringRectangle.METERING_WEIGHT_MAX
             const val DEFAULT_AUTO_CANCEL_DURATION_MS = 5000L
 
             private fun getPreferredAFMode(
