@@ -52,11 +52,11 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.isNormali
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.launchIn
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.normalize
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
+import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.util.concurrent.Executors
 
 
 /**
@@ -984,7 +984,13 @@ class CameraSettings internal constructor(
             // Auto cancel AF trigger after timeoutDurationMs
             if (timeoutDurationMs > 0) {
                 autoCancelHandle = coroutineScope.launchIn(timeoutDurationMs)
-                { cancelFocusAndMetering() }
+                {
+                    try {
+                        cancelFocusAndMetering()
+                    } catch (t: Throwable) {
+                        Logger.w(TAG, "Failed to auto cancel focus and metering", t)
+                    }
+                }
             }
         }
 
@@ -1122,9 +1128,12 @@ class CameraSettings internal constructor(
             fovRotationDegree: Int,
             timeoutDurationMs: Long = DEFAULT_AUTO_CANCEL_DURATION_MS
         ) {
-            val cameraId = cameraSettings.cameraId
             val relativeRotation =
-                getSensorRotationDegrees(characteristics, cameraId, fovRotationDegree)
+                getSensorRotationDegrees(
+                    characteristics,
+                    cameraSettings.cameraId,
+                    fovRotationDegree
+                )
 
             startFocusAndMetering(
                 afPoints.map { normalizePoint(it, fovRect, relativeRotation) },
@@ -1149,8 +1158,6 @@ class CameraSettings internal constructor(
         }
 
         companion object {
-            private const val TAG = "CameraSettings"
-
             private const val DEFAULT_AF_SIZE = 1.0f / 6.0f
             private const val DEFAULT_AE_SIZE = DEFAULT_AF_SIZE * 1.5f
             private const val DEFAULT_METERING_WEIGHT_MAX = MeteringRectangle.METERING_WEIGHT_MAX
@@ -1274,5 +1281,9 @@ class CameraSettings internal constructor(
                 return MeteringRectangle(focusRect, DEFAULT_METERING_WEIGHT_MAX)
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "CameraSettings"
     }
 }
