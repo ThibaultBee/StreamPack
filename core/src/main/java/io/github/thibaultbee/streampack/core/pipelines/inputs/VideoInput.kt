@@ -413,7 +413,7 @@ internal class VideoInput(
                 surfaceProcessor.createInputSurface(
                     videoSource.infoProviderFlow.value.getSurfaceSize(
                         videoSourceConfig.resolution
-                    ), videoSource.timestampOffsetInNs
+                    ), videoSource.timebase
                 )
             )
         } else {

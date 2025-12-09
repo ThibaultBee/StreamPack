@@ -25,6 +25,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.AbstractPrev
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
+import io.github.thibaultbee.streampack.core.elements.utils.time.Timebase
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,7 +41,7 @@ internal class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSo
     IVideoSourceInternal,
     ISurfaceSourceInternal,
     IBitmapSource {
-    override val timestampOffsetInNs = 0L
+    override val timebase = Timebase.UPTIME
     override val infoProviderFlow =
         MutableStateFlow(SourceInfoProvider() as ISourceInfoProvider).asStateFlow()
 

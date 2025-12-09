@@ -19,6 +19,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
 import android.util.Size
@@ -33,8 +34,8 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSizes
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSurface
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraTimestampHelper
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestWithTargetsBuilder
+import io.github.thibaultbee.streampack.core.elements.utils.time.Timebase
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,16 +64,23 @@ internal class CameraSource(
         }
     )
 
+    private val characteristics = manager.getCameraCharacteristics(cameraId)
+
     override val settings by lazy {
         CameraSettings(
             coroutineScope,
-            manager.getCameraCharacteristics(cameraId),
+            characteristics,
             controller
         )
     }
 
-    override val timestampOffsetInNs =
-        CameraTimestampHelper.getTimeOffsetInNsToMonoClock(manager, cameraId)
+    override val timebase =
+        if (characteristics[CameraCharacteristics.SENSOR_INFO_TIMESTAMP_SOURCE] == CameraCharacteristics.SENSOR_INFO_TIMESTAMP_SOURCE_REALTIME) {
+            Timebase.REALTIME
+        } else {
+            Timebase.UPTIME
+        }
+
 
     override val infoProviderFlow = MutableStateFlow(CameraInfoProvider(manager, cameraId))
 

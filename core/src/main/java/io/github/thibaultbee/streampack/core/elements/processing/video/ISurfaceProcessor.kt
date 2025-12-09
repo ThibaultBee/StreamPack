@@ -23,6 +23,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
+import io.github.thibaultbee.streampack.core.elements.utils.time.Timebase
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 
 interface ISurfaceProcessor
@@ -36,7 +37,7 @@ interface ISurfaceProcessor
  * You can create your own implementation of this interface to handle custom effects or processing.
  */
 interface ISurfaceProcessorInternal : ISurfaceProcessor, Releasable {
-    fun createInputSurface(surfaceSize: Size, timestampOffsetInNs: Long): Surface
+    fun createInputSurface(surfaceSize: Size, timebase: Timebase): Surface
 
     fun removeInputSurface(surface: Surface)
 

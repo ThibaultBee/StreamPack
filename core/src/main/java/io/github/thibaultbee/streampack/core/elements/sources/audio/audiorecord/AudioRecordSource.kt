@@ -28,7 +28,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordEffect.Companion.isValidUUID
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordEffect.Factory.Companion.getFactoryForEffectType
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordSource.Companion.isEffectAvailable
-import io.github.thibaultbee.streampack.core.elements.utils.TimeUtils
+import io.github.thibaultbee.streampack.core.elements.utils.time.TimeUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.type
 import io.github.thibaultbee.streampack.core.elements.utils.pool.IReadOnlyRawFrameFactory
 import io.github.thibaultbee.streampack.core.logger.Logger

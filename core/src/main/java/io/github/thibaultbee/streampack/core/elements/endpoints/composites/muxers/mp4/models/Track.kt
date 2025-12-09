@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.models
 
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
-import io.github.thibaultbee.streampack.core.elements.utils.TimeUtils
+import io.github.thibaultbee.streampack.core.elements.utils.time.TimeUtils
 
 class Track(
     val id: Int,

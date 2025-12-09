@@ -20,7 +20,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.Stream
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.descriptors.AdaptationField
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.packets.Pes.StreamId.Companion.fromMimeType
-import io.github.thibaultbee.streampack.core.elements.utils.TimeUtils
+import io.github.thibaultbee.streampack.core.elements.utils.time.TimeUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isVideo
 import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool

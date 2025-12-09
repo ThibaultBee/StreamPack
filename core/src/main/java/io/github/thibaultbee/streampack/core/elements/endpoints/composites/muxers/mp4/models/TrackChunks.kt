@@ -55,7 +55,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.boxes.VPCodecConfigurationBox
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.utils.createHandlerBox
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.utils.createTypeMediaHeaderBox
-import io.github.thibaultbee.streampack.core.elements.utils.TimeUtils
+import io.github.thibaultbee.streampack.core.elements.utils.time.TimeUtils
 import io.github.thibaultbee.streampack.core.elements.utils.av.audio.opus.OpusCsdParser
 import io.github.thibaultbee.streampack.core.elements.utils.av.descriptors.AudioSpecificConfigDescriptor
 import io.github.thibaultbee.streampack.core.elements.utils.av.descriptors.ESDescriptor
