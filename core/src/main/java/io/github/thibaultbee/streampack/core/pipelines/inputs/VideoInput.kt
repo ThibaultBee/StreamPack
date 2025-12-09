@@ -640,7 +640,23 @@ internal class VideoInput(
 
     private suspend fun stopStreamUnsafe() {
         try {
-            source?.stopStream()
+            val videoSource = sourceInternalFlow.value
+            videoSource?.stopStream()
+            if (videoSource is ISurfaceSourceInternal) {
+                sourceConfig?.let {
+                    videoSource.getOutput()?.let { surface -> processor.removeInputSurface(surface) }
+                    videoSource.setOutput(
+                        processor.createInputSurface(
+                            videoSource.infoProviderFlow.value.getSurfaceSize(
+                                it.resolution
+                            ), videoSource.timebase
+                        )
+                    )
+                } ?: Logger.w(
+                    TAG,
+                    "Video source configuration is not set"
+                )
+            }
         } catch (t: Throwable) {
             Logger.w(TAG, "stopStream: Can't stop video source: ${t.message}")
         }
