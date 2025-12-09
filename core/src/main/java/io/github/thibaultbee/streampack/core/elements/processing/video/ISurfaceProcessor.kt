@@ -41,6 +41,8 @@ interface ISurfaceProcessorInternal : ISurfaceProcessor, Releasable {
 
     fun removeInputSurface(surface: Surface)
 
+    fun setTimebase(surface: Surface, timebase: Timebase)
+
     fun addOutputSurface(surfaceOutput: ISurfaceOutput)
 
     fun removeOutputSurface(surfaceOutput: ISurfaceOutput)
