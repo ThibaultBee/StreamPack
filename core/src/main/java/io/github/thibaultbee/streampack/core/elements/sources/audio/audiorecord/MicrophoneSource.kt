@@ -24,13 +24,17 @@ import android.os.Build
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.elements.utils.AudioSourceValue
 import java.util.UUID
 
 /**
  * The [MicrophoneSource] class is an implementation of [AudioRecordSource] that captures audio
  * from the microphone.
+ *
+ * @param audioSource The audio source to use (e.g., MediaRecorder.AudioSource.MIC).
  */
-internal class MicrophoneSource : AudioRecordSource() {
+internal class MicrophoneSource(@AudioSourceValue val audioSource: Int) :
+    AudioRecordSource() {
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun buildAudioRecord(config: AudioSourceConfig, bufferSize: Int): AudioRecord {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -43,11 +47,11 @@ internal class MicrophoneSource : AudioRecordSource() {
             AudioRecord.Builder()
                 .setAudioFormat(audioFormat)
                 .setBufferSizeInBytes(bufferSize)
-                .setAudioSource(MediaRecorder.AudioSource.DEFAULT)
+                .setAudioSource(audioSource)
                 .build()
         } else {
             AudioRecord(
-                MediaRecorder.AudioSource.DEFAULT,
+                audioSource,
                 config.sampleRate,
                 config.channelConfig,
                 config.byteFormat,
@@ -60,16 +64,18 @@ internal class MicrophoneSource : AudioRecordSource() {
 /**
  * A factory to create a [MicrophoneSource].
  *
+ * @param audioSource the audio source to use (e.g., MediaRecorder.AudioSource.MIC)
  * @param effects a set of audio effects to apply to the audio source
  */
 class MicrophoneSourceFactory(
+    @AudioSourceValue val audioSource: Int = MediaRecorder.AudioSource.CAMCORDER,
     effects: Set<UUID> = defaultAudioEffects
 ) :
     AudioRecordSourceFactory(effects) {
-    override suspend fun createImpl(context: Context) = MicrophoneSource()
+    override suspend fun createImpl(context: Context) = MicrophoneSource(audioSource)
 
     override fun isSourceEquals(source: IAudioSourceInternal?): Boolean {
-        return source is MicrophoneSource
+        return source is MicrophoneSource && this.audioSource == source.audioSource
     }
 
     override fun toString(): String {

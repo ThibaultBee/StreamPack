@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources
 
+import android.media.MediaRecorder
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource
 import io.github.thibaultbee.streampack.core.elements.utils.StubLogger
 import io.github.thibaultbee.streampack.core.elements.utils.StubRawFrameFactory
@@ -30,7 +31,7 @@ class MicrophoneSourceUnitTest {
 
     @Test
     fun `assert exception on bad state`() = runTest {
-        val microphoneSource = MicrophoneSource()
+        val microphoneSource = MicrophoneSource(MediaRecorder.AudioSource.CAMCORDER)
         try {
             microphoneSource.startStream()
             Assert.fail()
@@ -45,15 +46,15 @@ class MicrophoneSourceUnitTest {
 
     @Test
     fun `assert no exception on bad state`() = runTest {
-        val microphoneSource = MicrophoneSource()
+        val microphoneSource = MicrophoneSource(MediaRecorder.AudioSource.CAMCORDER)
         try {
             microphoneSource.stopStream()
-        } catch (t: Throwable) {
+        } catch (_: Throwable) {
             Assert.fail()
         }
         try {
             microphoneSource.release()
-        } catch (t: Throwable) {
+        } catch (_: Throwable) {
             Assert.fail()
         }
     }

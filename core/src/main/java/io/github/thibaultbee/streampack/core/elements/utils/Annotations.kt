@@ -3,6 +3,7 @@ package io.github.thibaultbee.streampack.core.elements.utils
 import android.hardware.camera2.CameraCharacteristics
 import android.media.AudioFormat
 import android.media.MediaFormat
+import android.media.MediaRecorder
 import android.os.Process
 import android.view.Surface
 import androidx.annotation.IntDef
@@ -85,7 +86,7 @@ annotation class ThreadPriorityValue
 
 
 /**
- * Valid thread priority values
+ * Valid lens facing direction values
  */
 @IntDef(
     CameraCharacteristics.LENS_FACING_BACK,
@@ -97,3 +98,22 @@ annotation class ThreadPriorityValue
 )
 annotation class Camera2FacingDirectionValue
 
+/**
+ * Valid audio source values
+ */
+@IntDef(
+    MediaRecorder.AudioSource.CAMCORDER,
+    MediaRecorder.AudioSource.DEFAULT,
+    MediaRecorder.AudioSource.MIC,
+    MediaRecorder.AudioSource.UNPROCESSED,
+    MediaRecorder.AudioSource.VOICE_CALL,
+    MediaRecorder.AudioSource.VOICE_COMMUNICATION,
+    MediaRecorder.AudioSource.VOICE_DOWNLINK,
+    MediaRecorder.AudioSource.VOICE_PERFORMANCE,
+    MediaRecorder.AudioSource.VOICE_RECOGNITION,
+    MediaRecorder.AudioSource.VOICE_UPLINK
+)
+@Retention(
+    AnnotationRetention.SOURCE
+)
+annotation class AudioSourceValue
