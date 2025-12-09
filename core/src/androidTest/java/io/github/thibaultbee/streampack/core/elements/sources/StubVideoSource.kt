@@ -9,12 +9,14 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoFrameS
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.pool.IReadOnlyRawFrameFactory
+import io.github.thibaultbee.streampack.core.elements.utils.time.Timebase
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class StubVideoSurfaceSource(override val timestampOffsetInNs: Long = 0) : StubVideoSource(),
+class StubVideoSurfaceSource(override val timebase: Timebase = Timebase.REALTIME) :
+    StubVideoSource(),
     ISurfaceSourceInternal {
     private var outputSurface: Surface? = null
     override suspend fun getOutput() = outputSurface
@@ -27,12 +29,12 @@ class StubVideoSurfaceSource(override val timestampOffsetInNs: Long = 0) : StubV
         outputSurface = null
     }
 
-    class Factory(val timestampOffsetInNs: Long = 0) : IVideoSourceInternal.Factory {
+    class Factory(val timebase: Timebase = Timebase.REALTIME) : IVideoSourceInternal.Factory {
         override suspend fun create(
             context: Context,
             dispatcherProvider: IVideoDispatcherProvider
         ): IVideoSourceInternal {
-            return StubVideoSurfaceSource(timestampOffsetInNs)
+            return StubVideoSurfaceSource(timebase)
         }
 
         override fun isSourceEquals(source: IVideoSourceInternal?): Boolean {

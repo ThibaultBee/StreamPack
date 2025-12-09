@@ -26,10 +26,13 @@ import com.google.common.util.concurrent.ListenableFuture
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.SurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils
+import io.github.thibaultbee.streampack.core.elements.utils.time.VideoTimebaseConverter
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.preRotate
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.preVerticalFlip
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
+import io.github.thibaultbee.streampack.core.elements.utils.time.TimeUtils
+import io.github.thibaultbee.streampack.core.elements.utils.time.Timebase
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_GL
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
@@ -53,7 +56,8 @@ private class DefaultSurfaceProcessor(
 
     private val surfaceOutputs: MutableList<ISurfaceOutput> = mutableListOf()
     private val surfaceInputs: MutableList<SurfaceInput> = mutableListOf()
-    private val surfaceInputsTimestampInNsMap: MutableMap<SurfaceTexture, Long> = hashMapOf()
+    private val surfaceInputsToTimeConverterMap: MutableMap<SurfaceTexture, VideoTimebaseConverter> =
+        hashMapOf()
 
     private val pendingSnapshots = mutableListOf<PendingSnapshot>()
 
@@ -72,7 +76,7 @@ private class DefaultSurfaceProcessor(
         }
     }
 
-    override fun createInputSurface(surfaceSize: Size, timestampOffsetInNs: Long): Surface {
+    override fun createInputSurface(surfaceSize: Size, timebase: Timebase): Surface {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("SurfaceProcessor is released")
         }
@@ -85,7 +89,10 @@ private class DefaultSurfaceProcessor(
                 renderer.setInputFormat(GLUtils.InputFormat.YUV)
             }
 
-            surfaceInputsTimestampInNsMap[surfaceTexture] = timestampOffsetInNs
+            surfaceInputsToTimeConverterMap[surfaceTexture] = VideoTimebaseConverter(
+                timebase,
+                TimeUtils.systemTimeProvider
+            )
             SurfaceInput(Surface(surfaceTexture), surfaceTexture)
         }
 
@@ -103,7 +110,7 @@ private class DefaultSurfaceProcessor(
                 surfaceTexture.release()
                 surface.release()
 
-                surfaceInputsTimestampInNsMap.remove(surfaceTexture)
+                surfaceInputsToTimeConverterMap.remove(surfaceTexture)
                 surfaceInputs.remove(surfaceInput)
 
                 checkReadyToRelease()
@@ -225,14 +232,16 @@ private class DefaultSurfaceProcessor(
         surfaceTexture.updateTexImage()
         surfaceTexture.getTransformMatrix(textureMatrix)
 
-        val timestamp =
-            surfaceTexture.timestamp + (surfaceInputsTimestampInNsMap[surfaceTexture] ?: 0L)
+        val timeConverter = surfaceInputsToTimeConverterMap[surfaceTexture]!!
+
         surfaceOutputs.filterIsInstance<SurfaceOutput>().forEach {
             try {
                 it.updateTransformMatrix(surfaceOutputMatrix, textureMatrix)
                 if (it.isStreaming()) {
                     renderer.render(
-                        timestamp,
+                        timeConverter.convertToUptimeNs(
+                            surfaceTexture.timestamp
+                        ),
                         surfaceOutputMatrix,
                         it.targetSurface
                     )

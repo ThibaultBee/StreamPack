@@ -24,11 +24,11 @@ import io.github.thibaultbee.srtdroid.core.models.Stats
 import io.github.thibaultbee.srtdroid.ktx.CoroutineSrtSocket
 import io.github.thibaultbee.srtdroid.ktx.connect
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
+import io.github.thibaultbee.streampack.core.elements.endpoints.ClosedException
+import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.Packet
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.SrtPacket
-import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.AbstractSink
-import io.github.thibaultbee.streampack.core.elements.endpoints.ClosedException
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.ext.srt.configuration.mediadescriptor.SrtMediaDescriptor
@@ -121,6 +121,7 @@ class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSi
     override suspend fun write(packet: Packet): Int {
         if (isOnError) {
             return -1
+            
         }
 
         // Pick up completionException if any

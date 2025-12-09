@@ -16,16 +16,17 @@
 package io.github.thibaultbee.streampack.core.elements.sources.video
 
 import android.view.Surface
+import io.github.thibaultbee.streampack.core.elements.utils.time.Timebase
 
 /**
  * Interface for video source that provides a [Surface] for video stream.
  */
 interface ISurfaceSourceInternal {
     /**
-     * The offset between source capture time and MONOTONIC clock in nanoseconds. It is used to
-     * synchronize video with audio. It is only useful for camera source.
+     * Gets the timebase used for the video source.
+     * If you can, prefer [Timebase.REALTIME] for video sources.
      */
-    val timestampOffsetInNs: Long
+    val timebase: Timebase
 
     /**
      * Gets the output surface for the video stream.

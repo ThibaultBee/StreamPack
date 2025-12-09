@@ -31,7 +31,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.models.MovieFragmentBoxFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.models.Segment
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.models.Track
-import io.github.thibaultbee.streampack.core.elements.utils.TimeUtils
+import io.github.thibaultbee.streampack.core.elements.utils.time.TimeUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isVideo
 import java.nio.ByteBuffer

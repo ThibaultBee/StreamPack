@@ -34,6 +34,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.landscapi
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.portraitize
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.screenRect
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.size
+import io.github.thibaultbee.streampack.core.elements.utils.time.Timebase
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_VIRTUAL_DISPLAY
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
@@ -48,7 +49,7 @@ internal class MediaProjectionVideoSource(
     private val handlerThreadExecutor: HandlerThreadExecutor,
     @RotationValue private val overrideRotation: Int? = null,
 ) : IVideoSourceInternal, ISurfaceSourceInternal, IMediaProjectionSource {
-    override val timestampOffsetInNs = 0L
+    override val timebase = Timebase.UPTIME
     override val infoProviderFlow =
         MutableStateFlow(
             FullScreenInfoProvider(

@@ -73,14 +73,13 @@ class StreamerPipelineTest {
     // Test on source
     @Test
     fun testStartStreamSources() = runTest {
-        val timestampOffset = 1234L
 
         val output = StubAudioSyncVideoSurfacePipelineOutputInternal(resolution = Size(640, 480))
 
         streamerPipeline = buildStreamerPipeline(
             context,
             StubAudioSource.Factory(),
-            StubVideoSurfaceSource.Factory(timestampOffsetInNs = timestampOffset)
+            StubVideoSurfaceSource.Factory()
         )
         streamerPipeline.addOutput(output)
 
