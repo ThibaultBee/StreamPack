@@ -643,19 +643,14 @@ internal class VideoInput(
             val videoSource = sourceInternalFlow.value
             videoSource?.stopStream()
             if (videoSource is ISurfaceSourceInternal) {
-                sourceConfig?.let {
-                    videoSource.getOutput()?.let { surface -> processor.removeInputSurface(surface) }
-                    videoSource.setOutput(
-                        processor.createInputSurface(
-                            videoSource.infoProviderFlow.value.getSurfaceSize(
-                                it.resolution
-                            ), videoSource.timebase
-                        )
-                    )
-                } ?: Logger.w(
-                    TAG,
-                    "Video source configuration is not set"
-                )
+                videoSource.getOutput()?.let {
+                    /**
+                     * Reset timebase to video source timebase to avoid timebase mismatch when
+                     * the device is locked.
+                     * This will reset the internally the [io.github.thibaultbee.streampack.core.elements.utils.time.VideoTimebaseConverter]
+                     */
+                    processor.setTimebase(it, videoSource.timebase)
+                } ?: Logger.w(TAG, "stopStream: Video source output surface is null")
             }
         } catch (t: Throwable) {
             Logger.w(TAG, "stopStream: Can't stop video source: ${t.message}")

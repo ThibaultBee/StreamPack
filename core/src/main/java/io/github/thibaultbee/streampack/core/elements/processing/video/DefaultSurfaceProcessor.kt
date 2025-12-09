@@ -26,13 +26,13 @@ import com.google.common.util.concurrent.ListenableFuture
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.SurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils
-import io.github.thibaultbee.streampack.core.elements.utils.time.VideoTimebaseConverter
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.preRotate
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.preVerticalFlip
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
 import io.github.thibaultbee.streampack.core.elements.utils.time.TimeUtils
 import io.github.thibaultbee.streampack.core.elements.utils.time.Timebase
+import io.github.thibaultbee.streampack.core.elements.utils.time.VideoTimebaseConverter
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_GL
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
@@ -114,6 +114,21 @@ private class DefaultSurfaceProcessor(
                 surfaceInputs.remove(surfaceInput)
 
                 checkReadyToRelease()
+            } else {
+                Logger.w(TAG, "Surface not found")
+            }
+        }
+    }
+
+    override fun setTimebase(surface: Surface, timebase: Timebase) {
+        executeSafely {
+            val surfaceInput = surfaceInputs.find { it.surface == surface }
+            if (surfaceInput != null) {
+                surfaceInputsToTimeConverterMap[surfaceInput.surfaceTexture] =
+                    VideoTimebaseConverter(
+                        timebase,
+                        TimeUtils.systemTimeProvider
+                    )
             } else {
                 Logger.w(TAG, "Surface not found")
             }
