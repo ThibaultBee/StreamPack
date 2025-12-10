@@ -36,6 +36,7 @@ import io.github.thibaultbee.streampack.screenrecorder.R
 import io.github.thibaultbee.streampack.screenrecorder.models.Actions
 import io.github.thibaultbee.streampack.services.MediaProjectionService
 import io.github.thibaultbee.streampack.services.utils.SingleStreamerFactory
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -96,7 +97,8 @@ class DemoMediaProjectionService : MediaProjectionService<ISingleStreamer>(
      */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent != null) {
-            streamer.let {
+            lifecycleScope.launch {
+                val streamer = this@DemoMediaProjectionService.streamerFlow.first()
                 if (intent.action == Actions.STOP.value) {
                     lifecycleScope.launch {
                         streamer.stopStream()

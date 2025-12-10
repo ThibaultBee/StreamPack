@@ -74,13 +74,17 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     private val storageRepository = DataStoreRepository(application, application.dataStore)
     private val rotationRepository = RotationRepository.getInstance(application)
 
-    private val buildStreamerUseCase = BuildStreamerUseCase(application, storageRepository)
+    private val buildStreamerUseCase = BuildStreamerUseCase(application)
 
     private val streamerFlow =
         MutableStateFlow(
-            SingleStreamer(
-                application,
-                runBlocking { storageRepository.isAudioEnableFlow.first() }) // TODO avoid runBlocking
+            // TODO avoid runBlocking
+            runBlocking {
+                SingleStreamer(
+                    application,
+                    storageRepository.isAudioEnableFlow.first()
+                )
+            }
         )
     private val streamer: SingleStreamer
         get() = streamerFlow.value

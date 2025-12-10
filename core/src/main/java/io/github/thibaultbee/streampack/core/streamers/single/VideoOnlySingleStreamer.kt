@@ -105,25 +105,38 @@ suspend fun VideoOnlySingleStreamer(
     return streamer
 }
 
+
 /**
- * A [ISingleStreamer] implementation for video only (without audio).
+ * Creates a [VideoOnlySingleStreamer] without a video source
  *
  * @param context the application context
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  */
-class VideoOnlySingleStreamer(
+suspend fun VideoOnlySingleStreamer(
     context: Context,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation
-) : ISingleStreamer, IVideoSingleStreamer {
-    private val streamer = SingleStreamer(
+): VideoOnlySingleStreamer {
+    val streamer = SingleStreamer(
         context = context,
         endpointFactory = endpointFactory,
         withAudio = false,
         withVideo = true,
         defaultRotation = defaultRotation
     )
+    return VideoOnlySingleStreamer(streamer)
+}
+
+
+/**
+ * A [ISingleStreamer] implementation for video only (without audio).
+ *
+ * @param streamer the internal streamer implementation
+ */
+class VideoOnlySingleStreamer internal constructor(
+    private val streamer: SingleStreamer
+) : ISingleStreamer, IVideoSingleStreamer {
     override val throwableFlow = streamer.throwableFlow
     override val isOpenFlow = streamer.isOpenFlow
     override val isStreamingFlow = streamer.isStreamingFlow

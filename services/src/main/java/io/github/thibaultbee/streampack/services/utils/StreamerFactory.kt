@@ -36,7 +36,7 @@ interface StreamerFactory<T : IStreamer> {
      * @param context the application context
      * @return the streamer
      */
-    fun create(context: Context): T
+    suspend fun create(context: Context): T
 }
 
 /**
@@ -52,7 +52,7 @@ open class SingleStreamerFactory(
     @RotationValue private val defaultRotation: Int? = null
 ) :
     StreamerFactory<ISingleStreamer> {
-    override fun create(context: Context): ISingleStreamer {
+    override suspend fun create(context: Context): ISingleStreamer {
         return SingleStreamer(
             context,
             withAudio,
@@ -75,7 +75,7 @@ open class DualStreamerFactory(
     @RotationValue private val defaultRotation: Int? = null
 ) :
     StreamerFactory<IDualStreamer> {
-    override fun create(context: Context): IDualStreamer {
+    override suspend fun create(context: Context): IDualStreamer {
         return DualStreamer(
             context,
             withAudio,

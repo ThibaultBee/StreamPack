@@ -37,6 +37,8 @@ import io.github.thibaultbee.streampack.core.interfaces.IWithAudioSource
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.utils.extensions.getMediaProjection
 import io.github.thibaultbee.streampack.services.utils.StreamerFactory
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 
 /**
  * Foreground bound service that manages screen recorder streamers.
@@ -194,7 +196,7 @@ abstract class MediaProjectionService<T : IStreamer>(
     }
 
     override suspend fun onExtra(extras: Bundle) {
-        setStreamerMediaProjection(streamer, createMediaProjectionFromBundle(extras), extras)
+        setStreamerMediaProjection(this@MediaProjectionService.streamerFlow.first(), createMediaProjectionFromBundle(extras), extras)
     }
 
     override fun onDestroy() {
@@ -236,14 +238,14 @@ abstract class MediaProjectionService<T : IStreamer>(
             serviceClass: Class<out MediaProjectionService<*>>,
             resultCode: Int,
             resultData: Intent,
-            onServiceCreated: (IStreamer) -> Unit,
+            onServiceCreated: (Flow<IStreamer>) -> Unit,
             onServiceDisconnected: (name: ComponentName?) -> Unit = {},
             onExtra: (Intent) -> Unit = {}
         ): ServiceConnection {
             val connection = object : ServiceConnection {
                 override fun onServiceConnected(name: ComponentName?, service: IBinder) {
                     if (service is StreamerService<*>.StreamerServiceBinder) {
-                        onServiceCreated(service.streamer)
+                        onServiceCreated(service.streamerFlow)
                     }
                 }
 

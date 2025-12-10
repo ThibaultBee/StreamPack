@@ -48,21 +48,32 @@ suspend fun AudioOnlySingleStreamer(
 }
 
 /**
- * A [ISingleStreamer] implementation for audio only (without video).
+ * Creates a [AudioOnlySingleStreamer] without audio source.
  *
  * @param context the application context
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  */
-class AudioOnlySingleStreamer(
+suspend fun AudioOnlySingleStreamer(
     context: Context,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
-) : ISingleStreamer, IAudioSingleStreamer {
-    private val streamer = SingleStreamer(
+): AudioOnlySingleStreamer {
+    val streamer = SingleStreamer(
         context = context,
         endpointFactory = endpointFactory,
         withAudio = true,
         withVideo = false
     )
+    return AudioOnlySingleStreamer(streamer)
+}
+
+/**
+ * A [ISingleStreamer] implementation for audio only (without video).
+ *
+ * @param streamer the internal streamer implementation
+ */
+class AudioOnlySingleStreamer internal constructor(
+    private val streamer: SingleStreamer
+) : ISingleStreamer, IAudioSingleStreamer {
     override val throwableFlow = streamer.throwableFlow
     override val isOpenFlow = streamer.isOpenFlow
     override val isStreamingFlow = streamer.isStreamingFlow
@@ -73,7 +84,7 @@ class AudioOnlySingleStreamer(
 
     override val audioConfigFlow = streamer.audioConfigFlow
     override val audioInput: IAudioInput = streamer.audioInput!!
-    
+
     override val audioEncoder: IEncoder?
         get() = streamer.audioEncoder
 

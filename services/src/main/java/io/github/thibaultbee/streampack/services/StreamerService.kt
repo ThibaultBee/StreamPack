@@ -38,10 +38,14 @@ import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.streamers.orientation.IRotationProvider
 import io.github.thibaultbee.streampack.core.streamers.orientation.SensorRotationProvider
+import io.github.thibaultbee.streampack.services.StreamerService.Companion.bindService
 import io.github.thibaultbee.streampack.services.utils.NotificationUtils
 import io.github.thibaultbee.streampack.services.utils.StreamerFactory
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -78,31 +82,37 @@ abstract class StreamerService<T : IStreamer>(
     @StringRes protected val channelDescriptionResourceId: Int = 0,
     @DrawableRes protected val notificationIconResourceId: Int = R.drawable.ic_baseline_linked_camera_24
 ) : LifecycleService(), IRotationProvider.Listener {
-    protected val streamer: T by lazy {
-        streamerFactory.create(this).apply {
-            lifecycleScope.launch {
-                throwableFlow.filterNotNull().collect { t ->
-                    onError(t)
-                }
-            }
+    protected val streamerFlow: Flow<T> = flow {
+        streamerFactory.create(this@StreamerService)
+    }
 
-            lifecycleScope.launch {
-                isStreamingFlow.drop(1).collect { isStreaming ->
-                    if (isStreaming) {
-                        onStreamingStart()
-                    } else {
-                        onStreamingStop()
+    init {
+        lifecycleScope.launch {
+            this@StreamerService.streamerFlow.collect { streamer ->
+                lifecycleScope.launch {
+                    streamer.throwableFlow.filterNotNull().collect { t ->
+                        onError(t)
                     }
                 }
-            }
 
-            if (this is ICloseableStreamer) {
                 lifecycleScope.launch {
-                    isOpenFlow.drop(1).collect { isOpen ->
-                        if (isOpen) {
-                            onOpen()
+                    streamer.isStreamingFlow.drop(1).collect { isStreaming ->
+                        if (isStreaming) {
+                            onStreamingStart()
                         } else {
-                            onClose()
+                            onStreamingStop()
+                        }
+                    }
+                }
+
+                if (this is ICloseableStreamer) {
+                    lifecycleScope.launch {
+                        isOpenFlow.drop(1).collect { isOpen ->
+                            if (isOpen) {
+                                onOpen()
+                            } else {
+                                onClose()
+                            }
                         }
                     }
                 }
@@ -198,7 +208,7 @@ abstract class StreamerService<T : IStreamer>(
 
     override fun onOrientationChanged(rotation: Int) {
         lifecycleScope.launch {
-            (streamer as? IWithVideoRotation)?.setTargetRotation(rotation)
+            (this@StreamerService.streamerFlow as? IWithVideoRotation)?.setTargetRotation(rotation)
         }
     }
 
@@ -214,6 +224,7 @@ abstract class StreamerService<T : IStreamer>(
         rotationProvider?.removeListener(this)
 
         runBlocking {
+            val streamer = this@StreamerService.streamerFlow.first()
             streamer.stopStream()
             (streamer as ICloseableStreamer?)?.close()
             streamer.release()
@@ -283,8 +294,12 @@ abstract class StreamerService<T : IStreamer>(
     }
 
     protected inner class StreamerServiceBinder : Binder() {
-        val streamer: T
-            get() = this@StreamerService.streamer
+        val streamerFlow: Flow<T>
+            get() = this@StreamerService.streamerFlow
+
+        suspend fun getStreamer(): T {
+            return streamerFlow.first()
+        }
     }
 
     companion object {
@@ -311,14 +326,14 @@ abstract class StreamerService<T : IStreamer>(
         fun bindService(
             context: Context,
             serviceClass: Class<out StreamerService<*>>,
-            onServiceCreated: (IStreamer) -> Unit,
+            onServiceCreated: (Flow<IStreamer>) -> Unit,
             onServiceDisconnected: (name: ComponentName?) -> Unit = {},
             onExtra: (Intent) -> Unit = {}
         ): ServiceConnection {
             val connection = object : ServiceConnection {
                 override fun onServiceConnected(name: ComponentName?, service: IBinder) {
                     if (service is StreamerService<*>.StreamerServiceBinder) {
-                        onServiceCreated(service.streamer)
+                        onServiceCreated(service.streamerFlow)
                     }
                 }
 
@@ -353,7 +368,7 @@ abstract class StreamerService<T : IStreamer>(
             }
 
             context.bindService(
-                intent, connection, Context.BIND_AUTO_CREATE
+                intent, connection, BIND_AUTO_CREATE
             )
         }
     }

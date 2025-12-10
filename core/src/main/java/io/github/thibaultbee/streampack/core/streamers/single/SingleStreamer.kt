@@ -55,7 +55,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.runBlocking
 
 
 /**
@@ -173,7 +172,7 @@ suspend fun SingleStreamer(
 }
 
 /**
- * A [ISingleStreamer] implementation for audio and video.
+ * Creates a [SingleStreamer] without an audio source and a video source
  *
  * @param context the application context
  * @param withAudio [Boolean.true] to capture audio. It can't be changed after instantiation.
@@ -181,19 +180,18 @@ suspend fun SingleStreamer(
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param dispatcherProvider the coroutine dispatchers
  */
-open class SingleStreamer(
-    protected val context: Context,
-    val withAudio: Boolean = true,
-    val withVideo: Boolean = true,
+suspend fun SingleStreamer(
+    context: Context,
+    withAudio: Boolean = true,
+    withVideo: Boolean = true,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider(),
-) : ISingleStreamer, IAudioSingleStreamer, IVideoSingleStreamer {
-    private val coroutineScope: CoroutineScope = CoroutineScope(dispatcherProvider.default)
-
-    private val pipeline = StreamerPipeline(
+): SingleStreamer {
+    val pipeline = StreamerPipeline(
         context,
         withAudio,
         withVideo,
@@ -201,16 +199,33 @@ open class SingleStreamer(
         surfaceProcessorFactory,
         dispatcherProvider
     )
-    private val pipelineOutput: IEncodingPipelineOutputInternal =
-        runBlocking(dispatcherProvider.default) {
-            pipeline.createEncodingOutput(
-                withAudio,
-                withVideo,
-                endpointFactory,
-                defaultRotation
-            ) as IEncodingPipelineOutputInternal
-        }
+    val pipelineOutput: IEncodingPipelineOutputInternal = pipeline.createEncodingOutput(
+        withAudio,
+        withVideo,
+        endpointFactory,
+        defaultRotation
+    ) as IEncodingPipelineOutputInternal
 
+    return SingleStreamer(pipeline, pipelineOutput, dispatcherProvider)
+}
+
+/**
+ * A [ISingleStreamer] implementation for audio and video.
+ *
+ * @param pipeline the main pipeline
+ * @param pipelineOutput the encoding output
+ * @param dispatcherProvider the coroutine dispatchers
+ */
+open class SingleStreamer internal constructor(
+    private val pipeline: StreamerPipeline,
+    private val pipelineOutput: IEncodingPipelineOutputInternal,
+    dispatcherProvider: IDispatcherProvider
+) : ISingleStreamer, IAudioSingleStreamer, IVideoSingleStreamer {
+    private val coroutineScope: CoroutineScope = CoroutineScope(dispatcherProvider.default)
+
+    val withAudio = pipeline.withAudio
+    val withVideo = pipeline.withVideo
+    
     override val throwableFlow: StateFlow<Throwable?> =
         merge(pipeline.throwableFlow, pipelineOutput.throwableFlow).stateIn(
             coroutineScope,
@@ -294,7 +309,7 @@ open class SingleStreamer(
         }
     }
 
-    // CONFIGURATION
+// CONFIGURATION
     /**
      * The audio configuration flow.
      */

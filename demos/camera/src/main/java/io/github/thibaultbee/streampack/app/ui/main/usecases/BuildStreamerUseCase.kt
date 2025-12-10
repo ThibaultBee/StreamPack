@@ -4,12 +4,10 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
-import io.github.thibaultbee.streampack.app.data.storage.DataStoreRepository
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 
 class BuildStreamerUseCase(
     private val context: Context,
-    private val dataStoreRepository: DataStoreRepository
 ) {
     /**
      * Build a new [SingleStreamer] based on audio and video preferences.
