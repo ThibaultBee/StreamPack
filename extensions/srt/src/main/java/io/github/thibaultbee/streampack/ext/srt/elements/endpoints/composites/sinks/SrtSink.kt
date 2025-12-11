@@ -83,9 +83,7 @@ class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSi
             isOnError = false
             it.socketContext.invokeOnCompletion { t ->
                 completionException = t
-                runBlocking {
-                    this@SrtSink.close()
-                }
+                _isOpenFlow.tryEmit(false)
             }
             it.connect(mediaDescriptor.srtUrl)
         }
@@ -165,9 +163,7 @@ class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSi
 
     override suspend fun close() {
         socket?.close()
-        _isOpenFlow.emit(false)
     }
-
 
     companion object {
         private const val TAG = "SrtSink"
