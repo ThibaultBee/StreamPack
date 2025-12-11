@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.elements.encoders
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
-import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
+import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendReleasable
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamable
 import kotlinx.coroutines.channels.SendChannel
 import java.nio.ByteBuffer
@@ -60,7 +60,7 @@ interface IEncoder {
     fun requestKeyFrame()
 }
 
-interface IEncoderInternal : SuspendStreamable, Releasable,
+interface IEncoderInternal : SuspendStreamable, SuspendReleasable,
     IEncoder {
 
     /**

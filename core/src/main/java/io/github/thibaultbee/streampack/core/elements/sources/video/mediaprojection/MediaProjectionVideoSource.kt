@@ -130,7 +130,7 @@ internal class MediaProjectionVideoSource(
         _isStreamingFlow.emit(false)
     }
 
-    override fun release() {
+    override suspend fun release() {
         handlerThreadExecutor.quit()
     }
 

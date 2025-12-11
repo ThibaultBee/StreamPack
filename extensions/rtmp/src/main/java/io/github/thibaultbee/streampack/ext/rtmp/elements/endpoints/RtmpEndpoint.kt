@@ -215,7 +215,7 @@ class RtmpEndpoint internal constructor(
         }
     }
 
-    override fun release() {
+    override suspend fun release() {
         selectorManager.close()
         coroutineScope.cancel()
     }

@@ -14,7 +14,7 @@ class MediaMuxerEndpointTest {
     private val mediaMuxerEndpoint = MediaMuxerEndpoint(context, Dispatchers.IO)
 
     @Test
-    fun releaseMustNotThrow() {
+    fun releaseMustNotThrow() = runTest {
         mediaMuxerEndpoint.release()
     }
 

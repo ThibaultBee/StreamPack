@@ -262,7 +262,7 @@ internal class CameraSource(
         }
     }
 
-    override fun release() {
+    override suspend fun release() {
         controller.unmuteVibrationAndSound()
         controller.release()
     }

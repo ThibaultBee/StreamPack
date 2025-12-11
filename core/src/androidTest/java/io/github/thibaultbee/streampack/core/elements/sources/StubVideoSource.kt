@@ -83,7 +83,5 @@ abstract class StubVideoSource : IVideoSourceInternal {
         _configurationFlow.value = config
     }
 
-    override fun release() {
-
-    }
+    override suspend fun release() = Unit
 }

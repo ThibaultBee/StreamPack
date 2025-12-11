@@ -18,10 +18,10 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites
 import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.Packet
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.Packet
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ISinkInternal
@@ -58,6 +58,7 @@ class CompositeEndpoint(
         muxer.listener = object :
             IMuxerInternal.IMuxerListener {
             override fun onOutputFrame(packet: Packet) {
+                // TODO: remove runBlocking
                 runBlocking {
                     sink.write(packet)
                 }

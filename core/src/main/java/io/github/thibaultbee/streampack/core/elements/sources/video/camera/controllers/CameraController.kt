@@ -35,7 +35,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -406,12 +405,10 @@ internal class CameraController(
         deviceController = null
     }
 
-    fun release() {
-        runBlocking {
-            controllerMutex.withLock {
-                closeControllers()
-                sessionController = null
-            }
+    suspend fun release() {
+        controllerMutex.withLock {
+            closeControllers()
+            sessionController = null
         }
         outputs.clear()
         sessionCompat.release()

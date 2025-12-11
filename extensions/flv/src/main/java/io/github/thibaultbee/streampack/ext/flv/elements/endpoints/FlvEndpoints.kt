@@ -177,7 +177,7 @@ sealed class FlvEndpoint(
         }
     }
 
-    override fun release() {
+    override suspend fun release() {
         flvTagChannel.cancel()
     }
 

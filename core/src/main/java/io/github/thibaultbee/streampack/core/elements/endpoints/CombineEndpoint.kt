@@ -262,7 +262,7 @@ open class CombineEndpoint(
         }
     }
 
-    override fun release() {
+    override suspend fun release() {
         endpointInternals.forEach { endpoint ->
             try {
                 endpoint.release()

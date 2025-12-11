@@ -72,10 +72,19 @@ interface SuspendConfigurable<T> {
     suspend fun configure(config: T)
 }
 
-
 interface Releasable {
     /**
      * Closes and releases resources
      */
     fun release()
+}
+
+/**
+ * Same as [Releasable] but with suspend functions.
+ */
+interface SuspendReleasable {
+    /**
+     * Closes and releases resources
+     */
+    suspend fun release()
 }

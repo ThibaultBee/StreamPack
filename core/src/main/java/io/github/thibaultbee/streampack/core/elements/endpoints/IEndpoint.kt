@@ -21,15 +21,14 @@ import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
-import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendCloseable
+import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendReleasable
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamable
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.runBlocking
 
 interface IEndpointInternal : IEndpoint, SuspendStreamable,
-    SuspendCloseable, Releasable {
+    SuspendCloseable, SuspendReleasable {
 
     /**
      * An asynchronous error that occurred during streaming.
@@ -76,12 +75,12 @@ interface IEndpointInternal : IEndpoint, SuspendStreamable,
 
     /**
      * Releases an [IEndpointInternal].
+     *
+     * The default implementation calls [stopStream] and [close]
      */
-    override fun release() {
-        runBlocking {
-            stopStream()
-            close()
-        }
+    override suspend fun release() {
+        stopStream()
+        close()
     }
 
     /**

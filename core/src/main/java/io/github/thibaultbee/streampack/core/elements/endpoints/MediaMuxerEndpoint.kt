@@ -32,7 +32,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -302,13 +301,11 @@ class MediaMuxerEndpoint(
         }
     }
 
-    override fun release() {
-        runBlocking {
-            mutex.withLock {
-                setState(State.PENDING_RELEASE)
-                closeUnsafe()
-                setState(State.RELEASED)
-            }
+    override suspend fun release() {
+        mutex.withLock {
+            setState(State.PENDING_RELEASE)
+            closeUnsafe()
+            setState(State.RELEASED)
         }
     }
 

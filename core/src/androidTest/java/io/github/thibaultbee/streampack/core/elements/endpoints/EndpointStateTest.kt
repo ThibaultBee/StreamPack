@@ -19,7 +19,7 @@ class EndpointStateTest(private val endpoint: IEndpointInternal) {
     }
 
     @Test
-    fun releaseTest() {
+    fun releaseTest() = runTest {
         endpoint.release()
     }
 

@@ -138,7 +138,7 @@ internal class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSo
         _isStreamingFlow.emit(false)
     }
 
-    override fun release() {
+    override suspend fun release() {
         outputExecutor.shutdown()
         previewExecutor.shutdown()
     }

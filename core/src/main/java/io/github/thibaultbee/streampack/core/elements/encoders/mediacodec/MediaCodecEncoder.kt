@@ -37,7 +37,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -253,13 +252,11 @@ internal constructor(
         }
     }
 
-    override fun release() {
-        runBlocking {
-            withMutexContext {
-                releaseUnsafe()
-            }
-            coroutineScope.cancel()
+    override suspend fun release() {
+        withMutexContext {
+            releaseUnsafe()
         }
+        coroutineScope.cancel()
     }
 
     private fun notifyError(t: Throwable) {
@@ -308,7 +305,8 @@ internal constructor(
     }
 
     private fun reachEndOfStream() {
-        runBlocking {
+        Logger.i(tag, "End of stream reached")
+        coroutineScope.launch {
             stopStream()
         }
     }
