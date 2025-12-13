@@ -31,12 +31,14 @@ import java.util.UUID
  * The [MicrophoneSource] class is an implementation of [AudioRecordSource] that captures audio
  * from the microphone.
  *
- * @param audioSource The audio source to use (e.g., MediaRecorder.AudioSource.MIC).
+ * @param audioSourceType The MediaRecorder.AudioSource constant to use. Defaults to CAMCORDER.
+ *                        Common values: CAMCORDER(5), VOICE_COMMUNICATION(7)
  */
-internal class MicrophoneSource(@AudioSourceValue val audioSource: Int) :
-    AudioRecordSource() {
+internal class MicrophoneSource(val audioSourceType: Int = MediaRecorder.AudioSource.CAMCORDER) : AudioRecordSource() {
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun buildAudioRecord(config: AudioSourceConfig, bufferSize: Int): AudioRecord {
+        val audioSource = audioSourceType
+        
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val audioFormat = AudioFormat.Builder()
                 .setEncoding(config.byteFormat)
@@ -64,21 +66,26 @@ internal class MicrophoneSource(@AudioSourceValue val audioSource: Int) :
 /**
  * A factory to create a [MicrophoneSource].
  *
- * @param audioSource the audio source to use (e.g., MediaRecorder.AudioSource.MIC)
- * @param effects a set of audio effects to apply to the audio source
+ * @param audioSourceType The MediaRecorder.AudioSource constant to use. Defaults to CAMCORDER.
+ *                        Common values: CAMCORDER(5), VOICE_COMMUNICATION(7)
+ * @param effects a set of audio effects to apply to the audio source. Defaults to AEC+NS.
  */
 class MicrophoneSourceFactory(
-    @AudioSourceValue val audioSource: Int = MediaRecorder.AudioSource.CAMCORDER,
+    private val audioSourceType: Int = MediaRecorder.AudioSource.CAMCORDER,
     effects: Set<UUID> = defaultAudioEffects
 ) :
     AudioRecordSourceFactory(effects) {
-    override suspend fun createImpl(context: Context) = MicrophoneSource(audioSource)
+    
+    override suspend fun createImpl(context: Context) = MicrophoneSource(audioSourceType)
 
     override fun isSourceEquals(source: IAudioSourceInternal?): Boolean {
-        return source is MicrophoneSource && this.audioSource == source.audioSource
+        // Always return false to force recreation when effects or audio source type changes.
+        // Since we can't query the current effects from an existing source, we recreate
+        // the source to ensure the new effects configuration is applied.
+        return false
     }
 
     override fun toString(): String {
-        return "MicrophoneSourceFactory(audioSource=$audioSource, effects=$effects)"
+        return "MicrophoneSourceFactory(audioSourceType=$audioSourceType, effects=$effects)"
     }
 }
