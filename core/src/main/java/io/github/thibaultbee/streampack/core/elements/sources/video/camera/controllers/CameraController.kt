@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.core.elements.sources.video.camera.cont
 
 import android.Manifest
 import android.hardware.camera2.CameraCaptureSession
+import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
@@ -43,6 +44,7 @@ import kotlinx.coroutines.sync.withLock
  */
 internal class CameraController(
     private val manager: CameraManager,
+    private val characteristics: CameraCharacteristics,
     dispatcherProvider: CameraDispatcherProvider,
     val cameraId: String,
     val captureRequestBuilder: CaptureRequestWithTargetsBuilder.() -> Unit = {}
@@ -64,7 +66,7 @@ internal class CameraController(
     val isActiveFlow = _isActiveFlow.asStateFlow()
 
     private val fpsRange: Range<Int>
-        get() = CameraUtils.getClosestFpsRange(manager, cameraId, fps)
+        get() = CameraUtils.getClosestFpsRange(characteristics, fps)
     private var fps: Int = 30
     private var dynamicRangeProfile: DynamicRangeProfile = DynamicRangeProfile.sdr
 
@@ -305,18 +307,6 @@ internal class CameraController(
             if (sessionController.isEmpty) {
                 closeControllers()
             }
-        }
-    }
-
-    /**
-     * A default capture callback that logs the failure reason.
-     */
-    private val captureCallback = object : CameraCaptureSession.CaptureCallback() {
-        override fun onCaptureFailed(
-            session: CameraCaptureSession, request: CaptureRequest, failure: CaptureFailure
-        ) {
-            super.onCaptureFailed(session, request, failure)
-            Logger.e(TAG, "Capture failed with code ${failure.reason}")
         }
     }
 

@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.core.elements.sources.video.camera.util
 
 import android.Manifest
 import android.hardware.camera2.CameraCaptureSession
+import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.params.OutputConfiguration
@@ -152,11 +153,10 @@ internal object CameraUtils {
     }
 
     internal fun getClosestFpsRange(
-        cameraManager: CameraManager,
-        cameraId: String,
+        characteristics: CameraCharacteristics,
         fps: Int
     ): Range<Int> {
-        var fpsRangeList = cameraManager.getCameraCharacteristics(cameraId).targetFps
+        var fpsRangeList = characteristics.targetFps
         Logger.i(TAG, "Supported FPS range list: $fpsRangeList")
 
         // Get range that contains FPS

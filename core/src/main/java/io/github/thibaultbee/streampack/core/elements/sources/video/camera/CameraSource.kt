@@ -57,14 +57,17 @@ internal class CameraSource(
 ) : ICameraSourceInternal, ICameraSource, AbstractPreviewableSource() {
     private val coroutineScope = CoroutineScope(dispatcherProvider.default)
 
+    private val characteristics = manager.getCameraCharacteristics(cameraId)
+
     private val controller = CameraController(
-        manager, dispatcherProvider, cameraId,
+        manager,
+        characteristics,
+        dispatcherProvider,
+        cameraId,
         captureRequestBuilder = {
             defaultCaptureRequest(this)
         }
     )
-
-    private val characteristics = manager.getCameraCharacteristics(cameraId)
 
     override val settings by lazy {
         CameraSettings(
