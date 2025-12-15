@@ -366,7 +366,9 @@ internal class CameraSessionController private constructor(
         }
         captureRequestBuilder.clearTargets()
         captureRequestBuilder.addTargets(targets)
+        val minFrameDuration = 1_000_000_000 / fpsRange.upper.toLong()
         captureRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
+        captureRequestBuilder.set(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
 
         // Close current session
         close()
@@ -424,7 +426,9 @@ internal class CameraSessionController private constructor(
             val captureRequestBuilder = CaptureRequestWithTargetsBuilder.create(
                 cameraDeviceController
             ).apply {
+                val minFrameDuration = 1_000_000_000 / fpsRange.upper.toLong()
                 set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
+                set(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
                 defaultRequestBuilder()
             }
             return CameraSessionController(

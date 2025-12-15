@@ -345,7 +345,10 @@ internal class CameraController(
             this.fps = fps
 
             if (isActiveFlow.value) {
-                setSetting(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
+                val range = fpsRange
+                val minFrameDuration = 1_000_000_000 / range.upper.toLong()
+                setSetting(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, range)
+                setSetting(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
             }
         }
     }
