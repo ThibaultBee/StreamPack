@@ -167,7 +167,7 @@ class CameraSettings internal constructor(
         /**
          * Whether the the current camera has a flash device.
          *
-         * @return [Boolean.true] if camera has a flash device, [Boolean.false] otherwise.
+         * @return `true` if camera has a flash device, [Boolean.Companion.toString] otherwise.
          */
         val isAvailable: Boolean
             get() = characteristics.isFlashAvailable
@@ -179,7 +179,7 @@ class CameraSettings internal constructor(
          */
         val isEnable: Boolean
             /**
-             * @return [Boolean.true] if flash is already on, otherwise [Boolean.false]
+             * @return `true` if flash is already on, otherwise `false`
              */
             get() = getFlash() == CaptureResult.FLASH_MODE_TORCH
 
@@ -189,7 +189,7 @@ class CameraSettings internal constructor(
         /**
          * Enable or disable the flash.
          *
-         * @param isEnable [Boolean.true] to enable flash, otherwise [Boolean.false]
+         * @param isEnable `true` to enable flash, otherwise `false`
          */
         suspend fun setIsEnable(isEnable: Boolean) {
             if (isEnable) {
@@ -282,7 +282,7 @@ class CameraSettings internal constructor(
         /**
          * Sets the auto white balance lock state.
          *
-         * @param isLocked the lock state. [Boolean.true] to lock auto white balance, otherwise [Boolean.false]
+         * @param isLocked the lock state. `true` to lock auto white balance, otherwise `false`
          */
         suspend fun setIsLocked(isLocked: Boolean) {
             cameraSettings.set(CaptureRequest.CONTROL_AWB_LOCK, isLocked)
@@ -345,7 +345,7 @@ class CameraSettings internal constructor(
         /**
          * Whether the camera supports color correction.
          *
-         * @return [Boolean.true] if camera has a flash device, [Boolean.false] otherwise.
+         * @return `true` if camera has a flash device, `false` otherwise.
          */
         val isAvailable: Boolean
             get() {
@@ -524,7 +524,7 @@ class CameraSettings internal constructor(
         /**
          * Sets the auto exposure lock.
          *
-         * @param isLocked the lock state. [Boolean.true] to lock auto exposure, otherwise [Boolean.false]
+         * @param isLocked the lock state. `true` to lock auto exposure, otherwise `false`
          */
         suspend fun setIsLocked(isLocked: Boolean) {
             cameraSettings.set(
@@ -808,14 +808,14 @@ class CameraSettings internal constructor(
             /**
              * Whether the video stabilization is enabled.
              *
-             * @return [Boolean.true] if video stabilization is enabled, otherwise [Boolean.false]
+             * @return `true` if video stabilization is enabled, otherwise `false`
              */
             get() = cameraSettings.get(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE) == CaptureResult.CONTROL_VIDEO_STABILIZATION_MODE_ON
 
         /**
          * Enables or disables the video stabilization.
          *
-         * @param isEnableVideo [Boolean.true] to enable video stabilization, otherwise [Boolean.false]
+         * @param isEnableVideo `true` to enable video stabilization, otherwise `false`
          */
         suspend fun setIsEnableVideo(isEnableVideo: Boolean) {
             if (isEnableVideo) {
@@ -835,7 +835,7 @@ class CameraSettings internal constructor(
         /**
          * Whether the optical video stabilization is available.
          *
-         * @return [Boolean.true] if optical video stabilization is supported, otherwise [Boolean.false]
+         * @return `true` if optical video stabilization is supported, otherwise `false`
          *
          * @see [isEnableOptical]
          */
@@ -854,14 +854,14 @@ class CameraSettings internal constructor(
             /**
              * Whether the optical video stabilization is enabled.
              *
-             * @return [Boolean.true] if optical video stabilization is enabled, otherwise [Boolean.false]
+             * @return `true` if optical video stabilization is enabled, otherwise `false`
              */
             get() = cameraSettings.get(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE) == CaptureResult.LENS_OPTICAL_STABILIZATION_MODE_ON
 
         /**
          * Enable or disable the optical video stabilization.
          *
-         * @param isEnableOptical [Boolean.true] to enable optical video stabilization, otherwise [Boolean.false]
+         * @param isEnableOptical `true` to enable optical video stabilization, otherwise `false`
          */
         suspend fun setIsEnableOptical(isEnableOptical: Boolean) {
             if (isEnableOptical) {

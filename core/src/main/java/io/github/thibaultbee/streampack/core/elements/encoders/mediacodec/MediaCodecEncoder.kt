@@ -508,7 +508,7 @@ internal constructor(
          * Process output frame synchronously
          *
          * @param frame the frame to process
-         * @return [Boolean.true] if the frame is processed, [Boolean.false] otherwise
+         * @return `true` if the frame is processed, `false` otherwise
          */
         private fun queueInputFrameSync(frame: RawFrame): Boolean {
             val inputBufferId = mediaCodec.dequeueInputBuffer(0) // Don't block

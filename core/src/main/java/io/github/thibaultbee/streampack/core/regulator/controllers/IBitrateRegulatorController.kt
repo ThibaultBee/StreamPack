@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.core.regulator.controllers
 
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
+import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
 import kotlinx.coroutines.CoroutineDispatcher
 
 /**

@@ -108,7 +108,7 @@ suspend fun DualEndpoint.startStreamSecond(descriptor: MediaDescriptor) {
 /**
  * Starts audio/video stream for the second endpoint.
  *
- * Same as doing [open] and [startStream].
+ * Same as doing [openSecond] and [startStreamSecond].
  *
  * @param uri The uri to open
  */
@@ -125,7 +125,7 @@ suspend fun DualEndpoint.startStreamSecond(uri: Uri) {
 /**
  * Starts audio/video stream for the second endpoint.
  *
- * Same as doing [open] and [startStream].
+ * Same as doing [openSecond] and [startStreamSecond].
  *
  * @param uriString The uri to open
  */

@@ -26,11 +26,11 @@ class SrtPacket(
      */
     buffer: ByteBuffer,
     /**
-     * [Boolean.true] if this is the first packet that describes a frame.
+     * `true` if this is the first packet that describes a frame.
      */
     val isFirstPacketFrame: Boolean,
     /**
-     * [Boolean.true] if this is the last packet that describes a frame.
+     * `true` if this is the last packet that describes a frame.
      */
     val isLastPacketFrame: Boolean,
     /**

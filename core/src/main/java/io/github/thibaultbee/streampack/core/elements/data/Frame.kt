@@ -66,7 +66,7 @@ data class Frame(
     val dtsInUs: Long? = null,
 
     /**
-     * [Boolean.true] if frame is a key frame (I-frame for AVC/HEVC and audio frames)
+     * `true` if frame is a key frame (I-frame for AVC/HEVC and audio frames)
      */
     val isKeyFrame: Boolean,
 
@@ -89,10 +89,10 @@ data class Frame(
 }
 
 /**
- * Removes the [extra] prefixes from the [rawBuffer].
+ * Removes the [Frame.extra] prefixes from the [Frame.rawBuffer].
  *
  * With MediaCodec, the encoded frames may contain prefixes like SPS, PPS for H264/H265 key frames.
- * It also modifies the position of the [rawBuffer] to skip the prefixes.s
+ * It also modifies the position of the [Frame.rawBuffer] to skip the prefixes.s
  *
  * @return A [ByteBuffer] without prefixes.
  */
@@ -122,7 +122,7 @@ fun FrameWithCloseable(
     dtsInUs: Long?,
 
     /**
-     * [Boolean.true] if frame is a key frame (I-frame for AVC/HEVC and audio frames)
+     * `true` if frame is a key frame (I-frame for AVC/HEVC and audio frames)
      */
     isKeyFrame: Boolean,
 

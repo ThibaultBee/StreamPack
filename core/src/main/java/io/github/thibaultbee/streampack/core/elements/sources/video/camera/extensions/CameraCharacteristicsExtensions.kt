@@ -82,7 +82,7 @@ fun <T : Any> CameraCharacteristics.getCameraOutputSizes(klass: Class<T>): List<
  * Whether the camera supports a frame rate
  *
  * @param fps frame rate
- * @return [Boolean.true] if camera supports fps, [Boolean.false] otherwise.
+ * @return `true` if camera supports fps, `false` otherwise.
  */
 fun CameraCharacteristics.isFpsSupported(fps: Int) =
     targetFps.any { it.contains(fps) }
@@ -90,7 +90,7 @@ fun CameraCharacteristics.isFpsSupported(fps: Int) =
 /**
  * Whether the camera has a flash device.
  *
- * @return [Boolean.true] if camera has a flash device, [Boolean.false] otherwise.
+ * @return `true` if camera has a flash device, `false` otherwise.
  */
 val CameraCharacteristics.isFlashAvailable: Boolean
     get() = this[CameraCharacteristics.FLASH_INFO_AVAILABLE] ?: false
@@ -203,7 +203,7 @@ val CameraCharacteristics.maxNumberOfFocusMeteringRegions: Int?
 /**
  * Whether the camera supports optical stabilization.
  *
- * @return [Boolean.true] if camera supports optical stabilization, [Boolean.false] otherwise.
+ * @return `true` if camera supports optical stabilization, `false` otherwise.
  */
 val CameraCharacteristics.isOpticalStabilizationAvailable: Boolean
     get() = this[CameraCharacteristics.LENS_INFO_AVAILABLE_OPTICAL_STABILIZATION]?.contains(

@@ -37,7 +37,7 @@ interface IPreviewableSource {
     /**
      * Whether the video source has a preview.
      *
-     * @return [Boolean.true] if the video source has a preview, [Boolean.false]
+     * @return `true` if the video source has a preview, `false`
      */
     suspend fun hasPreview(): Boolean
 

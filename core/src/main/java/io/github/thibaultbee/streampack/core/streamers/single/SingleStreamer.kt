@@ -176,8 +176,8 @@ suspend fun SingleStreamer(
  * A [ISingleStreamer] implementation for audio and video.
  *
  * @param context the application context
- * @param withAudio [Boolean.true] to capture audio. It can't be changed after instantiation.
- * @param withVideo [Boolean.true] to capture video. It can't be changed after instantiation.
+ * @param withAudio `true` to capture audio. It can't be changed after instantiation.
+ * @param withVideo `true` to capture video. It can't be changed after instantiation.
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
