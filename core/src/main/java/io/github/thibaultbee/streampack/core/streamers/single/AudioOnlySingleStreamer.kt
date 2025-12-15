@@ -15,7 +15,9 @@
  */
 package io.github.thibaultbee.streampack.core.streamers.single
 
+import android.Manifest
 import android.content.Context
+import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
@@ -79,6 +81,7 @@ class AudioOnlySingleStreamer(
 
     override fun getInfo(descriptor: MediaDescriptor) = streamer.getInfo(descriptor)
 
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override suspend fun setAudioConfig(audioConfig: AudioConfig) =
         streamer.setAudioConfig(audioConfig)
 

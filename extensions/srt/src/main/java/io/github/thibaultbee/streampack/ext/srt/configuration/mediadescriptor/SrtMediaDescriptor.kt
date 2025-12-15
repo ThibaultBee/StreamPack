@@ -24,6 +24,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.MediaContainerTy
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import java.security.InvalidParameterException
+import androidx.core.net.toUri
 
 /**
  * Creates a SRT connection descriptor from an [descriptor].
@@ -140,7 +141,7 @@ class SrtMediaDescriptor(
     Type(MediaContainerType.TS, MediaSinkType.SRT),
     listOf(serviceInfo)
 ) {
-    override val uri: Uri = Uri.parse(srtUrl.srtUri.toString())
+    override val uri: Uri = srtUrl.srtUri.toString().toUri()
 
     /**
      * The SRT host
@@ -173,7 +174,7 @@ class SrtMediaDescriptor(
             url: String,
             serviceInfo: TSServiceInfo = createDefaultTsServiceInfo()
         ) =
-            fromUri(Uri.parse(url), serviceInfo)
+            fromUri(url.toUri(), serviceInfo)
 
         /**
          * Creates a SRT connection descriptor from an Uri

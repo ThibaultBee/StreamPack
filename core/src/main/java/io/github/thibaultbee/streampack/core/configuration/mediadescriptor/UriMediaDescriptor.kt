@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaContainerType
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
+import androidx.core.net.toUri
 
 
 /**
@@ -20,7 +21,7 @@ fun UriMediaDescriptor(
     uriString: String,
     customData: List<Any> = emptyList()
 ): UriMediaDescriptor {
-    val uri = Uri.parse(uriString)
+    val uri = uriString.toUri()
     return UriMediaDescriptor(uri, MediaDescriptor.Type.getContainerType(context, uri), customData)
 }
 
@@ -33,7 +34,7 @@ fun UriMediaDescriptor(
  * @param customData custom data to attach to the media descriptor
  */
 fun UriMediaDescriptor(uriString: String, customData: List<Any> = emptyList()): UriMediaDescriptor {
-    val uri = Uri.parse(uriString)
+    val uri = uriString.toUri()
     return UriMediaDescriptor(uri, MediaDescriptor.Type.getContainerType(null, uri), customData)
 }
 
