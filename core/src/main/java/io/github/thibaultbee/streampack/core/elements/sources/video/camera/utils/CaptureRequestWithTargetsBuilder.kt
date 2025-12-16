@@ -20,7 +20,6 @@ import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.CaptureRequest.Builder
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraDeviceController
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -41,8 +40,7 @@ internal class CaptureRequestWithTargetsBuilder private constructor(
     /**
      * Whether the CaptureRequest has no target
      */
-    val isEmpty: Boolean
-        get() = runBlocking { mutex.withLock { mutableTargets.isEmpty() } }
+    suspend fun isEmpty() = mutex.withLock { mutableTargets.isEmpty() }
 
     /**
      * Whether the [CaptureRequest.Builder] has a target

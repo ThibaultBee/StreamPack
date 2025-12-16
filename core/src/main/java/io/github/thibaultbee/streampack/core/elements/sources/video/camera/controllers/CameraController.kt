@@ -288,7 +288,7 @@ internal class CameraController(
         controllerMutex.withLock {
             val sessionController = getSessionController()
             sessionController.removeTarget(target)
-            if (sessionController.isEmpty) {
+            if (sessionController.isEmpty()) {
                 closeControllers()
             }
         }
@@ -304,7 +304,7 @@ internal class CameraController(
         controllerMutex.withLock {
             val sessionController = getSessionController()
             sessionController.removeTarget(name)
-            if (sessionController.isEmpty) {
+            if (sessionController.isEmpty()) {
                 closeControllers()
             }
         }
@@ -389,7 +389,7 @@ internal class CameraController(
         sessionController.setRepeatingSession()
     }
 
-    private fun closeControllers() {
+    private suspend fun closeControllers() {
         sessionController?.close()
         deviceController?.close()
         deviceController = null

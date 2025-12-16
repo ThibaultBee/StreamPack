@@ -33,7 +33,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.atomic.AtomicLong
@@ -73,10 +72,9 @@ internal class CameraSessionController private constructor(
     private val sessionCallback = CameraControlSessionCallback(coroutineScope)
 
     private val captureCallbacks =
-        mutableSetOf<CaptureCallback>(captureCallback, sessionCallback)
+        mutableSetOf(captureCallback, sessionCallback)
 
-    val isEmpty: Boolean
-        get() = runBlocking { requestTargetMutex.withLock { captureRequestBuilder.isEmpty } }
+    suspend fun isEmpty() = requestTargetMutex.withLock { captureRequestBuilder.isEmpty() }
 
     /**
      * Whether the current capture request has a target
@@ -167,7 +165,7 @@ internal class CameraSessionController private constructor(
             targets.forEach {
                 captureRequestBuilder.removeTarget(it)
             }
-            if (captureRequestBuilder.isEmpty) {
+            if (captureRequestBuilder.isEmpty()) {
                 stopRepeatingSession()
             } else {
                 setRepeatingSession()
@@ -187,7 +185,7 @@ internal class CameraSessionController private constructor(
                 captureRequestBuilder.removeTarget(it)
             } ?: Logger.w(TAG, "Target type $name not found in current outputs $outputs")
 
-            if (captureRequestBuilder.isEmpty) {
+            if (captureRequestBuilder.isEmpty()) {
                 stopRepeatingSession()
             } else {
                 setRepeatingSession()
@@ -204,7 +202,7 @@ internal class CameraSessionController private constructor(
         requestTargetMutex.withLock {
             captureRequestBuilder.removeTarget(target)
 
-            if (captureRequestBuilder.isEmpty) {
+            if (captureRequestBuilder.isEmpty()) {
                 stopRepeatingSession()
             } else {
                 setRepeatingSession()
@@ -212,11 +210,11 @@ internal class CameraSessionController private constructor(
         }
     }
 
-    fun close() = runBlocking {
+    suspend fun close() {
         captureSessionMutex.withLock {
             if (isClosed) {
                 Logger.w(TAG, "Session already closed")
-                return@runBlocking
+                return
             }
             try {
                 captureSession.close()
@@ -247,7 +245,7 @@ internal class CameraSessionController private constructor(
      * Sets a repeating session with the current capture request.
      */
     suspend fun setRepeatingSessionSync() {
-        if (captureRequestBuilder.isEmpty) {
+        if (captureRequestBuilder.isEmpty()) {
             Logger.w(TAG, "Capture request is empty")
             return
         }
@@ -292,7 +290,7 @@ internal class CameraSessionController private constructor(
      * Sets a repeating session with the current capture request.
      */
     suspend fun setRepeatingSession() {
-        if (captureRequestBuilder.isEmpty) {
+        if (captureRequestBuilder.isEmpty()) {
             Logger.w(TAG, "Capture request is empty")
             return
         }
@@ -390,7 +388,7 @@ internal class CameraSessionController private constructor(
             isClosedFlow.asStateFlow()
         )
 
-        if (!captureRequestBuilder.isEmpty) {
+        if (!captureRequestBuilder.isEmpty()) {
             controller.setRepeatingSession()
         }
 

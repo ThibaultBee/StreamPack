@@ -35,7 +35,6 @@ import io.github.thibaultbee.streampack.ext.srt.configuration.mediadescriptor.Sr
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.runBlocking
 
 class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSink() {
     override val supportedSinkTypes: List<MediaSinkType> = listOf(MediaSinkType.SRT)
@@ -119,7 +118,7 @@ class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSi
     override suspend fun write(packet: Packet): Int {
         if (isOnError) {
             return -1
-            
+
         }
 
         // Pick up completionException if any

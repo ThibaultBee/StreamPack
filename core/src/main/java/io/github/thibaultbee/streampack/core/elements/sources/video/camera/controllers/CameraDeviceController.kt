@@ -30,7 +30,6 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.Closeable
@@ -47,7 +46,7 @@ internal class CameraDeviceController private constructor(
     private val sessionCompat: ICameraCaptureSessionCompat,
     val isClosedFlow: StateFlow<Boolean>,
     val throwableFlow: StateFlow<Throwable?>
-) : Closeable {
+) {
     private val mutex = Mutex()
 
     val isClosed: Boolean
@@ -97,17 +96,15 @@ internal class CameraDeviceController private constructor(
         }
     }
 
-    override fun close() {
-        runBlocking {
-            mutex.withLock {
-                if (isClosed) {
-                    Logger.w(TAG, "Camera $id already closed")
-                    return@withLock
-                }
-                cameraDevice.close()
-                if (!isClosedFlow.value) {
-                    isClosedFlow.first { it }
-                }
+    suspend fun close() {
+        mutex.withLock {
+            if (isClosed) {
+                Logger.w(TAG, "Camera $id already closed")
+                return@withLock
+            }
+            cameraDevice.close()
+            if (!isClosedFlow.value) {
+                isClosedFlow.first { it }
             }
         }
     }
