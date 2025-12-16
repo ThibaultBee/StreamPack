@@ -55,7 +55,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
@@ -590,14 +591,18 @@ class PreviewView @JvmOverloads constructor(
     }
 
     private inner class PinchToZoomOnScaleGestureListener : SimpleOnScaleGestureListener() {
+        private val mutex = Mutex()
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             val source = streamer?.videoInput?.sourceFlow?.value
             if (source is ICameraSource) {
-                val zoom = source.settings.zoom
-                runBlocking(coroutineDispatcher) {
-                    zoom.onPinch(detector.scaleFactor)
-                    listener?.onZoomRationOnPinchChanged(zoom.getZoomRatio())
-                }
+                val scaleFactor = detector.scaleFactor
+                lifecycleScope?.launch(coroutineDispatcher) {
+                    mutex.withLock {
+                        val zoom = source.settings.zoom
+                        zoom.onPinch(scaleFactor)
+                        listener?.onZoomRationOnPinchChanged(zoom.getZoomRatio())
+                    }
+                } ?: Logger.e(TAG, "LifecycleScope is not available")
                 return true
             } else {
                 return false
