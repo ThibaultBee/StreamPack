@@ -96,6 +96,7 @@ internal class EncodingPipelineOutput(
      * Mutex to avoid concurrent start/stop operations.
      */
     private val mutex = Mutex()
+    private val openCloseMutex = Mutex()
 
     private val isReleaseRequested = AtomicBoolean(false)
 
@@ -539,16 +540,27 @@ internal class EncodingPipelineOutput(
      *
      * @param descriptor Media descriptor to open
      */
-    override suspend fun open(descriptor: MediaDescriptor) = withContextMutex {
-        endpointInternal.open(descriptor)
+    override suspend fun open(descriptor: MediaDescriptor) {
+        withContext(coroutineDispatcher) {
+            openCloseMutex.withLock {
+                if (isReleaseRequested.get()) {
+                    throw IllegalStateException("Output is released")
+                }
+                endpointInternal.open(descriptor)
+            }
+        }
     }
 
     /**
      * Closes the streamer endpoint.
      */
-    override suspend fun close() = withContextMutex {
-        stopStreamUnsafe()
-        endpointInternal.close()
+    override suspend fun close() {
+        withContext(coroutineDispatcher) {
+            openCloseMutex.withLock {
+                stopStream()
+                endpointInternal.close()
+            }
+        }
     }
 
     /**
@@ -861,10 +873,10 @@ internal class EncodingPipelineOutput(
      */
     private suspend fun withContextMutex(block: suspend () -> Unit) =
         withContext(coroutineDispatcher) {
-            if (isReleaseRequested.get()) {
-                throw IllegalStateException("Output is released")
-            }
             mutex.withLock {
+                if (isReleaseRequested.get()) {
+                    throw IllegalStateException("Output is released")
+                }
                 block()
             }
         }
