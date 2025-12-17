@@ -301,7 +301,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                 _streamerErrorLiveData.postValue("startStream cancelled")
             } catch (t: Throwable) {
                 Log.e(TAG, "startStream failed", t)
-                _streamerErrorLiveData.postValue("startStream: ${t.message ?: "Unknown error"}")
+                _streamerErrorLiveData.postValue("startStream: ${t.message ?: t::class.java.simpleName}")
             } finally {
                 _isTryingConnectionLiveData.postValue(false)
             }
