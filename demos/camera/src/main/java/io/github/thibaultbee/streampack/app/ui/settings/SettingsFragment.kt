@@ -222,7 +222,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             val fps = (newValue as String).toInt()
             val cameraManager = requireContext().cameraManager
             val unsupportedCameras = cameraManager.cameras.filter {
-                cameraManager.getCameraCharacteristics(it).isFpsSupported(fps)
+                !cameraManager.getCameraCharacteristics(it).isFpsSupported(fps)
             }
             if (unsupportedCameras.isNotEmpty()) {
                 DialogUtils.showAlertDialog(
