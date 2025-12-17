@@ -58,7 +58,6 @@ internal class CameraController(
     private val controllerMutex = Mutex()
 
     private val outputs = mutableMapOf<String, CameraSurface>()
-    private val outputsMutex = Mutex()
 
     private val _isActiveFlow = MutableStateFlow(false)
     val isActiveFlow = _isActiveFlow.asStateFlow()
@@ -72,7 +71,7 @@ internal class CameraController(
      * Whether the current capture session has the given output.
      */
     suspend fun hasOutput(output: CameraSurface): Boolean {
-        return outputsMutex.withLock { outputs.values.contains(output) }
+        return controllerMutex.withLock { outputs.values.contains(output) }
     }
 
     /**
@@ -81,7 +80,7 @@ internal class CameraController(
      * @param name The name of the output to check
      */
     suspend fun hasOutput(name: String): Boolean {
-        return outputsMutex.withLock { outputs.keys.contains(name) }
+        return controllerMutex.withLock { outputs.keys.contains(name) }
     }
 
     /**
@@ -90,7 +89,7 @@ internal class CameraController(
      * @param name The name of the output to get
      */
     suspend fun getOutput(name: String): CameraSurface? {
-        return outputsMutex.withLock { outputs[name] }
+        return controllerMutex.withLock { outputs[name] }
     }
 
     /**
@@ -102,15 +101,14 @@ internal class CameraController(
     @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun addOutput(output: CameraSurface) {
         require(output.surface.isValid) { "Output is invalid: $output" }
-        val needRestart = outputsMutex.withLock {
+        controllerMutex.withLock {
             if (outputs.values.contains(output)) {
                 return
             }
             outputs[output.name] = output
-            isActiveFlow.value
-        }
-        if (needRestart) {
-            restartSession()
+            if (isActiveFlow.value) {
+                restartSessionUnsafe()
+            }
         }
     }
 
@@ -120,16 +118,14 @@ internal class CameraController(
      * If the output is in the current capture session, the capture session is recreated without.
      */
     @RequiresPermission(Manifest.permission.CAMERA)
-    suspend fun removeOutput(name: String): Boolean {
-        val needRestart = outputsMutex.withLock {
+    suspend fun removeOutput(name: String) {
+        controllerMutex.withLock {
             val needRestart = outputs.containsKey(name) && isActiveFlow.value
             outputs.remove(name) != null
-            needRestart
+            if (needRestart) {
+                restartSessionUnsafe()
+            }
         }
-        if (needRestart) {
-            restartSession()
-        }
-        return needRestart
     }
 
     /**
@@ -154,19 +150,17 @@ internal class CameraController(
     private suspend fun getSessionController(): CameraSessionController {
         return if (sessionController == null) {
             val deviceController = getDeviceController()
-            outputsMutex.withLock {
-                CameraSessionController.create(
-                    coroutineScope,
-                    sessionCompat,
-                    deviceController,
-                    outputs.values.toList(),
-                    dynamicRange = dynamicRangeProfile.dynamicRange,
-                    fpsRange = fpsRange,
-                    captureRequestBuilder
-                ).apply {
-                    applySessionController(this)
-                    Logger.d(TAG, "Session controller created")
-                }
+            CameraSessionController.create(
+                coroutineScope,
+                sessionCompat,
+                deviceController,
+                outputs.values.toList(),
+                dynamicRange = dynamicRangeProfile.dynamicRange,
+                fpsRange = fpsRange,
+                captureRequestBuilder
+            ).apply {
+                applySessionController(this)
+                Logger.d(TAG, "Session controller created")
             }
         } else {
             if (!sessionController!!.isClosed) {
@@ -174,16 +168,14 @@ internal class CameraController(
             } else {
                 try {
                     val deviceController = getDeviceController()
-                    outputsMutex.withLock {
-                        sessionController!!.recreate(
-                            deviceController,
-                            outputs.values.toList(),
-                            dynamicRange = dynamicRangeProfile.dynamicRange,
-                            fpsRange = fpsRange
-                        ).apply {
-                            applySessionController(this)
-                            Logger.d(TAG, "Session controller recreated")
-                        }
+                    sessionController!!.recreate(
+                        deviceController,
+                        outputs.values.toList(),
+                        dynamicRange = dynamicRangeProfile.dynamicRange,
+                        fpsRange = fpsRange
+                    ).apply {
+                        applySessionController(this)
+                        Logger.d(TAG, "Session controller recreated")
                     }
                 } catch (t: Throwable) {
                     _isActiveFlow.tryEmit(false)
@@ -211,26 +203,34 @@ internal class CameraController(
     @RequiresPermission(Manifest.permission.CAMERA)
     private suspend fun restartSession() {
         controllerMutex.withLock {
-            val sessionController = sessionController
-            if (sessionController == null) {
-                Logger.i(TAG, "SessionController is null, nothing to restart")
-                return
-            }
+            restartSessionUnsafe()
+        }
+    }
 
-            isActiveJob?.cancel()
-            isActiveJob = null
+    /**
+     * Restarts the current capture session.
+     *
+     * The current capture session is closed and a new one is created with the same outputs.
+     */
+    @RequiresPermission(Manifest.permission.CAMERA)
+    private suspend fun restartSessionUnsafe() {
+        val sessionController = sessionController
+        if (sessionController == null) {
+            Logger.i(TAG, "SessionController is null, nothing to restart")
+            return
+        }
 
-            outputsMutex.withLock {
-                sessionController.recreate(
-                    getDeviceController(),
-                    outputs.values.toList(),
-                    dynamicRange = dynamicRangeProfile.dynamicRange,
-                    fpsRange = fpsRange
-                ).apply {
-                    applySessionController(this)
-                    Logger.d(TAG, "Session controller restarted")
-                }
-            }
+        isActiveJob?.cancel()
+        isActiveJob = null
+
+        sessionController.recreate(
+            getDeviceController(),
+            outputs.values.toList(),
+            dynamicRange = dynamicRangeProfile.dynamicRange,
+            fpsRange = fpsRange
+        ).apply {
+            applySessionController(this)
+            Logger.d(TAG, "Session controller restarted")
         }
     }
 
