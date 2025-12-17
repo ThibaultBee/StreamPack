@@ -16,10 +16,8 @@
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers
 
 import android.Manifest
-import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
-import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
 import android.util.Range
 import androidx.annotation.RequiresPermission
@@ -349,6 +347,7 @@ internal class CameraController(
                 val minFrameDuration = 1_000_000_000 / range.upper.toLong()
                 setSetting(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, range)
                 setSetting(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
+                setRepeatingSession()
             }
         }
     }
