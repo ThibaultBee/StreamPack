@@ -79,6 +79,6 @@ class MicrophoneSourceFactory(
     }
 
     override fun toString(): String {
-        return "MicrophoneSourceFactory(effects=$effects)"
+        return "MicrophoneSourceFactory(audioSource=$audioSource, effects=$effects)"
     }
 }
