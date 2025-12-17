@@ -48,6 +48,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.io.EOFException
 import java.io.IOException
 
@@ -55,7 +56,7 @@ import java.io.IOException
  * An endpoint that send frame to an RTMP server.
  */
 class RtmpEndpoint internal constructor(
-    defaultDispatcher: CoroutineDispatcher, ioDispatcher: CoroutineDispatcher
+    defaultDispatcher: CoroutineDispatcher, val ioDispatcher: CoroutineDispatcher
 ) : IEndpointInternal {
     private val coroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
     private val mutex = Mutex()
@@ -101,33 +102,35 @@ class RtmpEndpoint internal constructor(
     }
 
     override suspend fun open(descriptor: MediaDescriptor) {
-        mutex.withLock {
-            if (rtmpClient?.isClosed == false) {
-                Logger.w(TAG, "Already opened")
-                return
-            }
+        withContext(ioDispatcher) {
+            mutex.withLock {
+                if (rtmpClient?.isClosed == false) {
+                    Logger.w(TAG, "Already opened")
+                    return@withContext
+                }
 
-            rtmpClient = connectionBuilder.connect(descriptor.uri.toString()).apply {
-                _isOpenFlow.emit(true)
+                rtmpClient = connectionBuilder.connect(descriptor.uri.toString()).apply {
+                    _isOpenFlow.emit(true)
 
-                socketContext.invokeOnCompletion { throwable ->
-                    rtmpClient = null
+                    socketContext.invokeOnCompletion { throwable ->
+                        rtmpClient = null
 
-                    _isOpenFlow.tryEmit(false)
-                    if (throwable != null) {
-                        Logger.e(TAG, "RTMP connection closed with error: $throwable")
-                        if (throwable !is EOFException) {
-                            _throwableFlow.tryEmit(ClosedException(throwable))
-                        } else {
-                            _throwableFlow.tryEmit(
-                                ClosedException(
-                                    "Connection lost",
-                                    IOException(throwable)
+                        _isOpenFlow.tryEmit(false)
+                        if (throwable != null) {
+                            Logger.e(TAG, "RTMP connection closed with error: $throwable")
+                            if (throwable !is EOFException) {
+                                _throwableFlow.tryEmit(ClosedException(throwable))
+                            } else {
+                                _throwableFlow.tryEmit(
+                                    ClosedException(
+                                        "Connection lost",
+                                        IOException(throwable)
+                                    )
                                 )
-                            )
+                            }
+                        } else {
+                            Logger.i(TAG, "RTMP connection closed")
                         }
-                    } else {
-                        Logger.i(TAG, "RTMP connection closed")
                     }
                 }
             }
