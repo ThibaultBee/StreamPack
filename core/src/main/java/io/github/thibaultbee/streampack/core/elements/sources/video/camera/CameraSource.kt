@@ -20,7 +20,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.hardware.camera2.CameraCharacteristics
-import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
 import android.util.Size
 import android.view.Surface
@@ -29,6 +28,7 @@ import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.core.elements.sources.video.AbstractPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraController
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameraManager
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameras
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFpsSupported
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
@@ -51,12 +51,12 @@ import kotlinx.coroutines.sync.withLock
  */
 internal class CameraSource(
     private val context: Context,
-    private val manager: CameraManager,
     override val cameraId: String,
     dispatcherProvider: CameraDispatcherProvider,
 ) : ICameraSourceInternal, ICameraSource, AbstractPreviewableSource() {
     private val coroutineScope = CoroutineScope(dispatcherProvider.default)
 
+    private val manager = context.cameraManager
     private val characteristics = manager.getCameraCharacteristics(cameraId)
 
     private val controller = CameraController(

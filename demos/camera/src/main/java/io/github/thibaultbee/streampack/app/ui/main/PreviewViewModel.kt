@@ -50,6 +50,8 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.IBitm
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameraManager
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.interfaces.startStream
@@ -91,6 +93,8 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
      */
     private val testBitmap =
         BitmapFactory.decodeResource(application.resources, R.drawable.img_test)
+
+    private val defaultCameraId = application.cameraManager.defaultCameraId
 
     /**
      * Camera settings.
@@ -265,7 +269,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         viewModelScope.launch {
             videoSourceMutex.withLock {
                 if (streamer.videoInput?.sourceFlow?.value == null) {
-                    streamer.setVideoSource(CameraSourceFactory())
+                    streamer.setVideoSource(CameraSourceFactory(defaultCameraId))
                 } else {
                     Log.i(TAG, "Camera source already set")
                 }
@@ -367,12 +371,12 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                     }
 
                     is IBitmapSource -> {
-                        CameraSourceFactory()
+                        CameraSourceFactory(defaultCameraId)
                     }
 
                     else -> {
                         Log.i(TAG, "Unknown video source. Fallback to camera sources")
-                        CameraSourceFactory()
+                        CameraSourceFactory(defaultCameraId)
                     }
                 }
                 Log.i(TAG, "Switch video source to $nextSource")

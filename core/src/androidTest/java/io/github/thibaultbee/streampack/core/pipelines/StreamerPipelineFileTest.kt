@@ -64,7 +64,7 @@ class StreamerPipelineFileTest : DeviceTest() {
     fun testAudioOrVideoStream() = runTest(timeout = TEST_TIMEOUT_MS.milliseconds) {
         // Add sources
         streamerPipeline.setAudioSource(MicrophoneSourceFactory())
-        streamerPipeline.setVideoSource(CameraSourceFactory())
+        streamerPipeline.setVideoSource(CameraSourceFactory(context))
 
         // Add outputs
         val audioOnlyOutput =

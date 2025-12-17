@@ -26,11 +26,19 @@ import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Compan
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 
 /**
+ * Creates a [CameraSourceFactory] with the default camera.
+ *
+ * @param context the application context
+ */
+fun CameraSourceFactory(context: Context) =
+    CameraSourceFactory(context.cameraManager.defaultCameraId)
+
+/**
  * A factory to create a [CameraSource].
  *
- * @param cameraId the camera id to use, If null, the default camera is used.
+ * @param cameraId the camera id to use.
  */
-class CameraSourceFactory(val cameraId: String? = null) : IVideoSourceInternal.Factory {
+class CameraSourceFactory(val cameraId: String) : IVideoSourceInternal.Factory {
     @RequiresPermission(Manifest.permission.CAMERA)
     override suspend fun create(
         context: Context,
@@ -41,11 +49,10 @@ class CameraSourceFactory(val cameraId: String? = null) : IVideoSourceInternal.F
             { dispatcherProvider.createVideoHandlerExecutor(THREAD_NAME_CAMERA) },
             { dispatcherProvider.createVideoExecutor(1, THREAD_NAME_CAMERA) }
         )
-        val cameraManager = context.cameraManager
+
         return CameraSource(
             context,
-            cameraManager,
-            cameraId ?: cameraManager.defaultCameraId,
+            cameraId,
             cameraDispatcherProvider
         )
     }
