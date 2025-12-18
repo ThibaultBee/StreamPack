@@ -50,7 +50,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -75,13 +74,6 @@ class PreviewView @JvmOverloads constructor(
     private val viewfinder = CameraViewfinder(context, attrs, defStyle)
 
     private var viewfinderSurfaceRequest: ViewfinderSurfaceRequest? = null
-
-    private val _isPreviewingFlow = MutableStateFlow(false)
-
-    /**
-     * Whether the preview is requested in case the source has been set to a non previewable source.
-     */
-    private val isPreviewingFlow = _isPreviewingFlow.asStateFlow()
 
     /**
      * Enables zoom on pinch gesture.
@@ -226,16 +218,6 @@ class PreviewView @JvmOverloads constructor(
                 }
             }
         }
-
-        defaultScope.launch {
-            isPreviewingFlow.collect { isPreviewing ->
-                if (isPreviewing) {
-                    requestSurface(size)
-                } else {
-                    stopPreviewInternal()
-                }
-            }
-        }
     }
 
     private suspend fun setPreview(videoSource: IPreviewableSource, surface: Surface) {
@@ -254,17 +236,20 @@ class PreviewView @JvmOverloads constructor(
         try {
             Logger.e(TAG, "Setting preview")
             setPreview(videoSource, surface)
-            if (isPreviewingFlow.value) {
-                Logger.i(TAG, "Starting preview")
-                videoSource.startPreview()
-                listener?.onPreviewStarted()
-            }
+            Logger.i(TAG, "Starting preview")
+            videoSource.startPreview()
+            listener?.onPreviewStarted()
         } catch (t: Throwable) {
             if (surface.isValid) {
                 listener?.onPreviewFailed(t)
             } else {
                 // Happens when set video source is called repeatedly
                 Logger.w(TAG, "Surface is not valid: $t")
+            }
+            try {
+                videoSource.resetPreview()
+            } catch (_: Throwable) {
+
             }
         }
     }
@@ -303,7 +288,7 @@ class PreviewView @JvmOverloads constructor(
         if (visibility == GONE) {
             defaultScope.launch {
                 try {
-                    stopPreviewInternal()
+                    stopPreview()
                 } catch (t: Throwable) {
                     Logger.e(TAG, "Failed to stop preview", t)
                 }
@@ -313,14 +298,13 @@ class PreviewView @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         if (w != oldw || h != oldh) {
-            if (isPreviewingFlow.value) {
-                requestSurface(Size(w, h))
-            }
+            requestSurface(Size(w, h))
         }
     }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        Logger.d(TAG, "onAttachedToWindow")
 
         lifecycleScope = CoroutineScope(mainDispatcher + SupervisorJob())
     }
@@ -330,7 +314,7 @@ class PreviewView @JvmOverloads constructor(
 
         defaultScope.launch {
             try {
-                stopPreviewInternal()
+                stopPreview()
             } catch (t: Throwable) {
                 Logger.e(TAG, "Failed to stop preview", t)
             }
@@ -431,7 +415,6 @@ class PreviewView @JvmOverloads constructor(
         }
         val previewSize = getPreviewSize(videoSource, size)
         val builder = ViewfinderSurfaceRequest.Builder(previewSize)
-        Logger.e(TAG, "Display = $display")
         if (videoSource is ICameraSource) {
             val cameraCharacteristics =
                 context.getCameraCharacteristics(videoSource.cameraId)
@@ -465,13 +448,12 @@ class PreviewView @JvmOverloads constructor(
      * Stops the preview.
      */
     suspend fun stopPreview() {
-        _isPreviewingFlow.emit(false)
+        Logger.d(TAG, "stopPreview called")
+        stopPreviewInternal()
     }
 
 
     private suspend fun stopPreviewInternal() {
-        _isPreviewingFlow.emit(false)
-        Logger.e(TAG, "Stopping preview")
         streamer?.let {
             val source = it.videoInput?.sourceFlow?.value
             if (source is IPreviewableSource) {
@@ -486,8 +468,9 @@ class PreviewView @JvmOverloads constructor(
     /**
      * Starts the preview.
      */
-    suspend fun startPreview() {
-        _isPreviewingFlow.emit(true)
+    fun startPreview() {
+        Logger.d(TAG, "startPreview called")
+        requestSurface(size)
     }
 
     private fun getPreviewSize(
