@@ -37,7 +37,6 @@ import io.github.thibaultbee.streampack.app.utils.PermissionManager
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.streamers.lifecycle.StreamerViewModelLifeCycleObserver
-import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.ui.views.PreviewView
 import kotlinx.coroutines.launch
 
@@ -159,9 +158,8 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
         DialogUtils.showAlertDialog(requireContext(), "Error: $title", message)
     }
 
-    @SuppressLint("MissingPermission")
-    override fun onStart() {
-        super.onStart()
+    override fun onResume() {
+        super.onResume()
         requestCameraAndMicrophonePermissions()
     }
 
