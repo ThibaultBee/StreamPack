@@ -1,6 +1,32 @@
 Changelog
 ==========
 
+Version 3.1.0
+----------------
+
+## API changes:
+
+- `PreviewView` `streamer` setter/getter has been renamed by `setVideoSourceProvider`.
+
+## Features:
+
+- RTMP: New implementation (fixes [#22](https://github.com/ThibaultBee/StreamPack/issues/220))
+- RTMP: Add support for Opus
+- Camera settings are now suspendable
+- Microphone: add a way to set the audio source
+- Camera: also set `SENSOR_FRAME_DURATION` when the framerate setting is applied
+- `PreviewView` automatically starts when it is displayed. You don't have to call neither `startPreview` nor `stopPreview`
+- Upgrade to dokka 2.1.0
+
+## Bug fixes:
+
+- PreviewView: fix multiple race conditions
+- Fix timestamp after the device has been locked
+- Camera settings: fix onTap.
+- Remove multiple `runBlocking`
+- Fix a deadlock when calling `setTargetRotation` while trying to open the streamer
+- And other bug fixes.
+
 Version 3.0.2
 ----------------
 
@@ -14,7 +40,6 @@ Version 3.0.2
 - Fix a crash when trying to change the FPS of a configurable output
 - Fix video aspect ratio when using multiple outputs with different aspect ratios.
 - Do not emit audio/video source changed events when the configuration failed to be applied.
-
 
 Version 3.0.1
 ----------------

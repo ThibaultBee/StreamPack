@@ -9,7 +9,7 @@ allprojects {
     val versionName by extra { "3.1.0" }
 
     group = "io.github.thibaultbee.streampack"
-    version = "$versionName-SNAPSHOT"
+    version = versionName
 }
 
 dependencies {
