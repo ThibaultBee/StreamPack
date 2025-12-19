@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 /**
  * Encapsulates device controller and session controller.
@@ -49,7 +50,8 @@ internal class CameraController(
 ) {
     private val sessionCompat = CameraCaptureSessionCompatBuilder.build(dispatcherProvider)
 
-    private val coroutineScope = CoroutineScope(dispatcherProvider.default)
+    private val defaultDispatcher = dispatcherProvider.default
+    private val coroutineScope = CoroutineScope(defaultDispatcher)
     private var isActiveJob: Job? = null
 
     private var deviceController: CameraDeviceController? = null
@@ -70,8 +72,8 @@ internal class CameraController(
     /**
      * Whether the current capture session has the given output.
      */
-    suspend fun hasOutput(output: CameraSurface): Boolean {
-        return controllerMutex.withLock { outputs.values.contains(output) }
+    suspend fun hasOutput(output: CameraSurface) = withContext(defaultDispatcher) {
+        controllerMutex.withLock { outputs.values.contains(output) }
     }
 
     /**
@@ -79,8 +81,8 @@ internal class CameraController(
      *
      * @param name The name of the output to check
      */
-    suspend fun hasOutput(name: String): Boolean {
-        return controllerMutex.withLock { outputs.keys.contains(name) }
+    suspend fun hasOutput(name: String) = withContext(defaultDispatcher) {
+        controllerMutex.withLock { outputs.keys.contains(name) }
     }
 
     /**
@@ -88,8 +90,8 @@ internal class CameraController(
      *
      * @param name The name of the output to get
      */
-    suspend fun getOutput(name: String): CameraSurface? {
-        return controllerMutex.withLock { outputs[name] }
+    suspend fun getOutput(name: String) = withContext(defaultDispatcher) {
+        controllerMutex.withLock { outputs[name] }
     }
 
     /**
@@ -101,13 +103,15 @@ internal class CameraController(
     @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun addOutput(output: CameraSurface) {
         require(output.surface.isValid) { "Output is invalid: $output" }
-        controllerMutex.withLock {
-            if (outputs.values.contains(output)) {
-                return
-            }
-            outputs[output.name] = output
-            if (isActiveFlow.value) {
-                restartSessionUnsafe()
+        withContext(defaultDispatcher) {
+            controllerMutex.withLock {
+                if (outputs.values.contains(output)) {
+                    return@withContext
+                }
+                outputs[output.name] = output
+                if (isActiveFlow.value) {
+                    restartSessionUnsafe()
+                }
             }
         }
     }
@@ -119,11 +123,13 @@ internal class CameraController(
      */
     @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun removeOutput(name: String) {
-        controllerMutex.withLock {
-            val needRestart = outputs.containsKey(name) && isActiveFlow.value
-            outputs.remove(name) != null
-            if (needRestart) {
-                restartSessionUnsafe()
+        withContext(defaultDispatcher) {
+            controllerMutex.withLock {
+                val needRestart = outputs.containsKey(name) && isActiveFlow.value
+                outputs.remove(name) != null
+                if (needRestart) {
+                    restartSessionUnsafe()
+                }
             }
         }
     }
@@ -201,18 +207,6 @@ internal class CameraController(
      * The current capture session is closed and a new one is created with the same outputs.
      */
     @RequiresPermission(Manifest.permission.CAMERA)
-    private suspend fun restartSession() {
-        controllerMutex.withLock {
-            restartSessionUnsafe()
-        }
-    }
-
-    /**
-     * Restarts the current capture session.
-     *
-     * The current capture session is closed and a new one is created with the same outputs.
-     */
-    @RequiresPermission(Manifest.permission.CAMERA)
     private suspend fun restartSessionUnsafe() {
         val sessionController = sessionController
         if (sessionController == null) {
@@ -241,8 +235,8 @@ internal class CameraController(
      * @return true if the target has been added, false otherwise
      */
     @RequiresPermission(Manifest.permission.CAMERA)
-    suspend fun addTarget(name: String): Boolean {
-        return controllerMutex.withLock {
+    suspend fun addTarget(name: String) = withContext(defaultDispatcher) {
+        controllerMutex.withLock {
             val sessionController = getSessionController()
             sessionController.addTarget(name)
         }
@@ -255,8 +249,8 @@ internal class CameraController(
      * @return true if the target has been added, false otherwise
      */
     @RequiresPermission(Manifest.permission.CAMERA)
-    suspend fun addTarget(target: CameraSurface): Boolean {
-        return controllerMutex.withLock {
+    suspend fun addTarget(target: CameraSurface) = withContext(defaultDispatcher) {
+        controllerMutex.withLock {
             val sessionController = getSessionController()
             sessionController.addTarget(target)
         }
@@ -269,8 +263,8 @@ internal class CameraController(
      * @return true if the targets have been added, false otherwise
      */
     @RequiresPermission(Manifest.permission.CAMERA)
-    suspend fun addTargets(targets: List<CameraSurface>): Boolean {
-        return controllerMutex.withLock {
+    suspend fun addTargets(targets: List<CameraSurface>) = withContext(defaultDispatcher) {
+        controllerMutex.withLock {
             val sessionController = getSessionController()
             sessionController.addTargets(targets)
         }
@@ -283,11 +277,13 @@ internal class CameraController(
      */
     @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun removeTarget(target: CameraSurface) {
-        controllerMutex.withLock {
-            val sessionController = getSessionController()
-            sessionController.removeTarget(target)
-            if (sessionController.isEmpty()) {
-                closeControllers()
+        withContext(defaultDispatcher) {
+            controllerMutex.withLock {
+                val sessionController = getSessionController()
+                sessionController.removeTarget(target)
+                if (sessionController.isEmpty()) {
+                    closeControllers()
+                }
             }
         }
     }
@@ -299,11 +295,13 @@ internal class CameraController(
      */
     @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun removeTarget(name: String) {
-        controllerMutex.withLock {
-            val sessionController = getSessionController()
-            sessionController.removeTarget(name)
-            if (sessionController.isEmpty()) {
-                closeControllers()
+        withContext(defaultDispatcher) {
+            controllerMutex.withLock {
+                val sessionController = getSessionController()
+                sessionController.removeTarget(name)
+                if (sessionController.isEmpty()) {
+                    closeControllers()
+                }
             }
         }
     }
@@ -335,19 +333,21 @@ internal class CameraController(
      * @param fpsRange The fps range
      */
     suspend fun setFps(fps: Int) {
-        controllerMutex.withLock {
-            if (this.fps == fps) {
-                return
-            }
+        withContext(defaultDispatcher) {
+            controllerMutex.withLock {
+                if (this@CameraController.fps == fps) {
+                    return@withContext
+                }
 
-            this.fps = fps
+                this@CameraController.fps = fps
 
-            if (isActiveFlow.value) {
-                val range = fpsRange
-                val minFrameDuration = 1_000_000_000 / range.upper.toLong()
-                setSetting(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, range)
-                setSetting(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
-                setRepeatingSession()
+                if (isActiveFlow.value) {
+                    val range = fpsRange
+                    val minFrameDuration = 1_000_000_000 / range.upper.toLong()
+                    setSetting(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, range)
+                    setSetting(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
+                    setRepeatingSession()
+                }
             }
         }
     }
@@ -359,17 +359,19 @@ internal class CameraController(
      */
     @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun setDynamicRangeProfile(dynamicRangeProfile: DynamicRangeProfile) {
-        val needRestart = controllerMutex.withLock {
-            if (this.dynamicRangeProfile == dynamicRangeProfile) {
-                return
-            }
-            Logger.d(TAG, "Setting dynamic range profile to $dynamicRangeProfile")
+        withContext(defaultDispatcher) {
+            controllerMutex.withLock {
+                if (this@CameraController.dynamicRangeProfile == dynamicRangeProfile) {
+                    return@withContext
+                }
+                Logger.d(TAG, "Setting dynamic range profile to $dynamicRangeProfile")
 
-            this.dynamicRangeProfile = dynamicRangeProfile
-            isActiveFlow.value
-        }
-        if (needRestart) {
-            restartSession()
+                this@CameraController.dynamicRangeProfile = dynamicRangeProfile
+
+                if (isActiveFlow.value) {
+                    restartSessionUnsafe()
+                }
+            }
         }
     }
 
@@ -398,9 +400,11 @@ internal class CameraController(
     }
 
     suspend fun release() {
-        controllerMutex.withLock {
-            closeControllers()
-            sessionController = null
+        withContext(defaultDispatcher) {
+            controllerMutex.withLock {
+                closeControllers()
+                sessionController = null
+            }
         }
         outputs.clear()
         sessionCompat.release()
