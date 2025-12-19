@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 /**
  * Camera source implementation.
@@ -54,7 +55,8 @@ internal class CameraSource(
     override val cameraId: String,
     dispatcherProvider: CameraDispatcherProvider,
 ) : ICameraSourceInternal, ICameraSource, AbstractPreviewableSource() {
-    private val coroutineScope = CoroutineScope(dispatcherProvider.default)
+    private val defaultDispatcher = dispatcherProvider.default
+    private val coroutineScope = CoroutineScope(defaultDispatcher)
 
     private val manager = context.cameraManager
     private val characteristics = manager.getCameraCharacteristics(cameraId)
@@ -197,39 +199,51 @@ internal class CameraSource(
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    override suspend fun startPreview(): Unit = previewMutex.withLock {
-        startPreviewUnsafe()
+    override suspend fun startPreview() {
+        withContext(defaultDispatcher) {
+            previewMutex.withLock {
+                startPreviewUnsafe()
+            }
+        }
     }
 
     /**
      * Starts video preview on [previewSurface].
      */
     @RequiresPermission(Manifest.permission.CAMERA)
-    override suspend fun startPreview(previewSurface: Surface) = previewMutex.withLock {
-        if (isPreviewingFlow.value) {
-            Logger.w(TAG, "Camera is already previewing")
-            return
+    override suspend fun startPreview(previewSurface: Surface) {
+        withContext(defaultDispatcher) {
+            previewMutex.withLock {
+                if (isPreviewingFlow.value) {
+                    Logger.w(TAG, "Camera is already previewing")
+                    return@withContext
+                }
+                setPreview(previewSurface)
+                startPreviewUnsafe()
+            }
         }
-        setPreview(previewSurface)
-        startPreviewUnsafe()
     }
 
     @SuppressLint("MissingPermission")
-    override suspend fun stopPreview() = previewMutex.withLock {
-        Logger.d(TAG, "Stopping preview")
-        if (!isPreviewingFlow.value) {
-            Logger.w(TAG, "Camera is not previewing")
-            return
-        }
+    override suspend fun stopPreview() {
+        withContext(defaultDispatcher) {
+            previewMutex.withLock {
+                Logger.d(TAG, "Stopping preview")
+                if (!isPreviewingFlow.value) {
+                    Logger.w(TAG, "Camera is not previewing")
+                    return@withContext
+                }
 
-        try {
-            executeIfCameraPermission {
-                controller.removeTarget(PREVIEW_NAME)
+                try {
+                    executeIfCameraPermission {
+                        controller.removeTarget(PREVIEW_NAME)
+                    }
+                } catch (t: Throwable) {
+                    Logger.w(TAG, "Failed to stop preview: $t")
+                } finally {
+                    _isPreviewingFlow.emit(false)
+                }
             }
-        } catch (t: Throwable) {
-            Logger.w(TAG, "Failed to stop preview: $t")
-        } finally {
-            _isPreviewingFlow.emit(false)
         }
     }
 

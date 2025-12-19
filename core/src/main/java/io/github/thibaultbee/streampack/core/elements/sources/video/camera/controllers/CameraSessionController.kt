@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -74,7 +75,9 @@ internal class CameraSessionController private constructor(
     private val captureCallbacks =
         mutableSetOf(captureCallback, sessionCallback)
 
-    suspend fun isEmpty() = requestTargetMutex.withLock { captureRequestBuilder.isEmpty() }
+    suspend fun isEmpty() = withContext(coroutineScope.coroutineContext) {
+        requestTargetMutex.withLock { captureRequestBuilder.isEmpty() }
+    }
 
     /**
      * Whether the current capture request has a target
@@ -84,8 +87,10 @@ internal class CameraSessionController private constructor(
      * @param surface The target to check
      * @return true if the target is in the current capture request, false otherwise
      */
-    suspend fun hasTarget(surface: Surface) = requestTargetMutex.withLock {
-        captureRequestBuilder.hasTarget(surface)
+    suspend fun hasTarget(surface: Surface) = withContext(coroutineScope.coroutineContext) {
+        requestTargetMutex.withLock {
+            captureRequestBuilder.hasTarget(surface)
+        }
     }
 
     /**
@@ -96,9 +101,12 @@ internal class CameraSessionController private constructor(
      * @param cameraSurface The target to check
      * @return true if the target is in the current capture request, false otherwise
      */
-    suspend fun hasTarget(cameraSurface: CameraSurface) = requestTargetMutex.withLock {
-        captureRequestBuilder.hasTarget(cameraSurface)
-    }
+    suspend fun hasTarget(cameraSurface: CameraSurface) =
+        withContext(coroutineScope.coroutineContext) {
+            requestTargetMutex.withLock {
+                captureRequestBuilder.hasTarget(cameraSurface)
+            }
+        }
 
     /**
      * Adds targets to the current capture session
@@ -110,12 +118,14 @@ internal class CameraSessionController private constructor(
         require(targets.all { it.surface.isValid }) { "All targets must be valid" }
         require(targets.all { outputs.contains(it) }) { "Targets must be in the current capture session: $targets ($outputs)" }
 
-        val res = requestTargetMutex.withLock {
-            val res = targets.map {
-                captureRequestBuilder.addTarget(it)
-            }.all { it }
-            setRepeatingSession()
-            res
+        val res = withContext(coroutineScope.coroutineContext) {
+            requestTargetMutex.withLock {
+                val res = targets.map {
+                    captureRequestBuilder.addTarget(it)
+                }.all { it }
+                setRepeatingSession()
+                res
+            }
         }
 
         return res
@@ -129,11 +139,13 @@ internal class CameraSessionController private constructor(
     suspend fun addTarget(name: String): Boolean {
         require(outputs.any { it.name == name }) { "Target type must be in the current capture session: $name ($outputs)" }
 
-        val res = requestTargetMutex.withLock {
-            val target = outputs.first { it.name == name }
-            val res = captureRequestBuilder.addTarget(target)
-            setRepeatingSession()
-            res
+        val res = withContext(coroutineScope.coroutineContext) {
+            requestTargetMutex.withLock {
+                val target = outputs.first { it.name == name }
+                val res = captureRequestBuilder.addTarget(target)
+                setRepeatingSession()
+                res
+            }
         }
         return res
     }
@@ -147,10 +159,12 @@ internal class CameraSessionController private constructor(
         require(target.surface.isValid) { "Target must be valid: $target" }
         require(outputs.contains(target)) { "Target must be in the current capture session: $target ($outputs)" }
 
-        val res = requestTargetMutex.withLock {
-            val res = captureRequestBuilder.addTarget(target)
-            setRepeatingSession()
-            res
+        val res = withContext(coroutineScope.coroutineContext) {
+            requestTargetMutex.withLock {
+                val res = captureRequestBuilder.addTarget(target)
+                setRepeatingSession()
+                res
+            }
         }
         return res
     }
@@ -161,14 +175,16 @@ internal class CameraSessionController private constructor(
      * @param targets The targets to remove
      */
     suspend fun removeTargets(targets: List<CameraSurface>) {
-        requestTargetMutex.withLock {
-            targets.forEach {
-                captureRequestBuilder.removeTarget(it)
-            }
-            if (captureRequestBuilder.isEmpty()) {
-                stopRepeatingSession()
-            } else {
-                setRepeatingSession()
+        withContext(coroutineScope.coroutineContext) {
+            requestTargetMutex.withLock {
+                targets.forEach {
+                    captureRequestBuilder.removeTarget(it)
+                }
+                if (captureRequestBuilder.isEmpty()) {
+                    stopRepeatingSession()
+                } else {
+                    setRepeatingSession()
+                }
             }
         }
     }
@@ -179,16 +195,21 @@ internal class CameraSessionController private constructor(
      * @param name The name of target to remove
      */
     suspend fun removeTarget(name: String) {
-        requestTargetMutex.withLock {
-            val target = outputs.firstOrNull { it.name == name }
-            target?.let {
-                captureRequestBuilder.removeTarget(it)
-            } ?: Logger.w(TAG, "Target type $name not found in current outputs $outputs")
+        withContext(coroutineScope.coroutineContext) {
+            requestTargetMutex.withLock {
+                val target = outputs.firstOrNull { it.name == name }
+                target?.let {
+                    captureRequestBuilder.removeTarget(it)
+                } ?: Logger.w(
+                    TAG,
+                    "Target type $name not found in current outputs $outputs"
+                )
 
-            if (captureRequestBuilder.isEmpty()) {
-                stopRepeatingSession()
-            } else {
-                setRepeatingSession()
+                if (captureRequestBuilder.isEmpty()) {
+                    stopRepeatingSession()
+                } else {
+                    setRepeatingSession()
+                }
             }
         }
     }
@@ -199,31 +220,35 @@ internal class CameraSessionController private constructor(
      * @param target The target to remove
      */
     suspend fun removeTarget(target: CameraSurface) {
-        requestTargetMutex.withLock {
-            captureRequestBuilder.removeTarget(target)
+        withContext(coroutineScope.coroutineContext) {
+            requestTargetMutex.withLock {
+                captureRequestBuilder.removeTarget(target)
 
-            if (captureRequestBuilder.isEmpty()) {
-                stopRepeatingSession()
-            } else {
-                setRepeatingSession()
+                if (captureRequestBuilder.isEmpty()) {
+                    stopRepeatingSession()
+                } else {
+                    setRepeatingSession()
+                }
             }
         }
     }
 
     suspend fun close() {
-        captureSessionMutex.withLock {
-            if (isClosed) {
-                Logger.w(TAG, "Session already closed")
-                return
-            }
-            try {
-                captureSession.close()
-
-                if (!isClosedFlow.value) {
-                    isClosedFlow.first { it }
+        withContext(coroutineScope.coroutineContext) {
+            captureSessionMutex.withLock {
+                if (isClosed) {
+                    Logger.w(TAG, "Session already closed")
+                    return@withContext
                 }
-            } catch (t: Throwable) {
-                Logger.w(TAG, "Error closing camera session: $t")
+                try {
+                    captureSession.close()
+
+                    if (!isClosedFlow.value) {
+                        isClosedFlow.first { it }
+                    }
+                } catch (t: Throwable) {
+                    Logger.w(TAG, "Error closing camera session: $t")
+                }
             }
         }
     }
@@ -231,13 +256,15 @@ internal class CameraSessionController private constructor(
     suspend fun removeCaptureCallback(
         cameraCaptureCallback: CaptureCallback
     ) {
-        captureSessionMutex.withLock {
-            if (isClosed) {
-                Logger.w(TAG, "Camera session controller is released")
-                return
-            }
+        withContext(coroutineScope.coroutineContext) {
+            captureSessionMutex.withLock {
+                if (isClosed) {
+                    Logger.w(TAG, "Camera session controller is released")
+                    return@withContext
+                }
 
-            captureCallbacks.remove(cameraCaptureCallback)
+                captureCallbacks.remove(cameraCaptureCallback)
+            }
         }
     }
 
@@ -249,39 +276,41 @@ internal class CameraSessionController private constructor(
             Logger.w(TAG, "Capture request is empty")
             return
         }
-        captureSessionMutex.withLock {
-            if (isClosed) {
-                Logger.w(TAG, "Camera session controller is released")
-                return
-            }
-
-            suspendCoroutine { continuation ->
-                val nextSessionId = nextSessionUpdateId.getAndIncrement()
-
-                val captureCallback = object : CaptureResultListener {
-                    override fun onCaptureResult(result: TotalCaptureResult): Boolean {
-                        val tag = result.request.tag as? TagBundle
-                        val keyId = tag?.keyId ?: return false
-                        if (keyId >= nextSessionId) {
-                            continuation.resume(Unit)
-                            return true
-                        }
-                        return false
-                    }
+        withContext(coroutineScope.coroutineContext) {
+            captureSessionMutex.withLock {
+                if (isClosed) {
+                    Logger.w(TAG, "Camera session controller is released")
+                    return@withContext
                 }
 
-                sessionCallback.addListener(captureCallback)
+                suspendCoroutine { continuation ->
+                    val nextSessionId = nextSessionUpdateId.getAndIncrement()
 
-                captureRequestBuilder.setTag(
-                    TagBundle().apply {
-                        keyId = nextSessionId
+                    val captureCallback = object : CaptureResultListener {
+                        override fun onCaptureResult(result: TotalCaptureResult): Boolean {
+                            val tag = result.request.tag as? TagBundle
+                            val keyId = tag?.keyId ?: return false
+                            if (keyId >= nextSessionId) {
+                                continuation.resume(Unit)
+                                return true
+                            }
+                            return false
+                        }
                     }
-                )
-                sessionCompat.setRepeatingSingleRequest(
-                    captureSession,
-                    captureRequestBuilder.build(),
-                    MultiCaptureCallback(captureCallbacks)
-                )
+
+                    sessionCallback.addListener(captureCallback)
+
+                    captureRequestBuilder.setTag(
+                        TagBundle().apply {
+                            keyId = nextSessionId
+                        }
+                    )
+                    sessionCompat.setRepeatingSingleRequest(
+                        captureSession,
+                        captureRequestBuilder.build(),
+                        MultiCaptureCallback(captureCallbacks)
+                    )
+                }
             }
         }
     }
@@ -294,28 +323,32 @@ internal class CameraSessionController private constructor(
             Logger.w(TAG, "Capture request is empty")
             return
         }
-        captureSessionMutex.withLock {
-            if (isClosed) {
-                Logger.w(TAG, "Camera session controller is released")
-                return
-            }
+        withContext(coroutineScope.coroutineContext) {
+            captureSessionMutex.withLock {
+                if (isClosed) {
+                    Logger.w(TAG, "Camera session controller is released")
+                    return@withContext
+                }
 
-            sessionCompat.setRepeatingSingleRequest(
-                captureSession,
-                captureRequestBuilder.build(),
-                MultiCaptureCallback(captureCallbacks)
-            )
+                sessionCompat.setRepeatingSingleRequest(
+                    captureSession,
+                    captureRequestBuilder.build(),
+                    MultiCaptureCallback(captureCallbacks)
+                )
+            }
         }
     }
 
     private suspend fun stopRepeatingSession() {
-        captureSessionMutex.withLock {
-            if (isClosed) {
-                Logger.w(TAG, "Camera session controller is released")
-                return
-            }
+        withContext(coroutineScope.coroutineContext) {
+            captureSessionMutex.withLock {
+                if (isClosed) {
+                    Logger.w(TAG, "Camera session controller is released")
+                    return@withContext
+                }
 
-            captureSession.stopRepeating()
+                captureSession.stopRepeating()
+            }
         }
     }
 
@@ -332,7 +365,8 @@ internal class CameraSessionController private constructor(
      * @param key The setting key
      * @param value The setting value
      */
-    fun <T> setSetting(key: CaptureRequest.Key<T>, value: T) = captureRequestBuilder.set(key, value)
+    fun <T> setSetting(key: CaptureRequest.Key<T>, value: T) =
+        captureRequestBuilder.set(key, value)
 
     /**
      * Creates a new capture session with the given outputs.
@@ -349,58 +383,60 @@ internal class CameraSessionController private constructor(
         outputs: List<CameraSurface>,
         dynamicRange: Long,
         fpsRange: Range<Int>
-    ): CameraSessionController = requestTargetMutex.withLock {
-        require(outputs.isNotEmpty()) { "At least one output is required" }
-        require(outputs.all { it.surface.isValid }) { "All outputs $outputs must be valid but ${outputs.filter { !it.surface.isValid }} is invalid" }
+    ): CameraSessionController = withContext(coroutineScope.coroutineContext) {
+        requestTargetMutex.withLock {
+            require(outputs.isNotEmpty()) { "At least one output is required" }
+            require(outputs.all { it.surface.isValid }) { "All outputs $outputs must be valid but ${outputs.filter { !it.surface.isValid }} is invalid" }
 
-        if ((dynamicRange == this.dynamicRange) && (outputs == this.outputs) && !isClosed) {
-            Logger.w(TAG, "Same dynamic range and outputs, returning the same controller")
-            return this
-        }
+            if ((dynamicRange == this@CameraSessionController.dynamicRange) && (outputs == this@CameraSessionController.outputs) && !isClosed) {
+                Logger.w(TAG, "Same dynamic range and outputs, returning the same controller")
+                return@withContext this@CameraSessionController
+            }
 
-        // Re-add targets that are in the new outputs (identified by their name)
-        val targets = outputs.filter {
-            captureRequestBuilder.hasTarget(it.name)
-        }
-        captureRequestBuilder.clearTargets()
-        captureRequestBuilder.addTargets(targets)
-        val minFrameDuration = 1_000_000_000 / fpsRange.upper.toLong()
-        captureRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
-        captureRequestBuilder.set(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
+            // Re-add targets that are in the new outputs (identified by their name)
+            val targets = outputs.filter {
+                captureRequestBuilder.hasTarget(it.name)
+            }
+            captureRequestBuilder.clearTargets()
+            captureRequestBuilder.addTargets(targets)
+            val minFrameDuration = 1_000_000_000 / fpsRange.upper.toLong()
+            captureRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
+            captureRequestBuilder.set(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
 
-        // Close current session
-        close()
+            // Close current session
+            close()
 
-        val isClosedFlow = MutableStateFlow(false)
-        val newCaptureSession =
-            CameraUtils.createCaptureSession(
-                cameraDeviceController,
-                outputs.map { it.surface },
+            val isClosedFlow = MutableStateFlow(false)
+            val newCaptureSession =
+                CameraUtils.createCaptureSession(
+                    cameraDeviceController,
+                    outputs.map { it.surface },
+                    dynamicRange,
+                    isClosedFlow
+                )
+
+            val controller = CameraSessionController(
+                coroutineScope,
+                captureRequestBuilder,
+                sessionCompat,
+                newCaptureSession,
+                outputs,
                 dynamicRange,
-                isClosedFlow
+                isClosedFlow.asStateFlow()
             )
 
-        val controller = CameraSessionController(
-            coroutineScope,
-            captureRequestBuilder,
-            sessionCompat,
-            newCaptureSession,
-            outputs,
-            dynamicRange,
-            isClosedFlow.asStateFlow()
-        )
+            if (!captureRequestBuilder.isEmpty()) {
+                controller.setRepeatingSession()
+            }
 
-        if (!captureRequestBuilder.isEmpty()) {
-            controller.setRepeatingSession()
+            controller
         }
-
-        return controller
     }
 
     companion object {
         private const val TAG = "CameraSessionController"
 
-        internal suspend fun create(
+        suspend fun create(
             coroutineScope: CoroutineScope,
             sessionCompat: ICameraCaptureSessionCompat,
             cameraDeviceController: CameraDeviceController,
