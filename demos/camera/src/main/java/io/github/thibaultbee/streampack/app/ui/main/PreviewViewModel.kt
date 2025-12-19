@@ -59,6 +59,7 @@ import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrtBitrateRegulatorController
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -75,6 +76,8 @@ import kotlinx.coroutines.sync.withLock
 class PreviewViewModel(private val application: Application) : ObservableViewModel() {
     private val storageRepository = DataStoreRepository(application, application.dataStore)
     private val rotationRepository = RotationRepository.getInstance(application)
+
+    private val defaultDispatcher = Dispatchers.IO
 
     private val buildStreamerUseCase = BuildStreamerUseCase(application, storageRepository)
 
@@ -336,8 +339,10 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
          */
         val videoSource = streamer.videoInput?.sourceFlow?.value
         if (videoSource is ICameraSource) {
-            viewModelScope.launch {
-                streamer.toggleBackToFront(application)
+            viewModelScope.launch(defaultDispatcher) {
+                videoSourceMutex.withLock {
+                    streamer.toggleBackToFront(application)
+                }
             }
         }
         return true
@@ -350,7 +355,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
          * exception instead of crashing. You can either catch the exception or check if the
          * configuration is valid for the new camera with [Context.isFpsSupported].
          */
-        viewModelScope.launch {
+        viewModelScope.launch(defaultDispatcher) {
             videoSourceMutex.withLock {
                 val videoSource = streamer.videoInput?.sourceFlow?.value
                 if (videoSource is ICameraSource) {
@@ -362,7 +367,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
 
     @RequiresPermission(Manifest.permission.CAMERA)
     fun toggleVideoSource() {
-        viewModelScope.launch {
+        viewModelScope.launch(defaultDispatcher) {
             videoSourceMutex.withLock {
                 val videoSource = streamer.videoInput?.sourceFlow?.value
                 val nextSource = when (videoSource) {
