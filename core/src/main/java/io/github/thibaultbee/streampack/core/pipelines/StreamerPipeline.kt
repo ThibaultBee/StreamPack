@@ -152,9 +152,16 @@ open class StreamerPipeline(
         }
 
         require(withVideo) { "Do not need to set video rotation as it is an audio only streamer" }
-        safeOutputCall { outputs ->
-            outputs.keys.filterIsInstance<IVideoSurfacePipelineOutputInternal>()
-                .forEach { it.setTargetRotation(rotation) }
+
+        withContext(dispatcherProvider.default) {
+            val jobs = mutableListOf<Job>()
+            safeOutputCall { outputs ->
+                jobs += coroutineScope.launch {
+                    outputs.keys.filterIsInstance<IVideoSurfacePipelineOutputInternal>()
+                        .forEach { it.setTargetRotation(rotation) }
+                }
+            }
+            jobs.joinAll()
         }
     }
 
@@ -780,7 +787,7 @@ open class StreamerPipeline(
      * If an [IEncodingPipelineOutput] is not opened, it won't start the stream and will throw an
      * exception. But the other outputs will be started.
      */
-    override suspend fun startStream() = withContext(dispatcherProvider.default) {
+    override suspend fun startStream() {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Pipeline is released")
         }
@@ -914,7 +921,7 @@ open class StreamerPipeline(
         safeStreamingOutputCall { outputs ->
             jobs += stopStreamOutputs(outputs.keys)
         }
-
+        jobs.joinAll()
     }
 
     /**
@@ -927,7 +934,6 @@ open class StreamerPipeline(
             throw IllegalStateException("Pipeline is released")
         }
         withContext(dispatcherProvider.default) {
-
             inputMutex.withLock {
                 stopStreamInputsUnsafe()
             }
