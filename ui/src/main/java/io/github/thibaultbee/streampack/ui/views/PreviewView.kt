@@ -49,11 +49,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 /**
  * A [FrameLayout] containing a preview for [IPreviewableSource] sources.
@@ -125,7 +126,7 @@ class PreviewView @JvmOverloads constructor(
     private var defaultScope: CoroutineScope =
         CoroutineScope(defaultDispatcher + SupervisorJob() + CoroutineName("preview"))
 
-    private val surfaceFlow = MutableStateFlow<Surface?>(null)
+    private val surfaceFlow = MutableSharedFlow<Surface?>(1)
 
     private var sourceJob: Job? = null
 
@@ -206,7 +207,7 @@ class PreviewView @JvmOverloads constructor(
 
         defaultScope.launch {
             surfaceFlow.filterNotNull().collect { surface ->
-                Logger.i(TAG, "New surface collected")
+                Logger.d(TAG, "New surface collected")
                 val previewableSource =
                     streamer?.videoInput?.sourceFlow?.value as? IPreviewableSource?
                 previewableSource?.let {
@@ -266,10 +267,12 @@ class PreviewView @JvmOverloads constructor(
                         if (previousVideoSource is IPreviewableSource) {
                             val isPreviewing = previousVideoSource.isPreviewingFlow.value
                             if (isPreviewing) {
-                                Logger.d(TAG, "Stopping preview")
+                                Logger.d(TAG, "Stopping preview for $previousVideoSource")
                                 previousVideoSource.stopPreview()
                             }
+                            Logger.d(TAG, "Resetting preview")
                             previousVideoSource.resetPreview()
+                            Logger.d(TAG, "Requesting for source $previousVideoSource preview")
                             previousVideoSource.requestRelease()
 
                         }
@@ -449,11 +452,14 @@ class PreviewView @JvmOverloads constructor(
      */
     suspend fun stopPreview() {
         Logger.d(TAG, "stopPreview called")
-        stopPreviewInternal()
+        withContext(defaultDispatcher) {
+            stopPreviewInternal()
+        }
     }
 
 
     private suspend fun stopPreviewInternal() {
+        Logger.d(TAG, "stopPreviewInternal called")
         streamer?.let {
             val source = it.videoInput?.sourceFlow?.value
             if (source is IPreviewableSource) {
