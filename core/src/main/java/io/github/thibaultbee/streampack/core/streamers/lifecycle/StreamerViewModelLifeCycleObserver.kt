@@ -17,11 +17,11 @@ package io.github.thibaultbee.streampack.core.streamers.lifecycle
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
-import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
-import io.github.thibaultbee.streampack.core.interfaces.stopPreview
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.launch
 
 /**
  * A [DefaultLifecycleObserver] to control a streamer on [Activity] lifecycle in a ViewModel.
@@ -37,15 +37,10 @@ open class StreamerViewModelLifeCycleObserver(protected val streamer: IStreamer)
     DefaultLifecycleObserver {
 
     override fun onPause(owner: LifecycleOwner) {
-        runBlocking {
-            if (streamer is IWithVideoSource) {
-                streamer.stopPreview()
-            }
+        owner.lifecycleScope.launch(NonCancellable) {
             streamer.stopStream()
             if (streamer is ICloseableStreamer) {
-                if (streamer.isOpenFlow.value) {
-                    streamer.close()
-                }
+                streamer.close()
             }
         }
     }
