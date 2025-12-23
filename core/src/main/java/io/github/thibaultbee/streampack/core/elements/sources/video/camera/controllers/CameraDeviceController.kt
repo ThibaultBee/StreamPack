@@ -103,9 +103,8 @@ internal class CameraDeviceController private constructor(
                 return@withLock
             }
             cameraDevice.close()
-            if (!isClosedFlow.value) {
-                isClosedFlow.first { it }
-            }
+            isClosedFlow.first { it }
+            Logger.d(TAG, "Camera $id closed")
         }
     }
 

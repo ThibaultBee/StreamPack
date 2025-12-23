@@ -193,17 +193,8 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
         }
 
         // Wait till streamer exists to set it to the SurfaceView.
-        preview.streamer = streamer
-        if (PermissionManager.hasPermissions(requireContext(), Manifest.permission.CAMERA)) {
-            lifecycleScope.launch {
-                try {
-                    preview.startPreview()
-                } catch (t: Throwable) {
-                    Log.e(TAG, "Error starting preview", t)
-                }
-            }
-        } else {
-            Log.e(TAG, "Camera permission not granted. Preview will not start.")
+        lifecycleScope.launch {
+            preview.setVideoSourceProvider(streamer)
         }
     }
 
