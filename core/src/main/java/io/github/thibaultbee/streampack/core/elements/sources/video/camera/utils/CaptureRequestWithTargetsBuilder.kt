@@ -20,6 +20,7 @@ import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.CaptureRequest.Builder
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraDeviceController
+import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 

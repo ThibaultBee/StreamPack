@@ -106,6 +106,7 @@ internal class CameraController(
         withContext(defaultDispatcher) {
             controllerMutex.withLock {
                 if (outputs.values.contains(output)) {
+                    Logger.w(TAG, "Output is already added: $output")
                     return@withContext
                 }
                 outputs[output.name] = output
@@ -125,8 +126,7 @@ internal class CameraController(
     suspend fun removeOutput(name: String) {
         withContext(defaultDispatcher) {
             controllerMutex.withLock {
-                val needRestart = outputs.containsKey(name) && isActiveFlow.value
-                outputs.remove(name) != null
+                val needRestart = outputs.remove(name) != null && isActiveFlow.value
                 if (needRestart) {
                     restartSessionUnsafe()
                 }

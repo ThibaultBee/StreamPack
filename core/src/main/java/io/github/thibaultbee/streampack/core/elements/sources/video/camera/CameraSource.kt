@@ -132,16 +132,29 @@ internal class CameraSource(
     override suspend fun hasPreview() = controller.hasOutput(PREVIEW_NAME)
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    override suspend fun setPreview(surface: Surface) {
+    private suspend fun setPreviewUnsafe(surface: Surface) {
         if (isPreviewingFlow.value) {
             Logger.w(TAG, "Trying to set preview while previewing")
         }
         controller.addOutput(CameraSurface(PREVIEW_NAME, surface))
     }
 
+    @RequiresPermission(Manifest.permission.CAMERA)
+    override suspend fun setPreview(surface: Surface) {
+        withContext(defaultDispatcher) {
+            previewMutex.withLock {
+                setPreviewUnsafe(surface)
+            }
+        }
+    }
+
     @SuppressLint("MissingPermission")
     override suspend fun resetPreviewImpl() {
-        controller.removeOutput(PREVIEW_NAME)
+        withContext(defaultDispatcher) {
+            previewMutex.withLock {
+                controller.removeOutput(PREVIEW_NAME)
+            }
+        }
     }
 
     override suspend fun getOutput() = controller.getOutput(STREAM_NAME)?.surface
@@ -192,7 +205,6 @@ internal class CameraSource(
     private suspend fun startPreviewUnsafe() {
         if (isPreviewingFlow.value) {
             Logger.w(TAG, "Camera is already previewing")
-            return
         }
         controller.addTarget(PREVIEW_NAME)
         _isPreviewingFlow.emit(true)
@@ -214,11 +226,7 @@ internal class CameraSource(
     override suspend fun startPreview(previewSurface: Surface) {
         withContext(defaultDispatcher) {
             previewMutex.withLock {
-                if (isPreviewingFlow.value) {
-                    Logger.w(TAG, "Camera is already previewing")
-                    return@withContext
-                }
-                setPreview(previewSurface)
+                setPreviewUnsafe(previewSurface)
                 startPreviewUnsafe()
             }
         }
@@ -228,7 +236,6 @@ internal class CameraSource(
     override suspend fun stopPreview() {
         withContext(defaultDispatcher) {
             previewMutex.withLock {
-                Logger.d(TAG, "Stopping preview")
                 if (!isPreviewingFlow.value) {
                     Logger.w(TAG, "Camera is not previewing")
                     return@withContext
@@ -253,7 +260,6 @@ internal class CameraSource(
             Logger.w(TAG, "Camera is already streaming")
             return
         }
-        Logger.d(TAG, "startStream")
         controller.addTarget(STREAM_NAME)
         _isStreamingFlow.emit(true)
         controller.muteVibrationAndSound()
@@ -261,7 +267,6 @@ internal class CameraSource(
 
     @SuppressLint("MissingPermission")
     override suspend fun stopStream() = streamMutex.withLock {
-        Logger.d(TAG, "stopStream")
         if (!isStreamingFlow.value) {
             Logger.w(TAG, "Camera is not streaming")
             return

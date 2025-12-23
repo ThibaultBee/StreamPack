@@ -156,9 +156,9 @@ minutes, you will be able to stream live video to your server.
     /**
      * If the preview is a `PreviewView`
      */
-    preview.streamer = streamer
-    // Then start the preview
-    streamer.startPreview()
+    preview.setVideoSourceProvider(streamer)
+    // The preview automatically starts
+    
     
     /**
      * Otherwise if the preview is in a [SurfaceView], a [TextureView], a [Surface],... you can use:

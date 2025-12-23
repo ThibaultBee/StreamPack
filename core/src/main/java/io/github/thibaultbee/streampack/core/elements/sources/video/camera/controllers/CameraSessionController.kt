@@ -47,12 +47,13 @@ internal class CameraSessionController private constructor(
     private val captureSession: CameraCaptureSession,
     private val outputs: List<CameraSurface>,
     val dynamicRange: Long,
+    val cameraIsClosedFlow: StateFlow<Boolean>,
     val isClosedFlow: StateFlow<Boolean>
 ) {
     private val captureSessionMutex = Mutex()
 
     val isClosed: Boolean
-        get() = isClosedFlow.value
+        get() = isClosedFlow.value || cameraIsClosedFlow.value
 
     private val requestTargetMutex = Mutex()
 
@@ -82,8 +83,6 @@ internal class CameraSessionController private constructor(
     /**
      * Whether the current capture request has a target
      *
-     * The target must be in the current capture session, see [hasOutput].
-     *
      * @param surface The target to check
      * @return true if the target is in the current capture request, false otherwise
      */
@@ -95,8 +94,6 @@ internal class CameraSessionController private constructor(
 
     /**
      * Whether the current capture request has a target
-     *
-     * The target must be in the current capture session, see [hasOutput].
      *
      * @param cameraSurface The target to check
      * @return true if the target is in the current capture request, false otherwise
@@ -242,10 +239,8 @@ internal class CameraSessionController private constructor(
                 }
                 try {
                     captureSession.close()
-
-                    if (!isClosedFlow.value) {
-                        isClosedFlow.first { it }
-                    }
+                    isClosedFlow.first { it }
+                    Logger.d(TAG, "Camera session closed")
                 } catch (t: Throwable) {
                     Logger.w(TAG, "Error closing camera session: $t")
                 }
@@ -422,6 +417,7 @@ internal class CameraSessionController private constructor(
                 newCaptureSession,
                 outputs,
                 dynamicRange,
+                cameraDeviceController.isClosedFlow,
                 isClosedFlow.asStateFlow()
             )
 
@@ -472,6 +468,7 @@ internal class CameraSessionController private constructor(
                 captureSession,
                 outputs,
                 dynamicRange,
+                cameraDeviceController.isClosedFlow,
                 isClosedFlow.asStateFlow()
             )
         }
