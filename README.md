@@ -360,12 +360,11 @@ You will also have to declare the `Service`,
 
 ## Documentations
 
-[StreamPack API guide](https://thibaultbee.github.io/StreamPack)
-
+- [StreamPack API guide](https://thibaultbee.github.io/StreamPack)
 - Additional documentations are available in the `docs` directory:
     - [Live and record simultaneously](docs/LiveAndRecordSimultaneously.md)
     - [Streamers](docs/Streamers.md)
-    - [Streamer elements](docs/AdvancedStreamer)
+    - [Streamer elements](docs/AdvancedStreamer.md)
 
 ## Demos
 
