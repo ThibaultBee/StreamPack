@@ -10,6 +10,8 @@ android {
 
     defaultConfig {
         applicationId = "io.github.thibaultbee.streampack.sample"
+
+        minSdk = 23
     }
     buildFeatures {
         viewBinding = true

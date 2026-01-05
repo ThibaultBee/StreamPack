@@ -16,48 +16,70 @@
 package io.github.thibaultbee.streampack.ui.views
 
 import android.util.Size
-import androidx.camera.viewfinder.CameraViewfinder
-import androidx.camera.viewfinder.CameraViewfinderExt.requestSurface
 import androidx.camera.viewfinder.core.ViewfinderSurfaceRequest
-import androidx.camera.viewfinder.core.populateFromCharacteristics
+import androidx.camera.viewfinder.core.ViewfinderSurfaceSession
+import androidx.camera.viewfinder.view.ViewfinderView
+import androidx.camera.viewfinder.view.requestSurfaceSession
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraCharacteristics
 
 /**
- * Start preview on a [CameraViewfinder]
+ * Sets preview on a [ViewfinderView]
  *
- * @param viewfinder The [CameraViewfinder] to set as preview
+ * @param viewfinderView The [ViewfinderView] to set as preview
  * @param previewSize The size of the preview
- * @return The [ViewfinderSurfaceRequest] used to set the preview. Use it to call [ViewfinderSurfaceRequest.markSurfaceSafeToRelease] after [stopPreview].
+ * @return The [ViewfinderSurfaceSession] used to set the preview. Use it to call [ViewfinderSurfaceSession.close].
  */
-suspend fun IPreviewableSource.startPreview(
-    viewfinder: CameraViewfinder,
+suspend fun IPreviewableSource.setPreview(
+    viewfinderView: ViewfinderView,
     previewSize: Size
-): ViewfinderSurfaceRequest {
-    val request = setPreview(viewfinder, previewSize)
-    startPreview()
-    return request
+) = setPreview(viewfinderView, ViewfinderSurfaceRequest(previewSize.width, previewSize.height))
+
+/**
+ * Sets preview on a [ViewfinderView]
+ *
+ * @param viewfinderView The [ViewfinderView] to set as preview
+ * @param surfaceRequest The [ViewfinderSurfaceRequest] used to set the preview.
+ * @return The [ViewfinderSurfaceSession] used to set the preview. Use it to call [ViewfinderSurfaceSession.close].
+ */
+suspend fun IPreviewableSource.setPreview(
+    viewfinderView: ViewfinderView,
+    surfaceRequest: ViewfinderSurfaceRequest
+): ViewfinderSurfaceSession {
+    val surfaceSession = viewfinderView.requestSurfaceSession(
+        surfaceRequest
+    )
+    setPreview(surfaceSession.surface)
+    return surfaceSession
 }
 
 /**
- * Set preview on a [CameraViewfinder]
+ * Starts preview on a [ViewfinderView]
  *
- * @param viewfinder The [CameraViewfinder] to set as preview
+ * @param viewfinderView The [ViewfinderView] to set as preview
  * @param previewSize The size of the preview
- * @return The [ViewfinderSurfaceRequest] used to set the preview. Use it to call [ViewfinderSurfaceRequest.markSurfaceSafeToRelease].
+ * @return The [ViewfinderSurfaceSession] used to set the preview. Use it to call [ViewfinderSurfaceSession.close].
  */
-suspend fun IPreviewableSource.setPreview(
-    viewfinder: CameraViewfinder,
+suspend fun IPreviewableSource.startPreview(
+    viewfinderView: ViewfinderView,
     previewSize: Size
-): ViewfinderSurfaceRequest {
-    val builder = ViewfinderSurfaceRequest.Builder(previewSize)
-    val request = if (this is ICameraSource) {
-        val cameraCharacteristics = viewfinder.context.getCameraCharacteristics(cameraId)
-        builder.populateFromCharacteristics(cameraCharacteristics).build()
-    } else {
-        builder.build()
-    }
-    setPreview(viewfinder.requestSurface(request))
-    return request
+): ViewfinderSurfaceSession {
+    val surfaceSession = setPreview(viewfinderView, previewSize)
+    startPreview()
+    return surfaceSession
+}
+
+/**
+ * Starts preview on a [ViewfinderView]
+ *
+ * @param viewfinderView The [ViewfinderView] to set as preview
+ * @param surfaceRequest The [ViewfinderSurfaceRequest] used to set the preview.
+ * @return The [ViewfinderSurfaceSession] used to set the preview. Use it to call [ViewfinderSurfaceSession.close].
+ */
+suspend fun IPreviewableSource.startPreview(
+    viewfinderView: ViewfinderView,
+    surfaceRequest: ViewfinderSurfaceRequest
+): ViewfinderSurfaceSession {
+    val surfaceSession = setPreview(viewfinderView, surfaceRequest)
+    startPreview()
+    return surfaceSession
 }

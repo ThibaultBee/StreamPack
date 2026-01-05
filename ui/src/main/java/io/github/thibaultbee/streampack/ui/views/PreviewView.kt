@@ -30,15 +30,15 @@ import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.annotation.MainThread
-import androidx.camera.viewfinder.CameraViewfinder
-import androidx.camera.viewfinder.CameraViewfinderExt.requestSurface
 import androidx.camera.viewfinder.core.ScaleType
+import androidx.camera.viewfinder.core.TransformationInfo
 import androidx.camera.viewfinder.core.ViewfinderSurfaceRequest
-import androidx.camera.viewfinder.core.populateFromCharacteristics
+import androidx.camera.viewfinder.core.ViewfinderSurfaceSession
+import androidx.camera.viewfinder.view.ViewfinderView
+import androidx.camera.viewfinder.view.requestSurfaceSession
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION_MS
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraCharacteristics
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
 import io.github.thibaultbee.streampack.core.elements.utils.OrientationUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.runningHistoryNotNull
@@ -74,9 +74,9 @@ import kotlinx.coroutines.withContext
 class PreviewView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
 ) : FrameLayout(context, attrs, defStyle) {
-    private val viewfinder = CameraViewfinder(context, attrs, defStyle)
+    private val viewfinder = ViewfinderView(context, attrs, defStyle)
 
-    private var viewfinderSurfaceRequest: ViewfinderSurfaceRequest? = null
+    private var surfaceRequestSession: ViewfinderSurfaceSession? = null
 
     /**
      * Enables zoom on pinch gesture.
@@ -170,7 +170,7 @@ class PreviewView @JvmOverloads constructor(
                 previewableSource?.let {
                     lifecycleScope?.launch {
                         try {
-                            startPreviewIfNeeded(it, surface)
+                            startPreview(it, surface)
                         } catch (t: Throwable) {
                             Logger.e(TAG, "Failed to start preview: $t")
                         }
@@ -181,11 +181,19 @@ class PreviewView @JvmOverloads constructor(
     }
 
     @MainThread
-    private suspend fun startPreviewIfNeeded(
+    private suspend fun startPreview(
         videoSource: IPreviewableSource,
         surface: Surface
     ) {
         try {
+            Logger.d(TAG, "Settings transformation")
+            viewfinder.transformationInfo = TransformationInfo(
+                sourceRotation = videoSource.infoProviderFlow.value.getRelativeRotationDegrees(
+                    display.rotation,
+                    false
+                )
+            )
+            
             Logger.i(TAG, "Starting preview")
             videoSource.startPreview(surface)
             listener?.onPreviewStarted()
@@ -390,32 +398,21 @@ class PreviewView @JvmOverloads constructor(
             return
         }
         val previewSize = getPreviewSize(videoSource, size)
-        val builder = ViewfinderSurfaceRequest.Builder(previewSize)
-        if (videoSource is ICameraSource) {
-            val cameraCharacteristics =
-                context.getCameraCharacteristics(videoSource.cameraId)
-            builder.populateFromCharacteristics(cameraCharacteristics)
-        } else {
-
-            val rotationDegrees = OrientationUtils.getSurfaceRotationDegrees(display.rotation)
-            builder.setSourceOrientation(rotationDegrees)
-        }
-        requestSurface(builder)
+        val request = ViewfinderSurfaceRequest(previewSize.width, previewSize.height)
+        requestSurface(request)
     }
 
     /**
      * Use [requestSurface] instead.
      */
     private fun requestSurface(
-        viewfinderBuilder: ViewfinderSurfaceRequest.Builder
+        viewfinderRequest: ViewfinderSurfaceRequest
     ) {
         lifecycleScope?.launch {
-            val viewfinderRequest = viewfinderBuilder.build().apply {
-                viewfinderSurfaceRequest = this
+            val requestSession = viewfinder.requestSurfaceSession(viewfinderRequest).apply {
+                surfaceRequestSession = this
             }
-            viewfinderRequest.getSurfaceAsync()
-            val surface = viewfinder.requestSurface(viewfinderRequest)
-            surfaceFlow.emit(surface)
+            surfaceFlow.emit(requestSession.surface)
         } ?: Logger.w(TAG, "Lifecycle scope is not available")
     }
 
@@ -428,8 +425,8 @@ class PreviewView @JvmOverloads constructor(
                 source.resetPreview()
             }
         }
-        viewfinderSurfaceRequest?.markSurfaceSafeToRelease()
-        viewfinderSurfaceRequest = null
+        surfaceRequestSession?.close()
+        surfaceRequestSession = null
     }
 
 

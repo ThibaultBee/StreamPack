@@ -20,6 +20,7 @@ import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.TextureView
+import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.interfaces.setPreview
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import kotlinx.coroutines.flow.StateFlow
@@ -28,6 +29,12 @@ import kotlinx.coroutines.flow.StateFlow
  * Interface for video sources that can be previewed.
  */
 interface IPreviewableSource {
+    /**
+     * Orientation provider of the capture source.
+     * It is used to orientate the frame according to the source orientation.
+     */
+    val infoProviderFlow: StateFlow<ISourceInfoProvider>
+    
     /**
      * Flow of the last previewing state.
      */
