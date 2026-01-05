@@ -20,6 +20,7 @@ import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.TextureView
+import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.interfaces.setPreview
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import kotlinx.coroutines.flow.StateFlow
@@ -31,6 +32,12 @@ import kotlinx.coroutines.sync.Mutex
  * The methods of this interface should be called in the [previewMutex].
  */
 interface IPreviewableSource {
+    /**
+     * Orientation provider of the capture source.
+     * It is used to orientate the frame according to the source orientation.
+     */
+    val infoProviderFlow: StateFlow<ISourceInfoProvider>
+
     /**
      * Mutex for the preview.
      * Use it when you have to synchronise access to the preview.
