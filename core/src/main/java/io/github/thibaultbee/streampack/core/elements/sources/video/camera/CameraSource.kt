@@ -129,7 +129,11 @@ internal class CameraSource(
         }
     }
 
-    override suspend fun hasPreview() = controller.hasOutput(PREVIEW_NAME)
+    override suspend fun hasPreview() = withContext(defaultDispatcher) {
+        previewMutex.withLock {
+            controller.hasOutput(PREVIEW_NAME)
+        }
+    }
 
     @RequiresPermission(Manifest.permission.CAMERA)
     private suspend fun setPreviewUnsafe(surface: Surface) {
