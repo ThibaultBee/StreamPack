@@ -135,6 +135,8 @@ class PreviewView @JvmOverloads constructor(
     private var streamer: IWithVideoSource? = null
     private val streamerMutex = Mutex()
 
+    private val startStopMutex = Mutex()
+
     init {
         val a = context.obtainStyledAttributes(attrs, R.styleable.PreviewView)
 
@@ -165,7 +167,7 @@ class PreviewView @JvmOverloads constructor(
 
         defaultScope.launch {
             surfaceFlow.filterNotNull().collect { surface ->
-                Logger.d(TAG, "New surface collected")
+                Logger.d(TAG, "New surface collected $surface")
                 val previewableSource =
                     streamer?.videoInput?.sourceFlow?.value as? IPreviewableSource?
                 previewableSource?.let {
@@ -173,7 +175,7 @@ class PreviewView @JvmOverloads constructor(
                         try {
                             startPreviewIfNeeded(it, surface)
                         } catch (t: Throwable) {
-                            Logger.e(TAG, "Failed to start preview: $t")
+                            Logger.e(TAG, "Failed to start preview on $surface $t")
                         }
                     }
                 }
@@ -188,7 +190,9 @@ class PreviewView @JvmOverloads constructor(
     ) {
         try {
             Logger.d(TAG, "Starting preview")
-            videoSource.startPreview(surface)
+            startStopMutex.withLock {
+                videoSource.startPreview(surface)
+            }
             Logger.d(TAG, "Preview started")
             listener?.onPreviewStarted()
         } catch (t: Throwable) {
@@ -218,7 +222,9 @@ class PreviewView @JvmOverloads constructor(
 
                         }
                         if (newVideoSource is IPreviewableSource) {
-                            attachToStreamerIfReady(true)
+                            withContext(mainDispatcher) {
+                                attachToStreamerIfReady(true)
+                            }
                         }
                     }
                 }
@@ -256,6 +262,7 @@ class PreviewView @JvmOverloads constructor(
                 } else {
                     sourceJob.cancel()
                 }
+                Logger.e(TAG, "New streamer set")
             }
         }
     }
@@ -279,13 +286,16 @@ class PreviewView @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         Logger.d(TAG, "onSizeChanged")
+
         if (w != oldw || h != oldh) {
-            requestSurface(Size(w, h))
+            attachToStreamerIfReady(false)
         }
     }
 
     override fun onWindowVisibilityChanged(visibility: Int) {
         super.onWindowVisibilityChanged(visibility)
+        Logger.d(TAG, "onWindowVisibilityChanged")
+
         if (visibility == VISIBLE) {
             attachToStreamerIfReady(false)
         } else {
@@ -435,11 +445,13 @@ class PreviewView @JvmOverloads constructor(
 
     @MainThread
     private suspend fun stopPreview() {
-        streamer?.let {
-            val source = it.videoInput?.sourceFlow?.value
-            if (source is IPreviewableSource) {
-                source.stopPreview()
-                source.resetPreview()
+        startStopMutex.withLock {
+            streamer?.let {
+                val source = it.videoInput?.sourceFlow?.value
+                if (source is IPreviewableSource) {
+                    source.stopPreview()
+                    source.resetPreview()
+                }
             }
         }
         viewfinderSurfaceRequest?.markSurfaceSafeToRelease()
