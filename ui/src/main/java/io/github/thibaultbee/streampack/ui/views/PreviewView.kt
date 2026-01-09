@@ -133,6 +133,7 @@ class PreviewView @JvmOverloads constructor(
     private var sourceJob = ConflatedJob()
 
     private var streamer: IWithVideoSource? = null
+    private val streamerMutex = Mutex()
 
     init {
         val a = context.obtainStyledAttributes(attrs, R.styleable.PreviewView)
@@ -186,8 +187,9 @@ class PreviewView @JvmOverloads constructor(
         surface: Surface
     ) {
         try {
-            Logger.i(TAG, "Starting preview")
+            Logger.d(TAG, "Starting preview")
             videoSource.startPreview(surface)
+            Logger.d(TAG, "Preview started")
             listener?.onPreviewStarted()
         } catch (t: Throwable) {
             Logger.e(TAG, "Failed to start preview: $t")
@@ -234,20 +236,26 @@ class PreviewView @JvmOverloads constructor(
      */
     suspend fun setVideoSourceProvider(newStreamer: IWithVideoSource? = null) {
         withContext(mainDispatcher) {
-            if (streamer != newStreamer) {
+            streamerMutex.withLock {
+                if (newStreamer == streamer) {
+                    Logger.w(TAG, "Streamer already set")
+                    return@withContext
+                }
+
                 /**
                  * If streamer is not the same, we stop the previous previewing one.
                  */
                 val previousSource = streamer?.videoInput?.sourceFlow?.value as? IPreviewableSource
                 previousSource?.stopPreview()
                 previousSource?.resetPreview()
-            }
+                previousSource?.requestRelease()
 
-            streamer = newStreamer
-            if (newStreamer != null) {
-                collectSource(newStreamer)
-            } else {
-                sourceJob.cancel()
+                streamer = newStreamer
+                if (newStreamer != null) {
+                    collectSource(newStreamer)
+                } else {
+                    sourceJob.cancel()
+                }
             }
         }
     }
@@ -276,25 +284,32 @@ class PreviewView @JvmOverloads constructor(
         }
     }
 
+    override fun onWindowVisibilityChanged(visibility: Int) {
+        super.onWindowVisibilityChanged(visibility)
+        if (visibility == VISIBLE) {
+            attachToStreamerIfReady(false)
+        } else {
+            lifecycleScope?.launch {
+                try {
+                    Logger.d(TAG, "Stopping preview")
+                    stopPreview()
+                } catch (t: Throwable) {
+                    Logger.e(TAG, "Failed to stop preview", t)
+                }
+            }
+        }
+    }
+
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         Logger.d(TAG, "onAttachedToWindow")
 
         lifecycleScope = CoroutineScope(mainDispatcher + SupervisorJob())
-        attachToStreamerIfReady(true)
     }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         Logger.d(TAG, "onDetachedFromWindow")
-
-        lifecycleScope?.launch {
-            try {
-                stopPreview()
-            } catch (t: Throwable) {
-                Logger.e(TAG, "Failed to stop preview", t)
-            }
-        }
 
         lifecycleScope?.cancel()
         lifecycleScope = null
