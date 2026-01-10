@@ -29,7 +29,6 @@ import android.view.SurfaceHolder
 import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import androidx.annotation.MainThread
 import androidx.camera.viewfinder.CameraViewfinder
 import androidx.camera.viewfinder.CameraViewfinderExt.requestSurface
 import androidx.camera.viewfinder.core.ScaleType
@@ -135,8 +134,6 @@ class PreviewView @JvmOverloads constructor(
     private var streamer: IWithVideoSource? = null
     private val streamerMutex = Mutex()
 
-    private val startStopMutex = Mutex()
-
     init {
         val a = context.obtainStyledAttributes(attrs, R.styleable.PreviewView)
 
@@ -171,26 +168,27 @@ class PreviewView @JvmOverloads constructor(
                 val previewableSource =
                     streamer?.videoInput?.sourceFlow?.value as? IPreviewableSource?
                 previewableSource?.let {
-                    lifecycleScope?.launch {
-                        try {
-                            startPreviewIfNeeded(it, surface)
-                        } catch (t: Throwable) {
-                            Logger.e(TAG, "Failed to start preview on $surface $t")
-                        }
+                    try {
+                        startPreview(it, surface)
+                    } catch (t: Throwable) {
+                        Logger.e(TAG, "Failed to start preview on $surface $t")
                     }
                 }
             }
         }
     }
 
-    @MainThread
-    private suspend fun startPreviewIfNeeded(
+    private suspend fun startPreview(
         videoSource: IPreviewableSource,
         surface: Surface
     ) {
+        if (!isAttachedToWindow) {
+            Logger.w(TAG, "Not attached to window")
+            return
+        }
         try {
             Logger.d(TAG, "Starting preview")
-            startStopMutex.withLock {
+            videoSource.previewMutex.withLock {
                 videoSource.startPreview(surface)
             }
             Logger.d(TAG, "Preview started")
@@ -198,11 +196,6 @@ class PreviewView @JvmOverloads constructor(
         } catch (t: Throwable) {
             Logger.e(TAG, "Failed to start preview: $t")
             listener?.onPreviewFailed(t)
-            try {
-                videoSource.resetPreview()
-            } catch (_: Throwable) {
-
-            }
         }
     }
 
@@ -216,15 +209,14 @@ class PreviewView @JvmOverloads constructor(
                         Logger.w(TAG, "No change in video source")
                     } else {
                         if (previousVideoSource is IPreviewableSource) {
-                            previousVideoSource.stopPreview()
-                            previousVideoSource.resetPreview()
-                            previousVideoSource.requestRelease()
-
+                            previousVideoSource.previewMutex.withLock {
+                                previousVideoSource.stopPreview()
+                                previousVideoSource.resetPreview()
+                                previousVideoSource.requestRelease()
+                            }
                         }
                         if (newVideoSource is IPreviewableSource) {
-                            withContext(mainDispatcher) {
-                                attachToStreamerIfReady(true)
-                            }
+                            attachToStreamerIfReady(true)
                         }
                     }
                 }
@@ -241,7 +233,7 @@ class PreviewView @JvmOverloads constructor(
      * @param newStreamer the [IWithVideoSource] to preview
      */
     suspend fun setVideoSourceProvider(newStreamer: IWithVideoSource? = null) {
-        withContext(mainDispatcher) {
+        withContext(defaultDispatcher) {
             streamerMutex.withLock {
                 if (newStreamer == streamer) {
                     Logger.w(TAG, "Streamer already set")
@@ -252,9 +244,13 @@ class PreviewView @JvmOverloads constructor(
                  * If streamer is not the same, we stop the previous previewing one.
                  */
                 val previousSource = streamer?.videoInput?.sourceFlow?.value as? IPreviewableSource
-                previousSource?.stopPreview()
-                previousSource?.resetPreview()
-                previousSource?.requestRelease()
+                previousSource?.let {
+                    it.previewMutex.withLock {
+                        it.stopPreview()
+                        it.resetPreview()
+                        it.requestRelease()
+                    }
+                }
 
                 streamer = newStreamer
                 if (newStreamer != null) {
@@ -267,7 +263,6 @@ class PreviewView @JvmOverloads constructor(
         }
     }
 
-    @MainThread
     private fun attachToStreamerIfReady(shouldFailSilently: Boolean) {
         if (streamer != null && isAttachedToWindow) {
             try {
@@ -299,7 +294,7 @@ class PreviewView @JvmOverloads constructor(
         if (visibility == VISIBLE) {
             attachToStreamerIfReady(false)
         } else {
-            lifecycleScope?.launch {
+            defaultScope.launch {
                 try {
                     Logger.d(TAG, "Stopping preview")
                     stopPreview()
@@ -443,12 +438,11 @@ class PreviewView @JvmOverloads constructor(
         } ?: Logger.w(TAG, "Lifecycle scope is not available")
     }
 
-    @MainThread
     private suspend fun stopPreview() {
-        startStopMutex.withLock {
-            streamer?.let {
-                val source = it.videoInput?.sourceFlow?.value
-                if (source is IPreviewableSource) {
+        streamer?.let {
+            val source = it.videoInput?.sourceFlow?.value
+            if (source is IPreviewableSource) {
+                source.previewMutex.withLock {
                     source.stopPreview()
                     source.resetPreview()
                 }
