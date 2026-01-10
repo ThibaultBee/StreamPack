@@ -96,9 +96,7 @@ internal class CameraSource(
     private val _isPreviewingFlow = MutableStateFlow(false)
     override val isPreviewingFlow = _isPreviewingFlow.asStateFlow()
 
-    private val previewMutex = Mutex()
     private val streamMutex = Mutex()
-
 
     init {
         val deviceCameras = manager.cameras
@@ -130,34 +128,24 @@ internal class CameraSource(
     }
 
     override suspend fun hasPreview() = withContext(defaultDispatcher) {
-        previewMutex.withLock {
-            controller.hasOutput(PREVIEW_NAME)
-        }
-    }
-
-    @RequiresPermission(Manifest.permission.CAMERA)
-    private suspend fun setPreviewUnsafe(surface: Surface) {
-        if (isPreviewingFlow.value) {
-            Logger.w(TAG, "Trying to set preview while previewing")
-        }
-        controller.addOutput(CameraSurface(PREVIEW_NAME, surface))
+        controller.hasOutput(PREVIEW_NAME)
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
     override suspend fun setPreview(surface: Surface) {
         withContext(defaultDispatcher) {
-            previewMutex.withLock {
-                setPreviewUnsafe(surface)
+            if (isPreviewingFlow.value) {
+                Logger.w(TAG, "Trying to set preview while previewing")
             }
+            Logger.e(TAG, "surface = $surface")
+            controller.addOutput(CameraSurface(PREVIEW_NAME, surface))
         }
     }
 
     @SuppressLint("MissingPermission")
     override suspend fun resetPreviewImpl() {
         withContext(defaultDispatcher) {
-            previewMutex.withLock {
-                controller.removeOutput(PREVIEW_NAME)
-            }
+            controller.removeOutput(PREVIEW_NAME)
         }
     }
 
@@ -206,54 +194,32 @@ internal class CameraSource(
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    private suspend fun startPreviewUnsafe() {
-        if (isPreviewingFlow.value) {
-            Logger.w(TAG, "Camera is already previewing")
-        }
-        controller.addTarget(PREVIEW_NAME)
-        _isPreviewingFlow.emit(true)
-    }
-
-    @RequiresPermission(Manifest.permission.CAMERA)
     override suspend fun startPreview() {
         withContext(defaultDispatcher) {
-            previewMutex.withLock {
-                startPreviewUnsafe()
+            if (isPreviewingFlow.value) {
+                Logger.w(TAG, "Camera is already previewing")
             }
-        }
-    }
-
-    /**
-     * Starts video preview on [previewSurface].
-     */
-    @RequiresPermission(Manifest.permission.CAMERA)
-    override suspend fun startPreview(previewSurface: Surface) {
-        withContext(defaultDispatcher) {
-            previewMutex.withLock {
-                setPreviewUnsafe(previewSurface)
-                startPreviewUnsafe()
-            }
+            controller.addTarget(PREVIEW_NAME)
+            _isPreviewingFlow.emit(true)
         }
     }
 
     @SuppressLint("MissingPermission")
     override suspend fun stopPreview() {
         withContext(defaultDispatcher) {
-            previewMutex.withLock {
-                if (!isPreviewingFlow.value) {
-                    Logger.w(TAG, "Camera is not previewing")
-                    return@withContext
-                }
+            if (!isPreviewingFlow.value) {
+                Logger.w(TAG, "Camera is not previewing")
+                return@withContext
+            }
 
-                try {
-                    executeIfCameraPermission {
-                        controller.removeTarget(PREVIEW_NAME)
-                    }
-                } catch (t: Throwable) {
-                    Logger.w(TAG, "Failed to stop preview: $t")
-                } finally {
-                    _isPreviewingFlow.emit(false)
+            try {
+                executeIfCameraPermission {
+                    controller.removeTarget(PREVIEW_NAME)
                 }
+            } catch (t: Throwable) {
+                Logger.w(TAG, "Failed to stop preview: $t")
+            } finally {
+                _isPreviewingFlow.emit(false)
             }
         }
     }

@@ -23,11 +23,21 @@ import android.view.TextureView
 import io.github.thibaultbee.streampack.core.interfaces.setPreview
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.sync.Mutex
 
 /**
  * Interface for video sources that can be previewed.
+ *
+ * The methods of this interface should be called in the [previewMutex].
  */
 interface IPreviewableSource {
+    /**
+     * Mutex for the preview.
+     * Use it when you have to synchronise access to the preview.
+     * It is used by the [IPreviewableSource] user.
+     */
+    val previewMutex: Mutex
+
     /**
      * Flow of the last previewing state.
      */
@@ -55,9 +65,17 @@ interface IPreviewableSource {
     /**
      * Sets preview surface and start video preview.
      *
-     * @param previewSurface The [Surface] used for camera preview
+     * @param surface The [Surface] used for camera preview
      */
-    suspend fun startPreview(previewSurface: Surface)
+    suspend fun startPreview(surface: Surface) {
+        setPreview(surface)
+        try {
+            startPreview()
+        } catch (t: Throwable) {
+            resetPreview()
+            throw t
+        }
+    }
 
     /**
      * Stops video preview.

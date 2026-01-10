@@ -15,12 +15,16 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.video
 
+import kotlinx.coroutines.sync.Mutex
+
 /**
  * Abstract class for previewable sources to manage [requestRelease].
  */
 abstract class AbstractPreviewableSource : ISurfaceSourceInternal, IVideoSourceInternal,
     IPreviewableSource {
     private var isReleasedRequested = false
+    
+    override val previewMutex = Mutex()
 
     /**
      * Resets output implementation.

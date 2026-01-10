@@ -87,11 +87,6 @@ internal class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSo
         )
     }
 
-    override suspend fun startPreview(previewSurface: Surface) {
-        setPreview(previewSurface)
-        startPreview()
-    }
-
     override suspend fun stopPreview() {
         previewScheduler?.cancel(true)
         _isPreviewingFlow.emit(false)
