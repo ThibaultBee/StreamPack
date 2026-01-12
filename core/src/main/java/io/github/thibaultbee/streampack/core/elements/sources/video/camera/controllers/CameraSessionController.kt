@@ -31,6 +31,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -239,8 +240,9 @@ internal class CameraSessionController private constructor(
                 }
                 try {
                     captureSession.close()
-                    isClosedFlow.first { it }
-                    Logger.d(TAG, "Camera session closed")
+                    combine(isClosedFlow, cameraIsClosedFlow) { isClosed, isClosedCamera ->
+                        isClosed || isClosedCamera
+                    }.first { it }
                 } catch (t: Throwable) {
                     Logger.w(TAG, "Error closing camera session: $t")
                 }

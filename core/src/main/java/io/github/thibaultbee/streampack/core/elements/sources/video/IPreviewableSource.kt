@@ -59,6 +59,8 @@ interface IPreviewableSource {
 
     /**
      * Starts video preview.
+     *
+     * In some particular case, [startPreview] can be called several time without any call to [stopPreview].
      */
     suspend fun startPreview()
 
