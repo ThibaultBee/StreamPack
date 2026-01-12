@@ -86,8 +86,8 @@ internal object CameraUtils {
         }
         try {
             sessionCompat.openCamera(manager, cameraId, callbacks)
-        } catch (_: Throwable) {
-            isClosedFlow.tryEmit(true)
+        } catch (t: Throwable) {
+            continuation.resumeWithException(CameraException("Failed to open camera $cameraId: $t"))
         }
     }
 
@@ -147,8 +147,8 @@ internal object CameraUtils {
                     outputs, callbacks
                 )
             }
-        } catch (_: Throwable) {
-            isClosedFlow.tryEmit(true)
+        } catch (t: Throwable) {
+            continuation.resumeWithException(CameraException("Failed to create capture session for camera $cameraId and outputs $outputs: $t"))
         }
     }
 

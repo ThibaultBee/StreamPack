@@ -137,7 +137,6 @@ internal class CameraSource(
             if (isPreviewingFlow.value) {
                 Logger.w(TAG, "Trying to set preview while previewing")
             }
-            Logger.e(TAG, "surface = $surface")
             controller.addOutput(CameraSurface(PREVIEW_NAME, surface))
         }
     }
