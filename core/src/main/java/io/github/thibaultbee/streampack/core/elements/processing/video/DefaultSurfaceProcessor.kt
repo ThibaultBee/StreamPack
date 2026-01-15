@@ -141,7 +141,7 @@ private class DefaultSurfaceProcessor(
         }
 
         executeSafely {
-            if (!surfaceOutputs.contains(surfaceOutput)) {
+            if (!surfaceOutputs.map { it.targetSurface }.contains(surfaceOutput.targetSurface)) {
                 renderer.registerOutputSurface(surfaceOutput.targetSurface)
                 surfaceOutputs.add(surfaceOutput)
             } else {
