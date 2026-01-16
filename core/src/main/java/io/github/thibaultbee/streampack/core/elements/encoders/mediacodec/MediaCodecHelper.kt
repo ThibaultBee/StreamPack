@@ -369,7 +369,7 @@ object MediaCodecHelper {
         ): MediaCodecInfo.VideoCapabilities {
             require(mimeType.isVideo) { "MimeType must be video" }
 
-            return getCodecCapabilities(mimeType, name).videoCapabilities
+            return getCodecCapabilities(mimeType, name).videoCapabilities!!
         }
 
         /**
@@ -487,7 +487,7 @@ object MediaCodecHelper {
         ): MediaCodecInfo.AudioCapabilities {
             require(mimeType.isAudio) { "MimeType must be audio" }
 
-            return getCodecCapabilities(mimeType, name).audioCapabilities
+            return getCodecCapabilities(mimeType, name).audioCapabilities!!
         }
 
         /**
