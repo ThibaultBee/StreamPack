@@ -127,7 +127,9 @@ internal class CameraController(
         withContext(defaultDispatcher) {
             controllerMutex.withLock {
                 val needRestart = outputs.remove(name) != null && isActiveFlow.value
-                if (needRestart) {
+                if (outputs.isEmpty()) {
+                    sessionController?.close()
+                } else if (needRestart) {
                     restartSessionUnsafe()
                 }
             }
