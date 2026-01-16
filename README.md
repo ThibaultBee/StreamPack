@@ -51,7 +51,7 @@ dependencies {
     * Audio only mode
     * Device audio capabilities
     * Switch between audio sources
-* File: TS, FLV, MP4, WebM and Fragmented MP4
+* File: TS, FLV, MP4, WebM, Fragmented MP4 or custom output.
     * Write to a single file or multiple chunk files
 * Streaming: RTMP/RTMPS or SRT
     * [Record to a file and stream at the same time](docs/LiveAndRecordSimultaneously.md)
