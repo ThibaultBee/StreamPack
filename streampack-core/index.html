@@ -1,22 +1,22 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
     <title>streampack-core</title>
-<link href="../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../";</script>
-    <script>document.documentElement.classList.replace("no-js","js");</script>
+<link href="../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
     <script>const storage = localStorage.getItem("dokka-dark-mode")
-    if (storage == null) {
+      if (storage == null) {
         const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
         if (osDarkSchemePreferred === true) {
-            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
         }
-    } else {
+      } else {
         const savedDarkMode = JSON.parse(storage)
-        if(savedDarkMode === true) {
-            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
         }
-    }
+      }
     </script>
 <script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
 <script type="text/javascript" src="../scripts/sourceset_dependencies.js" async></script>
@@ -24,39 +24,37 @@
 <link href="../styles/main.css" rel="Stylesheet">
 <link href="../styles/prism.css" rel="Stylesheet">
 <link href="../styles/logo-styles.css" rel="Stylesheet">
-<link href="../styles/font-jb-sans-auto.css" rel="Stylesheet">
 <link href="../ui-kit/ui-kit.min.css" rel="Stylesheet">
-<script type="text/javascript" src="../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../scripts/safe-local-storage_blocking.js"></script>
 <script type="text/javascript" src="../scripts/navigation-loader.js" async></script>
 <script type="text/javascript" src="../scripts/platform-content-handler.js" async></script>
 <script type="text/javascript" src="../scripts/main.js" defer></script>
 <script type="text/javascript" src="../scripts/prism.js" async></script>
-<script type="text/javascript" src="../ui-kit/ui-kit.min.js" defer></script>
-<script type="text/javascript" src="../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<script type="text/javascript" src="../ui-kit/ui-kit.min.js" defer></script></head>
 <body>
-    <div class="root">
-    <nav class="navigation theme-dark" id="navigation-wrapper">
-<a class="library-name--link" href="../index.html">
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../index.html" tabindex="1">
                     StreamPack
             </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
         </button>
         <div class="navigation-controls--break ui-kit_mobile-only"></div>
-        <div class="library-version" id="library-version">3.0.2
+        <div class="library-version" id="library-version">3.1.0
         </div>
         <div class="navigation-controls">
-        <div class="filter-section filter-section_loading" id="filter-section">
-                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":streampack-core:dokkaHtmlPartial/release">androidJvm</button>
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":streampack-core/main">androidJvm</button>
             <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
                 <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
-                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
-                    <div class="dropdown--header"><span>Platform filter</span>
-                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
                             <i class="ui-kit-icon ui-kit-icon_cross"></i>
                         </button>
                     </div>
                         <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
                             <label class="checkbox">
-                                <input type="checkbox" class="checkbox--input" id=":streampack-core:dokkaHtmlPartial/release" data-filter=":streampack-core:dokkaHtmlPartial/release">
+                                <input type="checkbox" class="checkbox--input" id=":streampack-core/main" data-filter=":streampack-core/main">
                                 <span class="checkbox--icon"></span>
                                 androidJvm
                             </label>
@@ -64,48 +62,50 @@
                 </ul>
                 <div class="dropdown--overlay"></div>
             </div>
-        </div>
+        </ul>
             <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
             </button>
             <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
                 API
             </div>
         </div>
-    </nav>
-        <div id="container">
-            <div class="sidebar" id="leftColumn">
-                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
-                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox">
-                        <div class="dropdown--header">
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
                             <span>
                                     StreamPack
                             </span>
-                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
-                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
-                            </button>
-                        </div>
-                        <div class="sidebar--inner" id="sideMenu"></div>
-                    </ul>
-                    <div class="dropdown--overlay"></div>
-                </div>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
             </div>
-            <div id="main">
-<div class="main-content" id="content" pageids="streampack-core::////PointingToDeclaration//1850203186">
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" id="content" pageids="streampack-core::////PointingToDeclaration//650901000">
   <div class="breadcrumbs"></div>
   <div class="cover ">
     <h1 class="cover"><span><span>streampack-core</span></span></h1>
   </div>
   <h2 class="">Packages</h2>
-  <div class="table"><a data-name="-1294037338%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.configuration" id="-1294037338%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+  <div class="table"><a data-name="-1294037338%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.configuration" id="-1294037338%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.configuration/index.html">io.github.thibaultbee.streampack.core.configuration</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1294037338%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1294037338%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -114,16 +114,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="180860619%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.configuration.mediadescriptor" id="180860619%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="180860619%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.configuration.mediadescriptor" id="180860619%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.configuration.mediadescriptor/index.html">io.github.thibaultbee.streampack.core.configuration.mediadescriptor</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="180860619%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="180860619%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -132,16 +132,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="64891953%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.data" id="64891953%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="64891953%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.data" id="64891953%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.data/index.html">io.github.thibaultbee.streampack.core.elements.data</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="64891953%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="64891953%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -150,16 +150,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="407433886%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.encoders" id="407433886%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="407433886%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.encoders" id="407433886%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.encoders/index.html">io.github.thibaultbee.streampack.core.elements.encoders</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="407433886%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="407433886%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -168,16 +168,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-352704762%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.encoders.mediacodec" id="-352704762%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-352704762%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.encoders.mediacodec" id="-352704762%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.encoders.mediacodec/index.html">io.github.thibaultbee.streampack.core.elements.encoders.mediacodec</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-352704762%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-352704762%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -186,16 +186,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-501565477%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints" id="-501565477%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-501565477%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints" id="-501565477%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints/index.html">io.github.thibaultbee.streampack.core.elements.endpoints</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-501565477%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-501565477%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -204,16 +204,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="106319171%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites" id="106319171%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="106319171%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites" id="106319171%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="106319171%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="106319171%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -222,16 +222,34 @@
         <div></div>
       </div>
     </div>
-<a data-name="758271397%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers" id="758271397%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="121422841%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.data" id="121422841%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.data/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.data</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="121422841%2FPackages%2F650901000"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="758271397%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers" id="758271397%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="758271397%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="758271397%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -240,124 +258,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1604523225%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv" id="-1604523225%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1604523225%2FPackages%2F1850203186"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag jvm-like">androidJvm</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="-1488356237%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.amf" id="-1488356237%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.amf/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.amf</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1488356237%2FPackages%2F1850203186"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag jvm-like">androidJvm</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="798028657%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.amf.containers" id="798028657%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.amf.containers/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.amf.containers</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="798028657%2FPackages%2F1850203186"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag jvm-like">androidJvm</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="1352672075%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.amf.primitives" id="1352672075%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.amf.primitives/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.amf.primitives</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1352672075%2FPackages%2F1850203186"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag jvm-like">androidJvm</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="113359940%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.tags" id="113359940%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.tags/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.tags</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="113359940%2FPackages%2F1850203186"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag jvm-like">androidJvm</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="719046033%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.tags.video" id="719046033%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.tags.video/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.flv.tags.video</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="719046033%2FPackages%2F1850203186"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag jvm-like">androidJvm</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="-1108740504%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4" id="-1108740504%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1108740504%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4" id="-1108740504%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1108740504%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1108740504%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -366,16 +276,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-13675917%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.boxes" id="-13675917%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-13675917%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.boxes" id="-13675917%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.boxes/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.boxes</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-13675917%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-13675917%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -384,16 +294,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-728646988%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.models" id="-728646988%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-728646988%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.models" id="-728646988%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.models/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.models</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-728646988%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-728646988%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -402,16 +312,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1176610453%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.utils" id="-1176610453%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1176610453%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.utils" id="-1176610453%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.utils/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.utils</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1176610453%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1176610453%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -420,16 +330,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="427292204%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts" id="427292204%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="427292204%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts" id="427292204%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="427292204%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="427292204%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -438,16 +348,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-58899280%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data" id="-58899280%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-58899280%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data" id="-58899280%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-58899280%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-58899280%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -456,16 +366,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="4751778%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.descriptors" id="4751778%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="4751778%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.descriptors" id="4751778%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.descriptors/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.descriptors</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="4751778%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="4751778%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -474,16 +384,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="1741352681%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.packets" id="1741352681%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1741352681%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.packets" id="1741352681%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.packets/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.packets</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1741352681%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1741352681%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -492,16 +402,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="1291220527%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils" id="1291220527%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1291220527%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils" id="1291220527%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1291220527%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1291220527%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -510,16 +420,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1844367464%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.av" id="-1844367464%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1844367464%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.av" id="-1844367464%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.av/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.av</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1844367464%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1844367464%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -528,16 +438,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="1185439445%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks" id="1185439445%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1185439445%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks" id="1185439445%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks/index.html">io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1185439445%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1185439445%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -546,16 +456,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1170339039%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.interfaces" id="-1170339039%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1170339039%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.interfaces" id="-1170339039%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.interfaces/index.html">io.github.thibaultbee.streampack.core.elements.interfaces</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1170339039%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1170339039%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -564,16 +474,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="1190927002%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.processing" id="1190927002%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1190927002%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.processing" id="1190927002%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.processing/index.html">io.github.thibaultbee.streampack.core.elements.processing</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1190927002%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1190927002%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -582,16 +492,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="989021954%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.processing.audio" id="989021954%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="989021954%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.processing.audio" id="989021954%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.processing.audio/index.html">io.github.thibaultbee.streampack.core.elements.processing.audio</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="989021954%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="989021954%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -600,16 +510,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="649038695%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.processing.video" id="649038695%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="649038695%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.processing.video" id="649038695%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.processing.video/index.html">io.github.thibaultbee.streampack.core.elements.processing.video</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="649038695%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="649038695%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -618,16 +528,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="1881360651%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.processing.video.outputs" id="1881360651%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1881360651%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.processing.video.outputs" id="1881360651%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.processing.video.outputs/index.html">io.github.thibaultbee.streampack.core.elements.processing.video.outputs</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1881360651%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1881360651%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -636,16 +546,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="1464380230%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.processing.video.source" id="1464380230%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1464380230%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.processing.video.source" id="1464380230%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.processing.video.source/index.html">io.github.thibaultbee.streampack.core.elements.processing.video.source</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1464380230%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1464380230%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -654,16 +564,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-2038828246%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.processing.video.utils" id="-2038828246%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-2038828246%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.processing.video.utils" id="-2038828246%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.processing.video.utils/index.html">io.github.thibaultbee.streampack.core.elements.processing.video.utils</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2038828246%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2038828246%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -672,16 +582,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="2077638108%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions" id="2077638108%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="2077638108%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions" id="2077638108%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions/index.html">io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2077638108%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2077638108%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -690,16 +600,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="134843477%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.sources" id="134843477%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="134843477%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.sources" id="134843477%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.sources/index.html">io.github.thibaultbee.streampack.core.elements.sources</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="134843477%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="134843477%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -708,16 +618,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-2104147843%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.audio" id="-2104147843%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-2104147843%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.audio" id="-2104147843%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.sources.audio/index.html">io.github.thibaultbee.streampack.core.elements.sources.audio</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2104147843%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2104147843%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -726,16 +636,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="1899385206%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord" id="1899385206%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1899385206%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord" id="1899385206%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord/index.html">io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1899385206%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1899385206%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -744,16 +654,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="1850836194%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.video" id="1850836194%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1850836194%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.video" id="1850836194%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.sources.video/index.html">io.github.thibaultbee.streampack.core.elements.sources.video</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1850836194%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1850836194%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -762,16 +672,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1823360641%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.video.bitmap" id="-1823360641%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1823360641%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.video.bitmap" id="-1823360641%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.sources.video.bitmap/index.html">io.github.thibaultbee.streampack.core.elements.sources.video.bitmap</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1823360641%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1823360641%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -780,16 +690,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-953850891%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.video.camera" id="-953850891%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-953850891%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.video.camera" id="-953850891%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.sources.video.camera/index.html">io.github.thibaultbee.streampack.core.elements.sources.video.camera</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-953850891%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-953850891%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -798,16 +708,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-2071793615%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions" id="-2071793615%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-2071793615%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions" id="-2071793615%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions/index.html">io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2071793615%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2071793615%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -816,16 +726,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="1145106015%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat" id="1145106015%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1145106015%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat" id="1145106015%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat/index.html">io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1145106015%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1145106015%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -834,16 +744,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-723343048%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils" id="-723343048%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-723343048%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils" id="-723343048%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils/index.html">io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-723343048%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-723343048%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -852,16 +762,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-589966361%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection" id="-589966361%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-589966361%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection" id="-589966361%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection/index.html">io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-589966361%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-589966361%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -870,16 +780,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="833781454%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.utils" id="833781454%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="833781454%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.utils" id="833781454%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.utils/index.html">io.github.thibaultbee.streampack.core.elements.utils</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="833781454%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="833781454%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -888,16 +798,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1480560999%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av" id="-1480560999%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1480560999%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av" id="-1480560999%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.utils.av/index.html">io.github.thibaultbee.streampack.core.elements.utils.av</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1480560999%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1480560999%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -906,16 +816,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="1329749953%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.audio" id="1329749953%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1329749953%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.audio" id="1329749953%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.utils.av.audio/index.html">io.github.thibaultbee.streampack.core.elements.utils.av.audio</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1329749953%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1329749953%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -924,16 +834,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-787510954%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.audio.aac" id="-787510954%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-787510954%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.audio.aac" id="-787510954%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.utils.av.audio.aac/index.html">io.github.thibaultbee.streampack.core.elements.utils.av.audio.aac</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-787510954%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-787510954%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -942,16 +852,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="950524638%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.audio.aac.config" id="950524638%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="950524638%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.audio.aac.config" id="950524638%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.utils.av.audio.aac.config/index.html">io.github.thibaultbee.streampack.core.elements.utils.av.audio.aac.config</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="950524638%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="950524638%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -960,16 +870,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="1806469264%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.audio.opus" id="1806469264%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1806469264%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.audio.opus" id="1806469264%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.utils.av.audio.opus/index.html">io.github.thibaultbee.streampack.core.elements.utils.av.audio.opus</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1806469264%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1806469264%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -978,16 +888,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1138703431%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.buffer" id="-1138703431%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1138703431%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.buffer" id="-1138703431%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.utils.av.buffer/index.html">io.github.thibaultbee.streampack.core.elements.utils.av.buffer</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1138703431%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1138703431%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -996,16 +906,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="1533460111%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.descriptors" id="1533460111%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1533460111%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.descriptors" id="1533460111%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.utils.av.descriptors/index.html">io.github.thibaultbee.streampack.core.elements.utils.av.descriptors</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1533460111%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1533460111%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1014,16 +924,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="989766694%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.video" id="989766694%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="989766694%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.video" id="989766694%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.utils.av.video/index.html">io.github.thibaultbee.streampack.core.elements.utils.av.video</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="989766694%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="989766694%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1032,16 +942,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-773232556%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.video.av1" id="-773232556%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-773232556%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.video.av1" id="-773232556%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.utils.av.video.av1/index.html">io.github.thibaultbee.streampack.core.elements.utils.av.video.av1</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-773232556%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-773232556%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1050,16 +960,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="62828038%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.video.avc" id="62828038%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="62828038%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.video.avc" id="62828038%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.utils.av.video.avc/index.html">io.github.thibaultbee.streampack.core.elements.utils.av.video.avc</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="62828038%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="62828038%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1068,16 +978,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1142115402%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.video.hevc" id="-1142115402%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1142115402%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.video.hevc" id="-1142115402%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.utils.av.video.hevc/index.html">io.github.thibaultbee.streampack.core.elements.utils.av.video.hevc</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1142115402%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1142115402%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1086,16 +996,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="1980538934%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.video.vpx" id="1980538934%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1980538934%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.av.video.vpx" id="1980538934%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.utils.av.video.vpx/index.html">io.github.thibaultbee.streampack.core.elements.utils.av.video.vpx</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1980538934%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1980538934%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1104,16 +1014,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-2143894600%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.extensions" id="-2143894600%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-2143894600%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.extensions" id="-2143894600%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.utils.extensions/index.html">io.github.thibaultbee.streampack.core.elements.utils.extensions</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2143894600%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2143894600%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1122,16 +1032,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="753266496%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.pool" id="753266496%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="753266496%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.pool" id="753266496%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.elements.utils.pool/index.html">io.github.thibaultbee.streampack.core.elements.utils.pool</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="753266496%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="753266496%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1140,16 +1050,34 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1690148562%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.interfaces" id="-1690148562%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-991969615%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.elements.utils.time" id="-991969615%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="io.github.thibaultbee.streampack.core.elements.utils.time/index.html">io.github.thibaultbee.streampack.core.elements.utils.time</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-991969615%2FPackages%2F650901000"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1690148562%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.interfaces" id="-1690148562%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.interfaces/index.html">io.github.thibaultbee.streampack.core.interfaces</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1690148562%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1690148562%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1158,16 +1086,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1371345436%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.logger" id="-1371345436%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1371345436%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.logger" id="-1371345436%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.logger/index.html">io.github.thibaultbee.streampack.core.logger</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1371345436%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1371345436%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1176,16 +1104,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-736190719%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.pipelines" id="-736190719%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-736190719%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.pipelines" id="-736190719%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.pipelines/index.html">io.github.thibaultbee.streampack.core.pipelines</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-736190719%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-736190719%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1194,16 +1122,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-455562566%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.pipelines.inputs" id="-455562566%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-455562566%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.pipelines.inputs" id="-455562566%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.pipelines.inputs/index.html">io.github.thibaultbee.streampack.core.pipelines.inputs</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-455562566%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-455562566%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1212,16 +1140,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-2080759131%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.pipelines.outputs" id="-2080759131%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-2080759131%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.pipelines.outputs" id="-2080759131%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.pipelines.outputs/index.html">io.github.thibaultbee.streampack.core.pipelines.outputs</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2080759131%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2080759131%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1230,16 +1158,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1834079552%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.pipelines.outputs.encoding" id="-1834079552%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1834079552%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.pipelines.outputs.encoding" id="-1834079552%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.pipelines.outputs.encoding/index.html">io.github.thibaultbee.streampack.core.pipelines.outputs.encoding</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1834079552%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1834079552%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1248,16 +1176,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="227437380%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.pipelines.utils" id="227437380%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="227437380%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.pipelines.utils" id="227437380%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.pipelines.utils/index.html">io.github.thibaultbee.streampack.core.pipelines.utils</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="227437380%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="227437380%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1266,16 +1194,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-451762447%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.regulator" id="-451762447%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-451762447%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.regulator" id="-451762447%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.regulator/index.html">io.github.thibaultbee.streampack.core.regulator</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-451762447%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-451762447%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1284,16 +1212,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1831211366%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.regulator.controllers" id="-1831211366%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1831211366%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.regulator.controllers" id="-1831211366%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.regulator.controllers/index.html">io.github.thibaultbee.streampack.core.regulator.controllers</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1831211366%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1831211366%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1302,16 +1230,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-2009715050%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.streamers" id="-2009715050%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-2009715050%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.streamers" id="-2009715050%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.streamers/index.html">io.github.thibaultbee.streampack.core.streamers</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2009715050%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2009715050%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1320,16 +1248,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="704234712%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.streamers.dual" id="704234712%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="704234712%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.streamers.dual" id="704234712%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.streamers.dual/index.html">io.github.thibaultbee.streampack.core.streamers.dual</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="704234712%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="704234712%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1338,16 +1266,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-787663123%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.streamers.infos" id="-787663123%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-787663123%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.streamers.infos" id="-787663123%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.streamers.infos/index.html">io.github.thibaultbee.streampack.core.streamers.infos</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-787663123%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-787663123%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1356,16 +1284,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-380447342%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.streamers.lifecycle" id="-380447342%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-380447342%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.streamers.lifecycle" id="-380447342%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.streamers.lifecycle/index.html">io.github.thibaultbee.streampack.core.streamers.lifecycle</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-380447342%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-380447342%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1374,16 +1302,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1559251208%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.streamers.orientation" id="-1559251208%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1559251208%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.streamers.orientation" id="-1559251208%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.streamers.orientation/index.html">io.github.thibaultbee.streampack.core.streamers.orientation</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1559251208%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1559251208%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1392,16 +1320,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-207031516%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.streamers.single" id="-207031516%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-207031516%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.streamers.single" id="-207031516%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.streamers.single/index.html">io.github.thibaultbee.streampack.core.streamers.single</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-207031516%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-207031516%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1410,16 +1338,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="2038380313%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.streamers.utils" id="2038380313%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="2038380313%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.streamers.utils" id="2038380313%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.streamers.utils/index.html">io.github.thibaultbee.streampack.core.streamers.utils</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2038380313%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2038380313%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1428,16 +1356,16 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1781294075%2FPackages%2F1850203186" anchor-label="io.github.thibaultbee.streampack.core.utils.extensions" id="-1781294075%2FPackages%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-    <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1781294075%2FPackages%2F650901000" anchor-label="io.github.thibaultbee.streampack.core.utils.extensions" id="-1781294075%2FPackages%2F650901000" data-filterable-set=":streampack-core/main"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="io.github.thibaultbee.streampack.core.utils.extensions/index.html">io.github.thibaultbee.streampack.core.utils.extensions</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1781294075%2FPackages%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1781294075%2FPackages%2F650901000"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
-          <div class="pull-right">
+          <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
               <div class="platform-tag jvm-like">androidJvm</div>
             </div>
@@ -1449,17 +1377,21 @@
   </div>
 </div>
     <div class="footer">
-        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
-        <span>© 2025 Copyright</span>
-        <span class="pull-right">
-            <span>Generated by </span>
-            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
-                <span>dokka</span>
-            </a>
-        </span>
-    </div>
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
             </div>
         </div>
     </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

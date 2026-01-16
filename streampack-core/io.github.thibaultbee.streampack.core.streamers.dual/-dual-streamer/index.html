@@ -1,22 +1,22 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
     <title>DualStreamer</title>
-<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../";</script>
-    <script>document.documentElement.classList.replace("no-js","js");</script>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
     <script>const storage = localStorage.getItem("dokka-dark-mode")
-    if (storage == null) {
+      if (storage == null) {
         const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
         if (osDarkSchemePreferred === true) {
-            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
         }
-    } else {
+      } else {
         const savedDarkMode = JSON.parse(storage)
-        if(savedDarkMode === true) {
-            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
         }
-    }
+      }
     </script>
 <script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
 <script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
@@ -24,39 +24,37 @@
 <link href="../../../styles/main.css" rel="Stylesheet">
 <link href="../../../styles/prism.css" rel="Stylesheet">
 <link href="../../../styles/logo-styles.css" rel="Stylesheet">
-<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
 <link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
-<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
 <script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
 <script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
 <script type="text/javascript" src="../../../scripts/main.js" defer></script>
 <script type="text/javascript" src="../../../scripts/prism.js" async></script>
-<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script>
-<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
 <body>
-    <div class="root">
-    <nav class="navigation theme-dark" id="navigation-wrapper">
-<a class="library-name--link" href="../../../index.html">
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
                     StreamPack
             </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
         </button>
         <div class="navigation-controls--break ui-kit_mobile-only"></div>
-        <div class="library-version" id="library-version">3.0.2
+        <div class="library-version" id="library-version">3.1.0
         </div>
         <div class="navigation-controls">
-        <div class="filter-section filter-section_loading" id="filter-section">
-                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":streampack-core:dokkaHtmlPartial/release">androidJvm</button>
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":streampack-core/main">androidJvm</button>
             <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
                 <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
-                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
-                    <div class="dropdown--header"><span>Platform filter</span>
-                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
                             <i class="ui-kit-icon ui-kit-icon_cross"></i>
                         </button>
                     </div>
                         <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
                             <label class="checkbox">
-                                <input type="checkbox" class="checkbox--input" id=":streampack-core:dokkaHtmlPartial/release" data-filter=":streampack-core:dokkaHtmlPartial/release">
+                                <input type="checkbox" class="checkbox--input" id=":streampack-core/main" data-filter=":streampack-core/main">
                                 <span class="checkbox--icon"></span>
                                 androidJvm
                             </label>
@@ -64,54 +62,56 @@
                 </ul>
                 <div class="dropdown--overlay"></div>
             </div>
-        </div>
+        </ul>
             <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
             </button>
             <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
                 API
             </div>
         </div>
-    </nav>
-        <div id="container">
-            <div class="sidebar" id="leftColumn">
-                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
-                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox">
-                        <div class="dropdown--header">
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
                             <span>
                                     StreamPack
                             </span>
-                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
-                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
-                            </button>
-                        </div>
-                        <div class="sidebar--inner" id="sideMenu"></div>
-                    </ul>
-                    <div class="dropdown--overlay"></div>
-                </div>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
             </div>
-            <div id="main">
-<div class="main-content" data-page-type="classlike" id="content" pageids="streampack-core::io.github.thibaultbee.streampack.core.streamers.dual/DualStreamer///PointingToDeclaration//1850203186">
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="streampack-core::io.github.thibaultbee.streampack.core.streamers.dual/DualStreamer///PointingToDeclaration//650901000">
   <div class="breadcrumbs"><a href="../../index.html">streampack-core</a><span class="delimiter">/</span><a href="../index.html">io.github.thibaultbee.streampack.core.streamers.dual</a><span class="delimiter">/</span><span class="current">DualStreamer</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Dual</span><wbr><span><span>Streamer</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="index.html">DualStreamer</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>withAudio<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>withVideo<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">firstEndpointFactory<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints/-i-endpoint-internal/-factory/index.html">IEndpointInternal.Factory</a><span class="token operator"> = </span>DynamicEndpointFactory()<span class="token punctuation">, </span></span><span class="parameter ">secondEndpointFactory<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints/-i-endpoint-internal/-factory/index.html">IEndpointInternal.Factory</a><span class="token operator"> = </span>DynamicEndpointFactory()<span class="token punctuation">, </span></span><span class="parameter ">defaultRotation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>context.displayRotation<span class="token punctuation">, </span></span><span class="parameter ">surfaceProcessorFactory<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.processing.video/-i-surface-processor-internal/-factory/index.html">ISurfaceProcessorInternal.Factory</a><span class="token operator"> = </span>DefaultSurfaceProcessorFactory()<span class="token punctuation">, </span></span><span class="parameter ">dispatcherProvider<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.pipelines/-i-dispatcher-provider/index.html">IDispatcherProvider</a><span class="token operator"> = </span>DispatcherProvider()</span></span><span class="token punctuation">)</span> : <a href="../-i-dual-streamer/index.html">IDualStreamer</a>, <a href="../-i-audio-dual-streamer/index.html">IAudioDualStreamer</a>, <a href="../-i-video-dual-streamer/index.html">IVideoDualStreamer</a></div><p class="paragraph">A class that handles 2 outputs.</p><p class="paragraph">For example, you can use it to live stream and record simultaneously.</p><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>context</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the application context</p></div></div></div></div><div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>with</span><wbr><span><span>Audio</span></span></u></div></span></div><div><div class="title"><p class="paragraph"><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean.true</a> to capture audio. It can't be changed after instantiation.</p></div></div></div></div><div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>with</span><wbr><span><span>Video</span></span></u></div></span></div><div><div class="title"><p class="paragraph"><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean.true</a> to capture video. It can't be changed after instantiation.</p></div></div></div></div><div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>first</span><wbr><span>Endpoint</span><wbr><span><span>Factory</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the <a href="../../io.github.thibaultbee.streampack.core.elements.endpoints/-i-endpoint-internal/index.html">IEndpointInternal</a> implementation of the first output. By default, it is a <a href="../../io.github.thibaultbee.streampack.core.elements.endpoints/-dynamic-endpoint/index.html">DynamicEndpoint</a>.</p></div></div></div></div><div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>second</span><wbr><span>Endpoint</span><wbr><span><span>Factory</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the <a href="../../io.github.thibaultbee.streampack.core.elements.endpoints/-i-endpoint-internal/index.html">IEndpointInternal</a> implementation of the second output. By default, it is a <a href="../../io.github.thibaultbee.streampack.core.elements.endpoints/-dynamic-endpoint/index.html">DynamicEndpoint</a>.</p></div></div></div></div><div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>default</span><wbr><span><span>Rotation</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the default rotation in <a href="https://developer.android.com/reference/kotlin/android/view/Surface.html">Surface</a> rotation (<a href="https://developer.android.com/reference/kotlin/android/view/Surface.html#rotation_0">Surface.ROTATION_0</a>, ...). By default, it is the current device orientation.</p></div></div></div></div><div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>surface</span><wbr><span>Processor</span><wbr><span><span>Factory</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the <a href="../../io.github.thibaultbee.streampack.core.elements.processing.video/-i-surface-processor-internal/-factory/index.html">ISurfaceProcessorInternal.Factory</a> implementation to use to create the video processor. By default, it is a <a href="../../io.github.thibaultbee.streampack.core.elements.processing.video/-default-surface-processor-factory/index.html">DefaultSurfaceProcessorFactory</a>.</p></div></div></div></div></div></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="index.html">DualStreamer</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>withAudio<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>withVideo<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">firstEndpointFactory<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints/-i-endpoint-internal/-factory/index.html">IEndpointInternal.Factory</a><span class="token operator"> = </span>DynamicEndpointFactory()<span class="token punctuation">, </span></span><span class="parameter ">secondEndpointFactory<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints/-i-endpoint-internal/-factory/index.html">IEndpointInternal.Factory</a><span class="token operator"> = </span>DynamicEndpointFactory()<span class="token punctuation">, </span></span><span class="parameter ">defaultRotation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>context.displayRotation<span class="token punctuation">, </span></span><span class="parameter ">surfaceProcessorFactory<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.processing.video/-i-surface-processor-internal/-factory/index.html">ISurfaceProcessorInternal.Factory</a><span class="token operator"> = </span>DefaultSurfaceProcessorFactory()<span class="token punctuation">, </span></span><span class="parameter ">dispatcherProvider<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.pipelines/-i-dispatcher-provider/index.html">IDispatcherProvider</a><span class="token operator"> = </span>DispatcherProvider()</span></span><span class="token punctuation">)</span> : <a href="../-i-dual-streamer/index.html">IDualStreamer</a>, <a href="../-i-audio-dual-streamer/index.html">IAudioDualStreamer</a>, <a href="../-i-video-dual-streamer/index.html">IVideoDualStreamer</a><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://github.com/ThibaultBee/StreamPack/streampack-core/src/main/java/io/github/thibaultbee/streampack/core/streamers/dual/DualStreamer.kt#L202">source</a>)</span></span></div><p class="paragraph">A class that handles 2 outputs.</p><p class="paragraph">For example, you can use it to live stream and record simultaneously.</p><h4 class="tableheader">Parameters</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>context</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the application context</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>with</span><wbr><span><span>Audio</span></span></u></div></span></div><div><div class="title"><p class="paragraph"><code class="lang-kotlin">true</code> to capture audio. It can't be changed after instantiation.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>with</span><wbr><span><span>Video</span></span></u></div></span></div><div><div class="title"><p class="paragraph"><code class="lang-kotlin">true</code> to capture video. It can't be changed after instantiation.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>first</span><wbr><span>Endpoint</span><wbr><span><span>Factory</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the <a href="../../io.github.thibaultbee.streampack.core.elements.endpoints/-i-endpoint-internal/index.html">IEndpointInternal</a> implementation of the first output. By default, it is a <a href="../../io.github.thibaultbee.streampack.core.elements.endpoints/-dynamic-endpoint/index.html">DynamicEndpoint</a>.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>second</span><wbr><span>Endpoint</span><wbr><span><span>Factory</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the <a href="../../io.github.thibaultbee.streampack.core.elements.endpoints/-i-endpoint-internal/index.html">IEndpointInternal</a> implementation of the second output. By default, it is a <a href="../../io.github.thibaultbee.streampack.core.elements.endpoints/-dynamic-endpoint/index.html">DynamicEndpoint</a>.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>default</span><wbr><span><span>Rotation</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the default rotation in <a href="https://developer.android.com/reference/kotlin/android/view/Surface.html">Surface</a> rotation (<a href="https://developer.android.com/reference/kotlin/android/view/Surface.html#ROTATION_0()">Surface.ROTATION_0</a>, ...). By default, it is the current device orientation.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>surface</span><wbr><span>Processor</span><wbr><span><span>Factory</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the <a href="../../io.github.thibaultbee.streampack.core.elements.processing.video/-i-surface-processor-internal/-factory/index.html">ISurfaceProcessorInternal.Factory</a> implementation to use to create the video processor. By default, it is a <a href="../../io.github.thibaultbee.streampack.core.elements.processing.video/-default-surface-processor-factory/index.html">DefaultSurfaceProcessorFactory</a>.</p></div></div></div></div></div></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
-        <h2 class="">Constructors</h2>
-        <div class="table"><a data-name="1558375955%2FConstructors%2F1850203186" anchor-label="DualStreamer" id="1558375955%2FConstructors%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+        <h2 class="tableheader">Constructors</h2>
+        <div class="table"><a data-name="1558375955%2FConstructors%2F650901000" anchor-label="DualStreamer" id="1558375955%2FConstructors%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-dual-streamer.html"><span>Dual</span><wbr><span><span>Streamer</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1558375955%2FConstructors%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1558375955%2FConstructors%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter ">withAudio<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">withVideo<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">firstEndpointFactory<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints/-i-endpoint-internal/-factory/index.html">IEndpointInternal.Factory</a><span class="token operator"> = </span>DynamicEndpointFactory()<span class="token punctuation">, </span></span><span class="parameter ">secondEndpointFactory<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints/-i-endpoint-internal/-factory/index.html">IEndpointInternal.Factory</a><span class="token operator"> = </span>DynamicEndpointFactory()<span class="token punctuation">, </span></span><span class="parameter ">defaultRotation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>context.displayRotation<span class="token punctuation">, </span></span><span class="parameter ">surfaceProcessorFactory<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.processing.video/-i-surface-processor-internal/-factory/index.html">ISurfaceProcessorInternal.Factory</a><span class="token operator"> = </span>DefaultSurfaceProcessorFactory()<span class="token punctuation">, </span></span><span class="parameter ">dispatcherProvider<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.pipelines/-i-dispatcher-provider/index.html">IDispatcherProvider</a><span class="token operator"> = </span>DispatcherProvider()</span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter ">withAudio<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">withVideo<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">firstEndpointFactory<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints/-i-endpoint-internal/-factory/index.html">IEndpointInternal.Factory</a><span class="token operator"> = </span>DynamicEndpointFactory()<span class="token punctuation">, </span></span><span class="parameter ">secondEndpointFactory<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints/-i-endpoint-internal/-factory/index.html">IEndpointInternal.Factory</a><span class="token operator"> = </span>DynamicEndpointFactory()<span class="token punctuation">, </span></span><span class="parameter ">defaultRotation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>context.displayRotation<span class="token punctuation">, </span></span><span class="parameter ">surfaceProcessorFactory<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.processing.video/-i-surface-processor-internal/-factory/index.html">ISurfaceProcessorInternal.Factory</a><span class="token operator"> = </span>DefaultSurfaceProcessorFactory()<span class="token punctuation">, </span></span><span class="parameter ">dispatcherProvider<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.pipelines/-i-dispatcher-provider/index.html">IDispatcherProvider</a><span class="token operator"> = </span>DispatcherProvider()</span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -119,168 +119,168 @@
         </div>
       </div>
       <div data-togglable="PROPERTY">
-        <h2 class="">Properties</h2>
-        <div class="table"><a data-name="-1467736068%2FProperties%2F1850203186" anchor-label="audioInput" id="-1467736068%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-1467736068%2FProperties%2F650901000" anchor-label="audioInput" id="-1467736068%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="audio-input.html"><span>audio</span><wbr><span><span>Input</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1467736068%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1467736068%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="audio-input.html">audioInput</a><span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.pipelines.inputs/-i-audio-input/index.html">IAudioInput</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">The audio input to access to advanced settings.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="audio-input.html">audioInput</a><span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.pipelines.inputs/-i-audio-input/index.html">IAudioInput</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">The audio input to access to advanced settings.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="421743227%2FProperties%2F1850203186" anchor-label="context" id="421743227%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="421743227%2FProperties%2F650901000" anchor-label="context" id="421743227%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="context.html"><span><span>context</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="421743227%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="421743227%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">val </span><a href="context.html">context</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">val </span><a href="context.html">context</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-784949286%2FProperties%2F1850203186" anchor-label="first" id="-784949286%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-784949286%2FProperties%2F650901000" anchor-label="first" id="-784949286%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="first.html"><span><span>first</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-784949286%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-784949286%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="first.html">first</a><span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.pipelines.outputs.encoding/-i-configurable-audio-video-encoding-pipeline-output/index.html">IConfigurableAudioVideoEncodingPipelineOutput</a></div><div class="brief "><p class="paragraph">First output of the streamer.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="first.html">first</a><span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.pipelines.outputs.encoding/-i-configurable-audio-video-encoding-pipeline-output/index.html">IConfigurableAudioVideoEncodingPipelineOutput</a></div><div class="brief "><p class="paragraph">First output of the streamer.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1989367954%2FProperties%2F1850203186" anchor-label="isOpenFlow" id="-1989367954%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1989367954%2FProperties%2F650901000" anchor-label="isOpenFlow" id="-1989367954%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="is-open-flow.html"><span>is</span><wbr><span>Open</span><wbr><span><span>Flow</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1989367954%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1989367954%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-open-flow.html">isOpenFlow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Whether any of the output is opening.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-open-flow.html">isOpenFlow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Whether any of the output is opening.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1801919188%2FProperties%2F1850203186" anchor-label="isPreviewable" id="1801919188%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1801919188%2FProperties%2F650901000" anchor-label="isPreviewable" id="1801919188%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../io.github.thibaultbee.streampack.core.interfaces/is-previewable.html"><span>is</span><wbr><span><span>Previewable</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1801919188%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1801919188%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/is-previewable.html">isPreviewable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the video source has a preview.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/is-previewable.html">isPreviewable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the video source has a preview.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-66808988%2FProperties%2F1850203186" anchor-label="isStreamingFlow" id="-66808988%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-66808988%2FProperties%2F650901000" anchor-label="isStreamingFlow" id="-66808988%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="is-streaming-flow.html"><span>is</span><wbr><span>Streaming</span><wbr><span><span>Flow</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-66808988%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-66808988%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-streaming-flow.html">isStreamingFlow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Whether any of the output is streaming.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-streaming-flow.html">isStreamingFlow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Whether any of the output is streaming.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="495139484%2FProperties%2F1850203186" anchor-label="second" id="495139484%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="495139484%2FProperties%2F650901000" anchor-label="second" id="495139484%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="second.html"><span><span>second</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="495139484%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="495139484%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="second.html">second</a><span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.pipelines.outputs.encoding/-i-configurable-audio-video-encoding-pipeline-output/index.html">IConfigurableAudioVideoEncodingPipelineOutput</a></div><div class="brief "><p class="paragraph">Second output of the streamer.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="second.html">second</a><span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.pipelines.outputs.encoding/-i-configurable-audio-video-encoding-pipeline-output/index.html">IConfigurableAudioVideoEncodingPipelineOutput</a></div><div class="brief "><p class="paragraph">Second output of the streamer.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1731027780%2FProperties%2F1850203186" anchor-label="throwableFlow" id="-1731027780%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1731027780%2FProperties%2F650901000" anchor-label="throwableFlow" id="-1731027780%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="throwable-flow.html"><span>throwable</span><wbr><span><span>Flow</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1731027780%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1731027780%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="throwable-flow.html">throwableFlow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns the last throwable that occurred.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="throwable-flow.html">throwableFlow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns the last throwable that occurred.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="437103073%2FProperties%2F1850203186" anchor-label="videoInput" id="437103073%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="437103073%2FProperties%2F650901000" anchor-label="videoInput" id="437103073%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="video-input.html"><span>video</span><wbr><span><span>Input</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="437103073%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="437103073%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="video-input.html">videoInput</a><span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.pipelines.inputs/-i-video-input/index.html">IVideoInput</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">The audio input to access to advanced settings.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="video-input.html">videoInput</a><span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.pipelines.inputs/-i-video-input/index.html">IVideoInput</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">The audio input to access to advanced settings.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="749485402%2FProperties%2F1850203186" anchor-label="withAudio" id="749485402%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="749485402%2FProperties%2F650901000" anchor-label="withAudio" id="749485402%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="with-audio.html"><span>with</span><wbr><span><span>Audio</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="749485402%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="749485402%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="with-audio.html">withAudio</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="with-audio.html">withAudio</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1708349525%2FProperties%2F1850203186" anchor-label="withVideo" id="1708349525%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1708349525%2FProperties%2F650901000" anchor-label="withVideo" id="1708349525%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="with-video.html"><span>with</span><wbr><span><span>Video</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1708349525%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1708349525%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="with-video.html">withVideo</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="with-video.html">withVideo</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -288,258 +288,258 @@
         </div>
       </div>
       <div data-togglable="FUNCTION">
-        <h2 class="">Functions</h2>
-        <div class="table"><a data-name="1559319954%2FFunctions%2F1850203186" anchor-label="close" id="1559319954%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="1559319954%2FFunctions%2F650901000" anchor-label="close" id="1559319954%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="close.html"><span><span>close</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1559319954%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1559319954%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="close.html"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Closes the outputs. Same as calling first.close and second.close.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="close.html"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Closes the outputs. Same as calling first.close and second.close.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-666752221%2FFunctions%2F1850203186" anchor-label="release" id="-666752221%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-666752221%2FFunctions%2F650901000" anchor-label="release" id="-666752221%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="release.html"><span><span>release</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-666752221%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-666752221%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="release.html"><span class="token function">release</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Clean and reset the streamer.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="release.html"><span class="token function">release</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Clean and reset the streamer.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1429105345%2FFunctions%2F1850203186" anchor-label="releaseBlocking" id="1429105345%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1429105345%2FFunctions%2F650901000" anchor-label="releaseBlocking" id="1429105345%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../io.github.thibaultbee.streampack.core.interfaces/release-blocking.html"><span>release</span><wbr><span><span>Blocking</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1429105345%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1429105345%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-streamer/index.html">IStreamer</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/release-blocking.html"><span class="token function">releaseBlocking</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Clean and reset the streamer synchronously.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-streamer/index.html">IStreamer</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/release-blocking.html"><span class="token function">releaseBlocking</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Clean and reset the streamer synchronously.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1698820707%2FFunctions%2F1850203186" anchor-label="setAudioConfig" id="1698820707%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1698820707%2FFunctions%2F650901000" anchor-label="setAudioConfig" id="1698820707%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="set-audio-config.html"><span>set</span><wbr><span>Audio</span><wbr><span><span>Config</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1698820707%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1698820707%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.RECORD_AUDIO"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="set-audio-config.html"><span class="token function">setAudioConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">audioConfig<span class="token operator">: </span><a href="../-dual-streamer-audio-config/index.html">DualStreamerAudioConfig</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets audio configuration.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.RECORD_AUDIO"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="set-audio-config.html"><span class="token function">setAudioConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">audioConfig<span class="token operator">: </span><a href="../-dual-streamer-audio-config/index.html">DualStreamerAudioConfig</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets audio configuration.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1589779992%2FFunctions%2F1850203186" anchor-label="setAudioConfig" id="1589779992%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1589779992%2FFunctions%2F650901000" anchor-label="setAudioConfig" id="1589779992%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../set-audio-config.html"><span>set</span><wbr><span>Audio</span><wbr><span><span>Config</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1589779992%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1589779992%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.RECORD_AUDIO"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="index.html">DualStreamer</a><span class="token punctuation">.</span><a href="../set-audio-config.html"><span class="token function">setAudioConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">audioConfig<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.streamers.single/-audio-config/index.html">AudioConfig</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets audio configuration.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.RECORD_AUDIO"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="index.html">DualStreamer</a><span class="token punctuation">.</span><a href="../set-audio-config.html"><span class="token function">setAudioConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">audioConfig<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.streamers.single/-audio-config/index.html">AudioConfig</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets audio configuration.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="816651370%2FFunctions%2F1850203186" anchor-label="setAudioSource" id="816651370%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="816651370%2FFunctions%2F650901000" anchor-label="setAudioSource" id="816651370%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-audio-source/set-audio-source.html"><span>set</span><wbr><span>Audio</span><wbr><span><span>Source</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="816651370%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="816651370%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-audio-source/set-audio-source.html"><span class="token function">setAudioSource</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">audioSourceFactory<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.sources.audio/-i-audio-source-internal/-factory/index.html">IAudioSourceInternal.Factory</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets a new audio source.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-audio-source/set-audio-source.html"><span class="token function">setAudioSource</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">audioSourceFactory<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.sources.audio/-i-audio-source-internal/-factory/index.html">IAudioSourceInternal.Factory</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets a new audio source.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1114947994%2FFunctions%2F1850203186" anchor-label="setCameraId" id="-1114947994%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1114947994%2FFunctions%2F650901000" anchor-label="setCameraId" id="-1114947994%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../io.github.thibaultbee.streampack.core.interfaces/set-camera-id.html"><span>set</span><wbr><span>Camera</span><wbr><span><span>Id</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1114947994%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1114947994%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.CAMERA"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/set-camera-id.html"><span class="token function">setCameraId</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets the camera id.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.CAMERA"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/set-camera-id.html"><span class="token function">setCameraId</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">cameraId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets the camera id.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-685605228%2FFunctions%2F1850203186" anchor-label="setConfig" id="-685605228%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-685605228%2FFunctions%2F650901000" anchor-label="setConfig" id="-685605228%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="set-config.html"><span>set</span><wbr><span><span>Config</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-685605228%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-685605228%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.RECORD_AUDIO"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="set-config.html"><span class="token function">setConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">audioConfig<span class="token operator">: </span><a href="../-dual-streamer-audio-config/index.html">DualStreamerAudioConfig</a><span class="token punctuation">, </span></span><span class="parameter ">videoConfig<span class="token operator">: </span><a href="../-dual-streamer-video-config/index.html">DualStreamerVideoConfig</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Configures both video and audio settings.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.RECORD_AUDIO"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="set-config.html"><span class="token function">setConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">audioConfig<span class="token operator">: </span><a href="../-dual-streamer-audio-config/index.html">DualStreamerAudioConfig</a><span class="token punctuation">, </span></span><span class="parameter ">videoConfig<span class="token operator">: </span><a href="../-dual-streamer-video-config/index.html">DualStreamerVideoConfig</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Configures both video and audio settings.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-572270540%2FFunctions%2F1850203186" anchor-label="setPreview" id="-572270540%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-572270540%2FFunctions%2F650901000" anchor-label="setPreview" id="-572270540%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../io.github.thibaultbee.streampack.core.interfaces/set-preview.html"><span>set</span><wbr><span><span>Preview</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-572270540%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-572270540%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/set-preview.html"><span class="token function">setPreview</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">surface<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/Surface.html">Surface</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets the preview surface.</p></div><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/set-preview.html"><span class="token function">setPreview</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">surfaceHolder<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/SurfaceHolder.html">SurfaceHolder</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets a preview surface holder.</p></div><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/set-preview.html"><span class="token function">setPreview</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">surfaceView<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/SurfaceView.html">SurfaceView</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/set-preview.html"><span class="token function">setPreview</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">textureView<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/TextureView.html">TextureView</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets a preview surface.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/set-preview.html"><span class="token function">setPreview</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">surface<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/Surface.html">Surface</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets the preview surface.</p></div><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/set-preview.html"><span class="token function">setPreview</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">surfaceHolder<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/SurfaceHolder.html">SurfaceHolder</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets a preview surface holder.</p></div><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/set-preview.html"><span class="token function">setPreview</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">surfaceView<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/SurfaceView.html">SurfaceView</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/set-preview.html"><span class="token function">setPreview</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">textureView<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/TextureView.html">TextureView</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets a preview surface.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1119954775%2FFunctions%2F1850203186" anchor-label="setTargetRotation" id="1119954775%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1119954775%2FFunctions%2F650901000" anchor-label="setTargetRotation" id="1119954775%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="set-target-rotation.html"><span>set</span><wbr><span>Target</span><wbr><span><span>Rotation</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1119954775%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1119954775%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="set-target-rotation.html"><span class="token function">setTargetRotation</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">rotation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets the target rotation.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="set-target-rotation.html"><span class="token function">setTargetRotation</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">rotation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets the target rotation.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="521155097%2FFunctions%2F1850203186" anchor-label="setVideoConfig" id="521155097%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="521155097%2FFunctions%2F650901000" anchor-label="setVideoConfig" id="521155097%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="set-video-config.html"><span>set</span><wbr><span>Video</span><wbr><span><span>Config</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="521155097%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="521155097%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="set-video-config.html"><span class="token function">setVideoConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">videoConfig<span class="token operator">: </span><a href="../-dual-streamer-video-config/index.html">DualStreamerVideoConfig</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets video configuration.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="set-video-config.html"><span class="token function">setVideoConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">videoConfig<span class="token operator">: </span><a href="../-dual-streamer-video-config/index.html">DualStreamerVideoConfig</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets video configuration.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1637944610%2FFunctions%2F1850203186" anchor-label="setVideoConfig" id="1637944610%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1637944610%2FFunctions%2F650901000" anchor-label="setVideoConfig" id="1637944610%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../set-video-config.html"><span>set</span><wbr><span>Video</span><wbr><span><span>Config</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1637944610%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1637944610%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="index.html">DualStreamer</a><span class="token punctuation">.</span><a href="../set-video-config.html"><span class="token function">setVideoConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">videoConfig<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.streamers.single/-video-config/index.html">VideoConfig</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets video configuration.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="index.html">DualStreamer</a><span class="token punctuation">.</span><a href="../set-video-config.html"><span class="token function">setVideoConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">videoConfig<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.streamers.single/-video-config/index.html">VideoConfig</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets video configuration.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="821898602%2FFunctions%2F1850203186" anchor-label="setVideoSource" id="821898602%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="821898602%2FFunctions%2F650901000" anchor-label="setVideoSource" id="821898602%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/set-video-source.html"><span>set</span><wbr><span>Video</span><wbr><span><span>Source</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="821898602%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="821898602%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/set-video-source.html"><span class="token function">setVideoSource</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">videoSourceFactory<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.sources.video/-i-video-source-internal/-factory/index.html">IVideoSourceInternal.Factory</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets the video source.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/set-video-source.html"><span class="token function">setVideoSource</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">videoSourceFactory<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.sources.video/-i-video-source-internal/-factory/index.html">IVideoSourceInternal.Factory</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets the video source.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1382069118%2FFunctions%2F1850203186" anchor-label="startPreview" id="-1382069118%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1382069118%2FFunctions%2F650901000" anchor-label="startPreview" id="-1382069118%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../io.github.thibaultbee.streampack.core.interfaces/start-preview.html"><span>start</span><wbr><span><span>Preview</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1382069118%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1382069118%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/start-preview.html"><span class="token function">startPreview</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Starts video preview.</p></div><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/start-preview.html"><span class="token function">startPreview</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">surface<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/Surface.html">Surface</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.CAMERA"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/start-preview.html"><span class="token function">startPreview</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">surfaceHolder<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/SurfaceHolder.html">SurfaceHolder</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.CAMERA"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/start-preview.html"><span class="token function">startPreview</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">surfaceView<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/SurfaceView.html">SurfaceView</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.CAMERA"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/start-preview.html"><span class="token function">startPreview</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">textureView<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/TextureView.html">TextureView</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets preview surface and start video preview.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/start-preview.html"><span class="token function">startPreview</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Starts video preview.</p></div><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/start-preview.html"><span class="token function">startPreview</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">surface<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/Surface.html">Surface</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.CAMERA"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/start-preview.html"><span class="token function">startPreview</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">surfaceHolder<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/SurfaceHolder.html">SurfaceHolder</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.CAMERA"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/start-preview.html"><span class="token function">startPreview</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">surfaceView<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/SurfaceView.html">SurfaceView</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.CAMERA"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/start-preview.html"><span class="token function">startPreview</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">textureView<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/view/TextureView.html">TextureView</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets preview surface and start video preview.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1213020536%2FFunctions%2F1850203186" anchor-label="startStream" id="-1213020536%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1213020536%2FFunctions%2F650901000" anchor-label="startStream" id="-1213020536%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="start-stream.html"><span>start</span><wbr><span><span>Stream</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1213020536%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1213020536%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="start-stream.html"><span class="token function">startStream</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Starts audio/video stream.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="start-stream.html"><span class="token function">startStream</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Starts audio/video stream.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-78690782%2FFunctions%2F1850203186" anchor-label="stopPreview" id="-78690782%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-78690782%2FFunctions%2F650901000" anchor-label="stopPreview" id="-78690782%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../io.github.thibaultbee.streampack.core.interfaces/stop-preview.html"><span>stop</span><wbr><span><span>Preview</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-78690782%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-78690782%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/stop-preview.html"><span class="token function">stopPreview</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Stops video preview.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.interfaces/-i-with-video-source/index.html">IWithVideoSource</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.interfaces/stop-preview.html"><span class="token function">stopPreview</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Stops video preview.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1623278382%2FFunctions%2F1850203186" anchor-label="stopStream" id="1623278382%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1623278382%2FFunctions%2F650901000" anchor-label="stopStream" id="1623278382%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="stop-stream.html"><span>stop</span><wbr><span><span>Stream</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1623278382%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1623278382%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="stop-stream.html"><span class="token function">stopStream</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Stops audio/video stream.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="stop-stream.html"><span class="token function">stopStream</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Stops audio/video stream.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -550,17 +550,21 @@
   </div>
 </div>
     <div class="footer">
-        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
-        <span>© 2025 Copyright</span>
-        <span class="pull-right">
-            <span>Generated by </span>
-            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
-                <span>dokka</span>
-            </a>
-        </span>
-    </div>
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
             </div>
         </div>
     </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

@@ -1,22 +1,22 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
     <title>VideoCodecConfig</title>
-<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../";</script>
-    <script>document.documentElement.classList.replace("no-js","js");</script>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
     <script>const storage = localStorage.getItem("dokka-dark-mode")
-    if (storage == null) {
+      if (storage == null) {
         const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
         if (osDarkSchemePreferred === true) {
-            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
         }
-    } else {
+      } else {
         const savedDarkMode = JSON.parse(storage)
-        if(savedDarkMode === true) {
-            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
         }
-    }
+      }
     </script>
 <script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
 <script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
@@ -24,39 +24,37 @@
 <link href="../../../styles/main.css" rel="Stylesheet">
 <link href="../../../styles/prism.css" rel="Stylesheet">
 <link href="../../../styles/logo-styles.css" rel="Stylesheet">
-<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
 <link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
-<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
 <script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
 <script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
 <script type="text/javascript" src="../../../scripts/main.js" defer></script>
 <script type="text/javascript" src="../../../scripts/prism.js" async></script>
-<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script>
-<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
 <body>
-    <div class="root">
-    <nav class="navigation theme-dark" id="navigation-wrapper">
-<a class="library-name--link" href="../../../index.html">
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
                     StreamPack
             </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
         </button>
         <div class="navigation-controls--break ui-kit_mobile-only"></div>
-        <div class="library-version" id="library-version">3.0.2
+        <div class="library-version" id="library-version">3.1.0
         </div>
         <div class="navigation-controls">
-        <div class="filter-section filter-section_loading" id="filter-section">
-                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":streampack-core:dokkaHtmlPartial/release">androidJvm</button>
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":streampack-core/main">androidJvm</button>
             <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
                 <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
-                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
-                    <div class="dropdown--header"><span>Platform filter</span>
-                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
                             <i class="ui-kit-icon ui-kit-icon_cross"></i>
                         </button>
                     </div>
                         <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
                             <label class="checkbox">
-                                <input type="checkbox" class="checkbox--input" id=":streampack-core:dokkaHtmlPartial/release" data-filter=":streampack-core:dokkaHtmlPartial/release">
+                                <input type="checkbox" class="checkbox--input" id=":streampack-core/main" data-filter=":streampack-core/main">
                                 <span class="checkbox--icon"></span>
                                 androidJvm
                             </label>
@@ -64,54 +62,56 @@
                 </ul>
                 <div class="dropdown--overlay"></div>
             </div>
-        </div>
+        </ul>
             <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
             </button>
             <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
                 API
             </div>
         </div>
-    </nav>
-        <div id="container">
-            <div class="sidebar" id="leftColumn">
-                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
-                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox">
-                        <div class="dropdown--header">
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
                             <span>
                                     StreamPack
                             </span>
-                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
-                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
-                            </button>
-                        </div>
-                        <div class="sidebar--inner" id="sideMenu"></div>
-                    </ul>
-                    <div class="dropdown--overlay"></div>
-                </div>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
             </div>
-            <div id="main">
-<div class="main-content" data-page-type="classlike" id="content" pageids="streampack-core::io.github.thibaultbee.streampack.core.elements.encoders/VideoCodecConfig///PointingToDeclaration//1850203186">
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="streampack-core::io.github.thibaultbee.streampack.core.elements.encoders/VideoCodecConfig///PointingToDeclaration//650901000">
   <div class="breadcrumbs"><a href="../../index.html">streampack-core</a><span class="delimiter">/</span><a href="../index.html">io.github.thibaultbee.streampack.core.elements.encoders</a><span class="delimiter">/</span><span class="current">VideoCodecConfig</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Video</span><wbr><span>Codec</span><wbr><span><span>Config</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">VideoCodecConfig</a> : <a href="../-codec-config/index.html">CodecConfig</a></div><p class="paragraph">Video configuration class. If you don't know how to set class members, <a href="https://developer.android.com/guide/topics/media/media-formats#video-encoding">Video encoding recommendations</a> should give you hints.</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">VideoCodecConfig</a> : <a href="../-codec-config/index.html">CodecConfig</a><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://github.com/ThibaultBee/StreamPack/streampack-core/src/main/java/io/github/thibaultbee/streampack/core/elements/encoders/VideoCodecConfig.kt#L53">source</a>)</span></span></div><p class="paragraph">Video configuration class. If you don't know how to set class members, <a href="https://developer.android.com/guide/topics/media/media-formats#video-encoding">Video encoding recommendations</a> should give you hints.</p></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
-        <h2 class="">Constructors</h2>
-        <div class="table"><a data-name="1464848106%2FConstructors%2F1850203186" anchor-label="VideoCodecConfig" id="1464848106%2FConstructors%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+        <h2 class="tableheader">Constructors</h2>
+        <div class="table"><a data-name="1464848106%2FConstructors%2F650901000" anchor-label="VideoCodecConfig" id="1464848106%2FConstructors%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-video-codec-config.html"><span>Video</span><wbr><span>Codec</span><wbr><span><span>Config</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1464848106%2FConstructors%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1464848106%2FConstructors%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">mimeType<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>MediaFormat.MIMETYPE_VIDEO_AVC<span class="token punctuation">, </span></span><span class="parameter ">startBitrate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">resolution<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token operator"> = </span>DEFAULT_RESOLUTION<span class="token punctuation">, </span></span><span class="parameter ">fps<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>DEFAULT_FPS<span class="token punctuation">, </span></span><span class="parameter ">gopDurationInS<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a><span class="token operator"> = </span><span class="token constant">1.0f</span><span class="token punctuation">, </span></span><span class="parameter ">profile<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">level<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>getBestLevel(mimeType, profile)<span class="token punctuation">, </span></span><span class="parameter ">customize<span class="token operator">: </span><a href="../-media-format-custom-handler/index.html">MediaFormatCustomHandler</a><span class="token operator"> = </span>{}</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Instantiates a <a href="index.html">VideoCodecConfig</a> instance from profile and level.</p></div><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">mimeType<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>MediaFormat.MIMETYPE_VIDEO_AVC<span class="token punctuation">, </span></span><span class="parameter ">startBitrate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">resolution<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token operator"> = </span>DEFAULT_RESOLUTION<span class="token punctuation">, </span></span><span class="parameter ">fps<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>DEFAULT_FPS<span class="token punctuation">, </span></span><span class="parameter ">gopDurationInS<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a><span class="token operator"> = </span><span class="token constant">1.0f</span><span class="token punctuation">, </span></span><span class="parameter ">profileLevelColorBuilder<span class="token operator">: </span><a href="../-video-profile-level-color/-builder/index.html">VideoProfileLevelColor.Builder</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator"> = </span>{}<span class="token punctuation">, </span></span><span class="parameter ">customize<span class="token operator">: </span><a href="../-media-format-custom-handler/index.html">MediaFormatCustomHandler</a><span class="token operator"> = </span>{}</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Instantiates a <a href="index.html">VideoCodecConfig</a> instance from <a href="../-video-profile-level-color/-builder/index.html">VideoProfileLevelColor.Builder</a>.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">mimeType<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>MediaFormat.MIMETYPE_VIDEO_AVC<span class="token punctuation">, </span></span><span class="parameter ">startBitrate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">resolution<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token operator"> = </span>DEFAULT_RESOLUTION<span class="token punctuation">, </span></span><span class="parameter ">fps<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>DEFAULT_FPS<span class="token punctuation">, </span></span><span class="parameter ">gopDurationInS<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a><span class="token operator"> = </span><span class="token constant">1.0f</span><span class="token punctuation">, </span></span><span class="parameter ">profile<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">level<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>getBestLevel(mimeType, profile)<span class="token punctuation">, </span></span><span class="parameter ">customize<span class="token operator">: </span><a href="../-media-format-custom-handler/index.html">MediaFormatCustomHandler</a><span class="token operator"> = </span>{}</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Instantiates a <a href="-video-codec-config.html">VideoCodecConfig</a> instance from profile and level.</p></div><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">mimeType<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>MediaFormat.MIMETYPE_VIDEO_AVC<span class="token punctuation">, </span></span><span class="parameter ">startBitrate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">resolution<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token operator"> = </span>DEFAULT_RESOLUTION<span class="token punctuation">, </span></span><span class="parameter ">fps<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>DEFAULT_FPS<span class="token punctuation">, </span></span><span class="parameter ">gopDurationInS<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a><span class="token operator"> = </span><span class="token constant">1.0f</span><span class="token punctuation">, </span></span><span class="parameter ">profileLevelColorBuilder<span class="token operator">: </span><a href="../-video-profile-level-color/-builder/index.html">VideoProfileLevelColor.Builder</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator"> = </span>{}<span class="token punctuation">, </span></span><span class="parameter ">customize<span class="token operator">: </span><a href="../-media-format-custom-handler/index.html">MediaFormatCustomHandler</a><span class="token operator"> = </span>{}</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Instantiates a <a href="-video-codec-config.html">VideoCodecConfig</a> instance from <a href="../-video-profile-level-color/-builder/index.html">VideoProfileLevelColor.Builder</a>.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -119,18 +119,18 @@
         </div>
       </div>
       <div data-togglable="TYPE">
-        <h2 class="">Types</h2>
-        <div class="table"><a data-name="478000867%2FClasslikes%2F1850203186" anchor-label="Companion" id="478000867%2FClasslikes%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="478000867%2FClasslikes%2F650901000" anchor-label="Companion" id="478000867%2FClasslikes%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="478000867%2FClasslikes%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="478000867%2FClasslikes%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -138,168 +138,168 @@
         </div>
       </div>
       <div data-togglable="PROPERTY">
-        <h2 class="">Properties</h2>
-        <div class="table"><a data-name="508718253%2FProperties%2F1850203186" anchor-label="defaultEncoderName" id="508718253%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="508718253%2FProperties%2F650901000" anchor-label="defaultEncoderName" id="508718253%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../-codec-config/default-encoder-name.html"><span>default</span><wbr><span>Encoder</span><wbr><span><span>Name</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="508718253%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="508718253%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-codec-config/default-encoder-name.html">defaultEncoderName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Get default encoder name. If name is null, it won't be possible to start a stream.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-codec-config/default-encoder-name.html">defaultEncoderName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Get default encoder name. If name is null, it won't be possible to start a stream.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1329490511%2FProperties%2F1850203186" anchor-label="dynamicRangeProfile" id="-1329490511%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1329490511%2FProperties%2F650901000" anchor-label="dynamicRangeProfile" id="-1329490511%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="dynamic-range-profile.html"><span>dynamic</span><wbr><span>Range</span><wbr><span><span>Profile</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1329490511%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1329490511%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="dynamic-range-profile.html">dynamicRangeProfile</a><span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.utils.av.video/-dynamic-range-profile/index.html">DynamicRangeProfile</a></div><div class="brief "><p class="paragraph">The dynamic range profile. It is deduced from the <a href="../../../streampack-core/io.github.thibaultbee.streampack.core.elements.encoders/-video-codec-config/profile.html">profile</a>. <strong>See Also:</strong> <a href="https://developer.android.com/reference/android/hardware/camera2/params/DynamicRangeProfiles">DynamicRangeProfiles</a></p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="dynamic-range-profile.html">dynamicRangeProfile</a><span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.utils.av.video/-dynamic-range-profile/index.html">DynamicRangeProfile</a></div><div class="brief "><p class="paragraph">The dynamic range profile. It is deduced from the <a href="../-codec-config/profile.html">profile</a>. <strong>See Also:</strong> <a href="https://developer.android.com/reference/android/hardware/camera2/params/DynamicRangeProfiles">DynamicRangeProfiles</a></p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="276042771%2FProperties%2F1850203186" anchor-label="fps" id="276042771%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="276042771%2FProperties%2F650901000" anchor-label="fps" id="276042771%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="fps.html"><span><span>fps</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="276042771%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="276042771%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="fps.html">fps</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Video framerate. This is a best effort as few camera can not generate a fixed framerate.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="fps.html">fps</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Video framerate. This is a best effort as few camera can not generate a fixed framerate.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="933739916%2FProperties%2F1850203186" anchor-label="gopDurationInS" id="933739916%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="933739916%2FProperties%2F650901000" anchor-label="gopDurationInS" id="933739916%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="gop-duration-in-s.html"><span>gop</span><wbr><span>Duration</span><wbr><span>In</span><wbr><span><span>S</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="933739916%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="933739916%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="gop-duration-in-s.html">gopDurationInS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a><span class="token operator"> = </span><span class="token constant">1.0f</span></div><div class="brief "><p class="paragraph">Video encoder I-frame interval in seconds. This is a best effort as few camera can not generate a fixed frame rate. For live streaming, I-frame interval should be really low. For recording, I-frame interval should be higher. A value of 0 means that each frame is an I-frame. On device with API &lt; 25, this value will be rounded to an integer. So don't expect a precise value and any value &lt; 0.5 will be considered as 0.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="gop-duration-in-s.html">gopDurationInS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a></div><div class="brief "><p class="paragraph">Video encoder I-frame interval in seconds. This is a best effort as few camera can not generate a fixed frame rate. For live streaming, I-frame interval should be really low. For recording, I-frame interval should be higher. A value of 0 means that each frame is an I-frame. On device with API &lt; 25, this value will be rounded to an integer. So don't expect a precise value and any value &lt; 0.5 will be considered as 0.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="476338480%2FProperties%2F1850203186" anchor-label="isHdr" id="476338480%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="476338480%2FProperties%2F650901000" anchor-label="isHdr" id="476338480%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="is-hdr.html"><span>is</span><wbr><span><span>Hdr</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="476338480%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="476338480%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="is-hdr.html">isHdr</a><span class="token operator">: </span><span data-unresolved-link="/<Error class: unknown class>///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div><div class="brief "><p class="paragraph">Whether the configuration is HDR or not.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="is-hdr.html">isHdr</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the configuration is HDR or not.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1339313688%2FProperties%2F1850203186" anchor-label="level" id="1339313688%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1339313688%2FProperties%2F650901000" anchor-label="level" id="1339313688%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="level.html"><span><span>level</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1339313688%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1339313688%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="level.html">level</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Video encoder level. Encoders may not support requested level. In this case, StreamPack fallbacks to default level. ** See ** <a href="https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel">MediaCodecInfo.CodecProfileLevel</a></p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="level.html">level</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Video encoder level. Encoders may not support requested level. In this case, StreamPack fallbacks to default level. ** See ** <a href="https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel">MediaCodecInfo.CodecProfileLevel</a></p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-2069553051%2FProperties%2F1850203186" anchor-label="mimeType" id="-2069553051%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-2069553051%2FProperties%2F650901000" anchor-label="mimeType" id="-2069553051%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../-codec-config/mime-type.html"><span>mime</span><wbr><span><span>Type</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2069553051%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2069553051%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-codec-config/mime-type.html">mimeType</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The encoder mime type.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-codec-config/mime-type.html">mimeType</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The encoder mime type.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-224410370%2FProperties%2F1850203186" anchor-label="profile" id="-224410370%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-224410370%2FProperties%2F650901000" anchor-label="profile" id="-224410370%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../-codec-config/profile.html"><span><span>profile</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-224410370%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-224410370%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-codec-config/profile.html">profile</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span></div><div class="brief "><p class="paragraph">The encoder profile. Only applicable to AAC, AVC, HEVC, VP9, AV1.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-codec-config/profile.html">profile</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The encoder profile. Only applicable to AAC, AVC, HEVC, VP9, AV1.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="944766610%2FProperties%2F1850203186" anchor-label="resolution" id="944766610%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="944766610%2FProperties%2F650901000" anchor-label="resolution" id="944766610%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="resolution.html"><span><span>resolution</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="944766610%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="944766610%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="resolution.html">resolution</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a></div><div class="brief "><p class="paragraph">Video output resolution in pixel.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="resolution.html">resolution</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a></div><div class="brief "><p class="paragraph">Video output resolution in pixel.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1937665095%2FProperties%2F1850203186" anchor-label="sourceConfig" id="-1937665095%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1937665095%2FProperties%2F650901000" anchor-label="sourceConfig" id="-1937665095%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_PROPERTY" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../io.github.thibaultbee.streampack.core.elements.utils.extensions/source-config.html"><span>source</span><wbr><span><span>Config</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1937665095%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1937665095%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="index.html">VideoCodecConfig</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.elements.utils.extensions/source-config.html">sourceConfig</a><span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.sources.video/-video-source-config/index.html">VideoSourceConfig</a></div><div class="brief "><p class="paragraph">Converts <a href="index.html">VideoCodecConfig</a> to <a href="../../io.github.thibaultbee.streampack.core.elements.sources.video/-video-source-config/index.html">VideoSourceConfig</a>.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="index.html">VideoCodecConfig</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.elements.utils.extensions/source-config.html">sourceConfig</a><span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.sources.video/-video-source-config/index.html">VideoSourceConfig</a></div><div class="brief "><p class="paragraph">Converts <a href="index.html">VideoCodecConfig</a> to <a href="../../io.github.thibaultbee.streampack.core.elements.sources.video/-video-source-config/index.html">VideoSourceConfig</a>.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="947663080%2FProperties%2F1850203186" anchor-label="startBitrate" id="947663080%2FProperties%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="947663080%2FProperties%2F650901000" anchor-label="startBitrate" id="947663080%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../-codec-config/start-bitrate.html"><span>start</span><wbr><span><span>Bitrate</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="947663080%2FProperties%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="947663080%2FProperties%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-codec-config/start-bitrate.html">startBitrate</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The encoder bitrate in bits/s.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-codec-config/start-bitrate.html">startBitrate</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The encoder bitrate in bits/s.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -307,153 +307,153 @@
         </div>
       </div>
       <div data-togglable="FUNCTION">
-        <h2 class="">Functions</h2>
-        <div class="table"><a data-name="563509076%2FFunctions%2F1850203186" anchor-label="copy" id="563509076%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="563509076%2FFunctions%2F650901000" anchor-label="copy" id="563509076%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="copy.html"><span><span>copy</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="563509076%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="563509076%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="copy.html"><span class="token function">copy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">mimeType<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>this.mimeType<span class="token punctuation">, </span></span><span class="parameter ">startBitrate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>this.startBitrate<span class="token punctuation">, </span></span><span class="parameter ">resolution<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token operator"> = </span>this.resolution<span class="token punctuation">, </span></span><span class="parameter ">fps<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>this.fps<span class="token punctuation">, </span></span><span class="parameter ">gopDurationInS<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a><span class="token operator"> = </span>this.gopDurationInS<span class="token punctuation">, </span></span><span class="parameter ">profileLevelColor<span class="token operator">: </span><a href="../-video-profile-level-color/index.html">VideoProfileLevelColor</a><span class="token operator"> = </span>this.profileLevelColor<span class="token punctuation">, </span></span><span class="parameter ">customize<span class="token operator">: </span><a href="../-media-format-custom-handler/index.html">MediaFormatCustomHandler</a><span class="token operator"> = </span>this.customize</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">VideoCodecConfig</a></div><div class="brief "><p class="paragraph">Copies video configuration with new values</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="copy.html"><span class="token function">copy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">mimeType<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>this.mimeType<span class="token punctuation">, </span></span><span class="parameter ">startBitrate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>this.startBitrate<span class="token punctuation">, </span></span><span class="parameter ">resolution<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token operator"> = </span>this.resolution<span class="token punctuation">, </span></span><span class="parameter ">fps<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>this.fps<span class="token punctuation">, </span></span><span class="parameter ">gopDurationInS<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a><span class="token operator"> = </span>this.gopDurationInS<span class="token punctuation">, </span></span><span class="parameter ">profileLevelColor<span class="token operator">: </span><a href="../-video-profile-level-color/index.html">VideoProfileLevelColor</a><span class="token operator"> = </span>this.profileLevelColor<span class="token punctuation">, </span></span><span class="parameter ">customize<span class="token operator">: </span><a href="../-media-format-custom-handler/index.html">MediaFormatCustomHandler</a><span class="token operator"> = </span>this.customize</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">VideoCodecConfig</a></div><div class="brief "><p class="paragraph">Copies video configuration with new values</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1009387595%2FFunctions%2F1850203186" anchor-label="createHandlerBox" id="1009387595%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="1009387595%2FFunctions%2F650901000" anchor-label="createHandlerBox" id="1009387595%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.utils/create-handler-box.html"><span>create</span><wbr><span>Handler</span><wbr><span><span>Box</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1009387595%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1009387595%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../-codec-config/index.html">CodecConfig</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.utils/create-handler-box.html"><span class="token function">createHandlerBox</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.boxes/-handler-box/index.html">HandlerBox</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../-codec-config/index.html">CodecConfig</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.utils/create-handler-box.html"><span class="token function">createHandlerBox</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.boxes/-handler-box/index.html">HandlerBox</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="177350910%2FFunctions%2F1850203186" anchor-label="createTypeMediaHeaderBox" id="177350910%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="177350910%2FFunctions%2F650901000" anchor-label="createTypeMediaHeaderBox" id="177350910%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.utils/create-type-media-header-box.html"><span>create</span><wbr><span>Type</span><wbr><span>Media</span><wbr><span>Header</span><wbr><span><span>Box</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="177350910%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="177350910%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../-codec-config/index.html">CodecConfig</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.utils/create-type-media-header-box.html"><span class="token function">createTypeMediaHeaderBox</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.boxes/-type-media-header-box/index.html">TypeMediaHeaderBox</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../-codec-config/index.html">CodecConfig</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.utils/create-type-media-header-box.html"><span class="token function">createTypeMediaHeaderBox</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.boxes/-type-media-header-box/index.html">TypeMediaHeaderBox</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="900177731%2FFunctions%2F1850203186" anchor-label="equals" id="900177731%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="900177731%2FFunctions%2F650901000" anchor-label="equals" id="900177731%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="equals.html"><span><span>equals</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="900177731%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="900177731%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">operator override </span><span class="token keyword">fun </span><a href="equals.html"><span class="token function">equals</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">other<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">operator override </span><span class="token keyword">fun </span><a href="equals.html"><span class="token function">equals</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">other<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-969489853%2FFunctions%2F1850203186" anchor-label="hashCode" id="-969489853%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-969489853%2FFunctions%2F650901000" anchor-label="hashCode" id="-969489853%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="hash-code.html"><span>hash</span><wbr><span><span>Code</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-969489853%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-969489853%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="hash-code.html"><span class="token function">hashCode</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="hash-code.html"><span class="token function">hashCode</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="210981151%2FFunctions%2F1850203186" anchor-label="isCompatibleWith" id="210981151%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="210981151%2FFunctions%2F650901000" anchor-label="isCompatibleWith" id="210981151%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../io.github.thibaultbee.streampack.core.elements.utils.extensions/is-compatible-with.html"><span>is</span><wbr><span>Compatible</span><wbr><span><span>With</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="210981151%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="210981151%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">VideoCodecConfig</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.elements.utils.extensions/is-compatible-with.html"><span class="token function">isCompatibleWith</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">codecConfig<span class="token operator">: </span><a href="index.html">VideoCodecConfig</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether <a href="index.html">VideoCodecConfig</a> is compatible with <a href="index.html">VideoCodecConfig</a>.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">VideoCodecConfig</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.elements.utils.extensions/is-compatible-with.html"><span class="token function">isCompatibleWith</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">sourceConfig<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.sources.video/-video-source-config/index.html">VideoSourceConfig</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether <a href="index.html">VideoCodecConfig</a> is compatible with <a href="../../io.github.thibaultbee.streampack.core.elements.sources.video/-video-source-config/index.html">VideoSourceConfig</a>.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">VideoCodecConfig</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.elements.utils.extensions/is-compatible-with.html"><span class="token function">isCompatibleWith</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">codecConfig<span class="token operator">: </span><a href="index.html">VideoCodecConfig</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether <a href="index.html">VideoCodecConfig</a> is compatible with <a href="index.html">VideoCodecConfig</a>.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">VideoCodecConfig</a><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.elements.utils.extensions/is-compatible-with.html"><span class="token function">isCompatibleWith</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">sourceConfig<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.sources.video/-video-source-config/index.html">VideoSourceConfig</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether <a href="index.html">VideoCodecConfig</a> is compatible with <a href="../../io.github.thibaultbee.streampack.core.elements.sources.video/-video-source-config/index.html">VideoSourceConfig</a>.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-928829881%2FFunctions%2F1850203186" anchor-label="isFormatSupportedForEncoder" id="-928829881%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-928829881%2FFunctions%2F650901000" anchor-label="isFormatSupportedForEncoder" id="-928829881%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../-codec-config/is-format-supported-for-encoder.html"><span>is</span><wbr><span>Format</span><wbr><span>Supported</span><wbr><span>For</span><wbr><span><span>Encoder</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-928829881%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-928829881%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../-codec-config/is-format-supported-for-encoder.html"><span class="token function">isFormatSupportedForEncoder</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">requestFallback<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether configuration is supported by the default encoder. If format is not supported, it won't be possible to start a stream.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="../-codec-config/is-format-supported-for-encoder.html"><span class="token function">isFormatSupportedForEncoder</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">name<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">requestFallback<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Check if this configuration is supported by the specified encoder. If format is not supported, it won't be possible to start a stream.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../-codec-config/is-format-supported-for-encoder.html"><span class="token function">isFormatSupportedForEncoder</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">requestFallback<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether configuration is supported by the default encoder. If format is not supported, it won't be possible to start a stream.</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="../-codec-config/is-format-supported-for-encoder.html"><span class="token function">isFormatSupportedForEncoder</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">name<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">requestFallback<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Check if this configuration is supported by the specified encoder. If format is not supported, it won't be possible to start a stream.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-60860703%2FFunctions%2F1850203186" anchor-label="rotateDegreesFromNaturalOrientation" id="-60860703%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-60860703%2FFunctions%2F650901000" anchor-label="rotateDegreesFromNaturalOrientation" id="-60860703%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../rotate-degrees-from-natural-orientation.html"><span>rotate</span><wbr><span>Degrees</span><wbr><span>From</span><wbr><span>Natural</span><wbr><span><span>Orientation</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-60860703%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-60860703%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">VideoCodecConfig</a><span class="token punctuation">.</span><a href="../rotate-degrees-from-natural-orientation.html"><span class="token function">rotateDegreesFromNaturalOrientation</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter "><span><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/IntRange.html"><span class="token annotation builtin">IntRange</span></a><span class="token punctuation">(</span><span>from<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">0</span></span><span class="token punctuation">, </span></span><wbr><span>to<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">359</span></span></span><wbr><span class="token punctuation">)</span>&nbsp;</span>rotationDegrees<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">VideoCodecConfig</a></div><div class="brief "><p class="paragraph">Rotates video configuration to <a href="../rotate-degrees-from-natural-orientation.html">rotationDegrees</a> from device natural orientation.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">VideoCodecConfig</a><span class="token punctuation">.</span><a href="../rotate-degrees-from-natural-orientation.html"><span class="token function">rotateDegreesFromNaturalOrientation</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter "><span><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/IntRange.html"><span class="token annotation builtin">IntRange</span></a><span class="token punctuation">(</span><span>from<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">0</span></span><span class="token punctuation">, </span></span><wbr><span>to<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">359</span></span></span><wbr><span class="token punctuation">)</span>&nbsp;</span>rotationDegrees<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">VideoCodecConfig</a></div><div class="brief "><p class="paragraph">Rotates video configuration to <a href="../rotate-degrees-from-natural-orientation.html">rotationDegrees</a> from device natural orientation.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-331596806%2FFunctions%2F1850203186" anchor-label="rotateFromNaturalOrientation" id="-331596806%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-331596806%2FFunctions%2F650901000" anchor-label="rotateFromNaturalOrientation" id="-331596806%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../rotate-from-natural-orientation.html"><span>rotate</span><wbr><span>From</span><wbr><span>Natural</span><wbr><span><span>Orientation</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-331596806%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-331596806%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">VideoCodecConfig</a><span class="token punctuation">.</span><a href="../rotate-from-natural-orientation.html"><span class="token function">rotateFromNaturalOrientation</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter ">rotation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">VideoCodecConfig</a></div><div class="brief "><p class="paragraph">Rotates video configuration to <a href="../rotate-from-natural-orientation.html">rotation</a> from device natural orientation.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">VideoCodecConfig</a><span class="token punctuation">.</span><a href="../rotate-from-natural-orientation.html"><span class="token function">rotateFromNaturalOrientation</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter ">rotation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">VideoCodecConfig</a></div><div class="brief "><p class="paragraph">Rotates video configuration to <a href="../rotate-from-natural-orientation.html">rotation</a> from device natural orientation.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1147655918%2FFunctions%2F1850203186" anchor-label="toString" id="-1147655918%2FFunctions%2F1850203186" data-filterable-set=":streampack-core:dokkaHtmlPartial/release"></a>
-          <div class="table-row" data-filterable-current=":streampack-core:dokkaHtmlPartial/release" data-filterable-set=":streampack-core:dokkaHtmlPartial/release">
+<a data-name="-1147655918%2FFunctions%2F650901000" anchor-label="toString" id="-1147655918%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="to-string.html"><span>to</span><wbr><span><span>String</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1147655918%2FFunctions%2F1850203186"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1147655918%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="to-string.html"><span class="token function">toString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="to-string.html"><span class="token function">toString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -464,17 +464,21 @@
   </div>
 </div>
     <div class="footer">
-        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
-        <span>© 2025 Copyright</span>
-        <span class="pull-right">
-            <span>Generated by </span>
-            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
-                <span>dokka</span>
-            </a>
-        </span>
-    </div>
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
             </div>
         </div>
     </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
