@@ -17,8 +17,9 @@ publishing {
             }
 
             createPom {
-                name.set(project.name)
-                description.set(project.description)
+                name = project.name
+                description = project.description.orEmpty()
+                    .ifEmpty { "StreamPack is a multiprotocol live streaming broadcaster libraries for Android." }
             }
         }
     }
