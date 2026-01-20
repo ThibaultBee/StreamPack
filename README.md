@@ -45,7 +45,7 @@ dependencies {
 * Audio:
     * Source: Microphone, device audio
       or [custom audio source](docs/AdvancedStreamer.md#creates-your-custom-sources)
-    * Codec: AAC:LC, HE, HEv2,... or Opus
+    * Codec: AAC (LC, HE, HEv2,...) or Opus
     * Configurable bitrate, sample rate, stereo/mono, data format
     * Processing: Noise suppressor or echo cancellation
     * Audio only mode
