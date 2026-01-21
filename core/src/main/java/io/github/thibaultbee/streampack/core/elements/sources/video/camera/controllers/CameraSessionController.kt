@@ -37,9 +37,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import java.util.concurrent.atomic.AtomicLong
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 internal class CameraSessionController private constructor(
     private val coroutineScope: CoroutineScope,
@@ -58,8 +55,6 @@ internal class CameraSessionController private constructor(
 
     private val requestTargetMutex = Mutex()
 
-    private val nextSessionUpdateId = AtomicLong(0)
-
     /**
      * A default capture callback that logs the failure reason.
      */
@@ -75,7 +70,7 @@ internal class CameraSessionController private constructor(
     private val sessionCallback = CameraControlSessionCallback(coroutineScope)
 
     private val captureCallbacks =
-        mutableSetOf(captureCallback, sessionCallback)
+        setOf(captureCallback, sessionCallback)
 
     suspend fun isEmpty() = withContext(coroutineScope.coroutineContext) {
         requestTargetMutex.withLock { captureRequestBuilder.isEmpty() }
@@ -250,25 +245,21 @@ internal class CameraSessionController private constructor(
         }
     }
 
-    suspend fun removeCaptureCallback(
-        cameraCaptureCallback: CaptureCallback
-    ) {
-        withContext(coroutineScope.coroutineContext) {
-            captureSessionMutex.withLock {
-                if (isClosed) {
-                    Logger.w(TAG, "Camera session controller is released")
-                    return@withContext
-                }
-
-                captureCallbacks.remove(cameraCaptureCallback)
-            }
-        }
+    /**
+     * Adds a capture callback listener to the current capture session.
+     *
+     * The listener is removed when the session is closed.
+     */
+    fun addCaptureCallbackListener(listener: CaptureResultListener) {
+        sessionCallback.addListener(listener)
     }
 
     /**
      * Sets a repeating session with the current capture request.
+     *
+     * @param tag A tag to associate with the session.
      */
-    suspend fun setRepeatingSessionSync() {
+    suspend fun setRepeatingSession(tag: Any? = null) {
         if (captureRequestBuilder.isEmpty()) {
             Logger.w(TAG, "Capture request is empty")
             return
@@ -280,52 +271,7 @@ internal class CameraSessionController private constructor(
                     return@withContext
                 }
 
-                suspendCoroutine { continuation ->
-                    val nextSessionId = nextSessionUpdateId.getAndIncrement()
-
-                    val captureCallback = object : CaptureResultListener {
-                        override fun onCaptureResult(result: TotalCaptureResult): Boolean {
-                            val tag = result.request.tag as? TagBundle
-                            val keyId = tag?.keyId ?: return false
-                            if (keyId >= nextSessionId) {
-                                continuation.resume(Unit)
-                                return true
-                            }
-                            return false
-                        }
-                    }
-
-                    sessionCallback.addListener(captureCallback)
-
-                    captureRequestBuilder.setTag(
-                        TagBundle().apply {
-                            keyId = nextSessionId
-                        }
-                    )
-                    sessionCompat.setRepeatingSingleRequest(
-                        captureSession,
-                        captureRequestBuilder.build(),
-                        MultiCaptureCallback(captureCallbacks)
-                    )
-                }
-            }
-        }
-    }
-
-    /**
-     * Sets a repeating session with the current capture request.
-     */
-    suspend fun setRepeatingSession() {
-        if (captureRequestBuilder.isEmpty()) {
-            Logger.w(TAG, "Capture request is empty")
-            return
-        }
-        withContext(coroutineScope.coroutineContext) {
-            captureSessionMutex.withLock {
-                if (isClosed) {
-                    Logger.w(TAG, "Camera session controller is released")
-                    return@withContext
-                }
+                tag?.let { captureRequestBuilder.setTag(it) }
 
                 sessionCompat.setRepeatingSingleRequest(
                     captureSession,
@@ -514,27 +460,6 @@ internal class CameraSessionController private constructor(
         }
     }
 
-    private class TagBundle {
-        private val tagMap = mutableMapOf<String, Any?>()
-
-        var keyId: Long?
-            get() = tagMap[TAG_KEY_ID] as? Long
-            set(value) {
-                tagMap[TAG_KEY_ID] = value
-            }
-
-        val keys: Set<String>
-            get() = tagMap.keys
-
-        fun setTag(key: String, value: Any?) {
-            tagMap[key] = value
-        }
-
-        companion object {
-            private const val TAG_KEY_ID = "TAG_KEY_ID"
-        }
-    }
-
     interface CaptureResultListener {
         /**
          * Called when a capture result is received.
@@ -545,11 +470,21 @@ internal class CameraSessionController private constructor(
         fun onCaptureResult(result: TotalCaptureResult): Boolean
     }
 
+    /**
+     * A capture callback that wraps multiple [CaptureResultListener].
+     *
+     * @param coroutineScope The coroutine scope to use.
+     */
     private class CameraControlSessionCallback(private val coroutineScope: CoroutineScope) :
         CaptureCallback() {
         /* synthetic accessor */
         private val resultListeners = mutableSetOf<CaptureResultListener>()
 
+        /**
+         * Adds a capture result listener.
+         *
+         * The listener is removed when [removeListener] is explicitly called or when [CaptureResultListener] returns true.
+         */
         fun addListener(listener: CaptureResultListener) {
             resultListeners.add(listener)
         }
