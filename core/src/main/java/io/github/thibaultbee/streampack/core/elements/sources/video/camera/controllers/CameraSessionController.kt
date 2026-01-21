@@ -40,9 +40,10 @@ import kotlinx.coroutines.withContext
 
 internal class CameraSessionController private constructor(
     private val coroutineScope: CoroutineScope,
-    private val captureRequestBuilder: CaptureRequestWithTargetsBuilder,
-    private val sessionCompat: ICameraCaptureSessionCompat,
     private val captureSession: CameraCaptureSession,
+    private val captureRequestBuilder: CaptureRequestWithTargetsBuilder,
+    private val sessionCallback: CameraControlSessionCallback,
+    private val sessionCompat: ICameraCaptureSessionCompat,
     private val outputs: List<CameraSurface>,
     val dynamicRange: Long,
     val cameraIsClosedFlow: StateFlow<Boolean>,
@@ -66,8 +67,6 @@ internal class CameraSessionController private constructor(
             Logger.e(TAG, "Capture failed with code ${failure.reason}")
         }
     }
-
-    private val sessionCallback = CameraControlSessionCallback(coroutineScope)
 
     private val captureCallbacks =
         setOf(captureCallback, sessionCallback)
@@ -248,10 +247,19 @@ internal class CameraSessionController private constructor(
     /**
      * Adds a capture callback listener to the current capture session.
      *
-     * The listener is removed when the session is closed.
+     * The listener is removed when it returns true or [removeCaptureCallbackListener] is called.
      */
     fun addCaptureCallbackListener(listener: CaptureResultListener) {
         sessionCallback.addListener(listener)
+    }
+
+    /**
+     * Removes a capture callback listener from the current capture session.
+     *
+     * @param listener The listener to remove
+     */
+    fun removeCaptureCallbackListener(listener: CaptureResultListener) {
+        sessionCallback.removeListener(listener)
     }
 
     /**
@@ -360,9 +368,10 @@ internal class CameraSessionController private constructor(
 
             val controller = CameraSessionController(
                 coroutineScope,
-                captureRequestBuilder,
-                sessionCompat,
                 newCaptureSession,
+                captureRequestBuilder,
+                sessionCallback,
+                sessionCompat,
                 outputs,
                 dynamicRange,
                 cameraDeviceController.isClosedFlow,
@@ -411,9 +420,10 @@ internal class CameraSessionController private constructor(
             }
             return CameraSessionController(
                 coroutineScope,
-                captureRequestBuilder,
-                sessionCompat,
                 captureSession,
+                captureRequestBuilder,
+                CameraControlSessionCallback(coroutineScope),
+                sessionCompat,
                 outputs,
                 dynamicRange,
                 cameraDeviceController.isClosedFlow,
