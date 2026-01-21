@@ -21,6 +21,7 @@ import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
 import android.util.Range
 import androidx.annotation.RequiresPermission
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraSessionController.CaptureResultListener
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.CameraCaptureSessionCompatBuilder
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSurface
@@ -378,21 +379,23 @@ internal class CameraController(
     }
 
     /**
-     * Sets a repeating session sync with the current capture request.
+     * Adds a capture callback listener to the current capture session.
      *
-     * It returns only when the capture callback has been called for the first time.
+     * The listener is removed when the [CaptureResultListener] returns true.
      */
-    suspend fun setRepeatingSessionSync() {
+    fun addCaptureCallbackListener(listener: CaptureResultListener) {
         val sessionController = requireNotNull(sessionController) { "SessionController is null" }
-        sessionController.setRepeatingSessionSync()
+        sessionController.addCaptureCallbackListener(listener)
     }
 
     /**
      * Sets a repeating session with the current capture request.
+     *
+     * @param tag A tag to associate with the session.
      */
-    suspend fun setRepeatingSession() {
+    suspend fun setRepeatingSession(tag: Any? = null) {
         val sessionController = requireNotNull(sessionController) { "SessionController is null" }
-        sessionController.setRepeatingSession()
+        sessionController.setRepeatingSession(tag)
     }
 
     private suspend fun closeControllers() {
