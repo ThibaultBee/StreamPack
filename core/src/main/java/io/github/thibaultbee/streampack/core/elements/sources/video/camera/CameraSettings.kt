@@ -60,6 +60,11 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.atomic.AtomicLong
@@ -80,6 +85,27 @@ class CameraSettings internal constructor(
      * Current camera id.
      */
     val cameraId = cameraController.cameraId
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun getPhysicalCameraIdCallbackFlow() = callbackFlow {
+        val captureCallback = object : CaptureResultListener {
+            override fun onCaptureResult(result: TotalCaptureResult): Boolean {
+                trySend(result.get(CaptureResult.LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_ID)!!)
+                return false
+            }
+        }
+        cameraController.addCaptureCallbackListener(captureCallback)
+        awaitClose {
+            cameraController.removeCaptureCallbackListener(captureCallback)
+        }
+    }.conflate().distinctUntilChanged()
+
+    /**
+     * Current physical camera id.
+     */
+    val physicalCameraIdFlow: Flow<String>
+        @RequiresApi(Build.VERSION_CODES.Q)
+        get() = getPhysicalCameraIdCallbackFlow()
 
     /**
      * Whether the camera is available.
