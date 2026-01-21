@@ -381,12 +381,25 @@ internal class CameraController(
     /**
      * Adds a capture callback listener to the current capture session.
      *
-     * The listener is removed when the [CaptureResultListener] returns true.
+     * The listener is removed when the [CaptureResultListener] returns true or [removeCaptureCallbackListener] is called.
+     *
+     * @param listener The listener to add
      */
     fun addCaptureCallbackListener(listener: CaptureResultListener) {
         val sessionController = requireNotNull(sessionController) { "SessionController is null" }
         sessionController.addCaptureCallbackListener(listener)
     }
+
+    /**
+     * Removes a capture callback listener from the current capture session.
+     *
+     * @param listener The listener to remove
+     */
+    fun removeCaptureCallbackListener(listener: CaptureResultListener) {
+        val sessionController = requireNotNull(sessionController) { "SessionController is null" }
+        sessionController.removeCaptureCallbackListener(listener)
+    }
+
 
     /**
      * Sets a repeating session with the current capture request.
