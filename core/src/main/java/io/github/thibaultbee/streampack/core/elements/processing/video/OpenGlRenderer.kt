@@ -17,6 +17,7 @@
 package io.github.thibaultbee.streampack.core.elements.processing.video
 
 import android.graphics.Bitmap
+import android.graphics.Rect
 import android.opengl.EGL14
 import android.opengl.EGLConfig
 import android.opengl.EGLContext
@@ -74,6 +75,8 @@ import javax.microedition.khronos.egl.EGL10
 class OpenGlRenderer {
     protected val mInitialized: AtomicBoolean = AtomicBoolean(false)
     protected val mOutputSurfaceMap: MutableMap<Surface, OutputSurface> =
+        HashMap()
+    protected val mViewportRectMap: MutableMap<Surface, Rect> =
         HashMap()
     protected var mGlThread: Thread? = null
     protected var mEglDisplay: EGLDisplay = EGL14.EGL_NO_DISPLAY
@@ -172,15 +175,20 @@ class OpenGlRenderer {
     /**
      * Register the output surface.
      *
+     * @param surface The output surface to register.
+     * @param viewportRect The viewport rect for letterboxing/pillarboxing. If null, full surface will be used.
      * @throws IllegalStateException if the renderer is not initialized or the caller doesn't run
      * on the GL thread.
      */
-    fun registerOutputSurface(surface: Surface) {
+    fun registerOutputSurface(surface: Surface, viewportRect: Rect? = null) {
         checkInitializedOrThrow(mInitialized, true)
         checkGlThreadOrThrow(mGlThread)
 
         if (!mOutputSurfaceMap.containsKey(surface)) {
             mOutputSurfaceMap[surface] = NO_OUTPUT_SURFACE
+            if (viewportRect != null) {
+                mViewportRectMap[surface] = viewportRect
+            }
         }
     }
 
@@ -622,7 +630,9 @@ class OpenGlRenderer {
             return null
         }
         val size = getSurfaceSize(mEglDisplay, eglSurface)
-        return OutputSurface(eglSurface, size.width, size.height)
+        // Use stored viewport rect if available, otherwise use full surface
+        val viewportRect = mViewportRectMap[surface] ?: Rect(0, 0, size.width, size.height)
+        return OutputSurface(eglSurface, viewportRect)
     }
 
     protected fun removeOutputSurfaceInternal(surface: Surface, unregister: Boolean) {
@@ -632,9 +642,11 @@ class OpenGlRenderer {
             makeCurrent(mTempSurface)
         }
 
-        // Remove cached EGL surface.
+        // Remove cached EGL surface and viewport rect.
         val removedOutputSurface: OutputSurface = if (unregister) {
-            mOutputSurfaceMap.remove(surface)!!
+            mOutputSurfaceMap.remove(surface)!!.also {
+                mViewportRectMap.remove(surface)
+            }
         } else {
             mOutputSurfaceMap.put(surface, NO_OUTPUT_SURFACE)!!
         }

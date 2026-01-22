@@ -156,7 +156,7 @@ private class DefaultSurfaceProcessor(
                 throw IllegalStateException("SurfaceProcessor is released")
             }
             if (!surfaceOutputs.map { it.targetSurface }.contains(surfaceOutput.targetSurface)) {
-                renderer.registerOutputSurface(surfaceOutput.targetSurface)
+                renderer.registerOutputSurface(surfaceOutput.targetSurface, surfaceOutput.viewportRect)
                 surfaceOutputs.add(surfaceOutput)
             } else {
                 Logger.w(TAG, "Surface already added")

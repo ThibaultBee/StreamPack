@@ -15,19 +15,18 @@
  */
 package io.github.thibaultbee.streampack.core.elements.processing.video.outputs
 
+import android.graphics.Rect
 import android.opengl.Matrix
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
-import io.github.thibaultbee.streampack.core.elements.processing.video.utils.TransformUtils
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.preRotate
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.preVerticalFlip
-import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.toRectF
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
+import kotlin.math.roundToInt
 
 fun SurfaceOutput(
     descriptor: SurfaceDescriptor,
@@ -67,10 +66,40 @@ class SurfaceOutput(
     @IntRange(from = 0, to = 359)
     val sourceRotationDegrees = sourceInfoProvider.rotationDegrees
 
-    private val sourceResolutionRectF = sourceResolution.toRectF()
-
     private val additionalTransform = FloatArray(16)
     private val invertedTextureTransform = FloatArray(16)
+
+    /**
+     * Calculate viewport rect for letterboxing/pillarboxing.
+     * This ensures the source content fits within the target while preserving aspect ratio.
+     * We use getSurfaceSize(targetResolution) to get the source size - for cameras this returns
+     * targetResolution (same aspect ratio = no letterboxing), for external sources it returns
+     * the actual source resolution (may differ = letterboxing applied).
+     */
+    override val viewportRect: Rect = calculateViewportRect(
+        sourceInfoProvider.getSurfaceSize(targetResolution),
+        targetResolution
+    )
+
+    private fun calculateViewportRect(sourceSize: Size, targetSize: Size): Rect {
+        val sourceRatio = sourceSize.width.toFloat() / sourceSize.height
+        val targetRatio = targetSize.width.toFloat() / targetSize.height
+
+        return if (sourceRatio > targetRatio) {
+            // Source is wider than target - letterbox (black bars on top and bottom)
+            val newHeight = (targetSize.width / sourceRatio).roundToInt()
+            val yOffset = (targetSize.height - newHeight) / 2
+            Rect(0, yOffset, targetSize.width, yOffset + newHeight)
+        } else if (sourceRatio < targetRatio) {
+            // Source is taller than target - pillarbox (black bars on sides)
+            val newWidth = (targetSize.height * sourceRatio).roundToInt()
+            val xOffset = (targetSize.width - newWidth) / 2
+            Rect(xOffset, 0, xOffset + newWidth, targetSize.height)
+        } else {
+            // Same aspect ratio - use full target
+            Rect(0, 0, targetSize.width, targetSize.height)
+        }
+    }
 
     init {
         calculateAdditionalTransform(
@@ -131,33 +160,10 @@ class SurfaceOutput(
             Matrix.scaleM(additionalTransform, 0, -1f, 1f, 1f)
         }
 
-        // Crop
-        // Rotate the size and cropRect, and mirror the cropRect.
-        val rotatedTargetResolution = targetResolution.rotate(
-            rotationDegrees
-        )
-        val rotatedTargetResolutionRectF = rotatedTargetResolution.toRectF()
-        val imageTransform = TransformUtils.getRectToRect(
-            sourceResolutionRectF,
-            rotatedTargetResolutionRectF,
-            rotationDegrees,
-            sourceInfoProvider.isMirror
-        )
-        val rotatedCroppedRect = TransformUtils.calculateViewfinder(
-            rotatedTargetResolutionRectF,
-            sourceResolutionRectF
-        )
-        imageTransform.mapRect(rotatedCroppedRect)
-        // According to the rotated size and cropRect, compute the normalized offset and the scale
-        // of X and Y.
-        val offsetX: Float = rotatedCroppedRect.left / rotatedTargetResolution.width
-        val offsetY: Float = ((rotatedTargetResolution.height - rotatedCroppedRect.height()
-                - rotatedCroppedRect.top)) / rotatedTargetResolution.height
-        val scaleX: Float = rotatedCroppedRect.width() / rotatedTargetResolution.width
-        val scaleY: Float = rotatedCroppedRect.height() / rotatedTargetResolution.height
-        // Move to the new left-bottom position and apply the scale.
-        Matrix.translateM(additionalTransform, 0, offsetX, offsetY, 0f)
-        Matrix.scaleM(additionalTransform, 0, scaleX, scaleY, 1f)
+        // Note: We do NOT apply crop/scale transformation here because we use viewport-based
+        // letterboxing. The viewportRect already defines where on the output surface the content
+        // should be rendered while preserving aspect ratio. The texture should render at 1:1
+        // into that viewport area.
 
         // Step 2: calculate the inverted texture transform: A^-1
         calculateInvertedTextureTransform(invertedTransform, sourceInfoProvider)
