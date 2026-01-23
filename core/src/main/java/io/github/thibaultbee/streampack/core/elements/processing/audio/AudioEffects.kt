@@ -16,30 +16,47 @@
 package io.github.thibaultbee.streampack.core.elements.processing.audio
 
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
-import io.github.thibaultbee.streampack.core.elements.processing.IFrameProcessor
+import io.github.thibaultbee.streampack.core.elements.processing.IEffectConsumer
+import io.github.thibaultbee.streampack.core.elements.processing.IEffectProcessor
 import java.io.Closeable
 
 /**
  * The base audio effect.
  */
-interface IAudioEffect : IFrameProcessor<RawFrame>, Closeable
+sealed interface IAudioEffect : Closeable
 
 /**
- * Mute audio effect.
+ * An audio effect that can be dispatched to another thread. The result is not use by the audio pipeline.
+ * Example: a VU meter.
  */
-class MuteEffect : IAudioEffect {
+interface IConsumerAudioEffect : IAudioEffect, IEffectConsumer<RawFrame>
+
+/**
+ * An audio effect that can't be dispatched to another thread. The result is used by the audio pipeline.
+ *
+ * The [RawFrame.rawBuffer] can't be modified.
+ */
+interface IProcessorAudioEffect : IAudioEffect, IEffectProcessor<RawFrame>
+
+/**
+ * An audio effect that mute the audio.
+ */
+class MuteEffect : IProcessorAudioEffect {
     private var mutedByteArray: ByteArray? = null
 
-    override fun processFrame(frame: RawFrame): RawFrame {
-        val remaining = frame.rawBuffer.remaining()
-        val position = frame.rawBuffer.position()
+    override fun process(isMuted: Boolean, data: RawFrame): RawFrame {
+        if (!isMuted) {
+            return data
+        }
+        val remaining = data.rawBuffer.remaining()
+        val position = data.rawBuffer.position()
         if (remaining != mutedByteArray?.size) {
             mutedByteArray = ByteArray(remaining)
         }
-        frame.rawBuffer.put(mutedByteArray!!)
-        frame.rawBuffer.position(position)
+        data.rawBuffer.put(mutedByteArray!!)
+        data.rawBuffer.position(position)
 
-        return frame
+        return data
     }
 
     override fun close() {
