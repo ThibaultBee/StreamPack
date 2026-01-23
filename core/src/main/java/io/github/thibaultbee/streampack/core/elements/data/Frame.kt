@@ -16,7 +16,6 @@
 package io.github.thibaultbee.streampack.core.elements.data
 
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.removePrefixes
 import java.io.Closeable
 import java.nio.ByteBuffer
 
@@ -48,111 +47,102 @@ data class RawFrame(
     }
 }
 
-
-data class Frame(
+/**
+ * Encoded frame representation
+ */
+interface Frame {
     /**
      * Contains an audio or video frame data.
      */
-    val rawBuffer: ByteBuffer,
+    val rawBuffer: ByteBuffer
 
     /**
      * Presentation timestamp in µs
      */
-    val ptsInUs: Long,
+    val ptsInUs: Long
 
     /**
      * Decoded timestamp in µs (not used).
      */
-    val dtsInUs: Long? = null,
+    val dtsInUs: Long?
 
     /**
      * `true` if frame is a key frame (I-frame for AVC/HEVC and audio frames)
      */
-    val isKeyFrame: Boolean,
+    val isKeyFrame: Boolean
 
     /**
      * Contains csd buffers for key frames and audio frames only.
      * Could be (SPS, PPS, VPS, etc.) for key video frames, null for non-key video frames.
      * ESDS for AAC frames,...
      */
-    val extra: List<ByteBuffer>?,
+    val extra: List<ByteBuffer>?
 
     /**
      * Contains frame format..
      * TODO: to remove
      */
     val format: MediaFormat
-) {
-    init {
-        removePrefixes()
-    }
 }
+
+fun Frame.copy(
+    rawBuffer: ByteBuffer = this.rawBuffer,
+    ptsInUs: Long = this.ptsInUs,
+    dtsInUs: Long? = this.dtsInUs,
+    isKeyFrame: Boolean = this.isKeyFrame,
+    extra: List<ByteBuffer>? = this.extra,
+    format: MediaFormat = this.format
+): Frame {
+    return MutableFrame(
+        rawBuffer = rawBuffer,
+        ptsInUs = ptsInUs,
+        dtsInUs = dtsInUs,
+        isKeyFrame = isKeyFrame,
+        extra = extra,
+        format = format
+    )
+}
+
 
 /**
- * Removes the [Frame.extra] prefixes from the [Frame.rawBuffer].
+ * A mutable [Frame] internal representation.
  *
- * With MediaCodec, the encoded frames may contain prefixes like SPS, PPS for H264/H265 key frames.
- * It also modifies the position of the [Frame.rawBuffer] to skip the prefixes.s
- *
- * @return A [ByteBuffer] without prefixes.
+ * The purpose is to get reusable [Frame]
  */
-fun Frame.removePrefixes(): ByteBuffer {
-    return if (extra != null) {
-        rawBuffer.removePrefixes(extra)
-    } else {
-        rawBuffer
-    }
-}
-
-
-fun FrameWithCloseable(
+data class MutableFrame(
     /**
      * Contains an audio or video frame data.
      */
-    rawBuffer: ByteBuffer,
+    override var rawBuffer: ByteBuffer,
 
     /**
      * Presentation timestamp in µs
      */
-    ptsInUs: Long,
+    override var ptsInUs: Long,
 
     /**
      * Decoded timestamp in µs (not used).
      */
-    dtsInUs: Long?,
+    override var dtsInUs: Long?,
 
     /**
      * `true` if frame is a key frame (I-frame for AVC/HEVC and audio frames)
      */
-    isKeyFrame: Boolean,
+    override var isKeyFrame: Boolean,
 
     /**
      * Contains csd buffers for key frames and audio frames only.
      * Could be (SPS, PPS, VPS, etc.) for key video frames, null for non-key video frames.
      * ESDS for AAC frames,...
      */
-    extra: List<ByteBuffer>?,
+    override var extra: List<ByteBuffer>?,
 
     /**
      * Contains frame format..
+     * TODO: to remove
      */
-    format: MediaFormat,
-
-    /**
-     * A callback to call when frame is closed.
-     */
-    onClosed: (FrameWithCloseable) -> Unit,
-) = FrameWithCloseable(
-    Frame(
-        rawBuffer,
-        ptsInUs,
-        dtsInUs,
-        isKeyFrame,
-        extra,
-        format
-    ),
-    onClosed
-)
+    override var format: MediaFormat
+) : Frame
 
 /**
  * Frame internal representation.

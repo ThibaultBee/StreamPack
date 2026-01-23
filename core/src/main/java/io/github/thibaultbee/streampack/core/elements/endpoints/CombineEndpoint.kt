@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.core.elements.endpoints
 import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
+import io.github.thibaultbee.streampack.core.elements.data.copy
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.intersect
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -35,7 +36,6 @@ import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-
 
 /**
  * Combines multiple endpoints into one.

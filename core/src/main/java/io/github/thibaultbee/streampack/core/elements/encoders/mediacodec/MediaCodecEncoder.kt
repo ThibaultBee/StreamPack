@@ -31,6 +31,8 @@ import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extens
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.isValid
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.extra
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.put
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.removePrefixes
+import io.github.thibaultbee.streampack.core.elements.utils.pool.FramePool
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -40,6 +42,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.io.Closeable
 import kotlin.math.min
 
 /**
@@ -246,6 +249,8 @@ internal constructor(
             if (input is SurfaceInput) {
                 input.release()
             }
+
+            frameFactory.close()
         } catch (_: Throwable) {
         } finally {
             setState(State.RELEASED)
@@ -587,8 +592,10 @@ internal constructor(
     class FrameFactory(
         private val codec: MediaCodec,
         private val isVideo: Boolean
-    ) {
+    ) : Closeable {
         private var previousPresentationTimeUs = 0L
+
+        private val pool = FramePool()
 
         /**
          * Create a [Frame] from a [RawFrame]
@@ -623,30 +630,34 @@ internal constructor(
             tag: String
         ): FrameWithCloseable {
             val buffer = requireNotNull(codec.getOutputBuffer(index))
+            val extra = if (isKeyFrame || !isVideo) {
+                outputFormat.extra
+            } else {
+                null
+            }
+            val rawBuffer = if (extra != null) {
+                buffer.removePrefixes(extra)
+            } else {
+                buffer
+            }
+
+            val frame = pool.get(rawBuffer, ptsInUs, null, isKeyFrame, extra, outputFormat)
+
             return FrameWithCloseable(
-                buffer,
-                ptsInUs, // pts
-                null, // dts
-                isKeyFrame,
-                try {
-                    if (isKeyFrame || !isVideo) {
-                        outputFormat.extra
-                    } else {
-                        null
-                    }
-                } catch (_: Throwable) {
-                    null
-                },
-                outputFormat,
+                frame,
                 onClosed = {
                     try {
                         codec.releaseOutputBuffer(index, false)
+                        pool.put(frame)
                     } catch (t: Throwable) {
                         Logger.w(tag, "Failed to release output buffer for code: ${t.message}")
                     }
                 })
         }
 
+        override fun close() {
+            pool.close()
+        }
     }
 
     companion object {
