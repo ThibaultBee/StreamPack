@@ -23,6 +23,7 @@ import android.hardware.camera2.TotalCaptureResult
 import android.util.Range
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.ICameraCaptureSessionCompat
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSessionCallback
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSurface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraUtils
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestWithTargetsBuilder
@@ -42,7 +43,7 @@ internal class CameraSessionController private constructor(
     private val coroutineScope: CoroutineScope,
     private val captureSession: CameraCaptureSession,
     private val captureRequestBuilder: CaptureRequestWithTargetsBuilder,
-    private val sessionCallback: CameraControlSessionCallback,
+    private val sessionCallback: CameraSessionCallback,
     private val sessionCompat: ICameraCaptureSessionCompat,
     private val outputs: List<CameraSurface>,
     val dynamicRange: Long,
@@ -245,24 +246,6 @@ internal class CameraSessionController private constructor(
     }
 
     /**
-     * Adds a capture callback listener to the current capture session.
-     *
-     * The listener is removed when it returns true or [removeCaptureCallbackListener] is called.
-     */
-    fun addCaptureCallbackListener(listener: CaptureResultListener) {
-        sessionCallback.addListener(listener)
-    }
-
-    /**
-     * Removes a capture callback listener from the current capture session.
-     *
-     * @param listener The listener to remove
-     */
-    fun removeCaptureCallbackListener(listener: CaptureResultListener) {
-        sessionCallback.removeListener(listener)
-    }
-
-    /**
      * Sets a repeating session with the current capture request.
      *
      * @param tag A tag to associate with the session.
@@ -391,8 +374,9 @@ internal class CameraSessionController private constructor(
 
         suspend fun create(
             coroutineScope: CoroutineScope,
-            sessionCompat: ICameraCaptureSessionCompat,
             cameraDeviceController: CameraDeviceController,
+            sessionCallback: CameraSessionCallback,
+            sessionCompat: ICameraCaptureSessionCompat,
             outputs: List<CameraSurface>,
             dynamicRange: Long,
             fpsRange: Range<Int>,
@@ -422,7 +406,7 @@ internal class CameraSessionController private constructor(
                 coroutineScope,
                 captureSession,
                 captureRequestBuilder,
-                CameraControlSessionCallback(coroutineScope),
+                sessionCallback,
                 sessionCompat,
                 outputs,
                 dynamicRange,
@@ -478,48 +462,5 @@ internal class CameraSessionController private constructor(
          * @return true if the listener is finished and should be removed, false otherwise.
          */
         fun onCaptureResult(result: TotalCaptureResult): Boolean
-    }
-
-    /**
-     * A capture callback that wraps multiple [CaptureResultListener].
-     *
-     * @param coroutineScope The coroutine scope to use.
-     */
-    private class CameraControlSessionCallback(private val coroutineScope: CoroutineScope) :
-        CaptureCallback() {
-        /* synthetic accessor */
-        private val resultListeners = mutableSetOf<CaptureResultListener>()
-
-        /**
-         * Adds a capture result listener.
-         *
-         * The listener is removed when [removeListener] is explicitly called or when [CaptureResultListener] returns true.
-         */
-        fun addListener(listener: CaptureResultListener) {
-            resultListeners.add(listener)
-        }
-
-        fun removeListener(listener: CaptureResultListener) {
-            resultListeners.remove(listener)
-        }
-
-        override fun onCaptureCompleted(
-            session: CameraCaptureSession,
-            request: CaptureRequest,
-            result: TotalCaptureResult
-        ) {
-            coroutineScope.launch {
-                val removeSet = mutableSetOf<CaptureResultListener>()
-                for (listener in resultListeners) {
-                    val isFinished: Boolean = listener.onCaptureResult(result)
-                    if (isFinished) {
-                        removeSet.add(listener)
-                    }
-                }
-                if (!removeSet.isEmpty()) {
-                    resultListeners.removeAll(removeSet)
-                }
-            }
-        }
     }
 }

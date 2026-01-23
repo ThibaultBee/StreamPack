@@ -24,6 +24,7 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraSessionController.CaptureResultListener
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.CameraCaptureSessionCompatBuilder
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSessionCallback
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSurface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraUtils
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestWithTargetsBuilder
@@ -57,6 +58,8 @@ internal class CameraController(
 
     private var deviceController: CameraDeviceController? = null
     private var sessionController: CameraSessionController? = null
+
+    private val sessionCallback = CameraSessionCallback(coroutineScope)
 
     private val controllerMutex = Mutex()
 
@@ -161,8 +164,9 @@ internal class CameraController(
             val deviceController = getDeviceController()
             CameraSessionController.create(
                 coroutineScope,
-                sessionCompat,
                 deviceController,
+                sessionCallback,
+                sessionCompat,
                 outputs.values.toList(),
                 dynamicRange = dynamicRangeProfile.dynamicRange,
                 fpsRange = fpsRange,
@@ -381,13 +385,10 @@ internal class CameraController(
     /**
      * Adds a capture callback listener to the current capture session.
      *
-     * The listener is removed when the [CaptureResultListener] returns true or [removeCaptureCallbackListener] is called.
-     *
-     * @param listener The listener to add
+     * The listener is removed when it returns true or [removeCaptureCallbackListener] is called.
      */
     fun addCaptureCallbackListener(listener: CaptureResultListener) {
-        val sessionController = requireNotNull(sessionController) { "SessionController is null" }
-        sessionController.addCaptureCallbackListener(listener)
+        sessionCallback.addListener(listener)
     }
 
     /**
@@ -396,10 +397,8 @@ internal class CameraController(
      * @param listener The listener to remove
      */
     fun removeCaptureCallbackListener(listener: CaptureResultListener) {
-        val sessionController = requireNotNull(sessionController) { "SessionController is null" }
-        sessionController.removeCaptureCallbackListener(listener)
+        sessionCallback.removeListener(listener)
     }
-
 
     /**
      * Sets a repeating session with the current capture request.
