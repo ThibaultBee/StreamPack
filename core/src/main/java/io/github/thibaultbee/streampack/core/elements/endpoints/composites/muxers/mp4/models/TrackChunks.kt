@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxe
 import android.media.MediaFormat
 import android.util.Size
 import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.copy
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig

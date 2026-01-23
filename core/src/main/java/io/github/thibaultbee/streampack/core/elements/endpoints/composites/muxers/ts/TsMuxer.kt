@@ -19,6 +19,7 @@ import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
+import io.github.thibaultbee.streampack.core.elements.data.copy
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
@@ -86,16 +87,15 @@ class TsMuxer : IMuxerInternal {
                 mimeType == MediaFormat.MIMETYPE_VIDEO_AVC -> {
                     // Copy sps & pps before buffer
                     if (frame.isKeyFrame) {
-                        if (frame.extra == null) {
-                            throw MissingFormatArgumentException("Missing extra for AVC")
-                        }
+                        val extra = frame.extra
+                            ?: throw MissingFormatArgumentException("Missing extra for AVC")
                         val buffer =
-                            ByteBuffer.allocate(6 + frame.extra.sumOf { it.limit() } + frame.rawBuffer.limit())
+                            ByteBuffer.allocate(6 + extra.sumOf { it.limit() } + frame.rawBuffer.limit())
                         // Add access unit delimiter (AUD) before the AVC access unit
                         buffer.putInt(0x00000001)
                         buffer.put(0x09.toByte())
                         buffer.put(0xf0.toByte())
-                        frame.extra.forEach { buffer.put(it) }
+                        extra.forEach { buffer.put(it) }
                         buffer.put(frame.rawBuffer)
                         buffer.rewind()
                         frame.copy(rawBuffer = buffer)
@@ -107,17 +107,16 @@ class TsMuxer : IMuxerInternal {
                 mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC -> {
                     // Copy sps & pps & vps before buffer
                     if (frame.isKeyFrame) {
-                        if (frame.extra == null) {
-                            throw MissingFormatArgumentException("Missing extra for HEVC")
-                        }
+                        val extra = frame.extra
+                            ?: throw MissingFormatArgumentException("Missing extra for HEVC")
                         val buffer =
-                            ByteBuffer.allocate(7 + frame.extra.sumOf { it.limit() } + frame.rawBuffer.limit())
+                            ByteBuffer.allocate(7 + extra.sumOf { it.limit() } + frame.rawBuffer.limit())
                         // Add access unit delimiter (AUD) before the HEVC access unit
                         buffer.putInt(0x00000001)
                         buffer.put(0x46.toByte())
                         buffer.put(0x01.toByte())
                         buffer.put(0x50.toByte())
-                        frame.extra.forEach { buffer.put(it) }
+                        extra.forEach { buffer.put(it) }
                         buffer.put(frame.rawBuffer)
                         buffer.rewind()
                         frame.copy(rawBuffer = buffer)
