@@ -20,7 +20,7 @@ package io.github.thibaultbee.streampack.core.elements.processing.audio
  */
 interface IAudioFrameProcessor {
     /**
-     * Mute audio.
+     * Whether the processor is muted.
      */
     var isMuted: Boolean
 }

@@ -134,12 +134,12 @@ internal class AudioInput(
     /**
      * The audio processor.
      */
-    private val frameProcessorInternal = AudioFrameProcessor()
-    override val processor: IAudioFrameProcessor = frameProcessorInternal
+    private val processorInternal = AudioFrameProcessor(dispatcherProvider.default)
+    override val processor: IAudioFrameProcessor = processorInternal
     private val port = if (config is PushConfig) {
-        PushAudioPort(frameProcessorInternal, config, dispatcherProvider)
+        PushAudioPort(processorInternal, config, dispatcherProvider)
     } else {
-        CallbackAudioPort(frameProcessorInternal) // No threading needed, called from encoder thread
+        CallbackAudioPort(processorInternal) // No threading needed, called from encoder thread
     }
 
     // CONFIG
@@ -362,6 +362,15 @@ internal class AudioInput(
                     )
                 }
 
+                try {
+                    processorInternal.close()
+                } catch (t: Throwable) {
+                    Logger.w(
+                        TAG,
+                        "release: Can't close audio processor: ${t.message}"
+                    )
+                }
+
                 isStreamingJob.cancel()
             }
             coroutineScope.coroutineContext.cancelChildren()
@@ -434,7 +443,7 @@ private class CallbackAudioPort(private val audioFrameProcessor: AudioFrameProce
                     }
                     getFrame(RawFrame(buffer, 0))
                 }
-                return audioFrameProcessor.processFrame(frame)
+                return audioFrameProcessor.process(frame)
             }
         }
 
