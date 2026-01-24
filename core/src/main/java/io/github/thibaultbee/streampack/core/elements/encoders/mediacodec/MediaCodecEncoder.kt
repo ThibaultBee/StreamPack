@@ -22,7 +22,7 @@ import android.media.MediaFormat
 import android.os.Bundle
 import android.util.Log
 import android.view.Surface
-import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
+import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.EncoderMode
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal
@@ -249,8 +249,6 @@ internal constructor(
             if (input is SurfaceInput) {
                 input.release()
             }
-
-            frameFactory.close()
         } catch (_: Throwable) {
         } finally {
             setState(State.RELEASED)
@@ -604,7 +602,7 @@ internal constructor(
          */
         fun frame(
             index: Int, outputFormat: MediaFormat, info: BufferInfo, tag: String
-        ): FrameWithCloseable {
+        ): Frame {
             var pts = info.presentationTimeUs
             if (pts <= previousPresentationTimeUs) {
                 pts = previousPresentationTimeUs + 1
@@ -628,7 +626,7 @@ internal constructor(
             ptsInUs: Long,
             isKeyFrame: Boolean,
             tag: String
-        ): FrameWithCloseable {
+        ): Frame {
             val buffer = requireNotNull(codec.getOutputBuffer(index))
             val extra = if (isKeyFrame || !isVideo) {
                 outputFormat.extra
@@ -641,11 +639,14 @@ internal constructor(
                 buffer
             }
 
-            val frame = pool.get(rawBuffer, ptsInUs, null, isKeyFrame, extra, outputFormat)
-
-            return FrameWithCloseable(
-                frame,
-                onClosed = {
+            return pool.get(
+                rawBuffer,
+                ptsInUs,
+                null,
+                isKeyFrame,
+                extra,
+                outputFormat,
+                onClosed = { frame ->
                     try {
                         codec.releaseOutputBuffer(index, false)
                         pool.put(frame)

@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.pipelines.outputs.encoding
 import android.content.Context
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
+import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
@@ -239,7 +239,7 @@ internal class EncodingPipelineOutput(
         }
 
         override val outputChannel =
-            Channel<FrameWithCloseable>(Channel.UNLIMITED, onUndeliveredElement = {
+            Channel<Frame>(Channel.UNLIMITED, onUndeliveredElement = {
                 it.close()
             })
     }
@@ -250,7 +250,7 @@ internal class EncodingPipelineOutput(
         }
 
         override val outputChannel =
-            Channel<FrameWithCloseable>(Channel.UNLIMITED, onUndeliveredElement = {
+            Channel<Frame>(Channel.UNLIMITED, onUndeliveredElement = {
                 it.close()
             })
     }
@@ -259,10 +259,10 @@ internal class EncodingPipelineOutput(
         if (withAudio) {
             coroutineScope.launch(audioOutputDispatcher) {
                 // Audio
-                audioEncoderListener.outputChannel.consumeEach { closeableFrame ->
+                audioEncoderListener.outputChannel.consumeEach { frame ->
                     try {
                         audioStreamId?.let {
-                            endpointInternal.write(closeableFrame, it)
+                            endpointInternal.write(frame, it)
                         } ?: Logger.w(TAG, "Audio frame received but audio stream is not set")
                     } catch (t: Throwable) {
                         onInternalError(t)
@@ -273,10 +273,10 @@ internal class EncodingPipelineOutput(
         if (withVideo) {
             coroutineScope.launch(videoOutputDispatcher) {
                 // Video
-                videoEncoderListener.outputChannel.consumeEach { closeableFrame ->
+                videoEncoderListener.outputChannel.consumeEach { frame ->
                     try {
                         videoStreamId?.let {
-                            endpointInternal.write(closeableFrame, it)
+                            endpointInternal.write(frame, it)
                         } ?: Logger.w(TAG, "Video frame received but video stream is not set")
                     } catch (t: Throwable) {
                         onInternalError(t)
