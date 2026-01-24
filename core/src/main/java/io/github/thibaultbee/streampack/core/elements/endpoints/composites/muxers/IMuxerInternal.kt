@@ -15,7 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers
 
-import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
+import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.Packet
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
@@ -32,7 +32,7 @@ interface IMuxerInternal :
         fun onOutputFrame(packet: Packet)
     }
 
-    fun write(closeableFrame: FrameWithCloseable, streamPid: Int)
+    fun write(frame: Frame, streamPid: Int)
 
     fun addStreams(streamsConfig: List<CodecConfig>): Map<CodecConfig, Int>
 

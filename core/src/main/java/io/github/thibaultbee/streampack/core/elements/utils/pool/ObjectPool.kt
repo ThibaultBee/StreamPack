@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.utils.pool
 
+import io.github.thibaultbee.streampack.core.logger.Logger
 import java.io.Closeable
 import java.util.ArrayDeque
 import java.util.concurrent.atomic.AtomicBoolean

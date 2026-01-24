@@ -50,7 +50,7 @@ data class RawFrame(
 /**
  * Encoded frame representation
  */
-interface Frame {
+interface Frame : Closeable {
     /**
      * Contains an audio or video frame data.
      */
@@ -85,13 +85,18 @@ interface Frame {
     val format: MediaFormat
 }
 
+interface WithClosable<T> {
+    val onClosed: (T) -> Unit
+}
+
 fun Frame.copy(
     rawBuffer: ByteBuffer = this.rawBuffer,
     ptsInUs: Long = this.ptsInUs,
     dtsInUs: Long? = this.dtsInUs,
     isKeyFrame: Boolean = this.isKeyFrame,
     extra: List<ByteBuffer>? = this.extra,
-    format: MediaFormat = this.format
+    format: MediaFormat = this.format,
+    onClosed: (Frame) -> Unit = {}
 ): Frame {
     return MutableFrame(
         rawBuffer = rawBuffer,
@@ -99,7 +104,8 @@ fun Frame.copy(
         dtsInUs = dtsInUs,
         isKeyFrame = isKeyFrame,
         extra = extra,
-        format = format
+        format = format,
+        onClosed = onClosed
     )
 }
 
@@ -141,16 +147,13 @@ data class MutableFrame(
      * Contains frame format..
      * TODO: to remove
      */
-    override var format: MediaFormat
-) : Frame
+    override var format: MediaFormat,
 
-/**
- * Frame internal representation.
- */
-data class FrameWithCloseable(
-    val frame: Frame,
-    val onClosed: (FrameWithCloseable) -> Unit
-) : Closeable {
+    /**
+     * A callback to call when frame is closed.
+     */
+    override var onClosed: (MutableFrame) -> Unit = {}
+) : Frame, WithClosable<MutableFrame> {
     override fun close() {
         try {
             onClosed(this)
@@ -158,11 +161,4 @@ data class FrameWithCloseable(
             // Nothing to do
         }
     }
-}
-
-/**
- * Uses the resource and unwraps the [Frame] to pass it to the given block.
- */
-inline fun <T> FrameWithCloseable.useAndUnwrap(block: (Frame) -> T) = use {
-    block(frame)
 }
