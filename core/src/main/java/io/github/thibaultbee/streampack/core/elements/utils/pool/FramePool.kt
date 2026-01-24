@@ -18,7 +18,6 @@ package io.github.thibaultbee.streampack.core.elements.utils.pool
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.core.elements.data.MutableFrame
 import java.nio.ByteBuffer
-import java.util.ArrayDeque
 
 
 /**
@@ -31,7 +30,8 @@ internal class FramePool() : ObjectPool<MutableFrame>() {
         dtsInUs: Long?,
         isKeyFrame: Boolean,
         extra: List<ByteBuffer>?,
-        format: MediaFormat
+        format: MediaFormat,
+        onClosed: (MutableFrame) -> Unit
     ): MutableFrame {
         val frame = get()
 
@@ -42,6 +42,7 @@ internal class FramePool() : ObjectPool<MutableFrame>() {
             frame.isKeyFrame = isKeyFrame
             frame.extra = extra
             frame.format = format
+            frame.onClosed = onClosed
             frame
         } else {
             MutableFrame(
@@ -50,7 +51,8 @@ internal class FramePool() : ObjectPool<MutableFrame>() {
                 dtsInUs = dtsInUs,
                 isKeyFrame = isKeyFrame,
                 extra = extra,
-                format = format
+                format = format,
+                onClosed = onClosed
             )
         }
     }
