@@ -293,7 +293,15 @@ private class DefaultSurfaceProcessor(
             return
         }
 
-        surfaceTexture.updateTexImage()
+        // Guard against race condition where frame callback fires after surface is released
+        // This can happen when removeInputSurface is called while a frame is being processed
+        try {
+            surfaceTexture.updateTexImage()
+        } catch (e: RuntimeException) {
+            // Surface was already released or in invalid state - ignore this frame
+            Logger.w(TAG, "updateTexImage failed (surface likely released): ${e.message}")
+            return
+        }
         surfaceTexture.getTransformMatrix(textureMatrix)
 
         val timeConverter = surfaceInputsToTimeConverterMap[surfaceTexture]!!
