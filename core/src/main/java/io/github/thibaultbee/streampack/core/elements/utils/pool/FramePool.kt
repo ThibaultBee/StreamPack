@@ -56,4 +56,11 @@ internal class FramePool() : ObjectPool<MutableFrame>() {
             )
         }
     }
+
+    companion object {
+        /**
+         * The default frame pool.
+         */
+        internal val default by lazy { FramePool() }
+    }
 }

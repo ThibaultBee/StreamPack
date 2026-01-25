@@ -56,7 +56,6 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.boxes.VPCodecConfigurationBox
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.utils.createHandlerBox
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.utils.createTypeMediaHeaderBox
-import io.github.thibaultbee.streampack.core.elements.utils.time.TimeUtils
 import io.github.thibaultbee.streampack.core.elements.utils.av.audio.opus.OpusCsdParser
 import io.github.thibaultbee.streampack.core.elements.utils.av.descriptors.AudioSpecificConfigDescriptor
 import io.github.thibaultbee.streampack.core.elements.utils.av.descriptors.ESDescriptor
@@ -70,6 +69,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.isAvcc
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.removeStartCode
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.resolution
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.startCodeSize
+import io.github.thibaultbee.streampack.core.elements.utils.time.TimeUtils
 import java.nio.ByteBuffer
 
 /**
@@ -184,34 +184,38 @@ class TrackChunks(
     fun write() {
         chunks.forEach { chunk ->
             chunk.writeTo { frame ->
-                when (track.config.mimeType) {
-                    MediaFormat.MIMETYPE_VIDEO_HEVC,
-                    MediaFormat.MIMETYPE_VIDEO_AVC -> {
-                        if (frame.rawBuffer.isAnnexB) {
-                            // Replace start code with size (from Annex B to AVCC)
-                            val noStartCodeBuffer = frame.rawBuffer.removeStartCode()
-                            val sizeBuffer = ByteBuffer.allocate(4)
-                            sizeBuffer.putInt(0, noStartCodeBuffer.remaining())
-                            onNewSample(sizeBuffer)
-                            onNewSample(noStartCodeBuffer)
-                        } else if (frame.rawBuffer.isAvcc) {
-                            onNewSample(frame.rawBuffer)
-                        } else {
-                            throw IllegalArgumentException(
-                                "Unsupported buffer format: buffer start with 0x${
-                                    frame.rawBuffer.get(
-                                        0
-                                    ).toString(16)
-                                }, 0x${frame.rawBuffer.get(1).toString(16)}, 0x${
-                                    frame.rawBuffer.get(2).toString(16)
-                                }, 0x${frame.rawBuffer.get(3).toString(16)}"
-                            )
+                try {
+                    when (track.config.mimeType) {
+                        MediaFormat.MIMETYPE_VIDEO_HEVC,
+                        MediaFormat.MIMETYPE_VIDEO_AVC -> {
+                            if (frame.rawBuffer.isAnnexB) {
+                                // Replace start code with size (from Annex B to AVCC)
+                                val noStartCodeBuffer = frame.rawBuffer.removeStartCode()
+                                val sizeBuffer = ByteBuffer.allocate(4)
+                                sizeBuffer.putInt(0, noStartCodeBuffer.remaining())
+                                onNewSample(sizeBuffer)
+                                onNewSample(noStartCodeBuffer)
+                            } else if (frame.rawBuffer.isAvcc) {
+                                onNewSample(frame.rawBuffer)
+                            } else {
+                                throw IllegalArgumentException(
+                                    "Unsupported buffer format: buffer start with 0x${
+                                        frame.rawBuffer.get(
+                                            0
+                                        ).toString(16)
+                                    }, 0x${frame.rawBuffer.get(1).toString(16)}, 0x${
+                                        frame.rawBuffer.get(2).toString(16)
+                                    }, 0x${frame.rawBuffer.get(3).toString(16)}"
+                                )
+                            }
                         }
-                    }
 
-                    else -> {
-                        onNewSample(frame.rawBuffer)
-                    } // Nothing
+                        else -> {
+                            onNewSample(frame.rawBuffer)
+                        } // Nothing
+                    }
+                } finally {
+                    frame.close()
                 }
             }
         }
