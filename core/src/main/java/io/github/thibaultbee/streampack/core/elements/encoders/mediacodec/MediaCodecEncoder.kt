@@ -43,6 +43,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.Closeable
+import java.nio.ByteBuffer
 import kotlin.math.min
 
 /**
@@ -63,6 +64,12 @@ internal constructor(
     private val mediaCodec: MediaCodec
     private val format: MediaFormat
     private var outputFormat: MediaFormat? = null
+        set(value) {
+            extra = value?.extra
+            field = value
+        }
+    private var extra: List<ByteBuffer>? = null
+
     private val frameFactory by lazy { FrameFactory(mediaCodec, isVideo) }
 
     private val isVideo = encoderConfig.isVideo
@@ -353,7 +360,7 @@ internal constructor(
             info.isValid -> {
                 try {
                     val frame = frameFactory.frame(
-                        index, outputFormat!!, info, tag
+                        index, extra, outputFormat!!, info, tag
                     )
                     try {
                         listener.outputChannel.send(frame)
@@ -601,7 +608,11 @@ internal constructor(
          * @return the created frame
          */
         fun frame(
-            index: Int, outputFormat: MediaFormat, info: BufferInfo, tag: String
+            index: Int,
+            extra: List<ByteBuffer>?,
+            outputFormat: MediaFormat,
+            info: BufferInfo,
+            tag: String
         ): Frame {
             var pts = info.presentationTimeUs
             if (pts <= previousPresentationTimeUs) {
@@ -609,7 +620,7 @@ internal constructor(
                 Logger.w(tag, "Correcting timestamp: $pts <= $previousPresentationTimeUs")
             }
             previousPresentationTimeUs = pts
-            return createFrame(codec, index, outputFormat, pts, info.isKeyFrame, tag)
+            return createFrame(codec, index, extra, outputFormat, pts, info.isKeyFrame, tag)
         }
 
         /**
@@ -622,6 +633,7 @@ internal constructor(
         private fun createFrame(
             codec: MediaCodec,
             index: Int,
+            extra: List<ByteBuffer>?,
             outputFormat: MediaFormat,
             ptsInUs: Long,
             isKeyFrame: Boolean,
@@ -629,7 +641,7 @@ internal constructor(
         ): Frame {
             val buffer = requireNotNull(codec.getOutputBuffer(index))
             val extra = if (isKeyFrame || !isVideo) {
-                outputFormat.extra
+                extra!!.map { it.duplicate() }
             } else {
                 null
             }
