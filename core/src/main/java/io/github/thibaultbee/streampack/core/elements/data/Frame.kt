@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.core.elements.data
 
 import android.media.MediaFormat
+import io.github.thibaultbee.streampack.core.elements.utils.pool.FramePool
 import java.io.Closeable
 import java.nio.ByteBuffer
 
@@ -89,6 +90,11 @@ interface WithClosable<T> {
     val onClosed: (T) -> Unit
 }
 
+/**
+ * Copy a [Frame] to a new [Frame].
+ *
+ * For better memory allocation, you should close the returned frame after usage.
+ */
 fun Frame.copy(
     rawBuffer: ByteBuffer = this.rawBuffer,
     ptsInUs: Long = this.ptsInUs,
@@ -98,15 +104,13 @@ fun Frame.copy(
     format: MediaFormat = this.format,
     onClosed: (Frame) -> Unit = {}
 ): Frame {
-    return MutableFrame(
-        rawBuffer = rawBuffer,
-        ptsInUs = ptsInUs,
-        dtsInUs = dtsInUs,
-        isKeyFrame = isKeyFrame,
-        extra = extra,
-        format = format,
-        onClosed = onClosed
-    )
+    val pool = FramePool.default
+    return pool.get(
+        rawBuffer, ptsInUs, dtsInUs, isKeyFrame, extra, format,
+        { frame ->
+            pool.put(frame)
+            onClosed(frame)
+        })
 }
 
 
