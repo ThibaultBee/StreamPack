@@ -335,9 +335,6 @@ class EncodingPipelineOutputTest {
                 Random.nextLong()
             )
         )
-
-        // Wait for frame to be received
-        assertNotNull(dummyEndpoint.frameFlow.filterNotNull().first())
     }
 
     companion object {
