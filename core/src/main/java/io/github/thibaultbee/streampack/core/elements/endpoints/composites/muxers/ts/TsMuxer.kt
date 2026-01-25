@@ -154,8 +154,14 @@ class TsMuxer : IMuxerInternal {
                 else -> throw IllegalArgumentException("Unsupported mimeType $mimeType")
             }
 
-            synchronized(this) {
-                generateStreams(newFrame, pes)
+            try {
+                synchronized(this) {
+                    generateStreams(newFrame, pes)
+                }
+            } finally {
+                if (frame != newFrame) {
+                    newFrame.close()
+                }
             }
         } finally {
             frame.close()
