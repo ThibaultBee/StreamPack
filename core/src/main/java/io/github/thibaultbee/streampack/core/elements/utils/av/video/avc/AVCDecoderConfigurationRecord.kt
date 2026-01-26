@@ -19,8 +19,8 @@ import io.github.thibaultbee.streampack.core.elements.utils.av.buffer.ByteBuffer
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.ChromaFormat
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.put
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.putShort
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.removeStartCode
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.shl
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.skipStartCode
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.startCodeSize
 import java.nio.ByteBuffer
 
@@ -33,8 +33,8 @@ data class AVCDecoderConfigurationRecord(
     private val sps: List<ByteBuffer>,
     private val pps: List<ByteBuffer>
 ) : ByteBufferWriter() {
-    private val spsNoStartCode: List<ByteBuffer> = sps.map { it.removeStartCode() }
-    private val ppsNoStartCode: List<ByteBuffer> = pps.map { it.removeStartCode() }
+    private val spsNoStartCode: List<ByteBuffer> = sps.map { it.skipStartCode() }
+    private val ppsNoStartCode: List<ByteBuffer> = pps.map { it.skipStartCode() }
 
     override val size: Int = getSize(spsNoStartCode, ppsNoStartCode)
 
@@ -86,11 +86,13 @@ data class AVCDecoderConfigurationRecord(
             sps: List<ByteBuffer>,
             pps: List<ByteBuffer>
         ): AVCDecoderConfigurationRecord {
-            val spsNoStartCode = sps.map { it.removeStartCode() }
-            val ppsNoStartCode = pps.map { it.removeStartCode() }
-            val profileIdc: Byte = spsNoStartCode[0].get(1)
-            val profileCompatibility = spsNoStartCode[0].get(2)
-            val levelIdc = spsNoStartCode[0].get(3)
+            val spsNoStartCode = sps.map { it.skipStartCode() }
+            val ppsNoStartCode = pps.map { it.skipStartCode() }
+            val firstSpsNoStartCode = spsNoStartCode[0]
+            val firstSpsNoStartCodePosition = firstSpsNoStartCode.position()
+            val profileIdc: Byte = firstSpsNoStartCode.get(firstSpsNoStartCodePosition + 1)
+            val profileCompatibility = firstSpsNoStartCode.get(firstSpsNoStartCodePosition + 2)
+            val levelIdc = firstSpsNoStartCode.get(firstSpsNoStartCodePosition + 3)
             return AVCDecoderConfigurationRecord(
                 profileIdc = profileIdc,
                 profileCompatibility = profileCompatibility,
@@ -112,7 +114,8 @@ data class AVCDecoderConfigurationRecord(
                 size += 2 + it.remaining() - it.startCodeSize
             }
             val spsStartCodeSize = sps[0].startCodeSize
-            val profileIdc = sps[0].get(spsStartCodeSize + 1).toInt()
+            val spsPosition = sps[0].position()
+            val profileIdc = sps[0].get(spsPosition + spsStartCodeSize + 1).toInt()
             if ((profileIdc == 100) || (profileIdc == 110) || (profileIdc == 122) || (profileIdc == 144)) {
                 size += 4
             }

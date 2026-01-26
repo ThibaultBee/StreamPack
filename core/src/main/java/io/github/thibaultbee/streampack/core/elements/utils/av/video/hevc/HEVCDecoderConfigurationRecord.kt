@@ -20,7 +20,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.av.video.ChromaForma
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.put
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.putLong48
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.putShort
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.removeStartCode
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.skipStartCode
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.shl
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.shr
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.startCodeSize
@@ -195,7 +195,7 @@ data class HEVCDecoderConfigurationRecord(
     }
 
     data class NalUnit(val type: Type, val data: ByteBuffer, val completeness: Boolean = true) {
-        val noStartCodeData: ByteBuffer = data.removeStartCode()
+        val noStartCodeData: ByteBuffer = data.skipStartCode()
 
         fun write(buffer: ByteBuffer) {
             buffer.put((completeness shl 7) or type.value.toInt()) // array_completeness + reserved 1bit + naluType 6 bytes
