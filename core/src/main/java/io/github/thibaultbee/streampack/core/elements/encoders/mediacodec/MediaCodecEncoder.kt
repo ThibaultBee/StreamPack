@@ -531,7 +531,7 @@ internal constructor(
             }
             val inputBuffer = requireNotNull(mediaCodec.getInputBuffer(inputBufferId))
             val size = min(frame.rawBuffer.remaining(), inputBuffer.remaining())
-            inputBuffer.put(frame.rawBuffer, frame.rawBuffer.position(), size)
+            inputBuffer.put(frame.rawBuffer, 0, size)
             mediaCodec.queueInputBuffer(
                 inputBufferId, 0, size, frame.timestampInUs, 0
             )
