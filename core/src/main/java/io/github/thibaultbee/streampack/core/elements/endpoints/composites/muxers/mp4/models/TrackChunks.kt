@@ -66,7 +66,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.av.video.vpx.VPCodec
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.clone
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isAnnexB
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isAvcc
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.removeStartCode
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.skipStartCode
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.resolution
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.startCodeSize
 import io.github.thibaultbee.streampack.core.elements.utils.time.TimeUtils
@@ -190,7 +190,7 @@ class TrackChunks(
                         MediaFormat.MIMETYPE_VIDEO_AVC -> {
                             if (frame.rawBuffer.isAnnexB) {
                                 // Replace start code with size (from Annex B to AVCC)
-                                val noStartCodeBuffer = frame.rawBuffer.removeStartCode()
+                                val noStartCodeBuffer = frame.rawBuffer.skipStartCode()
                                 val sizeBuffer = ByteBuffer.allocate(4)
                                 sizeBuffer.putInt(0, noStartCodeBuffer.remaining())
                                 onNewSample(sizeBuffer)

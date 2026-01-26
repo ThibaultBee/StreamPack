@@ -30,7 +30,6 @@ import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extens
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.isKeyFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.isValid
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.extra
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.put
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.removePrefixes
 import io.github.thibaultbee.streampack.core.elements.utils.pool.FramePool
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -44,7 +43,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.Closeable
 import java.nio.ByteBuffer
-import kotlin.math.min
 
 /**
  * The [MediaCodec] encoder implementation.
@@ -530,8 +528,8 @@ internal constructor(
                 return false
             }
             val inputBuffer = requireNotNull(mediaCodec.getInputBuffer(inputBufferId))
-            val size = min(frame.rawBuffer.remaining(), inputBuffer.remaining())
-            inputBuffer.put(frame.rawBuffer, frame.rawBuffer.position(), size)
+            val size = frame.rawBuffer.remaining()
+            inputBuffer.put(frame.rawBuffer)
             mediaCodec.queueInputBuffer(
                 inputBufferId, 0, size, frame.timestampInUs, 0
             )
