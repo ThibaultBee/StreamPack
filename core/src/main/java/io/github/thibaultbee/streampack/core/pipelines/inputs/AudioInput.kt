@@ -24,10 +24,11 @@ import io.github.thibaultbee.streampack.core.elements.processing.RawFramePullPus
 import io.github.thibaultbee.streampack.core.elements.processing.audio.AudioFrameProcessor
 import io.github.thibaultbee.streampack.core.elements.processing.audio.IAudioFrameProcessor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioFrameSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
-import io.github.thibaultbee.streampack.core.elements.utils.pool.IRawFrameFactory
+import io.github.thibaultbee.streampack.core.elements.utils.pool.RawFramePool
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_AUDIO_PREPROCESSING
 import io.github.thibaultbee.streampack.core.pipelines.IAudioDispatcherProvider
@@ -200,15 +201,7 @@ internal class AudioInput(
                     }
                 }
 
-                when (port) {
-                    is PushAudioPort -> {
-                        port.setInput(newAudioSource::getAudioFrame)
-                    }
-
-                    is CallbackAudioPort -> {
-                        port.setInput(newAudioSource::fillAudioFrame)
-                    }
-                }
+                port.setInput(newAudioSource)
 
                 // Replace audio source
                 sourceInternalFlow.emit(newAudioSource)
@@ -380,8 +373,8 @@ internal class AudioInput(
     internal class CallbackConfig : Config()
 }
 
-private sealed interface IAudioPort<T> : Streamable, Releasable {
-    suspend fun setInput(getFrame: T)
+private sealed interface IAudioPort : Streamable, Releasable {
+    suspend fun setInput(source: IAudioFrameSourceInternal)
     suspend fun removeInput()
 }
 
@@ -389,7 +382,7 @@ private class PushAudioPort(
     audioFrameProcessor: AudioFrameProcessor,
     config: PushConfig,
     dispatcherProvider: IAudioDispatcherProvider
-) : IAudioPort<(frameFactory: IRawFrameFactory) -> RawFrame> {
+) : IAudioPort {
     private val audioPullPush = RawFramePullPush(
         audioFrameProcessor,
         config.onFrame,
@@ -399,8 +392,8 @@ private class PushAudioPort(
         )
     )
 
-    override suspend fun setInput(getFrame: (frameFactory: IRawFrameFactory) -> RawFrame) {
-        audioPullPush.setInput(getFrame)
+    override suspend fun setInput(source: IAudioFrameSourceInternal) {
+        audioPullPush.setInput(source)
     }
 
     override suspend fun removeInput() {
@@ -421,32 +414,35 @@ private class PushAudioPort(
 }
 
 private class CallbackAudioPort(private val audioFrameProcessor: AudioFrameProcessor) :
-    IAudioPort<(frame: RawFrame) -> RawFrame> {
-    private var getFrame: ((frame: RawFrame) -> RawFrame)? = null
+    IAudioPort {
     private val mutex = Mutex()
+    private val pool = RawFramePool()
+
+    private var source: IAudioFrameSourceInternal? = null
 
     var audioFrameRequestedListener: OnFrameRequestedListener =
         object : OnFrameRequestedListener {
             override suspend fun onFrameRequested(buffer: ByteBuffer): RawFrame {
                 val frame = mutex.withLock {
-                    val getFrame = requireNotNull(getFrame) {
+                    val source = requireNotNull(source) {
                         "Audio frame requested listener is not set yet"
                     }
-                    getFrame(RawFrame(buffer, 0))
+                    val timestampInUs = source.fillAudioFrame(buffer)
+                    pool.get(buffer, timestampInUs)
                 }
                 return audioFrameProcessor.processFrame(frame)
             }
         }
 
-    override suspend fun setInput(getFrame: (frame: RawFrame) -> RawFrame) {
+    override suspend fun setInput(source: IAudioFrameSourceInternal) {
         mutex.withLock {
-            this.getFrame = getFrame
+            this.source = source
         }
     }
 
     override suspend fun removeInput() {
         mutex.withLock {
-            this.getFrame = null
+            this.source = null
         }
     }
 
