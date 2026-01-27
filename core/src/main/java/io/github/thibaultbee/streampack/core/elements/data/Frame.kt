@@ -108,7 +108,6 @@ fun Frame.copy(
     return pool.get(
         rawBuffer, ptsInUs, dtsInUs, isKeyFrame, extra, format,
         { frame ->
-            pool.put(frame)
             onClosed(frame)
         })
 }
