@@ -22,18 +22,18 @@ import android.media.AudioTimestamp
 import android.media.audiofx.AudioEffect
 import android.os.Build
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordEffect.Companion.isValidUUID
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordEffect.Factory.Companion.getFactoryForEffectType
+import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordSource.Companion.availableEffect
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordSource.Companion.isEffectAvailable
-import io.github.thibaultbee.streampack.core.elements.utils.time.TimeUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.type
-import io.github.thibaultbee.streampack.core.elements.utils.pool.IReadOnlyRawFrameFactory
+import io.github.thibaultbee.streampack.core.elements.utils.time.TimeUtils
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.nio.ByteBuffer
 import java.util.UUID
 
 /**
@@ -42,7 +42,9 @@ import java.util.UUID
  */
 internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
     private var audioRecord: AudioRecord? = null
-    private var bufferSize: Int? = null
+    private var _minBufferSize: Int? = null
+    override val minBufferSize: Int
+        get() = _minBufferSize ?: throw IllegalStateException("Audio source is not initialized")
 
     private var processor: EffectProcessor? = null
     private var pendingAudioEffects = mutableListOf<UUID>()
@@ -74,9 +76,9 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
             }
         }
 
-        bufferSize = getMinBufferSize(config)
+        _minBufferSize = getMinBufferSize(config)
 
-        audioRecord = buildAudioRecord(config, bufferSize!!).also {
+        audioRecord = buildAudioRecord(config, _minBufferSize!!).also {
             val previousEffects = processor?.getAll() ?: emptyList()
             processor?.clear()
 
@@ -157,30 +159,19 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
     }
 
 
-    override fun fillAudioFrame(frame: RawFrame): RawFrame {
+    override fun fillAudioFrame(
+        buffer: ByteBuffer
+    ): Long {
         val audioRecord = requireNotNull(audioRecord) { "Audio source is not initialized" }
         if (audioRecord.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
             throw IllegalStateException("Audio source is not recording")
         }
 
-        val buffer = frame.rawBuffer
         val length = audioRecord.read(buffer, buffer.remaining())
-        if (length > 0) {
-            frame.timestampInUs = getTimestampInUs(audioRecord)
-            return frame
-        } else {
-            frame.close()
+        if (length <= 0) {
             throw IllegalArgumentException(audioRecordErrorToString(length))
         }
-    }
-
-    override fun getAudioFrame(frameFactory: IReadOnlyRawFrameFactory): RawFrame {
-        val bufferSize = requireNotNull(bufferSize) { "Buffer size is not initialized" }
-
-        /**
-         * Dummy timestamp: it is overwritten later.
-         */
-        return fillAudioFrame(frameFactory.create(bufferSize, 0))
+        return getTimestampInUs(audioRecord)
     }
 
     /**
