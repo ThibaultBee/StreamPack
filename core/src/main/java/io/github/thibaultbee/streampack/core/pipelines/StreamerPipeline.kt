@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.core.pipelines
 
 import android.content.Context
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
+import io.github.thibaultbee.streampack.core.elements.data.copy
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.processing.video.DefaultSurfaceProcessorFactory
@@ -70,7 +71,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import java.io.Closeable
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -246,25 +246,17 @@ open class StreamerPipeline(
                     Logger.e(TAG, "Error while queueing audio frame to output: $t")
                 }
             } else {
-                // Hook to close frame when all outputs have processed it
-                var numOfClosed = 0
-                val onClosed = { frame: Closeable ->
-                    numOfClosed++
-                    if (numOfClosed == audioStreamingOutput.size) {
-                        frame.close()
-                    }
-                }
                 audioStreamingOutput.forEachIndexed { index, output ->
                     try {
                         output.queueAudioFrame(
-                            frame.copy(
-                                rawBuffer = if (index == audioStreamingOutput.lastIndex) {
-                                    frame.rawBuffer
-                                } else {
-                                    frame.rawBuffer.duplicate()
-                                },
-                                onClosed = onClosed
-                            )
+                            if (index == audioStreamingOutput.lastIndex) {
+                                frame
+                            } else {
+                                frame.copy(
+                                    rawBuffer =
+                                        frame.rawBuffer.duplicate()
+                                )
+                            }
                         )
                     } catch (t: Throwable) {
                         Logger.e(TAG, "Error while queueing audio frame to output $output: $t")

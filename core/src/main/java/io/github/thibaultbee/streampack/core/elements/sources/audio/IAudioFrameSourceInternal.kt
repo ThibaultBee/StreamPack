@@ -15,26 +15,20 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.audio
 
-import io.github.thibaultbee.streampack.core.elements.data.RawFrame
-import io.github.thibaultbee.streampack.core.elements.utils.pool.IRawFrameFactory
-import io.github.thibaultbee.streampack.core.elements.utils.pool.IReadOnlyRawFrameFactory
+import java.nio.ByteBuffer
 
 interface IAudioFrameSourceInternal {
     /**
-     * Gets an audio frame from the source.
-     *
-     * @param frame the [RawFrame] to fill with audio data.
-     * @return a [RawFrame] containing audio data.
+     * Gets the size of the buffer to allocate.
+     * When using encoder is callback mode, it's unused.
      */
-    fun fillAudioFrame(frame: RawFrame): RawFrame
+    val minBufferSize: Int
 
     /**
      * Gets an audio frame from the source.
      *
-     * The [RawFrame] to fill with audio data is created by the [frameFactory].
-     *
-     * @param frameFactory a [IRawFrameFactory] to create [RawFrame].
-     * @return a [RawFrame] containing audio data.
+     * @param buffer the [ByteBuffer] to fill with audio data.
+     * @return the timestamp in microseconds.
      */
-    fun getAudioFrame(frameFactory: IReadOnlyRawFrameFactory): RawFrame
+    fun fillAudioFrame(buffer: ByteBuffer): Long
 }

@@ -17,28 +17,64 @@ package io.github.thibaultbee.streampack.core.elements.data
 
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.core.elements.utils.pool.FramePool
+import io.github.thibaultbee.streampack.core.elements.utils.pool.RawFramePool
 import java.io.Closeable
 import java.nio.ByteBuffer
 
 /**
- * A raw frame internal representation.
+ * Encoded frame representation
  */
-data class RawFrame(
+interface RawFrame : Closeable {
     /**
      * Contains an audio or video frame data.
      */
-    val rawBuffer: ByteBuffer,
+    val rawBuffer: ByteBuffer
 
     /**
      * Presentation timestamp in µs
      */
-    var timestampInUs: Long,
+    val timestampInUs: Long
+}
 
+
+/**
+ * Copy a [RawFrame] to a new [RawFrame].
+ *
+ * For better memory allocation, you should close the returned frame after usage.
+ */
+fun RawFrame.copy(
+    rawBuffer: ByteBuffer = this.rawBuffer,
+    timestampInUs: Long = this.timestampInUs,
+    onClosed: (RawFrame) -> Unit = {}
+): RawFrame {
+    val pool = RawFramePool.default
+    return pool.get(
+        rawBuffer, timestampInUs,
+        { frame ->
+            onClosed(frame)
+        })
+}
+
+/**
+ * A mutable [RawFrame] internal representation.
+ *
+ * The purpose is to get reusable [RawFrame]
+ */
+data class MutableRawFrame(
+    /**
+     * Contains an audio or video frame data.
+     */
+    override var rawBuffer: ByteBuffer,
+
+    /**
+     * Presentation timestamp in µs
+     */
+    override var timestampInUs: Long,
     /**
      * A callback to call when frame is closed.
      */
-    val onClosed: (RawFrame) -> Unit = {}
-) : Closeable {
+    override var onClosed: (MutableRawFrame) -> Unit = {}
+) : RawFrame, WithClosable<MutableRawFrame> {
     override fun close() {
         try {
             onClosed(this)
