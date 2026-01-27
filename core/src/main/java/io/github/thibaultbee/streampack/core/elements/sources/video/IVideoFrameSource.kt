@@ -15,17 +15,15 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.video
 
-import io.github.thibaultbee.streampack.core.elements.data.RawFrame
-import io.github.thibaultbee.streampack.core.elements.utils.pool.IRawFrameFactory
-import io.github.thibaultbee.streampack.core.elements.utils.pool.IReadOnlyRawFrameFactory
+import java.nio.ByteBuffer
 
 interface IVideoFrameSourceInternal {
 
     /**
      * Gets a video frame from a source.
      *
-     * @param frameFactory a [IRawFrameFactory] to create [RawFrame].
-     * @return a [RawFrame] containing video data.
+     * @param buffer The buffer to fill with the video frame.
+     * @return The timestamp in microseconds of the video frame.
      */
-    fun getVideoFrame(frameFactory: IReadOnlyRawFrameFactory): RawFrame
+    fun getVideoFrame(buffer: ByteBuffer): Long
 }
