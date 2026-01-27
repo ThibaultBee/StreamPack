@@ -35,6 +35,11 @@ internal class FramePool() : ObjectPool<MutableFrame>() {
     ): MutableFrame {
         val frame = get()
 
+        val onClosedHook = { frame: MutableFrame ->
+            onClosed(frame)
+            put(frame)
+        }
+
         return if (frame != null) {
             frame.rawBuffer = rawBuffer
             frame.ptsInUs = ptsInUs
@@ -42,7 +47,7 @@ internal class FramePool() : ObjectPool<MutableFrame>() {
             frame.isKeyFrame = isKeyFrame
             frame.extra = extra
             frame.format = format
-            frame.onClosed = onClosed
+            frame.onClosed = onClosedHook
             frame
         } else {
             MutableFrame(
@@ -52,7 +57,7 @@ internal class FramePool() : ObjectPool<MutableFrame>() {
                 isKeyFrame = isKeyFrame,
                 extra = extra,
                 format = format,
-                onClosed = onClosed
+                onClosed = onClosedHook
             )
         }
     }

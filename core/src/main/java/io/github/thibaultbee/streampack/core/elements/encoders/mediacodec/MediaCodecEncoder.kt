@@ -658,10 +658,9 @@ internal constructor(
                 isKeyFrame,
                 extra,
                 outputFormat,
-                onClosed = { frame ->
+                onClosed = {
                     try {
                         codec.releaseOutputBuffer(index, false)
-                        pool.put(frame)
                     } catch (t: Throwable) {
                         Logger.w(tag, "Failed to release output buffer for code: ${t.message}")
                     }
