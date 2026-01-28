@@ -31,7 +31,7 @@ import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.atomic.AtomicBoolean
 
 fun RawFramePullPush(
-    frameProcessor: IFrameProcessor<RawFrame>,
+    frameProcessor: IProcessor<RawFrame>,
     onFrame: suspend (RawFrame) -> Unit,
     processDispatcher: CoroutineDispatcher,
     isDirect: Boolean = true
@@ -46,7 +46,7 @@ fun RawFramePullPush(
  * @param processDispatcher the dispatcher to process frames on
  */
 class RawFramePullPush(
-    private val frameProcessor: IFrameProcessor<RawFrame>,
+    private val frameProcessor: IProcessor<RawFrame>,
     val onFrame: suspend (RawFrame) -> Unit,
     private val frameFactory: IRawFrameFactory,
     private val processDispatcher: CoroutineDispatcher,
@@ -94,7 +94,7 @@ class RawFramePullPush(
 
                 // Process buffer with effects
                 val processedFrame = try {
-                    frameProcessor.processFrame(rawFrame)
+                    frameProcessor.process(rawFrame)
                 } catch (t: Throwable) {
                     Logger.e(TAG, "Failed to pre-process frame: ${t.message}")
                     continue

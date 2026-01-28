@@ -16,22 +16,76 @@
 package io.github.thibaultbee.streampack.core.elements.processing.audio
 
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
-import io.github.thibaultbee.streampack.core.elements.processing.IFrameProcessor
+import io.github.thibaultbee.streampack.core.elements.processing.IProcessor
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import java.io.Closeable
+import java.util.function.IntFunction
 
 /**
  * Audio frame processor.
  *
- * Only supports mute effect for now.
+ * It is not thread-safe.
  */
-class AudioFrameProcessor : IFrameProcessor<RawFrame>,
-    IAudioFrameProcessor {
+class AudioFrameProcessor(
+    dispatcher: CoroutineDispatcher,
+    private val effects: MutableList<IAudioEffect> = mutableListOf()
+) : IProcessor<RawFrame>, IAudioFrameProcessor, Closeable, MutableList<IAudioEffect> by effects {
+    private val coroutineScope = CoroutineScope(dispatcher + SupervisorJob())
+
+    /**
+     * Whether the audio is muted.
+     *
+     * When the audio is muted, the audio effect are not processed. Only consumer effects are processed.
+     */
     override var isMuted = false
     private val muteEffect = MuteEffect()
 
-    override fun processFrame(frame: RawFrame): RawFrame {
-        if (isMuted) {
-            return muteEffect.processFrame(frame)
+    private fun launchConsumerEffect(
+        effect: IConsumerAudioEffect,
+        isMuted: Boolean,
+        data: RawFrame
+    ) {
+        coroutineScope.launch {
+            val consumeFrame =
+                data.copy(
+                    rawBuffer = data.rawBuffer.duplicate().asReadOnlyBuffer()
+                )
+            effect.consume(isMuted, consumeFrame)
         }
-        return frame
+    }
+
+    override fun process(data: RawFrame): RawFrame {
+        val isMuted = isMuted
+
+        var processedFrame = muteEffect.process(isMuted, data)
+
+        effects.forEach {
+            if (it is IProcessorAudioEffect) {
+                processedFrame = it.process(isMuted, processedFrame)
+            } else if (it is IConsumerAudioEffect) {
+                launchConsumerEffect(it, isMuted, processedFrame)
+            }
+        }
+
+        return processedFrame
+    }
+
+    override fun close() {
+        effects.forEach { it.close() }
+        effects.clear()
+
+        muteEffect.close()
+
+        coroutineScope.cancel()
+    }
+
+    @Deprecated("'fun <T : Any!> toArray(generator: IntFunction<Array<(out) T!>!>!): Array<(out) T!>!' is deprecated. This declaration is redundant in Kotlin and might be removed soon.")
+    @Suppress("DEPRECATION")
+    override fun <T : Any?> toArray(generator: IntFunction<Array<out T?>?>): Array<out T?> {
+        return super.toArray(generator)
     }
 }
