@@ -15,9 +15,8 @@
  */
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4
 
-import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
+import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.Packet
-import io.github.thibaultbee.streampack.core.elements.data.useAndUnwrap
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.mp4.boxes.FileTypeBox
@@ -58,9 +57,9 @@ class Mp4Muxer(
     override val streamConfigs: List<CodecConfig>
         get() = tracks.map { it.config }
 
-    override fun write(closeableFrame: FrameWithCloseable, streamPid: Int) {
+    override fun write(frame: Frame, streamPid: Int) {
         synchronized(this) {
-            closeableFrame.useAndUnwrap { frame ->
+            frame.use { frame ->
                 if (segmenter!!.mustWriteSegment(frame)) {
                     writeSegment()
                 }

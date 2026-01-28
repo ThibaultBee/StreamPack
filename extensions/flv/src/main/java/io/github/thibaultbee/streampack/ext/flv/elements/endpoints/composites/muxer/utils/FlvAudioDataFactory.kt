@@ -24,6 +24,7 @@ import io.github.komedia.komuxer.flv.tags.audio.ExtendedAudioDataFactory
 import io.github.komedia.komuxer.flv.tags.audio.codedFrame
 import io.github.komedia.komuxer.flv.tags.audio.sequenceStart
 import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.get
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.utils.av.audio.opus.OpusCsdParser
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.AudioFlvMuxerInfo
@@ -72,7 +73,7 @@ internal class FlvAudioDataFactory {
             val flvDatas = mutableListOf<AudioData>()
 
             if (withSequenceStart) {
-                val decoderConfigurationRecordBuffer = frame.extra!![0]
+                val decoderConfigurationRecordBuffer = frame.extra!!.get(0)
                 flvDatas.add(
                     aacAudioDataFactory.sequenceStart(
                         decoderConfigurationRecordBuffer
@@ -155,7 +156,7 @@ internal class FlvAudioDataFactory {
             return FlvExtendedAudioDataFactory(
                 ExtendedAudioDataFactory(AudioFourCC.AAC),
                 onSequenceStart = { frame ->
-                    frame.extra!![0]
+                    frame.extra!!.get(0)
                 }
             )
         }
@@ -165,7 +166,7 @@ internal class FlvAudioDataFactory {
                 ExtendedAudioDataFactory(AudioFourCC.OPUS),
                 onSequenceStart = { frame ->
                     frame.extra?.let {
-                        OpusCsdParser.findIdentificationHeader(it[0])
+                        OpusCsdParser.findIdentificationHeader(it.get(0))
                     }
                 }
             )

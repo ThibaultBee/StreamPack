@@ -22,7 +22,7 @@ import io.github.komedia.komuxer.rtmp.client.RtmpClient
 import io.github.komedia.komuxer.rtmp.connect
 import io.github.komedia.komuxer.rtmp.messages.command.StreamPublishType
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
+import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.ClosedException
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
@@ -164,12 +164,11 @@ class RtmpEndpoint internal constructor(
     }
 
     override suspend fun write(
-        closeableFrame: FrameWithCloseable, streamPid: Int
+        frame: Frame, streamPid: Int
     ) {
-        val frame = closeableFrame.frame
         val startUpTimestamp = getStartUpTimestamp(frame.ptsInUs)
         val ts = (frame.ptsInUs - startUpTimestamp) / 1000
-        flvTagBuilder.write(closeableFrame, ts.toInt(), streamPid)
+        flvTagBuilder.write(frame, ts.toInt(), streamPid)
     }
 
     override suspend fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
