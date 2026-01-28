@@ -16,7 +16,6 @@
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera
 
 import android.hardware.camera2.CameraCharacteristics
-import android.hardware.camera2.CameraManager
 import android.util.Size
 import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
@@ -25,10 +24,8 @@ import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotationToDegrees
 
 internal fun CameraInfoProvider(
-    cameraManager: CameraManager,
-    cameraId: String
+    characteristics: CameraCharacteristics
 ): CameraInfoProvider {
-    val characteristics = cameraManager.getCameraCharacteristics(cameraId)
     val rotationDegrees = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 0
     val facingDirection = characteristics.get(CameraCharacteristics.LENS_FACING)
     return CameraInfoProvider(rotationDegrees, facingDirection = facingDirection)

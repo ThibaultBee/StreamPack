@@ -1,3 +1,5 @@
+import utils.AndroidVersions
+
 plugins {
     id(libs.plugins.android.library.get().pluginId)
     id(libs.plugins.kotlin.android.get().pluginId)
@@ -8,6 +10,10 @@ description = "UI components for StreamPack."
 
 android {
     namespace = "io.github.thibaultbee.streampack.ui"
+
+    defaultConfig {
+        minSdk = 23
+    }
 }
 
 dependencies {

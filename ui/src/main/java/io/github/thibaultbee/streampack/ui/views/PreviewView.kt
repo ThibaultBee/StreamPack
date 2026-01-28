@@ -29,15 +29,15 @@ import android.view.SurfaceHolder
 import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import androidx.camera.viewfinder.CameraViewfinder
-import androidx.camera.viewfinder.CameraViewfinderExt.requestSurface
 import androidx.camera.viewfinder.core.ScaleType
+import androidx.camera.viewfinder.core.TransformationInfo
 import androidx.camera.viewfinder.core.ViewfinderSurfaceRequest
-import androidx.camera.viewfinder.core.populateFromCharacteristics
+import androidx.camera.viewfinder.core.ViewfinderSurfaceSession
+import androidx.camera.viewfinder.view.ViewfinderView
+import androidx.camera.viewfinder.view.requestSurfaceSession
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION_MS
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraCharacteristics
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
 import io.github.thibaultbee.streampack.core.elements.utils.OrientationUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.runningHistoryNotNull
@@ -70,9 +70,9 @@ import kotlinx.coroutines.withContext
 class PreviewView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
 ) : FrameLayout(context, attrs, defStyle) {
-    private val viewfinder = CameraViewfinder(context, attrs, defStyle)
+    private val viewfinder = ViewfinderView(context, attrs, defStyle)
 
-    private var viewfinderSurfaceRequest: ViewfinderSurfaceRequest? = null
+    private var surfaceRequestSession: ViewfinderSurfaceSession? = null
 
     /**
      * Enables zoom on pinch gesture.
@@ -337,8 +337,6 @@ class PreviewView @JvmOverloads constructor(
 
     /**
      * Requests a [Surface] for the size and the current streamer video source.
-     *
-     * The [Surface] is emit to the [surfaceFlow].
      */
     private fun startPreview(size: Size) {
         Logger.d(TAG, "Requesting surface for $size")
@@ -352,8 +350,6 @@ class PreviewView @JvmOverloads constructor(
 
     /**
      * Requests a [Surface] for the size and the [videoSource].
-     *
-     * The [Surface] is emit to the [surfaceFlow].
      */
     private fun startPreview(
         size: Size,
@@ -364,27 +360,27 @@ class PreviewView @JvmOverloads constructor(
             return
         }
         val previewSize = getPreviewSize(videoSource, size)
-        val builder = ViewfinderSurfaceRequest.Builder(previewSize)
-        if (videoSource is ICameraSource) {
-            val cameraCharacteristics =
-                context.getCameraCharacteristics(videoSource.cameraId)
-            builder.populateFromCharacteristics(cameraCharacteristics)
-        } else {
-            val rotationDegrees = OrientationUtils.getSurfaceRotationDegrees(display.rotation)
-            builder.setSourceOrientation(rotationDegrees)
-        }
+        val request = ViewfinderSurfaceRequest(previewSize.width, previewSize.height)
         defaultScope.launch {
-            startPreview(videoSource, builder)
+            startPreview(videoSource, request)
         }
     }
 
     private suspend fun startPreview(
-        videoSource: IPreviewableSource, viewfinderBuilder: ViewfinderSurfaceRequest.Builder
+        videoSource: IPreviewableSource, viewfinderRequest: ViewfinderSurfaceRequest
     ) {
         try {
-            Logger.d(TAG, "Starting preview")
             videoSource.previewMutex.withLock {
-                val surface = requestSurface(viewfinderBuilder)
+                val surface = requestSurface(viewfinderRequest)
+                Logger.d(TAG, "Settings transformation")
+                viewfinder.transformationInfo = TransformationInfo(
+                    sourceRotation = videoSource.infoProviderFlow.value.getRelativeRotationDegrees(
+                        display.rotation,
+                        false
+                    )
+                )
+
+                Logger.d(TAG, "Starting preview")
                 videoSource.startPreview(surface)
             }
             Logger.d(TAG, "Preview started")
@@ -399,13 +395,13 @@ class PreviewView @JvmOverloads constructor(
      * Use [requestSurface] instead.
      */
     private suspend fun requestSurface(
-        viewfinderBuilder: ViewfinderSurfaceRequest.Builder
+        viewfinderRequest: ViewfinderSurfaceRequest
     ): Surface {
         return withContext(mainDispatcher) {
-            val viewfinderRequest = viewfinderBuilder.build().apply {
-                viewfinderSurfaceRequest = this
+            val requestSession = viewfinder.requestSurfaceSession(viewfinderRequest).apply {
+                surfaceRequestSession = this
             }
-            viewfinder.requestSurface(viewfinderRequest)
+            requestSession.surface
         }
     }
 
@@ -421,8 +417,8 @@ class PreviewView @JvmOverloads constructor(
                 Logger.d(TAG, "Preview stopped")
             }
         }
-        viewfinderSurfaceRequest?.markSurfaceSafeToRelease()
-        viewfinderSurfaceRequest = null
+        surfaceRequestSession?.close()
+        surfaceRequestSession = null
     }
 
 

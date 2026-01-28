@@ -87,7 +87,7 @@ internal class CameraSource(
         }
 
 
-    override val infoProviderFlow = MutableStateFlow(CameraInfoProvider(manager, cameraId))
+    override val infoProviderFlow = MutableStateFlow(CameraInfoProvider(characteristics))
 
     // States
     private val _isStreamingFlow = MutableStateFlow(false)
