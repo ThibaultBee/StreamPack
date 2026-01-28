@@ -88,12 +88,14 @@ class TsMuxer : IMuxerInternal {
                         val extra = frame.extra
                             ?: throw MissingFormatArgumentException("Missing extra for AVC")
                         val buffer =
-                            ByteBuffer.allocate(6 + extra.sumOf { it.limit() } + frame.rawBuffer.limit())
+                            ByteBuffer.allocate(6 + extra.getLength() + frame.rawBuffer.limit())
                         // Add access unit delimiter (AUD) before the AVC access unit
                         buffer.putInt(0x00000001)
                         buffer.put(0x09.toByte())
                         buffer.put(0xf0.toByte())
-                        extra.forEach { buffer.put(it) }
+                        extra.get {
+                            forEach { buffer.put(it) }
+                        }
                         buffer.put(frame.rawBuffer)
                         buffer.rewind()
                         frame.copy(rawBuffer = buffer)
@@ -108,13 +110,15 @@ class TsMuxer : IMuxerInternal {
                         val extra = frame.extra
                             ?: throw MissingFormatArgumentException("Missing extra for HEVC")
                         val buffer =
-                            ByteBuffer.allocate(7 + extra.sumOf { it.limit() } + frame.rawBuffer.limit())
+                            ByteBuffer.allocate(7 + extra.getLength() + frame.rawBuffer.limit())
                         // Add access unit delimiter (AUD) before the HEVC access unit
                         buffer.putInt(0x00000001)
                         buffer.put(0x46.toByte())
                         buffer.put(0x01.toByte())
                         buffer.put(0x50.toByte())
-                        extra.forEach { buffer.put(it) }
+                        extra.get {
+                            forEach { buffer.put(it) }
+                        }
                         buffer.put(frame.rawBuffer)
                         buffer.rewind()
                         frame.copy(rawBuffer = buffer)
@@ -130,11 +134,13 @@ class TsMuxer : IMuxerInternal {
                                 frame.rawBuffer, pes.stream.config as AudioCodecConfig
                             ).toByteBuffer()
                         } else {
-                            LATMFrameWriter.fromDecoderSpecificInfo(
-                                frame.rawBuffer,
-                                frame.extra!!.first()
-                            )
-                                .toByteBuffer()
+                            frame.extra!!.get {
+                                LATMFrameWriter.fromDecoderSpecificInfo(
+                                    frame.rawBuffer,
+                                    this.first()
+                                )
+                                    .toByteBuffer()
+                            }
                         }
                     )
                 }

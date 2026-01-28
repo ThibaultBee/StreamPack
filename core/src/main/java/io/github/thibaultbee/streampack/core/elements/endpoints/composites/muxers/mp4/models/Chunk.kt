@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxe
 
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.extra
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.unzip
 import java.nio.ByteBuffer
 
@@ -50,8 +51,9 @@ class Chunk(val id: Int) {
     private val sampleSizes: List<Int>
         get() = samples.map { it.frame.rawBuffer.remaining() }
 
+    // TODO: pass `Extra` instead of `List<ByteBuffer>`
     val extra: List<List<ByteBuffer>>
-        get() = samples.mapNotNull { it.frame.extra }.unzip()
+        get() = samples.mapNotNull { it.frame.extra?.extra }.unzip()
 
     val format: List<MediaFormat>
         get() = samples.map { it.frame.format }

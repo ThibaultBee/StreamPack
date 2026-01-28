@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.core.elements.utils
 
 import android.media.MediaFormat
+import io.github.thibaultbee.streampack.core.elements.data.Extra
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.data.MutableFrame
 import java.nio.ByteBuffer
@@ -56,9 +57,11 @@ object FakeFrames {
             pts,
             dts,
             isKeyFrame,
-            listOf(
-                ByteBuffer.wrap(
-                    Random.nextBytes(10)
+            Extra(
+                listOf(
+                    ByteBuffer.wrap(
+                        Random.nextBytes(10)
+                    )
                 )
             ),
             format = format
