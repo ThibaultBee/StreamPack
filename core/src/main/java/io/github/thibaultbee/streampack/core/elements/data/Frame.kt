@@ -109,11 +109,12 @@ interface Frame : Closeable {
     val isKeyFrame: Boolean
 
     /**
-     * Contains csd buffers for key frames and audio frames only.
+     * Gets the csd buffers for key frames and audio frames.
+     *
      * Could be (SPS, PPS, VPS, etc.) for key video frames, null for non-key video frames.
      * ESDS for AAC frames,...
      */
-    val extra: List<ByteBuffer>?
+    val extra: Extra?
 
     /**
      * Contains frame format..
@@ -136,7 +137,7 @@ fun Frame.copy(
     ptsInUs: Long = this.ptsInUs,
     dtsInUs: Long? = this.dtsInUs,
     isKeyFrame: Boolean = this.isKeyFrame,
-    extra: List<ByteBuffer>? = this.extra,
+    extra: Extra? = this.extra,
     format: MediaFormat = this.format,
     onClosed: (Frame) -> Unit = {}
 ): Frame {
@@ -180,7 +181,7 @@ data class MutableFrame(
      * Could be (SPS, PPS, VPS, etc.) for key video frames, null for non-key video frames.
      * ESDS for AAC frames,...
      */
-    override var extra: List<ByteBuffer>?,
+    override var extra: Extra?,
 
     /**
      * Contains frame format..
@@ -200,4 +201,46 @@ data class MutableFrame(
             // Nothing to do
         }
     }
+}
+
+/**
+ * Ensures that extra are not used at the same time.
+ *
+ * After accessing the extra, they are automatically rewind for a new usage.
+ */
+class Extra(private val extraBuffers: List<ByteBuffer>) {
+    private val lock = Any()
+
+    val _length by lazy { extraBuffers.sumOf { it.remaining() } }
+
+    fun getLength(): Int {
+        return synchronized(lock) {
+            _length
+        }
+    }
+
+    fun <T> get(extra: List<ByteBuffer>.() -> T): T {
+        return synchronized(lock) {
+            val result = extraBuffers.extra()
+            extraBuffers.forEach { it.rewind() }
+            result
+        }
+    }
+}
+
+/**
+ * Gets the duplicated extra.
+ *
+ * Prefers to use [Extra.get] as it does not create new resources.
+ */
+val Extra.extra: List<ByteBuffer>
+    get() = get { this.map { it.duplicate() } }
+
+/**
+ * Gets the duplicated extra at [index]
+ *
+ * Prefers to use [Extra.get] as it does not create new resources.
+ */
+fun Extra.get(index: Int): ByteBuffer {
+    return get { this[index].duplicate() }
 }

@@ -22,6 +22,7 @@ import android.media.MediaFormat
 import android.os.Bundle
 import android.util.Log
 import android.view.Surface
+import io.github.thibaultbee.streampack.core.elements.data.Extra
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.EncoderMode
@@ -63,14 +64,8 @@ internal constructor(
 
     private val mediaCodec: MediaCodec
     private val format: MediaFormat
-    private var outputFormat: MediaFormat? = null
-        set(value) {
-            extra = value?.extra
-            field = value
-        }
-    private var extra: List<ByteBuffer>? = null
 
-    private val frameFactory by lazy { FrameFactory(mediaCodec, isVideo) }
+    private val frameFactory by lazy { FrameFactory(mediaCodec, isVideo, mediaCodec.outputFormat) }
 
     private val isVideo = encoderConfig.isVideo
     private val tag = if (isVideo) VIDEO_ENCODER_TAG else AUDIO_ENCODER_TAG + "(${this.hashCode()})"
@@ -360,7 +355,7 @@ internal constructor(
             info.isValid -> {
                 try {
                     val frame = frameFactory.frame(
-                        index, extra, outputFormat!!, info, tag
+                        index, info, tag
                     )
                     try {
                         listener.outputChannel.send(frame)
@@ -444,7 +439,6 @@ internal constructor(
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
-            outputFormat = format
             Logger.i(tag, "Format changed : $format")
         }
 
@@ -566,7 +560,6 @@ internal constructor(
                             if (outputBufferId >= 0) {
                                 processOutputFrameUnsafe(mediaCodec, outputBufferId, bufferInfo)
                             } else if (outputBufferId == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                                outputFormat = mediaCodec.outputFormat
                                 Logger.i(tag, "Format changed: ${mediaCodec.outputFormat}")
                             }
                         }
@@ -587,6 +580,18 @@ internal constructor(
         }
     }
 
+    fun FrameFactory(
+        codec: MediaCodec,
+        isVideo: Boolean,
+        outputFormat: MediaFormat
+    ): FrameFactory {
+        val extraBuffers: List<ByteBuffer>? by lazy { outputFormat.extra }
+        val extra: Extra? by lazy {
+            extraBuffers?.map { it.duplicate() }?.let { Extra(it) }
+        }
+        return FrameFactory(codec, isVideo, outputFormat, extra, extraBuffers)
+    }
+
     /**
      * A workaround to address the fact that some AAC encoders do not provide frame with `presentationTimeUs` in order.
      * If a frame is received with a timestamp lower or equal to the previous one, it is corrected by adding 1 to the previous timestamp.
@@ -596,7 +601,10 @@ internal constructor(
      */
     class FrameFactory(
         private val codec: MediaCodec,
-        private val isVideo: Boolean
+        private val isVideo: Boolean,
+        private val outputFormat: MediaFormat,
+        private val extra: Extra?,
+        private val extraBuffers: List<ByteBuffer>?
     ) : Closeable {
         private var previousPresentationTimeUs = 0L
 
@@ -609,8 +617,6 @@ internal constructor(
          */
         fun frame(
             index: Int,
-            extra: List<ByteBuffer>?,
-            outputFormat: MediaFormat,
             info: BufferInfo,
             tag: String
         ): Frame {
@@ -620,7 +626,7 @@ internal constructor(
                 Logger.w(tag, "Correcting timestamp: $pts <= $previousPresentationTimeUs")
             }
             previousPresentationTimeUs = pts
-            return createFrame(codec, index, extra, outputFormat, pts, info.isKeyFrame, tag)
+            return createFrame(codec, index, pts, info.isKeyFrame, tag)
         }
 
         /**
@@ -633,20 +639,18 @@ internal constructor(
         private fun createFrame(
             codec: MediaCodec,
             index: Int,
-            extra: List<ByteBuffer>?,
-            outputFormat: MediaFormat,
             ptsInUs: Long,
             isKeyFrame: Boolean,
             tag: String
         ): Frame {
             val buffer = requireNotNull(codec.getOutputBuffer(index))
             val extra = if (isKeyFrame || !isVideo) {
-                extra!!.map { it.duplicate() }
+                extra!!
             } else {
                 null
             }
-            val rawBuffer = if (extra != null) {
-                buffer.removePrefixes(extra)
+            val rawBuffer = if (extraBuffers != null) {
+                buffer.removePrefixes(extraBuffers)
             } else {
                 buffer
             }

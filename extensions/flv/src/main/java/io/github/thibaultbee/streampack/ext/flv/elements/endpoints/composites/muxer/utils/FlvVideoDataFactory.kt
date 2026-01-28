@@ -28,6 +28,8 @@ import io.github.komedia.komuxer.flv.tags.video.VideoFrameType
 import io.github.komedia.komuxer.flv.tags.video.codedFrame
 import io.github.komedia.komuxer.flv.tags.video.sequenceStart
 import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.extra
+import io.github.thibaultbee.streampack.core.elements.data.get
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.avc.AVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.hevc.HEVCDecoderConfigurationRecord
@@ -64,10 +66,11 @@ internal class FlvVideoDataFactory {
                 VideoFrameType.INTER
             }
             if (frame.isKeyFrame && withSequenceStart) {
+                val extra = frame.extra!!.extra
                 val decoderConfigurationRecordBuffer =
                     AVCDecoderConfigurationRecord.fromParameterSets(
-                        frame.extra!![0],
-                        frame.extra!![1]
+                        extra[0],
+                        extra[1]
                     ).toByteBuffer()
                 flvDatas.add(
                     factory.sequenceStart(
@@ -185,10 +188,11 @@ internal class FlvVideoDataFactory {
         private fun createHEVCFactory(): IVideoDataFactory {
             return FlvExtendedVideoDataFactory(HEVCExtendedVideoDataFactory()) { frame ->
                 // Extra is VPS, SPS, PPS
+                val extra = frame.extra!!.extra
                 HEVCDecoderConfigurationRecord.fromParameterSets(
-                    frame.extra!![0],
-                    frame.extra!![1],
-                    frame.extra!![2]
+                    extra[0],
+                    extra[1],
+                    extra[2]
                 ).toByteBuffer()
             }
         }
@@ -196,7 +200,7 @@ internal class FlvVideoDataFactory {
         private fun createAV1Factory(): IVideoDataFactory {
             return FlvExtendedVideoDataFactory(ExtendedVideoDataFactory(VideoFourCC.AV1)) { frame ->
                 // Extra is AV1CodecConfigurationRecord
-                frame.extra!![0]
+                frame.extra!!.get(0)
             }
         }
 
