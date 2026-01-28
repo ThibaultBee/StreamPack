@@ -21,8 +21,10 @@ import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
 import android.util.Range
 import androidx.annotation.RequiresPermission
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraSessionController.CaptureResultListener
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.CameraCaptureSessionCompatBuilder
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSessionCallback
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSurface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraUtils
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestWithTargetsBuilder
@@ -56,6 +58,8 @@ internal class CameraController(
 
     private var deviceController: CameraDeviceController? = null
     private var sessionController: CameraSessionController? = null
+
+    private val sessionCallback = CameraSessionCallback(coroutineScope)
 
     private val controllerMutex = Mutex()
 
@@ -160,8 +164,9 @@ internal class CameraController(
             val deviceController = getDeviceController()
             CameraSessionController.create(
                 coroutineScope,
-                sessionCompat,
                 deviceController,
+                sessionCallback,
+                sessionCompat,
                 outputs.values.toList(),
                 dynamicRange = dynamicRangeProfile.dynamicRange,
                 fpsRange = fpsRange,
@@ -378,21 +383,31 @@ internal class CameraController(
     }
 
     /**
-     * Sets a repeating session sync with the current capture request.
+     * Adds a capture callback listener to the current capture session.
      *
-     * It returns only when the capture callback has been called for the first time.
+     * The listener is removed when it returns true or [removeCaptureCallbackListener] is called.
      */
-    suspend fun setRepeatingSessionSync() {
-        val sessionController = requireNotNull(sessionController) { "SessionController is null" }
-        sessionController.setRepeatingSessionSync()
+    fun addCaptureCallbackListener(listener: CaptureResultListener) {
+        sessionCallback.addListener(listener)
+    }
+
+    /**
+     * Removes a capture callback listener from the current capture session.
+     *
+     * @param listener The listener to remove
+     */
+    fun removeCaptureCallbackListener(listener: CaptureResultListener) {
+        sessionCallback.removeListener(listener)
     }
 
     /**
      * Sets a repeating session with the current capture request.
+     *
+     * @param tag A tag to associate with the session.
      */
-    suspend fun setRepeatingSession() {
+    suspend fun setRepeatingSession(tag: Any? = null) {
         val sessionController = requireNotNull(sessionController) { "SessionController is null" }
-        sessionController.setRepeatingSession()
+        sessionController.setRepeatingSession(tag)
     }
 
     private suspend fun closeControllers() {
