@@ -115,10 +115,19 @@ minutes, you will be able to stream live video to your server.
      *  viewModelScope.launch {
      *  }
      */
+   
     val streamer = cameraSingleStreamer(context = requireContext())
-    // To have multiple independent outputs (like for live and record), use a `cameraDualStreamer` or even the `StreamerPipeline`.
-    // You can also use the `SingleStreamer`or the `DualStreamer` and add later the audio and video source with `setAudioSource` 
-    // and `setVideoSource`.
+   
+    /**
+     * To have multiple independent outputs (like for live and record), use a `cameraDualStreamer` or even the `StreamerPipeline`.
+     *
+     * You can also create the `SingleStreamer`or the `DualStreamer` and add later the audio and video source with `setAudioSource` 
+     * and `setVideoSource`.
+     * val streamer = SingleStreamer(context = requireContext())
+     * streamer.setVideoSource(CameraSourceFactory()) // Same as streamer.setCameraId(context.defaultCameraId)
+     * streamer.setAudioSource(MicrophoneSourceFactory())
+    */
+
     ```
 
    For more information, check the [Streamers](docs/Streamers.md) documentation.
