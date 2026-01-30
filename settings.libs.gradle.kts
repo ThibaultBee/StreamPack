@@ -1,10 +1,16 @@
 // StreamPack libraries
 include(":core")
 project(":core").name = "streampack-core"
-include(":ui")
-project(":ui").name = "streampack-ui"
 include(":services")
 project(":services").name = "streampack-services"
+
+// UI
+include(":ui")
+project(":ui").projectDir = File(rootDir, "ui/ui")
+project(":ui").name = "streampack-ui"
+include(":compose")
+project(":compose").projectDir = File(rootDir, "ui/compose")
+project(":compose").name = "streampack-compose"
 
 // Extensions
 include(":extension-flv")
