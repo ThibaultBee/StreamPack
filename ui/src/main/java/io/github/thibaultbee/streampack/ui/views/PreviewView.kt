@@ -511,7 +511,10 @@ class PreviewView @JvmOverloads constructor(
                     mutex.withLock {
                         val zoom = source.settings.zoom
                         zoom.onPinch(scaleFactor)
-                        listener?.onZoomRationOnPinchChanged(zoom.getZoomRatio())
+                        val newZoomRatio = zoom.getZoomRatio()
+                        post {
+                            listener?.onZoomRationOnPinchChanged(newZoomRatio)
+                        }
                     }
                 }
                 return true
