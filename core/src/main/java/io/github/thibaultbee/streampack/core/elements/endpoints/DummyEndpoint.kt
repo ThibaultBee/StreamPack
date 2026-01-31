@@ -16,28 +16,23 @@
 package io.github.thibaultbee.streampack.core.elements.endpoints
 
 import android.content.Context
-import android.util.Log
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.Frame
-import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+/**
+ * A dummy endpoint for testing.
+ */
 class DummyEndpoint : IEndpointInternal {
     private val _isOpenFlow = MutableStateFlow(false)
     override val isOpenFlow = _isOpenFlow.asStateFlow()
 
-    private val _frameFlow = MutableStateFlow<Frame?>(null)
-    val frameFlow = _frameFlow.asStateFlow()
-
     private val _isStreamingFlow = MutableStateFlow(false)
     val isStreamingFlow = _isStreamingFlow.asStateFlow()
-
-    private val _configFlow = MutableStateFlow<CodecConfig?>(null)
-    val configFlow = _configFlow.asStateFlow()
 
     override val info: IEndpoint.IEndpointInfo
         get() = TODO("Not yet implemented")
@@ -58,20 +53,15 @@ class DummyEndpoint : IEndpointInternal {
         _isOpenFlow.emit(false)
     }
 
-    override suspend fun write(closeableFrame: FrameWithCloseable, streamPid: Int) {
-        val frame = closeableFrame.frame
-        Log.i(TAG, "write: $frame")
-        _frameFlow.emit(frame)
-        closeableFrame.close()
+    override suspend fun write(frame: Frame, streamPid: Int) {
+        frame.close()
     }
 
     override suspend fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
-        streamConfigs.forEach { _configFlow.emit(it) }
         return streamConfigs.associateWith { it.hashCode() }
     }
 
     override suspend fun addStream(streamConfig: CodecConfig): Int {
-        _configFlow.emit(streamConfig)
         return streamConfig.hashCode()
     }
 
@@ -81,10 +71,6 @@ class DummyEndpoint : IEndpointInternal {
 
     override suspend fun stopStream() {
         _isStreamingFlow.emit(false)
-    }
-
-    companion object {
-        private const val TAG = "DummyEndpoint"
     }
 }
 

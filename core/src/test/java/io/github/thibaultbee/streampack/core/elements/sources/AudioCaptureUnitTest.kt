@@ -18,11 +18,11 @@ package io.github.thibaultbee.streampack.core.elements.sources
 import android.media.MediaRecorder
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSource
 import io.github.thibaultbee.streampack.core.elements.utils.StubLogger
-import io.github.thibaultbee.streampack.core.elements.utils.StubRawFrameFactory
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test
+import java.nio.ByteBuffer
 
 class MicrophoneSourceUnitTest {
     init {
@@ -38,7 +38,7 @@ class MicrophoneSourceUnitTest {
         } catch (_: Throwable) {
         }
         try {
-            microphoneSource.getAudioFrame(StubRawFrameFactory())
+            microphoneSource.fillAudioFrame(ByteBuffer.allocate(microphoneSource.minBufferSize))
             Assert.fail()
         } catch (_: Throwable) {
         }

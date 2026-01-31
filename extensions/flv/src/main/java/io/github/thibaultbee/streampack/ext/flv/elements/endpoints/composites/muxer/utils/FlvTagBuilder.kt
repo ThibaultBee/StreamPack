@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.m
 import io.github.komedia.komuxer.flv.tags.FLVTag
 import io.github.komedia.komuxer.flv.tags.script.Metadata
 import io.github.komedia.komuxer.logger.KomuxerLogger
-import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
+import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
@@ -106,20 +106,18 @@ class FlvTagBuilder(val channel: ChannelWithCloseableData<FLVTag>) {
     }
 
     suspend fun write(
-        closeableFrame: FrameWithCloseable,
+        frame: Frame,
         ts: Int,
         streamPid: Int
     ) {
         if (ts < 0) {
             Logger.w(
                 TAG,
-                "Negative timestamp $ts for frame ${closeableFrame.frame}. Frame will be dropped."
+                "Negative timestamp $ts for frame $frame. Frame will be dropped."
             )
-            closeableFrame.close()
+            frame.close()
             return
         }
-
-        val frame = closeableFrame.frame
 
         val flvDatas = when (streamPid) {
             AUDIO_STREAM_PID -> audioStream?.create(frame)
@@ -133,7 +131,7 @@ class FlvTagBuilder(val channel: ChannelWithCloseableData<FLVTag>) {
         flvDatas.forEachIndexed { index, flvData ->
             if (index == flvDatas.lastIndex) {
                 // Pass the close callback on the last element
-                channel.send(FLVTag(ts, flvData), { closeableFrame.close() })
+                channel.send(FLVTag(ts, flvData), { frame.close() })
             } else {
                 channel.send(FLVTag(ts, flvData))
             }

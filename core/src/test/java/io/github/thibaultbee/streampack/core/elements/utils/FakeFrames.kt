@@ -16,8 +16,9 @@
 package io.github.thibaultbee.streampack.core.elements.utils
 
 import android.media.MediaFormat
+import io.github.thibaultbee.streampack.core.elements.data.Extra
 import io.github.thibaultbee.streampack.core.elements.data.Frame
-import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
+import io.github.thibaultbee.streampack.core.elements.data.MutableFrame
 import java.nio.ByteBuffer
 import kotlin.random.Random
 
@@ -51,36 +52,19 @@ object FakeFrames {
                 )
             )
         }
-        return Frame(
+        return MutableFrame(
             buffer,
             pts,
             dts,
             isKeyFrame,
-            listOf(
-                ByteBuffer.wrap(
-                    Random.nextBytes(10)
+            Extra(
+                listOf(
+                    ByteBuffer.wrap(
+                        Random.nextBytes(10)
+                    )
                 )
             ),
             format = format
         )
     }
-}
-
-object FakeFramesWithCloseable {
-    fun create(
-        mimeType: String,
-        buffer: ByteBuffer = ByteBuffer.wrap(Random.nextBytes(1024)),
-        pts: Long = Random.nextLong(),
-        dts: Long? = null,
-        isKeyFrame: Boolean = false
-    ) = FrameWithCloseable(
-        FakeFrames.create(
-            mimeType,
-            buffer,
-            pts,
-            dts,
-            isKeyFrame
-        ),
-        {/* Nothing to do */ }
-    )
 }
