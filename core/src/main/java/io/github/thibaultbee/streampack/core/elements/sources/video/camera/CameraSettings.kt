@@ -22,6 +22,7 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.CaptureResult
+import android.hardware.camera2.TotalCaptureResult
 import android.hardware.camera2.params.ColorSpaceTransform
 import android.hardware.camera2.params.MeteringRectangle
 import android.hardware.camera2.params.RggbChannelVector
@@ -32,6 +33,7 @@ import androidx.annotation.IntRange
 import androidx.annotation.RequiresApi
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.is90or270
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraController
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraSessionController.CaptureResultListener
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.autoExposureModes
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.autoFocusModes
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.autoWhiteBalanceModes
@@ -55,10 +57,17 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.launchIn
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.normalize
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
 import io.github.thibaultbee.streampack.core.logger.Logger
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.atomic.AtomicLong
 
 
 /**
@@ -76,6 +85,27 @@ class CameraSettings internal constructor(
      * Current camera id.
      */
     val cameraId = cameraController.cameraId
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun getPhysicalCameraIdCallbackFlow() = callbackFlow {
+        val captureCallback = object : CaptureResultListener {
+            override fun onCaptureResult(result: TotalCaptureResult): Boolean {
+                trySend(result.get(CaptureResult.LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_ID)!!)
+                return false
+            }
+        }
+        cameraController.addCaptureCallbackListener(captureCallback)
+        awaitClose {
+            cameraController.removeCaptureCallbackListener(captureCallback)
+        }
+    }.conflate().distinctUntilChanged()
+
+    /**
+     * Current physical camera id.
+     */
+    val physicalCameraIdFlow: Flow<String>
+        @RequiresApi(Build.VERSION_CODES.Q)
+        get() = getPhysicalCameraIdCallbackFlow()
 
     /**
      * Whether the camera is available.
@@ -129,6 +159,8 @@ class CameraSettings internal constructor(
     val focusMetering =
         FocusMetering(coroutineScope, characteristics, this, zoom, focus, exposure, whiteBalance)
 
+    private val tagBundleFactory = TagBundle.TagBundleFactory()
+
     /**
      * Directly gets a [CaptureRequest] from the camera.
      *
@@ -153,12 +185,64 @@ class CameraSettings internal constructor(
      *
      * This method returns when the capture callback is received with the passed request.
      */
-    suspend fun applyRepeatingSessionSync() = cameraController.setRepeatingSessionSync()
+    suspend fun applyRepeatingSessionSync() {
+        val deferred = CompletableDeferred<Unit>()
+
+        val tag = tagBundleFactory.create()
+        val captureCallback = object : CaptureResultListener {
+            override fun onCaptureResult(result: TotalCaptureResult): Boolean {
+                val resultTag = result.request.tag as? TagBundle
+                val keyId = resultTag?.keyId ?: return false
+                if (keyId >= tag.keyId) {
+                    deferred.complete(Unit)
+                    return true
+                }
+                return false
+            }
+        }
+
+        cameraController.addCaptureCallbackListener(captureCallback)
+        cameraController.setRepeatingSession(tag)
+        deferred.await()
+    }
 
     /**
      * Applies settings to the camera repeatedly.
      */
     suspend fun applyRepeatingSession() = cameraController.setRepeatingSession()
+
+    private class TagBundle private constructor(val keyId: Long) {
+        private val tagMap = mutableMapOf<String, Any?>().apply {
+            put(TAG_KEY_ID, keyId)
+        }
+
+        val keys: Set<String>
+            get() = tagMap.keys
+
+        fun setTag(key: String, value: Any?) {
+            tagMap[key] = value
+        }
+
+        companion object {
+            private const val TAG_KEY_ID = "TAG_KEY_ID"
+        }
+
+        /**
+         * Factory for [TagBundle].
+         *
+         * The purpose is to make sure the tag always contains an increasing id.
+         */
+        class TagBundleFactory {
+            /**
+             * Next session id.
+             */
+            private val nextSessionUpdateId = AtomicLong(0)
+
+            fun create(): TagBundle {
+                return TagBundle(nextSessionUpdateId.getAndIncrement())
+            }
+        }
+    }
 
     class Flash(
         private val characteristics: CameraCharacteristics,
