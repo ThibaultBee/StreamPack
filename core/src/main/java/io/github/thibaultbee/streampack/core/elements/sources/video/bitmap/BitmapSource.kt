@@ -137,9 +137,22 @@ internal class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSo
     }
 
     override suspend fun release() {
+        // Stop any scheduled tasks first
+        outputScheduler?.cancel(true)
+        previewScheduler?.cancel(true)
+        
+        // Shutdown executors and wait for them to finish
         outputExecutor.shutdown()
         previewExecutor.shutdown()
-        // Recycle pre-composited bitmaps if they exist
+        try {
+            // Wait for executors to finish any in-progress drawing
+            outputExecutor.awaitTermination(500, TimeUnit.MILLISECONDS)
+            previewExecutor.awaitTermination(500, TimeUnit.MILLISECONDS)
+        } catch (e: InterruptedException) {
+            // Ignore
+        }
+        
+        // Now safe to recycle pre-composited bitmaps
         compositedBitmaps.forEach { it.recycle() }
         compositedBitmaps.clear()
     }
@@ -195,28 +208,40 @@ internal class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSo
 
     private fun drawOutput() {
         outputSurface?.let { surface ->
-            ensureCompositedBitmapsGenerated()
-            
-            val canvas = surface.lockCanvas(null)
-            
-            // Single drawBitmap call - source and noise pre-composited
-            if (compositedBitmaps.isNotEmpty()) {
-                canvas.drawBitmap(compositedBitmaps[frameIndex % compositedBitmaps.size], 0f, 0f, null)
-                frameIndex++
-            } else {
-                // Fallback if compositing failed
-                canvas.drawBitmap(bitmap, 0f, 0f, null)
+            try {
+                ensureCompositedBitmapsGenerated()
+                
+                val canvas = surface.lockCanvas(null) ?: return@let
+                
+                // Single drawBitmap call - source and noise pre-composited
+                val bitmapToDraw = if (compositedBitmaps.isNotEmpty()) {
+                    compositedBitmaps.getOrNull(frameIndex % compositedBitmaps.size)?.takeIf { !it.isRecycled }
+                } else {
+                    bitmap.takeIf { !it.isRecycled }
+                }
+                
+                if (bitmapToDraw != null) {
+                    canvas.drawBitmap(bitmapToDraw, 0f, 0f, null)
+                    frameIndex++
+                }
+                
+                surface.unlockCanvasAndPost(canvas)
+            } catch (e: Exception) {
+                // Ignore drawing errors (bitmap recycled, surface invalid, etc.)
             }
-            
-            surface.unlockCanvasAndPost(canvas)
         }
     }
 
     private fun drawPreview() {
         previewSurface?.let {
-            val canvas = it.lockCanvas(null)
-            canvas.drawBitmap(bitmap, 0f, 0f, null)
-            it.unlockCanvasAndPost(canvas)
+            try {
+                if (bitmap.isRecycled) return@let
+                val canvas = it.lockCanvas(null) ?: return@let
+                canvas.drawBitmap(bitmap, 0f, 0f, null)
+                it.unlockCanvasAndPost(canvas)
+            } catch (e: Exception) {
+                // Ignore drawing errors
+            }
         }
     }
 
