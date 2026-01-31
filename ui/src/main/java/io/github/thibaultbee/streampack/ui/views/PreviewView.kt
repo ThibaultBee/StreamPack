@@ -384,6 +384,13 @@ class PreviewView @JvmOverloads constructor(
         try {
             Logger.d(TAG, "Starting preview")
             videoSource.previewMutex.withLock {
+                /**
+                 * [requestSurface] will make the current preview [Surface] invalid.
+                 * Force the [videoSource] to remove the preview [Surface] before the [Surface] is invalid.
+                 * It prevents race conditions with the [videoSource] configuration.
+                 */
+                videoSource.stopPreview()
+                videoSource.resetPreview()
                 val surface = requestSurface(viewfinderBuilder)
                 videoSource.startPreview(surface)
             }
