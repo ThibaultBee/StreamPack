@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.utils.extensions
 
+import io.github.thibaultbee.streampack.core.elements.utils.pool.IBufferPool
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.charset.StandardCharsets
@@ -86,12 +87,14 @@ fun ByteBuffer.put3x3Matrix(matrix: IntArray) {
     matrix.forEach { putInt(it) }
 }
 
-fun ByteBuffer.put(buffer: ByteBuffer, offset: Int, length: Int) {
-    val limit = buffer.limit()
-    buffer.position(offset)
-    buffer.limit(offset + length)
-    this.put(buffer)
-    buffer.limit(limit)
+fun ByteBuffer.put(src: ByteBuffer, offset: Int, length: Int) {
+    val limit = src.limit()
+    if (offset != 0) {
+        src.position(src.position() + offset)
+    }
+    src.limit(src.position() + offset + length)
+    this.put(src)
+    src.limit(limit)
 }
 
 fun ByteBuffer.getString(size: Int = this.remaining()): String {
@@ -111,22 +114,38 @@ fun ByteBuffer.getLong(isLittleEndian: Boolean): Long {
     return value
 }
 
-fun ByteBuffer.indicesOf(prefix: ByteArray): List<Int> {
-    if (prefix.isEmpty()) {
-        return emptyList()
-    }
+/**
+ * Finds all occurrences of the given [needle] byte array within the ByteBuffer.
+ * @param needle The byte array sequence to search for.
+ * @return A list of starting indices for every match found.
+ */
+fun ByteBuffer.indicesOf(needle: ByteArray): List<Int> {
+    if (needle.isEmpty()) return emptyList()
 
-    val indices = mutableListOf<Int>()
+    val results = mutableListOf<Int>()
+    val end = limit() - needle.size
+    var i = position()
 
-    outer@ for (i in 0 until this.limit() - prefix.size + 1) {
-        for (j in prefix.indices) {
-            if (this.get(i + j) != prefix[j]) {
-                continue@outer
-            }
+    while (i <= end) {
+        if (match(i, needle)) {
+            results.add(i)
+            // Move forward by the needle's length to find the next non-overlapping match
+            // Or use i++ if you want to allow overlapping matches (e.g., "AAA" in "AAAA")
+            i += needle.size
+        } else {
+            i++
         }
-        indices.add(i)
     }
-    return indices
+    return results
+}
+
+private fun ByteBuffer.match(start: Int, needle: ByteArray): Boolean {
+    for (idx in needle.indices) {
+        if (get(start + idx) != needle[idx]) {
+            return false
+        }
+    }
+    return true
 }
 
 /**
@@ -137,18 +156,18 @@ fun ByteBuffer.slices(prefix: ByteArray): List<ByteBuffer> {
 
     // Get all occurrence of prefix in buffer
     val indexes = this.indicesOf(prefix)
+
     // Get slices
     indexes.forEachIndexed { index, i ->
         val nextPosition = if (indexes.indices.contains(index + 1)) {
-            indexes[index + 1] - 1
+            indexes[index + 1]
         } else {
-            this.limit() - 1
+            this.limit()
         }
         slices.add(Pair(i, nextPosition))
     }
-    val array = this.array()
     return slices.map {
-        ByteBuffer.wrap(array.sliceArray(IntRange(it.first, it.second)))
+        this.slice(from = it.first, to = it.second)
     }
 }
 
@@ -235,18 +254,37 @@ fun ByteBuffer.toByteArray(): ByteArray {
 }
 
 /**
- * Clone [ByteBuffer].
+ * Deep copy of [ByteBuffer].
  * The position of the original [ByteBuffer] will be 0 after the clone.
  */
-fun ByteBuffer.clone(): ByteBuffer {
+@Deprecated("Use ByteBufferPool instead")
+fun ByteBuffer.deepCopy(): ByteBuffer {
     val originalPosition = this.position()
     try {
-        val clone = if (isDirect) {
+        val copy = if (isDirect) {
             ByteBuffer.allocateDirect(this.remaining())
         } else {
             ByteBuffer.allocate(this.remaining())
         }
-        return clone.put(this).apply { rewind() }
+        return copy.put(this).apply { rewind() }
+    } finally {
+        this.position(originalPosition)
+    }
+}
+
+/**
+ * Deep copy of [ByteBuffer] from [IBufferPool].
+ *
+ * Don't forget to put the returned [ByteBuffer] to the buffer pool when you are done with it.
+ *
+ * @param pool [IBufferPool] to use
+ * @return [ByteBuffer] deep copy
+ */
+fun ByteBuffer.deepCopy(pool: IBufferPool<ByteBuffer>): ByteBuffer {
+    val originalPosition = this.position()
+    try {
+        val copy = pool.get(this.remaining())
+        return copy.put(this).apply { rewind() }
     } finally {
         this.position(originalPosition)
     }
@@ -258,51 +296,72 @@ fun ByteBuffer.clone(): ByteBuffer {
 
 
 /**
- * Get start code size of [ByteBuffer].
+ * Get start code size of [ByteBuffer] from the current position
  */
 val ByteBuffer.startCodeSize: Int
-    get() {
-        return if (this.get(0) == 0x00.toByte() && this.get(1) == 0x00.toByte()
-            && this.get(2) == 0x00.toByte() && this.get(3) == 0x01.toByte()
-        ) {
-            4
-        } else if (this.get(0) == 0x00.toByte() && this.get(1) == 0x00.toByte()
-            && this.get(2) == 0x01.toByte()
-        ) {
-            3
-        } else {
-            0
-        }
-    }
+    get() = getStartCodeSize(this.position())
 
-fun ByteBuffer.removeStartCode(): ByteBuffer {
-    val startCodeSize = this.startCodeSize
-    this.position(startCodeSize)
-    return this.slice()
+/**
+ * Get start code size of [ByteBuffer] from the given [position].
+ */
+fun ByteBuffer.getStartCodeSize(
+    position: Int
+): Int {
+    return if (remaining() >= 4 && this.get(position) == 0x00.toByte() && this.get(position + 1) == 0x00.toByte()
+        && this.get(position + 2) == 0x00.toByte() && this.get(position + 3) == 0x01.toByte()
+    ) {
+        4
+    } else if (remaining() >= 3 && this.get(position) == 0x00.toByte() && this.get(position + 1) == 0x00.toByte()
+        && this.get(position + 2) == 0x01.toByte()
+    ) {
+        3
+    } else {
+        0
+    }
 }
 
-fun ByteBuffer.extractRbsp(headerLength: Int): ByteBuffer {
-    val rbsp = ByteBuffer.allocateDirect(this.remaining())
-
-    val indices = this.indicesOf(byteArrayOf(0x00, 0x00, 0x03))
-
-    rbsp.put(this, this.startCodeSize, headerLength)
-
-    var previous = this.position()
-    indices.forEach {
-        rbsp.put(this, previous, it + 2 - previous)
-        previous = it + 3 // skip emulation_prevention_three_byte
+/**
+ * Moves the position after the start code.
+ */
+fun ByteBuffer.skipStartCode(): ByteBuffer {
+    val startCodeSize = this.startCodeSize
+    if (startCodeSize > 0) {
+        this.position(this.position() + startCodeSize)
     }
-    rbsp.put(this, previous, this.limit() - previous)
+    return this
+}
 
-    rbsp.limit(rbsp.position())
+private val emulationPreventionThreeByte = byteArrayOf(0x00, 0x00, 0x03)
+
+/**
+ * Removes all emulation prevention three bytes from [ByteBuffer].
+ *
+ * @param headerLength [Int] of the header length before writing the [ByteBuffer].
+ * @return [ByteBuffer] without emulation prevention three bytes
+ */
+fun ByteBuffer.extractRbsp(headerLength: Int): ByteBuffer {
+    val indices = this.indicesOf(emulationPreventionThreeByte)
+
+    val rbspSize =
+        this.remaining() - indices.size // remove 0x3 bytes for each emulation prevention three bytes
+    val rbsp = ByteBuffer.allocateDirect(rbspSize)
+
+    // Write header to new buffer
+    rbsp.put(this, 0, headerLength + this.startCodeSize)
+
+    indices.forEach {
+        rbsp.put(this, 0, it + 2 - this.position())
+        this.position(this.position() + 1) // skip emulation_prevention_three_byte
+    }
+    rbsp.put(this, 0, this.limit() - this.position())
+
     rbsp.rewind()
     return rbsp
 }
 
 /**
  * Remove all [prefixes] from [ByteBuffer] whatever their order.
- * It slices [ByteBuffer] so it does not copy data.
+ * It moves the [position] of the [ByteBuffer].
  *
  * Once a prefix is found, it is removed from the [prefixes] list.
  *
@@ -324,7 +383,7 @@ fun ByteBuffer.removePrefixes(prefixes: List<ByteBuffer>): ByteBuffer {
         }
     }
 
-    return this.slice().order(this.order())
+    return this
 }
 
 /**
@@ -344,3 +403,20 @@ val ByteBuffer.isAvcc: Boolean
         val size = this.getInt(0)
         return size == (this.remaining() - 4)
     }
+
+/**
+ * Slices the buffer from [from] position to [to] position.
+ *
+ * @param from start position
+ * @param to end position
+ */
+fun ByteBuffer.slice(from: Int, to: Int): ByteBuffer {
+    val currentPosition = this.position()
+    val currentLimit = this.limit()
+    this.position(from)
+    this.limit(to)
+    val newBuffer = this.slice()
+    this.position(currentPosition)
+    this.limit(currentLimit)
+    return newBuffer
+}

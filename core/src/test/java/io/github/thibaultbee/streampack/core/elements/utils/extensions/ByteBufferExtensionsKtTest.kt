@@ -117,7 +117,7 @@ class ByteBufferExtensionsKtTest {
         )
         testBuffer.position(2)
 
-        val clonedBuffer = testBuffer.clone()
+        val clonedBuffer = testBuffer.deepCopy()
         assertArrayEquals(
             testBuffer.toByteArray(), clonedBuffer.toByteArray()
         )
@@ -134,12 +134,16 @@ class ByteBufferExtensionsKtTest {
         val resultBuffers = testBuffer.slices(
             byteArrayOf(0, 0, 0, 1)
         )
+
         assertEquals(
             3, resultBuffers.size
         )
-        var resultArray = ByteArray(0)
-        resultBuffers.forEach { resultArray += it.array() } // concat all arrays
-        assertArrayEquals(testBuffer.array(), resultArray)
+
+        val resultBuffer = ByteBuffer.allocate(resultBuffers.sumOf { it.remaining() })
+        resultBuffers.forEach {
+            resultBuffer.put(it)
+        }
+        assertArrayEquals(testBuffer.array(), resultBuffer.array())
     }
 
     @Test
@@ -172,7 +176,12 @@ class ByteBufferExtensionsKtTest {
         assertEquals(
             1, resultBuffers.size
         )
-        assertArrayEquals(testBuffer.array(), resultBuffers[0].array())
+
+        val resultBuffer = ByteBuffer.allocate(resultBuffers.sumOf { it.remaining() })
+        resultBuffers.forEach {
+            resultBuffer.put(it)
+        }
+        assertArrayEquals(testBuffer.array(), resultBuffer.array())
     }
 
     @Test
@@ -189,9 +198,12 @@ class ByteBufferExtensionsKtTest {
         assertEquals(
             1, resultBuffers.size
         )
-        assertArrayEquals(
-            testBuffer.array().sliceArray(IntRange(3, 8)), resultBuffers[0].array()
-        )
+
+        val resultBuffer = ByteBuffer.allocate(resultBuffers.sumOf { it.remaining() })
+        resultBuffers.forEach {
+            resultBuffer.put(it)
+        }
+        assertArrayEquals(testBuffer.array().sliceArray(IntRange(3, 8)), resultBuffer.array())
     }
 
     @Test
@@ -263,6 +275,10 @@ class ByteBufferExtensionsKtTest {
             )
         )
         val expectedArray = byteArrayOf(
+            0,
+            0,
+            0,
+            1,
             66,
             1,
             1,
@@ -335,5 +351,20 @@ class ByteBufferExtensionsKtTest {
         assertTrue(testBuffer.startsWith(prefixBuffer))
         assertEquals(0, prefixBuffer.position())
         assertEquals(0, testBuffer.position())
+    }
+
+    @Test
+    fun `slice from to test`() {
+        val testBuffer = ByteBuffer.wrap("ABCDE".toByteArray())
+        val slice = testBuffer.slice(1, 4)
+
+        assertArrayEquals(
+            "BCDE".toByteArray(), slice.toByteArray()
+        )
+        assertEquals(0, slice.position())
+        assertEquals(4, slice.limit())
+
+        assertEquals(0, testBuffer.position())
+        assertEquals(5, testBuffer.limit())
     }
 }

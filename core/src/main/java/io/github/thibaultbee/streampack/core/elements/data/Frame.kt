@@ -16,29 +16,85 @@
 package io.github.thibaultbee.streampack.core.elements.data
 
 import android.media.MediaFormat
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.removePrefixes
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.deepCopy
+import io.github.thibaultbee.streampack.core.elements.utils.pool.FramePool
+import io.github.thibaultbee.streampack.core.elements.utils.pool.IBufferPool
+import io.github.thibaultbee.streampack.core.elements.utils.pool.RawFramePool
 import java.io.Closeable
 import java.nio.ByteBuffer
 
 /**
- * A raw frame internal representation.
+ * Encoded frame representation
  */
-data class RawFrame(
+interface RawFrame : Closeable {
     /**
      * Contains an audio or video frame data.
      */
-    val rawBuffer: ByteBuffer,
+    val rawBuffer: ByteBuffer
 
     /**
      * Presentation timestamp in µs
      */
-    var timestampInUs: Long,
+    val timestampInUs: Long
+}
 
+/**
+ * Deep copy the [RawFrame.rawBuffer] into a new [RawFrame].
+ *
+ * For better memory allocation, you should close the returned frame after usage.
+ */
+fun RawFrame.deepCopy(
+    bufferPool: IBufferPool<ByteBuffer>,
+    timestampInUs: Long = this.timestampInUs,
+    onClosed: (RawFrame) -> Unit = {}
+): RawFrame {
+    val copy = this.rawBuffer.deepCopy(bufferPool)
+    return copy(
+        rawBuffer = copy, timestampInUs = timestampInUs, onClosed = {
+            onClosed(it)
+            bufferPool.put(copy)
+        }
+    )
+}
+
+/**
+ * Copy a [RawFrame] to a new [RawFrame].
+ *
+ * For better memory allocation, you should close the returned frame after usage.
+ */
+fun RawFrame.copy(
+    rawBuffer: ByteBuffer = this.rawBuffer,
+    timestampInUs: Long = this.timestampInUs,
+    onClosed: (RawFrame) -> Unit = {}
+): RawFrame {
+    val pool = RawFramePool.default
+    return pool.get(
+        rawBuffer, timestampInUs,
+        { frame ->
+            onClosed(frame)
+        })
+}
+
+/**
+ * A mutable [RawFrame] internal representation.
+ *
+ * The purpose is to get reusable [RawFrame]
+ */
+data class MutableRawFrame(
+    /**
+     * Contains an audio or video frame data.
+     */
+    override var rawBuffer: ByteBuffer,
+
+    /**
+     * Presentation timestamp in µs
+     */
+    override var timestampInUs: Long,
     /**
      * A callback to call when frame is closed.
      */
-    val onClosed: (RawFrame) -> Unit = {}
-) : Closeable {
+    override var onClosed: (MutableRawFrame) -> Unit = {}
+) : RawFrame, WithClosable<MutableRawFrame> {
     override fun close() {
         try {
             onClosed(this)
@@ -48,119 +104,116 @@ data class RawFrame(
     }
 }
 
-
-data class Frame(
+/**
+ * Encoded frame representation
+ */
+interface Frame : Closeable {
     /**
      * Contains an audio or video frame data.
      */
-    val rawBuffer: ByteBuffer,
+    val rawBuffer: ByteBuffer
 
     /**
      * Presentation timestamp in µs
      */
-    val ptsInUs: Long,
+    val ptsInUs: Long
 
     /**
      * Decoded timestamp in µs (not used).
      */
-    val dtsInUs: Long? = null,
+    val dtsInUs: Long?
 
     /**
      * `true` if frame is a key frame (I-frame for AVC/HEVC and audio frames)
      */
-    val isKeyFrame: Boolean,
+    val isKeyFrame: Boolean
 
     /**
-     * Contains csd buffers for key frames and audio frames only.
+     * Gets the csd buffers for key frames and audio frames.
+     *
      * Could be (SPS, PPS, VPS, etc.) for key video frames, null for non-key video frames.
      * ESDS for AAC frames,...
      */
-    val extra: List<ByteBuffer>?,
+    val extra: Extra?
 
     /**
      * Contains frame format..
      * TODO: to remove
      */
     val format: MediaFormat
-) {
-    init {
-        removePrefixes()
-    }
+}
+
+interface WithClosable<T> {
+    val onClosed: (T) -> Unit
 }
 
 /**
- * Removes the [Frame.extra] prefixes from the [Frame.rawBuffer].
+ * Copy a [Frame] to a new [Frame].
  *
- * With MediaCodec, the encoded frames may contain prefixes like SPS, PPS for H264/H265 key frames.
- * It also modifies the position of the [Frame.rawBuffer] to skip the prefixes.s
- *
- * @return A [ByteBuffer] without prefixes.
+ * For better memory allocation, you should close the returned frame after usage.
  */
-fun Frame.removePrefixes(): ByteBuffer {
-    return if (extra != null) {
-        rawBuffer.removePrefixes(extra)
-    } else {
-        rawBuffer
-    }
+fun Frame.copy(
+    rawBuffer: ByteBuffer = this.rawBuffer,
+    ptsInUs: Long = this.ptsInUs,
+    dtsInUs: Long? = this.dtsInUs,
+    isKeyFrame: Boolean = this.isKeyFrame,
+    extra: Extra? = this.extra,
+    format: MediaFormat = this.format,
+    onClosed: (Frame) -> Unit = {}
+): Frame {
+    val pool = FramePool.default
+    return pool.get(
+        rawBuffer, ptsInUs, dtsInUs, isKeyFrame, extra, format,
+        { frame ->
+            onClosed(frame)
+        })
 }
 
 
-fun FrameWithCloseable(
+/**
+ * A mutable [Frame] internal representation.
+ *
+ * The purpose is to get reusable [Frame]
+ */
+data class MutableFrame(
     /**
      * Contains an audio or video frame data.
      */
-    rawBuffer: ByteBuffer,
+    override var rawBuffer: ByteBuffer,
 
     /**
      * Presentation timestamp in µs
      */
-    ptsInUs: Long,
+    override var ptsInUs: Long,
 
     /**
      * Decoded timestamp in µs (not used).
      */
-    dtsInUs: Long?,
+    override var dtsInUs: Long?,
 
     /**
      * `true` if frame is a key frame (I-frame for AVC/HEVC and audio frames)
      */
-    isKeyFrame: Boolean,
+    override var isKeyFrame: Boolean,
 
     /**
      * Contains csd buffers for key frames and audio frames only.
      * Could be (SPS, PPS, VPS, etc.) for key video frames, null for non-key video frames.
      * ESDS for AAC frames,...
      */
-    extra: List<ByteBuffer>?,
+    override var extra: Extra?,
 
     /**
      * Contains frame format..
+     * TODO: to remove
      */
-    format: MediaFormat,
+    override var format: MediaFormat,
 
     /**
      * A callback to call when frame is closed.
      */
-    onClosed: (FrameWithCloseable) -> Unit,
-) = FrameWithCloseable(
-    Frame(
-        rawBuffer,
-        ptsInUs,
-        dtsInUs,
-        isKeyFrame,
-        extra,
-        format
-    ),
-    onClosed
-)
-
-/**
- * Frame internal representation.
- */
-data class FrameWithCloseable(
-    val frame: Frame,
-    val onClosed: (FrameWithCloseable) -> Unit
-) : Closeable {
+    override var onClosed: (MutableFrame) -> Unit = {}
+) : Frame, WithClosable<MutableFrame> {
     override fun close() {
         try {
             onClosed(this)
@@ -171,8 +224,43 @@ data class FrameWithCloseable(
 }
 
 /**
- * Uses the resource and unwraps the [Frame] to pass it to the given block.
+ * Ensures that extra are not used at the same time.
+ *
+ * After accessing the extra, they are automatically rewind for a new usage.
  */
-inline fun <T> FrameWithCloseable.useAndUnwrap(block: (Frame) -> T) = use {
-    block(frame)
+class Extra(private val extraBuffers: List<ByteBuffer>) {
+    private val lock = Any()
+
+    val _length by lazy { extraBuffers.sumOf { it.remaining() } }
+
+    fun getLength(): Int {
+        return synchronized(lock) {
+            _length
+        }
+    }
+
+    fun <T> get(extra: List<ByteBuffer>.() -> T): T {
+        return synchronized(lock) {
+            val result = extraBuffers.extra()
+            extraBuffers.forEach { it.rewind() }
+            result
+        }
+    }
+}
+
+/**
+ * Gets the duplicated extra.
+ *
+ * Prefers to use [Extra.get] as it does not create new resources.
+ */
+val Extra.extra: List<ByteBuffer>
+    get() = get { this.map { it.duplicate() } }
+
+/**
+ * Gets the duplicated extra at [index]
+ *
+ * Prefers to use [Extra.get] as it does not create new resources.
+ */
+fun Extra.get(index: Int): ByteBuffer {
+    return get { this[index].duplicate() }
 }

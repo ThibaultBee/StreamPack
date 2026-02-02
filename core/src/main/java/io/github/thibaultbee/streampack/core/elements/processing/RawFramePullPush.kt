@@ -16,8 +16,9 @@
 package io.github.thibaultbee.streampack.core.elements.processing
 
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
-import io.github.thibaultbee.streampack.core.elements.utils.pool.IRawFrameFactory
-import io.github.thibaultbee.streampack.core.elements.utils.pool.RawFrameFactory
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioFrameSourceInternal
+import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
+import io.github.thibaultbee.streampack.core.elements.utils.pool.RawFramePool
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -30,45 +31,40 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.atomic.AtomicBoolean
 
-fun RawFramePullPush(
-    frameProcessor: IFrameProcessor<RawFrame>,
-    onFrame: suspend (RawFrame) -> Unit,
-    processDispatcher: CoroutineDispatcher,
-    isDirect: Boolean = true
-) = RawFramePullPush(frameProcessor, onFrame, RawFrameFactory(isDirect), processDispatcher)
-
 /**
  * A component that pull a frame from an input and push it to [onFrame] output.
  *
  * @param frameProcessor the frame processor
  * @param onFrame the output frame callback
- * @param frameFactory the frame factory to create frames
+ * @param bufferPool the [ByteBuffer] pool
  * @param processDispatcher the dispatcher to process frames on
  */
 class RawFramePullPush(
-    private val frameProcessor: IFrameProcessor<RawFrame>,
+    private val frameProcessor: IProcessor<RawFrame>,
     val onFrame: suspend (RawFrame) -> Unit,
-    private val frameFactory: IRawFrameFactory,
+    private val bufferPool: ByteBufferPool,
     private val processDispatcher: CoroutineDispatcher,
 ) {
     private val coroutineScope = CoroutineScope(SupervisorJob() + processDispatcher)
     private val mutex = Mutex()
 
-    private var getFrame: (suspend (frameFactory: IRawFrameFactory) -> RawFrame)? = null
+    private val pool = RawFramePool()
+
+    private var source: IAudioFrameSourceInternal? = null
 
     private val isReleaseRequested = AtomicBoolean(false)
 
     private var job: Job? = null
 
-    suspend fun setInput(getFrame: suspend (frameFactory: IRawFrameFactory) -> RawFrame) {
+    suspend fun setInput(source: IAudioFrameSourceInternal) {
         mutex.withLock {
-            this.getFrame = getFrame
+            this.source = source
         }
     }
 
     suspend fun removeInput() {
         mutex.withLock {
-            this.getFrame = null
+            this.source = null
         }
     }
 
@@ -80,9 +76,11 @@ class RawFramePullPush(
         job = coroutineScope.launch {
             while (isActive) {
                 val rawFrame = mutex.withLock {
-                    val listener = getFrame ?: return@withLock null
+                    val unwrapSource = source ?: return@withLock null
                     try {
-                        listener(frameFactory)
+                        val buffer = bufferPool.get(unwrapSource.minBufferSize)
+                        val timestampInUs = unwrapSource.fillAudioFrame(buffer)
+                        pool.get(buffer, timestampInUs)
                     } catch (t: Throwable) {
                         Logger.e(TAG, "Failed to get frame: ${t.message}")
                         null
@@ -94,7 +92,7 @@ class RawFramePullPush(
 
                 // Process buffer with effects
                 val processedFrame = try {
-                    frameProcessor.processFrame(rawFrame)
+                    frameProcessor.process(rawFrame)
                 } catch (t: Throwable) {
                     Logger.e(TAG, "Failed to pre-process frame: ${t.message}")
                     continue
@@ -115,7 +113,8 @@ class RawFramePullPush(
         job?.cancel()
         job = null
 
-        frameFactory.clear()
+        pool.clear()
+        bufferPool.clear()
     }
 
     fun release() {
@@ -127,7 +126,8 @@ class RawFramePullPush(
         }
 
         coroutineScope.cancel()
-        frameFactory.close()
+        pool.close()
+        bufferPool.close()
     }
 
     companion object {

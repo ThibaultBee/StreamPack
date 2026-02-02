@@ -17,7 +17,8 @@ package io.github.thibaultbee.streampack.core.elements.endpoints
 
 import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
-import io.github.thibaultbee.streampack.core.elements.data.FrameWithCloseable
+import io.github.thibaultbee.streampack.core.elements.data.Frame
+import io.github.thibaultbee.streampack.core.elements.data.copy
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.intersect
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -35,7 +36,6 @@ import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-
 
 /**
  * Combines multiple endpoints into one.
@@ -218,8 +218,7 @@ open class CombineEndpoint(
      *
      * If all endpoints write fails, it throws the exception of the first endpoint that failed.
      */
-    override suspend fun write(closeableFrame: FrameWithCloseable, streamPid: Int) {
-        val frame = closeableFrame.frame
+    override suspend fun write(frame: Frame, streamPid: Int) {
         val throwables = mutableListOf<Throwable>()
 
         /**
@@ -231,9 +230,10 @@ open class CombineEndpoint(
         endpointInternals.filter { it.isOpenFlow.value }.forEach { endpoint ->
             try {
                 val deferred = CompletableDeferred<Unit>()
-                val duplicatedFrame = FrameWithCloseable(
-                    frame.copy(rawBuffer = frame.rawBuffer.duplicate()),
-                    { deferred.complete(Unit) })
+                val duplicatedFrame = frame.copy(
+                    rawBuffer = frame.rawBuffer.duplicate(),
+                    onClosed = { deferred.complete(Unit) }
+                )
 
                 val endpointStreamId = endpointsToStreamIdsMap[Pair(endpoint, streamPid)]!!
                 deferreds += deferred
@@ -246,7 +246,7 @@ open class CombineEndpoint(
 
         coroutineScope.launch {
             deferreds.forEach { it.await() }
-            closeableFrame.close()
+            frame.close()
         }
 
         if (throwables.isNotEmpty()) {
