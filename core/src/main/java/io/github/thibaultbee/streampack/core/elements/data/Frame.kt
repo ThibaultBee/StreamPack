@@ -16,7 +16,9 @@
 package io.github.thibaultbee.streampack.core.elements.data
 
 import android.media.MediaFormat
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.deepCopy
 import io.github.thibaultbee.streampack.core.elements.utils.pool.FramePool
+import io.github.thibaultbee.streampack.core.elements.utils.pool.IBufferPool
 import io.github.thibaultbee.streampack.core.elements.utils.pool.RawFramePool
 import java.io.Closeable
 import java.nio.ByteBuffer
@@ -36,6 +38,24 @@ interface RawFrame : Closeable {
     val timestampInUs: Long
 }
 
+/**
+ * Deep copy the [RawFrame.rawBuffer] into a new [RawFrame].
+ *
+ * For better memory allocation, you should close the returned frame after usage.
+ */
+fun RawFrame.deepCopy(
+    bufferPool: IBufferPool<ByteBuffer>,
+    timestampInUs: Long = this.timestampInUs,
+    onClosed: (RawFrame) -> Unit = {}
+): RawFrame {
+    val copy = this.rawBuffer.deepCopy(bufferPool)
+    return copy(
+        rawBuffer = copy, timestampInUs = timestampInUs, onClosed = {
+            onClosed(it)
+            bufferPool.put(copy)
+        }
+    )
+}
 
 /**
  * Copy a [RawFrame] to a new [RawFrame].

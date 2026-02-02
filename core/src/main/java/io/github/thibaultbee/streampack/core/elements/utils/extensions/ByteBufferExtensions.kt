@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.utils.extensions
 
+import io.github.thibaultbee.streampack.core.elements.utils.pool.IBufferPool
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.charset.StandardCharsets
@@ -256,6 +257,7 @@ fun ByteBuffer.toByteArray(): ByteArray {
  * Deep copy of [ByteBuffer].
  * The position of the original [ByteBuffer] will be 0 after the clone.
  */
+@Deprecated("Use ByteBufferPool instead")
 fun ByteBuffer.deepCopy(): ByteBuffer {
     val originalPosition = this.position()
     try {
@@ -264,6 +266,24 @@ fun ByteBuffer.deepCopy(): ByteBuffer {
         } else {
             ByteBuffer.allocate(this.remaining())
         }
+        return copy.put(this).apply { rewind() }
+    } finally {
+        this.position(originalPosition)
+    }
+}
+
+/**
+ * Deep copy of [ByteBuffer] from [IBufferPool].
+ *
+ * Don't forget to put the returned [ByteBuffer] to the buffer pool when you are done with it.
+ *
+ * @param pool [IBufferPool] to use
+ * @return [ByteBuffer] deep copy
+ */
+fun ByteBuffer.deepCopy(pool: IBufferPool<ByteBuffer>): ByteBuffer {
+    val originalPosition = this.position()
+    try {
+        val copy = pool.get(this.remaining())
         return copy.put(this).apply { rewind() }
     } finally {
         this.position(originalPosition)
