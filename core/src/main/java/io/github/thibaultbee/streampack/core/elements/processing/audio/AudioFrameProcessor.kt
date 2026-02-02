@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.core.elements.processing.audio
 
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
+import io.github.thibaultbee.streampack.core.elements.data.copy
 import io.github.thibaultbee.streampack.core.elements.processing.IProcessor
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -49,11 +50,11 @@ class AudioFrameProcessor(
         isMuted: Boolean,
         data: RawFrame
     ) {
+        val consumeFrame =
+            data.copy(
+                rawBuffer = data.rawBuffer.duplicate().asReadOnlyBuffer()
+            )
         coroutineScope.launch {
-            val consumeFrame =
-                data.copy(
-                    rawBuffer = data.rawBuffer.duplicate().asReadOnlyBuffer()
-                )
             effect.consume(isMuted, consumeFrame)
         }
     }
