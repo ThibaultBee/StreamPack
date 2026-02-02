@@ -16,14 +16,16 @@
 package io.github.thibaultbee.streampack.core.elements.processing.audio
 
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
-import io.github.thibaultbee.streampack.core.elements.data.copy
+import io.github.thibaultbee.streampack.core.elements.data.deepCopy
 import io.github.thibaultbee.streampack.core.elements.processing.IProcessor
+import io.github.thibaultbee.streampack.core.elements.utils.pool.IBufferPool
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import java.io.Closeable
+import java.nio.ByteBuffer
 import java.util.function.IntFunction
 
 /**
@@ -32,6 +34,7 @@ import java.util.function.IntFunction
  * It is not thread-safe.
  */
 class AudioFrameProcessor(
+    private val bufferPool: IBufferPool<ByteBuffer>,
     dispatcher: CoroutineDispatcher,
     private val effects: MutableList<IAudioEffect> = mutableListOf()
 ) : IProcessor<RawFrame>, IAudioFrameProcessor, Closeable, MutableList<IAudioEffect> by effects {
@@ -50,10 +53,7 @@ class AudioFrameProcessor(
         isMuted: Boolean,
         data: RawFrame
     ) {
-        val consumeFrame =
-            data.copy(
-                rawBuffer = data.rawBuffer.duplicate().asReadOnlyBuffer()
-            )
+        val consumeFrame = data.deepCopy(bufferPool)
         coroutineScope.launch {
             effect.consume(isMuted, consumeFrame)
         }

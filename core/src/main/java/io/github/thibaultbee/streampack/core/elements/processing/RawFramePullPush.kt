@@ -31,13 +31,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.atomic.AtomicBoolean
 
-fun RawFramePullPush(
-    frameProcessor: IProcessor<RawFrame>,
-    onFrame: suspend (RawFrame) -> Unit,
-    processDispatcher: CoroutineDispatcher,
-    isDirect: Boolean = true
-) = RawFramePullPush(frameProcessor, onFrame, ByteBufferPool(isDirect), processDispatcher)
-
 /**
  * A component that pull a frame from an input and push it to [onFrame] output.
  *
