@@ -1,6 +1,17 @@
 Changelog
 ==========
 
+Version 3.1.1
+----------------
+
+## Bug fixes:
+
+- RTMP: fix connection to Facebook Live (
+  see [#274](https://github.com/ThibaultBee/StreamPack/issues/274))
+- PreviewView: call onZoomRationOnPinchChanged from the main thread
+- PreviewView: stop preview before requesting a new surface to avoid race condition (with setConfig)
+- UI: remove the permission in the `AndroidManifest.xml`
+
 Version 3.1.0
 ----------------
 
@@ -15,7 +26,8 @@ Version 3.1.0
 - Camera settings are now suspendable
 - Microphone: add a way to set the audio source
 - Camera: also set `SENSOR_FRAME_DURATION` when the framerate setting is applied
-- `PreviewView` automatically starts when it is displayed. You don't have to call neither `startPreview` nor `stopPreview`
+- `PreviewView` automatically starts when it is displayed. You don't have to call neither
+  `startPreview` nor `stopPreview`
 - Upgrade to dokka 2.1.0
 
 ## Bug fixes:
