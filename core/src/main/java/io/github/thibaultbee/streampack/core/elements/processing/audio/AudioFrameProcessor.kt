@@ -26,17 +26,16 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import java.io.Closeable
 import java.nio.ByteBuffer
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.function.IntFunction
 
 /**
  * Audio frame processor.
- *
- * It is not thread-safe.
  */
 class AudioFrameProcessor(
     private val bufferPool: IBufferPool<ByteBuffer>,
     dispatcher: CoroutineDispatcher,
-    private val effects: MutableList<IAudioEffect> = mutableListOf()
+    private val effects: CopyOnWriteArrayList<IAudioEffect> = CopyOnWriteArrayList()
 ) : IProcessor<RawFrame>, IAudioFrameProcessor, Closeable, MutableList<IAudioEffect> by effects {
     private val coroutineScope = CoroutineScope(dispatcher + SupervisorJob())
 
