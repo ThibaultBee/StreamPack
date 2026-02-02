@@ -253,18 +253,18 @@ fun ByteBuffer.toByteArray(): ByteArray {
 }
 
 /**
- * Clone [ByteBuffer].
+ * Deep copy of [ByteBuffer].
  * The position of the original [ByteBuffer] will be 0 after the clone.
  */
-fun ByteBuffer.clone(): ByteBuffer {
+fun ByteBuffer.deepCopy(): ByteBuffer {
     val originalPosition = this.position()
     try {
-        val clone = if (isDirect) {
+        val copy = if (isDirect) {
             ByteBuffer.allocateDirect(this.remaining())
         } else {
             ByteBuffer.allocate(this.remaining())
         }
-        return clone.put(this).apply { rewind() }
+        return copy.put(this).apply { rewind() }
     } finally {
         this.position(originalPosition)
     }

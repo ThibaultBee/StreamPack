@@ -117,7 +117,7 @@ class ByteBufferExtensionsKtTest {
         )
         testBuffer.position(2)
 
-        val clonedBuffer = testBuffer.clone()
+        val clonedBuffer = testBuffer.deepCopy()
         assertArrayEquals(
             testBuffer.toByteArray(), clonedBuffer.toByteArray()
         )
