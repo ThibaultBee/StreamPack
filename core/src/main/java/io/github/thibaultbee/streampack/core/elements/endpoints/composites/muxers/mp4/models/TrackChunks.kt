@@ -63,7 +63,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.av.descriptors.SLCon
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.avc.AVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.hevc.HEVCDecoderConfigurationRecord
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.vpx.VPCodecConfigurationRecord
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.clone
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.deepCopy
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isAnnexB
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isAvcc
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.skipStartCode
@@ -176,7 +176,7 @@ class TrackChunks(
         }
 
         val frameCopy =
-            frame.copy(rawBuffer = frame.rawBuffer.clone()) // Do not keep mediacodec buffer
+            frame.copy(rawBuffer = frame.rawBuffer.deepCopy()) // Do not keep mediacodec buffer
         chunks.last().add(frameId, frameCopy)
         frameId++
     }
