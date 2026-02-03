@@ -328,7 +328,7 @@ class CameraSettings internal constructor(
          * Use the range to call [setStrengthLevel]
          */
         @delegate:RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
-        val strengthLevelRange: Range<Int> by lazy {
+        val availableStrengthLevelRange: Range<Int> by lazy {
             Range(
                 1,
                 characteristics[CameraCharacteristics.FLASH_TORCH_STRENGTH_MAX_LEVEL] ?: 1
@@ -348,7 +348,7 @@ class CameraSettings internal constructor(
          * Sets the flash strength.
          *
          * @param level flash strength. Range is from [1-x].
-         * @see [strengthLevelRange]
+         * @see [availableStrengthLevelRange]
          */
         @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
         suspend fun setStrengthLevel(level: Int) {
