@@ -21,13 +21,13 @@ import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
 import android.util.Range
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraSessionController.CaptureResultListener
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.CameraCaptureSessionCompatBuilder
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSessionCallback
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSurface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraUtils
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestWithTargetsBuilder
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureResultListener
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CoroutineScope
@@ -387,7 +387,7 @@ internal class CameraController(
      *
      * The listener is removed when it returns true or [removeCaptureCallbackListener] is called.
      */
-    fun addCaptureCallbackListener(listener: CaptureResultListener) {
+    suspend fun addCaptureCallbackListener(listener: CaptureResultListener) {
         sessionCallback.addListener(listener)
     }
 
@@ -396,7 +396,7 @@ internal class CameraController(
      *
      * @param listener The listener to remove
      */
-    fun removeCaptureCallbackListener(listener: CaptureResultListener) {
+    suspend fun removeCaptureCallbackListener(listener: CaptureResultListener) {
         sessionCallback.removeListener(listener)
     }
 

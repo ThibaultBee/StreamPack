@@ -34,7 +34,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -452,15 +451,5 @@ internal class CameraSessionController private constructor(
                 it.onCaptureFailed(session, request, failure)
             }
         }
-    }
-
-    interface CaptureResultListener {
-        /**
-         * Called when a capture result is received.
-         *
-         * @param result The capture result.
-         * @return true if the listener is finished and should be removed, false otherwise.
-         */
-        fun onCaptureResult(result: TotalCaptureResult): Boolean
     }
 }
