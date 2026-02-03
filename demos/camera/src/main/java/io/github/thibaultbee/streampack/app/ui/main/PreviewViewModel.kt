@@ -247,7 +247,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         }
     }
 
-    fun onZoomRationOnPinchChanged() {
+    fun onZoomChanged() {
         notifyPropertyChanged(BR.zoomRatio)
     }
 

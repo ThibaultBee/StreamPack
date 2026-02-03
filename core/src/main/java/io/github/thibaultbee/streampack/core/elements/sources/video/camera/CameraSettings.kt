@@ -73,6 +73,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.CancellationException
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicLong
 
 
@@ -684,6 +685,8 @@ class CameraSettings internal constructor(
         protected val characteristics: CameraCharacteristics,
         protected val cameraSettings: CameraSettings
     ) {
+        private val listeners: CopyOnWriteArrayList<OnZoomChangedListener> = CopyOnWriteArrayList()
+
         abstract val availableRatioRange: Range<Float>
         internal abstract suspend fun getCropSensorRegion(): Rect
 
@@ -706,6 +709,20 @@ class CameraSettings internal constructor(
                 1.0f + (scaleFactor - 1.0f) * ratio
             } else {
                 1.0f - (1.0f - scaleFactor) * ratio
+            }
+        }
+
+        fun addListener(listener: OnZoomChangedListener) {
+            listeners.add(listener)
+        }
+
+        fun removeListener(listener: OnZoomChangedListener) {
+            listeners.remove(listener)
+        }
+
+        protected fun notifyZoomListeners(zoomRatio: Float) {
+            listeners.forEach {
+                it.onZoomChanged(zoomRatio)
             }
         }
 
@@ -732,6 +749,11 @@ class CameraSettings internal constructor(
             override suspend fun setZoomRatio(zoomRatio: Float) {
                 mutex.withLock {
                     val clampedValue = zoomRatio.clamp(availableRatioRange)
+                    if (clampedValue == persistentZoomRatio) {
+                        return@withLock
+                    }
+                    persistentZoomRatio = clampedValue
+
                     currentCropRect = getCropRegion(
                         characteristics,
                         clampedValue
@@ -739,8 +761,8 @@ class CameraSettings internal constructor(
                     cameraSettings.set(
                         CaptureRequest.SCALER_CROP_REGION, currentCropRect
                     )
-                    cameraSettings.applyRepeatingSession()
-                    persistentZoomRatio = clampedValue
+                    cameraSettings.applyRepeatingSessionSync()
+                    notifyZoomListeners(clampedValue)
                 }
             }
 
@@ -800,10 +822,14 @@ class CameraSettings internal constructor(
             }
 
             override suspend fun setZoomRatio(zoomRatio: Float) {
+                if (zoomRatio == getZoomRatio()) {
+                    return
+                }
                 cameraSettings.set(
                     CaptureRequest.CONTROL_ZOOM_RATIO, zoomRatio.clamp(availableRatioRange)
                 )
                 cameraSettings.applyRepeatingSession()
+                notifyZoomListeners(zoomRatio)
             }
 
             override suspend fun getCropSensorRegion(): Rect {
@@ -825,6 +851,18 @@ class CameraSettings internal constructor(
                     CropScalerRegionZoom(characteristics, cameraSettings)
                 }
             }
+        }
+
+        /**
+         * Listener for zoom change.
+         */
+        interface OnZoomChangedListener {
+            /**
+             * Called when the zoom ratio changes.
+             *
+             * @param zoomRatio the zoom ratio
+             */
+            fun onZoomChanged(zoomRatio: Float)
         }
     }
 
