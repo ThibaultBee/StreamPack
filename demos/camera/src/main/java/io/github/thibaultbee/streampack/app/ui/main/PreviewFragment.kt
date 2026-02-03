@@ -34,6 +34,7 @@ import io.github.thibaultbee.streampack.app.R
 import io.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import io.github.thibaultbee.streampack.app.utils.DialogUtils
 import io.github.thibaultbee.streampack.app.utils.PermissionManager
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.streamers.lifecycle.StreamerViewModelLifeCycleObserver
@@ -182,15 +183,17 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
     private fun inflateStreamerPreview(streamer: IWithVideoSource) {
         val preview = binding.preview
         // Set camera settings button when camera is started
-        preview.listener = object : PreviewView.Listener {
+        preview.listener = object : PreviewView.PreviewListener {
             override fun onPreviewStarted() {
                 Log.i(TAG, "Preview started")
             }
-
-            override fun onZoomRationOnPinchChanged(zoomRatio: Float) {
-                previewViewModel.onZoomRationOnPinchChanged()
-            }
         }
+
+        preview.setZoomListener(object : CameraSettings.Zoom.OnZoomChangedListener {
+            override fun onZoomChanged(zoomRatio: Float) {
+                previewViewModel.onZoomChanged()
+            }
+        })
 
         // Wait till streamer exists to set it to the SurfaceView.
         lifecycleScope.launch {

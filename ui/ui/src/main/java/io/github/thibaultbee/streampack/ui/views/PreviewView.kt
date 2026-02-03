@@ -35,6 +35,7 @@ import androidx.camera.viewfinder.core.ScaleType
 import androidx.camera.viewfinder.core.ViewfinderSurfaceRequest
 import androidx.camera.viewfinder.core.populateFromCharacteristics
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION_MS
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraCharacteristics
@@ -108,9 +109,11 @@ class PreviewView @JvmOverloads constructor(
         }
 
     /**
-     * The [Listener] to listen to specific view events.
+     * The [PreviewListener] to listen to specific view events.
      */
-    var listener: Listener? = null
+    var listener: PreviewListener? = null
+
+    private var zoomListener: CameraSettings.Zoom.OnZoomChangedListener? = null
 
     private var touchUpEvent: MotionEvent? = null
 
@@ -176,11 +179,45 @@ class PreviewView @JvmOverloads constructor(
                         }
                         if (newVideoSource is IPreviewableSource) {
                             attachToStreamerIfReady(true)
+                            zoomListener?.let {
+                                registerZoomListener(it)
+                            }
                         }
                     }
                 }
         }
     }
+
+    /**
+     * Sets the [CameraSettings.Zoom.OnZoomChangedListener] to listen to zoom changes.
+     *
+     * @param listener the [CameraSettings.Zoom.OnZoomChangedListener] to listen to zoom changes.
+     */
+    fun setZoomListener(listener: CameraSettings.Zoom.OnZoomChangedListener?) {
+        if (listener == null) {
+            unregisterZoomListener()
+        } else {
+            registerZoomListener(listener)
+        }
+        zoomListener = listener
+    }
+
+    private fun registerZoomListener(listener: CameraSettings.Zoom.OnZoomChangedListener) {
+        val source = streamer?.videoInput?.sourceFlow?.value
+        if (source is ICameraSource) {
+            source.settings.zoom.addListener(listener)
+        }
+    }
+
+    private fun unregisterZoomListener() {
+        zoomListener?.let {
+            val source = streamer?.videoInput?.sourceFlow?.value
+            if (source is ICameraSource) {
+                source.settings.zoom.removeListener(it)
+            }
+        }
+    }
+
 
     /**
      * Sets the [IWithVideoSource] to preview.
@@ -504,7 +541,6 @@ class PreviewView @JvmOverloads constructor(
                     mutex.withLock {
                         val zoom = source.settings.zoom
                         zoom.onPinch(scaleFactor)
-                        listener?.onZoomRationOnPinchChanged(zoom.getZoomRatio())
                     }
                 }
                 return true
@@ -518,7 +554,7 @@ class PreviewView @JvmOverloads constructor(
     /**
      * A listener for the [PreviewView].
      */
-    interface Listener {
+    interface PreviewListener {
         /**
          * Called when the preview is started.
          */
@@ -528,12 +564,6 @@ class PreviewView @JvmOverloads constructor(
          * Called when the preview failed to start.
          */
         fun onPreviewFailed(t: Throwable) {}
-
-        /**
-         * Called when the zoom ratio is changed.
-         * @param zoomRatio the new zoom ratio
-         */
-        fun onZoomRationOnPinchChanged(zoomRatio: Float) {}
     }
 
     /**
