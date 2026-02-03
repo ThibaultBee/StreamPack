@@ -320,6 +320,31 @@ class CameraSettings internal constructor(
             cameraSettings.set(CaptureRequest.FLASH_MODE, mode)
             cameraSettings.applyRepeatingSession()
         }
+
+        /**
+         * Gets the range of supported flash strength.
+         * Range is from [1-x].
+         *
+         * Use the range to call [setStrengthLevel]
+         */
+        val strengthLevelRange: Range<Int>
+            @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+            get() = Range(
+                1,
+                characteristics[CameraCharacteristics.FLASH_TORCH_STRENGTH_MAX_LEVEL] ?: 1
+            )
+
+        /**
+         * Sets the flash strength.
+         *
+         * @param level flash strength. Range is from [1-x].
+         * @see [strengthLevelRange]
+         */
+        @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+        suspend fun setStrengthLevel(level: Int) {
+            cameraSettings.set(CaptureRequest.FLASH_STRENGTH_LEVEL, level)
+            cameraSettings.applyRepeatingSession()
+        }
     }
 
     class WhiteBalance internal constructor(
