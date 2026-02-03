@@ -19,9 +19,10 @@ import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCaptureSession.CaptureCallback
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.TotalCaptureResult
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraSessionController.CaptureResultListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * A capture callback that wraps multiple [CaptureResultListener].
@@ -32,18 +33,23 @@ internal class CameraSessionCallback(private val coroutineScope: CoroutineScope)
     CaptureCallback() {
     /* synthetic accessor */
     private val resultListeners = mutableSetOf<CaptureResultListener>()
+    private val mutex = Mutex()
 
     /**
      * Adds a capture result listener.
      *
      * The listener is removed when [removeListener] is explicitly called or when [CaptureResultListener] returns true.
      */
-    fun addListener(listener: CaptureResultListener) {
-        resultListeners.add(listener)
+    suspend fun addListener(listener: CaptureResultListener) {
+        mutex.withLock {
+            resultListeners.add(listener)
+        }
     }
 
-    fun removeListener(listener: CaptureResultListener) {
-        resultListeners.remove(listener)
+    suspend fun removeListener(listener: CaptureResultListener) {
+        mutex.withLock {
+            resultListeners.remove(listener)
+        }
     }
 
     override fun onCaptureCompleted(
@@ -53,14 +59,18 @@ internal class CameraSessionCallback(private val coroutineScope: CoroutineScope)
     ) {
         coroutineScope.launch {
             val removeSet = mutableSetOf<CaptureResultListener>()
-            for (listener in resultListeners) {
-                val isFinished: Boolean = listener.onCaptureResult(result)
-                if (isFinished) {
-                    removeSet.add(listener)
+            mutex.withLock {
+                for (listener in resultListeners) {
+                    val isFinished: Boolean = listener.onCaptureResult(result)
+                    if (isFinished) {
+                        removeSet.add(listener)
+                    }
                 }
             }
             if (!removeSet.isEmpty()) {
-                resultListeners.removeAll(removeSet)
+                mutex.withLock {
+                    resultListeners.removeAll(removeSet)
+                }
             }
         }
     }

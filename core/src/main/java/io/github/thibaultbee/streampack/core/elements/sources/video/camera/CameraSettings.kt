@@ -20,6 +20,10 @@ import android.graphics.PointF
 import android.graphics.Rect
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraMetadata
+import android.hardware.camera2.CameraMetadata.CONTROL_AF_STATE_ACTIVE_SCAN
+import android.hardware.camera2.CameraMetadata.CONTROL_AF_STATE_FOCUSED_LOCKED
+import android.hardware.camera2.CameraMetadata.CONTROL_AF_STATE_INACTIVE
+import android.hardware.camera2.CameraMetadata.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.CaptureResult
 import android.hardware.camera2.TotalCaptureResult
@@ -33,7 +37,6 @@ import androidx.annotation.IntRange
 import androidx.annotation.RequiresApi
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.is90or270
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraController
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraSessionController.CaptureResultListener
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.autoExposureModes
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.autoFocusModes
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.autoWhiteBalanceModes
@@ -50,6 +53,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.scalerMaxZoom
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.sensitivityRange
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.zoomRatioRange
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureResultListener
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.clamp
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isApplicationPortrait
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isNormalized
@@ -65,8 +69,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.CancellationException
 import java.util.concurrent.atomic.AtomicLong
 
 
@@ -96,7 +102,9 @@ class CameraSettings internal constructor(
         }
         cameraController.addCaptureCallbackListener(captureCallback)
         awaitClose {
-            cameraController.removeCaptureCallbackListener(captureCallback)
+            runBlocking {
+                cameraController.removeCaptureCallbackListener(captureCallback)
+            }
         }
     }.conflate().distinctUntilChanged()
 
@@ -159,8 +167,6 @@ class CameraSettings internal constructor(
     val focusMetering =
         FocusMetering(coroutineScope, characteristics, this, zoom, focus, exposure, whiteBalance)
 
-    private val tagBundleFactory = TagBundle.TagBundleFactory()
-
     /**
      * Directly gets a [CaptureRequest] from the camera.
      *
@@ -184,18 +190,35 @@ class CameraSettings internal constructor(
      * Applies settings to the camera repeatedly in a synchronized way.
      *
      * This method returns when the capture callback is received with the passed request.
+     *
+     * @return the total capture result
      */
-    suspend fun applyRepeatingSessionSync() {
-        val deferred = CompletableDeferred<Unit>()
+    suspend fun applyRepeatingSessionSync(): TotalCaptureResult {
+        val deferred = CompletableDeferred<TotalCaptureResult>()
 
-        val tag = tagBundleFactory.create()
+        val captureResult = object : CaptureResultListener {
+            override fun onCaptureResult(result: TotalCaptureResult): Boolean {
+                deferred.complete(result)
+                return false
+            }
+        }
+        applyRepeatingSession(captureResult)
+        return deferred.await()
+    }
+
+    /**
+     * Applies settings to the camera repeatedly.
+     *
+     * @param onCaptureResult the capture result callback. Return `true` to stop the callback.
+     */
+    suspend fun applyRepeatingSession(onCaptureResult: CaptureResultListener) {
+        val tag = TagBundle.Factory.default.create()
         val captureCallback = object : CaptureResultListener {
             override fun onCaptureResult(result: TotalCaptureResult): Boolean {
                 val resultTag = result.request.tag as? TagBundle
                 val keyId = resultTag?.keyId ?: return false
                 if (keyId >= tag.keyId) {
-                    deferred.complete(Unit)
-                    return true
+                    return onCaptureResult.onCaptureResult(result)
                 }
                 return false
             }
@@ -203,7 +226,6 @@ class CameraSettings internal constructor(
 
         cameraController.addCaptureCallbackListener(captureCallback)
         cameraController.setRepeatingSession(tag)
-        deferred.await()
     }
 
     /**
@@ -211,7 +233,7 @@ class CameraSettings internal constructor(
      */
     suspend fun applyRepeatingSession() = cameraController.setRepeatingSession()
 
-    private class TagBundle private constructor(val keyId: Long) {
+    private class TagBundle(val keyId: Long) {
         private val tagMap = mutableMapOf<String, Any?>().apply {
             put(TAG_KEY_ID, keyId)
         }
@@ -232,7 +254,7 @@ class CameraSettings internal constructor(
          *
          * The purpose is to make sure the tag always contains an increasing id.
          */
-        class TagBundleFactory {
+        class Factory private constructor() {
             /**
              * Next session id.
              */
@@ -240,6 +262,10 @@ class CameraSettings internal constructor(
 
             fun create(): TagBundle {
                 return TagBundle(nextSessionUpdateId.getAndIncrement())
+            }
+
+            companion object {
+                val default = Factory()
             }
         }
     }
@@ -1035,7 +1061,35 @@ class CameraSettings internal constructor(
                 )
                 cameraSettings.set(CaptureRequest.CONTROL_AE_MODE, aeMode)
             }
-            cameraSettings.applyRepeatingSession()
+
+            val deferred = CompletableDeferred<Unit>()
+            val captureResult = object : CaptureResultListener {
+                override fun onCaptureResult(result: TotalCaptureResult): Boolean {
+                    return when (val afState = result[CaptureResult.CONTROL_AF_STATE]) {
+                        CONTROL_AF_STATE_FOCUSED_LOCKED -> {
+                            deferred.complete(Unit)
+                            true
+                        }
+
+                        CONTROL_AF_STATE_NOT_FOCUSED_LOCKED -> {
+                            deferred.completeExceptionally(Exception("AF not focused"))
+                            true
+                        }
+
+                        CONTROL_AF_STATE_INACTIVE -> {
+                            deferred.completeExceptionally(CancellationException("AF has been cancelled"))
+                            true
+                        }
+
+                        CONTROL_AF_STATE_ACTIVE_SCAN -> false
+                        else -> {
+                            deferred.completeExceptionally(IllegalStateException("AF is not in an expected state $afState"))
+                        }
+                    }
+                }
+            }
+            cameraSettings.applyRepeatingSession(captureResult)
+            deferred.await()
         }
 
         private suspend fun executeMetering(
@@ -1052,7 +1106,7 @@ class CameraSettings internal constructor(
              */
             cameraSettings.set(
                 CaptureRequest.CONTROL_AF_TRIGGER,
-                CameraMetadata.CONTROL_AF_TRIGGER_IDLE
+                CameraMetadata.CONTROL_AF_TRIGGER_CANCEL
             )
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 cameraSettings.set(
@@ -1063,9 +1117,6 @@ class CameraSettings internal constructor(
             cameraSettings.applyRepeatingSessionSync()
 
             addFocusMetering(afRectangles, aeRectangles, awbRectangles)
-            if (afRectangles.isNotEmpty()) {
-                triggerAf(true)
-            }
 
             // Auto cancel AF trigger after timeoutDurationMs
             if (timeoutDurationMs > 0) {
@@ -1077,6 +1128,10 @@ class CameraSettings internal constructor(
                         Logger.w(TAG, "Failed to auto cancel focus and metering", t)
                     }
                 }
+            }
+
+            if (afRectangles.isNotEmpty()) {
+                triggerAf(true)
             }
         }
 
