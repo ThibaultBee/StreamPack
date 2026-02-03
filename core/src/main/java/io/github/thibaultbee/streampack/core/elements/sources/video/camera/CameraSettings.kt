@@ -270,7 +270,7 @@ class CameraSettings internal constructor(
         }
     }
 
-    class Flash(
+    class Flash internal constructor(
         private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings
     ) {
@@ -322,7 +322,7 @@ class CameraSettings internal constructor(
         }
     }
 
-    class WhiteBalance(
+    class WhiteBalance internal constructor(
         private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings
     ) {
@@ -400,7 +400,7 @@ class CameraSettings internal constructor(
         }
     }
 
-    class Iso(
+    class Iso internal constructor(
         private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings
     ) {
@@ -448,7 +448,7 @@ class CameraSettings internal constructor(
         }
     }
 
-    class ColorCorrection(
+    class ColorCorrection internal constructor(
         private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings
     ) {
@@ -503,7 +503,7 @@ class CameraSettings internal constructor(
         }
     }
 
-    class Exposure(
+    class Exposure internal constructor(
         private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings
     ) {
@@ -679,7 +679,7 @@ class CameraSettings internal constructor(
             }
         }
 
-        class CropScalerRegionZoom(
+        class CropScalerRegionZoom internal constructor(
             characteristics: CameraCharacteristics,
             cameraSettings: CameraSettings
         ) : Zoom(characteristics, cameraSettings) {
@@ -754,7 +754,10 @@ class CameraSettings internal constructor(
         }
 
         @RequiresApi(Build.VERSION_CODES.R)
-        class RZoom(characteristics: CameraCharacteristics, cameraSettings: CameraSettings) :
+        class RZoom internal constructor(
+            characteristics: CameraCharacteristics,
+            cameraSettings: CameraSettings
+        ) :
             Zoom(characteristics, cameraSettings) {
             override val availableRatioRange: Range<Float>
                 get() = characteristics.zoomRatioRange
@@ -781,7 +784,7 @@ class CameraSettings internal constructor(
             const val DEFAULT_ZOOM_RATIO = 1f
             val DEFAULT_ZOOM_RATIO_RANGE = Range(DEFAULT_ZOOM_RATIO, DEFAULT_ZOOM_RATIO)
 
-            fun build(
+            internal fun build(
                 characteristics: CameraCharacteristics,
                 cameraSettings: CameraSettings
             ): Zoom {
@@ -795,7 +798,7 @@ class CameraSettings internal constructor(
     }
 
 
-    class Focus(
+    class Focus internal constructor(
         private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings
     ) {
@@ -905,7 +908,7 @@ class CameraSettings internal constructor(
         }
     }
 
-    class Stabilization(
+    class Stabilization internal constructor(
         private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings
     ) {
@@ -989,7 +992,7 @@ class CameraSettings internal constructor(
         }
     }
 
-    class FocusMetering(
+    class FocusMetering internal constructor(
         private val coroutineScope: CoroutineScope,
         private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings,
