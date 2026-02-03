@@ -279,8 +279,7 @@ class CameraSettings internal constructor(
          *
          * @return `true` if camera has a flash device, [Boolean.Companion.toString] otherwise.
          */
-        val isAvailable: Boolean
-            get() = characteristics.isFlashAvailable
+        val isAvailable: Boolean by lazy { characteristics.isFlashAvailable }
 
         /**
          * Enables or disables flash.
@@ -327,12 +326,22 @@ class CameraSettings internal constructor(
          *
          * Use the range to call [setStrengthLevel]
          */
-        val strengthLevelRange: Range<Int>
-            @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
-            get() = Range(
+        @delegate:RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+        val strengthLevelRange: Range<Int> by lazy {
+            Range(
                 1,
                 characteristics[CameraCharacteristics.FLASH_TORCH_STRENGTH_MAX_LEVEL] ?: 1
             )
+        }
+
+        val strengthLevel: Int
+            /**
+             * Gets the flash strength.
+             *
+             * @return the flash strength
+             */
+            @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+            get() = cameraSettings.get(CaptureRequest.FLASH_STRENGTH_LEVEL) ?: 1
 
         /**
          * Sets the flash strength.
@@ -356,8 +365,7 @@ class CameraSettings internal constructor(
          *
          * @return list of supported white balance modes.
          */
-        val availableAutoModes: List<Int>
-            get() = characteristics.autoWhiteBalanceModes
+        val availableAutoModes: List<Int> by lazy { characteristics.autoWhiteBalanceModes }
 
         /**
          * Gets the auto white balance mode.
@@ -388,8 +396,7 @@ class CameraSettings internal constructor(
         /**
          * Get maximum number of available white balance metering regions.
          */
-        val maxNumOfMeteringRegions: Int
-            get() = characteristics.maxNumberOfWhiteBalanceMeteringRegions
+        val maxNumOfMeteringRegions: Int by lazy { characteristics.maxNumberOfWhiteBalanceMeteringRegions }
 
         /**
          * Gets the white balance metering regions.
@@ -436,8 +443,9 @@ class CameraSettings internal constructor(
          *
          * @see [sensorSensitivity]
          */
-        val availableSensorSensitivityRange: Range<Int>
-            get() = characteristics.sensitivityRange ?: DEFAULT_SENSITIVITY_RANGE
+        val availableSensorSensitivityRange: Range<Int> by lazy {
+            characteristics.sensitivityRange ?: DEFAULT_SENSITIVITY_RANGE
+        }
 
         /**
          * Gets lens focus distance.
@@ -482,11 +490,10 @@ class CameraSettings internal constructor(
          *
          * @return `true` if camera has a flash device, `false` otherwise.
          */
-        val isAvailable: Boolean
-            get() {
-                return characteristics[CameraCharacteristics.COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES]
-                    ?.contains(CaptureRequest.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX) == true
-            }
+        val isAvailable: Boolean by lazy {
+            characteristics[CameraCharacteristics.COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES]
+                ?.contains(CaptureRequest.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX) == true
+        }
 
         /**
          * Gets color correction gain.
@@ -539,9 +546,7 @@ class CameraSettings internal constructor(
          *
          * @see [autoMode]
          */
-        val availableAutoModes: List<Int>
-            get() = characteristics.autoExposureModes
-
+        val availableAutoModes: List<Int> by lazy { characteristics.autoExposureModes }
 
         /**
          * Gets auto exposure mode.
@@ -575,9 +580,10 @@ class CameraSettings internal constructor(
          * @see [availableCompensationStep]
          * @see [compensation]
          */
-        val availableCompensationRange: Range<Int>
-            get() = characteristics.exposureRange
+        val availableCompensationRange: Range<Int> by lazy {
+            characteristics.exposureRange
                 ?: DEFAULT_COMPENSATION_RANGE
+        }
 
         /**
          * Gets current camera exposure compensation step.
@@ -591,9 +597,9 @@ class CameraSettings internal constructor(
          * @see [availableCompensationRange]
          * @see [compensation]
          */
-        val availableCompensationStep: Rational
-            get() = characteristics.exposureStep
-                ?: DEFAULT_COMPENSATION_STEP_RATIONAL
+        val availableCompensationStep: Rational by lazy {
+            characteristics.exposureStep ?: DEFAULT_COMPENSATION_STEP_RATIONAL
+        }
 
         /**
          * Gets exposure compensation.
@@ -626,8 +632,7 @@ class CameraSettings internal constructor(
         /**
          * Get maximum number of available exposure metering regions.
          */
-        val maxNumOfMeteringRegions: Int
-            get() = characteristics.maxNumberOfExposureMeteringRegions
+        val maxNumOfMeteringRegions by lazy { characteristics.maxNumberOfExposureMeteringRegions }
 
         /**
          * Gets the exposure metering regions.
@@ -714,10 +719,11 @@ class CameraSettings internal constructor(
             private var persistentZoomRatio = 1f
             private var currentCropRect: Rect? = null
 
-            override val availableRatioRange: Range<Float>
-                get() = Range(
+            override val availableRatioRange: Range<Float> by lazy {
+                Range(
                     DEFAULT_ZOOM_RATIO, characteristics.scalerMaxZoom
                 )
+            }
 
             override suspend fun getZoomRatio(): Float = mutex.withLock {
                 persistentZoomRatio
@@ -784,9 +790,9 @@ class CameraSettings internal constructor(
             cameraSettings: CameraSettings
         ) :
             Zoom(characteristics, cameraSettings) {
-            override val availableRatioRange: Range<Float>
-                get() = characteristics.zoomRatioRange
-                    ?: DEFAULT_ZOOM_RATIO_RANGE
+            override val availableRatioRange: Range<Float> by lazy {
+                characteristics.zoomRatioRange ?: DEFAULT_ZOOM_RATIO_RANGE
+            }
 
             override suspend fun getZoomRatio(): Float {
                 return cameraSettings.get(CaptureRequest.CONTROL_ZOOM_RATIO)
@@ -834,8 +840,7 @@ class CameraSettings internal constructor(
          *
          * @see [autoMode]
          */
-        val availableAutoModes: List<Int>
-            get() = characteristics.autoFocusModes
+        val availableAutoModes: List<Int> by lazy { characteristics.autoFocusModes }
 
         /**
          * Gets the auto focus mode.
@@ -868,8 +873,9 @@ class CameraSettings internal constructor(
          *
          * @see [lensDistance]
          */
-        val availableLensDistanceRange: Range<Float>
-            get() = characteristics.lensDistanceRange
+        val availableLensDistanceRange: Range<Float> by lazy {
+            characteristics.lensDistanceRange
+        }
 
         /**
          * Gets the lens focus distance.
@@ -902,9 +908,9 @@ class CameraSettings internal constructor(
         /**
          * Get maximum number of available focus metering regions.
          */
-        val maxNumOfMeteringRegions: Int
-            get() = characteristics.maxNumberOfFocusMeteringRegions
-                ?: DEFAULT_MAX_NUM_OF_METERING_REGION
+        val maxNumOfMeteringRegions: Int by lazy {
+            characteristics.maxNumberOfFocusMeteringRegions ?: DEFAULT_MAX_NUM_OF_METERING_REGION
+        }
 
         /**
          * Gets the focus metering regions.
@@ -977,8 +983,9 @@ class CameraSettings internal constructor(
          *
          * @see [isEnableOptical]
          */
-        val isOpticalAvailable: Boolean
-            get() = characteristics.isOpticalStabilizationAvailable
+        val isOpticalAvailable: Boolean by lazy {
+            characteristics.isOpticalStabilizationAvailable
+        }
 
 
         /**
