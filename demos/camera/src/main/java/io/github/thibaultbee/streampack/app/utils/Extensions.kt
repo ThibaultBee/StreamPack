@@ -37,7 +37,7 @@ import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun IWithVideoSource.setNextCameraId(context: Context) {
     val cameras = context.cameraManager.cameras
-    val videoSource = videoInput?.sourceFlow?.value
+    val videoSource = videoInput.sourceFlow.value
 
     val newCameraId = if (videoSource is ICameraSource) {
         val currentCameraIndex = cameras.indexOf(videoSource.cameraId)
@@ -52,7 +52,7 @@ suspend fun IWithVideoSource.setNextCameraId(context: Context) {
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun IWithVideoSource.toggleBackToFront(context: Context) {
     val cameraManager = context.cameraManager
-    val videoSource = videoInput?.sourceFlow?.value
+    val videoSource = videoInput.sourceFlow.value
     val cameras = if (videoSource is ICameraSource) {
         if (cameraManager.isBackCamera(videoSource.cameraId)) {
             cameraManager.frontCameras

@@ -25,8 +25,9 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
+import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
-import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 
 /**
@@ -35,15 +36,18 @@ import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
  * @param context the application context
  * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory. If parameter is null, no audio source are set. It can be set later with [AudioOnlySingleStreamer.setAudioSource].
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
 suspend fun AudioOnlySingleStreamer(
     context: Context,
     audioSourceFactory: IAudioSourceInternal.Factory = MicrophoneSourceFactory(),
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
+    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ): AudioOnlySingleStreamer {
     val streamer = AudioOnlySingleStreamer(
         context = context,
         endpointFactory = endpointFactory,
+        dispatcherProvider = dispatcherProvider
     )
     streamer.setAudioSource(audioSourceFactory)
     return streamer
@@ -54,16 +58,19 @@ suspend fun AudioOnlySingleStreamer(
  *
  * @param context the application context
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
 class AudioOnlySingleStreamer(
     context: Context,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory()
+    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ) : ISingleStreamer, IAudioSingleStreamer {
-    private val streamer = SingleStreamer(
+    private val streamer = SingleStreamerImpl(
         context = context,
-        endpointFactory = endpointFactory,
         withAudio = true,
-        withVideo = false
+        withVideo = false,
+        endpointFactory = endpointFactory,
+        dispatcherProvider = dispatcherProvider
     )
     override val throwableFlow = streamer.throwableFlow
     override val isOpenFlow = streamer.isOpenFlow
@@ -74,8 +81,8 @@ class AudioOnlySingleStreamer(
         get() = streamer.info
 
     override val audioConfigFlow = streamer.audioConfigFlow
-    override val audioInput: IAudioInput = streamer.audioInput!!
-    
+    override val audioInput: IAudioInput = streamer.audioInput
+
     override val audioEncoder: IEncoder?
         get() = streamer.audioEncoder
 
@@ -97,12 +104,4 @@ class AudioOnlySingleStreamer(
     override suspend fun stopStream() = streamer.stopStream()
 
     override suspend fun release() = streamer.release()
-
-    override fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) {
-        throw UnsupportedOperationException("Audio single streamer does not support bitrate regulator controller")
-    }
-
-    override fun removeBitrateRegulatorController() {
-        // Do nothing
-    }
 }
