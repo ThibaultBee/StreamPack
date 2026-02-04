@@ -30,6 +30,7 @@ import io.github.thibaultbee.streampack.core.streamer.surface.SurfaceViewTestAct
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.cameraSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
+import io.github.thibaultbee.streampack.core.streamers.single.setConfig
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest

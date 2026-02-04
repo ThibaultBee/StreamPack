@@ -55,7 +55,12 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.interfaces.startStream
+import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.VideoOnlySingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.withAudio
+import io.github.thibaultbee.streampack.core.streamers.single.withVideo
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrtBitrateRegulatorController
 import kotlinx.coroutines.CancellationException
@@ -79,16 +84,18 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
 
     private val defaultDispatcher = Dispatchers.IO
 
-    private val buildStreamerUseCase = BuildStreamerUseCase(application, storageRepository)
+    private val buildStreamerUseCase = BuildStreamerUseCase(application)
 
     private val streamerFlow =
-        MutableStateFlow(
-            SingleStreamer(
-                application,
-                runBlocking { storageRepository.isAudioEnableFlow.first() }) // TODO avoid runBlocking
+        MutableStateFlow<IVideoSingleStreamer>(
+            buildFirstStreamer(runBlocking { storageRepository.isAudioEnableFlow.first() })
         )
-    private val streamer: SingleStreamer
+
+    private val streamer: IVideoSingleStreamer
         get() = streamerFlow.value
+    private val audioStreamer: IAudioSingleStreamer?
+        get() = streamer as? IAudioSingleStreamer?
+
     val streamerLiveData = streamerFlow.asLiveData()
 
     /**
@@ -111,10 +118,10 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     val requiredPermissions: List<String>
         get() {
             val permissions = mutableListOf<String>()
-            if (streamer.videoInput?.sourceFlow is ICameraSource) {
+            if (streamer.videoInput.sourceFlow is ICameraSource) {
                 permissions.add(Manifest.permission.CAMERA)
             }
-            if (streamer.audioInput?.sourceFlow?.value is IAudioRecordSource) {
+            if (audioStreamer?.audioInput?.sourceFlow?.value is IAudioRecordSource) {
                 permissions.add(Manifest.permission.RECORD_AUDIO)
             }
             storageRepository.endpointDescriptorFlow.asLiveData().value?.let {
@@ -149,7 +156,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                 // Set audio source and video source
                 if (streamer.withAudio) {
                     Log.i(TAG, "Audio source is enabled. Setting audio source")
-                    streamer.setAudioSource(MicrophoneSourceFactory())
+                    audioStreamer!!.setAudioSource(MicrophoneSourceFactory())
                 } else {
                     Log.i(TAG, "Audio source is disabled")
                 }
@@ -167,7 +174,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
 
                 // TODO: cancel jobs linked to previous streamer
                 viewModelScope.launch {
-                    streamer.videoInput?.sourceFlow?.collect {
+                    streamer.videoInput.sourceFlow.collect {
                         notifySourceChanged()
                     }
                 }
@@ -226,7 +233,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
                         try {
-                            streamer.setAudioConfig(config)
+                            audioStreamer!!.setAudioConfig(config)
                         } catch (t: Throwable) {
                             Log.e(TAG, "setAudioConfig failed", t)
                             _streamerErrorLiveData.postValue("setAudioConfig: ${t.message ?: "Unknown error"}")
@@ -247,6 +254,14 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         }
     }
 
+    private fun buildFirstStreamer(isAudioEnable: Boolean): IVideoSingleStreamer {
+        return if (isAudioEnable) {
+            SingleStreamer(application)
+        } else {
+            VideoOnlySingleStreamer(application)
+        }
+    }
+
     fun onZoomChanged() {
         notifyPropertyChanged(BR.zoomRatio)
     }
@@ -255,7 +270,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     fun configureAudio() {
         viewModelScope.launch {
             try {
-                storageRepository.audioConfigFlow.first()?.let { streamer.setAudioConfig(it) }
+                storageRepository.audioConfigFlow.first()?.let { audioStreamer?.setAudioConfig(it) }
                     ?: Log.i(
                         TAG,
                         "Audio is disabled"
@@ -271,7 +286,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     fun initializeVideoSource() {
         viewModelScope.launch {
             videoSourceMutex.withLock {
-                if (streamer.videoInput?.sourceFlow?.value == null) {
+                if (streamer.videoInput.sourceFlow.value == null) {
                     streamer.setVideoSource(CameraSourceFactory(defaultCameraId))
                 } else {
                     Log.i(TAG, "Camera source already set")
@@ -327,7 +342,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     }
 
     fun setMute(isMuted: Boolean) {
-        streamer.audioInput?.isMuted = isMuted
+        audioStreamer?.audioInput?.isMuted = isMuted
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
@@ -337,7 +352,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
          * exception instead of crashing. You can either catch the exception or check if the
          * configuration is valid for the new camera with [Context.isFpsSupported].
          */
-        val videoSource = streamer.videoInput?.sourceFlow?.value
+        val videoSource = streamer.videoInput.sourceFlow.value
         if (videoSource is ICameraSource) {
             viewModelScope.launch(defaultDispatcher) {
                 videoSourceMutex.withLock {
@@ -357,7 +372,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
          */
         viewModelScope.launch(defaultDispatcher) {
             videoSourceMutex.withLock {
-                val videoSource = streamer.videoInput?.sourceFlow?.value
+                val videoSource = streamer.videoInput.sourceFlow.value
                 if (videoSource is ICameraSource) {
                     streamer.setNextCameraId(application)
                 }
@@ -369,7 +384,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     fun toggleVideoSource() {
         viewModelScope.launch(defaultDispatcher) {
             videoSourceMutex.withLock {
-                val videoSource = streamer.videoInput?.sourceFlow?.value
+                val videoSource = streamer.videoInput.sourceFlow.value
                 val nextSource = when (videoSource) {
                     is ICameraSource -> {
                         BitmapSourceFactory(testBitmap)
@@ -390,7 +405,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         }
     }
 
-    val isCameraSource = streamer.videoInput?.sourceFlow?.map { it is ICameraSource }?.asLiveData()
+    val isCameraSource = streamer.videoInput.sourceFlow?.map { it is ICameraSource }?.asLiveData()
 
     val isFlashAvailable = MutableLiveData(false)
     fun toggleFlash() {
@@ -514,7 +529,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         }
 
     private fun notifySourceChanged() {
-        val videoSource = streamer.videoInput?.sourceFlow?.value ?: return
+        val videoSource = streamer.videoInput.sourceFlow.value ?: return
         if (videoSource is ICameraSource) {
             notifyCameraChanged(videoSource)
         } else {

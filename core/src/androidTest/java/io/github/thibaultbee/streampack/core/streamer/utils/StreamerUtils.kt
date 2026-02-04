@@ -4,7 +4,7 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.Media
 import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
 import io.github.thibaultbee.streampack.core.interfaces.startStream
 import io.github.thibaultbee.streampack.core.streamers.dual.DualStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -14,7 +14,7 @@ import kotlin.time.Duration.Companion.seconds
 
 object StreamerUtils {
     suspend fun runSingleStream(
-        streamer: SingleStreamer,
+        streamer: ISingleStreamer,
         descriptor: MediaDescriptor,
         duration: Duration,
         pollDuration: Duration = 1.seconds

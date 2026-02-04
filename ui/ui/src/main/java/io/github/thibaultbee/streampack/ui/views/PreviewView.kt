@@ -163,8 +163,8 @@ class PreviewView @JvmOverloads constructor(
         streamer: IWithVideoSource
     ) {
         sourceJob += defaultScope.launch {
-            streamer.videoInput?.sourceFlow?.runningHistoryNotNull()
-                ?.collect { (previousVideoSource, newVideoSource) ->
+            streamer.videoInput.sourceFlow.runningHistoryNotNull()
+                .collect { (previousVideoSource, newVideoSource) ->
                     if (previousVideoSource == newVideoSource) {
                         Logger.w(TAG, "No change in video source")
                     } else {
@@ -448,7 +448,7 @@ class PreviewView @JvmOverloads constructor(
 
     private suspend fun stopPreview() {
         streamer?.let {
-            val videoSource = it.videoInput?.sourceFlow?.value
+            val videoSource = it.videoInput.sourceFlow.value
             if (videoSource is IPreviewableSource) {
                 Logger.d(TAG, "Stopping preview")
                 videoSource.previewMutex.withLock {

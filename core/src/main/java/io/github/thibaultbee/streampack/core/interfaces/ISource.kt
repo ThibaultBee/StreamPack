@@ -36,7 +36,7 @@ interface IWithAudioSource {
     /**
      * The audio input to access to advanced settings.
      */
-    val audioInput: IAudioInput?
+    val audioInput: IAudioInput
 
     /**
      * Sets a new audio source.
@@ -44,8 +44,7 @@ interface IWithAudioSource {
      * @param audioSourceFactory The new audio source factory.
      */
     suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory) {
-        val audio = requireNotNull(audioInput) { "Audio input is not available" }
-        audio.setSource(audioSourceFactory)
+        audioInput.setSource(audioSourceFactory)
     }
 }
 
@@ -63,9 +62,9 @@ interface IWithVideoRotation {
  */
 interface IWithVideoSource {
     /**
-     * The audio input to access to advanced settings.
+     * The video input to access to advanced settings.
      */
-    val videoInput: IVideoInput?
+    val videoInput: IVideoInput
 
     /**
      * Sets the video source.
@@ -73,8 +72,7 @@ interface IWithVideoSource {
      * The previous video source will be released unless its preview is still running.
      */
     suspend fun setVideoSource(videoSourceFactory: IVideoSourceInternal.Factory) {
-        val video = requireNotNull(videoInput) { "Video input is not available" }
-        video.setSource(videoSourceFactory)
+        videoInput.setSource(videoSourceFactory)
     }
 }
 
@@ -87,8 +85,7 @@ interface IWithVideoSource {
  */
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun IWithVideoSource.setCameraId(cameraId: String) {
-    val video = requireNotNull(videoInput) { "Video input is not available" }
-    video.setSource(CameraSourceFactory(cameraId))
+    videoInput.setSource(CameraSourceFactory(cameraId))
 }
 
 
@@ -96,7 +93,7 @@ suspend fun IWithVideoSource.setCameraId(cameraId: String) {
  * Whether the video source has a preview.
  */
 val IWithVideoSource.isPreviewable: Boolean
-    get() = videoInput?.sourceFlow?.value is IPreviewableSource
+    get() = videoInput.sourceFlow?.value is IPreviewableSource
 
 /**
  * Sets the preview surface.
@@ -105,7 +102,7 @@ val IWithVideoSource.isPreviewable: Boolean
  * @throws [IllegalStateException] if the video source is not previewable
  */
 suspend fun IWithVideoSource.setPreview(surface: Surface) {
-    (videoInput?.sourceFlow?.value as? IPreviewableSource)?.setPreview(surface)
+    (videoInput.sourceFlow.value as? IPreviewableSource)?.setPreview(surface)
         ?: throw IllegalStateException("Video source is not previewable")
 }
 
@@ -142,7 +139,7 @@ suspend fun IWithVideoSource.setPreview(textureView: TextureView) =
  * @throws [IllegalStateException] if the video source is not previewable
  */
 suspend fun IWithVideoSource.startPreview() {
-    (videoInput?.sourceFlow?.value as? IPreviewableSource)?.startPreview()
+    (videoInput.sourceFlow.value as? IPreviewableSource)?.startPreview()
         ?: throw IllegalStateException("Video source is not previewable")
 }
 
@@ -154,7 +151,7 @@ suspend fun IWithVideoSource.startPreview() {
  * @see [IWithVideoSource.stopPreview]
  */
 suspend fun IWithVideoSource.startPreview(surface: Surface) {
-    (videoInput?.sourceFlow?.value as? IPreviewableSource)?.startPreview(surface)
+    (videoInput.sourceFlow.value as? IPreviewableSource)?.startPreview(surface)
         ?: throw IllegalStateException("Video source is not previewable")
 }
 
@@ -195,5 +192,5 @@ suspend fun IWithVideoSource.startPreview(textureView: TextureView) =
  * Stops video preview.
  */
 suspend fun IWithVideoSource.stopPreview() {
-    (videoInput?.sourceFlow?.value as? IPreviewableSource)?.stopPreview()
+    (videoInput.sourceFlow.value as? IPreviewableSource)?.stopPreview()
 }

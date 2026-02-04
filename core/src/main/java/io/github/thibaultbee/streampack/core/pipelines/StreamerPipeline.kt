@@ -116,7 +116,8 @@ open class StreamerPipeline(
     } else {
         null
     }
-    override val audioInput: IAudioInput? = _audioInput
+    override val audioInput: IAudioInput
+        get() = requireNotNull(_audioInput) { "Audio input is not available" }
 
     private val _videoInput = if (withVideo) {
         VideoInput(context, surfaceProcessorFactory, dispatcherProvider) {
@@ -126,7 +127,8 @@ open class StreamerPipeline(
         null
     }
 
-    override val videoInput: IVideoInput? = _videoInput
+    override val videoInput: IVideoInput
+        get() = requireNotNull(_videoInput) { "Video input is not available" }
 
     private val _isStreamingFlow = MutableStateFlow(false)
 

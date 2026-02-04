@@ -55,22 +55,25 @@ interface ISingleStreamer : IOpenableStreamer {
      * Gets configuration information
      */
     fun getInfo(descriptor: MediaDescriptor): IConfigurationInfo
-
-    /**
-     * Adds a bitrate regulator controller to the streamer.
-     */
-    fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory)
-
-    /**
-     * Removes the bitrate regulator controller from the streamer.
-     */
-    fun removeBitrateRegulatorController()
 }
+
+val ISingleStreamer.withAudio: Boolean
+    /**
+     * Whether the streamer has an audio source.
+     */
+    get() = this is IAudioSingleStreamer
+
+val ISingleStreamer.withVideo: Boolean
+    /**
+     * Whether the streamer has a video source.
+     */
+    get() = this is IVideoSingleStreamer
+
 
 /**
  * An audio single Streamer
  */
-interface IAudioSingleStreamer : IAudioStreamer<AudioConfig> {
+interface IAudioSingleStreamer : IAudioStreamer<AudioConfig>, ISingleStreamer {
     /**
      * The audio configuration flow.
      */
@@ -85,7 +88,7 @@ interface IAudioSingleStreamer : IAudioStreamer<AudioConfig> {
 /**
  * A video single streamer.
  */
-interface IVideoSingleStreamer : IVideoStreamer<VideoConfig> {
+interface IVideoSingleStreamer : IVideoStreamer<VideoConfig>, ISingleStreamer {
     /**
      * The video configuration flow.
      */
@@ -95,5 +98,15 @@ interface IVideoSingleStreamer : IVideoStreamer<VideoConfig> {
      * Advanced settings for the video encoder.
      */
     val videoEncoder: IEncoder?
+
+    /**
+     * Adds a bitrate regulator controller to the streamer.
+     */
+    fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory)
+
+    /**
+     * Removes the bitrate regulator controller from the streamer.
+     */
+    fun removeBitrateRegulatorController()
 }
 

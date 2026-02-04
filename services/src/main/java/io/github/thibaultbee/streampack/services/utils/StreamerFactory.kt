@@ -16,13 +16,16 @@
 package io.github.thibaultbee.streampack.services.utils
 
 import android.content.Context
+import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.streamers.dual.DualStreamer
 import io.github.thibaultbee.streampack.core.streamers.dual.IDualStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.AudioOnlySingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
+import io.github.thibaultbee.streampack.core.streamers.single.VideoOnlySingleStreamer
 import io.github.thibaultbee.streampack.services.StreamerService
 
 
@@ -53,12 +56,19 @@ open class SingleStreamerFactory(
 ) :
     StreamerFactory<ISingleStreamer> {
     override fun create(context: Context): ISingleStreamer {
-        return SingleStreamer(
-            context,
-            withAudio,
-            withVideo,
-            defaultRotation = defaultRotation ?: context.displayRotation
-        )
+        return if (withAudio && withVideo) {
+            SingleStreamer(
+                context,
+                defaultRotation = defaultRotation ?: context.displayRotation
+            )
+        } else if (withAudio) {
+            AudioOnlySingleStreamer(context)
+        } else {
+            VideoOnlySingleStreamer(
+                context,
+                defaultRotation = defaultRotation ?: context.displayRotation
+            )
+        }
     }
 }
 
