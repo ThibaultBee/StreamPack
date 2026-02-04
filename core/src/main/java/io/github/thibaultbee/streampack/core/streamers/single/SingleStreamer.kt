@@ -25,7 +25,6 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
-import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
@@ -35,7 +34,6 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MediaProjectionAudioSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
@@ -43,19 +41,10 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRo
 import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
-import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
+import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
-import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
-import io.github.thibaultbee.streampack.core.streamers.infos.StreamerConfigurationInfo
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.runBlocking
 
 
 /**
@@ -66,6 +55,8 @@ import kotlinx.coroutines.runBlocking
  * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory. If set to null, you will have to set it later explicitly.
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun cameraSingleStreamer(
@@ -73,10 +64,16 @@ suspend fun cameraSingleStreamer(
     cameraId: String = context.defaultCameraId,
     audioSourceFactory: IAudioSourceInternal.Factory? = MicrophoneSourceFactory(),
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
-    @RotationValue defaultRotation: Int = context.displayRotation
+    @RotationValue defaultRotation: Int = context.displayRotation,
+    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
+    dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ): SingleStreamer {
     val streamer = SingleStreamer(
-        context, withAudio = true, withVideo = true, endpointFactory, defaultRotation
+        context = context,
+        endpointFactory = endpointFactory,
+        defaultRotation = defaultRotation,
+        surfaceProcessorFactory = surfaceProcessorFactory,
+        dispatcherProvider = dispatcherProvider
     )
     streamer.setCameraId(cameraId)
     if (audioSourceFactory != null) {
@@ -92,20 +89,24 @@ suspend fun cameraSingleStreamer(
  * @param mediaProjection the media projection. It can be obtained with [MediaProjectionManager.getMediaProjection]. Don't forget to call [MediaProjection.stop] when you are done.
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
 @RequiresApi(Build.VERSION_CODES.Q)
 suspend fun audioVideoMediaProjectionSingleStreamer(
     context: Context,
     mediaProjection: MediaProjection,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
-    @RotationValue defaultRotation: Int = context.displayRotation
+    @RotationValue defaultRotation: Int = context.displayRotation,
+    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
+    dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ): SingleStreamer {
     val streamer = SingleStreamer(
         context = context,
         endpointFactory = endpointFactory,
-        withAudio = true,
-        withVideo = true,
-        defaultRotation = defaultRotation
+        defaultRotation = defaultRotation,
+        surfaceProcessorFactory = surfaceProcessorFactory,
+        dispatcherProvider = dispatcherProvider
     )
 
     streamer.setVideoSource(MediaProjectionVideoSourceFactory(mediaProjection))
@@ -121,20 +122,24 @@ suspend fun audioVideoMediaProjectionSingleStreamer(
  * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory. If set to null, you will have to set it later explicitly.
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
 suspend fun videoMediaProjectionSingleStreamer(
     context: Context,
     mediaProjection: MediaProjection,
     audioSourceFactory: IAudioSourceInternal.Factory? = MicrophoneSourceFactory(),
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
-    @RotationValue defaultRotation: Int = context.displayRotation
+    @RotationValue defaultRotation: Int = context.displayRotation,
+    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
+    dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ): SingleStreamer {
     val streamer = SingleStreamer(
         context = context,
         endpointFactory = endpointFactory,
-        withAudio = true,
-        withVideo = true,
-        defaultRotation = defaultRotation
+        defaultRotation = defaultRotation,
+        surfaceProcessorFactory = surfaceProcessorFactory,
+        dispatcherProvider = dispatcherProvider
     )
 
     streamer.setVideoSource(MediaProjectionVideoSourceFactory(mediaProjection))
@@ -152,6 +157,8 @@ suspend fun videoMediaProjectionSingleStreamer(
  * @param videoSourceFactory the video source factory.
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
 suspend fun SingleStreamer(
     context: Context,
@@ -159,13 +166,15 @@ suspend fun SingleStreamer(
     videoSourceFactory: IVideoSourceInternal.Factory,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
+    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
+    dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ): SingleStreamer {
     val streamer = SingleStreamer(
         context = context,
-        withAudio = true,
-        withVideo = true,
         endpointFactory = endpointFactory,
-        defaultRotation = defaultRotation
+        defaultRotation = defaultRotation,
+        surfaceProcessorFactory = surfaceProcessorFactory,
+        dispatcherProvider = dispatcherProvider
     )
     streamer.setAudioSource(audioSourceFactory)
     streamer.setVideoSource(videoSourceFactory)
@@ -173,249 +182,102 @@ suspend fun SingleStreamer(
 }
 
 /**
- * A [ISingleStreamer] implementation for audio and video.
+ * A [ISingleStreamer] implementation for both audio and video.
  *
  * @param context the application context
- * @param withAudio `true` to capture audio. It can't be changed after instantiation.
- * @param withVideo `true` to capture video. It can't be changed after instantiation.
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
-open class SingleStreamer(
-    protected val context: Context,
-    val withAudio: Boolean = true,
-    val withVideo: Boolean = true,
+class SingleStreamer(
+    context: Context,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider(),
 ) : ISingleStreamer, IAudioSingleStreamer, IVideoSingleStreamer {
-    private val coroutineScope: CoroutineScope = CoroutineScope(dispatcherProvider.default)
-
-    private val pipeline = StreamerPipeline(
-        context,
-        withAudio,
-        withVideo,
-        audioOutputMode = StreamerPipeline.AudioOutputMode.CALLBACK,
-        surfaceProcessorFactory,
-        dispatcherProvider
+    private val streamer = SingleStreamerImpl(
+        context = context,
+        withAudio = true,
+        withVideo = true,
+        endpointFactory = endpointFactory,
+        defaultRotation = defaultRotation,
+        surfaceProcessorFactory = surfaceProcessorFactory,
+        dispatcherProvider = dispatcherProvider
     )
-    private val pipelineOutput: IEncodingPipelineOutputInternal =
-        runBlocking(dispatcherProvider.default) {
-            pipeline.createEncodingOutput(
-                withAudio,
-                withVideo,
-                endpointFactory,
-                defaultRotation
-            ) as IEncodingPipelineOutputInternal
-        }
 
-    override val throwableFlow: StateFlow<Throwable?> =
-        merge(pipeline.throwableFlow, pipelineOutput.throwableFlow).stateIn(
-            coroutineScope,
-            SharingStarted.Eagerly,
-            null
-        )
+    override val throwableFlow = streamer.throwableFlow
+    override val isOpenFlow = streamer.isOpenFlow
+    override val isStreamingFlow = streamer.isStreamingFlow
 
-    override val isOpenFlow: StateFlow<Boolean>
-        get() = pipelineOutput.isOpenFlow
-
-    override val isStreamingFlow: StateFlow<Boolean> = pipeline.isStreamingFlow
-
-    // AUDIO
-    /**
-     * The audio input.
-     * It allows advanced audio source settings.
-     */
-    override val audioInput = pipeline.audioInput
-
-    override val audioEncoder: IEncoder?
-        get() = pipelineOutput.audioEncoder
-
-    override suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory) =
-        pipeline.setAudioSource(audioSourceFactory)
-
-    // VIDEO
-    /**
-     * The video input.
-     * It allows advanced video source settings.
-     */
-    override val videoInput = pipeline.videoInput
-
-    override val videoEncoder: IEncoder?
-        get() = pipelineOutput.videoEncoder
-
-    // ENDPOINT
     override val endpoint: IEndpoint
-        get() = pipelineOutput.endpoint
+        get() = streamer.endpoint
+    override val info: IConfigurationInfo
+        get() = streamer.info
+
+    override val audioConfigFlow = streamer.audioConfigFlow
+    override val audioEncoder: IEncoder?
+        get() = streamer.audioEncoder
+    override val audioInput: IAudioInput = streamer.audioInput!!
+
+    override val videoConfigFlow = streamer.videoConfigFlow
+    override val videoEncoder: IEncoder?
+        get() = streamer.videoEncoder
+    override val videoInput: IVideoInput = streamer.videoInput!!
 
     /**
      * Sets the target rotation.
      *
      * @param rotation the target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
      */
-    override suspend fun setTargetRotation(@RotationValue rotation: Int) {
-        pipeline.setTargetRotation(rotation)
-    }
+    override suspend fun setTargetRotation(@RotationValue rotation: Int) =
+        streamer.setTargetRotation(rotation)
 
-    /**
-     * Gets configuration information.
-     *
-     * Could throw an exception if the endpoint needs to infer the configuration from the
-     * [MediaDescriptor].
-     * In this case, prefer using [getInfo] with the [MediaDescriptor] used in [open].
-     */
-    override val info: IConfigurationInfo
-        get() = if (videoInput?.sourceFlow?.value is CameraSource) {
-            CameraStreamerConfigurationInfo(endpoint.info)
-        } else {
-            StreamerConfigurationInfo(endpoint.info)
-        }
-
-    /**
-     * Gets configuration information from [MediaDescriptor].
-     *
-     * If the endpoint is not [DynamicEndpoint], [descriptor] is unused as the endpoint type is
-     * already known.
-     *
-     * @param descriptor the media descriptor
-     */
-    override fun getInfo(descriptor: MediaDescriptor): IConfigurationInfo {
-        val endpointInfo = try {
-            endpoint.info
-        } catch (_: Throwable) {
-            endpoint.getInfo(descriptor)
-        }
-        return if (videoInput?.sourceFlow?.value is CameraSource) {
-            CameraStreamerConfigurationInfo(endpointInfo)
-        } else {
-            StreamerConfigurationInfo(endpointInfo)
-        }
-    }
-
-    // CONFIGURATION
-    /**
-     * The audio configuration flow.
-     */
-    override val audioConfigFlow: StateFlow<AudioConfig?> = pipelineOutput.audioCodecConfigFlow
-
-    /**
-     * Configures audio settings.
-     * It is the first method to call after a [SingleStreamer] instantiation.
-     * It must be call when both stream and audio capture are not running.
-     *
-     * Use [IConfigurationInfo] to get value limits.
-     *
-     * @param audioConfig Audio configuration to set
-     *
-     * @throws [Throwable] if configuration can not be applied.
-     */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    override suspend fun setAudioConfig(audioConfig: AudioConfig) {
-        pipelineOutput.setAudioCodecConfig(audioConfig)
-    }
+    override suspend fun setAudioConfig(audioConfig: AudioConfig) =
+        streamer.setAudioConfig(audioConfig)
 
-    /**
-     * The video configuration flow.
-     */
-    override val videoConfigFlow: StateFlow<VideoConfig?> = pipelineOutput.videoCodecConfigFlow
+    override suspend fun setVideoConfig(videoConfig: VideoConfig) =
+        streamer.setVideoConfig(videoConfig)
 
-    /**
-     * Configures video settings.
-     * It is the first method to call after a [SingleStreamer] instantiation.
-     * It must be call when both stream and video capture are not running.
-     *
-     * Use [IConfigurationInfo] to get value limits.
-     *
-     * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
-     * to video encoder default level and default profile.
-     *
-     * @param videoConfig Video configuration to set
-     *
-     * @throws [Throwable] if configuration can not be applied.
-     */
-    override suspend fun setVideoConfig(videoConfig: VideoConfig) {
-        pipelineOutput.setVideoCodecConfig(videoConfig)
-    }
+    override fun getInfo(descriptor: MediaDescriptor) = streamer.getInfo(descriptor)
 
-    /**
-     * Configures both video and audio settings.
-     * It is the first method to call after a [SingleStreamer] instantiation.
-     * It must be call when both stream and audio and video capture are not running.
-     *
-     * Use [IConfigurationInfo] to get value limits.
-     *
-     * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
-     * to video encoder default level and default profile.
-     *
-     * @param audioConfig Audio configuration to set
-     * @param videoConfig Video configuration to set
-     *
-     * @throws [Throwable] if configuration can not be applied.
-     * @see [IStreamer.release]
-     */
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    suspend fun setConfig(audioConfig: AudioConfig, videoConfig: VideoConfig) {
-        setAudioConfig(audioConfig)
-        setVideoConfig(videoConfig)
-    }
+    override suspend fun open(descriptor: MediaDescriptor) = streamer.open(descriptor)
 
-    /**
-     * Opens the streamer endpoint.
-     *
-     * @param descriptor Media descriptor to open
-     */
-    override suspend fun open(descriptor: MediaDescriptor) = pipelineOutput.open(descriptor)
+    override suspend fun close() = streamer.close()
 
-    /**
-     * Closes the streamer endpoint.
-     */
-    override suspend fun close() = pipelineOutput.close()
+    override suspend fun startStream() = streamer.startStream()
 
-    /**
-     * Starts audio/video stream.
-     * Stream depends of the endpoint: Audio/video could be write to a file or send to a remote
-     * device.
-     * To avoid creating an unresponsive UI, do not call on main thread.
-     *
-     * @see [stopStream]
-     */
-    override suspend fun startStream() = pipelineOutput.startStream()
+    override suspend fun stopStream() = streamer.stopStream()
 
-    /**
-     * Stops audio/video stream.
-     *
-     * Internally, it resets audio and video recorders and encoders to get them ready for another
-     * [startStream] session. It explains why preview could be restarted.
-     *
-     * @see [startStream]
-     */
-    override suspend fun stopStream() = pipeline.stopStream()
+    override suspend fun release() = streamer.release()
 
-    /**
-     * Releases the streamer.
-     */
-    override suspend fun release() {
-        pipeline.release()
-        coroutineScope.cancel()
-    }
-
-    /**
-     * Adds a bitrate regulator controller.
-     *
-     * Limitation: it is only available for SRT for now.
-     */
     override fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) =
-        pipelineOutput.addBitrateRegulatorController(controllerFactory)
+        streamer.addBitrateRegulatorController(controllerFactory)
 
-    /**
-     * Removes the bitrate regulator controller.
-     */
-    override fun removeBitrateRegulatorController() =
-        pipelineOutput.removeBitrateRegulatorController()
+    override fun removeBitrateRegulatorController() = streamer.removeBitrateRegulatorController()
+}
 
-    companion object {
-        const val TAG = "SingleStreamer"
-    }
+
+/**
+ * Configures both video and audio settings.
+ * It is the first method to call after a [SingleStreamer] instantiation.
+ * It must be call when both stream and audio and video capture are not running.
+ *
+ * Use [IConfigurationInfo] to get value limits.
+ *
+ * If video encoder does not support [VideoConfig.level] or [VideoConfig.profile], it fallbacks
+ * to video encoder default level and default profile.
+ *
+ * @param audioConfig Audio configuration to set
+ * @param videoConfig Video configuration to set
+ *
+ * @throws [Throwable] if configuration can not be applied.
+ * @see [SingleStreamer.release]
+ */
+@RequiresPermission(Manifest.permission.RECORD_AUDIO)
+suspend fun SingleStreamer.setConfig(audioConfig: AudioConfig, videoConfig: VideoConfig) {
+    setAudioConfig(audioConfig)
+    setVideoConfig(videoConfig)
 }

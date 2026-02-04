@@ -163,7 +163,7 @@ abstract class MediaProjectionService<T : IStreamer>(
         }
 
         if (streamer is IWithVideoSource) {
-            val videoSource = streamer.videoInput?.sourceFlow?.value
+            val videoSource = streamer.videoInput.sourceFlow.value
             if (videoSource is IMediaProjectionSource) {
                 streamer.setVideoSource(MediaProjectionVideoSourceFactory(mediaProjection))
             } else if (videoSource == null) {
