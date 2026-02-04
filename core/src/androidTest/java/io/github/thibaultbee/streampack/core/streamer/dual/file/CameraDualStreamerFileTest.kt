@@ -28,6 +28,7 @@ import io.github.thibaultbee.streampack.core.streamer.dual.utils.DualStreamerCon
 import io.github.thibaultbee.streampack.core.streamer.utils.StreamerUtils
 import io.github.thibaultbee.streampack.core.streamer.utils.VideoUtils
 import io.github.thibaultbee.streampack.core.streamers.dual.cameraDualStreamer
+import io.github.thibaultbee.streampack.core.streamers.dual.setConfig
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
 import kotlinx.coroutines.runBlocking

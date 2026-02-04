@@ -243,9 +243,9 @@ internal constructor(
     val dynamicRangeProfile = firstVideoConfig.dynamicRangeProfile
 }
 
-interface IAudioDualStreamer : IAudioStreamer<DualStreamerAudioConfig>
+interface IAudioDualStreamer : IAudioStreamer<DualStreamerAudioConfig>, IDualStreamer
 
-interface IVideoDualStreamer : IVideoStreamer<DualStreamerVideoConfig>
+interface IVideoDualStreamer : IVideoStreamer<DualStreamerVideoConfig>, IDualStreamer
 
 interface IDualStreamer : ICloseableStreamer {
     /**
