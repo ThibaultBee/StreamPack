@@ -23,14 +23,20 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.processing.video.DefaultSurfaceProcessorFactory
+import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal
+import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal.Factory
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.interfaces.setCameraId
+import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
+import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 
 
 /**
@@ -41,6 +47,8 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigu
  * @param firstEndpointFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
  * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation to use to create the video processor. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun cameraVideoOnlyDualStreamer(
@@ -48,10 +56,17 @@ suspend fun cameraVideoOnlyDualStreamer(
     cameraId: String = context.defaultCameraId,
     firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
-    @RotationValue defaultRotation: Int = context.displayRotation
+    @RotationValue defaultRotation: Int = context.displayRotation,
+    surfaceProcessorFactory: Factory = DefaultSurfaceProcessorFactory(),
+    dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ): VideoOnlyDualStreamer {
     val streamer = VideoOnlyDualStreamer(
-        context, firstEndpointFactory, secondEndpointFactory, defaultRotation
+        context = context,
+        firstEndpointFactory = firstEndpointFactory,
+        secondEndpointFactory = secondEndpointFactory,
+        defaultRotation = defaultRotation,
+        surfaceProcessorFactory = surfaceProcessorFactory,
+        dispatcherProvider = dispatcherProvider
     )
     streamer.setCameraId(cameraId)
     return streamer
@@ -65,19 +80,25 @@ suspend fun cameraVideoOnlyDualStreamer(
  * @param firstEndpointFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
  * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation to use to create the video processor. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
 suspend fun videoMediaProjectionVideoOnlyDualStreamer(
     context: Context,
     mediaProjection: MediaProjection,
     firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
-    @RotationValue defaultRotation: Int = context.displayRotation
+    @RotationValue defaultRotation: Int = context.displayRotation,
+    surfaceProcessorFactory: Factory = DefaultSurfaceProcessorFactory(),
+    dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ): VideoOnlyDualStreamer {
     val streamer = VideoOnlyDualStreamer(
         context = context,
         firstEndpointFactory = firstEndpointFactory,
         secondEndpointFactory = secondEndpointFactory,
-        defaultRotation = defaultRotation
+        defaultRotation = defaultRotation,
+        surfaceProcessorFactory = surfaceProcessorFactory,
+        dispatcherProvider = dispatcherProvider
     )
     streamer.setVideoSource(MediaProjectionVideoSourceFactory(mediaProjection))
     return streamer
@@ -91,19 +112,25 @@ suspend fun videoMediaProjectionVideoOnlyDualStreamer(
  * @param firstEndpointFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
  * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation to use to create the video processor. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
 suspend fun VideoOnlyDualStreamer(
     context: Context,
     videoSourceFactory: IVideoSourceInternal.Factory,
     firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
-    @RotationValue defaultRotation: Int = context.displayRotation
+    @RotationValue defaultRotation: Int = context.displayRotation,
+    surfaceProcessorFactory: Factory = DefaultSurfaceProcessorFactory(),
+    dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ): VideoOnlyDualStreamer {
     val streamer = VideoOnlyDualStreamer(
         context = context,
         firstEndpointFactory = firstEndpointFactory,
         secondEndpointFactory = secondEndpointFactory,
-        defaultRotation = defaultRotation
+        defaultRotation = defaultRotation,
+        surfaceProcessorFactory = surfaceProcessorFactory,
+        dispatcherProvider = dispatcherProvider
     )
     streamer.setVideoSource(videoSourceFactory)
     return streamer
@@ -116,20 +143,26 @@ suspend fun VideoOnlyDualStreamer(
  * @param firstEndpointFactory the [IEndpointInternal.Factory] implementation of the first output. By default, it is a [DynamicEndpointFactory].
  * @param secondEndpointFactory the [IEndpointInternal.Factory] implementation of the second output. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
+ * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation to use to create the video processor. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
 class VideoOnlyDualStreamer(
     context: Context,
     firstEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     secondEndpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
-    @RotationValue defaultRotation: Int = context.displayRotation
+    @RotationValue defaultRotation: Int = context.displayRotation,
+    surfaceProcessorFactory: Factory = DefaultSurfaceProcessorFactory(),
+    dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ) : IDualStreamer, IVideoDualStreamer {
-    private val streamer = DualStreamer(
+    private val streamer = DualStreamerImpl(
         context = context,
-        firstEndpointFactory = firstEndpointFactory,
-        secondEndpointFactory = secondEndpointFactory,
         withAudio = false,
         withVideo = true,
-        defaultRotation = defaultRotation
+        firstEndpointFactory = firstEndpointFactory,
+        secondEndpointFactory = secondEndpointFactory,
+        defaultRotation = defaultRotation,
+        surfaceProcessorFactory = surfaceProcessorFactory,
+        dispatcherProvider = dispatcherProvider
     )
 
     override val first = streamer.first as IConfigurableVideoEncodingPipelineOutput
@@ -139,7 +172,7 @@ class VideoOnlyDualStreamer(
     override val isOpenFlow = streamer.isOpenFlow
     override val isStreamingFlow = streamer.isStreamingFlow
 
-    override val videoInput: IVideoInput = streamer.videoInput!!
+    override val videoInput: IVideoInput = streamer.videoInput
 
     /**
      * Sets the target rotation.
@@ -160,3 +193,16 @@ class VideoOnlyDualStreamer(
 
     override suspend fun release() = streamer.release()
 }
+
+/**
+ * Sets video configuration.
+ *
+ * It is a shortcut for [VideoOnlyDualStreamer.setVideoConfig] when both
+ * outputs use the same video configuration.
+ *
+ * @param videoConfig the video configuration to set
+ */
+suspend fun VideoOnlyDualStreamer.setVideoConfig(videoConfig: VideoConfig) {
+    setVideoConfig(DualStreamerVideoConfig(videoConfig))
+}
+
