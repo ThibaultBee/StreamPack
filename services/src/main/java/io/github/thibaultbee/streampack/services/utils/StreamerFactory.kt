@@ -22,6 +22,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRo
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.streamers.dual.DualStreamer
 import io.github.thibaultbee.streampack.core.streamers.dual.IDualStreamer
+import io.github.thibaultbee.streampack.core.streamers.dual.VideoOnlyDualStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.AudioOnlySingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
@@ -86,11 +87,18 @@ open class DualStreamerFactory(
 ) :
     StreamerFactory<IDualStreamer> {
     override fun create(context: Context): IDualStreamer {
-        return DualStreamer(
-            context,
-            withAudio,
-            withVideo,
-            defaultRotation = defaultRotation ?: context.displayRotation
-        )
+        return if (withAudio && withVideo) {
+            DualStreamer(
+                context,
+                defaultRotation = defaultRotation ?: context.displayRotation
+            )
+        } else if (withVideo) {
+            VideoOnlyDualStreamer(
+                context,
+                defaultRotation = defaultRotation ?: context.displayRotation
+            )
+        } else {
+            throw IllegalArgumentException("DualStreamer audio only is not supported yet")
+        }
     }
 }
