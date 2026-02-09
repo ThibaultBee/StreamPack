@@ -373,9 +373,7 @@ class PreviewView @JvmOverloads constructor(
     }
 
     /**
-     * Requests a [Surface] for the size and the current streamer video source.
-     *
-     * The [Surface] is emit to the [surfaceFlow].
+     * Starts the preview for the given [size].
      */
     private fun startPreview(size: Size) {
         Logger.d(TAG, "Requesting surface for $size")
@@ -388,9 +386,7 @@ class PreviewView @JvmOverloads constructor(
     }
 
     /**
-     * Requests a [Surface] for the size and the [videoSource].
-     *
-     * The [Surface] is emit to the [surfaceFlow].
+     * Starts the preview for the given [size] and [videoSource].
      */
     private fun startPreview(
         size: Size,
