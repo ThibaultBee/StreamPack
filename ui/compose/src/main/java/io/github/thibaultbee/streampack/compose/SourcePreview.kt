@@ -26,6 +26,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import io.github.thibaultbee.streampack.compose.utils.BitmapUtils
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.BitmapSourceFactory
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION_MS
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -34,7 +35,7 @@ import io.github.thibaultbee.streampack.ui.views.PreviewView
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
 
-private const val TAG = "ComposePreviewView"
+private const val TAG = "ComposeSourcePreview"
 
 /**
  * Displays the preview of a [IWithVideoSource].
@@ -48,9 +49,10 @@ private const val TAG = "ComposePreviewView"
  * @param onTapToFocusTimeoutMs the duration in milliseconds after which the focus area set by tap-to-focus is cleared
  */
 @Composable
-fun PreviewScreen(
+fun SourcePreview(
     videoSource: IWithVideoSource,
     modifier: Modifier = Modifier,
+    onZoomChanged: ((zoomRatio: Float) -> Unit)? = null,
     enableZoomOnPinch: Boolean = true,
     enableTapToFocus: Boolean = true,
     onTapToFocusTimeoutMs: Long = DEFAULT_AUTO_CANCEL_DURATION_MS
@@ -63,6 +65,15 @@ fun PreviewScreen(
                 this.enableZoomOnPinch = enableZoomOnPinch
                 this.enableTapToFocus = enableTapToFocus
                 this.onTapToFocusTimeoutMs = onTapToFocusTimeoutMs
+                onZoomChanged?.let {
+                    val onZoomChangedListener = object : CameraSettings.Zoom.OnZoomChangedListener {
+                        override fun onZoomChanged(zoomRatio: Float) {
+                            onZoomChanged(zoomRatio)
+                        }
+                    }
+                    this.setZoomListener(onZoomChangedListener)
+                }
+
 
                 scope.launch {
                     try {
@@ -76,7 +87,7 @@ fun PreviewScreen(
         modifier = modifier,
         onRelease = {
             scope.launch {
-                val source = videoSource.videoInput?.sourceFlow?.value as? IPreviewableSource
+                val source = videoSource.videoInput.sourceFlow.value as? IPreviewableSource
                 source?.previewMutex?.withLock {
                     source.stopPreview()
                     source.resetPreview()
@@ -87,7 +98,7 @@ fun PreviewScreen(
 
 @Preview
 @Composable
-fun PreviewScreenPreview() {
+fun PreviewScreenSourcePreview() {
     val context = LocalContext.current
     val streamer = SingleStreamer(context)
     LaunchedEffect(Unit) {
@@ -101,5 +112,5 @@ fun PreviewScreenPreview() {
         )
     }
 
-    PreviewScreen(streamer, modifier = Modifier.fillMaxSize())
+    SourcePreview(streamer, modifier = Modifier.fillMaxSize())
 }
