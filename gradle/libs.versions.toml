@@ -26,7 +26,7 @@ kotlinxIo = "0.8.0"
 material = "1.13.0"
 mockk = "1.14.5"
 robolectric = "4.16"
-komuxer = "0.3.3"
+komuxer = "0.3.4"
 srtdroid = "1.9.5"
 junitKtx = "1.3.0"
 
