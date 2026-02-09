@@ -173,6 +173,8 @@ dependencies {
 
    Either `xml` UI
 
+   Either `xml` UI
+
     ```kotlin
     val streamer = cameraSingleStreamer(context = requireContext()) // Already instantiated streamer
     val preview = findViewById<PreviewView>(R.id.preview) // Already inflated preview
