@@ -17,15 +17,17 @@ Get StreamPack core latest artifacts on Maven Central:
 
 ```groovy
 dependencies {
-    implementation 'io.github.thibaultbee.streampack:streampack-core:3.1.2'
-    // For UI (incl. PreviewView)
-    implementation 'io.github.thibaultbee.streampack:streampack-ui:3.1.2'
+    implementation 'io.github.thibaultbee.streampack:streampack-core:3.2.0'
+    // For xml UI (incl. PreviewView)
+    implementation 'io.github.thibaultbee.streampack:streampack-ui:3.2.0'
+    // Or compose UI (incl. SourcePreview)
+    implementation 'io.github.thibaultbee.streampack:streampack-compose:3.2.0'
     // For services (incl. screen capture/media projection service)
-    implementation 'io.github.thibaultbee.streampack:streampack-services:3.1.2'
+    implementation 'io.github.thibaultbee.streampack:streampack-services:3.2.0'
     // For RTMP
-    implementation 'io.github.thibaultbee.streampack:streampack-rtmp:3.1.2'
+    implementation 'io.github.thibaultbee.streampack:streampack-rtmp:3.2.0'
     // For SRT
-    implementation 'io.github.thibaultbee.streampack:streampack-srt:3.1.2'
+    implementation 'io.github.thibaultbee.streampack:streampack-srt:3.2.0'
 }
 ```
 
@@ -159,6 +161,8 @@ minutes, you will be able to stream live video to your server.
 
 5. Inflates the preview with the streamer
 
+   Either `xml` UI
+
     ```kotlin
     val streamer = cameraSingleStreamer(context = requireContext()) // Already instantiated streamer
     val preview = findViewById<PreviewView>(R.id.preview) // Already inflated preview
@@ -173,6 +177,16 @@ minutes, you will be able to stream live video to your server.
      * Otherwise if the preview is in a [SurfaceView], a [TextureView], a [Surface],... you can use:
      */
     streamer.startPreview(preview)
+    ```
+
+   Or Compose UI
+
+    ```kotlin
+    val streamer = cameraSingleStreamer(context = requireContext()) // Already instantiated streamer
+    
+    Box {
+        SourcePreview(streamer, modifier = Modifier.fillMaxSize())
+    }
     ```
 
 6. Sets the device orientation
