@@ -70,7 +70,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.CancellationException
@@ -85,7 +85,7 @@ import java.util.concurrent.atomic.AtomicLong
  * @param characteristics Camera characteristics of the current camera.
  */
 class CameraSettings internal constructor(
-    coroutineScope: CoroutineScope,
+    private val coroutineScope: CoroutineScope,
     val characteristics: CameraCharacteristics,
     private val cameraController: CameraController
 ) {
@@ -111,8 +111,12 @@ class CameraSettings internal constructor(
         }
         cameraController.addCaptureCallbackListener(captureCallback)
         awaitClose {
-            runBlocking {
-                cameraController.removeCaptureCallbackListener(captureCallback)
+            coroutineScope.launch {
+                try {
+                    cameraController.removeCaptureCallbackListener(captureCallback)
+                } catch (e: Exception) {
+                    Logger.w(TAG, "Failed to remove capture callback listener on close", e)
+                }
             }
         }
     }.conflate()
