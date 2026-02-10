@@ -69,6 +69,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -93,11 +94,18 @@ class CameraSettings internal constructor(
      */
     val cameraId = cameraController.cameraId
 
-    @RequiresApi(Build.VERSION_CODES.Q)
-    private fun getPhysicalCameraIdCallbackFlow() = callbackFlow {
+    /**
+     * Current physical camera id.
+     */
+    val physicalCameraIdFlow: Flow<String>
+        @RequiresApi(Build.VERSION_CODES.Q)
+        get() = getTotalCaptureResultCallbackFlow().map { it[CaptureResult.LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_ID]!! }
+            .distinctUntilChanged()
+
+    private fun getTotalCaptureResultCallbackFlow() = callbackFlow {
         val captureCallback = object : CaptureResultListener {
             override fun onCaptureResult(result: TotalCaptureResult): Boolean {
-                trySend(result.get(CaptureResult.LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_ID)!!)
+                trySend(result)
                 return false
             }
         }
@@ -107,14 +115,13 @@ class CameraSettings internal constructor(
                 cameraController.removeCaptureCallbackListener(captureCallback)
             }
         }
-    }.conflate().distinctUntilChanged()
+    }.conflate()
 
     /**
-     * Current physical camera id.
+     * The total capture result flow.
      */
-    val physicalCameraIdFlow: Flow<String>
-        @RequiresApi(Build.VERSION_CODES.Q)
-        get() = getPhysicalCameraIdCallbackFlow()
+    val totalCaptureResultFlow: Flow<TotalCaptureResult>
+        get() = getTotalCaptureResultCallbackFlow()
 
     /**
      * Whether the camera is available.
@@ -212,7 +219,7 @@ class CameraSettings internal constructor(
      *
      * @param onCaptureResult the capture result callback. Return `true` to stop the callback.
      */
-    suspend fun applyRepeatingSession(onCaptureResult: CaptureResultListener) {
+    private suspend fun applyRepeatingSession(onCaptureResult: CaptureResultListener) {
         val tag = TagBundle.Factory.default.create()
         val captureCallback = object : CaptureResultListener {
             override fun onCaptureResult(result: TotalCaptureResult): Boolean {
