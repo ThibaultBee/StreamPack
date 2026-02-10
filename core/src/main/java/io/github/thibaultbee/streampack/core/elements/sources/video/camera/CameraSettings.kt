@@ -85,7 +85,7 @@ import java.util.concurrent.atomic.AtomicLong
  * @param characteristics Camera characteristics of the current camera.
  */
 class CameraSettings internal constructor(
-    val coroutineScope: CoroutineScope,
+    coroutineScope: CoroutineScope,
     val characteristics: CameraCharacteristics,
     private val cameraController: CameraController
 ) {
