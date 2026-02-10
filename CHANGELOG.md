@@ -1,6 +1,13 @@
 Changelog
 ==========
 
+Version 3.1.2
+----------------
+
+## Bug fixes:
+
+- RTMP: fix connection to Twitch (see [#283](https://github.com/ThibaultBee/StreamPack/issues/283))
+
 Version 3.1.1
 ----------------
 
