@@ -66,10 +66,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -97,35 +98,37 @@ class CameraSettings internal constructor(
     /**
      * Current physical camera id.
      */
-    val physicalCameraIdFlow: Flow<String>
-        @RequiresApi(Build.VERSION_CODES.Q)
-        get() = getTotalCaptureResultCallbackFlow().map { it[CaptureResult.LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_ID]!! }
+    @delegate:RequiresApi(Build.VERSION_CODES.Q)
+    val physicalCameraIdFlow: Flow<String> by lazy {
+        captureResultSharedFlow.map { it[CaptureResult.LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_ID]!! }
             .distinctUntilChanged()
+    }
 
-    private fun getTotalCaptureResultCallbackFlow() = callbackFlow {
-        val captureCallback = object : CaptureResultListener {
-            override fun onCaptureResult(result: TotalCaptureResult): Boolean {
-                trySend(result)
-                return false
-            }
-        }
-        cameraController.addCaptureCallbackListener(captureCallback)
-        awaitClose {
-            coroutineScope.launch {
-                try {
-                    cameraController.removeCaptureCallbackListener(captureCallback)
-                } catch (e: Exception) {
-                    Logger.w(TAG, "Failed to remove capture callback listener on close", e)
+    private val captureResultSharedFlow by lazy {
+        callbackFlow {
+            val captureCallback = object : CaptureResultListener {
+                override fun onCaptureResult(result: TotalCaptureResult): Boolean {
+                    trySend(result)
+                    return false
                 }
             }
-        }
-    }.conflate()
+            cameraController.addCaptureCallbackListener(captureCallback)
+            awaitClose {
+                coroutineScope.launch {
+                    try {
+                        cameraController.removeCaptureCallbackListener(captureCallback)
+                    } catch (e: Exception) {
+                        Logger.w(TAG, "Failed to remove capture callback listener on close", e)
+                    }
+                }
+            }
+        }.shareIn(coroutineScope, SharingStarted.WhileSubscribed(), 1)
+    }
 
     /**
      * The total capture result flow.
      */
-    val totalCaptureResultFlow: Flow<TotalCaptureResult>
-        get() = getTotalCaptureResultCallbackFlow()
+    val captureResultFlow: Flow<TotalCaptureResult> by lazy { captureResultSharedFlow }
 
     /**
      * Whether the camera is available.
