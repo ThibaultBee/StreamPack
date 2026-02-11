@@ -668,6 +668,10 @@ class CameraSettings internal constructor(
             cameraSettings.applyRepeatingSession()
         }
 
+
+        @delegate:RequiresApi(Build.VERSION_CODES.M)
+        val isLockAvailable: Boolean by lazy { characteristics[CameraCharacteristics.CONTROL_AE_LOCK_AVAILABLE] == true }
+
         /**
          * Gets auto exposure lock.
          *
