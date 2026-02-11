@@ -345,8 +345,20 @@ class CameraSettings internal constructor(
         val availableStrengthLevelRange: Range<Int> by lazy {
             Range(
                 1,
-                characteristics[CameraCharacteristics.FLASH_TORCH_STRENGTH_MAX_LEVEL] ?: 1
+                characteristics[CameraCharacteristics.FLASH_TORCH_STRENGTH_MAX_LEVEL] ?: DEFAULT_STRENGTH_LEVEL
             )
+        }
+
+        /**
+         * Gets the default flash strength.
+         * Range is from [availableStrengthLevelRange].
+         *
+         * Use the range to call [setStrengthLevel]
+         */
+        @delegate:RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+        val defaultStrengthLevel: Int by lazy {
+            characteristics[CameraCharacteristics.FLASH_TORCH_STRENGTH_DEFAULT_LEVEL]
+                ?: DEFAULT_STRENGTH_LEVEL
         }
 
         val strengthLevel: Int
@@ -356,7 +368,8 @@ class CameraSettings internal constructor(
              * @return the flash strength
              */
             @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
-            get() = cameraSettings.get(CaptureRequest.FLASH_STRENGTH_LEVEL) ?: 1
+            get() = cameraSettings.get(CaptureRequest.FLASH_STRENGTH_LEVEL)
+                ?: DEFAULT_STRENGTH_LEVEL
 
         /**
          * Sets the flash strength.
@@ -368,6 +381,10 @@ class CameraSettings internal constructor(
         suspend fun setStrengthLevel(level: Int) {
             cameraSettings.set(CaptureRequest.FLASH_STRENGTH_LEVEL, level)
             cameraSettings.applyRepeatingSession()
+        }
+
+        companion object {
+            private const val DEFAULT_STRENGTH_LEVEL = 1
         }
     }
 
