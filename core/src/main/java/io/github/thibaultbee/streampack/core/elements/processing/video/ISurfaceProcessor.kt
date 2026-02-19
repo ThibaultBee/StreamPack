@@ -51,8 +51,6 @@ interface ISurfaceProcessorInternal : ISurfaceProcessor, Releasable {
 
     fun removeAllOutputSurfaces()
 
-    fun snapshot(@IntRange(from = 0, to = 359) rotationDegrees: Int): ListenableFuture<Bitmap>
-
     /**
      * Factory interface for creating instances of [ISurfaceProcessorInternal].
      */

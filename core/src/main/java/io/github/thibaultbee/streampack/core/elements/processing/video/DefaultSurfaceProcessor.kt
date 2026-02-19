@@ -23,6 +23,7 @@ import android.view.Surface
 import androidx.annotation.IntRange
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import com.google.common.util.concurrent.ListenableFuture
+import io.github.thibaultbee.streampack.core.elements.interfaces.ISnapshotable
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.SurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.GLUtils
@@ -38,12 +39,14 @@ import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Compan
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.utils.HandlerThreadExecutor
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 private class DefaultSurfaceProcessor(
     private val dynamicRangeProfile: DynamicRangeProfile,
     private val glThread: HandlerThreadExecutor,
-) : ISurfaceProcessorInternal, SurfaceTexture.OnFrameAvailableListener {
+) : ISurfaceProcessorInternal, SurfaceTexture.OnFrameAvailableListener, ISnapshotable {
     private val renderer = OpenGlRenderer()
 
     private val glHandler = glThread.handler
@@ -225,7 +228,27 @@ private class DefaultSurfaceProcessor(
         }
     }
 
-    override fun snapshot(
+    /**
+     * Takes a snapshot of the current video frame.
+     *
+     * The snapshot is returned as a [Bitmap].
+     *
+     * @param rotationDegrees The rotation to apply to the snapshot, in degrees. 0 means no rotation.
+     * @return The snapshot as a [Bitmap].
+     */
+    override suspend fun takeSnapshot(rotationDegrees: Int): Bitmap {
+        return suspendCoroutine { continuation ->
+            val listener = snapshot(rotationDegrees)
+            try {
+                val bitmap = listener.get()
+                continuation.resume(bitmap)
+            } catch (e: Exception) {
+                continuation.resumeWith(Result.failure(e))
+            }
+        }
+    }
+
+    private fun snapshot(
         @IntRange(from = 0, to = 359) rotationDegrees: Int
     ): ListenableFuture<Bitmap> {
         if (isReleaseRequested.get()) {
