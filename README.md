@@ -1,17 +1,34 @@
-# StreamPack: RTMP and SRT live streaming SDK for Android
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.thibaultbee.streampack/streampack-core)](https://central.sonatype.com/artifact/io.github.thibaultbee.streampack/streampack-core)
+[![License](https://img.shields.io/github/license/ThibaultBee/StreamPack)](LICENSE.md)
+[![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg)](https://android-arsenal.com/api?level=21)
+[![Stars](https://img.shields.io/github/stars/ThibaultBee/StreamPack?style=social)](https://github.com/ThibaultBee/StreamPack/stargazers)
 
-StreamPack is a flexible live streaming library for Android made for both demanding video
-broadcasters and new video enthusiasts.
+# StreamPack — Android Live Streaming SDK (RTMP, SRT, Camera2, Kotlin)
 
-## Hop On Board! 🚀
+StreamPack is a modular, high-performance Android library designed for low-latency live streaming.
+It empowers developers to build professional broadcasting applications with support for SRT, RTMP,
+and RTMPS protocols. Leveraging the latest Android Camera2 and MediaCodec APIs, it is fully
+extensible, allowing for the integration of custom protocols and custom audio/video sources.
 
-⭐ If you like this project, don’t forget to star it!
+## 🏗️ 5-minute Quick Start / Boilerplate
 
-💖 Want to support its development? Consider becoming a sponsor.
+If you want to create a new application, you should use the
+template [StreamPack boilerplate](https://github.com/ThibaultBee/StreamPack-boilerplate). In 5
+minutes, you will be able to stream live video to your server.
 
-🛠️ Contributions are welcome—feel free to open issues or submit pull requests!
+## Table of Contents
 
-## Setup
+- [Setup](#-setup)
+- [Features](#-features)
+- [Quick Start](#-quick-start)
+- [Permissions](#-permissions)
+- [Documentation](#-documentations)
+- [Demos](#-demos)
+- [Contributing](#-contributing--support)
+- [Tips](#-tips)
+- [License](#-license)
+
+## 📦 Setup
 
 Get StreamPack core latest artifacts on Maven Central:
 
@@ -31,7 +48,7 @@ dependencies {
 }
 ```
 
-## Features
+## ✨ Features
 
 * Video:
     * Source: Cameras, Screen recorder
@@ -61,20 +78,14 @@ dependencies {
     * Ultra low-latency based on [SRT](https://github.com/Haivision/srt)
     * Network adaptive bitrate mechanism for [SRT](https://github.com/Haivision/srt)
 
-## Quick start
+## 🚀 Quick Start
 
-If you want to create a new application, you should use the
-template [StreamPack boilerplate](https://github.com/ThibaultBee/StreamPack-boilerplate). In 5
-minutes, you will be able to stream live video to your server.
-
-## Getting started
-
-### Getting started for a camera stream
+### 📷 Camera Stream
 
 1. Request the required permissions in your Activity/Fragment. See the
    [Permissions](#permissions) section for more information.
 
-2. Creates a `View` to display the preview in your layout
+2. Create a `View` to display the preview in your layout
 
    As a camera preview, you can also use a `SurfaceView`, a `TextureView` or any
    `View` where that can provide a `Surface`.
@@ -92,7 +103,7 @@ minutes, you will be able to stream live video to your server.
 
    `app:enableZoomOnPinch` is a boolean to enable zoom on pinch gesture.
 
-3. Instantiates the streamer (main live streaming class)
+3. Instantiate the streamer (main live streaming class)
 
    A `Streamer` is a class that represents a whole streaming pipeline from capture to endpoint (
    incl. encoding, muxing, sending).
@@ -118,14 +129,20 @@ minutes, you will be able to stream live video to your server.
      *  }
      */
     val streamer = cameraSingleStreamer(context = requireContext())
-    // To have multiple independent outputs (like for live and record), use a `cameraDualStreamer` or even the `StreamerPipeline`.
-    // You can also use the `SingleStreamer`or the `DualStreamer` and add later the audio and video source with `setAudioSource` 
-    // and `setVideoSource`.
+    /**
+     * To have multiple independent outputs (like for live and record), use a `cameraDualStreamer` or even the `StreamerPipeline`.
+     *
+     * You can also create the `SingleStreamer`or the `DualStreamer` and add later the audio and video source with `setAudioSource` 
+     * and `setVideoSource`.
+     * val streamer = SingleStreamer(context = requireContext())
+     * streamer.setVideoSource(CameraSourceFactory()) // Same as streamer.setCameraId(context.defaultCameraId)
+     * streamer.setAudioSource(MicrophoneSourceFactory())
+    */
     ```
 
    For more information, check the [Streamers](docs/Streamers.md) documentation.
 
-4. Configures audio and video settings
+4. Configure audio and video settings
 
     ```kotlin
     val streamer = cameraSingleStreamer(context = requireContext()) // Already instantiated streamer
@@ -150,7 +167,7 @@ minutes, you will be able to stream live video to your server.
     }
     ```
 
-5. Inflates the preview with the streamer
+5. Inflate the preview with the streamer
 
    Either `xml` UI
 
@@ -180,7 +197,7 @@ minutes, you will be able to stream live video to your server.
     }
     ```
 
-6. Sets the device orientation
+6. Set the device orientation
 
     ```kotlin
     // Already instantiated streamer
@@ -228,7 +245,7 @@ minutes, you will be able to stream live video to your server.
 
    You can also create your own `targetRotation` provider.
 
-7. Starts the live streaming
+7. Start the live streaming
 
     ```kotlin
     // Already instantiated streamer
@@ -247,7 +264,7 @@ minutes, you will be able to stream live video to your server.
     // streamer.startStream("rtmp://serverip:1935/s/streamKey") // For RTMP/RTMPS
     ```
 
-8. Stops and releases the streamer
+8. Stop and release the streamer
 
     ```kotlin
     // Already instantiated streamer
@@ -263,7 +280,7 @@ the [documentation](#documentations).
 
 For a complete example, check out the [demos/camera](demos/camera) directory.
 
-### Getting started for a screen recorder stream
+### 🖥️ Screen recorder stream
 
 1. Add the `streampack-services` dependency in your `build.gradle` file:
 
@@ -273,17 +290,17 @@ For a complete example, check out the [demos/camera](demos/camera) directory.
     }
     ```
 
-2. Requests the required permissions in your Activity/Fragment. See the
+2. Request the required permissions in your Activity/Fragment. See the
    [Permissions](#permissions) section for more information.
-3. Creates a `MyService` that extends `MediaProjectionService` (so you can customize
+3. Create a `MyService` that extends `MediaProjectionService` (so you can customize
    notifications among other things).
-4. Creates a screen record `Intent` and requests the activity result
+4. Create a screen record `Intent` and requests the activity result
 
     ```kotlin
     MediaProjectionUtils.createScreenCaptureIntent(context = requireContext())
     ```
 
-5. Starts the service
+5. Start the service
 
     ```kotlin
     MediaProjectionService.bindService(
@@ -304,7 +321,7 @@ For a complete example, check out the [demos/camera](demos/camera) directory.
 
 For a complete example, check out the [demos/screenrecorder](demos/screenrecorder) directory .
 
-## Permissions
+## 🔑 Permissions
 
 You need to add the following permissions in your `AndroidManifest.xml`:
 
@@ -321,7 +338,7 @@ You need to add the following permissions in your `AndroidManifest.xml`:
 To record locally, you also need to request the following dangerous
 permission: `android.permission.WRITE_EXTERNAL_STORAGE`.
 
-### Permissions for a camera stream
+### Camera stream
 
 To use the camera, you need to request the following permission:
 
@@ -346,7 +363,7 @@ For the PlayStore, your application might declare this in its `AndroidManifest.x
 </manifest>
 ```
 
-### Permissions for a screen recorder stream
+### Screen recorder stream
 
 To use the screen recorder, you need to request the following permission:
 
@@ -372,7 +389,7 @@ You will also have to declare the `Service`,
 </application>
 ```
 
-## Documentations
+## 📖 Documentations
 
 - [StreamPack API guide](https://thibaultbee.github.io/StreamPack)
 - Additional documentations are available in the `docs` directory:
@@ -380,7 +397,7 @@ You will also have to declare the `Service`,
     - [Streamers](docs/Streamers.md)
     - [Streamer elements](docs/AdvancedStreamer.md)
 
-## Demos
+## 🎬 Demos
 
 ### Camera and audio demo
 
@@ -406,7 +423,7 @@ Tells FFplay to listen on IP `0.0.0.0` and port `1935`.
 ffplay -listen 1 -i 'rtmp://0.0.0.0:1935/s/streamKey'
 ```
 
-On StreamPack sample app settings, set `Endpoint` -> `Type` to `Stream to a remove RTMP device`,
+On StreamPack sample app settings, set `Endpoint` -> `Type` to `Stream to a remote RTMP device`,
 then set the server `URL` to `rtmp://serverip:1935/s/streamKey`. At this point, StreamPack sample
 app should successfully sends audio and video frames. On FFplay side, you should be able to watch
 this live stream.
@@ -423,7 +440,15 @@ On StreamPack sample app settings, set the server `IP` to your server IP and ser
 At this point, StreamPack sample app should successfully sends audio and video frames. On FFplay
 side, you should be able to watch this live stream.
 
-## Tips
+## 🤝 Contributing & Support
+
+⭐ If you like this project, don’t forget to star it!
+
+💖 Want to support its development? Consider becoming a sponsor.
+
+🛠️ Contributions are welcome—feel free to open issues or submit pull requests!
+
+## 💡 Tips
 
 ### RTMP or SRT
 
@@ -494,7 +519,7 @@ Even if StreamPack sdk supports a `minSdkVersion` 21. I strongly recommend to se
 `minSdkVersion` of your application to a higher version (the highest is the best!) for better
 performance.
 
-## Licence
+## 📄 License
 
     Copyright 2021 Thibault B.
 
