@@ -18,11 +18,10 @@ package io.github.thibaultbee.streampack.core.elements.utils
 import android.media.MediaFormat
 import io.github.thibaultbee.streampack.core.elements.data.Extra
 import io.github.thibaultbee.streampack.core.elements.data.Frame
-import io.github.thibaultbee.streampack.core.elements.data.MutableFrame
 import java.nio.ByteBuffer
 import kotlin.random.Random
 
-object FakeFrames {
+object FakeFrameFactory {
     fun create(
         mimeType: String,
         buffer: ByteBuffer = ByteBuffer.wrap(Random.nextBytes(1024)),
@@ -52,7 +51,7 @@ object FakeFrames {
                 )
             )
         }
-        return MutableFrame(
+        return FakeFrame(
             buffer,
             pts,
             dts,
@@ -66,5 +65,18 @@ object FakeFrames {
             ),
             format = format
         )
+    }
+
+    data class FakeFrame(
+        override val rawBuffer: ByteBuffer,
+        override val ptsInUs: Long,
+        override val dtsInUs: Long?,
+        override val isKeyFrame: Boolean,
+        override val extra: Extra?,
+        override val format: MediaFormat,
+    ) : Frame {
+        override fun close() {
+            // Nothing to do
+        }
     }
 }

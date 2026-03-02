@@ -15,10 +15,17 @@
  */
 package io.github.thibaultbee.streampack.core.elements.utils.pool
 
-import io.github.thibaultbee.streampack.core.logger.Logger
 import java.io.Closeable
 import java.util.ArrayDeque
 import java.util.concurrent.atomic.AtomicBoolean
+
+interface IClearableObjectPool<T> : Closeable {
+    fun clear()
+}
+
+interface IObjectPool<T> : IClearableObjectPool<T> {
+    fun put(any: T)
+}
 
 /**
  * A pool of objects.
@@ -29,12 +36,12 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * @param T the type of object to pool
  */
-internal sealed class ObjectPool<T>() : Closeable {
+internal open class ObjectPoolImpl<T> : IObjectPool<T> {
     private val pool = ArrayDeque<T>()
 
     private val isClosed = AtomicBoolean(false)
 
-    protected fun get(): T? {
+    fun get(): T? {
         if (isClosed.get()) {
             throw IllegalStateException("ObjectPool is closed")
         }
@@ -53,7 +60,7 @@ internal sealed class ObjectPool<T>() : Closeable {
      *
      * @param any the object to put
      */
-    fun put(any: T) {
+    override fun put(any: T) {
         if (isClosed.get()) {
             throw IllegalStateException("ObjectPool is closed")
         }
@@ -65,7 +72,7 @@ internal sealed class ObjectPool<T>() : Closeable {
     /**
      * Clears the pool.
      */
-    fun clear() {
+    override fun clear() {
         if (isClosed.get()) {
             return
         }

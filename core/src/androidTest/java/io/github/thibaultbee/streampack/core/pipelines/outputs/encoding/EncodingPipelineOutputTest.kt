@@ -20,7 +20,6 @@ import android.util.Log
 import androidx.core.net.toFile
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
-import io.github.thibaultbee.streampack.core.elements.data.MutableRawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpoint
@@ -37,6 +36,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVide
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineEventOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.pipelines.outputs.releaseBlocking
+import io.github.thibaultbee.streampack.core.utils.FakeRawFrame
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -317,7 +317,7 @@ class EncodingPipelineOutputTest {
 
         try {
             output.queueAudioFrame(
-                MutableRawFrame(
+                FakeRawFrame(
                     ByteBuffer.allocateDirect(16384),
                     Random.nextLong()
                 )
@@ -330,7 +330,7 @@ class EncodingPipelineOutputTest {
         output.startStream(descriptor)
 
         output.queueAudioFrame(
-            MutableRawFrame(
+            FakeRawFrame(
                 ByteBuffer.allocateDirect(16384),
                 Random.nextLong()
             )
