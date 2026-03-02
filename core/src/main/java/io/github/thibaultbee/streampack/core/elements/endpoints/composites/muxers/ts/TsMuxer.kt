@@ -40,7 +40,7 @@ import java.util.MissingFormatArgumentException
 import kotlin.random.Random
 
 class TsMuxer : IMuxerInternal {
-    private val byteBufferPool = ByteBufferPool(true)
+    private val tsBufferPool = ByteBufferPool(true)
 
     override val info by lazy { TSMuxerInfo }
     private val tsServices = mutableListOf<Service>()
@@ -60,10 +60,10 @@ class TsMuxer : IMuxerInternal {
 
     private val tsId = Random.nextInt(Byte.MIN_VALUE.toInt(), Byte.MAX_VALUE.toInt()).toShort()
     private var pat = Pat(
-        byteBufferPool, listener, tsServices, tsId, packetCount = 0
+        tsBufferPool, listener, tsServices, tsId, packetCount = 0
     )
     private var sdt = Sdt(
-        byteBufferPool, listener, tsServices, tsId, packetCount = 0
+        tsBufferPool, listener, tsServices, tsId, packetCount = 0
     )
 
     override val streamConfigs: List<CodecConfig>
@@ -78,7 +78,7 @@ class TsMuxer : IMuxerInternal {
     override fun write(
         frame: Frame, streamPid: Int
     ) {
-        try {
+        frame.use { frame ->
             val pes = getPes(streamPid.toShort())
             val mimeType = pes.stream.config.mimeType
             val newFrame = when {
@@ -169,8 +169,6 @@ class TsMuxer : IMuxerInternal {
                     newFrame.close()
                 }
             }
-        } finally {
-            frame.close()
         }
     }
 
@@ -361,12 +359,12 @@ class TsMuxer : IMuxerInternal {
         service.pmt = service.pmt?.apply {
             versionNumber = (versionNumber + 1).toByte()
             streams = service.streams
-        } ?: Pmt(byteBufferPool, listener, service, service.streams, getNewPid())
+        } ?: Pmt(tsBufferPool, listener, service, service.streams, getNewPid())
 
         // Init PES
         newStreams.forEach {
             Pes(
-                byteBufferPool,
+                tsBufferPool,
                 listener,
                 it,
                 service.pcrPid == it.pid,
@@ -442,12 +440,12 @@ class TsMuxer : IMuxerInternal {
         tsServices.forEach {
             removeStreams(it)
         }
-        byteBufferPool.clear()
+        tsBufferPool.clear()
     }
 
     override fun release() {
         tsServices.clear()
-        byteBufferPool.close()
+        tsBufferPool.close()
     }
 
     /**

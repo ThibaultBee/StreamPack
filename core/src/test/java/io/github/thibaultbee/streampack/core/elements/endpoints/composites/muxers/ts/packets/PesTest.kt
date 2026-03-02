@@ -21,7 +21,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.Stream
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.AssertEqualsBuffersMockMuxerListener
-import io.github.thibaultbee.streampack.core.elements.utils.FakeFrames
+import io.github.thibaultbee.streampack.core.elements.utils.FakeFrameFactory
 import io.github.thibaultbee.streampack.core.elements.utils.MockUtils
 import io.github.thibaultbee.streampack.core.elements.utils.ResourcesUtils
 import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
@@ -54,7 +54,7 @@ class PesTest {
         MockUtils.mockTimeUtils(1433034)
 
         val rawData = ResourcesUtils.readByteBuffer(TEST_SAMPLES_DIR + "pes-video1/raw")
-        val frame = FakeFrames.create(
+        val frame = FakeFrameFactory.create(
             buffer = rawData,
             pts = 1433334,
             dts = 1400000,
@@ -84,7 +84,7 @@ class PesTest {
         MockUtils.mockTimeUtils(700000)
 
         val rawData = ResourcesUtils.readByteBuffer(TEST_SAMPLES_DIR + "pes-audio1/raw.aac")
-        val frame = FakeFrames.create(
+        val frame = FakeFrameFactory.create(
             buffer = rawData,
             pts = 1400000,
             dts = null,
@@ -108,7 +108,7 @@ class PesTest {
         MockUtils.mockTimeUtils(700000)
 
         val rawData = ResourcesUtils.readByteBuffer(TEST_SAMPLES_DIR + "pes-audio2/raw.aac")
-        val frame = FakeFrames.create(
+        val frame = FakeFrameFactory.create(
             buffer = rawData,
             pts = 1400000,
             dts = null,

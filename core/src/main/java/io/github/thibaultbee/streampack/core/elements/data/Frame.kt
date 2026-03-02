@@ -76,35 +76,6 @@ fun RawFrame.copy(
 }
 
 /**
- * A mutable [RawFrame] internal representation.
- *
- * The purpose is to get reusable [RawFrame]
- */
-data class MutableRawFrame(
-    /**
-     * Contains an audio or video frame data.
-     */
-    override var rawBuffer: ByteBuffer,
-
-    /**
-     * Presentation timestamp in µs
-     */
-    override var timestampInUs: Long,
-    /**
-     * A callback to call when frame is closed.
-     */
-    override var onClosed: (MutableRawFrame) -> Unit = {}
-) : RawFrame, WithClosable<MutableRawFrame> {
-    override fun close() {
-        try {
-            onClosed(this)
-        } catch (_: Throwable) {
-            // Nothing to do
-        }
-    }
-}
-
-/**
  * Encoded frame representation
  */
 interface Frame : Closeable {
@@ -169,60 +140,6 @@ fun Frame.copy(
         })
 }
 
-
-/**
- * A mutable [Frame] internal representation.
- *
- * The purpose is to get reusable [Frame]
- */
-data class MutableFrame(
-    /**
-     * Contains an audio or video frame data.
-     */
-    override var rawBuffer: ByteBuffer,
-
-    /**
-     * Presentation timestamp in µs
-     */
-    override var ptsInUs: Long,
-
-    /**
-     * Decoded timestamp in µs (not used).
-     */
-    override var dtsInUs: Long?,
-
-    /**
-     * `true` if frame is a key frame (I-frame for AVC/HEVC and audio frames)
-     */
-    override var isKeyFrame: Boolean,
-
-    /**
-     * Contains csd buffers for key frames and audio frames only.
-     * Could be (SPS, PPS, VPS, etc.) for key video frames, null for non-key video frames.
-     * ESDS for AAC frames,...
-     */
-    override var extra: Extra?,
-
-    /**
-     * Contains frame format..
-     * TODO: to remove
-     */
-    override var format: MediaFormat,
-
-    /**
-     * A callback to call when frame is closed.
-     */
-    override var onClosed: (MutableFrame) -> Unit = {}
-) : Frame, WithClosable<MutableFrame> {
-    override fun close() {
-        try {
-            onClosed(this)
-        } catch (_: Throwable) {
-            // Nothing to do
-        }
-    }
-}
-
 /**
  * Ensures that extra are not used at the same time.
  *
@@ -231,7 +148,7 @@ data class MutableFrame(
 class Extra(private val extraBuffers: List<ByteBuffer>) {
     private val lock = Any()
 
-    val _length by lazy { extraBuffers.sumOf { it.remaining() } }
+    private val _length by lazy { extraBuffers.sumOf { it.remaining() } }
 
     fun getLength(): Int {
         return synchronized(lock) {

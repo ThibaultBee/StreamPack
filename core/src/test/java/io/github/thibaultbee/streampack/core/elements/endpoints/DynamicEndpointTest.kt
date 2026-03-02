@@ -6,7 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.utils.DescriptorUtils
-import io.github.thibaultbee.streampack.core.elements.utils.FakeFrames
+import io.github.thibaultbee.streampack.core.elements.utils.FakeFrameFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertFalse
@@ -85,7 +85,7 @@ class DynamicEndpointTest {
         val dynamicEndpoint = DynamicEndpoint(context, Dispatchers.Default, Dispatchers.IO)
         try {
             dynamicEndpoint.write(
-                FakeFrames.create(MediaFormat.MIMETYPE_AUDIO_AAC),
+                FakeFrameFactory.create(MediaFormat.MIMETYPE_AUDIO_AAC),
                 0
             )
             fail("Throwable expected")
