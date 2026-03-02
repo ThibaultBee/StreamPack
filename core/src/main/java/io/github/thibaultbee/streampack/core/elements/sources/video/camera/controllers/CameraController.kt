@@ -163,7 +163,7 @@ internal class CameraController(
         return if (sessionController == null) {
             val deviceController = getDeviceController()
             CameraSessionController.create(
-                coroutineScope,
+                defaultDispatcher,
                 deviceController,
                 sessionCallback,
                 sessionCompat,

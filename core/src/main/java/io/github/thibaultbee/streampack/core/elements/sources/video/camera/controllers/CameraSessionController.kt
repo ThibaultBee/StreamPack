@@ -28,7 +28,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraUtils
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestWithTargetsBuilder
 import io.github.thibaultbee.streampack.core.logger.Logger
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,7 +39,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 internal class CameraSessionController private constructor(
-    private val coroutineScope: CoroutineScope,
+    private val coroutineDispatcher: CoroutineDispatcher,
     private val captureSession: CameraCaptureSession,
     private val captureRequestBuilder: CaptureRequestWithTargetsBuilder,
     private val sessionCallback: CameraSessionCallback,
@@ -71,7 +71,7 @@ internal class CameraSessionController private constructor(
     private val captureCallbacks =
         setOf(captureCallback, sessionCallback)
 
-    suspend fun isEmpty() = withContext(coroutineScope.coroutineContext) {
+    suspend fun isEmpty() = withContext(coroutineDispatcher) {
         requestTargetMutex.withLock { captureRequestBuilder.isEmpty() }
     }
 
@@ -81,7 +81,7 @@ internal class CameraSessionController private constructor(
      * @param surface The target to check
      * @return true if the target is in the current capture request, false otherwise
      */
-    suspend fun hasTarget(surface: Surface) = withContext(coroutineScope.coroutineContext) {
+    suspend fun hasTarget(surface: Surface) = withContext(coroutineDispatcher) {
         requestTargetMutex.withLock {
             captureRequestBuilder.hasTarget(surface)
         }
@@ -94,7 +94,7 @@ internal class CameraSessionController private constructor(
      * @return true if the target is in the current capture request, false otherwise
      */
     suspend fun hasTarget(cameraSurface: CameraSurface) =
-        withContext(coroutineScope.coroutineContext) {
+        withContext(coroutineDispatcher) {
             requestTargetMutex.withLock {
                 captureRequestBuilder.hasTarget(cameraSurface)
             }
@@ -110,7 +110,7 @@ internal class CameraSessionController private constructor(
         require(targets.all { it.surface.isValid }) { "All targets must be valid" }
         require(targets.all { outputs.contains(it) }) { "Targets must be in the current capture session: $targets ($outputs)" }
 
-        val res = withContext(coroutineScope.coroutineContext) {
+        val res = withContext(coroutineDispatcher) {
             requestTargetMutex.withLock {
                 val res = targets.map {
                     captureRequestBuilder.addTarget(it)
@@ -131,7 +131,7 @@ internal class CameraSessionController private constructor(
     suspend fun addTarget(name: String): Boolean {
         require(outputs.any { it.name == name }) { "Target type must be in the current capture session: $name ($outputs)" }
 
-        val res = withContext(coroutineScope.coroutineContext) {
+        val res = withContext(coroutineDispatcher) {
             requestTargetMutex.withLock {
                 val target = outputs.first { it.name == name }
                 val res = captureRequestBuilder.addTarget(target)
@@ -151,7 +151,7 @@ internal class CameraSessionController private constructor(
         require(target.surface.isValid) { "Target must be valid: $target" }
         require(outputs.contains(target)) { "Target must be in the current capture session: $target ($outputs)" }
 
-        val res = withContext(coroutineScope.coroutineContext) {
+        val res = withContext(coroutineDispatcher) {
             requestTargetMutex.withLock {
                 val res = captureRequestBuilder.addTarget(target)
                 setRepeatingSession()
@@ -167,7 +167,7 @@ internal class CameraSessionController private constructor(
      * @param targets The targets to remove
      */
     suspend fun removeTargets(targets: List<CameraSurface>) {
-        withContext(coroutineScope.coroutineContext) {
+        withContext(coroutineDispatcher) {
             requestTargetMutex.withLock {
                 targets.forEach {
                     captureRequestBuilder.removeTarget(it)
@@ -187,7 +187,7 @@ internal class CameraSessionController private constructor(
      * @param name The name of target to remove
      */
     suspend fun removeTarget(name: String) {
-        withContext(coroutineScope.coroutineContext) {
+        withContext(coroutineDispatcher) {
             requestTargetMutex.withLock {
                 val target = outputs.firstOrNull { it.name == name }
                 target?.let {
@@ -212,7 +212,7 @@ internal class CameraSessionController private constructor(
      * @param target The target to remove
      */
     suspend fun removeTarget(target: CameraSurface) {
-        withContext(coroutineScope.coroutineContext) {
+        withContext(coroutineDispatcher) {
             requestTargetMutex.withLock {
                 captureRequestBuilder.removeTarget(target)
 
@@ -226,7 +226,7 @@ internal class CameraSessionController private constructor(
     }
 
     suspend fun close() {
-        withContext(coroutineScope.coroutineContext) {
+        withContext(coroutineDispatcher) {
             captureSessionMutex.withLock {
                 if (isClosed) {
                     Logger.w(TAG, "Session already closed")
@@ -254,7 +254,7 @@ internal class CameraSessionController private constructor(
             Logger.w(TAG, "Capture request is empty")
             return
         }
-        withContext(coroutineScope.coroutineContext) {
+        withContext(coroutineDispatcher) {
             captureSessionMutex.withLock {
                 if (isClosed) {
                     Logger.w(TAG, "Camera session controller is released")
@@ -273,7 +273,7 @@ internal class CameraSessionController private constructor(
     }
 
     private suspend fun stopRepeatingSession() {
-        withContext(coroutineScope.coroutineContext) {
+        withContext(coroutineDispatcher) {
             captureSessionMutex.withLock {
                 if (isClosed) {
                     Logger.w(TAG, "Camera session controller is released")
@@ -316,7 +316,7 @@ internal class CameraSessionController private constructor(
         outputs: List<CameraSurface>,
         dynamicRange: Long,
         fpsRange: Range<Int>
-    ): CameraSessionController = withContext(coroutineScope.coroutineContext) {
+    ): CameraSessionController = withContext(coroutineDispatcher) {
         requestTargetMutex.withLock {
             require(outputs.isNotEmpty()) { "At least one output is required" }
             require(outputs.all { it.surface.isValid }) { "All outputs $outputs must be valid but ${outputs.filter { !it.surface.isValid }} is invalid" }
@@ -349,7 +349,7 @@ internal class CameraSessionController private constructor(
                 )
 
             val controller = CameraSessionController(
-                coroutineScope,
+                coroutineDispatcher,
                 newCaptureSession,
                 captureRequestBuilder,
                 sessionCallback,
@@ -372,7 +372,7 @@ internal class CameraSessionController private constructor(
         private const val TAG = "CameraSessionController"
 
         suspend fun create(
-            coroutineScope: CoroutineScope,
+            coroutineDispatcher: CoroutineDispatcher,
             cameraDeviceController: CameraDeviceController,
             sessionCallback: CameraSessionCallback,
             sessionCompat: ICameraCaptureSessionCompat,
@@ -402,7 +402,7 @@ internal class CameraSessionController private constructor(
                 defaultRequestBuilder()
             }
             return CameraSessionController(
-                coroutineScope,
+                coroutineDispatcher,
                 captureSession,
                 captureRequestBuilder,
                 sessionCallback,
