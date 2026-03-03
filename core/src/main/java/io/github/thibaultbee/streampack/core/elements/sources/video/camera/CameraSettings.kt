@@ -248,6 +248,13 @@ class CameraSettings internal constructor(
      */
     suspend fun applyRepeatingSession() = cameraController.setRepeatingSession()
 
+    /**
+     * Resets all settings to default.
+     */
+    suspend fun resetAll() {
+
+    }
+
     private class TagBundle(val keyId: Long) {
         private val tagMap = mutableMapOf<String, Any?>().apply {
             put(TAG_KEY_ID, keyId)
@@ -345,7 +352,8 @@ class CameraSettings internal constructor(
         val availableStrengthLevelRange: Range<Int> by lazy {
             Range(
                 1,
-                characteristics[CameraCharacteristics.FLASH_TORCH_STRENGTH_MAX_LEVEL] ?: DEFAULT_STRENGTH_LEVEL
+                characteristics[CameraCharacteristics.FLASH_TORCH_STRENGTH_MAX_LEVEL]
+                    ?: DEFAULT_STRENGTH_LEVEL
             )
         }
 
