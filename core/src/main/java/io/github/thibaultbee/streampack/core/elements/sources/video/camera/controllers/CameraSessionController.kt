@@ -20,7 +20,6 @@ import android.hardware.camera2.CameraCaptureSession.CaptureCallback
 import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.TotalCaptureResult
-import android.util.Range
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.ICameraCaptureSessionCompat
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSessionCallback
@@ -41,11 +40,8 @@ import kotlinx.coroutines.withContext
 internal class CameraSessionController private constructor(
     private val coroutineDispatcher: CoroutineDispatcher,
     private val captureSession: CameraCaptureSession,
-    private val captureRequestBuilder: CaptureRequestWithTargetsBuilder,
     private val sessionCallback: CameraSessionCallback,
     private val sessionCompat: ICameraCaptureSessionCompat,
-    private val outputs: List<CameraSurface>,
-    val dynamicRange: Long,
     val cameraIsClosedFlow: StateFlow<Boolean>,
     val isClosedFlow: StateFlow<Boolean>
 ) {
@@ -53,8 +49,6 @@ internal class CameraSessionController private constructor(
 
     val isClosed: Boolean
         get() = isClosedFlow.value || cameraIsClosedFlow.value
-
-    private val requestTargetMutex = Mutex()
 
     /**
      * A default capture callback that logs the failure reason.
@@ -70,160 +64,6 @@ internal class CameraSessionController private constructor(
 
     private val captureCallbacks =
         setOf(captureCallback, sessionCallback)
-
-    suspend fun isEmpty() = withContext(coroutineDispatcher) {
-        requestTargetMutex.withLock { captureRequestBuilder.isEmpty() }
-    }
-
-    /**
-     * Whether the current capture request has a target
-     *
-     * @param surface The target to check
-     * @return true if the target is in the current capture request, false otherwise
-     */
-    suspend fun hasTarget(surface: Surface) = withContext(coroutineDispatcher) {
-        requestTargetMutex.withLock {
-            captureRequestBuilder.hasTarget(surface)
-        }
-    }
-
-    /**
-     * Whether the current capture request has a target
-     *
-     * @param cameraSurface The target to check
-     * @return true if the target is in the current capture request, false otherwise
-     */
-    suspend fun hasTarget(cameraSurface: CameraSurface) =
-        withContext(coroutineDispatcher) {
-            requestTargetMutex.withLock {
-                captureRequestBuilder.hasTarget(cameraSurface)
-            }
-        }
-
-    /**
-     * Adds targets to the current capture session
-     *
-     * @param targets The targets to add
-     */
-    suspend fun addTargets(targets: List<CameraSurface>): Boolean {
-        require(targets.isNotEmpty()) { "At least one target is required" }
-        require(targets.all { it.surface.isValid }) { "All targets must be valid" }
-        require(targets.all { outputs.contains(it) }) { "Targets must be in the current capture session: $targets ($outputs)" }
-
-        val res = withContext(coroutineDispatcher) {
-            requestTargetMutex.withLock {
-                val res = targets.map {
-                    captureRequestBuilder.addTarget(it)
-                }.all { it }
-                setRepeatingSession()
-                res
-            }
-        }
-
-        return res
-    }
-
-    /**
-     * Adds a target to the current capture session
-     *
-     * @param name The name of target to add
-     */
-    suspend fun addTarget(name: String): Boolean {
-        require(outputs.any { it.name == name }) { "Target type must be in the current capture session: $name ($outputs)" }
-
-        val res = withContext(coroutineDispatcher) {
-            requestTargetMutex.withLock {
-                val target = outputs.first { it.name == name }
-                val res = captureRequestBuilder.addTarget(target)
-                setRepeatingSession()
-                res
-            }
-        }
-        return res
-    }
-
-    /**
-     * Adds a target to the current capture session
-     *
-     * @param target The target to add
-     */
-    suspend fun addTarget(target: CameraSurface): Boolean {
-        require(target.surface.isValid) { "Target must be valid: $target" }
-        require(outputs.contains(target)) { "Target must be in the current capture session: $target ($outputs)" }
-
-        val res = withContext(coroutineDispatcher) {
-            requestTargetMutex.withLock {
-                val res = captureRequestBuilder.addTarget(target)
-                setRepeatingSession()
-                res
-            }
-        }
-        return res
-    }
-
-    /**
-     * Removes targets from the current capture session
-     *
-     * @param targets The targets to remove
-     */
-    suspend fun removeTargets(targets: List<CameraSurface>) {
-        withContext(coroutineDispatcher) {
-            requestTargetMutex.withLock {
-                targets.forEach {
-                    captureRequestBuilder.removeTarget(it)
-                }
-                if (captureRequestBuilder.isEmpty()) {
-                    stopRepeatingSession()
-                } else {
-                    setRepeatingSession()
-                }
-            }
-        }
-    }
-
-    /**
-     * Removes a target from the current capture session
-     *
-     * @param name The name of target to remove
-     */
-    suspend fun removeTarget(name: String) {
-        withContext(coroutineDispatcher) {
-            requestTargetMutex.withLock {
-                val target = outputs.firstOrNull { it.name == name }
-                target?.let {
-                    captureRequestBuilder.removeTarget(it)
-                } ?: Logger.w(
-                    TAG,
-                    "Target type $name not found in current outputs $outputs"
-                )
-
-                if (captureRequestBuilder.isEmpty()) {
-                    stopRepeatingSession()
-                } else {
-                    setRepeatingSession()
-                }
-            }
-        }
-    }
-
-    /**
-     * Removes a target from the current capture session
-     *
-     * @param target The target to remove
-     */
-    suspend fun removeTarget(target: CameraSurface) {
-        withContext(coroutineDispatcher) {
-            requestTargetMutex.withLock {
-                captureRequestBuilder.removeTarget(target)
-
-                if (captureRequestBuilder.isEmpty()) {
-                    stopRepeatingSession()
-                } else {
-                    setRepeatingSession()
-                }
-            }
-        }
-    }
 
     suspend fun close() {
         withContext(coroutineDispatcher) {
@@ -245,11 +85,26 @@ internal class CameraSessionController private constructor(
     }
 
     /**
+     * Sets or stops a repeating session with the current capture request.
+     *
+     * If the [captureRequestBuilder] does not hold a [Surface], it will stop the repeating session.
+     *
+     * @param captureRequestBuilder The capture request builder to use
+     */
+    suspend fun applyRepeatingSession(captureRequestBuilder: CaptureRequestWithTargetsBuilder) {
+        if (captureRequestBuilder.isEmpty()) {
+            stopRepeatingSession()
+        } else {
+            setRepeatingSession(captureRequestBuilder)
+        }
+    }
+
+    /**
      * Sets a repeating session with the current capture request.
      *
-     * @param tag A tag to associate with the session.
+     * @param captureRequestBuilder The capture request builder to use
      */
-    suspend fun setRepeatingSession(tag: Any? = null) {
+    private suspend fun setRepeatingSession(captureRequestBuilder: CaptureRequestWithTargetsBuilder) {
         if (captureRequestBuilder.isEmpty()) {
             Logger.w(TAG, "Capture request is empty")
             return
@@ -260,8 +115,6 @@ internal class CameraSessionController private constructor(
                     Logger.w(TAG, "Camera session controller is released")
                     return@withContext
                 }
-
-                tag?.let { captureRequestBuilder.setTag(it) }
 
                 sessionCompat.setRepeatingSingleRequest(
                     captureSession,
@@ -286,22 +139,6 @@ internal class CameraSessionController private constructor(
     }
 
     /**
-     * Gets a setting from the current capture request.
-     */
-    fun <T> getSetting(key: CaptureRequest.Key<T?>) = captureRequestBuilder.get(key)
-
-    /**
-     * Sets a setting to the current capture request.
-     *
-     * Don't forget to call [setRepeatingSession] to apply the setting.
-     *
-     * @param key The setting key
-     * @param value The setting value
-     */
-    fun <T> setSetting(key: CaptureRequest.Key<T>, value: T) =
-        captureRequestBuilder.set(key, value)
-
-    /**
      * Creates a new capture session with the given outputs.
      *
      * The capture session of the current [CameraSessionController] will be closed.
@@ -315,71 +152,44 @@ internal class CameraSessionController private constructor(
         cameraDeviceController: CameraDeviceController,
         outputs: List<CameraSurface>,
         dynamicRange: Long,
-        fpsRange: Range<Int>
     ): CameraSessionController = withContext(coroutineDispatcher) {
-        requestTargetMutex.withLock {
-            require(outputs.isNotEmpty()) { "At least one output is required" }
-            require(outputs.all { it.surface.isValid }) { "All outputs $outputs must be valid but ${outputs.filter { !it.surface.isValid }} is invalid" }
+        require(outputs.isNotEmpty()) { "At least one output is required" }
+        require(outputs.all { it.surface.isValid }) { "All outputs $outputs must be valid but ${outputs.filter { !it.surface.isValid }} is invalid" }
 
-            if ((dynamicRange == this@CameraSessionController.dynamicRange) && (outputs == this@CameraSessionController.outputs) && !isClosed) {
-                Logger.w(TAG, "Same dynamic range and outputs, returning the same controller")
-                return@withContext this@CameraSessionController
-            }
+        // Close current session
+        close()
 
-            // Re-add targets that are in the new outputs (identified by their name)
-            val targets = outputs.filter {
-                captureRequestBuilder.hasTarget(it.name)
-            }
-            captureRequestBuilder.clearTargets()
-            captureRequestBuilder.addTargets(targets)
-            val minFrameDuration = 1_000_000_000 / fpsRange.upper.toLong()
-            captureRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
-            captureRequestBuilder.set(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
-
-            // Close current session
-            close()
-
-            val isClosedFlow = MutableStateFlow(false)
-            val newCaptureSession =
-                CameraUtils.createCaptureSession(
-                    cameraDeviceController,
-                    outputs.map { it.surface },
-                    dynamicRange,
-                    isClosedFlow
-                )
-
-            val controller = CameraSessionController(
-                coroutineDispatcher,
-                newCaptureSession,
-                captureRequestBuilder,
-                sessionCallback,
-                sessionCompat,
-                outputs,
+        val isClosedFlow = MutableStateFlow(false)
+        val newCaptureSession =
+            CameraUtils.createCaptureSession(
+                cameraDeviceController,
+                outputs.map { it.surface },
                 dynamicRange,
-                cameraDeviceController.isClosedFlow,
-                isClosedFlow.asStateFlow()
+                isClosedFlow
             )
 
-            if (!captureRequestBuilder.isEmpty()) {
-                controller.setRepeatingSession()
-            }
+        val controller = CameraSessionController(
+            coroutineDispatcher,
+            newCaptureSession,
+            sessionCallback,
+            sessionCompat,
+            cameraDeviceController.isClosedFlow,
+            isClosedFlow.asStateFlow()
+        )
 
-            controller
-        }
+        controller
     }
 
     companion object {
         private const val TAG = "CameraSessionController"
 
         suspend fun create(
-            coroutineDispatcher: CoroutineDispatcher,
             cameraDeviceController: CameraDeviceController,
             sessionCallback: CameraSessionCallback,
             sessionCompat: ICameraCaptureSessionCompat,
             outputs: List<CameraSurface>,
             dynamicRange: Long,
-            fpsRange: Range<Int>,
-            defaultRequestBuilder: CaptureRequestWithTargetsBuilder.() -> Unit = {}
+            coroutineDispatcher: CoroutineDispatcher
         ): CameraSessionController {
             require(outputs.isNotEmpty()) { "At least one output is required" }
             require(outputs.all { it.surface.isValid }) { "All outputs $outputs must be valid but ${outputs.filter { !it.surface.isValid }} is invalid" }
@@ -393,22 +203,11 @@ internal class CameraSessionController private constructor(
                     isClosedFlow
                 )
 
-            val captureRequestBuilder = CaptureRequestWithTargetsBuilder.create(
-                cameraDeviceController
-            ).apply {
-                val minFrameDuration = 1_000_000_000 / fpsRange.upper.toLong()
-                set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
-                set(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
-                defaultRequestBuilder()
-            }
             return CameraSessionController(
                 coroutineDispatcher,
                 captureSession,
-                captureRequestBuilder,
                 sessionCallback,
                 sessionCompat,
-                outputs,
-                dynamicRange,
                 cameraDeviceController.isClosedFlow,
                 isClosedFlow.asStateFlow()
             )

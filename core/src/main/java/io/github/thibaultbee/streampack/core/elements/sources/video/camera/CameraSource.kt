@@ -66,7 +66,7 @@ internal class CameraSource(
         characteristics,
         dispatcherProvider,
         cameraId,
-        captureRequestBuilder = {
+        onCaptureRequestBuilder = {
             defaultCaptureRequest(this)
         }
     )

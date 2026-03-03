@@ -48,7 +48,7 @@ internal class CameraController(
     private val characteristics: CameraCharacteristics,
     dispatcherProvider: CameraDispatcherProvider,
     val cameraId: String,
-    val captureRequestBuilder: CaptureRequestWithTargetsBuilder.() -> Unit = {}
+    val onCaptureRequestBuilder: CaptureRequestWithTargetsBuilder.() -> Unit = {}
 ) {
     private val sessionCompat = CameraCaptureSessionCompatBuilder.build(dispatcherProvider)
 
@@ -59,6 +59,7 @@ internal class CameraController(
     private var deviceController: CameraDeviceController? = null
     private var sessionController: CameraSessionController? = null
 
+    private var captureRequestBuilder: CaptureRequestWithTargetsBuilder? = null
     private val sessionCallback = CameraSessionCallback(coroutineScope)
 
     private val controllerMutex = Mutex()
@@ -155,22 +156,35 @@ internal class CameraController(
         }
     }
 
+    @RequiresPermission(Manifest.permission.CAMERA)
+    private suspend fun getCaptureRequestBuilder(): CaptureRequestWithTargetsBuilder {
+        return if (captureRequestBuilder != null) {
+            captureRequestBuilder!!
+        } else {
+            getDeviceController().createCaptureRequestBuilder().apply {
+                captureRequestBuilder = this
+
+                val minFrameDuration = 1_000_000_000 / fpsRange.upper.toLong()
+                set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
+                set(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
+                onCaptureRequestBuilder()
+            }
+        }
+    }
+
     /**
      * To be used under [controllerMutex]
      */
     @RequiresPermission(Manifest.permission.CAMERA)
     private suspend fun getSessionController(): CameraSessionController {
         return if (sessionController == null) {
-            val deviceController = getDeviceController()
             CameraSessionController.create(
-                defaultDispatcher,
-                deviceController,
+                getDeviceController(),
                 sessionCallback,
                 sessionCompat,
                 outputs.values.toList(),
                 dynamicRange = dynamicRangeProfile.dynamicRange,
-                fpsRange = fpsRange,
-                captureRequestBuilder
+                defaultDispatcher
             ).apply {
                 applySessionController(this)
                 Logger.d(TAG, "Session controller created")
@@ -180,12 +194,10 @@ internal class CameraController(
                 sessionController!!
             } else {
                 try {
-                    val deviceController = getDeviceController()
                     sessionController!!.recreate(
-                        deviceController,
+                        getDeviceController(),
                         outputs.values.toList(),
-                        dynamicRange = dynamicRangeProfile.dynamicRange,
-                        fpsRange = fpsRange
+                        dynamicRange = dynamicRangeProfile.dynamicRange
                     ).apply {
                         applySessionController(this)
                         Logger.d(TAG, "Session controller recreated")
@@ -198,7 +210,9 @@ internal class CameraController(
         }
     }
 
-    private fun applySessionController(sessionController: CameraSessionController) {
+    private suspend fun applySessionController(
+        sessionController: CameraSessionController
+    ) {
         this.sessionController = sessionController
 
         isActiveJob = coroutineScope.launch {
@@ -206,6 +220,19 @@ internal class CameraController(
                 _isActiveFlow.emit(!it)
             }
         }
+
+        // Re-add targets that are in the new outputs (identified by their name)
+        captureRequestBuilder?.let {
+            val targets = outputs.values.filter { output ->
+                it.hasTarget(output)
+            }
+            it.clearTargets()
+            if (targets.isNotEmpty()) {
+                it.addTargets(targets)
+            }
+        }
+
+        setRepeatingSessionUnsafe()
     }
 
     /**
@@ -227,8 +254,7 @@ internal class CameraController(
         sessionController.recreate(
             getDeviceController(),
             outputs.values.toList(),
-            dynamicRange = dynamicRangeProfile.dynamicRange,
-            fpsRange = fpsRange
+            dynamicRange = dynamicRangeProfile.dynamicRange
         ).apply {
             applySessionController(this)
             Logger.d(TAG, "Session controller restarted")
@@ -244,53 +270,18 @@ internal class CameraController(
     @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun addTarget(name: String) = withContext(defaultDispatcher) {
         controllerMutex.withLock {
-            val sessionController = getSessionController()
-            sessionController.addTarget(name)
-        }
-    }
+            val target = outputs[name] ?: throw IllegalArgumentException(
+                "Output $name not found in outputs ${outputs.keys.joinToString(", ")}"
+            )
 
-    /**
-     * Adds a target to the current capture session.
-     *
-     * @param target The target to add
-     * @return true if the target has been added, false otherwise
-     */
-    @RequiresPermission(Manifest.permission.CAMERA)
-    suspend fun addTarget(target: CameraSurface) = withContext(defaultDispatcher) {
-        controllerMutex.withLock {
-            val sessionController = getSessionController()
-            sessionController.addTarget(target)
-        }
-    }
-
-    /**
-     * Adds targets to the current capture session.
-     *
-     * @param targets The targets to add
-     * @return true if the targets have been added, false otherwise
-     */
-    @RequiresPermission(Manifest.permission.CAMERA)
-    suspend fun addTargets(targets: List<CameraSurface>) = withContext(defaultDispatcher) {
-        controllerMutex.withLock {
-            val sessionController = getSessionController()
-            sessionController.addTargets(targets)
-        }
-    }
-
-    /**
-     * Removes a target from the current capture session.
-     *
-     * @param target The target to remove
-     */
-    @RequiresPermission(Manifest.permission.CAMERA)
-    suspend fun removeTarget(target: CameraSurface) {
-        withContext(defaultDispatcher) {
-            controllerMutex.withLock {
-                val sessionController = getSessionController()
-                sessionController.removeTarget(target)
-                if (sessionController.isEmpty()) {
-                    closeControllers()
+            val wasAdded = getCaptureRequestBuilder().addTarget(target)
+            if (wasAdded) {
+                try {
+                    setRepeatingSessionUnsafe()
+                } catch (t: Throwable) {
+                    Logger.e(TAG, "Error to add target $name", t)
                 }
+                Logger.d(TAG, "Target $name added")
             }
         }
     }
@@ -304,11 +295,18 @@ internal class CameraController(
     suspend fun removeTarget(name: String) {
         withContext(defaultDispatcher) {
             controllerMutex.withLock {
-                val sessionController = getSessionController()
-                sessionController.removeTarget(name)
-                if (sessionController.isEmpty()) {
-                    closeControllers()
+                val target = outputs[name] ?: return@withContext
+
+                val wasRemoved = getCaptureRequestBuilder().removeTarget(target)
+                if (!wasRemoved) {
+                    return@withLock
                 }
+                try {
+                    setRepeatingSessionUnsafe()
+                } catch (t: Throwable) {
+                    Logger.e(TAG, "Error to remove target $name", t)
+                }
+                Logger.d(TAG, "Target $name removed")
             }
         }
     }
@@ -317,8 +315,9 @@ internal class CameraController(
      * Gets a setting from the current capture request.
      */
     fun <T> getSetting(key: CaptureRequest.Key<T?>): T? {
-        val sessionController = requireNotNull(sessionController) { "SessionController is null" }
-        return sessionController.getSetting(key)
+        val captureRequestBuilder =
+            requireNotNull(captureRequestBuilder) { "CaptureRequestBuilder is null" }
+        return captureRequestBuilder.get(key)
     }
 
     /**
@@ -330,8 +329,9 @@ internal class CameraController(
      * @param value The setting value
      */
     fun <T> setSetting(key: CaptureRequest.Key<T>, value: T) {
-        val sessionController = requireNotNull(sessionController) { "SessionController is null" }
-        sessionController.setSetting(key, value)
+        val captureRequestBuilder =
+            requireNotNull(captureRequestBuilder) { "CaptureRequestBuilder is null" }
+        captureRequestBuilder.set(key, value)
     }
 
     /**
@@ -339,6 +339,7 @@ internal class CameraController(
      *
      * @param fpsRange The fps range
      */
+    @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun setFps(fps: Int) {
         withContext(defaultDispatcher) {
             controllerMutex.withLock {
@@ -348,12 +349,15 @@ internal class CameraController(
 
                 this@CameraController.fps = fps
 
+                val captureRequestBuilder = getCaptureRequestBuilder()
+
+                val range = fpsRange
+                val minFrameDuration = 1_000_000_000 / range.upper.toLong()
+                captureRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, range)
+                captureRequestBuilder.set(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
+
                 if (isActiveFlow.value) {
-                    val range = fpsRange
-                    val minFrameDuration = 1_000_000_000 / range.upper.toLong()
-                    setSetting(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, range)
-                    setSetting(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
-                    setRepeatingSession()
+                    setRepeatingSessionUnsafe()
                 }
             }
         }
@@ -405,9 +409,27 @@ internal class CameraController(
      *
      * @param tag A tag to associate with the session.
      */
+    suspend fun setRepeatingSessionUnsafe(tag: Any? = null) {
+        val sessionController = getSessionController()
+        val captureRequestBuilder = getCaptureRequestBuilder()
+        tag?.let {
+            captureRequestBuilder.setTag(it)
+        }
+        sessionController.applyRepeatingSession(captureRequestBuilder)
+    }
+
+
+    /**
+     * Sets a repeating session with the current capture request.
+     *
+     * @param tag A tag to associate with the session.
+     */
     suspend fun setRepeatingSession(tag: Any? = null) {
-        val sessionController = requireNotNull(sessionController) { "SessionController is null" }
-        sessionController.setRepeatingSession(tag)
+        withContext(defaultDispatcher) {
+            controllerMutex.withLock {
+                setRepeatingSessionUnsafe(tag)
+            }
+        }
     }
 
     private suspend fun closeControllers() {
@@ -420,6 +442,7 @@ internal class CameraController(
         withContext(defaultDispatcher) {
             controllerMutex.withLock {
                 closeControllers()
+                captureRequestBuilder = null
                 sessionController = null
             }
         }

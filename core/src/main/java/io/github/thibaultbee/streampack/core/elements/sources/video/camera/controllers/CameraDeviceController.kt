@@ -26,6 +26,7 @@ import android.view.Surface
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.ICameraCaptureSessionCompat
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraUtils
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestWithTargetsBuilder
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -54,10 +55,9 @@ internal class CameraDeviceController private constructor(
 
     val id = cameraDevice.id
 
-    fun createCaptureRequest(
-        templateType: Int
-    ): CaptureRequest.Builder {
-        return cameraDevice.createCaptureRequest(templateType)
+    fun createCaptureRequestBuilder(template: Int = CameraDevice.TEMPLATE_RECORD): CaptureRequestWithTargetsBuilder {
+        val captureRequest = cameraDevice.createCaptureRequest(template)
+        return CaptureRequestWithTargetsBuilder(captureRequest)
     }
 
     fun createCaptureSession(
@@ -65,7 +65,6 @@ internal class CameraDeviceController private constructor(
     ) {
         sessionCompat.createCaptureSession(cameraDevice, targets, callback)
     }
-
 
     fun createCaptureSessionByOutputConfiguration(
         outputConfigurations: List<OutputConfiguration>,

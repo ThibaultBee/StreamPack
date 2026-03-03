@@ -15,20 +15,17 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils
 
-import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.CaptureRequest.Builder
 import android.view.Surface
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraDeviceController
-import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
  * A class to store for [CaptureRequest] with targets
  */
-internal class CaptureRequestWithTargetsBuilder private constructor(
-    private val captureRequestBuilder: Builder
+internal class CaptureRequestWithTargetsBuilder(
+    private var captureRequestBuilder: Builder
 ) {
     private val mutableTargets = mutableSetOf<CameraSurface>()
     private val mutex = Mutex()
@@ -64,12 +61,14 @@ internal class CaptureRequestWithTargetsBuilder private constructor(
     }
 
     /**
-     * Adds a target to the CaptureRequest
+     * Adds a target to the CaptureRequest from a [CameraSurface]
      *
      * @param cameraSurface The surface to add
      * @return true if the surface was added, false otherwise
      */
     suspend fun addTarget(cameraSurface: CameraSurface): Boolean = mutex.withLock {
+        require(cameraSurface.surface.isValid) { "Target $cameraSurface must be valid" }
+
         val wasAdded = mutableTargets.add(cameraSurface)
         if (wasAdded) {
             captureRequestBuilder.addTarget(cameraSurface.surface)
@@ -84,6 +83,9 @@ internal class CaptureRequestWithTargetsBuilder private constructor(
      * @return true if the surface was added, false otherwise
      */
     suspend fun addTargets(cameraSurfaces: List<CameraSurface>) = mutex.withLock {
+        require(cameraSurfaces.isNotEmpty()) { "At least one target is required" }
+        require(cameraSurfaces.all { it.surface.isValid }) { "All targets must be valid" }
+
         cameraSurfaces.forEach {
             val wasAdded = mutableTargets.add(it)
             if (wasAdded) {
@@ -138,18 +140,5 @@ internal class CaptureRequestWithTargetsBuilder private constructor(
 
     override fun toString(): String {
         return "$captureRequestBuilder with targets: $targets"
-    }
-
-    companion object {
-        /**
-         * Create a CaptureRequestBuilderWithTargets
-         *
-         * @param cameraDeviceController The camera device controller
-         * @param template The template to use
-         */
-        fun create(
-            cameraDeviceController: CameraDeviceController,
-            template: Int = CameraDevice.TEMPLATE_RECORD,
-        ) = CaptureRequestWithTargetsBuilder(cameraDeviceController.createCaptureRequest(template))
     }
 }
