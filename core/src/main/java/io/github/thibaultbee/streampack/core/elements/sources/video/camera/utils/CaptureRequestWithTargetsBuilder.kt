@@ -31,9 +31,11 @@ internal class CaptureRequestWithTargetsBuilder(
     private val mutex = Mutex()
 
     /**
-     * The targets of the CaptureRequest
+     * Gets the targets from the CaptureRequest
+     *
+     * @return The targets
      */
-    private val targets = mutableTargets.toList()
+    suspend fun getTargets() = mutex.withLock { mutableTargets.toList() }
 
     /**
      * Whether the CaptureRequest has no target
@@ -139,6 +141,6 @@ internal class CaptureRequestWithTargetsBuilder(
     fun build() = captureRequestBuilder.build()
 
     override fun toString(): String {
-        return "$captureRequestBuilder with targets: $targets"
+        return "$captureRequestBuilder with targets: $mutableTargets"
     }
 }

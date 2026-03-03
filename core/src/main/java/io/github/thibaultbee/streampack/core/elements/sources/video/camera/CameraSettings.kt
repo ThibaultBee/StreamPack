@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera
 
+import android.Manifest
 import android.content.Context
 import android.graphics.PointF
 import android.graphics.Rect
@@ -35,6 +36,7 @@ import android.util.Range
 import android.util.Rational
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresApi
+import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.is90or270
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraController
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.autoExposureModes
@@ -188,6 +190,7 @@ class CameraSettings internal constructor(
      * @param key the key to get
      * @return the value associated with the key
      */
+    @RequiresPermission(Manifest.permission.CAMERA)
     fun <T> get(key: CaptureRequest.Key<T?>) = cameraController.getSetting(key)
 
     /**
@@ -198,7 +201,8 @@ class CameraSettings internal constructor(
      * @param key the key to set
      * @param value the value to set
      */
-    fun <T> set(key: CaptureRequest.Key<T>, value: T) =
+    @RequiresPermission(Manifest.permission.CAMERA)
+    suspend fun <T> set(key: CaptureRequest.Key<T>, value: T) =
         cameraController.setSetting(key, value)
 
     /**
@@ -208,6 +212,7 @@ class CameraSettings internal constructor(
      *
      * @return the total capture result
      */
+    @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun applyRepeatingSessionSync(): TotalCaptureResult {
         val deferred = CompletableDeferred<TotalCaptureResult>()
 
@@ -226,6 +231,7 @@ class CameraSettings internal constructor(
      *
      * @param onCaptureResult the capture result callback. Return `true` to stop the callback.
      */
+    @RequiresPermission(Manifest.permission.CAMERA)
     private suspend fun applyRepeatingSession(onCaptureResult: CaptureResultListener) {
         val tag = TagBundle.Factory.default.create()
         val captureCallback = object : CaptureResultListener {
@@ -240,19 +246,22 @@ class CameraSettings internal constructor(
         }
 
         cameraController.addCaptureCallbackListener(captureCallback)
-        cameraController.setRepeatingSession(tag)
+        cameraController.applyRepeatingSession(tag)
     }
 
     /**
      * Applies settings to the camera repeatedly.
      */
-    suspend fun applyRepeatingSession() = cameraController.setRepeatingSession()
+    @RequiresPermission(Manifest.permission.CAMERA)
+    suspend fun applyRepeatingSession() = cameraController.applyRepeatingSession()
 
     /**
      * Resets all settings to default.
      */
+    @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun resetAll() {
-
+        cameraController.resetSettings()
+        applyRepeatingSession()
     }
 
     private class TagBundle(val keyId: Long) {
@@ -312,8 +321,10 @@ class CameraSettings internal constructor(
             /**
              * @return `true` if flash is already on, otherwise `false`
              */
+            @RequiresPermission(Manifest.permission.CAMERA)
             get() = getFlash() == CaptureResult.FLASH_MODE_TORCH
 
+        @RequiresPermission(Manifest.permission.CAMERA)
         private fun getFlash(): Int =
             cameraSettings.get(CaptureRequest.FLASH_MODE) ?: CaptureResult.FLASH_MODE_OFF
 
@@ -322,6 +333,7 @@ class CameraSettings internal constructor(
          *
          * @param isEnable `true` to enable flash, otherwise `false`
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setIsEnable(isEnable: Boolean) {
             if (isEnable) {
                 setFlash(CaptureRequest.FLASH_MODE_TORCH)
@@ -337,6 +349,7 @@ class CameraSettings internal constructor(
          *
          * @param mode flash mode
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         private suspend fun setFlash(mode: Int) {
             cameraSettings.set(CaptureRequest.FLASH_MODE, mode)
             cameraSettings.applyRepeatingSession()
@@ -376,6 +389,7 @@ class CameraSettings internal constructor(
              * @return the flash strength
              */
             @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+            @RequiresPermission(Manifest.permission.CAMERA)
             get() = cameraSettings.get(CaptureRequest.FLASH_STRENGTH_LEVEL)
                 ?: DEFAULT_STRENGTH_LEVEL
 
@@ -386,6 +400,7 @@ class CameraSettings internal constructor(
          * @see [availableStrengthLevelRange]
          */
         @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setStrengthLevel(level: Int) {
             cameraSettings.set(CaptureRequest.FLASH_STRENGTH_LEVEL, level)
             cameraSettings.applyRepeatingSession()
@@ -419,6 +434,7 @@ class CameraSettings internal constructor(
              *
              * @return current camera auto white balance mode
              */
+            @RequiresPermission(Manifest.permission.CAMERA)
             get() = cameraSettings.get(CaptureRequest.CONTROL_AWB_MODE)
                 ?: CaptureResult.CONTROL_AWB_MODE_OFF
 
@@ -428,6 +444,7 @@ class CameraSettings internal constructor(
          * @param autoMode auto white balance mode
          * @see [availableAutoModes]
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setAutoMode(autoMode: Int) {
             cameraSettings.set(CaptureRequest.CONTROL_AWB_MODE, autoMode)
             cameraSettings.applyRepeatingSession()
@@ -442,12 +459,14 @@ class CameraSettings internal constructor(
          * Gets the white balance metering regions.
          */
         val meteringRegions: List<MeteringRectangle>
+            @RequiresPermission(Manifest.permission.CAMERA)
             get() = cameraSettings.get(CaptureRequest.CONTROL_AWB_REGIONS)?.toList()
                 ?: emptyList()
 
         /**
          * Sets the white balance metering regions.
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setMeteringRegions(value: List<MeteringRectangle>) {
             cameraSettings.set(
                 CaptureRequest.CONTROL_AWB_REGIONS, value.toTypedArray()
@@ -459,6 +478,7 @@ class CameraSettings internal constructor(
          * Gets the auto white balance lock state.
          */
         val isLocked: Boolean
+            @RequiresPermission(Manifest.permission.CAMERA)
             get() = cameraSettings.get(CaptureRequest.CONTROL_AWB_LOCK) ?: false
 
         /**
@@ -466,6 +486,7 @@ class CameraSettings internal constructor(
          *
          * @param isLocked the lock state. `true` to lock auto white balance, otherwise `false`
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setIsLocked(isLocked: Boolean) {
             cameraSettings.set(CaptureRequest.CONTROL_AWB_LOCK, isLocked)
             cameraSettings.applyRepeatingSession()
@@ -498,6 +519,7 @@ class CameraSettings internal constructor(
              *
              * @return the sensitivity
              */
+            @RequiresPermission(Manifest.permission.CAMERA)
             get() = cameraSettings.get(CaptureRequest.SENSOR_SENSITIVITY)
                 ?: DEFAULT_SENSITIVITY
 
@@ -507,6 +529,7 @@ class CameraSettings internal constructor(
          *
          * @param sensorSensitivity the sensitivity
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setSensorSensitivity(sensorSensitivity: Int) {
             cameraSettings.set(
                 CaptureRequest.SENSOR_SENSITIVITY,
@@ -543,6 +566,7 @@ class CameraSettings internal constructor(
          * @see [WhiteBalance.autoMode]
          */
         val rggbChannelVector: RggbChannelVector?
+            @RequiresPermission(Manifest.permission.CAMERA)
             get() = cameraSettings.get(CaptureRequest.COLOR_CORRECTION_GAINS)
 
         /**
@@ -552,6 +576,7 @@ class CameraSettings internal constructor(
          *
          * @param rggbChannelVector the color correction gain
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setRggbChannelVector(rggbChannelVector: RggbChannelVector) {
             cameraSettings.set(
                 CaptureRequest.CONTROL_AWB_MODE,
@@ -599,6 +624,7 @@ class CameraSettings internal constructor(
              *
              * @return the auto exposure mode
              */
+            @RequiresPermission(Manifest.permission.CAMERA)
             get() = cameraSettings.get(CaptureRequest.CONTROL_AE_MODE)
                 ?: CaptureResult.CONTROL_AE_MODE_OFF
 
@@ -607,6 +633,7 @@ class CameraSettings internal constructor(
          *
          * @param autoMode the exposure auto mode
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setAutoMode(autoMode: Int) {
             cameraSettings.set(CaptureRequest.CONTROL_AE_MODE, autoMode)
             cameraSettings.applyRepeatingSession()
@@ -653,6 +680,7 @@ class CameraSettings internal constructor(
              *
              * @return the exposure compensation
              */
+            @RequiresPermission(Manifest.permission.CAMERA)
             get() = cameraSettings.get(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION)
                 ?: DEFAULT_COMPENSATION
 
@@ -661,6 +689,7 @@ class CameraSettings internal constructor(
          *
          * @param compensation the exposure compensation
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setCompensation(compensation: Int) {
             cameraSettings.set(
                 CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION,
@@ -678,6 +707,7 @@ class CameraSettings internal constructor(
          * Gets the exposure metering regions.
          */
         val meteringRegions: List<MeteringRectangle>
+            @RequiresPermission(Manifest.permission.CAMERA)
             get() = cameraSettings.get(CaptureRequest.CONTROL_AE_REGIONS)?.toList()
                 ?: emptyList()
 
@@ -686,6 +716,7 @@ class CameraSettings internal constructor(
          *
          * @param meteringRegions the metering regions
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setMeteringRegions(meteringRegions: List<MeteringRectangle>) {
             cameraSettings.set(
                 CaptureRequest.CONTROL_AE_REGIONS, meteringRegions.toTypedArray()
@@ -703,6 +734,7 @@ class CameraSettings internal constructor(
          * @return the auto exposure lock state
          */
         val isLocked: Boolean
+            @RequiresPermission(Manifest.permission.CAMERA)
             get() = cameraSettings.get(CaptureRequest.CONTROL_AE_LOCK) ?: false
 
         /**
@@ -710,6 +742,7 @@ class CameraSettings internal constructor(
          *
          * @param isLocked the lock state. `true` to lock auto exposure, otherwise `false`
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setIsLocked(isLocked: Boolean) {
             cameraSettings.set(
                 CaptureRequest.CONTROL_AE_LOCK, isLocked
@@ -789,6 +822,7 @@ class CameraSettings internal constructor(
                 persistentZoomRatio
             }
 
+            @RequiresPermission(Manifest.permission.CAMERA)
             override suspend fun setZoomRatio(zoomRatio: Float) {
                 mutex.withLock {
                     val clampedValue = zoomRatio.clamp(availableRatioRange)
@@ -859,11 +893,13 @@ class CameraSettings internal constructor(
                 characteristics.zoomRatioRange ?: DEFAULT_ZOOM_RATIO_RANGE
             }
 
+            @RequiresPermission(Manifest.permission.CAMERA)
             override suspend fun getZoomRatio(): Float {
                 return cameraSettings.get(CaptureRequest.CONTROL_ZOOM_RATIO)
                     ?: DEFAULT_ZOOM_RATIO
             }
 
+            @RequiresPermission(Manifest.permission.CAMERA)
             override suspend fun setZoomRatio(zoomRatio: Float) {
                 if (zoomRatio == getZoomRatio()) {
                     return
@@ -934,6 +970,7 @@ class CameraSettings internal constructor(
              *
              * @return the auto focus mode
              */
+            @RequiresPermission(Manifest.permission.CAMERA)
             get() = cameraSettings.get(CaptureRequest.CONTROL_AF_MODE)
                 ?: CaptureResult.CONTROL_AF_MODE_OFF
 
@@ -942,6 +979,7 @@ class CameraSettings internal constructor(
          *
          * @param autoMode the auto focus mode
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setAutoMode(autoMode: Int) {
             cameraSettings.set(CaptureRequest.CONTROL_AF_MODE, autoMode)
             cameraSettings.applyRepeatingSession()
@@ -969,6 +1007,7 @@ class CameraSettings internal constructor(
              *
              * @return the lens focus distance
              */
+            @RequiresPermission(Manifest.permission.CAMERA)
             get() = cameraSettings.get(CaptureRequest.LENS_FOCUS_DISTANCE)
                 ?: DEFAULT_LENS_DISTANCE
 
@@ -979,6 +1018,7 @@ class CameraSettings internal constructor(
          *
          * @param lensDistance the lens focus distance
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setLensDistance(lensDistance: Float) {
             cameraSettings.set(
                 CaptureRequest.LENS_FOCUS_DISTANCE, lensDistance.clamp(availableLensDistanceRange)
@@ -997,6 +1037,7 @@ class CameraSettings internal constructor(
          * Gets the focus metering regions.
          */
         val meteringRegions: List<MeteringRectangle>
+            @RequiresPermission(Manifest.permission.CAMERA)
             get() = cameraSettings.get(CaptureRequest.CONTROL_AF_REGIONS)?.toList()
                 ?: emptyList()
 
@@ -1005,6 +1046,7 @@ class CameraSettings internal constructor(
          *
          * @param meteringRegions the metering regions
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setMeteringRegions(meteringRegions: List<MeteringRectangle>) {
             cameraSettings.set(
                 CaptureRequest.CONTROL_AF_REGIONS, meteringRegions.toTypedArray()
@@ -1035,6 +1077,7 @@ class CameraSettings internal constructor(
              *
              * @return `true` if video stabilization is enabled, otherwise `false`
              */
+            @RequiresPermission(Manifest.permission.CAMERA)
             get() = cameraSettings.get(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE) == CaptureResult.CONTROL_VIDEO_STABILIZATION_MODE_ON
 
         /**
@@ -1042,6 +1085,7 @@ class CameraSettings internal constructor(
          *
          * @param isEnableVideo `true` to enable video stabilization, otherwise `false`
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setIsEnableVideo(isEnableVideo: Boolean) {
             if (isEnableVideo) {
                 cameraSettings.set(
@@ -1082,6 +1126,7 @@ class CameraSettings internal constructor(
              *
              * @return `true` if optical video stabilization is enabled, otherwise `false`
              */
+            @RequiresPermission(Manifest.permission.CAMERA)
             get() = cameraSettings.get(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE) == CaptureResult.LENS_OPTICAL_STABILIZATION_MODE_ON
 
         /**
@@ -1089,6 +1134,7 @@ class CameraSettings internal constructor(
          *
          * @param isEnableOptical `true` to enable optical video stabilization, otherwise `false`
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setIsEnableOptical(isEnableOptical: Boolean) {
             if (isEnableOptical) {
                 cameraSettings.set(
@@ -1117,6 +1163,7 @@ class CameraSettings internal constructor(
         private var autoCancelHandle: Job? = null
 
         @Suppress("UNCHECKED_CAST")
+        @RequiresPermission(Manifest.permission.CAMERA)
         private suspend fun cancelAfAeTrigger() {
             // Cancel previous AF trigger
             cameraSettings.set(
@@ -1134,7 +1181,8 @@ class CameraSettings internal constructor(
         }
 
         @Suppress("UNCHECKED_CAST")
-        private fun addFocusMetering(
+        @RequiresPermission(Manifest.permission.CAMERA)
+        private suspend fun addFocusMetering(
             afRects: List<MeteringRectangle>,
             aeRects: List<MeteringRectangle>,
             awbRects: List<MeteringRectangle>
@@ -1166,6 +1214,7 @@ class CameraSettings internal constructor(
         }
 
         @Suppress("UNCHECKED_CAST")
+        @RequiresPermission(Manifest.permission.CAMERA)
         private suspend fun triggerAf(overrideAeMode: Boolean) {
             cameraSettings.set(
                 CaptureRequest.CONTROL_AF_TRIGGER,
@@ -1208,6 +1257,7 @@ class CameraSettings internal constructor(
             deferred.await()
         }
 
+        @RequiresPermission(Manifest.permission.CAMERA)
         private suspend fun executeMetering(
             afRectangles: List<MeteringRectangle>,
             aeRectangles: List<MeteringRectangle>,
@@ -1251,6 +1301,7 @@ class CameraSettings internal constructor(
             }
         }
 
+        @RequiresPermission(Manifest.permission.CAMERA)
         private suspend fun startFocusAndMetering(
             afPoints: List<PointF>,
             aePoints: List<PointF>,
@@ -1408,6 +1459,7 @@ class CameraSettings internal constructor(
          * @param fovRotationDegree the orientation of the field of view
          * @param timeoutDurationMs duration in milliseconds after which the focus and metering will be cancelled automatically
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun onTap(
             context: Context,
             afPoints: List<PointF>,
@@ -1441,6 +1493,7 @@ class CameraSettings internal constructor(
         /**
          * Cancel the focus and metering.
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun cancelFocusAndMetering() {
             disableAutoCancel()
 

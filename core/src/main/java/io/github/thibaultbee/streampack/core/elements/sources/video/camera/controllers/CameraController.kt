@@ -210,6 +210,7 @@ internal class CameraController(
         }
     }
 
+    @RequiresPermission(Manifest.permission.CAMERA)
     private suspend fun applySessionController(
         sessionController: CameraSessionController
     ) {
@@ -232,7 +233,7 @@ internal class CameraController(
             }
         }
 
-        setRepeatingSessionUnsafe()
+        applyRepeatingSessionUnsafe()
     }
 
     /**
@@ -277,7 +278,7 @@ internal class CameraController(
             val wasAdded = getCaptureRequestBuilder().addTarget(target)
             if (wasAdded) {
                 try {
-                    setRepeatingSessionUnsafe()
+                    applyRepeatingSessionUnsafe()
                 } catch (t: Throwable) {
                     Logger.e(TAG, "Error to add target $name", t)
                 }
@@ -302,7 +303,7 @@ internal class CameraController(
                     return@withLock
                 }
                 try {
-                    setRepeatingSessionUnsafe()
+                    applyRepeatingSessionUnsafe()
                 } catch (t: Throwable) {
                     Logger.e(TAG, "Error to remove target $name", t)
                 }
@@ -314,6 +315,7 @@ internal class CameraController(
     /**
      * Gets a setting from the current capture request.
      */
+    @RequiresPermission(Manifest.permission.CAMERA)
     fun <T> getSetting(key: CaptureRequest.Key<T?>): T? {
         val captureRequestBuilder =
             requireNotNull(captureRequestBuilder) { "CaptureRequestBuilder is null" }
@@ -321,16 +323,35 @@ internal class CameraController(
     }
 
     /**
+     * Resets the current capture request to its default settings.
+     *
+     * Don't forget to call [applyRepeatingSession] to apply the setting.
+     */
+    @RequiresPermission(Manifest.permission.CAMERA)
+    suspend fun resetSettings() {
+        withContext(defaultDispatcher) {
+            controllerMutex.withLock {
+                captureRequestBuilder ?: return@withLock
+                val currentCaptureRequestBuilder = getCaptureRequestBuilder()
+                // Get targets of previous builder
+                val targets = currentCaptureRequestBuilder.getTargets()
+                captureRequestBuilder = null
+                getCaptureRequestBuilder().addTargets(targets)
+            }
+        }
+    }
+
+    /**
      * Sets a setting to the current capture request.
      *
-     * Don't forget to call [setRepeatingSession] to apply the setting.
+     * Don't forget to call [applyRepeatingSession] to apply the setting.
      *
      * @param key The setting key
      * @param value The setting value
      */
-    fun <T> setSetting(key: CaptureRequest.Key<T>, value: T) {
-        val captureRequestBuilder =
-            requireNotNull(captureRequestBuilder) { "CaptureRequestBuilder is null" }
+    @RequiresPermission(Manifest.permission.CAMERA)
+    suspend fun <T> setSetting(key: CaptureRequest.Key<T>, value: T) {
+        val captureRequestBuilder = getCaptureRequestBuilder()
         captureRequestBuilder.set(key, value)
     }
 
@@ -357,7 +378,7 @@ internal class CameraController(
                 captureRequestBuilder.set(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
 
                 if (isActiveFlow.value) {
-                    setRepeatingSessionUnsafe()
+                    applyRepeatingSessionUnsafe()
                 }
             }
         }
@@ -409,7 +430,8 @@ internal class CameraController(
      *
      * @param tag A tag to associate with the session.
      */
-    suspend fun setRepeatingSessionUnsafe(tag: Any? = null) {
+    @RequiresPermission(Manifest.permission.CAMERA)
+    private suspend fun applyRepeatingSessionUnsafe(tag: Any? = null) {
         val sessionController = getSessionController()
         val captureRequestBuilder = getCaptureRequestBuilder()
         tag?.let {
@@ -424,26 +446,27 @@ internal class CameraController(
      *
      * @param tag A tag to associate with the session.
      */
-    suspend fun setRepeatingSession(tag: Any? = null) {
+    @RequiresPermission(Manifest.permission.CAMERA)
+    suspend fun applyRepeatingSession(tag: Any? = null) {
         withContext(defaultDispatcher) {
             controllerMutex.withLock {
-                setRepeatingSessionUnsafe(tag)
+                applyRepeatingSessionUnsafe(tag)
             }
         }
     }
 
     private suspend fun closeControllers() {
         sessionController?.close()
+        sessionController = null
         deviceController?.close()
         deviceController = null
+        captureRequestBuilder = null
     }
 
     suspend fun release() {
         withContext(defaultDispatcher) {
             controllerMutex.withLock {
                 closeControllers()
-                captureRequestBuilder = null
-                sessionController = null
             }
         }
         outputs.clear()
