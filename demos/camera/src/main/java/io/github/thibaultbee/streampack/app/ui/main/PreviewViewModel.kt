@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.app.ui.main
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
@@ -408,6 +409,8 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     val isCameraSource = streamer.videoInput.sourceFlow?.map { it is ICameraSource }?.asLiveData()
 
     val isFlashAvailable = MutableLiveData(false)
+
+    @SuppressLint("MissingPermission")
     fun toggleFlash() {
         cameraSettings?.let {
             viewModelScope.launch {
@@ -417,6 +420,8 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     }
 
     val isAutoWhiteBalanceAvailable = MutableLiveData(false)
+
+    @SuppressLint("MissingPermission")
     fun toggleAutoWhiteBalanceMode() {
         cameraSettings?.let { settings ->
             val awbModes = settings.whiteBalance.availableAutoModes
@@ -444,6 +449,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                 0f
             }
         }
+        @SuppressLint("MissingPermission")
         set(value) {
             cameraSettings?.let { settings ->
                 settings.exposure.let {
@@ -487,6 +493,8 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         }
 
     val isAutoFocusModeAvailable = MutableLiveData(false)
+
+    @SuppressLint("MissingPermission")
     fun toggleAutoFocusMode() {
         cameraSettings?.let {
             val afModes = it.focus.availableAutoModes
@@ -515,6 +523,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                 0f
             }
         }
+        @SuppressLint("MissingPermission")
         set(value) {
             cameraSettings?.let { settings ->
                 settings.focus.let {
@@ -541,6 +550,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun notifyCameraChanged(videoSource: ICameraSource) {
         val settings = videoSource.settings
         // Set optical stabilization first

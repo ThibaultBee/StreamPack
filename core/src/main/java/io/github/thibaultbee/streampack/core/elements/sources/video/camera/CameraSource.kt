@@ -119,8 +119,7 @@ internal class CameraSource(
     private fun defaultCaptureRequest(
         captureRequest: CaptureRequestWithTargetsBuilder
     ) {
-        if (settings.focus.availableAutoModes.contains(CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO)
-        ) {
+        if (settings.focus.availableAutoModes.contains(CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO)) {
             captureRequest.set(
                 CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO
             )
