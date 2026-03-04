@@ -22,6 +22,7 @@ import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * A [DefaultLifecycleObserver] to control a streamer on [Activity] lifecycle in a ViewModel.
@@ -37,10 +38,12 @@ open class StreamerViewModelLifeCycleObserver(protected val streamer: IStreamer)
     DefaultLifecycleObserver {
 
     override fun onPause(owner: LifecycleOwner) {
-        owner.lifecycleScope.launch(NonCancellable) {
-            streamer.stopStream()
-            if (streamer is ICloseableStreamer) {
-                streamer.close()
+        owner.lifecycleScope.launch {
+            withContext(NonCancellable) {
+                streamer.stopStream()
+                if (streamer is ICloseableStreamer) {
+                    streamer.close()
+                }
             }
         }
     }
