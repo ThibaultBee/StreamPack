@@ -166,6 +166,10 @@ class RtmpEndpoint internal constructor(
     override suspend fun write(
         frame: Frame, streamPid: Int
     ) {
+        if (!_isOpenFlow.value) {
+            frame.close()
+            return
+        }
         val startUpTimestamp = getStartUpTimestamp(frame.ptsInUs)
         val ts = (frame.ptsInUs - startUpTimestamp) / 1000
         flvTagBuilder.write(frame, ts.toInt(), streamPid)

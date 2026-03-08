@@ -138,7 +138,7 @@ class FlvTagBuilder(val channel: ChannelWithCloseableData<FLVTag>) {
         }
     }
 
-    companion object Companion {
+    companion object {
         private const val TAG = "FlvTagBuilder"
 
         private const val AUDIO_STREAM_PID = 0
