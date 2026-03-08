@@ -26,7 +26,7 @@ import java.security.InvalidParameterException
 /**
  * Creates a RTMP connection descriptor from an [descriptor].
  * If the descriptor is already a [RtmpMediaDescriptor], it will be returned as is.
- * If the descriptor is an [UriMediaDescriptor], it will be converted to a [RtmpMediaDescriptor] with default [TSServiceInfo].
+ * If the descriptor is an [UriMediaDescriptor], it will be converted to a [RtmpMediaDescriptor].
  * Otherwise, an [InvalidParameterException] will be thrown.
  */
 fun RtmpMediaDescriptor(descriptor: MediaDescriptor) =
@@ -65,7 +65,7 @@ class RtmpMediaDescriptor(
         require(streamKey.isNotBlank()) { "Invalid streamKey $streamKey" }
     }
 
-    override val uri = Uri.Builder()
+    override val uri: Uri = Uri.Builder()
         .scheme(scheme)
         .encodedAuthority("$host:$port")
         .apply {
@@ -109,12 +109,10 @@ class RtmpMediaDescriptor(
             val port = if (uri.port > 0) {
                 uri.port
             } else {
-                if ((scheme == RTMPS_SCHEME) || (scheme == RTMPTS_SCHEME)) {
-                    SSL_DEFAULT_PORT
-                } else if ((scheme == RTMPT_SCHEME) || (scheme == RTMPTE_SCHEME)) {
-                    HTTP_DEFAULT_PORT
-                } else {
-                    DEFAULT_PORT
+                when (scheme) {
+                    RTMPS_SCHEME, RTMPTS_SCHEME -> SSL_DEFAULT_PORT
+                    RTMPT_SCHEME, RTMPTE_SCHEME -> HTTP_DEFAULT_PORT
+                    else -> DEFAULT_PORT
                 }
             }
             if (uri.pathSegments.isEmpty()) {
