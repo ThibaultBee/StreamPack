@@ -22,11 +22,8 @@ enum class MediaSinkType(val schemes: Set<String>) {
             if (isLocalFileScheme(scheme)) {
                 return FILE
             }
-            try {
-                return entries.first { it.schemes.contains(scheme) }
-            } catch (t: Throwable) {
-                throw IllegalArgumentException("Unknown scheme: $scheme", t)
-            }
+            return entries.firstOrNull { it.schemes.contains(scheme) }
+                ?: throw IllegalArgumentException("Unknown scheme: $scheme")
         }
 
         private fun isLocalFileScheme(scheme: String?): Boolean {
