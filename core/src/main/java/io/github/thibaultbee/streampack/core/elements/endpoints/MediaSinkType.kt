@@ -22,6 +22,9 @@ enum class MediaSinkType(val schemes: Set<String>) {
             if (isLocalFileScheme(scheme)) {
                 return FILE
             }
+            if (scheme.isNullOrEmpty()) {
+                throw IllegalArgumentException("Scheme cannot be empty")
+            }
             return entries.firstOrNull { it.schemes.contains(scheme) }
                 ?: throw IllegalArgumentException("Unknown scheme: $scheme")
         }
