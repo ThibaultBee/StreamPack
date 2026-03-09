@@ -15,6 +15,9 @@ enum class MediaContainerType(val values: Set<String>) {
 
     companion object {
         private fun inferFromExtension(extension: String): MediaContainerType {
+            if (extension.isEmpty()) {
+                throw IllegalArgumentException("Extension cannot be empty")
+            }
             val type = entries.firstOrNull { it.values.contains(extension) }
             return type ?: throw IllegalArgumentException("Unsupported extension: $extension")
         }
