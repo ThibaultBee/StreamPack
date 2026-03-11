@@ -1427,6 +1427,7 @@ class CameraSettings internal constructor(
          * @param fovRotationDegree the orientation of the field of view
          * @param timeoutDurationMs duration in milliseconds after which the focus and metering will be cancelled automatically
          */
+        @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun onTap(
             context: Context,
             point: PointF,
