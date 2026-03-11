@@ -22,6 +22,7 @@ import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IWithAudioSource
 import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
+import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -48,7 +49,11 @@ open class StreamerLifeCycleObserver(
             owner.lifecycleScope.launch {
                 withContext(NonCancellable) {
                     if (streamer is IWithAudioSource) {
-                        streamer.audioInput.startCapture()
+                        try {
+                            streamer.audioInput.startCapture()
+                        } catch (t: Throwable) {
+                            Logger.e(TAG, "Error while starting audio capture: $t")
+                        }
                     }
                 }
             }
@@ -73,5 +78,9 @@ open class StreamerLifeCycleObserver(
         if (releaseOnDestroy) {
             streamer.releaseBlocking()
         }
+    }
+
+    companion object {
+        private const val TAG = "StreamerLifeCycleObserver"
     }
 }
