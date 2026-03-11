@@ -20,6 +20,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
+import io.github.thibaultbee.streampack.core.interfaces.IWithAudioSource
 import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
@@ -35,17 +36,34 @@ import kotlinx.coroutines.withContext
  *
  *  @param streamer The streamer to control
  *  @param releaseOnDestroy Whether to release the streamer when application is destroyed. If a view model is used, this should be set to false.
+ *  @param autostartAudioCapture Whether to start audio capture when application is resumed.
  */
 open class StreamerLifeCycleObserver(
     private val streamer: IStreamer,
-    private val releaseOnDestroy: Boolean = false
+    private val releaseOnDestroy: Boolean = false,
+    private val autostartAudioCapture: Boolean = false
 ) : DefaultLifecycleObserver {
+    override fun onResume(owner: LifecycleOwner) {
+        if (autostartAudioCapture) {
+            owner.lifecycleScope.launch {
+                withContext(NonCancellable) {
+                    if (streamer is IWithAudioSource) {
+                        streamer.audioInput.startCapture()
+                    }
+                }
+            }
+        }
+    }
+
     override fun onPause(owner: LifecycleOwner) {
         owner.lifecycleScope.launch {
             withContext(NonCancellable) {
                 streamer.stopStream()
                 if (streamer is ICloseableStreamer) {
                     streamer.close()
+                }
+                if (streamer is IWithAudioSource) {
+                    streamer.audioInput.stopCapture()
                 }
             }
         }
