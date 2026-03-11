@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.elements.processing.audio
 /**
  * Public interface for audio frame processor.
  */
-interface IAudioFrameProcessor {
+interface IAudioFrameProcessor : MutableList<IAudioEffect> {
     /**
      * Whether the processor is muted.
      */
