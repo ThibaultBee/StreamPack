@@ -58,6 +58,12 @@ interface IAudioInput {
     val isStreamingFlow: StateFlow<Boolean>
 
     /**
+     * Whether the audio input is capturing.
+     * Capturing means the audio source and processor are running but frames might not be pushed to the encoder.
+     */
+    val isCapturingFlow: StateFlow<Boolean>
+
+    /**
      * The audio source.
      * It allows access to advanced audio settings.
      *
@@ -80,6 +86,16 @@ interface IAudioInput {
      * @param audioSourceFactory The new audio source factory.
      */
     suspend fun setSource(audioSourceFactory: IAudioSourceInternal.Factory)
+
+    /**
+     * Starts the audio capture for dry-mode (does not push to encoders).
+     */
+    suspend fun startCapture()
+
+    /**
+     * Stops the audio capture.
+     */
+    suspend fun stopCapture()
 
     /**
      * Whether the audio input has a configuration.
@@ -132,6 +148,16 @@ internal class AudioInput(
             }
         }
 
+    // STATE
+    /**
+     * Whether the audio input is streaming.
+     */
+    private val _isStreamingFlow = MutableStateFlow(false)
+    override val isStreamingFlow = _isStreamingFlow.asStateFlow()
+
+    private val _isCapturingFlow = MutableStateFlow(false)
+    override val isCapturingFlow = _isCapturingFlow.asStateFlow()
+
     // PROCESSOR
     private val bufferPool = ByteBufferPool(true)
 
@@ -141,7 +167,14 @@ internal class AudioInput(
     private val processorInternal = AudioFrameProcessor(bufferPool, dispatcherProvider.default)
     override val processor: IAudioFrameProcessor = processorInternal
     private val port = if (config is PushConfig) {
-        PushAudioPort(processorInternal, config, bufferPool, dispatcherProvider)
+        val wrappedConfig = PushConfig { frame ->
+            if (_isStreamingFlow.value) {
+                config.onFrame(frame)
+            } else {
+                frame.close()
+            }
+        }
+        PushAudioPort(processorInternal, wrappedConfig, bufferPool, dispatcherProvider)
     } else {
         CallbackAudioPort(processorInternal) // No threading needed, called from encoder thread
     }
@@ -159,13 +192,6 @@ internal class AudioInput(
 
     override val withConfig: Boolean
         get() = sourceConfig != null
-
-    // STATE
-    /**
-     * Whether the audio input is streaming.
-     */
-    private val _isStreamingFlow = MutableStateFlow(false)
-    override val isStreamingFlow = _isStreamingFlow.asStateFlow()
 
     /**
      * Sets a new audio source.
@@ -197,9 +223,10 @@ internal class AudioInput(
 
                 isStreamingJob += coroutineScope.launch {
                     newAudioSource.isStreamingFlow.collect { isStreaming ->
-                        if ((!isStreaming) && isStreamingFlow.value) {
+                        if ((!isStreaming) && (isStreamingFlow.value || isCapturingFlow.value)) {
                             Logger.i(TAG, "Audio source has been stopped.")
-                            stopStream()
+                            if (isStreamingFlow.value) stopStream()
+                            if (isCapturingFlow.value) stopCapture()
                         }
                     }
                 }
@@ -296,6 +323,41 @@ internal class AudioInput(
         }
     }
 
+    override suspend fun startCapture() {
+        require(port is PushAudioPort) { "Audio capture is not supported in this mode: ${port::class.java}" }
+        
+        if (isReleaseRequested.get()) {
+            throw IllegalStateException("Input is released")
+        }
+
+        withContext(dispatcherProvider.default) {
+            sourceMutex.withLock {
+                val source = requireNotNull(sourceInternalFlow.value) {
+                    "Audio source is not set yet"
+                }
+                if (isCapturingFlow.value) {
+                    Logger.w(TAG, "Capture is already running")
+                    return@withContext
+                }
+                if (!withConfig) {
+                    Logger.w(TAG, "Audio source configuration is not set yet")
+                }
+                source.startStream()
+                try {
+                    port.startStream()
+                } catch (t: Throwable) {
+                    Logger.w(
+                        TAG,
+                        "startCapture: Can't start audio processor: ${t.message}"
+                    )
+                    source.stopStream()
+                    throw t
+                }
+                _isCapturingFlow.emit(true)
+            }
+        }
+    }
+
     internal suspend fun stopStream() {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
@@ -303,7 +365,9 @@ internal class AudioInput(
 
         withContext(dispatcherProvider.default) {
             sourceMutex.withLock {
+                if (!isStreamingFlow.value) return@withContext
                 _isStreamingFlow.emit(false)
+                if (isCapturingFlow.value) return@withContext
                 try {
                     port.stopStream()
                 } catch (t: Throwable) {
@@ -318,6 +382,37 @@ internal class AudioInput(
                     Logger.w(
                         TAG,
                         "stopStream: Can't stop audio source: ${t.message}"
+                    )
+                }
+            }
+        }
+    }
+
+    override suspend fun stopCapture() {
+        if (isReleaseRequested.get()) {
+            throw IllegalStateException("Input is released")
+        }
+
+        withContext(dispatcherProvider.default) {
+            sourceMutex.withLock {
+                if (!isCapturingFlow.value) return@withContext
+                _isCapturingFlow.emit(false)
+                if (isStreamingFlow.value) return@withContext
+
+                try {
+                    port.stopStream()
+                } catch (t: Throwable) {
+                    Logger.w(
+                        TAG,
+                        "stopCapture: Can't stop audio processor: ${t.message}"
+                    )
+                }
+                try {
+                    sourceInternalFlow.value?.stopStream()
+                } catch (t: Throwable) {
+                    Logger.w(
+                        TAG,
+                        "stopCapture: Can't stop audio source: ${t.message}"
                     )
                 }
             }
