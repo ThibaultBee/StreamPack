@@ -37,13 +37,13 @@ import io.github.thibaultbee.streampack.app.utils.PermissionManager
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
-import io.github.thibaultbee.streampack.core.streamers.lifecycle.StreamerViewModelLifeCycleObserver
+import io.github.thibaultbee.streampack.core.streamers.lifecycle.StreamerLifeCycleObserver
 import io.github.thibaultbee.streampack.ui.views.PreviewView
 import kotlinx.coroutines.launch
 
 class PreviewFragment : Fragment(R.layout.main_fragment) {
     private lateinit var binding: MainFragmentBinding
-    private var previousStreamerLifecycleObserver: StreamerViewModelLifeCycleObserver? = null
+    private var previousStreamerLifecycleObserver: StreamerLifeCycleObserver? = null
 
     private val previewViewModel: PreviewViewModel by viewModels {
         PreviewViewModelFactory(requireActivity().application)
@@ -111,7 +111,7 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
                 if (previousStreamerLifecycleObserver != null) {
                     lifecycle.removeObserver(previousStreamerLifecycleObserver!!)
                 }
-                val newObserver = StreamerViewModelLifeCycleObserver(streamer).apply {
+                val newObserver = StreamerLifeCycleObserver(streamer).apply {
                     previousStreamerLifecycleObserver = this
                 }
                 lifecycle.addObserver(newObserver)
