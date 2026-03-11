@@ -31,7 +31,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.isCompati
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
-import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline.AudioOutputMode
+import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline.AudioInputMode
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.utils.MultiThrowable
@@ -77,7 +77,7 @@ internal class DualStreamerImpl(
         context,
         withAudio,
         withVideo,
-        AudioOutputMode.PUSH,
+        AudioInputMode.PUSH,
         surfaceProcessorFactory,
         dispatcherProvider
     )

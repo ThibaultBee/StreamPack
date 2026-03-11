@@ -79,7 +79,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @param context the application context
  * @param withAudio whether the streamer has audio. It will create necessary audio components.
  * @param withVideo whether the streamer has video. It will create necessary video components.
- * @param audioOutputMode the audio output mode. It can be [AudioOutputMode.PUSH] or [AudioOutputMode.CALLBACK]. Only use [AudioOutputMode.CALLBACK] when you have a single output and its implements [IAudioCallbackPipelineOutputInternal]. By default, it is [AudioOutputMode.PUSH].
+ * @param audioInputMode the audio output mode. It can be [AudioInputMode.PUSH] or [AudioInputMode.CALLBACK]. Only use [AudioInputMode.CALLBACK] when you have a single output and its implements [IAudioCallbackPipelineOutputInternal]. By default, it is [AudioInputMode.PUSH].
  * @param surfaceProcessorFactory the factory to create the surface processor
  * @param dispatcherProvider the coroutine dispatcher
  */
@@ -87,7 +87,7 @@ open class StreamerPipeline(
     protected val context: Context,
     val withAudio: Boolean = true,
     val withVideo: Boolean = true,
-    private val audioOutputMode: AudioOutputMode = AudioOutputMode.PUSH,
+    private val audioInputMode: AudioInputMode = AudioInputMode.PUSH,
     surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
     protected val dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ) : IWithVideoSource, IWithVideoRotation, IWithAudioSource, IStreamer {
@@ -100,14 +100,14 @@ open class StreamerPipeline(
     // INPUTS
     private val inputMutex = Mutex()
     private val _audioInput = if (withAudio) {
-        when (audioOutputMode) {
-            AudioOutputMode.PUSH -> AudioInput(
+        when (audioInputMode) {
+            AudioInputMode.PUSH -> AudioInput(
                 context,
                 AudioInput.PushConfig(::queueAudioFrame),
                 dispatcherProvider
             )
 
-            AudioOutputMode.CALLBACK -> AudioInput(
+            AudioInputMode.CALLBACK -> AudioInput(
                 context,
                 AudioInput.CallbackConfig(),
                 dispatcherProvider
@@ -486,7 +486,7 @@ open class StreamerPipeline(
         if (output is IAudioPipelineOutputInternal) {
             if (withAudio) {
                 val audioInput = requireNotNull(_audioInput) { "Audio input is not set" }
-                if (audioOutputMode == AudioOutputMode.CALLBACK) {
+                if (audioInputMode == AudioInputMode.CALLBACK) {
                     require(output is IAudioCallbackPipelineOutputInternal) {
                         "Output $output must be an audio callback output"
                     }
@@ -1043,7 +1043,7 @@ open class StreamerPipeline(
     /**
      * Audio output mode.
      */
-    enum class AudioOutputMode {
+    enum class AudioInputMode {
         /**
          * The audio is pushed to the output.
          */

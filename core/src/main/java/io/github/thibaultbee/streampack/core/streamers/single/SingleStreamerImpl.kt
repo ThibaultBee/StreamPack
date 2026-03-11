@@ -55,6 +55,7 @@ import kotlinx.coroutines.runBlocking
  * @param context the application context
  * @param withAudio `true` to capture audio. It can't be changed after instantiation.
  * @param withVideo `true` to capture video. It can't be changed after instantiation.
+ * @param audioInputMode the audio output mode. By default, it is [StreamerPipeline.AudioInputMode.CALLBACK]. Use [StreamerPipeline.AudioInputMode.PUSH] only to get processor (incl. vumeter) running outside a stream
  * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
@@ -63,6 +64,7 @@ internal class SingleStreamerImpl(
     private val context: Context,
     withAudio: Boolean,
     withVideo: Boolean,
+    audioInputMode: StreamerPipeline.AudioInputMode = StreamerPipeline.AudioInputMode.CALLBACK,
     endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
@@ -74,7 +76,7 @@ internal class SingleStreamerImpl(
         context,
         withAudio,
         withVideo,
-        audioOutputMode = StreamerPipeline.AudioOutputMode.CALLBACK,
+        audioInputMode = audioInputMode,
         surfaceProcessorFactory,
         dispatcherProvider
     )
