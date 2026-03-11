@@ -96,7 +96,7 @@ class RawFramePullPush(
             // Store for outputs
             onFrame(processedFrame)
         }
-        Logger.e(TAG, "Processing loop ended")
+        Logger.d(TAG, "Processing loop ended")
     }
 
     fun startStream() {
