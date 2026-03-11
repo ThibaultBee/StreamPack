@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Thibault B.
+ * Copyright (C) 2022 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,23 +20,26 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
+import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * A [DefaultLifecycleObserver] to control a streamer on [Activity] lifecycle in a ViewModel.
+ * A [DefaultLifecycleObserver] to control a streamer on [Activity] lifecycle.
  *
- * It stops streamer when application goes to background.
+ * It stops streamer when application goes to background and release it when application is destroyed.
  *
  * To use it, call:
  *  - `lifeCycle.addObserver(StreamerActivityLifeCycleObserver(streamer))`
  *
  *  @param streamer The streamer to control
+ *  @param releaseOnDestroy Whether to release the streamer when application is destroyed. If a view model is used, this should be set to false.
  */
-open class StreamerViewModelLifeCycleObserver(protected val streamer: IStreamer) :
-    DefaultLifecycleObserver {
-
+open class StreamerLifeCycleObserver(
+    private val streamer: IStreamer,
+    private val releaseOnDestroy: Boolean = false
+) : DefaultLifecycleObserver {
     override fun onPause(owner: LifecycleOwner) {
         owner.lifecycleScope.launch {
             withContext(NonCancellable) {
@@ -45,6 +48,12 @@ open class StreamerViewModelLifeCycleObserver(protected val streamer: IStreamer)
                     streamer.close()
                 }
             }
+        }
+    }
+
+    override fun onDestroy(owner: LifecycleOwner) {
+        if (releaseOnDestroy) {
+            streamer.releaseBlocking()
         }
     }
 }
