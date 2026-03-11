@@ -68,40 +68,48 @@ class RawFramePullPush(
         }
     }
 
+    private suspend fun CoroutineScope.runProcessing() {
+        while (isActive) {
+            val rawFrame = mutex.withLock {
+                val unwrapSource = source ?: return@withLock null
+                try {
+                    val buffer = bufferPool.get(unwrapSource.minBufferSize)
+                    val timestampInUs = unwrapSource.fillAudioFrame(buffer)
+                    pool.get(buffer, timestampInUs)
+                } catch (t: Throwable) {
+                    Logger.e(TAG, "Failed to get frame: ${t.message}")
+                    null
+                }
+            }
+            if (rawFrame == null) {
+                continue
+            }
+
+            // Process buffer with effects
+            val processedFrame = try {
+                frameProcessor.process(rawFrame)
+            } catch (t: Throwable) {
+                Logger.e(TAG, "Failed to pre-process frame: ${t.message}")
+                continue
+            }
+
+            // Store for outputs
+            onFrame(processedFrame)
+        }
+        Logger.e(TAG, "Processing loop ended")
+    }
+
     fun startStream() {
         if (isReleaseRequested.get()) {
             Logger.w(TAG, "Already released")
             return
         }
+        if (job != null) {
+            Logger.w(TAG, "Already running")
+            return
+        }
         job = coroutineScope.launch {
-            while (isActive) {
-                val rawFrame = mutex.withLock {
-                    val unwrapSource = source ?: return@withLock null
-                    try {
-                        val buffer = bufferPool.get(unwrapSource.minBufferSize)
-                        val timestampInUs = unwrapSource.fillAudioFrame(buffer)
-                        pool.get(buffer, timestampInUs)
-                    } catch (t: Throwable) {
-                        Logger.e(TAG, "Failed to get frame: ${t.message}")
-                        null
-                    }
-                }
-                if (rawFrame == null) {
-                    continue
-                }
-
-                // Process buffer with effects
-                val processedFrame = try {
-                    frameProcessor.process(rawFrame)
-                } catch (t: Throwable) {
-                    Logger.e(TAG, "Failed to pre-process frame: ${t.message}")
-                    continue
-                }
-
-                // Store for outputs
-                onFrame(processedFrame)
-            }
-            Logger.e(TAG, "Processing loop ended")
+            runProcessing()
         }
     }
 
