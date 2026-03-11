@@ -85,7 +85,7 @@ class AudioFrameProcessor(
 
     @Deprecated("'fun <T : Any!> toArray(generator: IntFunction<Array<(out) T!>!>!): Array<(out) T!>!' is deprecated. This declaration is redundant in Kotlin and might be removed soon.")
     @Suppress("DEPRECATION")
-    override fun <T : Any?> toArray(generator: IntFunction<Array<out T?>?>): Array<out T?> {
-        return super.toArray(generator)
+    override fun <T> toArray(generator: IntFunction<Array<out T?>?>): Array<out T?> {
+        return super<IAudioFrameProcessor>.toArray(generator)
     }
 }
