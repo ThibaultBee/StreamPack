@@ -397,16 +397,28 @@ internal class EncodingPipelineOutput(
         }
     }
 
-    override suspend fun queueAudioFrame(frame: RawFrame) = mutex.withLock {
-        val input = try {
-            requireNotNull(audioInput) { "Audio input is null" }
-        } catch (t: Throwable) {
+    override suspend fun queueAudioFrame(frame: RawFrame) {
+        /**
+         * Avoid deadlock when trying to start/stop the stream.
+         */
+        if (!mutex.tryLock()) {
+            Logger.e(TAG, "queueAudioFrame: not locked")
             frame.close()
-            throw t
+            return
         }
-        input.queueInputFrame(
-            frame
-        )
+        try {
+            val input = try {
+                requireNotNull(audioInput) { "Audio input is null" }
+            } catch (t: Throwable) {
+                frame.close()
+                throw t
+            }
+            input.queueInputFrame(
+                frame
+            )
+        } finally {
+            mutex.unlock()
+        }
     }
 
 
