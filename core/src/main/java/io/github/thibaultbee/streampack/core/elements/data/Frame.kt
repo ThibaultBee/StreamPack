@@ -20,13 +20,12 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.deepCopy
 import io.github.thibaultbee.streampack.core.elements.utils.pool.FramePool
 import io.github.thibaultbee.streampack.core.elements.utils.pool.IBufferPool
 import io.github.thibaultbee.streampack.core.elements.utils.pool.RawFramePool
-import java.io.Closeable
 import java.nio.ByteBuffer
 
 /**
  * Encoded frame representation
  */
-interface RawFrame : Closeable {
+interface RawFrame : AutoCloseable {
     /**
      * Contains an audio or video frame data.
      */
@@ -78,7 +77,7 @@ fun RawFrame.copy(
 /**
  * Encoded frame representation
  */
-interface Frame : Closeable {
+interface Frame : AutoCloseable {
     /**
      * Contains an audio or video frame data.
      */
