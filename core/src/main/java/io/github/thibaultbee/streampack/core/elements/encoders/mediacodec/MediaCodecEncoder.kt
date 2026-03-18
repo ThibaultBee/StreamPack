@@ -43,7 +43,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import java.io.Closeable
 import java.nio.ByteBuffer
 import kotlin.math.min
 
@@ -605,7 +604,7 @@ internal constructor(
         private val outputFormat: MediaFormat,
         private val extra: Extra?,
         private val extraBuffers: List<ByteBuffer>?
-    ) : Closeable {
+    ) : AutoCloseable {
         private var previousPresentationTimeUs = 0L
 
         private val pool = FramePool()

@@ -53,9 +53,11 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.Camer
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameraManager
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
+import io.github.thibaultbee.streampack.core.interfaces.IWithAudioSource
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.interfaces.startStream
+import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
 import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
@@ -67,6 +69,7 @@ import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.drop
@@ -199,6 +202,12 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                         }
                 }
                 viewModelScope.launch {
+                    val audioInput = (streamer as IWithAudioSource).audioInput
+                    audioInput.sourceFlow.filterNotNull().first()
+                    delay(3000L)
+                    audioInput.startCapture()
+                }
+                viewModelScope.launch {
                     streamer.isStreamingFlow
                         .collect { isStreaming ->
                             _isStreamingFlow.emit(isStreaming)
@@ -257,7 +266,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
 
     private fun buildFirstStreamer(isAudioEnable: Boolean): IVideoSingleStreamer {
         return if (isAudioEnable) {
-            SingleStreamer(application)
+            SingleStreamer(application, audioInputMode = StreamerPipeline.AudioInputMode.PUSH)
         } else {
             VideoOnlySingleStreamer(application)
         }
