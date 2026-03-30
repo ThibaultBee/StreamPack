@@ -196,10 +196,18 @@ class PreviewView @JvmOverloads constructor(
     fun setZoomListener(listener: CameraSettings.Zoom.OnZoomChangedListener?) {
         if (listener == null) {
             unregisterZoomListener()
+            zoomListener = null
         } else {
-            registerZoomListener(listener)
+            val delegatedListener = object : CameraSettings.Zoom.OnZoomChangedListener {
+                override fun onZoomChanged(zoomRatio: Float) {
+                    post {
+                        listener.onZoomChanged(zoomRatio)
+                    }
+                }
+            }
+            registerZoomListener(delegatedListener)
+            zoomListener = delegatedListener
         }
-        zoomListener = listener
     }
 
     private fun registerZoomListener(listener: CameraSettings.Zoom.OnZoomChangedListener) {
