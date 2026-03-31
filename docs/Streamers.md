@@ -1,4 +1,4 @@
-# Streamer elements
+# Streamers
 
 ## Introduction
 
