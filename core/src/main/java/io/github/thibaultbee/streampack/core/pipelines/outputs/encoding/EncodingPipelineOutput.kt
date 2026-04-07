@@ -689,7 +689,11 @@ internal class EncodingPipelineOutput(
             return
         }
 
-        streamEventListener?.onStopStream()
+        try {
+            streamEventListener?.onStopStream()
+        } catch (t: Throwable) {
+            Logger.w(TAG, "Can't stop stream: ${t.message}")
+        }
 
         stopStreamElements()
 
