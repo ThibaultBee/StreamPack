@@ -19,6 +19,8 @@ import android.net.Uri
 import androidx.core.net.toUri
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 
@@ -59,11 +61,13 @@ interface IStreamer {
 /**
  * Clean and reset the streamer synchronously.
  *
+ * @param dispatcher The coroutine dispatcher to use
  * @see [IStreamer.release]
  */
-fun IStreamer.releaseBlocking() = runBlocking {
-    release()
-}
+fun IStreamer.releaseBlocking(dispatcher: CoroutineDispatcher = Dispatchers.Default) =
+    runBlocking(dispatcher) {
+        release()
+    }
 
 /**
  * An interface for a component that can be closed.

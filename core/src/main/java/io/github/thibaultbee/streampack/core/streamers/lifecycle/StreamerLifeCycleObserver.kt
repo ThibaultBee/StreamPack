@@ -23,7 +23,11 @@ import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IWithAudioSource
 import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.logger.Logger
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -42,13 +46,16 @@ import kotlinx.coroutines.withContext
 open class StreamerLifeCycleObserver(
     private val streamer: IStreamer,
     private val releaseOnDestroy: Boolean = false,
-    private val startAudioCaptureOnResume: Boolean = false
+    private val startAudioCaptureOnResume: Boolean = false,
+    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : DefaultLifecycleObserver {
     override fun onResume(owner: LifecycleOwner) {
         if (startAudioCaptureOnResume) {
-            owner.lifecycleScope.launch {
+            owner.lifecycleScope.launch(coroutineDispatcher) {
                 withContext(NonCancellable) {
                     if (streamer is IWithAudioSource) {
+                        // Wait for audio input to be ready
+                        streamer.audioInput.sourceFlow.filterNotNull().first()
                         try {
                             streamer.audioInput.startCapture()
                         } catch (t: Throwable) {
@@ -61,7 +68,7 @@ open class StreamerLifeCycleObserver(
     }
 
     override fun onPause(owner: LifecycleOwner) {
-        owner.lifecycleScope.launch {
+        owner.lifecycleScope.launch(coroutineDispatcher) {
             withContext(NonCancellable) {
                 try {
                     streamer.stopStream()
@@ -89,7 +96,7 @@ open class StreamerLifeCycleObserver(
     override fun onDestroy(owner: LifecycleOwner) {
         if (releaseOnDestroy) {
             try {
-                streamer.releaseBlocking()
+                streamer.releaseBlocking(coroutineDispatcher)
             } catch (t: Throwable) {
                 Logger.e(TAG, "Error while releasing streamer: $t")
             }
