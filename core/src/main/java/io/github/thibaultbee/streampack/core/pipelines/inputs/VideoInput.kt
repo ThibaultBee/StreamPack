@@ -151,6 +151,9 @@ internal class VideoInput(
 
         withContext(dispatcherProvider.default) {
             sourceMutex.withLock {
+                if (isReleaseRequested.get()) {
+                    throw IllegalStateException("Input is released")
+                }
                 val previousVideoSource = sourceInternalFlow.value
                 val isStreaming = previousVideoSource?.isStreamingFlow?.value ?: false
 
@@ -293,6 +296,9 @@ internal class VideoInput(
 
         withContext(dispatcherProvider.default) {
             sourceMutex.withLock {
+                if (isReleaseRequested.get()) {
+                    throw IllegalStateException("Input is released")
+                }
                 if (sourceConfig == newVideoSourceConfig) {
                     Logger.i(
                         TAG,
@@ -396,6 +402,9 @@ internal class VideoInput(
         }
         return withContext(dispatcherProvider.default) {
             sourceMutex.withLock {
+                if (isReleaseRequested.get()) {
+                    throw IllegalStateException("Input is released")
+                }
                 val processor = processor as? ISnapshotable?
                     ?: throw IllegalStateException("Processor is not a snapshotable")
 
@@ -447,6 +456,9 @@ internal class VideoInput(
         }
 
         sourceMutex.withLock {
+            if (isReleaseRequested.get()) {
+                throw IllegalStateException("Input is released")
+            }
             val sourceConfig = sourceConfig
             val infoProvider = source?.infoProviderFlow?.value
             if ((sourceConfig == null) || (infoProvider == null)) {
@@ -469,10 +481,6 @@ internal class VideoInput(
     }
 
     internal fun addOutputSurfaceUnsafe(output: ISurfaceOutput) {
-        if (isReleaseRequested.get()) {
-            throw IllegalStateException("Input is released")
-        }
-
         processor.addOutputSurface(output)
     }
 
@@ -480,10 +488,6 @@ internal class VideoInput(
         infoProvider: ISourceInfoProvider? = source?.infoProviderFlow?.value,
         videoSourceConfig: VideoSourceConfig? = sourceConfig
     ) {
-        if (isReleaseRequested.get()) {
-            throw IllegalStateException("Input is released")
-        }
-
         if ((videoSourceConfig == null) || (infoProvider == null)) {
             Logger.w(
                 TAG,
@@ -510,10 +514,6 @@ internal class VideoInput(
         infoProvider: ISourceInfoProvider? = source?.infoProviderFlow?.value,
         videoSourceConfig: VideoSourceConfig? = sourceConfig
     ) {
-        if (isReleaseRequested.get()) {
-            throw IllegalStateException("Input is released")
-        }
-
         processor.removeAllOutputSurfaces()
         addOutputSurfacesUnsafe(infoProvider, videoSourceConfig)
     }
@@ -527,6 +527,9 @@ internal class VideoInput(
         }
 
         sourceMutex.withLock {
+            if (isReleaseRequested.get()) {
+                throw IllegalStateException("Input is released")
+            }
             updateOutputSurfacesUnsafe(infoProvider, videoSourceConfig)
         }
     }
@@ -603,10 +606,15 @@ internal class VideoInput(
 
     suspend fun stopStream() {
         if (isReleaseRequested.get()) {
-            throw IllegalStateException("Input is released")
+            Logger.w(TAG, "Input is released")
+            return
         }
         withContext(dispatcherProvider.default) {
             sourceMutex.withLock {
+                if (isReleaseRequested.get()) {
+                    Logger.w(TAG, "Input is released")
+                    return@withContext
+                }
                 _isStreamingFlow.emit(false)
                 stopStreamUnsafe()
             }

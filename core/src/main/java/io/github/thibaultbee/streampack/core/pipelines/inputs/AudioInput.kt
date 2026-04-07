@@ -205,6 +205,10 @@ internal class AudioInput(
 
         withContext(dispatcherProvider.default) {
             sourceMutex.withLock {
+                if (isReleaseRequested.get()) {
+                    throw IllegalStateException("Input is released")
+                }
+                
                 val previousAudioSource = sourceInternalFlow.value
                 val isStreaming = previousAudioSource?.isStreamingFlow?.value ?: false
 
@@ -258,11 +262,15 @@ internal class AudioInput(
 
     internal suspend fun setSourceConfig(newAudioSourceConfig: AudioSourceConfig) {
         if (isReleaseRequested.get()) {
-            throw IllegalStateException("Pipeline is released")
+            throw IllegalStateException("Input is released")
         }
 
         withContext(dispatcherProvider.default) {
             sourceMutex.withLock {
+                if (isReleaseRequested.get()) {
+                    throw IllegalStateException("Input is released in lock")
+                }
+
                 if (sourceConfig == newAudioSourceConfig) {
                     Logger.i(
                         TAG,
@@ -305,6 +313,9 @@ internal class AudioInput(
 
         withContext(dispatcherProvider.default) {
             sourceMutex.withLock {
+                if (isReleaseRequested.get()) {
+                    throw IllegalStateException("Input is released in lock")
+                }
                 if (isStreamingFlow.value) {
                     Logger.w(TAG, "Stream is already running")
                     return@withContext
@@ -324,6 +335,9 @@ internal class AudioInput(
 
         withContext(dispatcherProvider.default) {
             sourceMutex.withLock {
+                if (isReleaseRequested.get()) {
+                    throw IllegalStateException("Input is released in lock")
+                }
                 if (isCapturingFlow.value) {
                     Logger.w(TAG, "Capture is already running")
                     return@withContext
@@ -356,11 +370,16 @@ internal class AudioInput(
 
     internal suspend fun stopStream() {
         if (isReleaseRequested.get()) {
-            throw IllegalStateException("Input is released")
+            Logger.w(TAG, "Input is released")
+            return
         }
 
         withContext(dispatcherProvider.default) {
             sourceMutex.withLock {
+                if (isReleaseRequested.get()) {
+                    Logger.w(TAG, "Input is released in lock")
+                    return@withContext
+                }
                 if (!isStreamingFlow.value) {
                     Logger.w(TAG, "Stream is already stopped")
                     return@withContext
@@ -370,18 +389,23 @@ internal class AudioInput(
                     Logger.w(TAG, "Stopping capture before stopping stream")
                     return@withContext
                 }
-                stop("stopStream")
+                stopUnsafe("stopStream")
             }
         }
     }
 
     override suspend fun stopCapture() {
         if (isReleaseRequested.get()) {
-            throw IllegalStateException("Input is released")
+            Logger.w(TAG, "Input is released")
+            return
         }
 
         withContext(dispatcherProvider.default) {
             sourceMutex.withLock {
+                if (isReleaseRequested.get()) {
+                    Logger.w(TAG, "Input is released in lock")
+                    return@withContext
+                }
                 if (!isCapturingFlow.value) {
                     Logger.w(TAG, "Capture is already stopped")
                     return@withContext
@@ -391,12 +415,12 @@ internal class AudioInput(
                     Logger.w(TAG, "Stopping stream before stopping capture")
                     return@withContext
                 }
-                stop("stopCapture")
+                stopUnsafe("stopCapture")
             }
         }
     }
 
-    private suspend fun stop(caller: String) {
+    private suspend fun stopUnsafe(caller: String) {
         try {
             port.stopStream()
         } catch (t: Throwable) {
