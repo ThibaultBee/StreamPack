@@ -238,7 +238,11 @@ internal class VideoInput(
                     newVideoSource.isStreamingFlow.collect { isStreaming ->
                         if ((!isStreaming) && isStreamingFlow.value) {
                             Logger.i(TAG, "Video source has been stopped.")
-                            stopStream()
+                            try {
+                                stopStream()
+                            } catch (_: Throwable) {
+                                // Nothing to do, input might be already released
+                            }
                         }
                     }
                 }

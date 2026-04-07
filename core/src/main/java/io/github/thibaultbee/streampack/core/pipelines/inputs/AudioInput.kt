@@ -225,8 +225,16 @@ internal class AudioInput(
                     newAudioSource.isStreamingFlow.collect { isStreaming ->
                         if ((!isStreaming) && (isStreamingFlow.value || isCapturingFlow.value)) {
                             Logger.i(TAG, "Audio source has been stopped.")
-                            stopStream()
-                            stopCapture()
+                            try {
+                                stopStream()
+                            } catch (_: Throwable) {
+                                // Nothing to do, input might be already released
+                            }
+                            try {
+                                stopCapture()
+                            } catch (_: Throwable) {
+                                // Nothing to do, input might be already released
+                            }
                         }
                     }
                 }
