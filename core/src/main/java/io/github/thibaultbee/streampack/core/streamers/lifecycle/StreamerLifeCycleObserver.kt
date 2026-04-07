@@ -63,12 +63,24 @@ open class StreamerLifeCycleObserver(
     override fun onPause(owner: LifecycleOwner) {
         owner.lifecycleScope.launch {
             withContext(NonCancellable) {
-                streamer.stopStream()
+                try {
+                    streamer.stopStream()
+                } catch (t: Throwable) {
+                    Logger.e(TAG, "Error while stopping streamer: $t")
+                }
                 if (streamer is ICloseableStreamer) {
-                    streamer.close()
+                    try {
+                        streamer.close()
+                    } catch (t: Throwable) {
+                        Logger.e(TAG, "Error while closing streamer: $t")
+                    }
                 }
                 if (streamer is IWithAudioSource) {
-                    streamer.audioInput.stopCapture()
+                    try {
+                        streamer.audioInput.stopCapture()
+                    } catch (t: Throwable) {
+                        Logger.e(TAG, "Error while stopping audio capture: $t")
+                    }
                 }
             }
         }
@@ -76,7 +88,11 @@ open class StreamerLifeCycleObserver(
 
     override fun onDestroy(owner: LifecycleOwner) {
         if (releaseOnDestroy) {
-            streamer.releaseBlocking()
+            try {
+                streamer.releaseBlocking()
+            } catch (t: Throwable) {
+                Logger.e(TAG, "Error while releasing streamer: $t")
+            }
         }
     }
 
