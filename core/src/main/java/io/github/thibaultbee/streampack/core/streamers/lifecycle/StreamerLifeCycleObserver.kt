@@ -37,15 +37,15 @@ import kotlinx.coroutines.withContext
  *
  *  @param streamer The streamer to control
  *  @param releaseOnDestroy Whether to release the streamer when application is destroyed. If a view model is used, this should be set to false.
- *  @param autostartAudioCapture Whether to start audio capture when application is resumed.
+ *  @param startAudioCaptureOnResume Whether to start audio capture when application is resumed.
  */
 open class StreamerLifeCycleObserver(
     private val streamer: IStreamer,
     private val releaseOnDestroy: Boolean = false,
-    private val autostartAudioCapture: Boolean = false
+    private val startAudioCaptureOnResume: Boolean = false
 ) : DefaultLifecycleObserver {
     override fun onResume(owner: LifecycleOwner) {
-        if (autostartAudioCapture) {
+        if (startAudioCaptureOnResume) {
             owner.lifecycleScope.launch {
                 withContext(NonCancellable) {
                     if (streamer is IWithAudioSource) {
