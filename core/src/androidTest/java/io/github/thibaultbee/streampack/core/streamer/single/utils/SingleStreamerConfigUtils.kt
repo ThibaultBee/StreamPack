@@ -50,18 +50,23 @@ object SingleStreamerConfigUtils {
      *
      * @return a [VideoConfig] for test
      */
-    fun defaultVideoConfig(resolution: Size = Size(640, 360)) = VideoConfig(
+    fun defaultVideoConfig(resolution: Size = defaultSize) = VideoConfig(
         resolution = resolution
     )
 
     /**
      * Creates an video configuration from a [MediaDescriptor] for test
      */
-    fun videoConfig(descriptor: MediaDescriptor, resolution: Size = Size(640, 360)): VideoConfig {
+    fun videoConfig(descriptor: MediaDescriptor, resolution: Size = defaultSize): VideoConfig {
         return if (descriptor.type.containerType == MediaContainerType.WEBM) {
-            VideoCodecConfig(mimeType = MediaFormat.MIMETYPE_VIDEO_VP9, resolution = resolution)
+            VideoCodecConfig(
+                mimeType = MediaFormat.MIMETYPE_VIDEO_VP9,
+                resolution = resolution
+            )
         } else {
             defaultVideoConfig()
         }
     }
+
+    private val defaultSize = Size(640, 360)
 }

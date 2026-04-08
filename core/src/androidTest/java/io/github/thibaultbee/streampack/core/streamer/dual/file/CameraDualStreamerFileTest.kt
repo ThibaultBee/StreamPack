@@ -133,8 +133,8 @@ class CameraDualStreamerFileTest(
         private const val STREAM_DURATION_MS = 30_000L
         private const val STREAM_POLLING_MS = 1_000L
 
-        private const val VIDEO_WIDTH = 1280
-        private const val VIDEO_HEIGHT = 720
+        private const val VIDEO_WIDTH = 640
+        private const val VIDEO_HEIGHT = 360
 
         @JvmStatic
         @Parameterized.Parameters(
