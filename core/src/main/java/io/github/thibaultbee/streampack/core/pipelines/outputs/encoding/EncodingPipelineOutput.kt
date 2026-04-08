@@ -50,6 +50,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
@@ -89,7 +90,7 @@ internal class EncodingPipelineOutput(
 ) : IConfigurableAudioVideoEncodingPipelineOutput, IEncodingPipelineOutputInternal,
     IVideoSurfacePipelineOutputInternal, IAudioSyncPipelineOutputInternal,
     IAudioCallbackPipelineOutputInternal {
-    private val coroutineScope = CoroutineScope(dispatcherProvider.default)
+    private val coroutineScope = CoroutineScope(dispatcherProvider.default + SupervisorJob())
     private val coroutineDispatcher = dispatcherProvider.default
 
     /**
