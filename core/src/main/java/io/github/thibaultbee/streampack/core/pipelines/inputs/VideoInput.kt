@@ -481,7 +481,11 @@ internal class VideoInput(
     }
 
     internal fun addOutputSurfaceUnsafe(output: ISurfaceOutput) {
-        processor.addOutputSurface(output)
+        try {
+            processor.addOutputSurface(output)
+        } catch (t: Throwable) {
+            Logger.w(TAG, "addOutputSurface: Can't add output surface: ${t.message}")
+        }
     }
 
     private suspend fun addOutputSurfacesUnsafe(
