@@ -85,6 +85,10 @@ private class DefaultSurfaceProcessor(
         }
 
         val future = submitSafely {
+            if (isReleaseRequested.get()) {
+                throw IllegalStateException("SurfaceProcessor is released")
+            }
+
             val surfaceTexture = SurfaceTexture(renderer.textureName)
             surfaceTexture.setDefaultBufferSize(surfaceSize.width, surfaceSize.height)
             surfaceTexture.setOnFrameAvailableListener(this, glHandler)
@@ -105,6 +109,10 @@ private class DefaultSurfaceProcessor(
     }
 
     override fun removeInputSurface(surface: Surface) {
+        if (isReleaseRequested.get()) {
+            Logger.w(TAG, "SurfaceProcessor is released")
+            return
+        }
         executeSafely {
             val surfaceInput = surfaceInputs.find { it.surface == surface }
             if (surfaceInput != null) {
@@ -140,10 +148,13 @@ private class DefaultSurfaceProcessor(
 
     override fun addOutputSurface(surfaceOutput: ISurfaceOutput) {
         if (isReleaseRequested.get()) {
-            return
+            throw IllegalStateException("SurfaceProcessor is released")
         }
 
         executeSafely {
+            if (isReleaseRequested.get()) {
+                throw IllegalStateException("SurfaceProcessor is released")
+            }
             if (!surfaceOutputs.map { it.targetSurface }.contains(surfaceOutput.targetSurface)) {
                 renderer.registerOutputSurface(surfaceOutput.targetSurface)
                 surfaceOutputs.add(surfaceOutput)
@@ -164,20 +175,30 @@ private class DefaultSurfaceProcessor(
 
     override fun removeOutputSurface(surfaceOutput: ISurfaceOutput) {
         if (isReleaseRequested.get()) {
+            Logger.w(TAG, "SurfaceProcessor is released")
             return
         }
 
         executeSafely {
+            if (isReleaseRequested.get()) {
+                Logger.w(TAG, "SurfaceProcessor is released")
+                return@executeSafely
+            }
             removeOutputSurfaceInternal(surfaceOutput)
         }
     }
 
     override fun removeOutputSurface(surface: Surface) {
         if (isReleaseRequested.get()) {
+            Logger.w(TAG, "SurfaceProcessor is released")
             return
         }
 
         executeSafely {
+            if (isReleaseRequested.get()) {
+                Logger.w(TAG, "SurfaceProcessor is released")
+                return@executeSafely
+            }
             val surfaceOutput =
                 surfaceOutputs.firstOrNull { it.targetSurface == surface }
             if (surfaceOutput != null) {
@@ -197,10 +218,15 @@ private class DefaultSurfaceProcessor(
 
     override fun removeAllOutputSurfaces() {
         if (isReleaseRequested.get()) {
+            Logger.w(TAG, "SurfaceProcessor is released")
             return
         }
 
         executeSafely {
+            if (isReleaseRequested.get()) {
+                Logger.w(TAG, "SurfaceProcessor is released")
+                return@executeSafely
+            }
             removeAllOutputSurfacesInternal()
         }
     }
