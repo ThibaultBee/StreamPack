@@ -1,10 +1,55 @@
 package io.github.thibaultbee.streampack.core.configuration.mediadescriptor
 
+import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import androidx.core.net.toUri
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaContainerType
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
-import androidx.core.net.toUri
+
+/**
+ * Creates a media descriptor in the video [android.content.ContentResolver].
+ *
+ * @param context the context to infer container type from content uri
+ * @param contentValues the content values to create the media descriptor from
+ * @param customData custom data to attach to the media descriptor
+ */
+fun videoUriMediaDescriptor(
+    context: Context,
+    contentValues: ContentValues,
+    customData: List<Any> = emptyList()
+): UriMediaDescriptor {
+    val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        MediaStore.Video.Media.getContentUri(
+            MediaStore.VOLUME_EXTERNAL_PRIMARY
+        )
+    } else {
+        MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+    }
+    return UriMediaDescriptor(context, contentValues, collection, customData)
+}
+
+/**
+ * Creates a media descriptor in the collection [android.content.ContentResolver].
+ *
+ * @param context the context to infer container type from content uri
+ * @param contentValues the content values to create the media descriptor from
+ * @param collection the collection to create the media descriptor from
+ * @param customData custom data to attach to the media descriptor
+ */
+private fun UriMediaDescriptor(
+    context: Context,
+    contentValues: ContentValues,
+    collection: Uri,
+    customData: List<Any> = emptyList()
+): UriMediaDescriptor {
+    val contentResolver = context.contentResolver
+    val uri = contentResolver.insert(collection, contentValues)
+        ?: throw RuntimeException("Unable to create file: $contentValues in $collection")
+    return UriMediaDescriptor(context, uri, customData)
+}
 
 
 /**

@@ -18,13 +18,13 @@ package io.github.thibaultbee.streampack.app.utils
 import android.Manifest
 import android.content.ContentValues
 import android.content.Context
-import android.net.Uri
-import android.os.Build
 import android.provider.MediaStore
 import android.util.Range
 import androidx.annotation.RequiresPermission
 import androidx.datastore.preferences.preferencesDataStore
 import io.github.thibaultbee.streampack.app.ApplicationConstants.userPrefName
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.videoUriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.backCameras
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameraManager
@@ -77,7 +77,7 @@ val Context.dataStore by preferencesDataStore(
     name = userPrefName
 )
 
-fun Context.createVideoContentUri(name: String): Uri {
+fun Context.createVideoContentUri(name: String): UriMediaDescriptor {
     val videoDetails = ContentValues().apply {
         put(MediaStore.Video.Media.TITLE, name)
         put(
@@ -85,42 +85,7 @@ fun Context.createVideoContentUri(name: String): Uri {
             name
         )
     }
-
-    val resolver = this.contentResolver
-    val collection =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            MediaStore.Video.Media.getContentUri(
-                MediaStore.VOLUME_EXTERNAL_PRIMARY
-            )
-        } else {
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-        }
-
-    return resolver.insert(collection, videoDetails)
-        ?: throw Exception("Unable to create video file: $name")
-}
-
-fun Context.createAudioContentUri(name: String): Uri {
-    val audioDetails = ContentValues().apply {
-        put(MediaStore.Audio.Media.TITLE, name)
-        put(
-            MediaStore.Audio.Media.DISPLAY_NAME,
-            name
-        )
-    }
-
-    val resolver = this.contentResolver
-    val collection =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            MediaStore.Audio.Media.getContentUri(
-                MediaStore.VOLUME_EXTERNAL_PRIMARY
-            )
-        } else {
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        }
-
-    return resolver.insert(collection, audioDetails)
-        ?: throw Exception("Unable to create audio file: $name")
+    return videoUriMediaDescriptor(this, videoDetails)
 }
 
 fun String.appendIfNotEndsWith(suffix: String): String {
