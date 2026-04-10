@@ -135,11 +135,8 @@ class DataStoreRepository(
                 val filename =
                     preferences[stringPreferencesKey(context.getString(R.string.file_endpoint_key))]
                         ?: "StreamPack"
-                UriMediaDescriptor(
-                    context,
-                    context.createVideoContentUri(
-                        filename.appendIfNotEndsWith(FileExtension.fromEndpointType(endpointType).extension)
-                    )
+                context.createVideoContentUri(
+                    filename.appendIfNotEndsWith(FileExtension.fromEndpointType(endpointType).extension)
                 )
             }
 
