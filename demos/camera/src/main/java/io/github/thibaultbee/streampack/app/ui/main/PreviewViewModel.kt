@@ -65,7 +65,7 @@ import io.github.thibaultbee.streampack.core.streamers.single.VideoOnlySingleStr
 import io.github.thibaultbee.streampack.core.streamers.single.withAudio
 import io.github.thibaultbee.streampack.core.streamers.single.withVideo
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
-import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.DefaultSrtBitrateRegulatorController
+import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.simpleSrtBitrateRegulatorControllerFactory
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -318,7 +318,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                     if (bitrateRegulatorConfig != null) {
                         Log.i(TAG, "Add bitrate regulator controller")
                         streamer.addBitrateRegulatorController(
-                            DefaultSrtBitrateRegulatorController.Factory(
+                            simpleSrtBitrateRegulatorControllerFactory(
                                 bitrateRegulatorConfig = bitrateRegulatorConfig
                             )
                         )

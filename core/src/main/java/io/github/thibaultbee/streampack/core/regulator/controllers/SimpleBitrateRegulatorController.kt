@@ -26,23 +26,23 @@ import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
 import kotlinx.coroutines.CoroutineDispatcher
 
 /**
- * A [BitrateRegulatorController] implementation that triggers [IBitrateRegulator.update] every [delayTimeInMs].
+ * A [BitrateRegulatorController] implementation that triggers [IBitrateRegulator.update] every [pollingTimeInMs].
  *
  * @param audioEncoder the audio [IEncoder]
  * @param videoEncoder the video [IEncoder]
  * @param endpoint the [IEndpoint] implementation
  * @param bitrateRegulatorFactory the [IBitrateRegulator.Factory] implementation. Use it to make your own bitrate regulator.
  * @param bitrateRegulatorConfig bitrate regulator configuration
- * @param delayTimeInMs delay between each call to [IBitrateRegulator.update]
+ * @param pollingTimeInMs delay between each call to [IBitrateRegulator.update]
  */
-open class DummyBitrateRegulatorController(
+open class SimpleBitrateRegulatorController(
     audioEncoder: IEncoder?,
     videoEncoder: IEncoder,
     endpoint: IEndpoint,
     bitrateRegulatorFactory: IBitrateRegulator.Factory,
     coroutineDispatcher: CoroutineDispatcher,
     bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
-    delayTimeInMs: Long = 500
+    pollingTimeInMs: Long = DEFAULT_POLLING_TIME_IN_MS
 ) : BitrateRegulatorController(
     audioEncoder,
     videoEncoder,
@@ -64,7 +64,7 @@ open class DummyBitrateRegulatorController(
     /**
      * Scheduler for bitrate regulation
      */
-    private val scheduler = CoroutineScheduler(delayTimeInMs, coroutineDispatcher) {
+    private val scheduler = CoroutineScheduler(pollingTimeInMs, coroutineDispatcher) {
         bitrateRegulator.update(
             endpoint.metrics,
             videoEncoder.bitrate,
@@ -80,10 +80,14 @@ open class DummyBitrateRegulatorController(
         scheduler.stop()
     }
 
+    companion object {
+        const val DEFAULT_POLLING_TIME_IN_MS = 500L
+    }
+
     class Factory(
         private val bitrateRegulatorFactory: IBitrateRegulator.Factory,
         private val bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
-        private val delayTimeInMs: Long = 500
+        private val pollingTimeInMs: Long = DEFAULT_POLLING_TIME_IN_MS
     ) : BitrateRegulatorController.Factory() {
         override fun newBitrateRegulatorController(
             pipelineOutput: IEncodingPipelineOutput,
@@ -102,14 +106,14 @@ open class DummyBitrateRegulatorController(
             } else {
                 null
             }
-            return DummyBitrateRegulatorController(
+            return SimpleBitrateRegulatorController(
                 audioEncoder,
                 videoEncoder,
                 pipelineOutput.endpoint,
                 bitrateRegulatorFactory,
                 coroutineDispatcher,
                 bitrateRegulatorConfig,
-                delayTimeInMs
+                pollingTimeInMs
             )
         }
     }

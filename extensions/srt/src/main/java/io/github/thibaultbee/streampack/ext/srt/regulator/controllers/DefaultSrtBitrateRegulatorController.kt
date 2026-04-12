@@ -16,50 +16,27 @@
 package io.github.thibaultbee.streampack.ext.srt.regulator.controllers
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioEncodingPipelineOutput
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
-import io.github.thibaultbee.streampack.core.regulator.controllers.BitrateRegulatorController
-import io.github.thibaultbee.streampack.core.regulator.controllers.DummyBitrateRegulatorController
-import io.github.thibaultbee.streampack.ext.srt.regulator.DefaultSrtBitrateRegulator
+import io.github.thibaultbee.streampack.core.regulator.controllers.SimpleBitrateRegulatorController
+import io.github.thibaultbee.streampack.core.regulator.controllers.SimpleBitrateRegulatorController.Companion.DEFAULT_POLLING_TIME_IN_MS
+import io.github.thibaultbee.streampack.ext.srt.regulator.DummySrtBitrateRegulator
 import io.github.thibaultbee.streampack.ext.srt.regulator.SrtBitrateRegulator
-import kotlinx.coroutines.CoroutineDispatcher
 
 /**
- * A [DummyBitrateRegulatorController] implementation for a [SrtSink].
+ * A [SimpleBitrateRegulatorController.Factory] for [SrtBitrateRegulator].
+ *
+ * @param bitrateRegulatorFactory the [SrtBitrateRegulator.Factory] implementation. Use it to make your own bitrate regulator.
+ * @param bitrateRegulatorConfig bitrate regulator configuration
+ * @param pollingTimeInMs delay between each call to [IBitrateRegulator.update]
+ *
+ * @see SimpleBitrateRegulatorController.Factory
+ * @see DummySrtBitrateRegulator.Factory
  */
-class DefaultSrtBitrateRegulatorController {
-    class Factory(
-        private val bitrateRegulatorFactory: SrtBitrateRegulator.Factory = DefaultSrtBitrateRegulator.Factory(),
-        private val bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
-        private val delayTimeInMs: Long = 500
-    ) : BitrateRegulatorController.Factory() {
-        override fun newBitrateRegulatorController(
-            pipelineOutput: IEncodingPipelineOutput,
-            coroutineDispatcher: CoroutineDispatcher
-        ): DummyBitrateRegulatorController {
-            require(pipelineOutput is IConfigurableVideoEncodingPipelineOutput) {
-                "Pipeline output must be an video encoding output"
-            }
-
-            val videoEncoder = requireNotNull(pipelineOutput.videoEncoder) {
-                "Video encoder must be set"
-            }
-
-            val audioEncoder = if (pipelineOutput is IConfigurableAudioEncodingPipelineOutput) {
-                pipelineOutput.audioEncoder
-            } else {
-                null
-            }
-            return DummyBitrateRegulatorController(
-                audioEncoder,
-                videoEncoder,
-                pipelineOutput.endpoint,
-                bitrateRegulatorFactory,
-                coroutineDispatcher,
-                bitrateRegulatorConfig,
-                delayTimeInMs
-            )
-        }
-    }
-}
+fun simpleSrtBitrateRegulatorControllerFactory(
+    bitrateRegulatorFactory: SrtBitrateRegulator.Factory = DummySrtBitrateRegulator.Factory(),
+    bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
+    pollingTimeInMs: Long = DEFAULT_POLLING_TIME_IN_MS
+) = SimpleBitrateRegulatorController.Factory(
+    bitrateRegulatorFactory,
+    bitrateRegulatorConfig,
+    pollingTimeInMs
+)
