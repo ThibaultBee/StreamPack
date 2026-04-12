@@ -27,7 +27,7 @@ import kotlin.math.min
  * @param onVideoTargetBitrateChange call when you have to change video bitrate
  * @param onAudioTargetBitrateChange not used in this implementation.
  */
-class DefaultSrtBitrateRegulator(
+class DummySrtBitrateRegulator(
     bitrateRegulatorConfig: BitrateRegulatorConfig,
     onVideoTargetBitrateChange: ((Int) -> Unit),
     onAudioTargetBitrateChange: ((Int) -> Unit)
@@ -108,24 +108,24 @@ class DefaultSrtBitrateRegulator(
     }
 
     /**
-     * Factory that creates a [DefaultSrtBitrateRegulator].
+     * Factory that creates a [DummySrtBitrateRegulator].
      */
     class Factory : SrtBitrateRegulator.Factory {
 
         /**
-         * Creates a [DefaultSrtBitrateRegulator] object from given parameters
+         * Creates a [DummySrtBitrateRegulator] object from given parameters
          *
          * @param bitrateRegulatorConfig bitrate regulation configuration
          * @param onVideoTargetBitrateChange call when you have to change video bitrate
          * @param onAudioTargetBitrateChange call when you have to change audio bitrate
-         * @return a [DefaultSrtBitrateRegulator] object
+         * @return a [DummySrtBitrateRegulator] object
          */
         override fun newBitrateRegulator(
             bitrateRegulatorConfig: BitrateRegulatorConfig,
             onVideoTargetBitrateChange: ((Int) -> Unit),
             onAudioTargetBitrateChange: ((Int) -> Unit)
-        ): DefaultSrtBitrateRegulator {
-            return DefaultSrtBitrateRegulator(
+        ): DummySrtBitrateRegulator {
+            return DummySrtBitrateRegulator(
                 bitrateRegulatorConfig,
                 onVideoTargetBitrateChange,
                 onAudioTargetBitrateChange
