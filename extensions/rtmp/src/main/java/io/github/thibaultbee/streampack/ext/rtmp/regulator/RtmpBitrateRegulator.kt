@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Thibault B.
+ * Copyright (C) 2026 Thibault B.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.ext.srt.regulator
+package io.github.thibaultbee.streampack.ext.rtmp.regulator
 
-import io.github.thibaultbee.srtdroid.core.models.Stats
+import io.github.komedia.komuxer.rtmp.util.metrics.RtmpMetrics
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.core.regulator.BitrateRegulator
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
 
 /**
- * Base class of SRT bitrate regulation implementation.
+ * Base class of RTMP bitrate regulation implementation.
  *
  * If you want to implement your custom bitrate regulator, it must inherit from this class.
  * The bitrate regulator object is created by streamers with the [IBitrateRegulator.Factory].
@@ -30,7 +30,7 @@ import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
  * @param onVideoTargetBitrateChange call when you have to change video bitrate
  * @param onAudioTargetBitrateChange call when you have to change audio bitrate
  */
-abstract class SrtBitrateRegulator(
+abstract class RtmpBitrateRegulator(
     bitrateRegulatorConfig: BitrateRegulatorConfig,
     onVideoTargetBitrateChange: ((Int) -> Unit),
     onAudioTargetBitrateChange: ((Int) -> Unit)
@@ -40,35 +40,35 @@ abstract class SrtBitrateRegulator(
     onAudioTargetBitrateChange
 ) {
     override fun update(metrics: Any, currentVideoBitrate: Int, currentAudioBitrate: Int) =
-        update(metrics as Stats, currentVideoBitrate, currentAudioBitrate)
+        update(metrics as RtmpMetrics, currentVideoBitrate, currentAudioBitrate)
 
     /**
-     * Call regularly to get new SRT metrics
+     * Call regularly to get new RTMP metrics
      *
-     * @param metrics SRT transmission metrics
+     * @param metrics RTMP transmission metrics
      * @param currentVideoBitrate current video bitrate target in bits/s.
      * @param currentAudioBitrate current audio bitrate target in bits/s.
      */
-    abstract fun update(metrics: Stats, currentVideoBitrate: Int, currentAudioBitrate: Int)
+    abstract fun update(metrics: RtmpMetrics, currentVideoBitrate: Int, currentAudioBitrate: Int)
 
     /**
-     * Factory interface you must use to create a [SrtBitrateRegulator] object.
-     * If you want to create a custom SRT bitrate regulation implementation, create a factory that
+     * Factory interface you must use to create a [RtmpBitrateRegulator] object.
+     * If you want to create a custom RTMP bitrate regulation implementation, create a factory that
      * implements this interface.
      */
     interface Factory : IBitrateRegulator.Factory {
         /**
-         * Creates a [SrtBitrateRegulator] object from given parameters
+         * Creates a [RtmpBitrateRegulator] object from given parameters
          *
          * @param bitrateRegulatorConfig bitrate regulation configuration
          * @param onVideoTargetBitrateChange call when you have to change video bitrate
          * @param onAudioTargetBitrateChange call when you have to change audio bitrate
-         * @return a [SrtBitrateRegulator] object
+         * @return a [RtmpBitrateRegulator] object
          */
         override fun newBitrateRegulator(
             bitrateRegulatorConfig: BitrateRegulatorConfig,
             onVideoTargetBitrateChange: ((Int) -> Unit),
             onAudioTargetBitrateChange: ((Int) -> Unit)
-        ): SrtBitrateRegulator
+        ): RtmpBitrateRegulator
     }
 }

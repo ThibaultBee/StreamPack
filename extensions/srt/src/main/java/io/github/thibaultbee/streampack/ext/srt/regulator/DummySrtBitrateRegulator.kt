@@ -42,12 +42,12 @@ class DummySrtBitrateRegulator(
         const val SEND_PACKET_THRESHOLD = 50
     }
 
-    override fun update(stats: Stats, currentVideoBitrate: Int, currentAudioBitrate: Int) {
-        val estimatedBandwidth = (stats.mbpsBandwidth * 1000000).toInt()
+    override fun update(metrics: Stats, currentVideoBitrate: Int, currentAudioBitrate: Int) {
+        val estimatedBandwidth = (metrics.mbpsBandwidth * 1000000).toInt()
 
         if (currentVideoBitrate > bitrateRegulatorConfig.videoBitrateRange.lower) {
             val newVideoBitrate = when {
-                stats.pktSndLoss > 0 -> {
+                metrics.pktSndLoss > 0 -> {
                     // Detected packet loss - quickly react
                     currentVideoBitrate - max(
                         currentVideoBitrate * 20 / 100, // too late - drop bitrate by 20 %
@@ -55,7 +55,7 @@ class DummySrtBitrateRegulator(
                     )
                 }
 
-                stats.pktSndBuf > SEND_PACKET_THRESHOLD -> {
+                metrics.pktSndBuf > SEND_PACKET_THRESHOLD -> {
                     // Try to avoid congestion
                     currentVideoBitrate - max(
                         currentVideoBitrate * 10 / 100, // drop bitrate by 10 %
@@ -80,10 +80,8 @@ class DummySrtBitrateRegulator(
                 ) // Don't go under videoBitrateRange.lower
                 return
             }
-        }
-
-        // Can bitrate go upper?
-        if (currentVideoBitrate < bitrateRegulatorConfig.videoBitrateRange.upper) {
+            // Can bitrate go upper?
+        } else if (currentVideoBitrate < bitrateRegulatorConfig.videoBitrateRange.upper) {
             val newVideoBitrate = when {
                 (currentVideoBitrate + currentAudioBitrate) < estimatedBandwidth -> {
                     currentVideoBitrate + min(

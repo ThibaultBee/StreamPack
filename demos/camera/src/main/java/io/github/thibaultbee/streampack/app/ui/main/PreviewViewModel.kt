@@ -65,6 +65,7 @@ import io.github.thibaultbee.streampack.core.streamers.single.VideoOnlySingleStr
 import io.github.thibaultbee.streampack.core.streamers.single.withAudio
 import io.github.thibaultbee.streampack.core.streamers.single.withVideo
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
+import io.github.thibaultbee.streampack.ext.rtmp.regulator.controllers.simpleRtmpBitrateRegulatorControllerFactory
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.simpleSrtBitrateRegulatorControllerFactory
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -77,6 +78,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -312,16 +314,32 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                 val descriptor = storageRepository.endpointDescriptorFlow.first()
                 streamer.startStream(descriptor)
 
-                if (descriptor.type.sinkType == MediaSinkType.SRT) {
+                if ((descriptor.type.sinkType == MediaSinkType.RTMP) || (descriptor.type.sinkType == MediaSinkType.SRT)) {
                     val bitrateRegulatorConfig =
                         storageRepository.bitrateRegulatorConfigFlow.first()
                     if (bitrateRegulatorConfig != null) {
                         Log.i(TAG, "Add bitrate regulator controller")
-                        streamer.addBitrateRegulatorController(
-                            simpleSrtBitrateRegulatorControllerFactory(
-                                bitrateRegulatorConfig = bitrateRegulatorConfig
-                            )
-                        )
+                        val controllerFactory =
+                            when (descriptor.type.sinkType) {
+                                MediaSinkType.RTMP -> {
+                                    simpleRtmpBitrateRegulatorControllerFactory(
+                                        bitrateRegulatorConfig = bitrateRegulatorConfig
+                                    )
+                                }
+
+                                MediaSinkType.SRT -> {
+                                    simpleSrtBitrateRegulatorControllerFactory(
+                                        bitrateRegulatorConfig = bitrateRegulatorConfig
+                                    )
+                                }
+
+                                else -> {
+                                    null
+                                }
+                            }
+                        controllerFactory?.let {
+                            streamer.addBitrateRegulatorController(it)
+                        } ?: Log.e(TAG, "Controller factory is null")
                     }
                 }
             } catch (e: CancellationException) {
