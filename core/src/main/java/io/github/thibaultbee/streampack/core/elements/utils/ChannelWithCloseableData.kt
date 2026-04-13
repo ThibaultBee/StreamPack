@@ -34,10 +34,14 @@ import java.io.Closeable
  */
 class ChannelWithCloseableData<T>(
     capacity: Int = RENDEZVOUS,
-    onBufferOverflow: BufferOverflow = BufferOverflow.SUSPEND
+    onBufferOverflow: BufferOverflow = BufferOverflow.SUSPEND,
+    onUndeliveredElement: ((T) -> Unit) = {}
 ) : ReceiveChannel<ChannelWithCloseableData.CloseableData<T>> {
     private val channel =
-        Channel<CloseableData<T>>(capacity, onBufferOverflow, onUndeliveredElement = { it.close() })
+        Channel<CloseableData<T>>(capacity, onBufferOverflow, onUndeliveredElement = {
+            it.close()
+            onUndeliveredElement(it.data)
+        })
 
     /**
      * Sends data along with a close action to the channel.

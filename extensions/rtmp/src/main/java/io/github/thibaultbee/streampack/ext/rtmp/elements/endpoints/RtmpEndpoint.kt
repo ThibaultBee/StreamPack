@@ -16,12 +16,16 @@
 package io.github.thibaultbee.streampack.ext.rtmp.elements.endpoints
 
 import android.content.Context
+import io.github.komedia.komuxer.amf.AmfVersion
 import io.github.komedia.komuxer.flv.tags.FLVTag
+import io.github.komedia.komuxer.flv.tags.audio.AudioData
+import io.github.komedia.komuxer.flv.tags.video.VideoData
 import io.github.komedia.komuxer.rtmp.RtmpConnectionBuilder
 import io.github.komedia.komuxer.rtmp.client.RtmpClient
 import io.github.komedia.komuxer.rtmp.client.RtmpClientSettings
 import io.github.komedia.komuxer.rtmp.connect
 import io.github.komedia.komuxer.rtmp.messages.command.StreamPublishType
+import io.github.komedia.komuxer.rtmp.util.metrics.RtmpMetrics
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
@@ -29,6 +33,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.ClosedException
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint.EndpointInfo
+import io.github.thibaultbee.streampack.core.elements.interfaces.WithMetrics
 import io.github.thibaultbee.streampack.core.elements.utils.ChannelWithCloseableData
 import io.github.thibaultbee.streampack.core.elements.utils.useConsumeEach
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -53,18 +58,43 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.io.EOFException
 import java.io.IOException
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 /**
  * An endpoint that send frame to an RTMP server.
  */
+@OptIn(ExperimentalAtomicApi::class)
 class RtmpEndpoint internal constructor(
     defaultDispatcher: CoroutineDispatcher, val ioDispatcher: CoroutineDispatcher
-) : IEndpointInternal {
+) : IEndpointInternal, WithMetrics<RtmpMetrics> {
     private val coroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
     private val mutex = Mutex()
 
+    private val metricsLock = Any()
+    private var frameDropped = 0L
+    private var audioFrameDropped = 0L
+    private var videoFrameDropped = 0L
+
+    private var payloadSendDroppedSize = 0L
+    private var audioPayloadSendDroppedSize = 0L
+    private var videoPayloadSendDroppedSize = 0L
+
     private val flvTagChannel = ChannelWithCloseableData<FLVTag>(
-        10 /* Arbitrary buffer size. TODO: add a parameter to set it */, BufferOverflow.DROP_OLDEST
+        10 /* Arbitrary buffer size. TODO: add a parameter to set it */, BufferOverflow.DROP_OLDEST,
+        onUndeliveredElement = { flvTag ->
+            synchronized(metricsLock) {
+                val payloadSize = flvTag.data.getSize(AmfVersion.AMF0)
+                frameDropped++
+                payloadSendDroppedSize += payloadSize
+                if (flvTag.data is AudioData) {
+                    audioFrameDropped++
+                    audioPayloadSendDroppedSize += payloadSize
+                } else if (flvTag.data is VideoData) {
+                    videoFrameDropped++
+                    videoPayloadSendDroppedSize += payloadSize
+                }
+            }
+        }
     )
     private val flvTagBuilder = FlvTagBuilder(flvTagChannel)
 
@@ -72,12 +102,24 @@ class RtmpEndpoint internal constructor(
     private val connectionBuilder = RtmpConnectionBuilder(selectorManager)
     private var rtmpClient: RtmpClient? = null
 
-
     private var startUpTimestamp = INVALID_TIMESTAMP
     private val timestampMutex = Mutex()
 
-    override val metrics: Any
-        get() = TODO("Not yet implemented")
+    override val metrics: RtmpMetrics
+        get() {
+            val metrics =
+                rtmpClient?.metrics ?: return RtmpMetrics.ZERO
+            return synchronized(metricsLock) {
+                metrics.copy(
+                    messagesSendDropped = metrics.messagesSendDropped + frameDropped,
+                    audioMessagesSendDropped = metrics.audioMessagesSendDropped + audioFrameDropped,
+                    videoMessagesSendDropped = metrics.videoMessagesSendDropped + videoFrameDropped,
+                    payloadSendDroppedSize = metrics.payloadSendDroppedSize + payloadSendDroppedSize,
+                    audioPayloadSendDroppedSize = metrics.audioPayloadSendDroppedSize + audioPayloadSendDroppedSize,
+                    videoPayloadSendDroppedSize = metrics.videoPayloadSendDroppedSize + videoPayloadSendDroppedSize
+                )
+            }
+        }
 
     private val _isOpenFlow = MutableStateFlow(false)
     override val isOpenFlow = _isOpenFlow.asStateFlow()
@@ -94,6 +136,18 @@ class RtmpEndpoint internal constructor(
             flvTagChannel.useConsumeEach { flvTag ->
                 write(flvTag)
             }
+        }
+    }
+
+    private fun resetMetrics() {
+        synchronized(metricsLock) {
+            frameDropped = 0L
+            audioFrameDropped = 0L
+            videoFrameDropped = 0L
+
+            payloadSendDroppedSize = 0L
+            audioPayloadSendDroppedSize = 0L
+            videoPayloadSendDroppedSize = 0L
         }
     }
 
@@ -114,6 +168,7 @@ class RtmpEndpoint internal constructor(
                     return@withContext
                 }
 
+                resetMetrics()
                 val client = if (descriptor.connectInfo != null) {
                     connectionBuilder.connect(
                         descriptor.uri.toString(),

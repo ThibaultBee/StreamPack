@@ -131,16 +131,28 @@ class SettingsFragment : PreferenceFragmentCompat() {
         this.findPreference(getString(R.string.srt_server_port_key))!!
     }
 
-    private val serverEnableBitrateRegulationPreference: SwitchPreference by lazy {
+    private val srtServerEnableBitrateRegulationPreference: SwitchPreference by lazy {
         this.findPreference(getString(R.string.srt_server_enable_bitrate_regulation_key))!!
     }
 
-    private val serverTargetVideoBitratePreference: SeekBarPreference by lazy {
+    private val srtServerTargetVideoBitratePreference: SeekBarPreference by lazy {
         this.findPreference(getString(R.string.srt_server_video_target_bitrate_key))!!
     }
 
-    private val serverMinVideoBitratePreference: SeekBarPreference by lazy {
+    private val srtServerMinVideoBitratePreference: SeekBarPreference by lazy {
         this.findPreference(getString(R.string.srt_server_video_min_bitrate_key))!!
+    }
+
+    private val rtmpServerEnableBitrateRegulationPreference: SwitchPreference by lazy {
+        this.findPreference(getString(R.string.rtmp_server_enable_bitrate_regulation_key))!!
+    }
+
+    private val rtmpServerTargetVideoBitratePreference: SeekBarPreference by lazy {
+        this.findPreference(getString(R.string.rtmp_server_video_target_bitrate_key))!!
+    }
+
+    private val rtmpServerMinVideoBitratePreference: SeekBarPreference by lazy {
+        this.findPreference(getString(R.string.rtmp_server_video_min_bitrate_key))!!
     }
 
     private val fileNamePreference: EditTextPreference by lazy {
@@ -417,26 +429,50 @@ class SettingsFragment : PreferenceFragmentCompat() {
             editText.filters = arrayOf(InputFilter.LengthFilter(5))
         }
 
-        serverTargetVideoBitratePreference.isVisible =
-            serverEnableBitrateRegulationPreference.isChecked
-        serverMinVideoBitratePreference.isVisible =
-            serverEnableBitrateRegulationPreference.isChecked
-        serverEnableBitrateRegulationPreference.setOnPreferenceChangeListener { _, newValue ->
-            serverTargetVideoBitratePreference.isVisible = newValue as Boolean
-            serverMinVideoBitratePreference.isVisible = newValue
+        srtServerTargetVideoBitratePreference.isVisible =
+            srtServerEnableBitrateRegulationPreference.isChecked
+        srtServerMinVideoBitratePreference.isVisible =
+            srtServerEnableBitrateRegulationPreference.isChecked
+        srtServerEnableBitrateRegulationPreference.setOnPreferenceChangeListener { _, newValue ->
+            srtServerTargetVideoBitratePreference.isVisible = newValue as Boolean
+            srtServerMinVideoBitratePreference.isVisible = newValue
             true
         }
 
-        serverTargetVideoBitratePreference.setOnPreferenceChangeListener { _, newValue ->
-            if ((newValue as Int) < serverMinVideoBitratePreference.value) {
-                serverMinVideoBitratePreference.value = newValue
+        srtServerTargetVideoBitratePreference.setOnPreferenceChangeListener { _, newValue ->
+            if ((newValue as Int) < srtServerMinVideoBitratePreference.value) {
+                srtServerMinVideoBitratePreference.value = newValue
             }
             true
         }
 
-        serverMinVideoBitratePreference.setOnPreferenceChangeListener { _, newValue ->
-            if ((newValue as Int) > serverTargetVideoBitratePreference.value) {
-                serverTargetVideoBitratePreference.value = newValue
+        srtServerMinVideoBitratePreference.setOnPreferenceChangeListener { _, newValue ->
+            if ((newValue as Int) > srtServerTargetVideoBitratePreference.value) {
+                srtServerTargetVideoBitratePreference.value = newValue
+            }
+            true
+        }
+
+        rtmpServerTargetVideoBitratePreference.isVisible =
+            rtmpServerEnableBitrateRegulationPreference.isChecked
+        rtmpServerMinVideoBitratePreference.isVisible =
+            rtmpServerEnableBitrateRegulationPreference.isChecked
+        rtmpServerEnableBitrateRegulationPreference.setOnPreferenceChangeListener { _, newValue ->
+            rtmpServerTargetVideoBitratePreference.isVisible = newValue as Boolean
+            rtmpServerMinVideoBitratePreference.isVisible = newValue
+            true
+        }
+
+        rtmpServerTargetVideoBitratePreference.setOnPreferenceChangeListener { _, newValue ->
+            if ((newValue as Int) < rtmpServerMinVideoBitratePreference.value) {
+                rtmpServerMinVideoBitratePreference.value = newValue
+            }
+            true
+        }
+
+        rtmpServerMinVideoBitratePreference.setOnPreferenceChangeListener { _, newValue ->
+            if ((newValue as Int) > rtmpServerTargetVideoBitratePreference.value) {
+                rtmpServerTargetVideoBitratePreference.value = newValue
             }
             true
         }
@@ -459,7 +495,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         // Update file extension
         if (endpoint.hasFileCapabilities) {
             // Remove previous extension
-            FileExtension.entries.forEach {
+            FileExtension.entries.forEach { _ ->
                 fileNamePreference.text = fileNamePreference.text?.substringBeforeLast(".")
             }
             // Add correct extension

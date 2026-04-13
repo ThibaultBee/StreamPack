@@ -167,11 +167,33 @@
             app:title="@string/rtmp_server">
 
             <EditTextPreference
-                app:defaultValue="@string/default_rtmp_url"
+                app:defaultValue="@string/rtmp_default_url"
                 app:key="@string/rtmp_server_url_key"
                 app:title="@string/server_url"
                 app:useSimpleSummaryProvider="true" />
 
+            <SwitchPreference
+                android:defaultValue="false"
+                app:key="@string/rtmp_server_enable_bitrate_regulation_key"
+                app:title="@string/srt_server_enable_bitrate_regulation" />
+
+            <SeekBarPreference
+                android:max="10000"
+                app:defaultValue="5000"
+                app:key="@string/rtmp_server_video_target_bitrate_key"
+                app:min="500"
+                app:showSeekBarValue="true"
+                app:title="@string/srt_server_video_target_bitrate"
+                app:useSimpleSummaryProvider="true" />
+
+            <SeekBarPreference
+                android:max="10000"
+                app:defaultValue="300"
+                app:key="@string/rtmp_server_video_min_bitrate_key"
+                app:min="100"
+                app:showSeekBarValue="true"
+                app:title="@string/srt_server_video_min_bitrate"
+                app:useSimpleSummaryProvider="true" />
         </PreferenceCategory>
 
         <PreferenceCategory
