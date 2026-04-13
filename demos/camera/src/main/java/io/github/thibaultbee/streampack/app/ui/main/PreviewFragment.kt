@@ -111,7 +111,7 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
                 if (previousStreamerLifecycleObserver != null) {
                     lifecycle.removeObserver(previousStreamerLifecycleObserver!!)
                 }
-                val newObserver = StreamerLifeCycleObserver(streamer).apply {
+                val newObserver = StreamerLifeCycleObserver(streamer, releaseOnDestroy = true).apply {
                     previousStreamerLifecycleObserver = this
                 }
                 lifecycle.addObserver(newObserver)

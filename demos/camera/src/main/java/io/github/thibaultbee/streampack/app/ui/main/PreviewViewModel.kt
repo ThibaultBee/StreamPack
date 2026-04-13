@@ -55,7 +55,6 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.interfaces.IWithAudioSource
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
-import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.interfaces.startStream
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
 import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
@@ -611,11 +610,8 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
 
     override fun onCleared() {
         super.onCleared()
-        try {
-            streamer.releaseBlocking()
-        } catch (t: Throwable) {
-            Log.e(TAG, "Streamer release failed", t)
-        }
+        startStreamJob?.cancel()
+        startStreamJob = null
     }
 
     companion object {
