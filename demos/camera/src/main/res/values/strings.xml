@@ -127,7 +127,14 @@
     <string name="rtmp_server_key">rtmp_server_key</string>
     <string name="rtmp_server">RTMP Server</string>
     <string name="rtmp_server_url_key">rtmp_server_url_key</string>
-    <string name="default_rtmp_url">rtmp://192.168.1.192/s/streamKey</string>
+    <string name="rtmp_default_url">rtmp://192.168.1.192/s/streamKey</string>
+    <string name="rtmp_server_enable_bitrate_regulation_key">rtmp_server_enable_bitrate_regulation_key</string>
+    <string name="rtmp_server_enable_bitrate_regulation">Enable bitrate regulation</string>
+    <string name="rtmp_server_video_target_bitrate_key">rtmp_server_video_target_bitrate_key</string>
+    <string name="rtmp_server_video_target_bitrate">Video target bitrate (kb/s)</string>
+    <string name="rtmp_server_video_min_bitrate_key">rtmp_server_video_min_bitrate_key</string>
+    <string name="rtmp_server_video_min_bitrate">Video minimum bitrate (kb/s)</string>
+
     <string name="server_url">URL</string>
 
     <string name="file_endpoint_key">file_endpoint_key</string>
