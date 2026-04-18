@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.ext.rtmp.configuration.mediadescriptor
 
 import android.net.Uri
 import androidx.core.net.toUri
+import io.github.komedia.komuxer.rtmp.client.RtmpClientSettings
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaContainerType
@@ -26,14 +27,17 @@ import java.security.InvalidParameterException
 /**
  * Creates a RTMP connection descriptor from an [descriptor].
  * If the descriptor is already a [RtmpMediaDescriptor], it will be returned as is.
- * If the descriptor is an [UriMediaDescriptor], it will be converted to a [RtmpMediaDescriptor].
+ * If the descriptor is an [UriMediaDescriptor], it will be converted to a [RtmpMediaDescriptor],
+ * forwarding any [RtmpClientSettings] attached to its custom data.
  * Otherwise, an [InvalidParameterException] will be thrown.
  */
 fun RtmpMediaDescriptor(descriptor: MediaDescriptor) =
     when (descriptor) {
         is RtmpMediaDescriptor -> descriptor
         is UriMediaDescriptor -> {
-            RtmpMediaDescriptor.fromUri(descriptor.uri)
+            val clientSettings = descriptor.getCustomData(RtmpClientSettings::class.java)
+                ?: RtmpClientSettings()
+            RtmpMediaDescriptor.fromUri(descriptor.uri, clientSettings)
         }
 
         else -> throw InvalidParameterException("Invalid descriptor ${descriptor::class.java.simpleName} for RTMP")
@@ -41,8 +45,12 @@ fun RtmpMediaDescriptor(descriptor: MediaDescriptor) =
 
 /**
  * Creates a RTMP connection descriptor from an [Uri]
+ *
+ * @param uri the server uri
+ * @param clientSettings the RTMP client settings used when opening the connection
  */
-fun RtmpMediaDescriptor(uri: Uri) = RtmpMediaDescriptor.fromUri(uri)
+fun RtmpMediaDescriptor(uri: Uri, clientSettings: RtmpClientSettings = RtmpClientSettings()) =
+    RtmpMediaDescriptor.fromUri(uri, clientSettings)
 
 /**
  * RTMP connection parameters
@@ -52,10 +60,16 @@ fun RtmpMediaDescriptor(uri: Uri) = RtmpMediaDescriptor.fromUri(uri)
  * @param port the server port
  * @param app the application name
  * @param streamKey the stream key
+ * @param clientSettings the RTMP client settings used when opening the connection.
+ *   Use [RtmpClientSettings.connectInfo] to customise the RTMP connect command — for
+ *   example, to set a custom `flashVer` string identifying your application to the server.
  */
 class RtmpMediaDescriptor(
-    val scheme: String, val host: String, val port: Int, val app: String?, val streamKey: String
-) : MediaDescriptor(Type(MediaContainerType.FLV, MediaSinkType.RTMP)) {
+    val scheme: String, val host: String, val port: Int, val app: String?, val streamKey: String,
+    clientSettings: RtmpClientSettings = RtmpClientSettings()
+) : MediaDescriptor(
+    Type(MediaContainerType.FLV, MediaSinkType.RTMP), listOf(clientSettings)
+) {
     init {
         require(scheme == RTMP_SCHEME || scheme == RTMPS_SCHEME || scheme == RTMPT_SCHEME || scheme == RTMPE_SCHEME || scheme == RTMFP_SCHEME || scheme == RTMPTE_SCHEME || scheme == RTMPTS_SCHEME) { "Invalid scheme $scheme" }
         require(host.isNotBlank()) { "Invalid host $host" }
@@ -91,18 +105,25 @@ class RtmpMediaDescriptor(
          * Creates a RTMP connection descriptor from an URL
          *
          * @param url the server url (syntax: rtmp://host:port/app/streamKey)
+         * @param clientSettings the RTMP client settings used when opening the connection
          * @return RTMP connection descriptor
          */
-        fun fromUrl(url: String) =
-            fromUri(url.toUri())
+        fun fromUrl(
+            url: String,
+            clientSettings: RtmpClientSettings = RtmpClientSettings()
+        ) = fromUri(url.toUri(), clientSettings)
 
         /**
          * Creates a RTMP connection descriptor from an Uri
          *
          * @param uri the server Uri
+         * @param clientSettings the RTMP client settings used when opening the connection
          * @return RTMP connection descriptor
          */
-        fun fromUri(uri: Uri): RtmpMediaDescriptor {
+        fun fromUri(
+            uri: Uri,
+            clientSettings: RtmpClientSettings = RtmpClientSettings()
+        ): RtmpMediaDescriptor {
             val scheme =
                 uri.scheme ?: throw InvalidParameterException("Invalid scheme ${uri.scheme}")
             val host = uri.host ?: throw InvalidParameterException("Invalid host ${uri.host}")
@@ -121,10 +142,10 @@ class RtmpMediaDescriptor(
                 val streamKey = uri.lastPathSegment
                     ?: throw InvalidParameterException("Invalid streamKey ${uri.lastPathSegment}")
                 if (uri.pathSegments.size == 1) {
-                    return RtmpMediaDescriptor(scheme, host, port, null, streamKey)
+                    return RtmpMediaDescriptor(scheme, host, port, null, streamKey, clientSettings)
                 } else {
                     val app = uri.pathSegments.minus(uri.lastPathSegment).joinToString("/")
-                    return RtmpMediaDescriptor(scheme, host, port, app, streamKey)
+                    return RtmpMediaDescriptor(scheme, host, port, app, streamKey, clientSettings)
                 }
             }
         }
