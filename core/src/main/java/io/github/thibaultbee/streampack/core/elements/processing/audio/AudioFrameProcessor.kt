@@ -26,16 +26,11 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import java.io.Closeable
 import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.function.IntFunction
-import kotlin.math.abs
-import kotlin.math.sqrt
 
 /**
  * Audio frame processor.
- *
- * Supports mute effect and audio level monitoring.
  */
 class AudioFrameProcessor(
     private val bufferPool: IBufferPool<ByteBuffer>,
@@ -50,10 +45,7 @@ class AudioFrameProcessor(
      * When the audio is muted, the audio effect are not processed. Only consumer effects are processed.
      */
     override var isMuted = false
-    override var channelCount = 1
     private val muteEffect = MuteEffect()
-    
-    override var audioLevelCallback: AudioLevelCallback? = null
 
     private fun launchConsumerEffect(
         effect: IConsumerAudioEffect,
@@ -68,11 +60,6 @@ class AudioFrameProcessor(
 
     override fun process(data: RawFrame): RawFrame {
         val isMuted = isMuted
-
-        audioLevelCallback?.let { callback ->
-            val levels = calculateAudioLevels(data.rawBuffer, channelCount)
-            callback(levels)
-        }
 
         var processedFrame = muteEffect.process(isMuted, data)
 
@@ -100,55 +87,5 @@ class AudioFrameProcessor(
     @Suppress("DEPRECATION")
     override fun <T> toArray(generator: IntFunction<Array<out T?>?>): Array<out T?> {
         return super<IAudioFrameProcessor>.toArray(generator)
-    }
-
-    private fun calculateAudioLevels(buffer: ByteBuffer, channels: Int): AudioLevelData {
-        val position = buffer.position()
-        val limit = buffer.limit()
-        val remaining = limit - position
-
-        if (remaining < 2) {
-            return AudioLevelData(channels, 0f, 0f, 0f, 0f)
-        }
-
-        val readBuffer = buffer.duplicate()
-        readBuffer.position(position)
-        readBuffer.order(ByteOrder.LITTLE_ENDIAN)
-
-        var maxSampleLeft = 0
-        var maxSampleRight = 0
-        var sumSquaresLeft = 0.0
-        var sumSquaresRight = 0.0
-        var sampleCountLeft = 0
-        var sampleCountRight = 0
-
-        val isStereo = channels >= 2
-        var isLeftChannel = true
-
-        while (readBuffer.remaining() >= 2) {
-            val sample = readBuffer.short.toInt()
-            val absSample = abs(sample)
-            val sampleSquared = (sample.toLong() * sample.toLong()).toDouble()
-
-            if (!isStereo || isLeftChannel) {
-                if (absSample > maxSampleLeft) maxSampleLeft = absSample
-                sumSquaresLeft += sampleSquared
-                sampleCountLeft++
-            } else {
-                if (absSample > maxSampleRight) maxSampleRight = absSample
-                sumSquaresRight += sampleSquared
-                sampleCountRight++
-            }
-
-            if (isStereo) isLeftChannel = !isLeftChannel
-        }
-
-        val peakLeft = if (sampleCountLeft > 0) (maxSampleLeft / 32767f).coerceIn(0f, 1f) else 0f
-        val rmsLeft = if (sampleCountLeft > 0) (sqrt(sumSquaresLeft / sampleCountLeft) / 32767.0).toFloat().coerceIn(0f, 1f) else 0f
-
-        val peakRight = if (sampleCountRight > 0) (maxSampleRight / 32767f).coerceIn(0f, 1f) else 0f
-        val rmsRight = if (sampleCountRight > 0) (sqrt(sumSquaresRight / sampleCountRight) / 32767.0).toFloat().coerceIn(0f, 1f) else 0f
-
-        return AudioLevelData(channels, rmsLeft, peakLeft, rmsRight, peakRight)
     }
 }
