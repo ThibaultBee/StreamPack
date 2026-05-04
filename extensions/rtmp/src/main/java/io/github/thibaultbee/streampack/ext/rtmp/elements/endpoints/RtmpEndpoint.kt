@@ -19,6 +19,7 @@ import android.content.Context
 import io.github.komedia.komuxer.flv.tags.FLVTag
 import io.github.komedia.komuxer.rtmp.RtmpConnectionBuilder
 import io.github.komedia.komuxer.rtmp.client.RtmpClient
+import io.github.komedia.komuxer.rtmp.client.RtmpClientSettings
 import io.github.komedia.komuxer.rtmp.connect
 import io.github.komedia.komuxer.rtmp.messages.command.StreamPublishType
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
@@ -113,8 +114,11 @@ class RtmpEndpoint internal constructor(
                     return@withContext
                 }
 
-                val client = if (descriptor.clientSettings != null) {
-                    connectionBuilder.connect(descriptor.uri.toString(), descriptor.clientSettings)
+                val client = if (descriptor.connectInfo != null) {
+                    connectionBuilder.connect(
+                        descriptor.uri.toString(),
+                        RtmpClientSettings(connectInfo = descriptor.connectInfo)
+                    )
                 } else {
                     connectionBuilder.connect(descriptor.uri.toString())
                 }
