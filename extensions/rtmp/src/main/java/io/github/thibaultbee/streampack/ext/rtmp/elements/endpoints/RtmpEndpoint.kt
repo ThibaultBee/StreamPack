@@ -19,7 +19,6 @@ import android.content.Context
 import io.github.komedia.komuxer.flv.tags.FLVTag
 import io.github.komedia.komuxer.rtmp.RtmpConnectionBuilder
 import io.github.komedia.komuxer.rtmp.client.RtmpClient
-import io.github.komedia.komuxer.rtmp.client.RtmpClientSettings
 import io.github.komedia.komuxer.rtmp.connect
 import io.github.komedia.komuxer.rtmp.messages.command.StreamPublishType
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
@@ -36,6 +35,7 @@ import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.FlvMuxerInfo
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.FlvTagBuilder
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.close
+import io.github.thibaultbee.streampack.ext.rtmp.configuration.mediadescriptor.RtmpMediaDescriptor
 import io.ktor.network.selector.SelectorManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -102,7 +102,10 @@ class RtmpEndpoint internal constructor(
         return mutex.withLock { block(rtmpClient) }
     }
 
-    override suspend fun open(descriptor: MediaDescriptor) {
+    override suspend fun open(descriptor: MediaDescriptor) =
+        open(RtmpMediaDescriptor(descriptor))
+
+    private suspend fun open(descriptor: RtmpMediaDescriptor) {
         withContext(ioDispatcher) {
             mutex.withLock {
                 if (rtmpClient?.isClosed == false) {
@@ -110,9 +113,12 @@ class RtmpEndpoint internal constructor(
                     return@withContext
                 }
 
-                val clientSettings = descriptor.getCustomData(RtmpClientSettings::class.java)
-                    ?: RtmpClientSettings()
-                rtmpClient = connectionBuilder.connect(descriptor.uri.toString(), clientSettings).apply {
+                val client = if (descriptor.clientSettings != null) {
+                    connectionBuilder.connect(descriptor.uri.toString(), descriptor.clientSettings)
+                } else {
+                    connectionBuilder.connect(descriptor.uri.toString())
+                }
+                rtmpClient = client.apply {
                     _isOpenFlow.emit(true)
 
                     socketContext.invokeOnCompletion { throwable ->
