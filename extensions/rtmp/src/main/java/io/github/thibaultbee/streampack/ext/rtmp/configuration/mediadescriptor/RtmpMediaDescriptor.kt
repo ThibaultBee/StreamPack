@@ -58,13 +58,11 @@ fun RtmpMediaDescriptor(
  */
 class RtmpMediaDescriptor(
     val scheme: String, val host: String, val port: Int, val app: String?, val streamKey: String,
-    connectInfo: (ConnectObjectBuilder.() -> Unit)? = null
+    val connectInfo: (ConnectObjectBuilder.() -> Unit)? = null
 ) : MediaDescriptor(
     Type(MediaContainerType.FLV, MediaSinkType.RTMP),
-    connectInfo?.let { listOf(RtmpClientSettings(connectInfo = it)) } ?: emptyList()
+    connectInfo?.let { listOf(it) } ?: emptyList()
 ) {
-    val clientSettings: RtmpClientSettings? = getCustomData(RtmpClientSettings::class.java)
-
     init {
         require(scheme == RTMP_SCHEME || scheme == RTMPS_SCHEME || scheme == RTMPT_SCHEME || scheme == RTMPE_SCHEME || scheme == RTMFP_SCHEME || scheme == RTMPTE_SCHEME || scheme == RTMPTS_SCHEME) { "Invalid scheme $scheme" }
         require(host.isNotBlank()) { "Invalid host $host" }
