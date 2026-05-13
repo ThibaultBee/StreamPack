@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.core.regulator.controllers
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
-import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.core.elements.interfaces.WithMetrics
 import io.github.thibaultbee.streampack.core.elements.utils.CoroutineScheduler
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
@@ -30,23 +30,23 @@ import kotlinx.coroutines.CoroutineDispatcher
  *
  * @param audioEncoder the audio [IEncoder]
  * @param videoEncoder the video [IEncoder]
- * @param endpoint the [IEndpoint] implementation
+ * @param metricsProvider the [WithMetrics] implementation
  * @param bitrateRegulatorFactory the [IBitrateRegulator.Factory] implementation. Use it to make your own bitrate regulator.
  * @param bitrateRegulatorConfig bitrate regulator configuration
  * @param pollingTimeInMs delay between each call to [IBitrateRegulator.update]
  */
-open class SimpleBitrateRegulatorController(
+open class IntervalBitrateRegulatorController<T : Any>(
     audioEncoder: IEncoder?,
     videoEncoder: IEncoder,
-    endpoint: IEndpoint,
-    bitrateRegulatorFactory: IBitrateRegulator.Factory,
+    metricsProvider: WithMetrics<T>,
+    bitrateRegulatorFactory: IBitrateRegulator.Factory<T>,
     coroutineDispatcher: CoroutineDispatcher,
     bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
     pollingTimeInMs: Long = DEFAULT_POLLING_TIME_IN_MS
 ) : BitrateRegulatorController(
     audioEncoder,
     videoEncoder,
-    endpoint,
+    metricsProvider,
     bitrateRegulatorFactory,
     bitrateRegulatorConfig
 ) {
@@ -66,7 +66,7 @@ open class SimpleBitrateRegulatorController(
      */
     private val scheduler = CoroutineScheduler(pollingTimeInMs, coroutineDispatcher) {
         bitrateRegulator.update(
-            endpoint.metrics,
+            metricsProvider.metrics,
             videoEncoder.bitrate,
             audioEncoder?.bitrate ?: 0
         )
@@ -84,8 +84,8 @@ open class SimpleBitrateRegulatorController(
         const val DEFAULT_POLLING_TIME_IN_MS = 500L
     }
 
-    class Factory(
-        private val bitrateRegulatorFactory: IBitrateRegulator.Factory,
+    class Factory<T : Any>(
+        private val bitrateRegulatorFactory: IBitrateRegulator.Factory<T>,
         private val bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
         private val pollingTimeInMs: Long = DEFAULT_POLLING_TIME_IN_MS
     ) : BitrateRegulatorController.Factory() {
@@ -106,10 +106,12 @@ open class SimpleBitrateRegulatorController(
             } else {
                 null
             }
-            return SimpleBitrateRegulatorController(
+            @Suppress("UNCHECKED_CAST")
+            val endpoint = pipelineOutput.endpoint as WithMetrics<T>
+            return IntervalBitrateRegulatorController(
                 audioEncoder,
                 videoEncoder,
-                pipelineOutput.endpoint,
+                endpoint,
                 bitrateRegulatorFactory,
                 coroutineDispatcher,
                 bitrateRegulatorConfig,

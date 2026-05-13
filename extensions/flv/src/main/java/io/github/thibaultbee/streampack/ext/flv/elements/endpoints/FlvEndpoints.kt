@@ -63,9 +63,6 @@ sealed class FlvEndpoint(
     private var startUpTimestamp = INVALID_TIMESTAMP
     private val timestampMutex = Mutex()
 
-    override val metrics: Any
-        get() = TODO("Not yet implemented")
-
     private val _isOpenFlow = MutableStateFlow(false)
     override val isOpenFlow: StateFlow<Boolean> = _isOpenFlow.asStateFlow()
 

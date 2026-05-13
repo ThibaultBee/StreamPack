@@ -34,14 +34,11 @@ abstract class RtmpBitrateRegulator(
     bitrateRegulatorConfig: BitrateRegulatorConfig,
     onVideoTargetBitrateChange: ((Int) -> Unit),
     onAudioTargetBitrateChange: ((Int) -> Unit)
-) : BitrateRegulator(
+) : BitrateRegulator<RtmpMetrics>(
     bitrateRegulatorConfig,
     onVideoTargetBitrateChange,
     onAudioTargetBitrateChange
 ) {
-    override fun update(metrics: Any, currentVideoBitrate: Int, currentAudioBitrate: Int) =
-        update(metrics as RtmpMetrics, currentVideoBitrate, currentAudioBitrate)
-
     /**
      * Call regularly to get new RTMP metrics
      *
@@ -49,14 +46,18 @@ abstract class RtmpBitrateRegulator(
      * @param currentVideoBitrate current video bitrate target in bits/s.
      * @param currentAudioBitrate current audio bitrate target in bits/s.
      */
-    abstract fun update(metrics: RtmpMetrics, currentVideoBitrate: Int, currentAudioBitrate: Int)
+    abstract override fun update(
+        metrics: RtmpMetrics,
+        currentVideoBitrate: Int,
+        currentAudioBitrate: Int
+    )
 
     /**
      * Factory interface you must use to create a [RtmpBitrateRegulator] object.
      * If you want to create a custom RTMP bitrate regulation implementation, create a factory that
      * implements this interface.
      */
-    interface Factory : IBitrateRegulator.Factory {
+    interface Factory : IBitrateRegulator.Factory<RtmpMetrics> {
         /**
          * Creates a [RtmpBitrateRegulator] object from given parameters
          *
