@@ -45,9 +45,4 @@ interface ISink {
      * For example, if the file is opened for [FileSink].
      */
     val isOpenFlow: StateFlow<Boolean>
-
-    /**
-     * Metrics of the sink.
-     */
-    val metrics: Any
 }

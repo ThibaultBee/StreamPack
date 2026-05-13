@@ -51,9 +51,6 @@ class CompositeEndpoint(
     override val info by lazy { EndpointInfo(muxer.info) }
     override fun getInfo(type: MediaDescriptor.Type) = info
 
-    override val metrics: Any
-        get() = sink.metrics
-
     init {
         muxer.listener = object :
             IMuxerInternal.IMuxerListener {

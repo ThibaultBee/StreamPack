@@ -65,8 +65,8 @@ import io.github.thibaultbee.streampack.core.streamers.single.VideoOnlySingleStr
 import io.github.thibaultbee.streampack.core.streamers.single.withAudio
 import io.github.thibaultbee.streampack.core.streamers.single.withVideo
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
-import io.github.thibaultbee.streampack.ext.rtmp.regulator.controllers.simpleRtmpBitrateRegulatorControllerFactory
-import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.simpleSrtBitrateRegulatorControllerFactory
+import io.github.thibaultbee.streampack.ext.rtmp.regulator.controllers.intervalRtmpBitrateRegulatorControllerFactory
+import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.intervalSrtBitrateRegulatorControllerFactory
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -78,7 +78,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -322,13 +321,13 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                         val controllerFactory =
                             when (descriptor.type.sinkType) {
                                 MediaSinkType.RTMP -> {
-                                    simpleRtmpBitrateRegulatorControllerFactory(
+                                    intervalRtmpBitrateRegulatorControllerFactory(
                                         bitrateRegulatorConfig = bitrateRegulatorConfig
                                     )
                                 }
 
                                 MediaSinkType.SRT -> {
-                                    simpleSrtBitrateRegulatorControllerFactory(
+                                    intervalSrtBitrateRegulatorControllerFactory(
                                         bitrateRegulatorConfig = bitrateRegulatorConfig
                                     )
                                 }

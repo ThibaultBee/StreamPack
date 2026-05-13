@@ -64,9 +64,6 @@ class MediaMuxerEndpoint(
 
     override fun getInfo(type: MediaDescriptor.Type) = Companion.getInfo(type)
 
-    override val metrics: Any
-        get() = TODO("Not yet implemented")
-
     private val _isOpenFlow = MutableStateFlow(false)
     override val isOpenFlow = _isOpenFlow.asStateFlow()
 

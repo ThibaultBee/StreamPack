@@ -170,9 +170,4 @@ interface IEndpoint {
             val supportedEncoders: List<String>
         }
     }
-
-    /**
-     * Metrics of the endpoint.
-     */
-    val metrics: Any
 }

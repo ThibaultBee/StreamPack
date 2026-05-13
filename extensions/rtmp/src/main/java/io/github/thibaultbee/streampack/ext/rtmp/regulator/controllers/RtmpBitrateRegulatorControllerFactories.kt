@@ -16,25 +16,25 @@
 package io.github.thibaultbee.streampack.ext.rtmp.regulator.controllers
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
-import io.github.thibaultbee.streampack.core.regulator.controllers.SimpleBitrateRegulatorController
-import io.github.thibaultbee.streampack.core.regulator.controllers.SimpleBitrateRegulatorController.Companion.DEFAULT_POLLING_TIME_IN_MS
+import io.github.thibaultbee.streampack.core.regulator.controllers.IntervalBitrateRegulatorController
+import io.github.thibaultbee.streampack.core.regulator.controllers.IntervalBitrateRegulatorController.Companion.DEFAULT_POLLING_TIME_IN_MS
 import io.github.thibaultbee.streampack.ext.rtmp.regulator.RtmpBitrateRegulator
 import io.github.thibaultbee.streampack.ext.rtmp.regulator.SimpleRtmpBitrateRegulator
 
 /**
- * A [SimpleBitrateRegulatorController.Factory] for [RtmpBitrateRegulator].
+ * A [IntervalBitrateRegulatorController.Factory] for [RtmpBitrateRegulator].
  *
  * @param bitrateRegulatorFactory the [RtmpBitrateRegulator.Factory] implementation. Use it to make your own bitrate regulator.
  * @param bitrateRegulatorConfig bitrate regulator configuration
  * @param pollingTimeInMs delay between each call to [RtmpBitrateRegulator.update]
  *
- * @see SimpleBitrateRegulatorController.Factory
+ * @see IntervalBitrateRegulatorController.Factory
  * @see SimpleRtmpBitrateRegulator.Factory
  */
-fun simpleRtmpBitrateRegulatorControllerFactory(
+fun intervalRtmpBitrateRegulatorControllerFactory(
     bitrateRegulatorFactory: RtmpBitrateRegulator.Factory = SimpleRtmpBitrateRegulator.Factory(),
     bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
     pollingTimeInMs: Long = DEFAULT_POLLING_TIME_IN_MS
-) = SimpleBitrateRegulatorController.Factory(
+) = IntervalBitrateRegulatorController.Factory(
     bitrateRegulatorFactory, bitrateRegulatorConfig, pollingTimeInMs
 )
