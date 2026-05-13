@@ -17,7 +17,6 @@ package io.github.thibaultbee.streampack.ext.rtmp.configuration.mediadescriptor
 
 import android.net.Uri
 import androidx.core.net.toUri
-import io.github.komedia.komuxer.rtmp.client.RtmpClientSettings
 import io.github.komedia.komuxer.rtmp.messages.command.ConnectObjectBuilder
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
@@ -28,8 +27,7 @@ import java.security.InvalidParameterException
 /**
  * Creates a RTMP connection descriptor from an [descriptor].
  * If the descriptor is already a [RtmpMediaDescriptor], it will be returned as is.
- * If the descriptor is an [UriMediaDescriptor], it will be converted to a [RtmpMediaDescriptor],
- * forwarding any [RtmpClientSettings] attached to its custom data.
+ * If the descriptor is an [UriMediaDescriptor], it will be converted to a [RtmpMediaDescriptor].
  * Otherwise, an [InvalidParameterException] will be thrown.
  */
 fun RtmpMediaDescriptor(descriptor: MediaDescriptor) =
@@ -61,7 +59,7 @@ class RtmpMediaDescriptor(
     val connectInfo: (ConnectObjectBuilder.() -> Unit)? = null
 ) : MediaDescriptor(
     Type(MediaContainerType.FLV, MediaSinkType.RTMP),
-    connectInfo?.let { listOf(it) } ?: emptyList()
+    emptyList()
 ) {
     init {
         require(scheme == RTMP_SCHEME || scheme == RTMPS_SCHEME || scheme == RTMPT_SCHEME || scheme == RTMPE_SCHEME || scheme == RTMFP_SCHEME || scheme == RTMPTE_SCHEME || scheme == RTMPTS_SCHEME) { "Invalid scheme $scheme" }
@@ -101,7 +99,7 @@ class RtmpMediaDescriptor(
          * @param connectInfo configures the RTMP connect command sent during the handshake
          * @return RTMP connection descriptor
          */
-        fun fromUrl(
+        internal fun fromUrl(
             url: String,
             connectInfo: (ConnectObjectBuilder.() -> Unit)? = null
         ) = fromUri(url.toUri(), connectInfo)
@@ -113,7 +111,7 @@ class RtmpMediaDescriptor(
          * @param connectInfo configures the RTMP connect command sent during the handshake
          * @return RTMP connection descriptor
          */
-        fun fromUri(
+        internal fun fromUri(
             uri: Uri,
             connectInfo: (ConnectObjectBuilder.() -> Unit)? = null
         ): RtmpMediaDescriptor = parse(uri, connectInfo)
@@ -122,20 +120,21 @@ class RtmpMediaDescriptor(
          * Creates a RTMP connection descriptor from a generic [MediaDescriptor].
          *
          * If the descriptor is already a [RtmpMediaDescriptor], it is returned as is.
-         * If it is a [UriMediaDescriptor], the [ConnectObjectBuilder] connect-command
-         * configuration from any [RtmpClientSettings] attached to its custom data is forwarded
-         * to the new descriptor.
+         * If the descriptor is an [UriMediaDescriptor], it will be converted to a [RtmpMediaDescriptor].
+         * Otherwise, an [InvalidParameterException] will be thrown.
          *
          * @param descriptor the source descriptor
          * @return RTMP connection descriptor
          */
-        fun fromMediaDescriptor(descriptor: MediaDescriptor): RtmpMediaDescriptor =
+        internal fun fromMediaDescriptor(descriptor: MediaDescriptor): RtmpMediaDescriptor =
             when (descriptor) {
                 is RtmpMediaDescriptor -> descriptor
-                is UriMediaDescriptor -> parse(
-                    descriptor.uri,
-                    descriptor.getCustomData(RtmpClientSettings::class.java)?.connectInfo
-                )
+                is UriMediaDescriptor -> {
+                    parse(
+                        descriptor.uri,
+                        null
+                    )
+                }
 
                 else -> throw InvalidParameterException("Invalid descriptor ${descriptor::class.java.simpleName} for RTMP")
             }
