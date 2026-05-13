@@ -41,8 +41,6 @@ class DummyEndpoint : IEndpointInternal {
         TODO("Not yet implemented")
     }
 
-    override val metrics: Any
-        get() = TODO("Not yet implemented")
     override val throwableFlow: StateFlow<Throwable?> = MutableStateFlow(null).asStateFlow()
 
     override suspend fun open(descriptor: MediaDescriptor) {

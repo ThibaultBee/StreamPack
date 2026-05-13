@@ -13,9 +13,6 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 abstract class AbstractSink : ISinkInternal {
     abstract val supportedSinkTypes: List<MediaSinkType>
 
-    override val metrics: Any
-        get() = TODO("Not yet implemented")
-
     override suspend fun open(mediaDescriptor: MediaDescriptor) {
         if (isOpenFlow.value) {
             Logger.w(TAG, "Sink is already opened")

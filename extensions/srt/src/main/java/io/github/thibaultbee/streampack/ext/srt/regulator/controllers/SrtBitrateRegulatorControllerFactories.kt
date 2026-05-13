@@ -16,26 +16,26 @@
 package io.github.thibaultbee.streampack.ext.srt.regulator.controllers
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
-import io.github.thibaultbee.streampack.core.regulator.controllers.SimpleBitrateRegulatorController
-import io.github.thibaultbee.streampack.core.regulator.controllers.SimpleBitrateRegulatorController.Companion.DEFAULT_POLLING_TIME_IN_MS
+import io.github.thibaultbee.streampack.core.regulator.controllers.IntervalBitrateRegulatorController
+import io.github.thibaultbee.streampack.core.regulator.controllers.IntervalBitrateRegulatorController.Companion.DEFAULT_POLLING_TIME_IN_MS
 import io.github.thibaultbee.streampack.ext.srt.regulator.DummySrtBitrateRegulator
 import io.github.thibaultbee.streampack.ext.srt.regulator.SrtBitrateRegulator
 
 /**
- * A [SimpleBitrateRegulatorController.Factory] for [SrtBitrateRegulator].
+ * A [IntervalBitrateRegulatorController.Factory] for [SrtBitrateRegulator].
  *
  * @param bitrateRegulatorFactory the [SrtBitrateRegulator.Factory] implementation. Use it to make your own bitrate regulator.
  * @param bitrateRegulatorConfig bitrate regulator configuration
  * @param pollingTimeInMs delay between each call to [IBitrateRegulator.update]
  *
- * @see SimpleBitrateRegulatorController.Factory
+ * @see IntervalBitrateRegulatorController.Factory
  * @see DummySrtBitrateRegulator.Factory
  */
-fun simpleSrtBitrateRegulatorControllerFactory(
+fun intervalSrtBitrateRegulatorControllerFactory(
     bitrateRegulatorFactory: SrtBitrateRegulator.Factory = DummySrtBitrateRegulator.Factory(),
     bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
     pollingTimeInMs: Long = DEFAULT_POLLING_TIME_IN_MS
-) = SimpleBitrateRegulatorController.Factory(
+) = IntervalBitrateRegulatorController.Factory(
     bitrateRegulatorFactory,
     bitrateRegulatorConfig,
     pollingTimeInMs

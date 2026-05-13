@@ -115,14 +115,6 @@ open class CombineEndpoint(
             .reduce { acc, iEndpointInfo -> acc intersect iEndpointInfo }
     }
 
-    /**
-     * Throws [UnsupportedOperationException] because [CombineEndpoint] does not have metrics.
-     *
-     * Call [IEndpoint.metrics] on each endpoint to get their metrics.
-     */
-    override val metrics: Any
-        get() = throw UnsupportedOperationException("CombineEndpoint does not have metrics.")
-
     private fun createNewStreamId(): Int {
         var i = 0
         while (endpointsToStreamIdsMap.keys.any { it.second == i }) {

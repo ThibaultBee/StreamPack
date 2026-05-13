@@ -34,14 +34,11 @@ abstract class SrtBitrateRegulator(
     bitrateRegulatorConfig: BitrateRegulatorConfig,
     onVideoTargetBitrateChange: ((Int) -> Unit),
     onAudioTargetBitrateChange: ((Int) -> Unit)
-) : BitrateRegulator(
+) : BitrateRegulator<Stats>(
     bitrateRegulatorConfig,
     onVideoTargetBitrateChange,
     onAudioTargetBitrateChange
 ) {
-    override fun update(metrics: Any, currentVideoBitrate: Int, currentAudioBitrate: Int) =
-        update(metrics as Stats, currentVideoBitrate, currentAudioBitrate)
-
     /**
      * Call regularly to get new SRT metrics
      *
@@ -49,14 +46,14 @@ abstract class SrtBitrateRegulator(
      * @param currentVideoBitrate current video bitrate target in bits/s.
      * @param currentAudioBitrate current audio bitrate target in bits/s.
      */
-    abstract fun update(metrics: Stats, currentVideoBitrate: Int, currentAudioBitrate: Int)
+    abstract override fun update(metrics: Stats, currentVideoBitrate: Int, currentAudioBitrate: Int)
 
     /**
      * Factory interface you must use to create a [SrtBitrateRegulator] object.
      * If you want to create a custom SRT bitrate regulation implementation, create a factory that
      * implements this interface.
      */
-    interface Factory : IBitrateRegulator.Factory {
+    interface Factory : IBitrateRegulator.Factory<Stats> {
         /**
          * Creates a [SrtBitrateRegulator] object from given parameters
          *
