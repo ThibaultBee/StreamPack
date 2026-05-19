@@ -35,11 +35,11 @@ import kotlinx.coroutines.CoroutineDispatcher
  * @param bitrateRegulatorConfig bitrate regulator configuration
  * @param pollingTimeInMs delay between each call to [IBitrateRegulator.update]
  */
-open class IntervalBitrateRegulatorController<T : Any>(
+open class IntervalBitrateRegulatorController(
     audioEncoder: IEncoder?,
     videoEncoder: IEncoder,
-    metricsProvider: WithMetrics<T>,
-    bitrateRegulatorFactory: IBitrateRegulator.Factory<T>,
+    metricsProvider: WithMetrics,
+    bitrateRegulatorFactory: IBitrateRegulator.Factory,
     coroutineDispatcher: CoroutineDispatcher,
     bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
     pollingTimeInMs: Long = DEFAULT_POLLING_TIME_IN_MS
@@ -84,8 +84,8 @@ open class IntervalBitrateRegulatorController<T : Any>(
         const val DEFAULT_POLLING_TIME_IN_MS = 500L
     }
 
-    class Factory<T : Any>(
-        private val bitrateRegulatorFactory: IBitrateRegulator.Factory<T>,
+    class Factory(
+        private val bitrateRegulatorFactory: IBitrateRegulator.Factory,
         private val bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
         private val pollingTimeInMs: Long = DEFAULT_POLLING_TIME_IN_MS
     ) : BitrateRegulatorController.Factory() {
@@ -106,8 +106,7 @@ open class IntervalBitrateRegulatorController<T : Any>(
             } else {
                 null
             }
-            @Suppress("UNCHECKED_CAST")
-            val endpoint = pipelineOutput.endpoint as WithMetrics<T>
+            val endpoint = pipelineOutput.endpoint as WithMetrics
             return IntervalBitrateRegulatorController(
                 audioEncoder,
                 videoEncoder,
