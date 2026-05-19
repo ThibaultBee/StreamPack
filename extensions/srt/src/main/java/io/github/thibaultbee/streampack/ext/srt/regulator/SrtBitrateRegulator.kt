@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.ext.srt.regulator
 
 import io.github.thibaultbee.srtdroid.core.models.Stats
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
+import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.regulator.BitrateRegulator
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
 
@@ -34,7 +35,7 @@ abstract class SrtBitrateRegulator(
     bitrateRegulatorConfig: BitrateRegulatorConfig,
     onVideoTargetBitrateChange: ((Int) -> Unit),
     onAudioTargetBitrateChange: ((Int) -> Unit)
-) : BitrateRegulator<Stats>(
+) : BitrateRegulator(
     bitrateRegulatorConfig,
     onVideoTargetBitrateChange,
     onAudioTargetBitrateChange
@@ -46,14 +47,33 @@ abstract class SrtBitrateRegulator(
      * @param currentVideoBitrate current video bitrate target in bits/s.
      * @param currentAudioBitrate current audio bitrate target in bits/s.
      */
-    abstract override fun update(metrics: Stats, currentVideoBitrate: Int, currentAudioBitrate: Int)
+    override fun update(metrics: Any, currentVideoBitrate: Int, currentAudioBitrate: Int) {
+        if (metrics !is Stats) {
+            Logger.w(TAG, "Expect Stats but got ${metrics::class.java.simpleName}")
+            return
+        }
+        update(metrics, currentVideoBitrate, currentAudioBitrate)
+    }
+
+    /**
+     * Call regularly to get new SRT metrics
+     *
+     * @param metrics SRT transmission metrics
+     * @param currentVideoBitrate current video bitrate target in bits/s.
+     * @param currentAudioBitrate current audio bitrate target in bits/s.
+     */
+    abstract fun update(metrics: Stats, currentVideoBitrate: Int, currentAudioBitrate: Int)
+
+    companion object {
+        private const val TAG = "SrtBitrateRegulator"
+    }
 
     /**
      * Factory interface you must use to create a [SrtBitrateRegulator] object.
      * If you want to create a custom SRT bitrate regulation implementation, create a factory that
      * implements this interface.
      */
-    interface Factory : IBitrateRegulator.Factory<Stats> {
+    interface Factory : IBitrateRegulator.Factory {
         /**
          * Creates a [SrtBitrateRegulator] object from given parameters
          *

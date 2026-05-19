@@ -15,9 +15,9 @@
  */
 package io.github.thibaultbee.streampack.core.elements.interfaces
 
-interface WithMetrics<out T : Any> {
+interface WithMetrics {
     /**
      * Metrics of the element.
      */
-    val metrics: T
+    val metrics: Any
 }

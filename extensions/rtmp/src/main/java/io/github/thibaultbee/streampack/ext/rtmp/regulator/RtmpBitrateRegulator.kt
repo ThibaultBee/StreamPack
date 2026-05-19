@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.ext.rtmp.regulator
 
 import io.github.komedia.komuxer.rtmp.util.metrics.RtmpMetrics
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
+import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.regulator.BitrateRegulator
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
 
@@ -34,7 +35,7 @@ abstract class RtmpBitrateRegulator(
     bitrateRegulatorConfig: BitrateRegulatorConfig,
     onVideoTargetBitrateChange: ((Int) -> Unit),
     onAudioTargetBitrateChange: ((Int) -> Unit)
-) : BitrateRegulator<RtmpMetrics>(
+) : BitrateRegulator(
     bitrateRegulatorConfig,
     onVideoTargetBitrateChange,
     onAudioTargetBitrateChange
@@ -46,18 +47,37 @@ abstract class RtmpBitrateRegulator(
      * @param currentVideoBitrate current video bitrate target in bits/s.
      * @param currentAudioBitrate current audio bitrate target in bits/s.
      */
-    abstract override fun update(
+    override fun update(metrics: Any, currentVideoBitrate: Int, currentAudioBitrate: Int) {
+        if (metrics !is RtmpMetrics) {
+            Logger.w(TAG, "Expect RtmpMetrics but got ${metrics::class.java.simpleName}")
+            return
+        }
+        update(metrics, currentVideoBitrate, currentAudioBitrate)
+    }
+
+    /**
+     * Call regularly to get new RTMP metrics
+     *
+     * @param metrics RTMP transmission metrics
+     * @param currentVideoBitrate current video bitrate target in bits/s.
+     * @param currentAudioBitrate current audio bitrate target in bits/s.
+     */
+    abstract fun update(
         metrics: RtmpMetrics,
         currentVideoBitrate: Int,
         currentAudioBitrate: Int
     )
+    
+    companion object {
+        private const val TAG = "RtmpBitrateRegulator"
+    }
 
     /**
      * Factory interface you must use to create a [RtmpBitrateRegulator] object.
      * If you want to create a custom RTMP bitrate regulation implementation, create a factory that
      * implements this interface.
      */
-    interface Factory : IBitrateRegulator.Factory<RtmpMetrics> {
+    interface Factory : IBitrateRegulator.Factory {
         /**
          * Creates a [RtmpBitrateRegulator] object from given parameters
          *
