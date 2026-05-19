@@ -39,7 +39,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSink(),
-    WithMetrics<Stats> {
+    WithMetrics {
     override val supportedSinkTypes: List<MediaSinkType> = listOf(MediaSinkType.SRT)
 
     private var socket: CoroutineSrtSocket? = null
@@ -56,6 +56,9 @@ class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSi
 
     private val _isOpenFlow = MutableStateFlow(false)
     override val isOpenFlow = _isOpenFlow.asStateFlow()
+
+    fun bitstats(clear: Boolean, instantaneous: Boolean) =
+        socket?.bistats(clear = clear, instantaneous = instantaneous) ?: SrtStatsHelper.ZERO
 
     override fun configure(config: SinkConfiguration) {
         bitrate = config.streamConfigs.sumOf { it.startBitrate.toLong() }

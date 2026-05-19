@@ -49,7 +49,7 @@ open class DynamicEndpoint(
     private val context: Context,
     private val defaultDispatcher: CoroutineDispatcher,
     private val ioDispatcher: CoroutineDispatcher
-) : IEndpointInternal, WithMetrics<Any> {
+) : IEndpointInternal, WithMetrics {
     private val coroutineScope = CoroutineScope(defaultDispatcher)
     private val mutex = Mutex()
 
@@ -88,7 +88,7 @@ open class DynamicEndpoint(
     override val metrics: Any
         get() {
             val endpoint = endpoint ?: throw IllegalStateException("Endpoint is not opened")
-            return (endpoint as? WithMetrics<*>)?.metrics
+            return (endpoint as? WithMetrics)?.metrics
                 ?: throw UnsupportedOperationException("Current endpoint does not support metrics")
         }
 

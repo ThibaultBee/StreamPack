@@ -27,8 +27,8 @@ import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfi
  * @param onVideoTargetBitrateChange call when you have to change video bitrate
  * @param onAudioTargetBitrateChange call when you have to change audio bitrate
  */
-abstract class BitrateRegulator<T : Any>(
+abstract class BitrateRegulator(
     protected val bitrateRegulatorConfig: BitrateRegulatorConfig,
     protected val onVideoTargetBitrateChange: ((Int) -> Unit),
     protected val onAudioTargetBitrateChange: ((Int) -> Unit)
-) : IBitrateRegulator<T>
+) : IBitrateRegulator
