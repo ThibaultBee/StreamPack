@@ -608,6 +608,21 @@ internal class EncodingPipelineOutput(
 
             streamEventListener?.onStartStream()
 
+            // [Hoso fork patch — fix/twitch-audio-race-hoso]
+            // The endpoint MUST be fully started (RTMP publish() complete, FLV
+            // header + onMetaData sent) BEFORE any encoder coroutine is
+            // launched. The AAC encoder emits its sequence header (csd-0,
+            // AACPacketType=0) within milliseconds of MediaCodec.start(); the
+            // output consumer in init{} forwards it to the endpoint
+            // immediately. If endpoint.startStream() has not run yet, the
+            // RtmpEndpoint.write() call silently catches the failure
+            // (Throwable swallowed), AudioFlvStream.sentSequenceStart flips to
+            // true, and the codec config is never re-emitted. Twitch then
+            // reports an empty Audio Codec / SampleRate forever.
+            // Moving endpointInternal.startStream() here guarantees publish()
+            // has handshaked before any frame is written.
+            endpointInternal.startStream()
+
             val audioEncoderJob = audioEncoderInternal?.let {
                 coroutineScope.launch {
                     it.startStream()
@@ -622,8 +637,6 @@ internal class EncodingPipelineOutput(
 
             audioEncoderJob?.join()
             videoEncoderJob?.join()
-
-            endpointInternal.startStream()
 
             bitrateRegulatorController?.start()
         } catch (t: Throwable) {
