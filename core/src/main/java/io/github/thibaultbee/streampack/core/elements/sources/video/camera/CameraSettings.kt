@@ -56,7 +56,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.sensitivityRange
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.zoomRatioRange
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureResultListener
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.clamp
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.coerceIn
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isApplicationPortrait
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isNormalized
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.launchIn
@@ -533,7 +533,7 @@ class CameraSettings internal constructor(
         suspend fun setSensorSensitivity(sensorSensitivity: Int) {
             cameraSettings.set(
                 CaptureRequest.SENSOR_SENSITIVITY,
-                sensorSensitivity.clamp(availableSensorSensitivityRange)
+                sensorSensitivity.coerceIn(availableSensorSensitivityRange)
             )
             cameraSettings.applyRepeatingSession()
         }
@@ -693,7 +693,7 @@ class CameraSettings internal constructor(
         suspend fun setCompensation(compensation: Int) {
             cameraSettings.set(
                 CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION,
-                compensation.clamp(availableCompensationRange)
+                compensation.coerceIn(availableCompensationRange)
             )
             cameraSettings.applyRepeatingSession()
         }
@@ -777,7 +777,7 @@ class CameraSettings internal constructor(
         suspend fun onPinch(scale: Float) {
             val scaledRatio: Float = getZoomRatio() * speedUpZoomByX(scale, 2)
             // Clamp the ratio with the zoom range.
-            setZoomRatio(scaledRatio.clamp(availableRatioRange.lower, availableRatioRange.upper))
+            setZoomRatio(scaledRatio.coerceIn(availableRatioRange.lower, availableRatioRange.upper))
         }
 
         private fun speedUpZoomByX(scaleFactor: Float, ratio: Int): Float {
@@ -825,7 +825,7 @@ class CameraSettings internal constructor(
             @RequiresPermission(Manifest.permission.CAMERA)
             override suspend fun setZoomRatio(zoomRatio: Float) {
                 mutex.withLock {
-                    val clampedValue = zoomRatio.clamp(availableRatioRange)
+                    val clampedValue = zoomRatio.coerceIn(availableRatioRange)
                     if (clampedValue == persistentZoomRatio) {
                         return@withLock
                     }
@@ -905,7 +905,7 @@ class CameraSettings internal constructor(
                     return
                 }
                 cameraSettings.set(
-                    CaptureRequest.CONTROL_ZOOM_RATIO, zoomRatio.clamp(availableRatioRange)
+                    CaptureRequest.CONTROL_ZOOM_RATIO, zoomRatio.coerceIn(availableRatioRange)
                 )
                 cameraSettings.applyRepeatingSession()
                 notifyZoomListeners(zoomRatio)
@@ -1021,7 +1021,7 @@ class CameraSettings internal constructor(
         @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setLensDistance(lensDistance: Float) {
             cameraSettings.set(
-                CaptureRequest.LENS_FOCUS_DISTANCE, lensDistance.clamp(availableLensDistanceRange)
+                CaptureRequest.LENS_FOCUS_DISTANCE, lensDistance.coerceIn(availableLensDistanceRange)
             )
             cameraSettings.applyRepeatingSession()
         }
@@ -1618,10 +1618,10 @@ class CameraSettings internal constructor(
                     (centerY + height / 2).toInt()
                 )
 
-                focusRect.left = focusRect.left.clamp(cropRegion.right, cropRegion.left)
-                focusRect.right = focusRect.right.clamp(cropRegion.right, cropRegion.left)
-                focusRect.top = focusRect.top.clamp(cropRegion.bottom, cropRegion.top)
-                focusRect.bottom = focusRect.bottom.clamp(cropRegion.bottom, cropRegion.top)
+                focusRect.left = focusRect.left.coerceIn(cropRegion.right, cropRegion.left)
+                focusRect.right = focusRect.right.coerceIn(cropRegion.right, cropRegion.left)
+                focusRect.top = focusRect.top.coerceIn(cropRegion.bottom, cropRegion.top)
+                focusRect.bottom = focusRect.bottom.coerceIn(cropRegion.bottom, cropRegion.top)
 
                 return MeteringRectangle(focusRect, DEFAULT_METERING_WEIGHT_MAX)
             }

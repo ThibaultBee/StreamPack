@@ -13,28 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.ext.rtmp.regulator.controllers
+package io.github.thibaultbee.streampack.core.regulator.controllers
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
-import io.github.thibaultbee.streampack.core.regulator.controllers.IntervalBitrateRegulatorController
+import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
+import io.github.thibaultbee.streampack.core.regulator.SimpleBitrateRegulator
 import io.github.thibaultbee.streampack.core.regulator.controllers.IntervalBitrateRegulatorController.Companion.DEFAULT_POLLING_TIME_IN_MS
-import io.github.thibaultbee.streampack.ext.rtmp.regulator.RtmpBitrateRegulator
-import io.github.thibaultbee.streampack.ext.rtmp.regulator.SimpleRtmpBitrateRegulator
+import io.github.thibaultbee.streampack.core.regulator.controllers.IntervalBitrateRegulatorController.Factory
 
 /**
- * A [IntervalBitrateRegulatorController.Factory] for [RtmpBitrateRegulator].
+ * A [IntervalBitrateRegulatorController.Factory] for [IBitrateRegulator].
  *
- * @param bitrateRegulatorFactory the [RtmpBitrateRegulator.Factory] implementation. Use it to make your own bitrate regulator.
+ * @param bitrateRegulatorFactory the [IBitrateRegulator.Factory] implementation. Use it to make your own bitrate regulator.
  * @param bitrateRegulatorConfig bitrate regulator configuration
- * @param pollingTimeInMs delay between each call to [RtmpBitrateRegulator.update]
- *
- * @see IntervalBitrateRegulatorController.Factory
- * @see SimpleRtmpBitrateRegulator.Factory
+ * @param pollingTimeInMs delay between each call to [IBitrateRegulator.update]
  */
 fun intervalRtmpBitrateRegulatorControllerFactory(
-    bitrateRegulatorFactory: RtmpBitrateRegulator.Factory = SimpleRtmpBitrateRegulator.Factory(),
+    bitrateRegulatorFactory: IBitrateRegulator.Factory = SimpleBitrateRegulator.Factory(),
     bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
     pollingTimeInMs: Long = DEFAULT_POLLING_TIME_IN_MS
-) = IntervalBitrateRegulatorController.Factory(
+) = Factory(
     bitrateRegulatorFactory, bitrateRegulatorConfig, pollingTimeInMs
 )

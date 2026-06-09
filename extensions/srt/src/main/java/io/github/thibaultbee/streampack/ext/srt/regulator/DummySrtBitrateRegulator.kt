@@ -15,8 +15,8 @@
  */
 package io.github.thibaultbee.streampack.ext.srt.regulator
 
-import io.github.thibaultbee.srtdroid.core.models.Stats
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
+import io.github.thibaultbee.streampack.ext.srt.utils.SrtEndpointMetrics
 import kotlin.math.max
 import kotlin.math.min
 
@@ -42,12 +42,13 @@ class DummySrtBitrateRegulator(
         const val SEND_PACKET_THRESHOLD = 50
     }
 
-    override fun update(metrics: Stats, currentVideoBitrate: Int, currentAudioBitrate: Int) {
-        val estimatedBandwidth = (metrics.mbpsBandwidth * 1000000).toInt()
+    override fun update(metrics: SrtEndpointMetrics, currentVideoBitrate: Int, currentAudioBitrate: Int) {
+        val stats = metrics.rawMetrics.bistatsOrNull(clear = true, instantaneous = true) ?: return
+        val estimatedBandwidth = (stats.mbpsBandwidth * 1000000).toInt()
 
         if (currentVideoBitrate > bitrateRegulatorConfig.videoBitrateRange.lower) {
             val newVideoBitrate = when {
-                metrics.pktSndLoss > 0 -> {
+                stats.pktSndLoss > 0 -> {
                     // Detected packet loss - quickly react
                     currentVideoBitrate - max(
                         currentVideoBitrate * 20 / 100, // too late - drop bitrate by 20 %
@@ -55,7 +56,7 @@ class DummySrtBitrateRegulator(
                     )
                 }
 
-                metrics.pktSndBuf > SEND_PACKET_THRESHOLD -> {
+                stats.pktSndBuf > SEND_PACKET_THRESHOLD -> {
                     // Try to avoid congestion
                     currentVideoBitrate - max(
                         currentVideoBitrate * 10 / 100, // drop bitrate by 10 %
@@ -72,12 +73,7 @@ class DummySrtBitrateRegulator(
             }
 
             if (newVideoBitrate != 0) {
-                onVideoTargetBitrateChange(
-                    max(
-                        newVideoBitrate,
-                        bitrateRegulatorConfig.videoBitrateRange.lower
-                    )
-                ) // Don't go under videoBitrateRange.lower
+                onVideoTargetBitrateChange(newVideoBitrate)
                 return
             }
             // Can bitrate go upper?
@@ -94,12 +90,7 @@ class DummySrtBitrateRegulator(
             }
 
             if (newVideoBitrate != 0) {
-                onVideoTargetBitrateChange(
-                    max(
-                        newVideoBitrate,
-                        bitrateRegulatorConfig.videoBitrateRange.lower
-                    )
-                ) // Don't go under videoBitrateRange.lower
+                onVideoTargetBitrateChange(newVideoBitrate)
                 return
             }
         }

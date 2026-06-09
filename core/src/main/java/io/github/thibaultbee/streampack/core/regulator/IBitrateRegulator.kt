@@ -16,19 +16,20 @@
 package io.github.thibaultbee.streampack.core.regulator
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
+import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetrics
 
 /**
  * Interface to implement a bitrate regulator.
  */
 interface IBitrateRegulator {
     /**
-     * Calls regularly to get new metrics
+     * Called regularly to get new metrics
      *
-     * @param metrics transmission metrics
+     * @param metrics endpoint metrics
      * @param currentVideoBitrate current video bitrate target in bits/s.
      * @param currentAudioBitrate current audio bitrate target in bits/s.
      */
-    fun update(metrics: Any, currentVideoBitrate: Int, currentAudioBitrate: Int)
+    fun update(metrics: EndpointMetrics<*>, currentVideoBitrate: Int, currentAudioBitrate: Int)
 
     /**
      * Factory interface you must use to create a [BitrateRegulator] object.

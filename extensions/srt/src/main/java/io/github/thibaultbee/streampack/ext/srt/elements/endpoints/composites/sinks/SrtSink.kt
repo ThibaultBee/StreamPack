@@ -20,7 +20,6 @@ import io.github.thibaultbee.srtdroid.core.enums.SockOpt
 import io.github.thibaultbee.srtdroid.core.enums.Transtype
 import io.github.thibaultbee.srtdroid.core.models.MsgCtrl
 import io.github.thibaultbee.srtdroid.core.models.SrtUrl.Mode
-import io.github.thibaultbee.srtdroid.core.models.Stats
 import io.github.thibaultbee.srtdroid.ktx.CoroutineSrtSocket
 import io.github.thibaultbee.srtdroid.ktx.connect
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
@@ -30,16 +29,17 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.SrtPacket
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.AbstractSink
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
-import io.github.thibaultbee.streampack.core.elements.interfaces.WithMetrics
+import io.github.thibaultbee.streampack.core.elements.metrics.WithEndpointMetrics
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.ext.srt.configuration.mediadescriptor.SrtMediaDescriptor
-import io.github.thibaultbee.streampack.ext.srt.utils.SrtStatsHelper
+import io.github.thibaultbee.streampack.ext.srt.utils.SrtRawMetrics
+import io.github.thibaultbee.streampack.ext.srt.utils.SrtEndpointMetrics
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSink(),
-    WithMetrics {
+    WithEndpointMetrics {
     override val supportedSinkTypes: List<MediaSinkType> = listOf(MediaSinkType.SRT)
 
     private var socket: CoroutineSrtSocket? = null
@@ -48,17 +48,16 @@ class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSi
 
     private var bitrate = 0L
 
+    private val srtRawMetrics = SrtRawMetrics { socket }
+
     /**
      * Get SRT stats
      */
-    override val metrics: Stats
-        get() = socket?.bistats(clear = true, instantaneous = true) ?: SrtStatsHelper.ZERO
+    override val metrics: SrtEndpointMetrics
+        get() = SrtEndpointMetrics(srtRawMetrics)
 
     private val _isOpenFlow = MutableStateFlow(false)
     override val isOpenFlow = _isOpenFlow.asStateFlow()
-
-    fun bitstats(clear: Boolean, instantaneous: Boolean) =
-        socket?.bistats(clear = clear, instantaneous = instantaneous) ?: SrtStatsHelper.ZERO
 
     override fun configure(config: SinkConfiguration) {
         bitrate = config.streamConfigs.sumOf { it.startBitrate.toLong() }

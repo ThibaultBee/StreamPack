@@ -1,23 +1,7 @@
-/*
- * Copyright (C) 2026 Thibault B.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package io.github.thibaultbee.streampack.ext.rtmp.regulator
+package io.github.thibaultbee.streampack.core.regulator
 
-import io.github.komedia.komuxer.rtmp.util.metrics.RtmpMetrics
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
-import io.github.thibaultbee.streampack.core.regulator.BitrateRegulator
+import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetrics
 import kotlin.math.max
 import kotlin.math.min
 
@@ -28,75 +12,78 @@ import kotlin.math.min
  * @param onVideoTargetBitrateChange call when you have to change video bitrate
  * @param onAudioTargetBitrateChange call when you have to change audio bitrate
  */
-class SimpleRtmpBitrateRegulator(
+class SimpleBitrateRegulator(
     bitrateRegulatorConfig: BitrateRegulatorConfig,
     onVideoTargetBitrateChange: ((Int) -> Unit),
     onAudioTargetBitrateChange: ((Int) -> Unit)
-) : RtmpBitrateRegulator(
+) : BitrateRegulator(
     bitrateRegulatorConfig,
     onVideoTargetBitrateChange,
     onAudioTargetBitrateChange
 ) {
     companion object {
-        const val MINIMUM_DECREASE_THRESHOLD = 100000 // b/s
-        const val MAXIMUM_INCREASE_THRESHOLD = 200000 // b/s
+        private const val MINIMUM_DECREASE_THRESHOLD = 100000 // b/s
+        private const val MAXIMUM_INCREASE_THRESHOLD = 200000 // b/s
     }
 
     /**
-     * Call regularly to get new RTMP metrics
+     * Called regularly to get new endpoint metrics
      *
-     * @param metrics RTMP transmission metrics
+     * @param metrics endpoint metrics
      * @param currentVideoBitrate current video bitrate target in bits/s.
      * @param currentAudioBitrate current audio bitrate target in bits/s.
      */
-    override fun update(metrics: RtmpMetrics, currentVideoBitrate: Int, currentAudioBitrate: Int) {
-        if (metrics.messagesSendDropped > 0) {
-            // Detected packet loss - quickly react
+    override fun update(
+        metrics: EndpointMetrics<*>,
+        currentVideoBitrate: Int,
+        currentAudioBitrate: Int
+    ) {
+        val packetsLostOrDropped = metrics.packetsSendDropped + metrics.packetsSendLost
+        if (packetsLostOrDropped > 0) {
+            // Detected packet dropped or loss - we should reduce the bitrate>
+            // How critical?
+            val percentageReduction = if (metrics.packetsSent == 0L) {
+                50
+            } else {
+                (packetsLostOrDropped * 100 / metrics.packetsSent).toInt().coerceIn(5, 50)
+            }
+
+            // Reduce current bitrate by percentageReduction %
             val newVideoBitrate = currentVideoBitrate - max(
-                currentVideoBitrate * 20 / 100, // too late - drop bitrate by 20 %
+                currentVideoBitrate * percentageReduction / 100,
                 MINIMUM_DECREASE_THRESHOLD // getting down by 100000 b/s minimum
             )
-            onVideoTargetBitrateChange(
-                max(
-                    newVideoBitrate,
-                    bitrateRegulatorConfig.videoBitrateRange.lower
-                )
-            )
-        } else if (currentVideoBitrate < bitrateRegulatorConfig.videoBitrateRange.upper) {
+            onVideoTargetBitrateChange(newVideoBitrate)
+        } else if (currentVideoBitrate < (bitrateRegulatorConfig.videoBitrateRange.upper * 90 / 100)) {
             // Try to increase to the max target
             val newVideoBitrate = currentVideoBitrate + min(
                 (bitrateRegulatorConfig.videoBitrateRange.upper - currentVideoBitrate) * 50 / 100, // getting slower when reaching target bitrate
                 MAXIMUM_INCREASE_THRESHOLD // not increasing to fast
             )
-            onVideoTargetBitrateChange(
-                min(
-                    newVideoBitrate,
-                    bitrateRegulatorConfig.videoBitrateRange.upper
-                )
-            )
+            onVideoTargetBitrateChange(newVideoBitrate)
         }
     }
 
     /**
-     * Factory interface you must use to create a [SimpleRtmpBitrateRegulator] object.
+     * Factory interface you must use to create a [SimpleBitrateRegulator] object.
      * If you want to create a custom RTMP bitrate regulation implementation, create a factory that
      * implements this interface.
      */
-    class Factory : RtmpBitrateRegulator.Factory {
+    class Factory : IBitrateRegulator.Factory {
         /**
-         * Creates a [SimpleRtmpBitrateRegulator] object from given parameters
+         * Creates a [SimpleBitrateRegulator] object from given parameters
          *
          * @param bitrateRegulatorConfig bitrate regulation configuration
          * @param onVideoTargetBitrateChange call when you have to change video bitrate
          * @param onAudioTargetBitrateChange call when you have to change audio bitrate
-         * @return a [SimpleRtmpBitrateRegulator] object
+         * @return a [SimpleBitrateRegulator] object
          */
         override fun newBitrateRegulator(
             bitrateRegulatorConfig: BitrateRegulatorConfig,
             onVideoTargetBitrateChange: ((Int) -> Unit),
             onAudioTargetBitrateChange: ((Int) -> Unit)
-        ): SimpleRtmpBitrateRegulator {
-            return SimpleRtmpBitrateRegulator(
+        ): SimpleBitrateRegulator {
+            return SimpleBitrateRegulator(
                 bitrateRegulatorConfig,
                 onVideoTargetBitrateChange,
                 onAudioTargetBitrateChange

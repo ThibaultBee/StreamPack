@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.core.regulator.controllers
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
-import io.github.thibaultbee.streampack.core.elements.interfaces.WithMetrics
+import io.github.thibaultbee.streampack.core.elements.metrics.WithEndpointMetrics
 import io.github.thibaultbee.streampack.core.elements.utils.CoroutineScheduler
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
@@ -30,15 +30,15 @@ import kotlinx.coroutines.CoroutineDispatcher
  *
  * @param audioEncoder the audio [IEncoder]
  * @param videoEncoder the video [IEncoder]
- * @param metricsProvider the [WithMetrics] implementation
+ * @param metricsProvider the [WithEndpointMetrics] implementation
  * @param bitrateRegulatorFactory the [IBitrateRegulator.Factory] implementation. Use it to make your own bitrate regulator.
  * @param bitrateRegulatorConfig bitrate regulator configuration
  * @param pollingTimeInMs delay between each call to [IBitrateRegulator.update]
  */
-open class IntervalBitrateRegulatorController(
+class IntervalBitrateRegulatorController(
     audioEncoder: IEncoder?,
     videoEncoder: IEncoder,
-    metricsProvider: WithMetrics,
+    metricsProvider: WithEndpointMetrics,
     bitrateRegulatorFactory: IBitrateRegulator.Factory,
     coroutineDispatcher: CoroutineDispatcher,
     bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
@@ -55,10 +55,10 @@ open class IntervalBitrateRegulatorController(
      */
     private val bitrateRegulator = bitrateRegulatorFactory.newBitrateRegulator(
         bitrateRegulatorConfig,
-        {
+        onVideoTargetBitrateChange = {
             videoEncoder.bitrate = it
         },
-        { /* Do nothing for audio */ }
+        onAudioTargetBitrateChange = { /* Do nothing for audio */ }
     )
 
     /**
@@ -106,7 +106,7 @@ open class IntervalBitrateRegulatorController(
             } else {
                 null
             }
-            val endpoint = pipelineOutput.endpoint as WithMetrics
+            val endpoint = pipelineOutput.endpoint as WithEndpointMetrics
             return IntervalBitrateRegulatorController(
                 audioEncoder,
                 videoEncoder,

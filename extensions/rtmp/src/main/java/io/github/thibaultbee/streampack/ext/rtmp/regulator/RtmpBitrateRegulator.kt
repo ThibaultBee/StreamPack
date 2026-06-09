@@ -15,11 +15,11 @@
  */
 package io.github.thibaultbee.streampack.ext.rtmp.regulator
 
-import io.github.komedia.komuxer.rtmp.util.metrics.RtmpMetrics
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
-import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetrics
 import io.github.thibaultbee.streampack.core.regulator.BitrateRegulator
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
+import io.github.thibaultbee.streampack.ext.rtmp.utils.RtmpEndpointMetrics
 
 /**
  * Base class of RTMP bitrate regulation implementation.
@@ -41,36 +41,32 @@ abstract class RtmpBitrateRegulator(
     onAudioTargetBitrateChange
 ) {
     /**
-     * Call regularly to get new RTMP metrics
+     * Called regularly to get new endpoint metrics
      *
-     * @param metrics RTMP transmission metrics
+     * @param metrics endpoint metrics
      * @param currentVideoBitrate current video bitrate target in bits/s.
      * @param currentAudioBitrate current audio bitrate target in bits/s.
      */
-    override fun update(metrics: Any, currentVideoBitrate: Int, currentAudioBitrate: Int) {
-        if (metrics !is RtmpMetrics) {
-            Logger.w(TAG, "Expect RtmpMetrics but got ${metrics::class.java.simpleName}")
-            return
-        }
-        update(metrics, currentVideoBitrate, currentAudioBitrate)
+    override fun update(
+        metrics: EndpointMetrics<*>,
+        currentVideoBitrate: Int,
+        currentAudioBitrate: Int
+    ) {
+        update(metrics as RtmpEndpointMetrics, currentVideoBitrate, currentAudioBitrate)
     }
 
     /**
-     * Call regularly to get new RTMP metrics
+     * Called regularly to get new RTMP metrics
      *
-     * @param metrics RTMP transmission metrics
+     * @param metrics RTMP endpoint metrics
      * @param currentVideoBitrate current video bitrate target in bits/s.
      * @param currentAudioBitrate current audio bitrate target in bits/s.
      */
     abstract fun update(
-        metrics: RtmpMetrics,
+        metrics: RtmpEndpointMetrics,
         currentVideoBitrate: Int,
         currentAudioBitrate: Int
     )
-    
-    companion object {
-        private const val TAG = "RtmpBitrateRegulator"
-    }
 
     /**
      * Factory interface you must use to create a [RtmpBitrateRegulator] object.
