@@ -15,11 +15,11 @@
  */
 package io.github.thibaultbee.streampack.ext.srt.regulator
 
-import io.github.thibaultbee.srtdroid.core.models.Stats
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
-import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetrics
 import io.github.thibaultbee.streampack.core.regulator.BitrateRegulator
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
+import io.github.thibaultbee.streampack.ext.srt.utils.SrtEndpointMetrics
 
 /**
  * Base class of SRT bitrate regulation implementation.
@@ -41,32 +41,28 @@ abstract class SrtBitrateRegulator(
     onAudioTargetBitrateChange
 ) {
     /**
-     * Call regularly to get new SRT metrics
+     * Called regularly to get new endpoint metrics
      *
-     * @param metrics SRT transmission metrics
+     * @param metrics endpoint metrics
      * @param currentVideoBitrate current video bitrate target in bits/s.
      * @param currentAudioBitrate current audio bitrate target in bits/s.
      */
-    override fun update(metrics: Any, currentVideoBitrate: Int, currentAudioBitrate: Int) {
-        if (metrics !is Stats) {
-            Logger.w(TAG, "Expect Stats but got ${metrics::class.java.simpleName}")
-            return
-        }
-        update(metrics, currentVideoBitrate, currentAudioBitrate)
+    override fun update(
+        metrics: EndpointMetrics<*>,
+        currentVideoBitrate: Int,
+        currentAudioBitrate: Int
+    ) {
+        update(metrics as SrtEndpointMetrics, currentVideoBitrate, currentAudioBitrate)
     }
 
     /**
-     * Call regularly to get new SRT metrics
+     * Called regularly to get new SRT endpoint metrics
      *
-     * @param metrics SRT transmission metrics
+     * @param metrics SRT endpoint metrics
      * @param currentVideoBitrate current video bitrate target in bits/s.
      * @param currentAudioBitrate current audio bitrate target in bits/s.
      */
-    abstract fun update(metrics: Stats, currentVideoBitrate: Int, currentAudioBitrate: Int)
-
-    companion object {
-        private const val TAG = "SrtBitrateRegulator"
-    }
+    abstract fun update(metrics: SrtEndpointMetrics, currentVideoBitrate: Int, currentAudioBitrate: Int)
 
     /**
      * Factory interface you must use to create a [SrtBitrateRegulator] object.

@@ -33,7 +33,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.ClosedException
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint.EndpointInfo
-import io.github.thibaultbee.streampack.core.elements.interfaces.WithMetrics
+import io.github.thibaultbee.streampack.core.elements.metrics.WithEndpointMetrics
 import io.github.thibaultbee.streampack.core.elements.utils.ChannelWithCloseableData
 import io.github.thibaultbee.streampack.core.elements.utils.useConsumeEach
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -42,6 +42,7 @@ import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.mu
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.FlvTagBuilder
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.close
 import io.github.thibaultbee.streampack.ext.rtmp.configuration.mediadescriptor.RtmpMediaDescriptor
+import io.github.thibaultbee.streampack.ext.rtmp.utils.RtmpEndpointMetrics
 import io.ktor.network.selector.SelectorManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -66,7 +67,7 @@ import kotlin.concurrent.atomics.ExperimentalAtomicApi
 @OptIn(ExperimentalAtomicApi::class)
 class RtmpEndpoint internal constructor(
     defaultDispatcher: CoroutineDispatcher, val ioDispatcher: CoroutineDispatcher
-) : IEndpointInternal, WithMetrics {
+) : IEndpointInternal, WithEndpointMetrics {
     private val coroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
     private val mutex = Mutex()
 
@@ -105,7 +106,7 @@ class RtmpEndpoint internal constructor(
     private var startUpTimestamp = INVALID_TIMESTAMP
     private val timestampMutex = Mutex()
 
-    override val metrics: RtmpMetrics
+    private val syncMetrics: RtmpMetrics
         get() {
             val metrics =
                 rtmpClient?.metrics ?: return RtmpMetrics.ZERO
@@ -120,6 +121,9 @@ class RtmpEndpoint internal constructor(
                 )
             }
         }
+
+    override val metrics: RtmpEndpointMetrics
+        get() = RtmpEndpointMetrics(syncMetrics)
 
     private val _isOpenFlow = MutableStateFlow(false)
     override val isOpenFlow = _isOpenFlow.asStateFlow()

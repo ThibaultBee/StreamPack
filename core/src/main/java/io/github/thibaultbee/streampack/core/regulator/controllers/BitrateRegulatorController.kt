@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.core.regulator.controllers
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
-import io.github.thibaultbee.streampack.core.elements.interfaces.WithMetrics
+import io.github.thibaultbee.streampack.core.elements.metrics.WithEndpointMetrics
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
 import kotlinx.coroutines.CoroutineDispatcher
@@ -27,14 +27,14 @@ import kotlinx.coroutines.CoroutineDispatcher
  *
  * @param audioEncoder the audio [IEncoder]
  * @param videoEncoder the video [IEncoder]
- * @param endpoint the [WithMetrics] implementation
+ * @param metricsProvider the [WithEndpointMetrics] implementation
  * @param bitrateRegulatorFactory the [IBitrateRegulator.Factory] implementation. Use it to make your own bitrate regulator.
  * @param bitrateRegulatorConfig bitrate regulator configuration
  */
 abstract class BitrateRegulatorController(
     private val audioEncoder: IEncoder?,
     private val videoEncoder: IEncoder?,
-    private val endpoint: WithMetrics,
+    private val metricsProvider: WithEndpointMetrics,
     private val bitrateRegulatorFactory: IBitrateRegulator.Factory,
     private val bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig()
 ) : IBitrateRegulatorController {

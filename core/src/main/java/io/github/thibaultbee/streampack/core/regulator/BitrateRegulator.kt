@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.core.regulator
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.coerceIn
 
 /**
  * Abstract class for the bitrate regulation implementation.
@@ -29,6 +30,15 @@ import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfi
  */
 abstract class BitrateRegulator(
     protected val bitrateRegulatorConfig: BitrateRegulatorConfig,
-    protected val onVideoTargetBitrateChange: ((Int) -> Unit),
-    protected val onAudioTargetBitrateChange: ((Int) -> Unit)
-) : IBitrateRegulator
+    onVideoTargetBitrateChange: ((Int) -> Unit),
+    onAudioTargetBitrateChange: ((Int) -> Unit)
+) : IBitrateRegulator {
+
+    protected val onVideoTargetBitrateChange: ((Int) -> Unit) = {
+        onVideoTargetBitrateChange(it.coerceIn(bitrateRegulatorConfig.videoBitrateRange))
+    }
+
+    protected val onAudioTargetBitrateChange: ((Int) -> Unit) = {
+        onAudioTargetBitrateChange(it.coerceIn(bitrateRegulatorConfig.audioBitrateRange))
+    }
+}
