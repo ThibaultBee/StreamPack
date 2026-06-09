@@ -25,8 +25,9 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ContentSink
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
+import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetrics
+import io.github.thibaultbee.streampack.core.elements.metrics.WithEndpointMetrics
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
-import io.github.thibaultbee.streampack.core.elements.interfaces.WithMetrics
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.CoroutineDispatcher
@@ -49,7 +50,7 @@ open class DynamicEndpoint(
     private val context: Context,
     private val defaultDispatcher: CoroutineDispatcher,
     private val ioDispatcher: CoroutineDispatcher
-) : IEndpointInternal, WithMetrics {
+) : IEndpointInternal, WithEndpointMetrics {
     private val coroutineScope = CoroutineScope(defaultDispatcher)
     private val mutex = Mutex()
 
@@ -85,10 +86,10 @@ open class DynamicEndpoint(
 
     override fun getInfo(type: MediaDescriptor.Type) = getEndpoint(type).getInfo(type)
 
-    override val metrics: Any
+    override val metrics: EndpointMetrics<*>
         get() {
             val endpoint = endpoint ?: throw IllegalStateException("Endpoint is not opened")
-            return (endpoint as? WithMetrics)?.metrics
+            return (endpoint as? WithEndpointMetrics)?.metrics
                 ?: throw UnsupportedOperationException("Current endpoint does not support metrics")
         }
 

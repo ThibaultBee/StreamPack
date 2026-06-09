@@ -65,7 +65,7 @@ import io.github.thibaultbee.streampack.core.streamers.single.VideoOnlySingleStr
 import io.github.thibaultbee.streampack.core.streamers.single.withAudio
 import io.github.thibaultbee.streampack.core.streamers.single.withVideo
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
-import io.github.thibaultbee.streampack.ext.rtmp.regulator.controllers.intervalRtmpBitrateRegulatorControllerFactory
+import io.github.thibaultbee.streampack.core.regulator.controllers.intervalRtmpBitrateRegulatorControllerFactory
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.intervalSrtBitrateRegulatorControllerFactory
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers

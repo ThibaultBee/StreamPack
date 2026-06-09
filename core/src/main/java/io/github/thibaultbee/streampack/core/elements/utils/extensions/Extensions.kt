@@ -43,16 +43,16 @@ internal fun Any.numOfBits(): Int {
     }
 }
 
-internal fun <T : Comparable<T>> T.clamp(min: T, max: T): T {
-    return if (max >= min) {
-        if (this < min) min else if (this > max) max else this
-    } else {
-        if (this < max) max else if (this > min) min else this
+internal fun <T : Comparable<T>> T.coerceIn(min: T, max: T): T {
+    return when {
+        this < min -> min
+        this > max -> max
+        else -> this
     }
 }
 
-internal fun <T : Comparable<T>> T.clamp(range: Range<T>) =
-    this.clamp(range.lower, range.upper)
+internal fun <T : Comparable<T>> T.coerceIn(range: Range<T>) =
+    this.coerceIn(range.lower, range.upper)
 
 internal val PointF.isNormalized: Boolean
     get() = x in 0f..1f && y in 0f..1f

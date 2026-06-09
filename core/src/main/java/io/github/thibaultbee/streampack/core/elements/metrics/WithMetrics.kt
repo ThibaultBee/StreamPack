@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.core.elements.interfaces
+package io.github.thibaultbee.streampack.core.elements.metrics
 
-interface WithMetrics {
+/**
+ * Minimal metrics interface
+ */
+interface WithMetrics<T> {
     /**
      * Metrics of the element.
      */
-    val metrics: Any
+    val metrics: T
 }
