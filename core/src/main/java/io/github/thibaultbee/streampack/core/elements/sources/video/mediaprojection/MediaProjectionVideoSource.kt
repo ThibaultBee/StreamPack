@@ -39,6 +39,7 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_VIRTUAL_DISPLAY
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.utils.HandlerThreadExecutor
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
@@ -109,6 +110,13 @@ internal class MediaProjectionVideoSource(
         val screenSize = getMediaProjectionSurfaceSize()
 
         mediaProjection.registerCallback(mediaProjectionCallback, virtualDisplayHandler)
+        // [Hoso fork patch — fix/mediaprojection-black-first-frame]
+        // On OPPO/ColorOS (Android 14), the FIRST AUTO_MIRROR VirtualDisplay
+        // created immediately after MediaProjection consent mirrors a black
+        // frame for the entire session; a second stream attempt works because
+        // the projection link is already warm. A short settle delay before
+        // creating the display lets the mirror bind to live screen content.
+        delay(FIRST_FRAME_SETTLE_MS)
         virtualDisplay = mediaProjection.createVirtualDisplay(
             VIRTUAL_DISPLAY_NAME,
             screenSize.width,
@@ -161,6 +169,10 @@ internal class MediaProjectionVideoSource(
         private const val TAG = "MediaProjectionVideo"
 
         private const val VIRTUAL_DISPLAY_NAME = "StreamPackScreenSource"
+
+        // [Hoso fork patch] settle delay before first AUTO_MIRROR display
+        // creation — works around black-first-frame on OPPO/ColorOS A14.
+        private const val FIRST_FRAME_SETTLE_MS = 600L
     }
 }
 
