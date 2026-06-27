@@ -25,11 +25,11 @@ import kotlin.time.Duration
 fun RtmpEndpointMetrics(rawMetrics: RtmpMetrics): RtmpEndpointMetrics {
     return RtmpEndpointMetrics(
         uptime = rawMetrics.uptime,
-        packetsSent = rawMetrics.messagesSent,
-        packetsSendDropped = rawMetrics.messagesSendDropped,
-        packetsSendLost = 0L,
-        bytesSent = rawMetrics.totalBytesSent,
-        bytesSendDropped = rawMetrics.payloadSendDroppedSize,
+        packetsWritten = rawMetrics.messagesSent,
+        packetsWriteDropped = rawMetrics.messagesSendDropped,
+        packetsWriteLost = 0L,
+        bytesWritten = rawMetrics.totalBytesSent,
+        bytesWriteDropped = rawMetrics.payloadSendDroppedSize,
         rawMetrics = rawMetrics
     )
 }
@@ -39,10 +39,10 @@ fun RtmpEndpointMetrics(rawMetrics: RtmpMetrics): RtmpEndpointMetrics {
  */
 data class RtmpEndpointMetrics(
     override val uptime: Duration,
-    override val packetsSent: Long,
-    override val packetsSendDropped: Long,
-    override val packetsSendLost: Long,
-    override val bytesSent: Long,
-    override val bytesSendDropped: Long,
+    override val packetsWritten: Long,
+    override val packetsWriteDropped: Long,
+    override val packetsWriteLost: Long,
+    override val bytesWritten: Long,
+    override val bytesWriteDropped: Long,
     override val rawMetrics: RtmpMetrics
 ) : EndpointMetrics<RtmpMetrics>

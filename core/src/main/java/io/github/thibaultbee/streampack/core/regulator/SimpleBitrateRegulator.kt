@@ -38,14 +38,14 @@ class SimpleBitrateRegulator(
         currentVideoBitrate: Int,
         currentAudioBitrate: Int
     ) {
-        val packetsLostOrDropped = metrics.packetsSendDropped + metrics.packetsSendLost
+        val packetsLostOrDropped = metrics.packetsWriteDropped + metrics.packetsWriteLost
         if (packetsLostOrDropped > 0) {
             // Detected packet dropped or loss - we should reduce the bitrate>
             // How critical?
-            val percentageReduction = if (metrics.packetsSent == 0L) {
+            val percentageReduction = if (metrics.packetsWritten == 0L) {
                 50
             } else {
-                (packetsLostOrDropped * 100 / metrics.packetsSent).toInt().coerceIn(5, 50)
+                (packetsLostOrDropped * 100 / metrics.packetsWritten).toInt().coerceIn(5, 50)
             }
 
             // Reduce current bitrate by percentageReduction %
