@@ -24,49 +24,49 @@ interface BasicEndpointMetrics {
     val uptime: Duration
 
     /**
-     *  The number of packets sent.
+     *  The number of packets written.
      */
-    val packetsSent: Long
+    val packetsWritten: Long
 
     /**
-     * The number of packets dropped before sending (e.g. due to congestion or timeout).
+     * The number of packets dropped before writing (e.g. due to congestion or timeout).
      */
-    val packetsSendDropped: Long
+    val packetsWriteDropped: Long
 
     /**
      * The number of packets lost during the transmission.
      */
-    val packetsSendLost: Long
+    val packetsWriteLost: Long
 
     /**
-     * The number of bytes successfully sent.
+     * The number of bytes successfully written.
      */
-    val bytesSent: Long
+    val bytesWritten: Long
 
     /**
-     * The number of bytes dropped before sending (e.g. due to congestion or timeout).
+     * The number of bytes dropped before writing (e.g. due to congestion or timeout).
      */
-    val bytesSendDropped: Long
+    val bytesWriteDropped: Long
     /**
      * Subtracts two [BasicEndpointMetrics]s.
      */
     operator fun minus(other: BasicEndpointMetrics): BasicEndpointMetrics {
         return object : BasicEndpointMetrics {
             override val uptime = this@BasicEndpointMetrics.uptime - other.uptime
-            override val packetsSent = this@BasicEndpointMetrics.packetsSent - other.packetsSent
-            override val packetsSendDropped = this@BasicEndpointMetrics.packetsSendDropped - other.packetsSendDropped
-            override val packetsSendLost = this@BasicEndpointMetrics.packetsSendLost - other.packetsSendLost
-            override val bytesSent = this@BasicEndpointMetrics.bytesSent - other.bytesSent
-            override val bytesSendDropped = this@BasicEndpointMetrics.bytesSendDropped - other.bytesSendDropped
+            override val packetsWritten = this@BasicEndpointMetrics.packetsWritten - other.packetsWritten
+            override val packetsWriteDropped = this@BasicEndpointMetrics.packetsWriteDropped - other.packetsWriteDropped
+            override val packetsWriteLost = this@BasicEndpointMetrics.packetsWriteLost - other.packetsWriteLost
+            override val bytesWritten = this@BasicEndpointMetrics.bytesWritten - other.bytesWritten
+            override val bytesWriteDropped = this@BasicEndpointMetrics.bytesWriteDropped - other.bytesWriteDropped
         }
     }
 }
 
 /**
- * The total sent bitrate in bits per second (bps).
+ * The total written bitrate in bits per second (bps).
  */
-val BasicEndpointMetrics.sentBitrateInBps: Long
-    get() = uptime.inWholeMilliseconds.let { if (it == 0L) 0L else (bytesSent * 8000) / it }
+val BasicEndpointMetrics.writtenBitrateInBps: Long
+    get() = uptime.inWholeMilliseconds.let { if (it == 0L) 0L else (bytesWritten * 8000) / it }
 
 /**
  * Endpoint metrics interface
