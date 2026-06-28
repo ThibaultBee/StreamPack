@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.core.regulator
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
+import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetricsTracker
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.coerceIn
 
 /**
@@ -24,11 +25,13 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.coerceIn
  * If you want to implement your custom bitrate regulator, it must inherit from this class.
  * The bitrate regulator object is created by streamers through the [IBitrateRegulator.Factory].
  *
+ * @param metricsTracker endpoint metrics tracker
  * @param bitrateRegulatorConfig bitrate regulation configuration
  * @param onVideoTargetBitrateChange call when you have to change video bitrate
  * @param onAudioTargetBitrateChange call when you have to change audio bitrate
  */
 abstract class BitrateRegulator(
+    override val metricsTracker: EndpointMetricsTracker,
     protected val bitrateRegulatorConfig: BitrateRegulatorConfig,
     onVideoTargetBitrateChange: ((Int) -> Unit),
     onAudioTargetBitrateChange: ((Int) -> Unit)

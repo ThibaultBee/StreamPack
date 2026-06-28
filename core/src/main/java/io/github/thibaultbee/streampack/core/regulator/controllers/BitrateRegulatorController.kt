@@ -32,11 +32,11 @@ import kotlinx.coroutines.CoroutineDispatcher
  * @param bitrateRegulatorConfig bitrate regulator configuration
  */
 abstract class BitrateRegulatorController(
-    private val audioEncoder: IEncoder?,
-    private val videoEncoder: IEncoder?,
-    private val metricsProvider: WithEndpointMetrics,
-    private val bitrateRegulatorFactory: IBitrateRegulator.Factory,
-    private val bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig()
+    protected val audioEncoder: IEncoder?,
+    protected val videoEncoder: IEncoder?,
+    protected val metricsProvider: WithEndpointMetrics,
+    protected val bitrateRegulatorFactory: IBitrateRegulator.Factory,
+    protected val bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig()
 ) : IBitrateRegulatorController {
     abstract class Factory : IBitrateRegulatorController.Factory {
         /**

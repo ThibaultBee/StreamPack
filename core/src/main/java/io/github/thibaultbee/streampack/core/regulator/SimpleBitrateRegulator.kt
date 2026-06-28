@@ -1,7 +1,7 @@
 package io.github.thibaultbee.streampack.core.regulator
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
-import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetrics
+import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetricsTracker
 import kotlin.math.max
 import kotlin.math.min
 
@@ -13,10 +13,12 @@ import kotlin.math.min
  * @param onAudioTargetBitrateChange call when you have to change audio bitrate
  */
 class SimpleBitrateRegulator(
+    metricsTracker: EndpointMetricsTracker,
     bitrateRegulatorConfig: BitrateRegulatorConfig,
     onVideoTargetBitrateChange: ((Int) -> Unit),
     onAudioTargetBitrateChange: ((Int) -> Unit)
 ) : BitrateRegulator(
+    metricsTracker,
     bitrateRegulatorConfig,
     onVideoTargetBitrateChange,
     onAudioTargetBitrateChange
@@ -29,15 +31,14 @@ class SimpleBitrateRegulator(
     /**
      * Called regularly to get new endpoint metrics
      *
-     * @param metrics endpoint metrics
      * @param currentVideoBitrate current video bitrate target in bits/s.
      * @param currentAudioBitrate current audio bitrate target in bits/s.
      */
     override fun update(
-        metrics: EndpointMetrics<*>,
         currentVideoBitrate: Int,
         currentAudioBitrate: Int
     ) {
+        val metrics = metricsTracker.instant
         val packetsLostOrDropped = metrics.packetsWriteDropped + metrics.packetsWriteLost
         if (packetsLostOrDropped > 0) {
             // Detected packet dropped or loss - we should reduce the bitrate>
@@ -73,17 +74,20 @@ class SimpleBitrateRegulator(
         /**
          * Creates a [SimpleBitrateRegulator] object from given parameters
          *
+         * @param metricsTracker endpoint metrics tracker
          * @param bitrateRegulatorConfig bitrate regulation configuration
          * @param onVideoTargetBitrateChange call when you have to change video bitrate
          * @param onAudioTargetBitrateChange call when you have to change audio bitrate
          * @return a [SimpleBitrateRegulator] object
          */
         override fun newBitrateRegulator(
+            metricsTracker: EndpointMetricsTracker,
             bitrateRegulatorConfig: BitrateRegulatorConfig,
             onVideoTargetBitrateChange: ((Int) -> Unit),
             onAudioTargetBitrateChange: ((Int) -> Unit)
         ): SimpleBitrateRegulator {
             return SimpleBitrateRegulator(
+                metricsTracker,
                 bitrateRegulatorConfig,
                 onVideoTargetBitrateChange,
                 onAudioTargetBitrateChange
