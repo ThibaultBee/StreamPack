@@ -829,7 +829,7 @@ internal class EncodingPipelineOutput(
     /**
      * Adds a bitrate regulator controller.
      */
-    override fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) {
+    override fun setBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Output is released")
         }
