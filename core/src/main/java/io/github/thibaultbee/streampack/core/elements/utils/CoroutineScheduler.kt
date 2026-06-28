@@ -22,8 +22,10 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+import kotlin.time.Duration
+
 class CoroutineScheduler(
-    private val delayTimeInMs: Long,
+    private val delayTime: Duration,
     coroutineDispatcher: CoroutineDispatcher,
     private val action: suspend CoroutineScope.() -> Unit
 ) {
@@ -36,7 +38,7 @@ class CoroutineScheduler(
         }
         job = coroutineScope.launch {
             while (true) {
-                delay(delayTimeInMs)
+                delay(delayTime)
                 launch { action() }
             }
         }
