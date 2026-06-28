@@ -30,6 +30,7 @@ class EndpointMetricsTracker(private val metricsProvider: WithEndpointMetrics) {
     /**
      * The instant metrics (difference between the current and the previous read).
      * If no previous read exists, it equals the current metrics.
+     * Avoid calling this from 2 different parts.
      */
     @get:Synchronized
     val instant: BasicEndpointMetrics

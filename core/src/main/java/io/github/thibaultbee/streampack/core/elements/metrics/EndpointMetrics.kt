@@ -15,6 +15,11 @@
  */
 package io.github.thibaultbee.streampack.core.elements.metrics
 
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
 import kotlin.time.Duration
 
 interface BasicEndpointMetrics {
@@ -84,3 +89,25 @@ interface EndpointMetrics<out T : Any> : BasicEndpointMetrics {
  * The members from [BasicEndpointMetrics] represent cumulative metrics.
  */
 interface WithEndpointMetrics : WithMetrics<EndpointMetrics<*>>
+
+/**
+ * Represents a pair of instant and cumulative metrics.
+ */
+data class TrackedMetrics(
+    val instant: BasicEndpointMetrics,
+    val cumulative: BasicEndpointMetrics
+)
+
+/**
+ * Returns a Flow that emits the [BasicEndpointMetrics] difference since the last emission.
+ * Every collector gets its own isolated [EndpointMetricsTracker] to prevent state collisions.
+ *
+ * @param interval The delay between emissions.
+ */
+fun WithEndpointMetrics.metricsFlow(interval: Duration): Flow<TrackedMetrics> = flow {
+    val tracker = EndpointMetricsTracker(this@metricsFlow)
+    while (currentCoroutineContext().isActive) {
+        delay(interval)
+        emit(TrackedMetrics(tracker.instant, tracker.cumulative))
+    }
+}
