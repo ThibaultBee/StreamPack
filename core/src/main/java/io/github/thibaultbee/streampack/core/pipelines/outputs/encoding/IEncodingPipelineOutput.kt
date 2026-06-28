@@ -42,12 +42,7 @@ interface IEncodingPipelineOutput : IPipelineOutput, IOpenableStreamer {
     /**
      * Adds a bitrate regulator controller to the streamer.
      */
-    fun setBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory)
-
-    /**
-     * Removes the bitrate regulator controller from the streamer.
-     */
-    fun removeBitrateRegulatorController()
+    var bitrateRegulatorControllerFactory: IBitrateRegulatorController.Factory?
 }
 
 /**
@@ -121,3 +116,17 @@ internal interface IEncodingPipelineOutputInternal : IConfigurableAudioVideoEnco
     IConfigurableAudioPipelineOutputInternal,
     IConfigurableVideoPipelineOutputInternal,
     IPipelineEventOutputInternal
+
+/**
+ * Adds a bitrate regulator controller to the streamer.
+ */
+fun IEncodingPipelineOutput.addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) {
+    this.bitrateRegulatorControllerFactory = controllerFactory
+}
+
+/**
+ * Removes the bitrate regulator controller from the streamer.
+ */
+fun IEncodingPipelineOutput.removeBitrateRegulatorController() {
+    this.bitrateRegulatorControllerFactory = null
+}

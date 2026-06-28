@@ -102,6 +102,28 @@ internal class EncodingPipelineOutput(
     private val isReleaseRequested = AtomicBoolean(false)
 
     private var bitrateRegulatorController: IBitrateRegulatorController? = null
+    override var bitrateRegulatorControllerFactory: IBitrateRegulatorController.Factory? = null
+        set(value) {
+            field = value
+            if (isReleaseRequested.get()) {
+                throw IllegalStateException("Output is released")
+            }
+            bitrateRegulatorController?.stop()
+            bitrateRegulatorController =
+                value?.newBitrateRegulatorController(this, dispatcherProvider.default)
+
+            if (bitrateRegulatorController != null) {
+                Logger.d(
+                    TAG,
+                    "Bitrate regulator controller added: ${bitrateRegulatorController!!.javaClass.simpleName}"
+                )
+                if (isStreaming) {
+                    bitrateRegulatorController?.start()
+                }
+            } else {
+                Logger.d(TAG, "Bitrate regulator controller removed")
+            }
+        }
 
     private var audioStreamId: Int? = null
     private var videoStreamId: Int? = null
@@ -257,6 +279,16 @@ internal class EncodingPipelineOutput(
     }
 
     init {
+        coroutineScope.launch {
+            isStreamingFlow.collect { isStreaming ->
+                if (isStreaming) {
+                    bitrateRegulatorController?.start()
+                } else {
+                    bitrateRegulatorController?.stop()
+                }
+            }
+        }
+
         if (withAudio) {
             coroutineScope.launch(audioOutputDispatcher) {
                 // Audio
@@ -637,8 +669,6 @@ internal class EncodingPipelineOutput(
             videoEncoderJob?.join()
 
             endpointInternal.startStream()
-
-            bitrateRegulatorController?.start()
         } catch (t: Throwable) {
             stopStreamUnsafe()
             throw t
@@ -716,12 +746,6 @@ internal class EncodingPipelineOutput(
      * @see [stopStream]
      */
     private suspend fun stopStreamElements() {
-        try {
-            bitrateRegulatorController?.stop()
-        } catch (t: Throwable) {
-            Logger.w(TAG, "Can't stop bitrate regulator controller: ${t.message}")
-        }
-
         // Encoders
         val audioEncoderJob = audioEncoderInternal?.let {
             coroutineScope.launch {
@@ -824,38 +848,6 @@ internal class EncodingPipelineOutput(
             releaseUnsafe()
         }
         coroutineScope.cancel()
-    }
-
-    /**
-     * Adds a bitrate regulator controller.
-     */
-    override fun setBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) {
-        if (isReleaseRequested.get()) {
-            throw IllegalStateException("Output is released")
-        }
-        bitrateRegulatorController?.stop()
-        bitrateRegulatorController =
-            controllerFactory.newBitrateRegulatorController(this, dispatcherProvider.default)
-                .apply {
-                    if (isStreaming) {
-                        this.start()
-                    }
-                    Logger.d(
-                        TAG, "Bitrate regulator controller added: ${this.javaClass.simpleName}"
-                    )
-                }
-    }
-
-    /**
-     * Removes the bitrate regulator controller.
-     */
-    override fun removeBitrateRegulatorController() {
-        if (isReleaseRequested.get()) {
-            throw IllegalStateException("Output is released")
-        }
-        bitrateRegulatorController?.stop()
-        bitrateRegulatorController = null
-        Logger.d(TAG, "Bitrate regulator controller removed")
     }
 
     private suspend fun setTargetRotationInternal(@RotationValue newTargetRotation: Int) {
