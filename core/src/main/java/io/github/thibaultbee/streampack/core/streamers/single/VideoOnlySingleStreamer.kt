@@ -193,8 +193,9 @@ class VideoOnlySingleStreamer(
 
     override suspend fun release() = streamer.release()
 
-    override fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) =
-        streamer.addBitrateRegulatorController(controllerFactory)
-
-    override fun removeBitrateRegulatorController() = streamer.removeBitrateRegulatorController()
+    override var bitrateRegulatorControllerFactory: IBitrateRegulatorController.Factory?
+        get() = streamer.bitrateRegulatorControllerFactory
+        set(value) {
+            streamer.bitrateRegulatorControllerFactory = value
+        }
 }

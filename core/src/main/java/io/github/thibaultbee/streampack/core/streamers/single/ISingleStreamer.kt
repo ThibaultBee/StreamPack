@@ -102,11 +102,5 @@ interface IVideoSingleStreamer : IVideoStreamer<VideoConfig>, ISingleStreamer {
     /**
      * Adds a bitrate regulator controller to the streamer.
      */
-    fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory)
-
-    /**
-     * Removes the bitrate regulator controller from the streamer.
-     */
-    fun removeBitrateRegulatorController()
+    var bitrateRegulatorControllerFactory: IBitrateRegulatorController.Factory?
 }
-
