@@ -58,6 +58,7 @@ import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.interfaces.startStream
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
+import io.github.thibaultbee.streampack.core.regulator.controllers.intervalRtmpBitrateRegulatorControllerFactory
 import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
@@ -65,7 +66,6 @@ import io.github.thibaultbee.streampack.core.streamers.single.VideoOnlySingleStr
 import io.github.thibaultbee.streampack.core.streamers.single.withAudio
 import io.github.thibaultbee.streampack.core.streamers.single.withVideo
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
-import io.github.thibaultbee.streampack.core.regulator.controllers.intervalRtmpBitrateRegulatorControllerFactory
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.intervalSrtBitrateRegulatorControllerFactory
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -337,7 +337,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                                 }
                             }
                         controllerFactory?.let {
-                            streamer.addBitrateRegulatorController(it)
+                            streamer.bitrateRegulatorControllerFactory = it
                         } ?: Log.e(TAG, "Controller factory is null")
                     }
                 }
@@ -361,7 +361,6 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
             try {
                 streamer.stopStream()
                 streamer.close()
-                streamer.removeBitrateRegulatorController()
             } catch (e: Throwable) {
                 Log.e(TAG, "stopStream failed", e)
             }

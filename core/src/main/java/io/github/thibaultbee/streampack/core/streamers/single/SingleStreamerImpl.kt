@@ -263,14 +263,11 @@ internal class SingleStreamerImpl(
     /**
      * Adds a bitrate regulator controller.
      */
-    override fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) =
-        pipelineOutput.setBitrateRegulatorController(controllerFactory)
-
-    /**
-     * Removes the bitrate regulator controller.
-     */
-    override fun removeBitrateRegulatorController() =
-        pipelineOutput.removeBitrateRegulatorController()
+    override var bitrateRegulatorControllerFactory: IBitrateRegulatorController.Factory?
+        get() = pipelineOutput.bitrateRegulatorControllerFactory
+        set(value) {
+            pipelineOutput.bitrateRegulatorControllerFactory = value
+        }
 
     companion object Companion {
         const val TAG = "SingleStreamer"

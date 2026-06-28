@@ -223,13 +223,9 @@ internal class StubAudioSyncConfigurableEncodingPipelineOutputInternal :
     override val endpoint: IEndpoint
         get() = TODO("Not yet implemented")
 
-    override fun setBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) {
-        TODO("Not yet implemented")
-    }
-
-    override fun removeBitrateRegulatorController() {
-        TODO("Not yet implemented")
-    }
+    override var bitrateRegulatorControllerFactory: IBitrateRegulatorController.Factory?
+        get() = TODO("Not yet implemented")
+        set(value) {}
 
     override suspend fun open(descriptor: MediaDescriptor) {
         TODO("Not yet implemented")
@@ -272,13 +268,9 @@ internal class StubVideoSurfaceConfigurableEncodingPipelineOutputInternal :
     override val endpoint: IEndpoint
         get() = TODO("Not yet implemented")
 
-    override fun setBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) {
-        TODO("Not yet implemented")
-    }
-
-    override fun removeBitrateRegulatorController() {
-        TODO("Not yet implemented")
-    }
+    override var bitrateRegulatorControllerFactory: IBitrateRegulatorController.Factory?
+        get() = TODO("Not yet implemented")
+        set(value) {}
 
     override suspend fun open(descriptor: MediaDescriptor) {
         TODO("Not yet implemented")
