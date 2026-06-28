@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.ext.srt.regulator
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
-import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetrics
+import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetricsTracker
 import io.github.thibaultbee.streampack.core.regulator.BitrateRegulator
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
 import io.github.thibaultbee.streampack.ext.srt.utils.SrtEndpointMetrics
@@ -32,37 +32,17 @@ import io.github.thibaultbee.streampack.ext.srt.utils.SrtEndpointMetrics
  * @param onAudioTargetBitrateChange call when you have to change audio bitrate
  */
 abstract class SrtBitrateRegulator(
+    metricsTracker: EndpointMetricsTracker,
     bitrateRegulatorConfig: BitrateRegulatorConfig,
     onVideoTargetBitrateChange: ((Int) -> Unit),
     onAudioTargetBitrateChange: ((Int) -> Unit)
 ) : BitrateRegulator(
+    metricsTracker,
     bitrateRegulatorConfig,
     onVideoTargetBitrateChange,
     onAudioTargetBitrateChange
 ) {
-    /**
-     * Called regularly to get new endpoint metrics
-     *
-     * @param metrics endpoint metrics
-     * @param currentVideoBitrate current video bitrate target in bits/s.
-     * @param currentAudioBitrate current audio bitrate target in bits/s.
-     */
-    override fun update(
-        metrics: EndpointMetrics<*>,
-        currentVideoBitrate: Int,
-        currentAudioBitrate: Int
-    ) {
-        update(metrics as SrtEndpointMetrics, currentVideoBitrate, currentAudioBitrate)
-    }
 
-    /**
-     * Called regularly to get new SRT endpoint metrics
-     *
-     * @param metrics SRT endpoint metrics
-     * @param currentVideoBitrate current video bitrate target in bits/s.
-     * @param currentAudioBitrate current audio bitrate target in bits/s.
-     */
-    abstract fun update(metrics: SrtEndpointMetrics, currentVideoBitrate: Int, currentAudioBitrate: Int)
 
     /**
      * Factory interface you must use to create a [SrtBitrateRegulator] object.
@@ -73,12 +53,14 @@ abstract class SrtBitrateRegulator(
         /**
          * Creates a [SrtBitrateRegulator] object from given parameters
          *
+         * @param metricsTracker endpoint metrics tracker
          * @param bitrateRegulatorConfig bitrate regulation configuration
          * @param onVideoTargetBitrateChange call when you have to change video bitrate
          * @param onAudioTargetBitrateChange call when you have to change audio bitrate
          * @return a [SrtBitrateRegulator] object
          */
         override fun newBitrateRegulator(
+            metricsTracker: EndpointMetricsTracker,
             bitrateRegulatorConfig: BitrateRegulatorConfig,
             onVideoTargetBitrateChange: ((Int) -> Unit),
             onAudioTargetBitrateChange: ((Int) -> Unit)

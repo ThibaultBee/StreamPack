@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.core.regulator.controllers
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
+import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetricsTracker
 import io.github.thibaultbee.streampack.core.elements.metrics.WithEndpointMetrics
 import io.github.thibaultbee.streampack.core.elements.utils.CoroutineScheduler
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioEncodingPipelineOutput
@@ -50,10 +51,13 @@ class IntervalBitrateRegulatorController(
     bitrateRegulatorFactory,
     bitrateRegulatorConfig
 ) {
+    private val metricsTracker = EndpointMetricsTracker(metricsProvider)
+
     /**
      * Bitrate regulator. Calls regularly by [scheduler]. Don't call it otherwise or you might break regulation.
      */
     private val bitrateRegulator = bitrateRegulatorFactory.newBitrateRegulator(
+        metricsTracker,
         bitrateRegulatorConfig,
         onVideoTargetBitrateChange = {
             videoEncoder.bitrate = it
@@ -66,7 +70,6 @@ class IntervalBitrateRegulatorController(
      */
     private val scheduler = CoroutineScheduler(pollingTimeInMs, coroutineDispatcher) {
         bitrateRegulator.update(
-            metricsProvider.metrics,
             videoEncoder.bitrate,
             audioEncoder?.bitrate ?: 0
         )
