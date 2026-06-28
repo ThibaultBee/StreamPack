@@ -264,7 +264,7 @@ internal class SingleStreamerImpl(
      * Adds a bitrate regulator controller.
      */
     override fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) =
-        pipelineOutput.addBitrateRegulatorController(controllerFactory)
+        pipelineOutput.setBitrateRegulatorController(controllerFactory)
 
     /**
      * Removes the bitrate regulator controller.

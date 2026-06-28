@@ -42,7 +42,7 @@ interface IEncodingPipelineOutput : IPipelineOutput, IOpenableStreamer {
     /**
      * Adds a bitrate regulator controller to the streamer.
      */
-    fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory)
+    fun setBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory)
 
     /**
      * Removes the bitrate regulator controller from the streamer.

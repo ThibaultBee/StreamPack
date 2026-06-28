@@ -223,7 +223,7 @@ internal class StubAudioSyncConfigurableEncodingPipelineOutputInternal :
     override val endpoint: IEndpoint
         get() = TODO("Not yet implemented")
 
-    override fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) {
+    override fun setBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) {
         TODO("Not yet implemented")
     }
 
@@ -272,7 +272,7 @@ internal class StubVideoSurfaceConfigurableEncodingPipelineOutputInternal :
     override val endpoint: IEndpoint
         get() = TODO("Not yet implemented")
 
-    override fun addBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) {
+    override fun setBitrateRegulatorController(controllerFactory: IBitrateRegulatorController.Factory) {
         TODO("Not yet implemented")
     }
 
