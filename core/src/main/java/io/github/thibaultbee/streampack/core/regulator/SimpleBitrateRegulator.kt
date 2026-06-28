@@ -2,6 +2,7 @@ package io.github.thibaultbee.streampack.core.regulator
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetricsTracker
+import io.github.thibaultbee.streampack.core.elements.metrics.writtenBitrateInBps
 import kotlin.math.max
 import kotlin.math.min
 
@@ -40,8 +41,10 @@ class SimpleBitrateRegulator(
     ) {
         val metrics = metricsTracker.instant
         val packetsLostOrDropped = metrics.packetsWriteDropped + metrics.packetsWriteLost
+        val writtenBitrate = metrics.writtenBitrateInBps
+
         if (packetsLostOrDropped > 0) {
-            // Detected packet dropped or loss - we should reduce the bitrate>
+            // Detected packet dropped or loss - we should reduce the bitrate with multiplicative decrease
             // How critical?
             val percentageReduction = if (metrics.packetsWritten == 0L) {
                 50
@@ -55,13 +58,17 @@ class SimpleBitrateRegulator(
                 MINIMUM_DECREASE_THRESHOLD // getting down by 100000 b/s minimum
             )
             onVideoTargetBitrateChange(newVideoBitrate)
-        } else if (currentVideoBitrate < (bitrateRegulatorConfig.videoBitrateRange.upper * 90 / 100)) {
-            // Try to increase to the max target
-            val newVideoBitrate = currentVideoBitrate + min(
-                (bitrateRegulatorConfig.videoBitrateRange.upper - currentVideoBitrate) * 50 / 100, // getting slower when reaching target bitrate
-                MAXIMUM_INCREASE_THRESHOLD // not increasing to fast
-            )
-            onVideoTargetBitrateChange(newVideoBitrate)
+        } else if (currentVideoBitrate < bitrateRegulatorConfig.videoBitrateRange.upper) {
+            // Only increase if we are successfully sending at near the current target bitrate
+            // This prevents us from increasing the target when the network is already saturated
+            if (writtenBitrate > currentVideoBitrate * 0.9) {
+                // Additive increase
+                val newVideoBitrate = min(
+                    currentVideoBitrate + MAXIMUM_INCREASE_THRESHOLD,
+                    bitrateRegulatorConfig.videoBitrateRange.upper
+                )
+                onVideoTargetBitrateChange(newVideoBitrate)
+            }
         }
     }
 
