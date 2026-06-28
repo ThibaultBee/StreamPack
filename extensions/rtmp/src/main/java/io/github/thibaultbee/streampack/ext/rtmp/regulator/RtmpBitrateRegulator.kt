@@ -16,7 +16,7 @@
 package io.github.thibaultbee.streampack.ext.rtmp.regulator
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
-import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetrics
+import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetricsTracker
 import io.github.thibaultbee.streampack.core.regulator.BitrateRegulator
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
 import io.github.thibaultbee.streampack.ext.rtmp.utils.RtmpEndpointMetrics
@@ -32,41 +32,17 @@ import io.github.thibaultbee.streampack.ext.rtmp.utils.RtmpEndpointMetrics
  * @param onAudioTargetBitrateChange call when you have to change audio bitrate
  */
 abstract class RtmpBitrateRegulator(
+    metricsTracker: EndpointMetricsTracker,
     bitrateRegulatorConfig: BitrateRegulatorConfig,
     onVideoTargetBitrateChange: ((Int) -> Unit),
     onAudioTargetBitrateChange: ((Int) -> Unit)
 ) : BitrateRegulator(
+    metricsTracker,
     bitrateRegulatorConfig,
     onVideoTargetBitrateChange,
     onAudioTargetBitrateChange
 ) {
-    /**
-     * Called regularly to get new endpoint metrics
-     *
-     * @param metrics endpoint metrics
-     * @param currentVideoBitrate current video bitrate target in bits/s.
-     * @param currentAudioBitrate current audio bitrate target in bits/s.
-     */
-    override fun update(
-        metrics: EndpointMetrics<*>,
-        currentVideoBitrate: Int,
-        currentAudioBitrate: Int
-    ) {
-        update(metrics as RtmpEndpointMetrics, currentVideoBitrate, currentAudioBitrate)
-    }
 
-    /**
-     * Called regularly to get new RTMP metrics
-     *
-     * @param metrics RTMP endpoint metrics
-     * @param currentVideoBitrate current video bitrate target in bits/s.
-     * @param currentAudioBitrate current audio bitrate target in bits/s.
-     */
-    abstract fun update(
-        metrics: RtmpEndpointMetrics,
-        currentVideoBitrate: Int,
-        currentAudioBitrate: Int
-    )
 
     /**
      * Factory interface you must use to create a [RtmpBitrateRegulator] object.
@@ -77,12 +53,14 @@ abstract class RtmpBitrateRegulator(
         /**
          * Creates a [RtmpBitrateRegulator] object from given parameters
          *
+         * @param metricsTracker endpoint metrics tracker
          * @param bitrateRegulatorConfig bitrate regulation configuration
          * @param onVideoTargetBitrateChange call when you have to change video bitrate
          * @param onAudioTargetBitrateChange call when you have to change audio bitrate
          * @return a [RtmpBitrateRegulator] object
          */
         override fun newBitrateRegulator(
+            metricsTracker: EndpointMetricsTracker,
             bitrateRegulatorConfig: BitrateRegulatorConfig,
             onVideoTargetBitrateChange: ((Int) -> Unit),
             onAudioTargetBitrateChange: ((Int) -> Unit)

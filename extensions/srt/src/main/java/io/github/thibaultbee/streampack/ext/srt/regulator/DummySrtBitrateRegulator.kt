@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.ext.srt.regulator
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
+import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetricsTracker
 import io.github.thibaultbee.streampack.ext.srt.utils.SrtEndpointMetrics
 import kotlin.math.max
 import kotlin.math.min
@@ -28,10 +29,12 @@ import kotlin.math.min
  * @param onAudioTargetBitrateChange not used in this implementation.
  */
 class DummySrtBitrateRegulator(
+    metricsTracker: EndpointMetricsTracker,
     bitrateRegulatorConfig: BitrateRegulatorConfig,
     onVideoTargetBitrateChange: ((Int) -> Unit),
     onAudioTargetBitrateChange: ((Int) -> Unit)
 ) : SrtBitrateRegulator(
+    metricsTracker,
     bitrateRegulatorConfig,
     onVideoTargetBitrateChange,
     onAudioTargetBitrateChange
@@ -42,7 +45,8 @@ class DummySrtBitrateRegulator(
         const val SEND_PACKET_THRESHOLD = 50
     }
 
-    override fun update(metrics: SrtEndpointMetrics, currentVideoBitrate: Int, currentAudioBitrate: Int) {
+    override fun update(currentVideoBitrate: Int, currentAudioBitrate: Int) {
+        val metrics = metricsTracker.cumulative as SrtEndpointMetrics
         val stats = metrics.rawMetrics.bistatsOrNull(clear = true, instantaneous = true) ?: return
         val estimatedBandwidth = (stats.mbpsBandwidth * 1000000).toInt()
 
@@ -104,17 +108,20 @@ class DummySrtBitrateRegulator(
         /**
          * Creates a [DummySrtBitrateRegulator] object from given parameters
          *
+         * @param metricsTracker endpoint metrics tracker
          * @param bitrateRegulatorConfig bitrate regulation configuration
          * @param onVideoTargetBitrateChange call when you have to change video bitrate
          * @param onAudioTargetBitrateChange call when you have to change audio bitrate
          * @return a [DummySrtBitrateRegulator] object
          */
         override fun newBitrateRegulator(
+            metricsTracker: EndpointMetricsTracker,
             bitrateRegulatorConfig: BitrateRegulatorConfig,
             onVideoTargetBitrateChange: ((Int) -> Unit),
             onAudioTargetBitrateChange: ((Int) -> Unit)
         ): DummySrtBitrateRegulator {
             return DummySrtBitrateRegulator(
+                metricsTracker,
                 bitrateRegulatorConfig,
                 onVideoTargetBitrateChange,
                 onAudioTargetBitrateChange
