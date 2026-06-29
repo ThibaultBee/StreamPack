@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.ext.srt.elements.endpoints
 
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.createDefaultTsServiceInfo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpointFactory
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpointWithMetricsFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TsMuxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.ext.srt.elements.endpoints.composites.sinks.SrtSink
@@ -34,7 +35,7 @@ fun SrtEndpointFactory(
     serviceInfo: TSServiceInfo = createDefaultTsServiceInfo(),
     coroutineDispatcher: CoroutineDispatcher
 ) =
-    CompositeEndpointFactory(
+    CompositeEndpointWithMetricsFactory(
         TsMuxer().apply { addService(serviceInfo) },
         SrtSink(coroutineDispatcher)
     )

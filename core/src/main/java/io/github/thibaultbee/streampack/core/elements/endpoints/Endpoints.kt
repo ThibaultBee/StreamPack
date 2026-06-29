@@ -1,8 +1,9 @@
 package io.github.thibaultbee.streampack.core.elements.endpoints
 
 import android.content.Context
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpointWithMetrics
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoints
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ISinkWithMetricsInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TsMuxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import kotlinx.coroutines.CoroutineDispatcher
@@ -98,6 +99,6 @@ object Endpoints {
         if (serviceInfo != null) {
             muxer.addService(serviceInfo)
         }
-        return CompositeEndpoint(muxer, sink)
+        return CompositeEndpointWithMetrics(muxer, sink as ISinkWithMetricsInternal<*>)
     }
 }

@@ -22,6 +22,8 @@ import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendCloseabl
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamable
 import kotlinx.coroutines.flow.StateFlow
 
+import io.github.thibaultbee.streampack.core.elements.metrics.WithEndpointMetrics
+
 interface ISinkInternal : ISink, Configurable<SinkConfiguration>, SuspendStreamable,
     SuspendCloseable {
     /**
@@ -38,6 +40,8 @@ interface ISinkInternal : ISink, Configurable<SinkConfiguration>, SuspendStreama
      */
     suspend fun write(packet: Packet): Int
 }
+
+interface ISinkWithMetricsInternal<T : Any> : ISinkInternal, WithEndpointMetrics<T>
 
 interface ISink {
     /**
