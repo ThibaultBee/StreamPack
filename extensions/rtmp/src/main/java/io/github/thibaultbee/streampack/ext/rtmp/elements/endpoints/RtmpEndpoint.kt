@@ -67,7 +67,7 @@ import kotlin.concurrent.atomics.ExperimentalAtomicApi
 @OptIn(ExperimentalAtomicApi::class)
 class RtmpEndpoint internal constructor(
     defaultDispatcher: CoroutineDispatcher, val ioDispatcher: CoroutineDispatcher
-) : IEndpointInternal, WithEndpointMetrics {
+) : IEndpointInternal, WithEndpointMetrics<RtmpMetrics> {
     private val coroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
     private val mutex = Mutex()
 

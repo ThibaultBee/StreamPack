@@ -25,7 +25,9 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ISinkInternal
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ISinkWithMetricsInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
+import io.github.thibaultbee.streampack.core.elements.metrics.WithEndpointMetrics
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,11 +39,10 @@ import kotlinx.coroutines.sync.withLock
 /**
  * An [IEndpointInternal] implementation that combines a [IMuxerInternal] and a [ISinkInternal].
  */
-class CompositeEndpoint(
+open class CompositeEndpoint(
     override val muxer: IMuxerInternal,
     override val sink: ISinkInternal
-) :
-    ICompositeEndpointInternal {
+) : ICompositeEndpointInternal {
     /**
      * The video and audio configurations.
      * It is used to configure the sink.
@@ -129,6 +130,14 @@ class CompositeEndpoint(
 }
 
 /**
+ * An [IEndpointInternal] implementation of [CompositeEndpoint] with [WithEndpointMetrics].
+ */
+class CompositeEndpointWithMetrics<T : Any>(
+    muxer: IMuxerInternal,
+    sink: ISinkWithMetricsInternal<T>
+) : CompositeEndpoint(muxer, sink), WithEndpointMetrics<T> by sink
+
+/**
  * A factory to build a [CompositeEndpoint].
  */
 class CompositeEndpointFactory(
@@ -140,5 +149,20 @@ class CompositeEndpointFactory(
         dispatcherProvider: IDispatcherProvider
     ): IEndpointInternal {
         return CompositeEndpoint(muxer, sink)
+    }
+}
+
+/**
+ * A factory to build a [CompositeEndpointWithMetrics].
+ */
+class CompositeEndpointWithMetricsFactory<T : Any>(
+    val muxer: IMuxerInternal,
+    val sink: ISinkWithMetricsInternal<T>
+) : IEndpointInternal.Factory {
+    override fun create(
+        context: Context,
+        dispatcherProvider: IDispatcherProvider
+    ): IEndpointInternal {
+        return CompositeEndpointWithMetrics(muxer, sink)
     }
 }

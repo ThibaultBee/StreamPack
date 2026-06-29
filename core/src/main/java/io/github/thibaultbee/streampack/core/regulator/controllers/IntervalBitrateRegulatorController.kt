@@ -17,8 +17,8 @@ package io.github.thibaultbee.streampack.core.regulator.controllers
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
-import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetricsTracker
 import io.github.thibaultbee.streampack.core.elements.metrics.WithEndpointMetrics
+import io.github.thibaultbee.streampack.core.elements.metrics.createMetricsTracker
 import io.github.thibaultbee.streampack.core.elements.utils.CoroutineScheduler
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
@@ -29,7 +29,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
- * A [BitrateRegulatorController] implementation that triggers [IBitrateRegulator.update] every [pollingTimeInMs].
+ * A [BitrateRegulatorController] implementation that triggers [IBitrateRegulator.update] every [pollingTime].
  *
  * @param audioEncoder the audio [IEncoder]
  * @param videoEncoder the video [IEncoder]
@@ -41,7 +41,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class IntervalBitrateRegulatorController(
     audioEncoder: IEncoder?,
     videoEncoder: IEncoder,
-    metricsProvider: WithEndpointMetrics,
+    metricsProvider: WithEndpointMetrics<*>,
     bitrateRegulatorFactory: IBitrateRegulator.Factory,
     coroutineDispatcher: CoroutineDispatcher,
     bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
@@ -53,7 +53,7 @@ class IntervalBitrateRegulatorController(
     bitrateRegulatorFactory,
     bitrateRegulatorConfig
 ) {
-    private val metricsTracker = EndpointMetricsTracker(metricsProvider)
+    private val metricsTracker = metricsProvider.createMetricsTracker()
 
     /**
      * Bitrate regulator. Calls regularly by [scheduler]. Don't call it otherwise or you might break regulation.
@@ -111,7 +111,7 @@ class IntervalBitrateRegulatorController(
             } else {
                 null
             }
-            val endpoint = pipelineOutput.endpoint as WithEndpointMetrics
+            val endpoint = pipelineOutput.endpoint as WithEndpointMetrics<*>
             return IntervalBitrateRegulatorController(
                 audioEncoder,
                 videoEncoder,
