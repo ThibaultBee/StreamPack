@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.elements.metrics
 /**
  * Minimal metrics interface
  */
-interface WithMetrics<T> {
+interface WithMetrics<out T> {
     /**
      * Metrics of the element.
      */

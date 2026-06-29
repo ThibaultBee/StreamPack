@@ -18,7 +18,7 @@ package io.github.thibaultbee.streampack.core.elements.metrics
 /**
  * Tracks [BasicEndpointMetrics] over time, providing both cumulative and instant (diff since last read) metrics.
  */
-class EndpointMetricsTracker(private val metricsProvider: WithEndpointMetrics) {
+class EndpointMetricsTracker(private val metricsProvider: WithEndpointMetrics<*>) {
     private var lastMetrics: BasicEndpointMetrics? = null
 
     /**
@@ -53,4 +53,4 @@ class EndpointMetricsTracker(private val metricsProvider: WithEndpointMetrics) {
 /**
  * Creates an [EndpointMetricsTracker] for this [WithEndpointMetrics].
  */
-fun WithEndpointMetrics.createMetricsTracker() = EndpointMetricsTracker(this)
+fun WithEndpointMetrics<*>.createMetricsTracker() = EndpointMetricsTracker(this)

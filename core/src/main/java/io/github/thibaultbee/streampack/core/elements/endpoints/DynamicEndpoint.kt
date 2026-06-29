@@ -50,7 +50,7 @@ open class DynamicEndpoint(
     private val context: Context,
     private val defaultDispatcher: CoroutineDispatcher,
     private val ioDispatcher: CoroutineDispatcher
-) : IEndpointInternal, WithEndpointMetrics {
+) : IEndpointInternal, WithEndpointMetrics<Any> {
     private val coroutineScope = CoroutineScope(defaultDispatcher)
     private val mutex = Mutex()
 
@@ -86,10 +86,10 @@ open class DynamicEndpoint(
 
     override fun getInfo(type: MediaDescriptor.Type) = getEndpoint(type).getInfo(type)
 
-    override val metrics: EndpointMetrics<*>
+    override val metrics: EndpointMetrics<Any>
         get() {
             val endpoint = endpoint ?: throw IllegalStateException("Endpoint is not opened")
-            return (endpoint as? WithEndpointMetrics)?.metrics
+            return (endpoint as? WithEndpointMetrics<*>)?.metrics
                 ?: throw UnsupportedOperationException("Current endpoint does not support metrics")
         }
 
@@ -182,13 +182,14 @@ open class DynamicEndpoint(
     private fun prepareEndpoint(mediaDescriptor: MediaDescriptor): IEndpointInternal {
         val endpoint = getEndpoint(mediaDescriptor.type)
 
-        if (endpoint is CompositeEndpoint) {
-            if (endpoint.muxer is TsMuxer) {
+        if (endpoint is io.github.thibaultbee.streampack.core.elements.endpoints.composites.ICompositeEndpoint) {
+            val muxer = endpoint.muxer
+            if (muxer is TsMuxer) {
                 // Clean up services
-                endpoint.muxer.removeServices()
+                muxer.removeServices()
                 val serviceInfo = mediaDescriptor.getCustomData(TSServiceInfo::class.java)
                     ?: createDefaultTsServiceInfo()
-                endpoint.muxer.addService(serviceInfo)
+                muxer.addService(serviceInfo)
             }
         }
 

@@ -88,7 +88,7 @@ interface EndpointMetrics<out T : Any> : BasicEndpointMetrics {
  *
  * The members from [BasicEndpointMetrics] represent cumulative metrics.
  */
-interface WithEndpointMetrics : WithMetrics<EndpointMetrics<*>>
+interface WithEndpointMetrics<out T : Any> : WithMetrics<EndpointMetrics<T>>
 
 /**
  * Represents a pair of instant and cumulative metrics.
@@ -104,7 +104,7 @@ data class TrackedMetrics(
  *
  * @param interval The delay between emissions.
  */
-fun WithEndpointMetrics.metricsFlow(interval: Duration): Flow<TrackedMetrics> = flow {
+fun WithEndpointMetrics<*>.metricsFlow(interval: Duration): Flow<TrackedMetrics> = flow {
     val tracker = EndpointMetricsTracker(this@metricsFlow)
     while (currentCoroutineContext().isActive) {
         delay(interval)
