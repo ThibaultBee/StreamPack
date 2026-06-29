@@ -25,8 +25,11 @@ class SimpleBitrateRegulator(
     onAudioTargetBitrateChange
 ) {
     companion object {
-        private const val MINIMUM_DECREASE_THRESHOLD = 100000 // b/s
-        private const val MAXIMUM_INCREASE_THRESHOLD = 200000 // b/s
+        private const val MIN_DECREASE_STEP = 100000 // b/s
+        private const val MAX_INCREASE_STEP = 200000 // b/s
+
+        private const val MAX_PERCENTAGE_DECREASE = 85 // %
+        private const val MIN_PERCENTAGE_DECREASE = 20 // %
     }
 
     /**
@@ -47,15 +50,15 @@ class SimpleBitrateRegulator(
             // Detected packet dropped or loss - we should reduce the bitrate with multiplicative decrease
             // How critical?
             val percentageReduction = if (metrics.packetsWritten == 0L) {
-                50
+                MAX_PERCENTAGE_DECREASE
             } else {
-                (packetsLostOrDropped * 100 / metrics.packetsWritten).toInt().coerceIn(5, 50)
+                (packetsLostOrDropped * 100 / metrics.packetsWritten).toInt().coerceIn(MIN_PERCENTAGE_DECREASE, MAX_PERCENTAGE_DECREASE)
             }
 
             // Reduce current bitrate by percentageReduction %
             val newVideoBitrate = currentVideoBitrate - max(
                 currentVideoBitrate * percentageReduction / 100,
-                MINIMUM_DECREASE_THRESHOLD // getting down by 100000 b/s minimum
+                MIN_DECREASE_STEP // getting down by 100000 b/s minimum
             )
             onVideoTargetBitrateChange(newVideoBitrate)
         } else if (currentVideoBitrate < bitrateRegulatorConfig.videoBitrateRange.upper) {
@@ -64,7 +67,7 @@ class SimpleBitrateRegulator(
             if (writtenBitrate > currentVideoBitrate * 0.9) {
                 // Additive increase
                 val newVideoBitrate = min(
-                    currentVideoBitrate + MAXIMUM_INCREASE_THRESHOLD,
+                    currentVideoBitrate + MAX_INCREASE_STEP,
                     bitrateRegulatorConfig.videoBitrateRange.upper
                 )
                 onVideoTargetBitrateChange(newVideoBitrate)
