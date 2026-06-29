@@ -78,7 +78,7 @@ val BasicEndpointMetrics.writtenBitrateInBps: Long
  */
 interface EndpointMetrics<out T : Any> : BasicEndpointMetrics {
     /**
-     * The protocol-specific metrics wrapper.
+     * The implementation-specific metrics wrapper.
      */
     val rawMetrics: T
 }
