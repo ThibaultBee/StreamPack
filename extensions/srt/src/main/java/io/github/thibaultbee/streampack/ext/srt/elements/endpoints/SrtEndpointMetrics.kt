@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.ext.srt.utils
+package io.github.thibaultbee.streampack.ext.srt.elements.endpoints
 
 import io.github.thibaultbee.srtdroid.core.models.Stats
 import io.github.thibaultbee.srtdroid.ktx.CoroutineSrtSocket
 import io.github.thibaultbee.streampack.core.elements.metrics.BasicEndpointMetrics
 import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetrics
+import io.github.thibaultbee.streampack.ext.srt.utils.SrtStatsHelper
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -238,7 +239,7 @@ class SrtRawMetrics internal constructor(private val socketProvider: () -> Corou
  * **See Also:** [srt_bstats](https://github.com/Haivision/srt/blob/master/docs/API/API-functions.md#srt_bstats)
  *
  * @param clear true if the statistics should be cleared after retrieval
- * @return the current [Stats] or [SrtStatsHelper.ZERO] if the socket is not connected
+ * @return the current [Stats] or [io.github.thibaultbee.streampack.ext.srt.utils.SrtStatsHelper.ZERO] if the socket is not connected
  */
 fun SrtRawMetrics.bstats(clear: Boolean): Stats {
     return bstatsOrNull(clear) ?: SrtStatsHelper.ZERO

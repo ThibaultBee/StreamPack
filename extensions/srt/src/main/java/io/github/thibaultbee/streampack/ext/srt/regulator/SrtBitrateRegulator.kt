@@ -19,7 +19,6 @@ import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfi
 import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetricsTracker
 import io.github.thibaultbee.streampack.core.regulator.BitrateRegulator
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
-import io.github.thibaultbee.streampack.ext.srt.utils.SrtEndpointMetrics
 
 /**
  * Base class of SRT bitrate regulation implementation.
