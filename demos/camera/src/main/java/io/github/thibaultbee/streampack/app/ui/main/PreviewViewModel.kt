@@ -44,6 +44,10 @@ import io.github.thibaultbee.streampack.app.utils.setNextCameraId
 import io.github.thibaultbee.streampack.app.utils.toggleBackToFront
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
+import io.github.thibaultbee.streampack.core.elements.metrics.WithEndpointMetrics
+import io.github.thibaultbee.streampack.core.elements.metrics.metricsFlow
+import io.github.thibaultbee.streampack.app.utils.formatBitrate
+import io.github.thibaultbee.streampack.core.elements.metrics.writtenBitrateInBps
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.IAudioRecordSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.BitmapSourceFactory
@@ -58,7 +62,7 @@ import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.interfaces.startStream
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
-import io.github.thibaultbee.streampack.core.regulator.controllers.intervalRtmpBitrateRegulatorControllerFactory
+import io.github.thibaultbee.streampack.core.regulator.controllers.intervalBitrateRegulatorControllerFactory
 import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
@@ -69,20 +73,24 @@ import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.intervalSrtBitrateRegulatorControllerFactory
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class PreviewViewModel(private val application: Application) : ObservableViewModel() {
     private val storageRepository = DataStoreRepository(application, application.dataStore)
     private val rotationRepository = RotationRepository.getInstance(application)
@@ -92,7 +100,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     private val buildStreamerUseCase = BuildStreamerUseCase(application)
 
     private val streamerFlow =
-        MutableStateFlow<IVideoSingleStreamer>(
+        MutableStateFlow(
             buildFirstStreamer(runBlocking { storageRepository.isAudioEnableFlow.first() })
         )
 
@@ -150,6 +158,12 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         get() = _isStreamingFlow.asLiveData()
     private val _isTryingConnectionLiveData = MutableLiveData<Boolean>()
     val isTryingConnectionLiveData: LiveData<Boolean> = _isTryingConnectionLiveData
+
+    private val _instantBitrateLiveData = MutableLiveData("0 bps")
+    val instantBitrateLiveData: LiveData<String> = _instantBitrateLiveData
+
+    private val _packetLossLiveData = MutableLiveData("0 / 0 (0%)")
+    val packetLossLiveData: LiveData<String> = _packetLossLiveData
 
     private val videoSourceMutex = Mutex()
 
@@ -263,6 +277,26 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                     }
                 }
         }
+        viewModelScope.launch {
+            streamerFlow.flatMapLatest { streamer ->
+                val endpointMetrics = streamer.endpoint as? WithEndpointMetrics<*>
+                endpointMetrics?.metricsFlow() ?: emptyFlow()
+            }.collect { metrics ->
+                val formattedBitrate = metrics.instant.writtenBitrateInBps.formatBitrate()
+                _instantBitrateLiveData.postValue(formattedBitrate)
+                val lost =
+                    metrics.cumulative.packetsWriteDropped + metrics.cumulative.packetsWriteLost
+                val total = metrics.cumulative.packetsWritten + lost
+                val packetLossStr = if (total == 0L) {
+                    "0 / 0 (0%)"
+                } else {
+                    val percentage = (lost * 100f / total)
+                    val formattedPercentage = String.format(java.util.Locale.US, "%.2f", percentage)
+                    "$lost / $total ($formattedPercentage%)"
+                }
+                _packetLossLiveData.postValue(packetLossStr)
+            }
+        }
     }
 
     private fun buildFirstStreamer(isAudioEnable: Boolean): IVideoSingleStreamer {
@@ -321,7 +355,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                         val controllerFactory =
                             when (descriptor.type.sinkType) {
                                 MediaSinkType.RTMP -> {
-                                    intervalRtmpBitrateRegulatorControllerFactory(
+                                    intervalBitrateRegulatorControllerFactory(
                                         bitrateRegulatorConfig = bitrateRegulatorConfig
                                     )
                                 }
