@@ -85,6 +85,19 @@ interface EndpointMetrics<out T : Any> : BasicEndpointMetrics {
 }
 
 /**
+ * An empty implementation of [EndpointMetrics] that returns zeros for all metrics.
+ */
+object EmptyEndpointMetrics : EndpointMetrics<Any> {
+    override val uptime: Duration = Duration.ZERO
+    override val packetsWritten: Long = 0L
+    override val packetsWriteDropped: Long = 0L
+    override val packetsWriteLost: Long = 0L
+    override val bytesWritten: Long = 0L
+    override val bytesWriteDropped: Long = 0L
+    override val rawMetrics: Any = Unit
+}
+
+/**
  * A specific [WithMetrics] for [EndpointMetrics].
  *
  * The members from [BasicEndpointMetrics] represent cumulative metrics.
