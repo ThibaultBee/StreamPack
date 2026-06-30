@@ -98,3 +98,11 @@ fun String.appendIfNotEndsWith(suffix: String): String {
 
 val Range<*>.isEmpty: Boolean
     get() = upper == lower
+
+fun Long.formatBitrate(): String {
+    return when {
+        this >= 1_000_000 -> String.format(java.util.Locale.US, "%.2f Mbps", this / 1_000_000.0)
+        this >= 1_000 -> String.format(java.util.Locale.US, "%.2f kbps", this / 1_000.0)
+        else -> "$this bps"
+    }
+}
