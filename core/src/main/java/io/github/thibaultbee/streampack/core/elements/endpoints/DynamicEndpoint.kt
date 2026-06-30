@@ -25,6 +25,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ContentSink
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.FileSink
+import io.github.thibaultbee.streampack.core.elements.metrics.EmptyEndpointMetrics
 import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetrics
 import io.github.thibaultbee.streampack.core.elements.metrics.WithEndpointMetrics
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
@@ -87,11 +88,7 @@ open class DynamicEndpoint(
     override fun getInfo(type: MediaDescriptor.Type) = getEndpoint(type).getInfo(type)
 
     override val metrics: EndpointMetrics<Any>
-        get() {
-            val endpoint = endpoint ?: throw IllegalStateException("Endpoint is not opened")
-            return (endpoint as? WithEndpointMetrics<*>)?.metrics
-                ?: throw UnsupportedOperationException("Current endpoint does not support metrics")
-        }
+        get() = (endpoint as? WithEndpointMetrics<Any>)?.metrics ?: EmptyEndpointMetrics
 
     init {
         coroutineScope.launch {
