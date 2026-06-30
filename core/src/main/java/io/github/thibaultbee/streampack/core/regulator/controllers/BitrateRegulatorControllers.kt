@@ -29,7 +29,7 @@ import kotlin.time.Duration
  * @param bitrateRegulatorConfig bitrate regulator configuration
  * @param pollingTime delay between each call to [IBitrateRegulator.update]
  */
-fun intervalRtmpBitrateRegulatorControllerFactory(
+fun intervalBitrateRegulatorControllerFactory(
     bitrateRegulatorFactory: IBitrateRegulator.Factory = SimpleBitrateRegulator.Factory(),
     bitrateRegulatorConfig: BitrateRegulatorConfig = BitrateRegulatorConfig(),
     pollingTime: Duration = DEFAULT_POLLING_TIME
