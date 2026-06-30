@@ -17,7 +17,7 @@ package io.github.thibaultbee.streampack.ext.srt.regulator
 
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetricsTracker
-import io.github.thibaultbee.streampack.ext.srt.utils.SrtEndpointMetrics
+import io.github.thibaultbee.streampack.ext.srt.elements.endpoints.SrtEndpointMetrics
 import kotlin.math.max
 import kotlin.math.min
 
