@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 interface BasicEndpointMetrics {
     /**
@@ -104,7 +105,7 @@ data class TrackedMetrics(
  *
  * @param interval The delay between emissions.
  */
-fun WithEndpointMetrics<*>.metricsFlow(interval: Duration): Flow<TrackedMetrics> = flow {
+fun WithEndpointMetrics<*>.metricsFlow(interval: Duration = 1000.milliseconds): Flow<TrackedMetrics> = flow {
     val tracker = EndpointMetricsTracker(this@metricsFlow)
     while (currentCoroutineContext().isActive) {
         delay(interval)
