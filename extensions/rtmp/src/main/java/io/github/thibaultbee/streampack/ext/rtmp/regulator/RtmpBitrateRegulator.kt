@@ -19,7 +19,6 @@ import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfi
 import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetricsTracker
 import io.github.thibaultbee.streampack.core.regulator.BitrateRegulator
 import io.github.thibaultbee.streampack.core.regulator.IBitrateRegulator
-import io.github.thibaultbee.streampack.ext.rtmp.utils.RtmpEndpointMetrics
 
 /**
  * Base class of RTMP bitrate regulation implementation.

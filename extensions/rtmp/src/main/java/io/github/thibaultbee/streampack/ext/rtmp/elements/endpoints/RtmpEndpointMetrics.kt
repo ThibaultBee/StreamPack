@@ -13,23 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.thibaultbee.streampack.ext.rtmp.utils
+package io.github.thibaultbee.streampack.ext.rtmp.elements.endpoints
 
 import io.github.komedia.komuxer.rtmp.util.metrics.RtmpMetrics
 import io.github.thibaultbee.streampack.core.elements.metrics.EndpointMetrics
 import kotlin.time.Duration
 
 /**
+ * Creates a [RtmpEndpointMetrics] from a [metricsProvider].
+ */
+fun RtmpEndpointMetrics(metricsProvider: () -> RtmpMetrics?): RtmpEndpointMetrics {
+    return RtmpEndpointMetrics(RtmpRawMetrics(metricsProvider))
+}
+
+/**
  * Creates a [RtmpEndpointMetrics] from a [RtmpMetrics].
  */
-fun RtmpEndpointMetrics(rawMetrics: RtmpMetrics): RtmpEndpointMetrics {
+fun RtmpEndpointMetrics(rawMetrics: RtmpRawMetrics): RtmpEndpointMetrics {
+    val metrics = rawMetrics.rtmpMetrics
     return RtmpEndpointMetrics(
-        uptime = rawMetrics.uptime,
-        packetsWritten = rawMetrics.messagesSent,
-        packetsWriteDropped = rawMetrics.messagesSendDropped,
+        uptime = metrics.uptime,
+        packetsWritten = metrics.messagesSent,
+        packetsWriteDropped = metrics.messagesSendDropped,
         packetsWriteLost = 0L,
-        bytesWritten = rawMetrics.totalBytesSent,
-        bytesWriteDropped = rawMetrics.payloadSendDroppedSize,
+        bytesWritten = metrics.totalBytesSent,
+        bytesWriteDropped = metrics.payloadSendDroppedSize,
         rawMetrics = rawMetrics
     )
 }
@@ -44,5 +52,23 @@ data class RtmpEndpointMetrics(
     override val packetsWriteLost: Long,
     override val bytesWritten: Long,
     override val bytesWriteDropped: Long,
-    override val rawMetrics: RtmpMetrics
-) : EndpointMetrics<RtmpMetrics>
+    override val rawMetrics: RtmpRawMetrics
+) : EndpointMetrics<RtmpRawMetrics>
+
+
+/**
+ * Provides an access to internal RTMP metrics APIs.
+ */
+class RtmpRawMetrics internal constructor(private val metricsProvider: () -> RtmpMetrics?) {
+    /**
+     * Returns the [RtmpMetrics] if the client is available, otherwise null.
+     */
+    val rtmpMetricsOrNull: RtmpMetrics?
+        get() = metricsProvider()
+}
+
+/**
+ * Returns the [RtmpMetrics] if the client is available, otherwise [RtmpMetrics.ZERO].
+ */
+val RtmpRawMetrics.rtmpMetrics: RtmpMetrics
+    get() = rtmpMetricsOrNull ?: RtmpMetrics.ZERO
