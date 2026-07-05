@@ -42,7 +42,6 @@ import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.mu
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.FlvTagBuilder
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.close
 import io.github.thibaultbee.streampack.ext.rtmp.configuration.mediadescriptor.RtmpMediaDescriptor
-import io.github.thibaultbee.streampack.ext.rtmp.utils.RtmpEndpointMetrics
 import io.ktor.network.selector.SelectorManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -67,7 +66,7 @@ import kotlin.concurrent.atomics.ExperimentalAtomicApi
 @OptIn(ExperimentalAtomicApi::class)
 class RtmpEndpoint internal constructor(
     defaultDispatcher: CoroutineDispatcher, val ioDispatcher: CoroutineDispatcher
-) : IEndpointInternal, WithEndpointMetrics<RtmpMetrics> {
+) : IEndpointInternal, WithEndpointMetrics<RtmpRawMetrics> {
     private val coroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
     private val mutex = Mutex()
 
@@ -123,7 +122,7 @@ class RtmpEndpoint internal constructor(
         }
 
     override val metrics: RtmpEndpointMetrics
-        get() = RtmpEndpointMetrics(syncMetrics)
+        get() = RtmpEndpointMetrics { syncMetrics }
 
     private val _isOpenFlow = MutableStateFlow(false)
     override val isOpenFlow = _isOpenFlow.asStateFlow()
