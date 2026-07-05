@@ -24,7 +24,7 @@ import androidx.annotation.RequiresPermission
 import androidx.datastore.preferences.preferencesDataStore
 import io.github.thibaultbee.streampack.app.ApplicationConstants.userPrefName
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
-import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.videoUriMediaDescriptor
+import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.mediaStoreMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.backCameras
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameraManager
@@ -85,7 +85,7 @@ fun Context.createVideoContentUri(name: String): UriMediaDescriptor {
             name
         )
     }
-    return videoUriMediaDescriptor(this, videoDetails)
+    return mediaStoreMediaDescriptor(this, videoDetails)
 }
 
 fun String.appendIfNotEndsWith(suffix: String): String {
