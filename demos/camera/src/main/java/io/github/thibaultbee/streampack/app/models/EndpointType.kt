@@ -29,6 +29,7 @@ enum class EndpointType(@StringRes val id: Int) {
     THREEGP_FILE(R.string.to_3gp_file);
 
     companion object {
-        fun fromId(id: Int): EndpointType = entries.first { it.id == id }
+        fun fromId(id: Int): EndpointType = entries.firstOrNull { it.id == id }
+            ?: throw IllegalArgumentException("No EndpointType with id $id")
     }
 }
