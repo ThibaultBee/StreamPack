@@ -60,6 +60,16 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
+            <ToggleButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/mute_unmute_video"
+                android:drawableTop="@drawable/ic_toggle_video_button"
+                android:onCheckedChanged="@{(_, checked) -> viewmodel.setVideoIsMuted(checked)}"
+                android:textOff=""
+                android:textOn=""
+                app:tint="@android:color/white" />
+
             <ImageButton
                 android:id="@+id/switchCameraButton"
                 android:layout_width="wrap_content"
@@ -191,7 +201,7 @@
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/mute_unmute_microphone"
                 android:drawableTop="@drawable/ic_toggle_mic_button"
-                android:onCheckedChanged="@{(_, checked) -> viewmodel.setMute(checked)}"
+                android:onCheckedChanged="@{(_, checked) -> viewmodel.setAudioIsMuted(checked)}"
                 android:textOff=""
                 android:textOn=""
                 app:tint="@android:color/white" />
