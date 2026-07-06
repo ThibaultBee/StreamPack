@@ -405,6 +405,7 @@ class PreviewView @JvmOverloads constructor(
             return
         }
         val previewSize = getPreviewSize(videoSource, size)
+        Logger.i(TAG, "Starting preview with size ($previewSize) for ($size)")
         val builder = ViewfinderSurfaceRequest.Builder(previewSize)
         if (videoSource is ICameraSource) {
             val cameraCharacteristics =
