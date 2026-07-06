@@ -47,6 +47,8 @@ private class DefaultSurfaceProcessor(
     private val dynamicRangeProfile: DynamicRangeProfile,
     private val glThread: HandlerThreadExecutor,
 ) : ISurfaceProcessorInternal, SurfaceTexture.OnFrameAvailableListener, ISnapshotable {
+    override var isMuted: Boolean = false
+
     private val renderer = OpenGlRenderer()
 
     private val glHandler = glThread.handler
@@ -280,6 +282,9 @@ private class DefaultSurfaceProcessor(
         if (isReleaseRequested.get()) {
             throw IllegalStateException("SurfaceProcessor is released")
         }
+        if (isMuted) {
+            throw IllegalStateException("Snapshot is not available when video is muted")
+        }
         return CallbackToFutureAdapter.getFuture { completer ->
             executeSafely {
                 pendingSnapshots.add(PendingSnapshot(rotationDegrees, completer))
@@ -307,7 +312,8 @@ private class DefaultSurfaceProcessor(
                             surfaceTexture.timestamp
                         ),
                         surfaceOutputMatrix,
-                        it.targetSurface
+                        it.targetSurface,
+                        isMuted
                     )
                 }
             } catch (t: Throwable) {

@@ -65,6 +65,17 @@ interface IVideoInput : ISnapshotable {
     val sourceFlow: StateFlow<IVideoSource?>
 
     /**
+     * Mute the video stream.
+     * The video stream will be replaced by a black screen.
+     * It is a shortcut to [ISurfaceProcessor.isMuted]
+     */
+    var isMuted: Boolean
+        get() = processor.isMuted
+        set(value) {
+            processor.isMuted = value
+        }
+
+    /**
      * Sets the video source.
      *
      * The previous video source will be released unless its preview is still running.

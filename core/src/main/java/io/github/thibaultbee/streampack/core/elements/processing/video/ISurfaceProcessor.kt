@@ -26,7 +26,13 @@ import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRang
 import io.github.thibaultbee.streampack.core.elements.utils.time.Timebase
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 
-interface ISurfaceProcessor
+interface ISurfaceProcessor {
+    /**
+     * Mute the video stream.
+     * The video stream will be replaced by a black screen.
+     */
+    var isMuted: Boolean
+}
 
 /**
  * Interface for a surface processor that manages input and output surfaces.

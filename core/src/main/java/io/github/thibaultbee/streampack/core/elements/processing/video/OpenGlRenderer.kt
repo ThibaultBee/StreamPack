@@ -250,7 +250,8 @@ class OpenGlRenderer {
     fun render(
         timestampNs: Long,
         textureTransform: FloatArray,
-        surface: Surface
+        surface: Surface,
+        isMuted: Boolean = false
     ) {
         checkInitializedOrThrow(mInitialized, true)
         checkGlThreadOrThrow(mGlThread)
@@ -288,16 +289,21 @@ class OpenGlRenderer {
         }
 
 
-        // TODO(b/245855601): Upload the matrix to GPU when textureTransform is changed.
-        val program: Program2D = requireNotNull(mCurrentProgram)
-        if (program is SamplerShaderProgram) {
-            // Copy the texture transformation matrix over.
-            program.updateTextureMatrix(textureTransform)
-        }
+        if (isMuted) {
+            GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f)
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+        } else {
+            // TODO(b/245855601): Upload the matrix to GPU when textureTransform is changed.
+            val program: Program2D = requireNotNull(mCurrentProgram)
+            if (program is SamplerShaderProgram) {
+                // Copy the texture transformation matrix over.
+                program.updateTextureMatrix(textureTransform)
+            }
 
-        // Draw the rect.
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP,  /*firstVertex=*/0,  /*vertexCount=*/4)
-        checkGlErrorOrThrow("glDrawArrays")
+            // Draw the rect.
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP,  /*firstVertex=*/0,  /*vertexCount=*/4)
+            checkGlErrorOrThrow("glDrawArrays")
+        }
 
         // Set timestamp
         EGLExt.eglPresentationTimeANDROID(mEglDisplay, outputSurface.eglSurface, timestampNs)
