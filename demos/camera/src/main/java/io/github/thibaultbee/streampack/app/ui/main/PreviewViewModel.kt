@@ -216,12 +216,6 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                         }
                 }
                 viewModelScope.launch {
-                    val audioInput = (streamer as IWithAudioSource).audioInput
-                    audioInput.sourceFlow.filterNotNull().first()
-                    delay(3000L)
-                    audioInput.startCapture()
-                }
-                viewModelScope.launch {
                     streamer.isStreamingFlow
                         .collect { isStreaming ->
                             _isStreamingFlow.emit(isStreaming)
