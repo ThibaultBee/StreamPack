@@ -17,7 +17,10 @@ package io.github.thibaultbee.streampack.app.ui.main
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.ActivityInfo
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -26,6 +29,7 @@ import android.view.ViewGroup
 import android.widget.ToggleButton
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
+import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -124,6 +128,35 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
             } else {
                 Log.e(TAG, "Can't start preview, streamer is not a video streamer")
             }
+        }
+
+        binding.switchSourceButton.setOnClickListener { view ->
+            val popup = PopupMenu(requireContext(), view)
+            val cameraManager =
+                requireContext().getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            val cameraIds = cameraManager.cameraIdList
+
+            cameraIds.forEach { cameraId ->
+                val characteristics = cameraManager.getCameraCharacteristics(cameraId)
+                val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
+                val facingString = when (facing) {
+                    CameraCharacteristics.LENS_FACING_FRONT -> " (Front)"
+                    CameraCharacteristics.LENS_FACING_BACK -> " (Back)"
+                    CameraCharacteristics.LENS_FACING_EXTERNAL -> " (External)"
+                    else -> "Unknow $facing"
+                }
+                popup.menu.add("Camera $cameraId$facingString").setOnMenuItemClickListener {
+                    previewViewModel.setVideoSourceToCamera(cameraId)
+                    true
+                }
+            }
+
+            popup.menu.add("Bitmap Source").setOnMenuItemClickListener {
+                previewViewModel.setVideoSourceToBitmap()
+                true
+            }
+
+            popup.show()
         }
     }
 

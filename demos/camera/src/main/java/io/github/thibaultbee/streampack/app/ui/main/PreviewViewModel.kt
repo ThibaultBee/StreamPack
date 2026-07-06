@@ -39,6 +39,7 @@ import io.github.thibaultbee.streampack.app.data.storage.DataStoreRepository
 import io.github.thibaultbee.streampack.app.ui.main.usecases.BuildStreamerUseCase
 import io.github.thibaultbee.streampack.app.utils.ObservableViewModel
 import io.github.thibaultbee.streampack.app.utils.dataStore
+import io.github.thibaultbee.streampack.app.utils.formatBitrate
 import io.github.thibaultbee.streampack.app.utils.isEmpty
 import io.github.thibaultbee.streampack.app.utils.setNextCameraId
 import io.github.thibaultbee.streampack.app.utils.toggleBackToFront
@@ -46,12 +47,10 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMe
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.metrics.WithEndpointMetrics
 import io.github.thibaultbee.streampack.core.elements.metrics.metricsFlow
-import io.github.thibaultbee.streampack.app.utils.formatBitrate
 import io.github.thibaultbee.streampack.core.elements.metrics.writtenBitrateInBps
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.IAudioRecordSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.BitmapSourceFactory
-import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.IBitmapSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
@@ -445,31 +444,25 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    fun toggleVideoSource() {
+    fun setVideoSourceToCamera(cameraId: String) {
         viewModelScope.launch(defaultDispatcher) {
             videoSourceMutex.withLock {
-                val videoSource = streamer.videoInput.sourceFlow.value
-                val nextSource = when (videoSource) {
-                    is ICameraSource -> {
-                        BitmapSourceFactory(testBitmap)
-                    }
-
-                    is IBitmapSource -> {
-                        CameraSourceFactory(defaultCameraId)
-                    }
-
-                    else -> {
-                        Log.i(TAG, "Unknown video source. Fallback to camera sources")
-                        CameraSourceFactory(defaultCameraId)
-                    }
-                }
-                Log.i(TAG, "Switch video source to $nextSource")
-                streamer.setVideoSource(nextSource)
+                Log.i(TAG, "Switch video source to Camera $cameraId")
+                streamer.setVideoSource(CameraSourceFactory(cameraId))
             }
         }
     }
 
-    val isCameraSource = streamer.videoInput.sourceFlow?.map { it is ICameraSource }?.asLiveData()
+    fun setVideoSourceToBitmap() {
+        viewModelScope.launch(defaultDispatcher) {
+            videoSourceMutex.withLock {
+                Log.i(TAG, "Switch video source to Bitmap")
+                streamer.setVideoSource(BitmapSourceFactory(testBitmap))
+            }
+        }
+    }
+
+    val isCameraSource = streamer.videoInput.sourceFlow.map { it is ICameraSource }.asLiveData()
 
     val isFlashAvailable = MutableLiveData(false)
 
