@@ -282,29 +282,3 @@ suspend fun DualStreamer.setConfig(
     setAudioConfig(audioConfig)
     setVideoConfig(videoConfig)
 }
-
-/**
- * Sets audio configuration.
- *
- * It is a shortcut for [DualStreamer.setVideoConfig] when both
- * outputs use the same audio configuration.
- *
- * @param audioConfig the audio configuration to set
- */
-@RequiresPermission(Manifest.permission.RECORD_AUDIO)
-suspend fun DualStreamer.setAudioConfig(audioConfig: AudioConfig) {
-    setAudioConfig(DualStreamerAudioConfig(audioConfig))
-}
-
-/**
- * Sets video configuration.
- *
- * It is a shortcut for [DualStreamer.setVideoConfig] when both
- * outputs use the same video configuration.
- *
- * @param videoConfig the video configuration to set
- */
-suspend fun DualStreamer.setVideoConfig(videoConfig: VideoConfig) {
-    setVideoConfig(DualStreamerVideoConfig(videoConfig))
-}
-

@@ -36,7 +36,6 @@ import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
-import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 
 
 /**
@@ -193,16 +192,3 @@ class VideoOnlyDualStreamer(
 
     override suspend fun release() = streamer.release()
 }
-
-/**
- * Sets video configuration.
- *
- * It is a shortcut for [VideoOnlyDualStreamer.setVideoConfig] when both
- * outputs use the same video configuration.
- *
- * @param videoConfig the video configuration to set
- */
-suspend fun VideoOnlyDualStreamer.setVideoConfig(videoConfig: VideoConfig) {
-    setVideoConfig(DualStreamerVideoConfig(videoConfig))
-}
-

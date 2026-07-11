@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.streamers.dual
 
+import android.Manifest
 import android.media.AudioFormat
 import android.media.MediaCodecInfo
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline
@@ -22,6 +23,7 @@ import android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain
 import android.media.MediaCodecInfo.CodecProfileLevel.VP9Profile0
 import android.media.MediaFormat
 import android.util.Size
+import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig.Companion.getDefaultProfile
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
@@ -245,7 +247,32 @@ internal constructor(
 
 interface IAudioDualStreamer : IAudioStreamer<DualStreamerAudioConfig>, IDualStreamer
 
+/**
+ * Sets audio configuration.
+ *
+ * It is a shortcut for [DualStreamer.setVideoConfig] when both
+ * outputs use the same audio configuration.
+ *
+ * @param audioConfig the audio configuration to set
+ */
+@RequiresPermission(Manifest.permission.RECORD_AUDIO)
+suspend fun IAudioDualStreamer.setAudioConfig(audioConfig: AudioConfig) {
+    setAudioConfig(DualStreamerAudioConfig(audioConfig))
+}
+
 interface IVideoDualStreamer : IVideoStreamer<DualStreamerVideoConfig>, IDualStreamer
+
+/**
+ * Sets video configuration.
+ *
+ * It is a shortcut for [DualStreamer.setVideoConfig] when both
+ * outputs use the same video configuration.
+ *
+ * @param videoConfig the video configuration to set
+ */
+suspend fun IVideoDualStreamer.setVideoConfig(videoConfig: VideoConfig) {
+    setVideoConfig(DualStreamerVideoConfig(videoConfig))
+}
 
 interface IDualStreamer : ICloseableStreamer {
     /**
