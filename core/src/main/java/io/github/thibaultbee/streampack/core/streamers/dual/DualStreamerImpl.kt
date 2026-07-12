@@ -32,6 +32,8 @@ import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline.AudioInputMode
+import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
+import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.utils.MultiThrowable
@@ -145,10 +147,12 @@ internal class DualStreamerImpl(
     }
 
     // SOURCES
-    override val audioInput = pipeline.audioInput
+    override val audioInput: IAudioInput
+        get() = pipeline.audioInput
 
     // PROCESSORS
-    override val videoInput = pipeline.videoInput
+    override val videoInput: IVideoInput
+        get() = pipeline.videoInput
 
     /**
      * Sets the target rotation.
