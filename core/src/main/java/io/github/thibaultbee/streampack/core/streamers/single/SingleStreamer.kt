@@ -235,12 +235,12 @@ class SingleStreamer(
     override val audioConfigFlow = streamer.audioConfigFlow
     override val audioEncoder: IEncoder?
         get() = streamer.audioEncoder
-    override val audioInput: IAudioInput = streamer.audioInput!!
+    override val audioInput: IAudioInput = streamer.audioInput
 
     override val videoConfigFlow = streamer.videoConfigFlow
     override val videoEncoder: IEncoder?
         get() = streamer.videoEncoder
-    override val videoInput: IVideoInput = streamer.videoInput!!
+    override val videoInput: IVideoInput = streamer.videoInput
 
     /**
      * Sets the target rotation.
