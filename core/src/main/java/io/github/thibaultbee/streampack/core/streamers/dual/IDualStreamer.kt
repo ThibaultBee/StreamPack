@@ -35,6 +35,8 @@ import io.github.thibaultbee.streampack.core.elements.utils.ByteFormatValue
 import io.github.thibaultbee.streampack.core.elements.utils.ChannelConfigValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isCompatibleWith
 import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioEncodingPipelineOutput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.streamers.IAudioStreamer
 import io.github.thibaultbee.streampack.core.streamers.IVideoStreamer
@@ -245,7 +247,17 @@ internal constructor(
     val dynamicRangeProfile = firstVideoConfig.dynamicRangeProfile
 }
 
-interface IAudioDualStreamer : IAudioStreamer<DualStreamerAudioConfig>, IDualStreamer
+interface IAudioDualStreamer : IAudioStreamer<DualStreamerAudioConfig>, IDualStreamer {
+    /**
+     * First output of the streamer.
+     */
+    override val first: IConfigurableAudioEncodingPipelineOutput
+
+    /**
+     * Second output of the streamer.
+     */
+    override val second: IConfigurableAudioEncodingPipelineOutput
+}
 
 /**
  * Sets audio configuration.
@@ -260,7 +272,17 @@ suspend fun IAudioDualStreamer.setAudioConfig(audioConfig: AudioConfig) {
     setAudioConfig(DualStreamerAudioConfig(audioConfig))
 }
 
-interface IVideoDualStreamer : IVideoStreamer<DualStreamerVideoConfig>, IDualStreamer
+interface IVideoDualStreamer : IVideoStreamer<DualStreamerVideoConfig>, IDualStreamer {
+    /**
+     * First output of the streamer.
+     */
+    override val first: IConfigurableVideoEncodingPipelineOutput
+
+    /**
+     * Second output of the streamer.
+     */
+    override val second: IConfigurableVideoEncodingPipelineOutput
+}
 
 /**
  * Sets video configuration.

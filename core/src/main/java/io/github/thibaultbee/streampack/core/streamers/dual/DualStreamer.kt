@@ -41,9 +41,7 @@ import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
-import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 
 /**
@@ -225,8 +223,8 @@ class DualStreamer(
         dispatcherProvider = dispatcherProvider
     )
 
-    override val first = streamer.first as IConfigurableVideoEncodingPipelineOutput
-    override val second = streamer.second as IConfigurableVideoEncodingPipelineOutput
+    override val first = streamer.first
+    override val second = streamer.second
 
     override val throwableFlow = streamer.throwableFlow
     override val isOpenFlow = streamer.isOpenFlow
