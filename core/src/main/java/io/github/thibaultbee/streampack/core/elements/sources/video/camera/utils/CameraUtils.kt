@@ -55,6 +55,7 @@ internal object CameraUtils {
                 } catch (_: IllegalStateException) {
                     // Ignore if the continuation has already been resumed
                 }
+                isClosedFlow.tryEmit(true)
                 Logger.w(TAG, "Camera ${camera.id} has been disconnected")
                 camera.close()
             }
@@ -75,6 +76,7 @@ internal object CameraUtils {
                 } catch (_: IllegalStateException) {
                     // Ignore if the continuation has already been resumed
                 }
+                isClosedFlow.tryEmit(true)
                 camera.close()
                 throwableFlow.tryEmit(exception)
             }
