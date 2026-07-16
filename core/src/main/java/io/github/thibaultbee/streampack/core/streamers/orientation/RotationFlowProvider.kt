@@ -28,6 +28,9 @@ import kotlinx.coroutines.flow.callbackFlow
 internal class RotationFlowProvider(private val rotationProvider: RotationProvider) :
     IRotationFlowProvider {
     override val rotationFlow: Flow<Int> = callbackFlow {
+        // Emit the initial rotation immediately.
+        // Otherwise, flow operators like `first()` might hang indefinitely if the device orientation never physically changes.
+        trySend(rotationProvider.rotation)
         val listener = object : IRotationProvider.Listener {
             override fun onOrientationChanged(rotation: Int) {
                 trySend(rotation)
