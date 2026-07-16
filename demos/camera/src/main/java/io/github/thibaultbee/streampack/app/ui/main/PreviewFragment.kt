@@ -258,7 +258,7 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
             ) -> {
                 inflateStreamerPreview()
                 previewViewModel.configureAudio()
-                previewViewModel.initializeVideoSource()
+                previewViewModel.setVideoSourceToCamera()
             }
 
             shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO) -> {
@@ -313,7 +313,7 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
 
         if (permissions[Manifest.permission.CAMERA] == true) {
             inflateStreamerPreview()
-            previewViewModel.initializeVideoSource()
+            previewViewModel.configureCamera()
         } else if (permissions[Manifest.permission.RECORD_AUDIO] == true) {
             previewViewModel.configureAudio()
         }
