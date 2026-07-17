@@ -9,7 +9,6 @@ import io.github.thibaultbee.streampack.app.data.storage.DataStoreRepository
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
-import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
 import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
@@ -22,13 +21,13 @@ class StreamerFactory(
     private val rotationRepository: RotationRepository
 ) {
     suspend fun build(withAudio: Boolean): IVideoSingleStreamer {
-        val streamer = if (withAudio) {
-            SingleStreamer(application, audioInputMode = StreamerPipeline.AudioInputMode.PUSH)
-        } else {
-            VideoOnlySingleStreamer(application)
-        }
+        val rotation = rotationRepository.rotationFlow.first()
 
-        streamer.setTargetRotation(rotationRepository.rotationFlow.first())
+        val streamer = if (withAudio) {
+            SingleStreamer(application, defaultRotation = rotation)
+        } else {
+            VideoOnlySingleStreamer(application, defaultRotation = rotation)
+        }
 
         if (ActivityCompat.checkSelfPermission(
                 application, Manifest.permission.CAMERA
