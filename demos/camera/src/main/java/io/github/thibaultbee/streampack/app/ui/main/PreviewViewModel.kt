@@ -22,6 +22,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.hardware.camera2.CaptureResult
+import android.os.Build
 import android.util.Log
 import android.util.Range
 import android.util.Rational
@@ -43,13 +44,10 @@ import io.github.thibaultbee.streampack.app.utils.formatBitrate
 import io.github.thibaultbee.streampack.app.utils.isEmpty
 import io.github.thibaultbee.streampack.app.utils.setNextCameraId
 import io.github.thibaultbee.streampack.app.utils.toggleBackToFront
-import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.metrics.WithEndpointMetrics
 import io.github.thibaultbee.streampack.core.elements.metrics.metricsFlow
 import io.github.thibaultbee.streampack.core.elements.metrics.writtenBitrateInBps
-import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.IAudioRecordSource
-import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.BitmapSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
@@ -64,7 +62,6 @@ import io.github.thibaultbee.streampack.core.regulator.controllers.intervalBitra
 import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.withAudio
-import io.github.thibaultbee.streampack.core.streamers.single.withVideo
 import io.github.thibaultbee.streampack.core.utils.extensions.isClosedException
 import io.github.thibaultbee.streampack.ext.srt.regulator.controllers.intervalSrtBitrateRegulatorControllerFactory
 import kotlinx.coroutines.CancellationException
@@ -122,23 +119,10 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
             return (videoSource as? ICameraSource)?.settings
         }
 
-    val requiredPermissions: List<String>
-        get() {
-            val permissions = mutableListOf<String>()
-            if (requiredStreamer.videoInput.sourceFlow is ICameraSource) {
-                permissions.add(Manifest.permission.CAMERA)
-            }
-            if (audioStreamer?.audioInput?.sourceFlow?.value is IAudioRecordSource) {
-                permissions.add(Manifest.permission.RECORD_AUDIO)
-            }
-            storageRepository.endpointDescriptorFlow.asLiveData().value?.let {
-                if (it is UriMediaDescriptor) {
-                    permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                }
-            }
-
-            return permissions
-        }
+    suspend fun needsStoragePermission(): Boolean {
+        return (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) &&
+                (storageRepository.endpointDescriptorFlow.first().type.sinkType == MediaSinkType.FILE)
+    }
 
     // Streamer errors
     private val _streamerErrorLiveData: MutableLiveData<String> = MutableLiveData()
@@ -277,7 +261,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    fun configureAudio() {
+    fun configureMicrophone() {
         viewModelScope.launch {
             try {
                 storageRepository.audioConfigFlow.first()?.let { audioStreamer?.setAudioConfig(it) }

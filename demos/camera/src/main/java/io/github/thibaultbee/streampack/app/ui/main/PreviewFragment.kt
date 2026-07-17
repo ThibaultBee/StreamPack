@@ -70,7 +70,13 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
             view as ToggleButton
             if (view.isPressed) {
                 if (view.isChecked) {
-                    startStreamIfPermissions(previewViewModel.requiredPermissions)
+                    lifecycleScope.launch {
+                        val permissions = mutableListOf<String>()
+                        if (previewViewModel.needsStoragePermission()) {
+                            permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        }
+                        startStreamIfPermissions(permissions)
+                    }
                 } else {
                     stopStream()
                 }
@@ -250,6 +256,21 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
         }
     }
 
+    private val requestLiveStreamPermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val missingPermissions = permissions.toList().filter {
+            !it.second
+        }.map { it.first }
+
+        if (missingPermissions.isEmpty()) {
+            startStream()
+        } else {
+            showPermissionError(*missingPermissions.toTypedArray())
+        }
+    }
+
+
     @SuppressLint("MissingPermission")
     private fun requestCameraAndMicrophonePermissions() {
         when {
@@ -257,7 +278,7 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
                 requireContext(), Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO
             ) -> {
                 inflateStreamerPreview()
-                previewViewModel.configureAudio()
+                previewViewModel.configureMicrophone()
                 previewViewModel.setVideoSourceToCamera()
             }
 
@@ -289,19 +310,6 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
         }
     }
 
-    private val requestLiveStreamPermissionsLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val missingPermissions = permissions.toList().filter {
-            !it.second
-        }.map { it.first }
-
-        if (missingPermissions.isEmpty()) {
-            startStream()
-        } else {
-            showPermissionError(*missingPermissions.toTypedArray())
-        }
-    }
 
     @SuppressLint("MissingPermission")
     private val requestCameraAndMicrophonePermissionsLauncher = registerForActivityResult(
@@ -315,7 +323,7 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
             inflateStreamerPreview()
             previewViewModel.configureCamera()
         } else if (permissions[Manifest.permission.RECORD_AUDIO] == true) {
-            previewViewModel.configureAudio()
+            previewViewModel.configureMicrophone()
         }
         if (missingPermissions.isNotEmpty()) {
             showPermissionError(*missingPermissions.toTypedArray())
