@@ -16,7 +16,9 @@
 package io.github.thibaultbee.streampack.ui.views
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.PointF
 import android.graphics.Rect
 import android.util.AttributeSet
@@ -34,6 +36,7 @@ import androidx.camera.viewfinder.CameraViewfinderExt.requestSurface
 import androidx.camera.viewfinder.core.ScaleType
 import androidx.camera.viewfinder.core.ViewfinderSurfaceRequest
 import androidx.camera.viewfinder.core.populateFromCharacteristics
+import androidx.core.content.ContextCompat
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION_MS
@@ -345,7 +348,15 @@ class PreviewView @JvmOverloads constructor(
         return true
     }
 
-    private fun performCameraTapOnFocus(cameraSource: ICameraSource) {
+    @SuppressLint("MissingPermission")
+    private fun performCameraTap(cameraSource: ICameraSource) {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_DENIED
+        ) {
+            return
+        }
         if (enableTapToFocus) {
             // touchUpEvent == null means it's an accessibility click. Focus at the center instead.
             val x = touchUpEvent?.x ?: (width / 2f)
@@ -374,7 +385,7 @@ class PreviewView @JvmOverloads constructor(
     override fun performClick(): Boolean {
         val videoSource = streamer?.videoInput?.sourceFlow?.value
         if (videoSource is ICameraSource) {
-            performCameraTapOnFocus(videoSource)
+            performCameraTap(videoSource)
         }
         touchUpEvent = null
         return super.performClick()
