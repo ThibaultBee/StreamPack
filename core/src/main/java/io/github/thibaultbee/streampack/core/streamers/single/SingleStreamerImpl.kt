@@ -37,6 +37,7 @@ import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
@@ -47,7 +48,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 /**
  * A [ISingleStreamer] implementation for audio and video.
@@ -81,14 +83,18 @@ internal class SingleStreamerImpl(
         dispatcherProvider
     )
     private val pipelineOutput: IEncodingPipelineOutputInternal =
-        runBlocking(dispatcherProvider.default) {
-            pipeline.createEncodingOutput(
-                withAudio,
-                withVideo,
-                endpointFactory,
-                defaultRotation
-            ) as IEncodingPipelineOutputInternal
-        }
+        EncodingPipelineOutput(
+            context,
+            withAudio,
+            withVideo,
+            endpointFactory,
+            defaultRotation,
+            dispatcherProvider
+        )
+
+    private val initJob: Job = coroutineScope.launch {
+        pipeline.addOutput(pipelineOutput)
+    }
 
     override val throwableFlow: StateFlow<Throwable?> =
         merge(pipeline.throwableFlow, pipelineOutput.throwableFlow).stateIn(
@@ -113,8 +119,10 @@ internal class SingleStreamerImpl(
     override val audioEncoder: IEncoder?
         get() = pipelineOutput.audioEncoder
 
-    override suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory) =
+    override suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory) {
+        initJob.join()
         pipeline.setAudioSource(audioSourceFactory)
+    }
 
     // VIDEO
     /**
@@ -137,6 +145,7 @@ internal class SingleStreamerImpl(
      * @param rotation the target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
      */
     override suspend fun setTargetRotation(@RotationValue rotation: Int) {
+        initJob.join()
         pipeline.setTargetRotation(rotation)
     }
 
@@ -194,6 +203,7 @@ internal class SingleStreamerImpl(
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override suspend fun setAudioConfig(audioConfig: AudioConfig) {
+        initJob.join()
         pipelineOutput.setAudioCodecConfig(audioConfig)
     }
 
@@ -217,6 +227,7 @@ internal class SingleStreamerImpl(
      * @throws [Throwable] if configuration can not be applied.
      */
     override suspend fun setVideoConfig(videoConfig: VideoConfig) {
+        initJob.join()
         pipelineOutput.setVideoCodecConfig(videoConfig)
     }
 
@@ -225,12 +236,18 @@ internal class SingleStreamerImpl(
      *
      * @param descriptor Media descriptor to open
      */
-    override suspend fun open(descriptor: MediaDescriptor) = pipelineOutput.open(descriptor)
+    override suspend fun open(descriptor: MediaDescriptor) {
+        initJob.join()
+        pipelineOutput.open(descriptor)
+    }
 
     /**
      * Closes the streamer endpoint.
      */
-    override suspend fun close() = pipelineOutput.close()
+    override suspend fun close() {
+        initJob.join()
+        pipelineOutput.close()
+    }
 
     /**
      * Starts audio/video stream.
@@ -240,7 +257,10 @@ internal class SingleStreamerImpl(
      *
      * @see [stopStream]
      */
-    override suspend fun startStream() = pipelineOutput.startStream()
+    override suspend fun startStream() {
+        initJob.join()
+        pipelineOutput.startStream()
+    }
 
     /**
      * Stops audio/video stream.
@@ -250,7 +270,10 @@ internal class SingleStreamerImpl(
      *
      * @see [startStream]
      */
-    override suspend fun stopStream() = pipeline.stopStream()
+    override suspend fun stopStream() {
+        initJob.join()
+        pipeline.stopStream()
+    }
 
     /**
      * Releases the streamer.

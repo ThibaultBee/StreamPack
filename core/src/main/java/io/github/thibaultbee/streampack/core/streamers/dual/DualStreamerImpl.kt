@@ -36,6 +36,7 @@ import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputInternal
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.utils.MultiThrowable
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
@@ -46,7 +47,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 
 /**
@@ -85,12 +87,14 @@ internal class DualStreamerImpl(
     )
 
     private val firstPipelineOutput: IEncodingPipelineOutputInternal =
-        runBlocking(dispatcherProvider.default) {
-            pipeline.createEncodingOutput(
-                withAudio, withVideo, firstEndpointFactory, defaultRotation
-            ) as IEncodingPipelineOutputInternal
-        }
-
+        EncodingPipelineOutput(
+            context,
+            withAudio,
+            withVideo,
+            firstEndpointFactory,
+            defaultRotation,
+            dispatcherProvider
+        )
 
     /**
      * First output of the streamer.
@@ -98,16 +102,24 @@ internal class DualStreamerImpl(
     override val first = firstPipelineOutput as IConfigurableAudioVideoEncodingPipelineOutput
 
     private val secondPipelineOutput: IEncodingPipelineOutputInternal =
-        runBlocking(dispatcherProvider.default) {
-            pipeline.createEncodingOutput(
-                withAudio, withVideo, secondEndpointFactory, defaultRotation
-            ) as IEncodingPipelineOutputInternal
-        }
+        EncodingPipelineOutput(
+            context,
+            withAudio,
+            withVideo,
+            secondEndpointFactory,
+            defaultRotation,
+            dispatcherProvider
+        )
 
     /**
      * Second output of the streamer.
      */
     override val second = secondPipelineOutput as IConfigurableAudioVideoEncodingPipelineOutput
+
+    private val initJob: Job = coroutineScope.launch {
+        pipeline.addOutput(firstPipelineOutput)
+        pipeline.addOutput(secondPipelineOutput)
+    }
 
     override val throwableFlow: StateFlow<Throwable?> = merge(
         pipeline.throwableFlow,
@@ -142,6 +154,7 @@ internal class DualStreamerImpl(
      * Same as calling [first.close] and [second.close].
      */
     override suspend fun close() {
+        initJob.join()
         firstPipelineOutput.close()
         secondPipelineOutput.close()
     }
@@ -160,6 +173,7 @@ internal class DualStreamerImpl(
      * @param rotation the target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
      */
     override suspend fun setTargetRotation(@RotationValue rotation: Int) {
+        initJob.join()
         pipeline.setTargetRotation(rotation)
     }
 
@@ -172,6 +186,7 @@ internal class DualStreamerImpl(
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override suspend fun setAudioConfig(audioConfig: DualStreamerAudioConfig) {
+        initJob.join()
         val throwables = mutableListOf<Throwable>()
 
         val firstAudioCodecConfig = firstPipelineOutput.audioCodecConfigFlow.value
@@ -217,6 +232,7 @@ internal class DualStreamerImpl(
      * @param videoConfig the video configuration to set
      */
     override suspend fun setVideoConfig(videoConfig: DualStreamerVideoConfig) {
+        initJob.join()
         val throwables = mutableListOf<Throwable>()
 
         val firstVideoCodecConfig = firstPipelineOutput.videoCodecConfigFlow.value
@@ -271,14 +287,21 @@ internal class DualStreamerImpl(
     suspend fun setConfig(
         audioConfig: DualStreamerAudioConfig, videoConfig: DualStreamerVideoConfig
     ) {
+        initJob.join()
         setAudioConfig(audioConfig)
         setVideoConfig(videoConfig)
     }
 
 
-    override suspend fun startStream() = pipeline.startStream()
+    override suspend fun startStream() {
+        initJob.join()
+        pipeline.startStream()
+    }
 
-    override suspend fun stopStream() = pipeline.stopStream()
+    override suspend fun stopStream() {
+        initJob.join()
+        pipeline.stopStream()
+    }
 
     override suspend fun release() {
         pipeline.release()
