@@ -31,9 +31,9 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.ICameraCaptureSessionCompat
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 internal object CameraUtils {
     private const val TAG = "CameraUtils"
@@ -45,15 +45,21 @@ internal object CameraUtils {
         cameraId: String,
         isClosedFlow: MutableStateFlow<Boolean>,
         throwableFlow: MutableStateFlow<Throwable?>
-    ): CameraDevice = suspendCoroutine { continuation ->
+    ): CameraDevice = suspendCancellableCoroutine { continuation ->
         val callbacks = object : CameraDevice.StateCallback() {
-            override fun onOpened(device: CameraDevice) = continuation.resume(device)
+            override fun onOpened(device: CameraDevice) {
+                if (continuation.isActive) {
+                    continuation.resume(device)
+                } else {
+                    device.close()
+                }
+            }
 
             override fun onDisconnected(camera: CameraDevice) {
                 try {
                     continuation.resumeWithException(RuntimeException("Camera has been disconnected"))
-                } catch (_: IllegalStateException) {
-                    // Ignore if the continuation has already been resumed
+                } catch (t: Throwable) {
+                    Logger.e(TAG, "Error while resuming with exception: $t")
                 }
                 isClosedFlow.tryEmit(true)
                 Logger.w(TAG, "Camera ${camera.id} has been disconnected")
@@ -73,8 +79,8 @@ internal object CameraUtils {
                 }
                 try {
                     continuation.resumeWithException(exception)
-                } catch (_: IllegalStateException) {
-                    // Ignore if the continuation has already been resumed
+                } catch (t: Throwable) {
+                    Logger.e(TAG, "Error while resuming with exception: $t")
                 }
                 isClosedFlow.tryEmit(true)
                 camera.close()
@@ -89,7 +95,11 @@ internal object CameraUtils {
         try {
             sessionCompat.openCamera(manager, cameraId, callbacks)
         } catch (t: Throwable) {
-            continuation.resumeWithException(CameraException("Failed to open camera $cameraId: $t"))
+            try {
+                continuation.resumeWithException(CameraException("Failed to open camera $cameraId: $t"))
+            } catch (t: Throwable) {
+                Logger.e(TAG, "Error while resuming with exception: $t")
+            }
         }
     }
 
@@ -98,7 +108,7 @@ internal object CameraUtils {
         outputs: List<Surface>,
         dynamicRange: Long,
         isClosedFlow: MutableStateFlow<Boolean>
-    ): CameraCaptureSession = suspendCoroutine { continuation ->
+    ): CameraCaptureSession = suspendCancellableCoroutine { continuation ->
         val cameraId = cameraDeviceController.id
         val callbacks = object : CameraCaptureSession.StateCallback() {
             override fun onConfigured(session: CameraCaptureSession) {
@@ -106,7 +116,11 @@ internal object CameraUtils {
                     TAG,
                     "Camera session configured for camera $cameraId and outputs $outputs"
                 )
-                continuation.resume(session)
+                if (continuation.isActive) {
+                    continuation.resume(session)
+                } else {
+                    session.close()
+                }
             }
 
             override fun onConfigureFailed(session: CameraCaptureSession) {
@@ -117,8 +131,8 @@ internal object CameraUtils {
                 )
                 try {
                     continuation.resumeWithException(CameraException("Camera: failed to configure the capture session for camera $cameraId and outputs $outputs"))
-                } catch (_: IllegalStateException) {
-                    // Ignore if the continuation has already been resumed
+                } catch (t: Throwable) {
+                    Logger.e(TAG, "Error while resuming with exception: $t")
                 }
             }
 
@@ -150,7 +164,11 @@ internal object CameraUtils {
                 )
             }
         } catch (t: Throwable) {
-            continuation.resumeWithException(CameraException("Failed to create capture session for camera $cameraId and outputs $outputs: $t"))
+            try {
+                continuation.resumeWithException(CameraException("Failed to create capture session for camera $cameraId and outputs $outputs: $t"))
+            } catch (t: Throwable) {
+                Logger.e(TAG, "Error while resuming with exception: $t")
+            }
         }
     }
 
