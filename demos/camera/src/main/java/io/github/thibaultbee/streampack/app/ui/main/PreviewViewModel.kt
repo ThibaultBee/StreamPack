@@ -43,7 +43,7 @@ import io.github.thibaultbee.streampack.app.utils.dataStore
 import io.github.thibaultbee.streampack.app.utils.formatBitrate
 import io.github.thibaultbee.streampack.app.utils.isEmpty
 import io.github.thibaultbee.streampack.app.utils.setNextCameraId
-import io.github.thibaultbee.streampack.app.utils.toggleBackToFront
+import io.github.thibaultbee.streampack.app.utils.switchBackToFront
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.metrics.WithEndpointMetrics
 import io.github.thibaultbee.streampack.core.elements.metrics.metricsFlow
@@ -367,12 +367,9 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
          * exception instead of crashing. You can either catch the exception or check if the
          * configuration is valid for the new camera with [Context.isFpsSupported].
          */
-        val videoSource = requiredStreamer.videoInput.sourceFlow.value
-        if (videoSource is ICameraSource) {
-            viewModelScope.launch(defaultDispatcher) {
-                videoSourceMutex.withLock {
-                    requiredStreamer.toggleBackToFront(application)
-                }
+        viewModelScope.launch(defaultDispatcher) {
+            videoSourceMutex.withLock {
+                streamer?.switchBackToFront(application)
             }
         }
         return true
@@ -387,10 +384,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
          */
         viewModelScope.launch(defaultDispatcher) {
             videoSourceMutex.withLock {
-                val videoSource = requiredStreamer.videoInput.sourceFlow.value
-                if (videoSource is ICameraSource) {
-                    streamer?.setNextCameraId(application)
-                }
+                streamer?.setNextCameraId(application)
             }
         }
     }

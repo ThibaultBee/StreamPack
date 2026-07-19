@@ -29,6 +29,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICame
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.backCameras
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameraManager
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameras
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.frontCameras
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isBackCamera
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
@@ -41,16 +42,17 @@ suspend fun IWithVideoSource.setNextCameraId(context: Context) {
 
     val newCameraId = if (videoSource is ICameraSource) {
         val currentCameraIndex = cameras.indexOf(videoSource.cameraId)
-        (currentCameraIndex + 1) % cameras.size
+        val newCameraIndex = (currentCameraIndex + 1) % cameras.size
+        cameras[newCameraIndex]
     } else {
-        0
+        context.defaultCameraId
     }
 
-    setCameraId(cameras[newCameraId])
+    setCameraId(newCameraId)
 }
 
 @RequiresPermission(Manifest.permission.CAMERA)
-suspend fun IWithVideoSource.toggleBackToFront(context: Context) {
+suspend fun IWithVideoSource.switchBackToFront(context: Context) {
     val cameraManager = context.cameraManager
     val videoSource = videoInput.sourceFlow.value
     val cameras = if (videoSource is ICameraSource) {
@@ -60,7 +62,7 @@ suspend fun IWithVideoSource.toggleBackToFront(context: Context) {
             cameraManager.backCameras
         }
     } else {
-        cameraManager.frontCameras
+        cameraManager.backCameras
     }
 
     if (cameras.isNotEmpty()) {
