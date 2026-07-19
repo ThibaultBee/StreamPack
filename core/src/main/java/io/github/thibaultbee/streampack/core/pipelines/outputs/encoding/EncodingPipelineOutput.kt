@@ -746,6 +746,17 @@ internal class EncodingPipelineOutput(
      * @see [stopStream]
      */
     private suspend fun stopStreamElements() {
+        // Disconnect encoders from endpoint to drop trailing frames
+        audioStreamId = null
+        videoStreamId = null
+
+        // Endpoint
+        try {
+            endpointInternal.stopStream()
+        } catch (t: Throwable) {
+            Logger.w(TAG, "Can't stop endpoint: ${t.message}")
+        }
+
         // Encoders
         val audioEncoderJob = audioEncoderInternal?.let {
             coroutineScope.launch {
@@ -753,9 +764,8 @@ internal class EncodingPipelineOutput(
                     it.stopStream()
                 } catch (t: Throwable) {
                     Logger.w(TAG, "Can't stop audio encoder: ${t.message}")
-                } finally {
-                    audioStreamId = null
                 }
+
                 // Flush remaining frames
                 audioEncoderListener.outputChannel.flush()
 
@@ -773,8 +783,6 @@ internal class EncodingPipelineOutput(
                     it.stopStream()
                 } catch (t: Throwable) {
                     Logger.w(TAG, "Can't stop video encoder: ${t.message}")
-                } finally {
-                    videoStreamId = null
                 }
 
                 // Flush remaining frames
@@ -790,13 +798,6 @@ internal class EncodingPipelineOutput(
 
         audioEncoderJob?.join()
         videoEncoderJob?.join()
-
-        // Endpoint
-        try {
-            endpointInternal.stopStream()
-        } catch (t: Throwable) {
-            Logger.w(TAG, "Can't stop endpoint: ${t.message}")
-        }
     }
 
     private suspend fun releaseUnsafe() {

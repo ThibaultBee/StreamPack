@@ -155,7 +155,9 @@ class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSi
 
     override suspend fun startStream() {
         val socket = requireNotNull(socket) { "SrtEndpoint is not initialized" }
-        require(socket.isConnected) { "SrtEndpoint should be connected at this point" }
+        if (!socket.isConnected) {
+            throw ClosedException("SrtEndpoint should be connected at this point")
+        }
 
         socket.setSockFlag(SockOpt.MAXBW, 0L)
         socket.setSockFlag(SockOpt.INPUTBW, bitrate)

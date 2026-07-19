@@ -275,6 +275,7 @@ class RtmpEndpoint internal constructor(
         } catch (t: Throwable) {
             Logger.w(TAG, "Error while stopping stream: $t")
         } finally {
+            flvTagChannel.clear()
             flvTagBuilder.clearStreams()
             timestampMutex.withLock {
                 startUpTimestamp = INVALID_TIMESTAMP

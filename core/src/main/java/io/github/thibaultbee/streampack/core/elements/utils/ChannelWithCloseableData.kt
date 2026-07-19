@@ -95,6 +95,13 @@ class ChannelWithCloseableData<T>(
             onClose()
         }
     }
+
+    fun clear() {
+        while (true) {
+            val element = channel.tryReceive().getOrNull() ?: break
+            element.close()
+        }
+    }
 }
 
 /**

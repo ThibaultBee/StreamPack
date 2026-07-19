@@ -155,6 +155,7 @@ sealed class FlvEndpoint(
         } catch (t: Throwable) {
             Logger.w(TAG, "Error while flushing FLV muxer: $t")
         } finally {
+            flvTagChannel.clear()
             flvTagBuilder.clearStreams()
             timestampMutex.withLock {
                 startUpTimestamp = INVALID_TIMESTAMP
