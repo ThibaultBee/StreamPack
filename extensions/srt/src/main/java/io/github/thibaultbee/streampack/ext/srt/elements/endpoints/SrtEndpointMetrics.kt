@@ -216,7 +216,9 @@ class SrtRawMetrics internal constructor(private val socketProvider: () -> Corou
      * @return the current [Stats] or null if the socket is not connected
      */
     fun bstatsOrNull(clear: Boolean): Stats? {
-        return socketProvider()?.bstats(clear)
+        val socket = socketProvider() ?: return null
+        if (!socket.isConnected) return null
+        return socket.bstats(clear)
     }
 
     /**
@@ -229,7 +231,9 @@ class SrtRawMetrics internal constructor(private val socketProvider: () -> Corou
      * @return the current [Stats] if the socket is not connected
      */
     fun bistatsOrNull(clear: Boolean, instantaneous: Boolean): Stats? {
-        return socketProvider()?.bistats(clear, instantaneous)
+        val socket = socketProvider() ?: return null
+        if (!socket.isConnected) return null
+        return socket.bistats(clear, instantaneous)
     }
 }
 
