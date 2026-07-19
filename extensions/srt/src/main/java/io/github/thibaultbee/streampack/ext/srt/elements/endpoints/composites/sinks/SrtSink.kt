@@ -28,12 +28,12 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.Packet
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.SrtPacket
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.AbstractSink
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ISinkWithMetricsInternal
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.ext.srt.configuration.mediadescriptor.SrtMediaDescriptor
-import io.github.thibaultbee.streampack.ext.srt.elements.endpoints.SrtRawMetrics
 import io.github.thibaultbee.streampack.ext.srt.elements.endpoints.SrtEndpointMetrics
+import io.github.thibaultbee.streampack.ext.srt.elements.endpoints.SrtRawMetrics
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -122,7 +122,6 @@ class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSi
     override suspend fun write(packet: Packet): Int {
         if (isOnError) {
             return -1
-
         }
 
         // Pick up completionException if any
@@ -132,11 +131,16 @@ class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSi
         }
 
         val socket = requireNotNull(socket) { "SrtEndpoint is not initialized" }
-        if ((packet.ts != 0L) && (socket.connectionTime > packet.ts)) {
-            Logger.w(
-                TAG,
-                "Packet ts (${packet.ts} ms) is lower than connection time (${socket.connectionTime} ms). Dropping packet."
-            )
+        try {
+            if ((packet.ts != 0L) && (socket.connectionTime > packet.ts)) {
+                Logger.w(
+                    TAG,
+                    "Packet ts (${packet.ts} ms) is lower than connection time (${socket.connectionTime} ms). Dropping packet."
+                )
+                return -1
+            }
+        } catch (t: Throwable) {
+            Logger.w(TAG, "Failed to get connection time: $t")
             return -1
         }
 
