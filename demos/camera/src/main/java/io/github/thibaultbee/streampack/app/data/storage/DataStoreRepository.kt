@@ -14,8 +14,10 @@ import io.github.thibaultbee.streampack.app.ApplicationConstants
 import io.github.thibaultbee.streampack.app.R
 import io.github.thibaultbee.streampack.app.models.EndpointType
 import io.github.thibaultbee.streampack.app.models.FileExtension
-import io.github.thibaultbee.streampack.app.utils.appendIfNotEndsWith
 import io.github.thibaultbee.streampack.app.utils.createVideoContentUri
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import io.github.thibaultbee.streampack.core.configuration.BitrateRegulatorConfig
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
@@ -135,8 +137,15 @@ class DataStoreRepository(
                 val filename =
                     preferences[stringPreferencesKey(context.getString(R.string.file_endpoint_key))]
                         ?: "StreamPack"
+                val date = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                val extension = FileExtension.fromEndpointType(endpointType).extension
+                val baseFilename = if (filename.endsWith(extension)) {
+                    filename.dropLast(extension.length)
+                } else {
+                    filename
+                }
                 context.createVideoContentUri(
-                    filename.appendIfNotEndsWith(FileExtension.fromEndpointType(endpointType).extension)
+                    "${baseFilename}_$date$extension"
                 )
             }
 
