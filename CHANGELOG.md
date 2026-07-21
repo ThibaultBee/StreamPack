@@ -1,6 +1,53 @@
 Changelog
 ==========
 
+Version 3.2.0
+----------------
+
+## API changes:
+
+- Camera: rename `toggleBackToFront` to `switchBackToFront`
+- DualStreamer: update interfaces to use specific output types for audio and video, and move
+  `setConfig` to corresponding interfaces
+- Core: `StreamerLifeCycleObserver`: merge life cycle observers into a single class and rename
+  `autostartAudioCapture` to `startAudioCaptureOnResume`
+
+## Features:
+
+- Compose: add a composable preview
+- Audio: add support for audio effects in the processor
+- Audio: add the audio input mode as a parameter for single streamer
+- Audio: add a specific start capture to run the audio without the stream (e.g., to display a
+  vumeter)
+- Video: add `isMuted` API
+- Camera: add access to capture result
+- Camera: add an API to set torch strength
+- Camera: add an API to reset all the settings
+- Camera: add a flow to get the current physical camera Id
+- Add UriMediaDescriptor API for the audio and video library. See `mediaStoreMediaDescriptor`
+- RTMP: expose `ConnectObjectBuilder` to allow custom RTMP connection parameters
+- RTMP: add support for metrics
+- Metrics: introduces a new generic API
+- Reduce memory usage
+
+## Bug fixes:
+
+- RTMP: fix first packet management
+- RTMP: do not push frame to the muxer if the connection is closed
+- SRT: handle exceptions when checking packet timestamp against connection time
+- SRT: verify connection for metrics to avoid displaying bad metrics
+- Core: change the order of `stopStream` in `EncodingOutput` to fix a crash in `MediaMuxer`
+- Core: use getter for audio and video input in dual streamers to avoid a crash on video only dual
+  streamers
+- Core: handle invalid EndpointType id in fromId function
+- Core: emit initial rotation in RotationFlowProvider to prevent hanging flow operators
+- Core: emit closed state for camera disconnection in CameraUtils
+- Core: avoid a deadlock when stopping the stream and then queueAudioFrame is called
+- Core: try/catch `onStopStream` and streamer method calls to avoid crash during release
+- Core: fix `startAudioCapture` when source is emitted in `StreamerLifeCycleObserver`
+- UI: add permission check for camera tap focus functionality
+- And other bug fixes.
+
 Version 3.1.2
 ----------------
 
