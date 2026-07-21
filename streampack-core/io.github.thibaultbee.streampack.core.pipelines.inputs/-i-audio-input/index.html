@@ -39,7 +39,7 @@
             </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
         </button>
         <div class="navigation-controls--break ui-kit_mobile-only"></div>
-        <div class="library-version" id="library-version">3.1.2
+        <div class="library-version" id="library-version">3.2.0
         </div>
         <div class="navigation-controls">
         <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
@@ -94,14 +94,29 @@
   <div class="breadcrumbs"><a href="../../index.html">streampack-core</a><span class="delimiter">/</span><a href="../index.html">io.github.thibaultbee.streampack.core.pipelines.inputs</a><span class="delimiter">/</span><span class="current">IAudioInput</span></div>
   <div class="cover ">
     <h1 class="cover"><span>IAudio</span><wbr><span><span>Input</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">IAudioInput</a><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://github.com/ThibaultBee/StreamPack/streampack-core/src/main/java/io/github/thibaultbee/streampack/core/pipelines/inputs/AudioInput.kt#L52">source</a>)</span></span></div><p class="paragraph">The public interface for the audio input. It provides access to the audio source, the audio processor, and the streaming state.</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">IAudioInput</a><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://github.com/ThibaultBee/StreamPack/streampack-core/src/main/java/io/github/thibaultbee/streampack/core/pipelines/inputs/AudioInput.kt#L54">source</a>)</span></span></div><p class="paragraph">The public interface for the audio input. It provides access to the audio source, the audio processor, and the streaming state.</p></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
     <div class="tabs-section-body">
       <div data-togglable="PROPERTY">
         <h2 class="tableheader">Properties</h2>
-        <div class="table"><a data-name="1886626405%2FProperties%2F650901000" anchor-label="isMuted" id="1886626405%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+        <div class="table"><a data-name="-2004305601%2FProperties%2F650901000" anchor-label="isCapturingFlow" id="-2004305601%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-capturing-flow.html"><span>is</span><wbr><span>Capturing</span><wbr><span><span>Flow</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2004305601%2FProperties%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="is-capturing-flow.html">isCapturingFlow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Whether the audio input is capturing. Capturing means the audio source and processor are running but frames might not be pushed to the encoder.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1886626405%2FProperties%2F650901000" anchor-label="isMuted" id="1886626405%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
           <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
@@ -206,6 +221,36 @@
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="set-source.html"><span class="token function">setSource</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">audioSourceFactory<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.sources.audio/-i-audio-source-internal/-factory/index.html">IAudioSourceInternal.Factory</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets a new audio source.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1393632112%2FFunctions%2F650901000" anchor-label="startCapture" id="1393632112%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="start-capture.html"><span>start</span><wbr><span><span>Capture</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1393632112%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="start-capture.html"><span class="token function">startCapture</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Starts the audio capture for dry-mode (does not push to encoders).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-173916990%2FFunctions%2F650901000" anchor-label="stopCapture" id="-173916990%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="stop-capture.html"><span>stop</span><wbr><span><span>Capture</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-173916990%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="stop-capture.html"><span class="token function">stopCapture</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Stops the audio capture.</p></div></div></div>
                 </div>
               </div>
             </div>

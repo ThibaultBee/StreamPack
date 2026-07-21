@@ -39,7 +39,7 @@
             </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
         </button>
         <div class="navigation-controls--break ui-kit_mobile-only"></div>
-        <div class="library-version" id="library-version">3.1.2
+        <div class="library-version" id="library-version">3.2.0
         </div>
         <div class="navigation-controls">
         <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
@@ -94,48 +94,14 @@
   <div class="breadcrumbs"><a href="../../index.html">streampack-core</a><span class="delimiter">/</span><a href="../index.html">io.github.thibaultbee.streampack.core.elements.data</a><span class="delimiter">/</span><span class="current">RawFrame</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Raw</span><wbr><span><span>Frame</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">RawFrame</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>rawBuffer<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">var </span>timestampInUs<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>onClosed<span class="token operator">: </span><span class="token punctuation">(</span><a href="index.html">RawFrame</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator"> = </span>{}</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/java/io/Closeable.html">Closeable</a><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://github.com/ThibaultBee/StreamPack/streampack-core/src/main/java/io/github/thibaultbee/streampack/core/elements/data/Frame.kt#L26">source</a>)</span></span></div><p class="paragraph">A raw frame internal representation.</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">RawFrame</a> : <a href="https://developer.android.com/reference/kotlin/java/lang/AutoCloseable.html">AutoCloseable</a><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://github.com/ThibaultBee/StreamPack/streampack-core/src/main/java/io/github/thibaultbee/streampack/core/elements/data/Frame.kt#L28">source</a>)</span></span></div><p class="paragraph">Encoded frame representation</p></div></div>
   </div>
   <div class="tabbedcontent">
-    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
     <div class="tabs-section-body">
-      <div data-togglable="CONSTRUCTOR">
-        <h2 class="tableheader">Constructors</h2>
-        <div class="table"><a data-name="-1431869062%2FConstructors%2F650901000" anchor-label="RawFrame" id="-1431869062%2FConstructors%2F650901000" data-filterable-set=":streampack-core/main"></a>
-          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="-raw-frame.html"><span>Raw</span><wbr><span><span>Frame</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1431869062%2FConstructors%2F650901000"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">rawBuffer<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token punctuation">, </span></span><span class="parameter ">timestampInUs<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter ">onClosed<span class="token operator">: </span><span class="token punctuation">(</span><a href="index.html">RawFrame</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator"> = </span>{}</span></span><span class="token punctuation">)</span></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
       <div data-togglable="PROPERTY">
         <h2 class="tableheader">Properties</h2>
-        <div class="table"><a data-name="-1129432408%2FProperties%2F650901000" anchor-label="onClosed" id="-1129432408%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
-          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="on-closed.html"><span>on</span><wbr><span><span>Closed</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1129432408%2FProperties%2F650901000"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="on-closed.html">onClosed</a><span class="token operator">: </span><span class="token punctuation">(</span><a href="index.html">RawFrame</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a></div><div class="brief "><p class="paragraph">A callback to call when frame is closed.</p></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-658419649%2FProperties%2F650901000" anchor-label="rawBuffer" id="-658419649%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+        <div class="table"><a data-name="-658419649%2FProperties%2F650901000" anchor-label="rawBuffer" id="-658419649%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
           <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
@@ -145,7 +111,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="raw-buffer.html">rawBuffer</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a></div><div class="brief "><p class="paragraph">Contains an audio or video frame data.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="raw-buffer.html">rawBuffer</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a></div><div class="brief "><p class="paragraph">Contains an audio or video frame data.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -160,7 +126,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">var </span><a href="timestamp-in-us.html">timestampInUs</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a></div><div class="brief "><p class="paragraph">Presentation timestamp in µs</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="timestamp-in-us.html">timestampInUs</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a></div><div class="brief "><p class="paragraph">Presentation timestamp in µs</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -169,17 +135,47 @@
       </div>
       <div data-togglable="FUNCTION">
         <h2 class="tableheader">Functions</h2>
-        <div class="table"><a data-name="-1715781681%2FFunctions%2F650901000" anchor-label="close" id="-1715781681%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+        <div class="table"><a data-name="-1117130810%2FFunctions%2F650901000" anchor-label="close" id="-1117130810%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
           <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="close.html"><span><span>close</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1715781681%2FFunctions%2F650901000"></span>
+                  <div><a href="../../io.github.thibaultbee.streampack.core.elements.utils.pool/-i-object-pool/index.html#-1117130810%2FFunctions%2F650901000"><span><span>close</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1117130810%2FFunctions%2F650901000"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="close.html"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="../../io.github.thibaultbee.streampack.core.elements.utils.pool/-i-object-pool/index.html#-1117130810%2FFunctions%2F650901000"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="371743689%2FFunctions%2F650901000" anchor-label="copy" id="371743689%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../copy.html"><span><span>copy</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="371743689%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">RawFrame</a><span class="token punctuation">.</span><a href="../copy.html"><span class="token function">copy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">rawBuffer<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token operator"> = </span>this.rawBuffer<span class="token punctuation">, </span></span><span class="parameter ">timestampInUs<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator"> = </span>this.timestampInUs<span class="token punctuation">, </span></span><span class="parameter ">onClosed<span class="token operator">: </span><span class="token punctuation">(</span><a href="index.html">RawFrame</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator"> = </span>{}</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">RawFrame</a></div><div class="brief "><p class="paragraph">Copy a <a href="index.html">RawFrame</a> to a new <a href="index.html">RawFrame</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="443435940%2FFunctions%2F650901000" anchor-label="deepCopy" id="443435940%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../deep-copy.html"><span>deep</span><wbr><span><span>Copy</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="443435940%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">RawFrame</a><span class="token punctuation">.</span><a href="../deep-copy.html"><span class="token function">deepCopy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">bufferPool<span class="token operator">: </span><a href="../../io.github.thibaultbee.streampack.core.elements.utils.pool/-i-buffer-pool/index.html">IBufferPool</a><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">timestampInUs<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator"> = </span>this.timestampInUs<span class="token punctuation">, </span></span><span class="parameter ">onClosed<span class="token operator">: </span><span class="token punctuation">(</span><a href="index.html">RawFrame</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator"> = </span>{}</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">RawFrame</a></div><div class="brief "><p class="paragraph">Deep copy the <a href="raw-buffer.html">RawFrame.rawBuffer</a> into a new <a href="index.html">RawFrame</a>.</p></div></div></div>
                 </div>
               </div>
             </div>

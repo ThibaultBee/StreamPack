@@ -39,7 +39,7 @@
             </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
         </button>
         <div class="navigation-controls--break ui-kit_mobile-only"></div>
-        <div class="library-version" id="library-version">3.1.2
+        <div class="library-version" id="library-version">3.2.0
         </div>
         <div class="navigation-controls">
         <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
@@ -94,10 +94,10 @@
   <div class="breadcrumbs"><a href="../../index.html">streampack-core</a><span class="delimiter">/</span><a href="../index.html">io.github.thibaultbee.streampack.core.elements.processing.audio</a><span class="delimiter">/</span><span class="current">IAudioFrameProcessor</span></div>
   <div class="cover ">
     <h1 class="cover"><span>IAudio</span><wbr><span>Frame</span><wbr><span><span>Processor</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">IAudioFrameProcessor</a><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://github.com/ThibaultBee/StreamPack/streampack-core/src/main/java/io/github/thibaultbee/streampack/core/elements/processing/audio/IAudioFrameProcessor.kt#L21">source</a>)</span></span></div><p class="paragraph">Public interface for audio frame processor.</p><h4 class="tableheader">Inheritors</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-audio-frame-processor/index.html">AudioFrameProcessor</a></div></span></div><div></div></div></div></div></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">IAudioFrameProcessor</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><a href="../-i-audio-effect/index.html">IAudioEffect</a><span class="token operator">&gt; </span><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://github.com/ThibaultBee/StreamPack/streampack-core/src/main/java/io/github/thibaultbee/streampack/core/elements/processing/audio/IAudioFrameProcessor.kt#L21">source</a>)</span></span></div><p class="paragraph">Public interface for audio frame processor.</p><h4 class="tableheader">Inheritors</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-audio-frame-processor/index.html">AudioFrameProcessor</a></div></span></div><div></div></div></div></div></div></div>
   </div>
   <div class="tabbedcontent">
-    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
     <div class="tabs-section-body">
       <div data-togglable="PROPERTY">
         <h2 class="tableheader">Properties</h2>
@@ -111,7 +111,311 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">var </span><a href="is-muted.html">isMuted</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Mute audio.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">var </span><a href="is-muted.html">isMuted</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the processor is muted.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="844915858%2FProperties%2F650901000" anchor-label="size" id="844915858%2FProperties%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#844915858%2FProperties%2F650901000"><span><span>size</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="844915858%2FProperties%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="index.html#844915858%2FProperties%2F650901000">size</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="1958259687%2FFunctions%2F650901000" anchor-label="add" id="1958259687%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#882550416%2FFunctions%2F650901000"><span><span>add</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1958259687%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#882550416%2FFunctions%2F650901000"><span class="token function">add</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">element<span class="token operator">: </span><a href="../-i-audio-effect/index.html">IAudioEffect</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="index.html#1855873387%2FFunctions%2F650901000"><span class="token function">add</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">element<span class="token operator">: </span><a href="../-i-audio-effect/index.html">IAudioEffect</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1270570731%2FFunctions%2F650901000" anchor-label="addAll" id="-1270570731%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-4875109%2FFunctions%2F650901000"><span>add</span><wbr><span><span>All</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1270570731%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-4875109%2FFunctions%2F650901000"><span class="token function">addAll</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">elements<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-collection/index.html">Collection</a><span class="token operator">&lt;</span><a href="../-i-audio-effect/index.html">IAudioEffect</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="index.html#2026806150%2FFunctions%2F650901000"><span class="token function">addAll</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">elements<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-collection/index.html">Collection</a><span class="token operator">&lt;</span><a href="../-i-audio-effect/index.html">IAudioEffect</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-35526398%2FFunctions%2F650901000" anchor-label="clear" id="-35526398%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-35526398%2FFunctions%2F650901000"><span><span>clear</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-35526398%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-35526398%2FFunctions%2F650901000"><span class="token function">clear</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1616436463%2FFunctions%2F650901000" anchor-label="closestTo" id="1616436463%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../io.github.thibaultbee.streampack.core.elements.utils.extensions/closest-to.html"><span>closest</span><wbr><span><span>To</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1616436463%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.elements.utils.extensions/closest-to.html"><span class="token function">closestTo</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">size<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a></div><div class="brief "><p class="paragraph">Find the closest size to the given size in a list of sizes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="765883978%2FFunctions%2F650901000" anchor-label="contains" id="765883978%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#765883978%2FFunctions%2F650901000"><span><span>contains</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="765883978%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">operator override </span><span class="token keyword">fun </span><a href="index.html#765883978%2FFunctions%2F650901000"><span class="token function">contains</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">element<span class="token operator">: </span><a href="../-i-audio-effect/index.html">IAudioEffect</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-225903147%2FFunctions%2F650901000" anchor-label="containsAll" id="-225903147%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-225903147%2FFunctions%2F650901000"><span>contains</span><wbr><span><span>All</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-225903147%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-225903147%2FFunctions%2F650901000"><span class="token function">containsAll</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">elements<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-collection/index.html">Collection</a><span class="token operator">&lt;</span><a href="../-i-audio-effect/index.html">IAudioEffect</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="961975567%2FFunctions%2F650901000" anchor-label="get" id="961975567%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#961975567%2FFunctions%2F650901000"><span><span>get</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="961975567%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">operator </span><span class="token keyword">fun </span><a href="index.html#961975567%2FFunctions%2F650901000"><span class="token function">get</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-i-audio-effect/index.html">IAudioEffect</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-407930336%2FFunctions%2F650901000" anchor-label="indexOf" id="-407930336%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-407930336%2FFunctions%2F650901000"><span>index</span><wbr><span><span>Of</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-407930336%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="index.html#-407930336%2FFunctions%2F650901000"><span class="token function">indexOf</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">element<span class="token operator">: </span><a href="../-i-audio-effect/index.html">IAudioEffect</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1000881820%2FFunctions%2F650901000" anchor-label="isEmpty" id="-1000881820%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1000881820%2FFunctions%2F650901000"><span>is</span><wbr><span><span>Empty</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1000881820%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-1000881820%2FFunctions%2F650901000"><span class="token function">isEmpty</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1177836957%2FFunctions%2F650901000" anchor-label="iterator" id="1177836957%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1177836957%2FFunctions%2F650901000"><span><span>iterator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1177836957%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">operator override </span><span class="token keyword">fun </span><a href="index.html#1177836957%2FFunctions%2F650901000"><span class="token function">iterator</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-mutable-iterator/index.html">MutableIterator</a><span class="token operator">&lt;</span><a href="../-i-audio-effect/index.html">IAudioEffect</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1327716778%2FFunctions%2F650901000" anchor-label="lastIndexOf" id="1327716778%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1327716778%2FFunctions%2F650901000"><span>last</span><wbr><span>Index</span><wbr><span><span>Of</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1327716778%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="index.html#1327716778%2FFunctions%2F650901000"><span class="token function">lastIndexOf</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">element<span class="token operator">: </span><a href="../-i-audio-effect/index.html">IAudioEffect</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-375512816%2FFunctions%2F650901000" anchor-label="listIterator" id="-375512816%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1028972833%2FFunctions%2F650901000"><span>list</span><wbr><span><span>Iterator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-375512816%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-1028972833%2FFunctions%2F650901000"><span class="token function">listIterator</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-mutable-list-iterator/index.html">MutableListIterator</a><span class="token operator">&lt;</span><a href="../-i-audio-effect/index.html">IAudioEffect</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-398766659%2FFunctions%2F650901000"><span class="token function">listIterator</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-mutable-list-iterator/index.html">MutableListIterator</a><span class="token operator">&lt;</span><a href="../-i-audio-effect/index.html">IAudioEffect</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="731697687%2FFunctions%2F650901000" anchor-label="remove" id="731697687%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#731697687%2FFunctions%2F650901000"><span><span>remove</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="731697687%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#731697687%2FFunctions%2F650901000"><span class="token function">remove</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">element<span class="token operator">: </span><a href="../-i-audio-effect/index.html">IAudioEffect</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1522148962%2FFunctions%2F650901000" anchor-label="removeAll" id="1522148962%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1522148962%2FFunctions%2F650901000"><span>remove</span><wbr><span><span>All</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1522148962%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#1522148962%2FFunctions%2F650901000"><span class="token function">removeAll</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">elements<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-collection/index.html">Collection</a><span class="token operator">&lt;</span><a href="../-i-audio-effect/index.html">IAudioEffect</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1899070414%2FFunctions%2F650901000" anchor-label="removeAt" id="-1899070414%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1899070414%2FFunctions%2F650901000"><span>remove</span><wbr><span><span>At</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1899070414%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="index.html#-1899070414%2FFunctions%2F650901000"><span class="token function">removeAt</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-i-audio-effect/index.html">IAudioEffect</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2082867107%2FFunctions%2F650901000" anchor-label="retainAll" id="2082867107%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#2082867107%2FFunctions%2F650901000"><span>retain</span><wbr><span><span>All</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2082867107%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#2082867107%2FFunctions%2F650901000"><span class="token function">retainAll</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">elements<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-collection/index.html">Collection</a><span class="token operator">&lt;</span><a href="../-i-audio-effect/index.html">IAudioEffect</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="647397898%2FFunctions%2F650901000" anchor-label="set" id="647397898%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#647397898%2FFunctions%2F650901000"><span><span>set</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="647397898%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">operator </span><span class="token keyword">fun </span><a href="index.html#647397898%2FFunctions%2F650901000"><span class="token function">set</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">index<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">element<span class="token operator">: </span><a href="../-i-audio-effect/index.html">IAudioEffect</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-i-audio-effect/index.html">IAudioEffect</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-11148114%2FFunctions%2F650901000" anchor-label="subList" id="-11148114%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-11148114%2FFunctions%2F650901000"><span>sub</span><wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-11148114%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-11148114%2FFunctions%2F650901000"><span class="token function">subList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fromIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">toIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><a href="../-i-audio-effect/index.html">IAudioEffect</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-123326213%2FFunctions%2F650901000" anchor-label="unzip" id="-123326213%2FFunctions%2F650901000" data-filterable-set=":streampack-core/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-core/main" data-filterable-set=":streampack-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../io.github.thibaultbee.streampack.core.elements.utils.extensions/unzip.html"><span><span>unzip</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-123326213%2FFunctions%2F650901000"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-core/main"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../io.github.thibaultbee.streampack.core.elements.utils.extensions/unzip.html">T</a><span class="token operator">&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-iterable/index.html">Iterable</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../io.github.thibaultbee.streampack.core.elements.utils.extensions/unzip.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="../../io.github.thibaultbee.streampack.core.elements.utils.extensions/unzip.html"><span class="token function">unzip</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../io.github.thibaultbee.streampack.core.elements.utils.extensions/unzip.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
                 </div>
               </div>
             </div>

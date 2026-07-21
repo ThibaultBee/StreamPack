@@ -39,7 +39,7 @@
             </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
         </button>
         <div class="navigation-controls--break ui-kit_mobile-only"></div>
-        <div class="library-version" id="library-version">3.1.2
+        <div class="library-version" id="library-version">3.2.0
         </div>
         <div class="navigation-controls">
         <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
@@ -96,11 +96,90 @@
     <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
   </div>
   <div class="tabbedcontent">
-    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button></div>
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button></div>
     <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-2034668223%2FClasslikes%2F221634568" anchor-label="SrtBasicEndpointMetrics" id="-2034668223%2FClasslikes%2F221634568" data-filterable-set=":streampack-srt/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-srt/main" data-filterable-set=":streampack-srt/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-srt-basic-endpoint-metrics/index.html"><span>Srt</span><wbr><span>Basic</span><wbr><span>Endpoint</span><wbr><span><span>Metrics</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2034668223%2FClasslikes%2F221634568"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-srt/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-srt-basic-endpoint-metrics/index.html">SrtBasicEndpointMetrics</a> : <a href="../../streampack-core/io.github.thibaultbee.streampack.core.elements.metrics/-basic-endpoint-metrics/index.html">BasicEndpointMetrics</a></div><div class="brief "><p class="paragraph">Basic metrics for SRT protocol, without the raw metrics helper.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="524265491%2FClasslikes%2F221634568" anchor-label="SrtEndpointMetrics" id="524265491%2FClasslikes%2F221634568" data-filterable-set=":streampack-srt/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-srt/main" data-filterable-set=":streampack-srt/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-srt-endpoint-metrics/index.html"><span>Srt</span><wbr><span>Endpoint</span><wbr><span><span>Metrics</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="524265491%2FClasslikes%2F221634568"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-srt/main"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-srt-endpoint-metrics/index.html">SrtEndpointMetrics</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>uptime<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>packetsWritten<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>packetsRead<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>packetsWriteLost<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>packetsReadLost<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>packetsRetransmitted<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>packetsWriteACK<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>packetsReadACK<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>packetsWriteNAK<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>packetsReadNAK<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>usWriteDuration<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>packetsWriteDropped<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>packetsReadDropped<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>packetsReadUndecrypt<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>bytesWritten<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>bytesRead<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>bytesReadLost<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>bytesRetransmitted<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>bytesWriteDropped<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>bytesReadDropped<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>bytesReadUndecrypt<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>rawMetrics<span class="token operator">: </span><a href="-srt-raw-metrics/index.html">SrtRawMetrics</a></span></span><span class="token punctuation">)</span> : <a href="-srt-basic-endpoint-metrics/index.html">SrtBasicEndpointMetrics</a>, <a href="../../streampack-core/io.github.thibaultbee.streampack.core.elements.metrics/-endpoint-metrics/index.html">EndpointMetrics</a><span class="token operator">&lt;</span><a href="-srt-raw-metrics/index.html">SrtRawMetrics</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">Specific <a href="../../streampack-core/io.github.thibaultbee.streampack.core.elements.metrics/-endpoint-metrics/index.html">EndpointMetrics</a> for SRT protocol, based on <a href="-srt-raw-metrics/index.html">SrtRawMetrics</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1195693446%2FClasslikes%2F221634568" anchor-label="SrtRawMetrics" id="1195693446%2FClasslikes%2F221634568" data-filterable-set=":streampack-srt/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-srt/main" data-filterable-set=":streampack-srt/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-srt-raw-metrics/index.html"><span>Srt</span><wbr><span>Raw</span><wbr><span><span>Metrics</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1195693446%2FClasslikes%2F221634568"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-srt/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-srt-raw-metrics/index.html">SrtRawMetrics</a></div><div class="brief "><p class="paragraph">Provides an access to internal SRT APIs.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div data-togglable="FUNCTION">
         <h2 class="tableheader">Functions</h2>
-        <div class="table"><a data-name="-1129902611%2FFunctions%2F221634568" anchor-label="SrtEndpointFactory" id="-1129902611%2FFunctions%2F221634568" data-filterable-set=":streampack-srt/main"></a>
+        <div class="table"><a data-name="1195765542%2FFunctions%2F221634568" anchor-label="bistats" id="1195765542%2FFunctions%2F221634568" data-filterable-set=":streampack-srt/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-srt/main" data-filterable-set=":streampack-srt/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="bistats.html"><span><span>bistats</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1195765542%2FFunctions%2F221634568"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-srt/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-srt-raw-metrics/index.html">SrtRawMetrics</a><span class="token punctuation">.</span><a href="bistats.html"><span class="token function">bistats</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clear<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">instantaneous<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="io.github.thibaultbee.srtdroid.core.models/Stats///PointingToDeclaration/">Stats</span></div><div class="brief "><p class="paragraph">Reports the current statistics.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1733999561%2FFunctions%2F221634568" anchor-label="bstats" id="-1733999561%2FFunctions%2F221634568" data-filterable-set=":streampack-srt/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":streampack-srt/main" data-filterable-set=":streampack-srt/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="bstats.html"><span><span>bstats</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1733999561%2FFunctions%2F221634568"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-srt/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-srt-raw-metrics/index.html">SrtRawMetrics</a><span class="token punctuation">.</span><a href="bstats.html"><span class="token function">bstats</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clear<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="io.github.thibaultbee.srtdroid.core.models/Stats///PointingToDeclaration/">Stats</span></div><div class="brief "><p class="paragraph">Reports the current statistics.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1129902611%2FFunctions%2F221634568" anchor-label="SrtEndpointFactory" id="-1129902611%2FFunctions%2F221634568" data-filterable-set=":streampack-srt/main"></a>
           <div class="table-row table-row_content" data-filterable-current=":streampack-srt/main" data-filterable-set=":streampack-srt/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
@@ -110,7 +189,22 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-srt/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-srt-endpoint-factory.html"><span class="token function">SrtEndpointFactory</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serviceInfo<span class="token operator">: </span><a href="../../streampack-core/io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data/-t-s-service-info/index.html">TSServiceInfo</a><span class="token operator"> = </span>createDefaultTsServiceInfo()<span class="token punctuation">, </span></span><span class="parameter ">coroutineDispatcher<span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/CoroutineDispatcher///PointingToDeclaration/">CoroutineDispatcher</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../streampack-core/io.github.thibaultbee.streampack.core.elements.endpoints.composites/-composite-endpoint-factory/index.html">CompositeEndpointFactory</a></div><div class="brief "><p class="paragraph">The SRT endpoint factory.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-srt/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-srt-endpoint-factory.html"><span class="token function">SrtEndpointFactory</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serviceInfo<span class="token operator">: </span><a href="../../streampack-core/io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data/-t-s-service-info/index.html">TSServiceInfo</a><span class="token operator"> = </span>createDefaultTsServiceInfo()<span class="token punctuation">, </span></span><span class="parameter ">coroutineDispatcher<span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/CoroutineDispatcher///PointingToDeclaration/">CoroutineDispatcher</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../streampack-core/io.github.thibaultbee.streampack.core.elements.endpoints.composites/-composite-endpoint-with-metrics-factory/index.html">CompositeEndpointWithMetricsFactory</a><span class="token operator">&lt;</span><a href="-srt-raw-metrics/index.html">SrtRawMetrics</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">The SRT endpoint factory.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2142062820%2FFunctions%2F221634568" anchor-label="SrtEndpointMetrics" id="-2142062820%2FFunctions%2F221634568" data-filterable-set=":streampack-srt/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":streampack-srt/main" data-filterable-set=":streampack-srt/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-srt-endpoint-metrics.html"><span>Srt</span><wbr><span>Endpoint</span><wbr><span><span>Metrics</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2142062820%2FFunctions%2F221634568"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":streampack-srt/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-srt-endpoint-metrics.html"><span class="token function">SrtEndpointMetrics</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">rawMetrics<span class="token operator">: </span><a href="-srt-raw-metrics/index.html">SrtRawMetrics</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-srt-endpoint-metrics/index.html">SrtEndpointMetrics</a></div><div class="brief "><p class="paragraph">Creates a <a href="-srt-endpoint-metrics.html">SrtEndpointMetrics</a> from a <a href="-srt-raw-metrics/index.html">SrtRawMetrics</a>.</p></div></div></div>
                 </div>
               </div>
             </div>
