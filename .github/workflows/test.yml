@@ -23,7 +23,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           java-version: '21'
-          distribution: 'adopt'
+          distribution: 'temurin'
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Run Android Tests

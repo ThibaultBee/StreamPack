@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: '21'
-          distribution: 'adopt'
+          distribution: 'temurin'
       - name: Setup git config (for patch command)
         run: |
           git config --global user.name "GitHub Actions Bot"

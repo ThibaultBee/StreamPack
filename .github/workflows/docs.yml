@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           java-version: '21'
-          distribution: 'adopt'
+          distribution: 'temurin'
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Generate API documentation
