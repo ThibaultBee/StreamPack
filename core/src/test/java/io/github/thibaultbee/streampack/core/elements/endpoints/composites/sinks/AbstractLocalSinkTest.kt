@@ -29,9 +29,11 @@ import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import java.nio.ByteBuffer
 
 @RunWith(RobolectricTestRunner::class)
+@Config(sdk = [36])
 abstract class AbstractLocalSinkTest(val sink: ISinkInternal) {
     init {
         Logger.logger = StubLogger()
