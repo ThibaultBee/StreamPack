@@ -1,42 +1,40 @@
 [versions]
 agp = "9.2.1"
 concurrentFutures = "1.3.0"
-datastorePreference = "1.1.7"
-guava = "33.5.0-android"
+datastorePreference = "1.2.1"
 videoApiClient = "1.6.7"
-androidxActivity = "1.10.1"
-androidxAppcompat = "1.7.1"
+androidxActivity = "1.13.0"
+androidxAppcompat = "1.8.0"
 androidxCamera = "1.4.0-alpha13"
-androidxComposeBom = "2026.01.00"
-androidxConstraintlayout = "2.2.1"
-androidxCore = "1.17.0"
-androidxDatabinding = "8.13.0"
+androidxComposeBom = "2026.08.00"
+androidxConstraintlayout = "2.2.2"
+androidxCore = "1.19.0"
+androidxDatabinding = "9.2.1"
 androidxEspresso = "3.7.0"
 androidxJunit = "1.3.0"
-androidxLifecycle = "2.9.3"
+androidxLifecycle = "2.11.0"
 androidxLifecycleExtensions = "2.2.0"
-androidxNavigation = "2.9.6"
+androidxNavigation = "2.9.8"
 androidxPreference = "1.2.1"
 androidxTest = "1.7.0"
-androidxWindow = "1.4.0"
-dokka = "2.1.0"
+androidxWindow = "1.5.1"
+dokka = "2.2.0"
 junit = "4.13.2"
-kotlin = "2.2.21"
-kotlinxCoroutines = "1.10.2"
-kotlinxIo = "0.8.0"
-material = "1.13.0"
-mockk = "1.14.5"
-robolectric = "4.16"
+kotlin = "2.4.10"
+kotlinxCoroutines = "1.11.0"
+kotlinxIo = "0.9.1"
+material = "1.14.0"
+mockk = "1.14.11"
+robolectric = "4.16.1"
 komuxer = "0.4.0"
 srtdroid = "1.9.5"
 junitKtx = "1.3.0"
-compose = "1.10.1"
+compose = "1.12.0"
 
 [libraries]
 android-documentation-plugin = { module = "org.jetbrains.dokka:android-documentation-plugin", version.ref = "dokka" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastorePreference" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreference" }
-guava = { module = "com.google.guava:guava", version.ref = "guava" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 video-api-client = { module = "video.api:android-api-client", version.ref = "videoApiClient" }
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -84,6 +82,5 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 legacy-kapt = { id = "com.android.legacy-kapt", version.ref = "agp" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 

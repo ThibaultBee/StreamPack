@@ -16,5 +16,4 @@ dependencies {
     implementation(libs.androidx.camera.viewfinder.view)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.core.ktx)
-    implementation(libs.guava)
 }
