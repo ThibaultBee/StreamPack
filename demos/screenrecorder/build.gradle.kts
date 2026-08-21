@@ -1,7 +1,6 @@
 plugins {
     id(libs.plugins.android.application.get().pluginId)
-    id(libs.plugins.kotlin.android.get().pluginId)
-    id(libs.plugins.kotlin.kapt.get().pluginId)
+    alias(libs.plugins.legacy.kapt)
     id("android-application-convention")
 }
 
