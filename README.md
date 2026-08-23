@@ -332,6 +332,8 @@ You need to add the following permissions in your `AndroidManifest.xml`:
 <manifest>
     <!-- Only for a live -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Only for a local network live (Android 37+) -->
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
     <!-- Only for a local record -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 </manifest>
@@ -339,6 +341,9 @@ You need to add the following permissions in your `AndroidManifest.xml`:
 
 To record locally, you also need to request the following dangerous
 permission: `android.permission.WRITE_EXTERNAL_STORAGE`.
+
+To stream on a local network, for Android 37 and later, you also need to request the following dangerous
+permission: `android.permission.ACCESS_LOCAL_NETWORK`.
 
 ### Camera stream
 
