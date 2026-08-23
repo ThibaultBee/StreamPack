@@ -37,6 +37,7 @@ import io.github.thibaultbee.streampack.app.BR
 import io.github.thibaultbee.streampack.app.R
 import io.github.thibaultbee.streampack.app.data.rotation.RotationRepository
 import io.github.thibaultbee.streampack.app.data.storage.DataStoreRepository
+import io.github.thibaultbee.streampack.app.utils.NetworkUtils
 import io.github.thibaultbee.streampack.app.utils.ObservableViewModel
 import io.github.thibaultbee.streampack.app.utils.StreamerFactory
 import io.github.thibaultbee.streampack.app.utils.dataStore
@@ -122,6 +123,13 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     suspend fun needsStoragePermission(): Boolean {
         return (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) &&
                 (storageRepository.endpointDescriptorFlow.first().type.sinkType == MediaSinkType.FILE)
+    }
+
+    suspend fun needsLocalNetworkPermission(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.CINNAMON_BUN) return false
+        val descriptor = storageRepository.endpointDescriptorFlow.first()
+        val host = descriptor.uri.host
+        return host?.let { NetworkUtils.isLocalHost(it) } ?: false
     }
 
     // Streamer errors

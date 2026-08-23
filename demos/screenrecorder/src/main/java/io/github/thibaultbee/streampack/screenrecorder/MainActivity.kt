@@ -22,6 +22,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Display
@@ -58,6 +59,7 @@ import io.github.thibaultbee.streampack.screenrecorder.services.DemoMediaProject
 import io.github.thibaultbee.streampack.screenrecorder.services.DemoMediaProjectionService.Companion.AUDIO_SOURCE_KEY
 import io.github.thibaultbee.streampack.screenrecorder.services.DemoMediaProjectionService.Companion.AUDIO_SOURCE_MICROPHONE_KEY
 import io.github.thibaultbee.streampack.screenrecorder.settings.SettingsActivity
+import io.github.thibaultbee.streampack.screenrecorder.utils.NetworkUtils
 import io.github.thibaultbee.streampack.services.MediaProjectionService
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -97,7 +99,11 @@ class MainActivity : AppCompatActivity() {
         binding.liveButton.setOnCheckedChangeListener { view, isChecked ->
             if (view.isPressed) {
                 if (isChecked) {
-                    requestAudioPermissionsLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                    val permissions = mutableListOf(Manifest.permission.RECORD_AUDIO)
+                    if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN) && needsLocalNetworkPermission()) {
+                        permissions.add(Manifest.permission.ACCESS_LOCAL_NETWORK)
+                    }
+                    requestAudioPermissionsLauncher.launch(permissions.toTypedArray())
                 } else {
                     runBlocking {
                         streamer?.stopStream()
@@ -116,9 +122,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val requestAudioPermissionsLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (!isGranted) {
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions[Manifest.permission.RECORD_AUDIO] != true) {
             showPermissionAlertDialog(this) { this.finish() }
         } else {
             getContent.launch(
@@ -169,7 +175,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun configure(streamer: IVideoStreamer<*>) {
         val deviceRefreshRate =
-            (this.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager).getDisplay(
+            (this.getSystemService(DISPLAY_SERVICE) as DisplayManager).getDisplay(
                 Display.DEFAULT_DISPLAY
             ).refreshRate.toInt()
         val fps = if (MediaCodecHelper.Video.getFramerateRange(configuration.video.encoder)
@@ -226,6 +232,15 @@ class MainActivity : AppCompatActivity() {
         } else {
             throw SecurityException("Permission RECORD_AUDIO must have been granted!")
         }
+    }
+
+    private fun needsLocalNetworkPermission(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.CINNAMON_BUN) return false
+        val host = when (configuration.endpoint.type) {
+            EndpointType.SRT -> configuration.endpoint.srt.ip
+            EndpointType.RTMP -> configuration.endpoint.rtmp.url.toUri().host
+        }
+        return host?.let { NetworkUtils.isLocalHost(it) } ?: false
     }
 
     private suspend fun startStream(streamer: IVideoStreamer<*>) {
