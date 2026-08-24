@@ -128,6 +128,9 @@ internal class EncodingPipelineOutput(
     private var audioStreamId: Int? = null
     private var videoStreamId: Int? = null
 
+    private val audioWriteMutex = Mutex()
+    private val videoWriteMutex = Mutex()
+
     // INPUTS
     override var audioFrameRequestedListener: IEncoderInternal.IAsyncByteBufferInput.OnFrameRequestedListener? =
         null
@@ -294,8 +297,10 @@ internal class EncodingPipelineOutput(
                 // Audio
                 audioEncoderListener.outputChannel.consumeEach { frame ->
                     try {
-                        audioStreamId?.let {
-                            endpointInternal.write(frame, it)
+                        audioWriteMutex.withLock {
+                            audioStreamId?.let { streamId ->
+                                endpointInternal.write(frame, streamId)
+                            }
                         } ?: Logger.w(TAG, "Audio frame received but audio stream is not set")
                     } catch (t: Throwable) {
                         onInternalError(t)
@@ -308,8 +313,10 @@ internal class EncodingPipelineOutput(
                 // Video
                 videoEncoderListener.outputChannel.consumeEach { frame ->
                     try {
-                        videoStreamId?.let {
-                            endpointInternal.write(frame, it)
+                        videoWriteMutex.withLock {
+                            videoStreamId?.let { streamId ->
+                                endpointInternal.write(frame, streamId)
+                            }
                         } ?: Logger.w(TAG, "Video frame received but video stream is not set")
                     } catch (t: Throwable) {
                         onInternalError(t)
@@ -746,9 +753,14 @@ internal class EncodingPipelineOutput(
      * @see [stopStream]
      */
     private suspend fun stopStreamElements() {
-        // Disconnect encoders from endpoint to drop trailing frames
-        audioStreamId = null
-        videoStreamId = null
+        // Wait for any ongoing writes to complete to avoid stopping encoders
+        // while buffers are still actively being read (which causes SEGV_MAPERR)
+        audioWriteMutex.withLock {
+            audioStreamId = null
+        }
+        videoWriteMutex.withLock {
+            videoStreamId = null
+        }
 
         // Endpoint
         try {
