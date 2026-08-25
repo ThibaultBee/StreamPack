@@ -70,7 +70,7 @@ class RtmpSingleStreamerTest {
                         TAG,
                         "Waiting for 1s (${i * LIVE_STREAM_POLLING_MS} ms/$LIVE_STREAM_DURATION_MS) ms"
                     )
-                    delay(LIVE_STREAM_POLLING_MS)
+                    delay(LIVE_STREAM_POLLING_MS.milliseconds)
                     val isBroadcasting =
                         liveStreamEndpoint.get(liveStream.liveStreamId).broadcasting!!
                     Log.i(TAG, "Is broadcasting $isBroadcasting")
@@ -85,7 +85,7 @@ class RtmpSingleStreamerTest {
             // Assert video is available
             // Wait for video to be available
             withContext(Dispatchers.Default) {
-                delay(10000)
+                delay(10_000.milliseconds)
             }
             val videoEndpoint = apiClient.videos()
             val videoPages = videoEndpoint.list().liveStreamId(liveStream.liveStreamId).execute()
@@ -100,7 +100,7 @@ class RtmpSingleStreamerTest {
                     if (videoStatus.encoding?.playable == true) {
                         return@withContext videoStatus
                     }
-                    delay(1000)
+                    delay(1_000.milliseconds)
                 }
             }
             status as VideoStatus

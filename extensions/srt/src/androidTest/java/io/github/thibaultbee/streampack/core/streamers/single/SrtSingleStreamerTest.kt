@@ -70,7 +70,7 @@ class SrtSingleStreamerTest {
                         TAG,
                         "Waiting for 1s (${i * LIVE_STREAM_POLLING_MS} ms/$LIVE_STREAM_DURATION_MS) ms"
                     )
-                    delay(LIVE_STREAM_POLLING_MS)
+                    delay(LIVE_STREAM_POLLING_MS.milliseconds)
                     val isBroadcasting =
                         liveStreamEndpoint.get(liveStream.liveStreamId).broadcasting!!
                     Log.i(TAG, "Is broadcasting $isBroadcasting")
@@ -85,7 +85,7 @@ class SrtSingleStreamerTest {
             // Assert video is available
             // Wait for video to be available
             withContext(Dispatchers.Default) {
-                delay(10000)
+                delay(10_000.milliseconds)
             }
             val videoEndpoint = apiClient.videos()
             val videoPages = videoEndpoint.list().liveStreamId(liveStream.liveStreamId).execute()
@@ -100,7 +100,7 @@ class SrtSingleStreamerTest {
                     if (videoStatus.encoding?.playable == true) {
                         return@withContext videoStatus
                     }
-                    delay(1000)
+                    delay(1_000.milliseconds)
                 }
             }
             status as VideoStatus
@@ -109,9 +109,9 @@ class SrtSingleStreamerTest {
             assertEquals(VIDEO_WIDTH, status.encoding!!.metadata!!.height)
             assertEquals(VIDEO_HEIGHT, status.encoding!!.metadata!!.width)
             assertEquals(44100, status.encoding!!.metadata!!.samplerate)
-            assertTrue(status.encoding!!.metadata!!.framerate!!.toInt() >= 0)
+            assertTrue(status.encoding!!.metadata!!.framerate!! >= 0)
             assertTrue(status.encoding!!.metadata!!.bitrate!!.toInt() >= 0)
-            assertTrue(status.encoding!!.metadata!!.duration!!.toInt() >= 0)
+            assertTrue(status.encoding!!.metadata!!.duration!! >= 0)
         } catch (e: Exception) {
             Log.e(TAG, " SRT test failed due to ${e.message}", e)
             throw e

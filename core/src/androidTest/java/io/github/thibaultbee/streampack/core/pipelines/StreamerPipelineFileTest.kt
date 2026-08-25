@@ -87,7 +87,7 @@ class StreamerPipelineFileTest : DeviceTest() {
         // Run stream
         audioOnlyOutput.startStream(audioOnlyDescriptor)
         withContext(Dispatchers.Default) {
-            delay(10_000)
+            delay(10_000.milliseconds)
         }
         videoOnlyOutput.startStream(videoOnlyDescriptor)
 
