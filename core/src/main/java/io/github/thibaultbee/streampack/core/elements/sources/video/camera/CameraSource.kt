@@ -226,7 +226,7 @@ internal class CameraSource(
     override suspend fun startStream() = streamMutex.withLock {
         if (isStreamingFlow.value) {
             Logger.w(TAG, "Camera is already streaming")
-            return
+            return@withLock
         }
         controller.addTarget(STREAM_NAME)
         _isStreamingFlow.emit(true)
@@ -237,7 +237,7 @@ internal class CameraSource(
     override suspend fun stopStream() = streamMutex.withLock {
         if (!isStreamingFlow.value) {
             Logger.w(TAG, "Camera is not streaming")
-            return
+            return@withLock
         }
 
         try {

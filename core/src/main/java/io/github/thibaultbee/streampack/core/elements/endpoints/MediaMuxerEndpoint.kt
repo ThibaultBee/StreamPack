@@ -89,7 +89,7 @@ class MediaMuxerEndpoint(
         }
         if (isOpenFlow.value) {
             Logger.w(TAG, "MediaMuxerEndpoint is already opened")
-            return
+            return@withLock
         }
 
         require((descriptor.type.sinkType == MediaSinkType.FILE) || (descriptor.type.sinkType == MediaSinkType.CONTENT)) { "MediaDescriptor must have a path" }
@@ -123,8 +123,6 @@ class MediaMuxerEndpoint(
                     }
                         ?: throw IllegalStateException("Could not open file descriptor for uri: ${descriptor.uri}")
                 }
-
-                else -> throw InvalidParameterException("Unsupported sink type: ${descriptor.type.sinkType}")
             }
         } catch (t: Throwable) {
             this.containerType = null
