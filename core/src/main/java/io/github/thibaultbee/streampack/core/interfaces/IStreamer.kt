@@ -99,6 +99,16 @@ interface IOpenableStreamer : ICloseableStreamer {
      * @see [close]
      */
     suspend fun open(descriptor: MediaDescriptor)
+
+    /**
+     * Starts audio/video stream.
+     *
+     * Same as doing [open] and [startStream].
+     *
+     * @param descriptor The media descriptor to open
+     * @see [IOpenableStreamer.stopStream]
+     */
+    suspend fun startStream(descriptor: MediaDescriptor)
 }
 
 /**
@@ -122,36 +132,11 @@ suspend fun IOpenableStreamer.open(uriString: String) =
  *
  * Same as doing [open] and [startStream].
  *
- * @param descriptor The media descriptor to open
- * @see [IOpenableStreamer.stopStream]
- */
-suspend fun IOpenableStreamer.startStream(descriptor: MediaDescriptor) {
-    open(descriptor)
-    try {
-        startStream()
-    } catch (t: Throwable) {
-        close()
-        throw t
-    }
-}
-
-/**
- * Starts audio/video stream.
- *
- * Same as doing [open] and [startStream].
- *
  * @param uri The uri to open
  * @see [IOpenableStreamer.stopStream]
  */
-suspend fun IOpenableStreamer.startStream(uri: Uri) {
-    open(uri)
-    try {
-        startStream()
-    } catch (t: Throwable) {
-        close()
-        throw t
-    }
-}
+suspend fun IOpenableStreamer.startStream(uri: Uri) =
+    startStream(UriMediaDescriptor(uri))
 
 /**
  * Starts audio/video stream.
@@ -161,12 +146,5 @@ suspend fun IOpenableStreamer.startStream(uri: Uri) {
  * @param uriString The uri to open
  * @see [IOpenableStreamer.stopStream]
  */
-suspend fun IOpenableStreamer.startStream(uriString: String) {
-    open(uriString)
-    try {
-        startStream()
-    } catch (t: Throwable) {
-        close()
-        throw t
-    }
-}
+suspend fun IOpenableStreamer.startStream(uriString: String) =
+    startStream(UriMediaDescriptor(uriString.toUri()))

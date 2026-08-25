@@ -110,6 +110,8 @@ class AudioOnlySingleStreamer(
 
     override suspend fun startStream() = streamer.startStream()
 
+    override suspend fun startStream(descriptor: MediaDescriptor) = streamer.startStream(descriptor)
+
     override suspend fun stopStream() = streamer.stopStream()
 
     override suspend fun release() = streamer.release()

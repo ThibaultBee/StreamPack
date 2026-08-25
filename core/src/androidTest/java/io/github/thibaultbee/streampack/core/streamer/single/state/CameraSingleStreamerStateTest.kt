@@ -21,7 +21,6 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.interfaces.startPreview
-import io.github.thibaultbee.streampack.core.interfaces.startStream
 import io.github.thibaultbee.streampack.core.interfaces.stopPreview
 import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreamerConfigUtils.audioConfig
 import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreamerConfigUtils.videoConfig

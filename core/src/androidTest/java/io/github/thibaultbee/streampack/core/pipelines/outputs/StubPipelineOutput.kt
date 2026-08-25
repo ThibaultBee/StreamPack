@@ -237,6 +237,10 @@ internal class StubAudioSyncConfigurableEncodingPipelineOutputInternal :
     override suspend fun close() {
         TODO("Not yet implemented")
     }
+
+    override suspend fun startStream(descriptor: MediaDescriptor) {
+        TODO("Not yet implemented")
+    }
 }
 
 internal class StubVideoSurfaceConfigurableEncodingPipelineOutputInternal :
@@ -280,6 +284,10 @@ internal class StubVideoSurfaceConfigurableEncodingPipelineOutputInternal :
         get() = TODO("Not yet implemented")
 
     override suspend fun close() {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun startStream(descriptor: MediaDescriptor) {
         TODO("Not yet implemented")
     }
 }

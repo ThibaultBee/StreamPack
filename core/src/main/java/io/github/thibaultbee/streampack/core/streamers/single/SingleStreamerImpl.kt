@@ -262,6 +262,11 @@ internal class SingleStreamerImpl(
         pipelineOutput.startStream()
     }
 
+    override suspend fun startStream(descriptor: MediaDescriptor) {
+        initJob.join()
+        pipelineOutput.startStream(descriptor)
+    }
+
     /**
      * Stops audio/video stream.
      *

@@ -2,7 +2,6 @@ package io.github.thibaultbee.streampack.core.streamer.utils
 
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
-import io.github.thibaultbee.streampack.core.interfaces.startStream
 import io.github.thibaultbee.streampack.core.streamers.dual.DualStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
 import kotlinx.coroutines.Dispatchers

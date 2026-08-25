@@ -595,12 +595,16 @@ internal class EncodingPipelineOutput(
     override suspend fun open(descriptor: MediaDescriptor) {
         withContext(coroutineDispatcher) {
             openCloseMutex.withLock {
-                if (isReleaseRequested.get()) {
-                    throw IllegalStateException("Output is released")
-                }
-                endpointInternal.open(descriptor)
+                openUnsafe(descriptor)
             }
         }
+    }
+
+    private suspend fun openUnsafe(descriptor: MediaDescriptor) {
+        if (isReleaseRequested.get()) {
+            throw IllegalStateException("Output is released")
+        }
+        endpointInternal.open(descriptor)
     }
 
     /**
@@ -609,10 +613,14 @@ internal class EncodingPipelineOutput(
     override suspend fun close() {
         withContext(coroutineDispatcher) {
             openCloseMutex.withLock {
-                stopStream()
-                endpointInternal.close()
+                closeUnsafe()
             }
         }
+    }
+
+    private suspend fun closeUnsafe() {
+        stopStream()
+        endpointInternal.close()
     }
 
     /**
@@ -693,6 +701,27 @@ internal class EncodingPipelineOutput(
     override suspend fun startStream() {
         withContextMutex {
             startStreamUnsafe()
+        }
+    }
+
+    /**
+     * Starts audio/video stream.
+     *
+     * Same as doing [open] and [startStream].
+     *
+     * @param descriptor The media descriptor to open
+     */
+    override suspend fun startStream(descriptor: MediaDescriptor) {
+        withContext(coroutineDispatcher) {
+            openCloseMutex.withLock {
+                openUnsafe(descriptor)
+                try {
+                    startStream()
+                } catch (t: Throwable) {
+                    closeUnsafe()
+                    throw t
+                }
+            }
         }
     }
 
