@@ -128,6 +128,7 @@ class PreviewView @JvmOverloads constructor(
     private val defaultDispatcher = Dispatchers.Default
     private var defaultScope: CoroutineScope =
         CoroutineScope(defaultDispatcher + SupervisorJob() + CoroutineName("preview"))
+    private var startPreviewJob = ConflatedJob()
     private var sourceJob = ConflatedJob()
 
     private var streamer: IWithVideoSource? = null
@@ -426,7 +427,7 @@ class PreviewView @JvmOverloads constructor(
             val rotationDegrees = OrientationUtils.getSurfaceRotationDegrees(display.rotation)
             builder.setSourceOrientation(rotationDegrees)
         }
-        defaultScope.launch {
+        startPreviewJob += defaultScope.launch {
             startPreview(videoSource, builder)
         }
     }
@@ -444,11 +445,16 @@ class PreviewView @JvmOverloads constructor(
                  */
                 videoSource.stopPreview()
                 videoSource.resetPreview()
-                val surface = requestSurface(viewfinderBuilder)
+            }
+            val surface = requestSurface(viewfinderBuilder)
+            videoSource.previewMutex.withLock {
                 videoSource.startPreview(surface)
             }
             Logger.d(TAG, "Preview started")
             listener?.onPreviewStarted()
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            Logger.d(TAG, "Start preview cancelled")
+            throw e
         } catch (t: Throwable) {
             Logger.e(TAG, "Failed to start preview: $t")
             listener?.onPreviewFailed(t)
@@ -470,6 +476,7 @@ class PreviewView @JvmOverloads constructor(
     }
 
     private suspend fun stopPreview() {
+        startPreviewJob.cancel()
         streamer?.let {
             val videoSource = it.videoInput.sourceFlow.value
             if (videoSource is IPreviewableSource) {
