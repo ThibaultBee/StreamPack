@@ -175,7 +175,7 @@ abstract class MediaProjectionService<T : IStreamer>(
         }
 
         if (streamer is IWithAudioSource) {
-            val audioSource = streamer.audioInput?.sourceFlow?.value
+            val audioSource = streamer.audioInput.sourceFlow?.value
             if (audioSource is IMediaProjectionSource) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     streamer.setAudioSource(MediaProjectionAudioSourceFactory(mediaProjection))

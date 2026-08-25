@@ -93,7 +93,7 @@ suspend fun IWithVideoSource.setCameraId(cameraId: String) {
  * Whether the video source has a preview.
  */
 val IWithVideoSource.isPreviewable: Boolean
-    get() = videoInput.sourceFlow?.value is IPreviewableSource
+    get() = videoInput.sourceFlow.value is IPreviewableSource
 
 /**
  * Sets the preview surface.
