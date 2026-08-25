@@ -20,10 +20,11 @@ import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.TextureView
-import io.github.thibaultbee.streampack.core.interfaces.setPreview
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.withContext
 
 /**
  * Interface for video sources that can be previewed.
@@ -74,7 +75,9 @@ interface IPreviewableSource {
         try {
             startPreview()
         } catch (t: Throwable) {
-            resetPreview()
+            withContext(NonCancellable) {
+                resetPreview()
+            }
             throw t
         }
     }
