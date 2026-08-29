@@ -16,6 +16,7 @@
 package io.github.thibaultbee.streampack.core.interfaces
 
 import android.Manifest
+import android.graphics.Bitmap
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
@@ -24,6 +25,7 @@ import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.BitmapSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
@@ -77,17 +79,27 @@ interface IWithVideoSource {
 }
 
 /**
- * Sets the camera id.
+ * Sets the [cameraId] as the new video source.
  *
- * Same as [IWithVideoSource.videoInput.setSource] with a [CameraSourceFactory].
+ * Same as [IWithVideoSource.setVideoSource] with a [CameraSourceFactory].
  *
  * @param cameraId the camera id
  */
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun IWithVideoSource.setCameraId(cameraId: String) {
-    videoInput.setSource(CameraSourceFactory(cameraId))
+    setVideoSource(CameraSourceFactory(cameraId))
 }
 
+/**
+ * Sets the [Bitmap] as the new video source.
+ *
+ * Same as [IWithVideoSource.setVideoSource] with a [CameraSourceFactory].
+ *
+ * @param bitmap the [Bitmap] to stream
+ */
+suspend fun IWithVideoSource.setBitmap(bitmap: Bitmap) {
+    setVideoSource(BitmapSourceFactory(bitmap))
+}
 
 /**
  * Whether the video source has a preview.
