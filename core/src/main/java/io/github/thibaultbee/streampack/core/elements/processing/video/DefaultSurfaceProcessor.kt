@@ -16,6 +16,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.processing.video
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.util.Size
@@ -447,6 +448,7 @@ private class DefaultSurfaceProcessor(
 class DefaultSurfaceProcessorFactory :
     ISurfaceProcessorInternal.Factory {
     override fun create(
+        context: Context,
         dynamicRangeProfile: DynamicRangeProfile,
         dispatcherProvider: IVideoDispatcherProvider
     ): ISurfaceProcessorInternal {

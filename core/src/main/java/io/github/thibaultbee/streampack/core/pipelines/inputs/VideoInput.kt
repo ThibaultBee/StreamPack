@@ -119,7 +119,7 @@ internal class VideoInput(
     private val sourceMutex = Mutex()
 
     override var processor: ISurfaceProcessorInternal =
-        surfaceProcessorFactory.create(dynamicRangeProfileHint, dispatcherProvider)
+        surfaceProcessorFactory.create(context, dynamicRangeProfileHint, dispatcherProvider)
         private set
 
     // SOURCE
@@ -383,6 +383,7 @@ internal class VideoInput(
     private suspend fun buildSurfaceProcessor(videoSourceConfig: VideoSourceConfig): ISurfaceProcessorInternal {
         val newSurfaceProcessor =
             surfaceProcessorFactory.create(
+                context,
                 videoSourceConfig.dynamicRangeProfile,
                 dispatcherProvider
             )
