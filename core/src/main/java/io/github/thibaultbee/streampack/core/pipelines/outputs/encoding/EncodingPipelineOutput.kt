@@ -32,6 +32,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.VideoE
 import io.github.thibaultbee.streampack.core.elements.encoders.rotateFromNaturalOrientation
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.flush
@@ -340,11 +341,8 @@ internal class EncodingPipelineOutput(
 
     private val _audioCodecConfigFlow = MutableStateFlow<AudioCodecConfig?>(null)
     override val audioCodecConfigFlow = _audioCodecConfigFlow.asStateFlow()
-    override val audioSourceConfigFlow = audioCodecConfigFlow.map { it?.sourceConfig }.stateIn(
-        coroutineScope,
-        SharingStarted.Eagerly,
-        null
-    )
+    private val _audioSourceConfigFlow = MutableStateFlow<AudioSourceConfig?>(null)
+    override val audioSourceConfigFlow = _audioSourceConfigFlow.asStateFlow()
 
     private val audioCodecConfig: AudioCodecConfig?
         get() = audioCodecConfigFlow.value
@@ -369,8 +367,10 @@ internal class EncodingPipelineOutput(
         try {
             applyAudioCodecConfig(audioCodecConfig)
             _audioCodecConfigFlow.emit(audioCodecConfig)
+            _audioSourceConfigFlow.emit(audioCodecConfig.sourceConfig)
         } catch (t: Throwable) {
             _audioCodecConfigFlow.emit(null)
+            _audioSourceConfigFlow.emit(null)
             throw t
         }
     }
@@ -428,6 +428,7 @@ internal class EncodingPipelineOutput(
             require(!isStreaming) { "Can't invalidate audio configuration while streaming" }
 
             _audioCodecConfigFlow.emit(null)
+            _audioSourceConfigFlow.emit(null)
             try {
                 audioEncoderInternal?.release()
             } catch (t: Throwable) {
@@ -465,12 +466,8 @@ internal class EncodingPipelineOutput(
     private val _videoCodecConfigFlow = MutableStateFlow<VideoCodecConfig?>(null)
     override val videoCodecConfigFlow = _videoCodecConfigFlow.asStateFlow()
 
-    override val videoSourceConfigFlow: StateFlow<VideoSourceConfig?> =
-        videoCodecConfigFlow.map { it?.sourceConfig }.stateIn(
-            coroutineScope,
-            SharingStarted.Eagerly,
-            null
-        )
+    private val _videoSourceConfigFlow = MutableStateFlow<VideoSourceConfig?>(null)
+    override val videoSourceConfigFlow = _videoSourceConfigFlow.asStateFlow()
 
     private val videoCodecConfig: VideoCodecConfig?
         get() = videoCodecConfigFlow.value
@@ -495,8 +492,10 @@ internal class EncodingPipelineOutput(
         try {
             applyVideoCodecConfig(videoCodecConfig)
             _videoCodecConfigFlow.emit(videoCodecConfig)
+            _videoSourceConfigFlow.emit(videoCodecConfig.sourceConfig)
         } catch (t: Throwable) {
             _videoCodecConfigFlow.emit(null)
+            _videoSourceConfigFlow.emit(null)
             throw t
         }
     }
@@ -577,6 +576,7 @@ internal class EncodingPipelineOutput(
             require(!isStreaming) { "Can't invalidate video configuration while streaming" }
 
             _videoCodecConfigFlow.emit(null)
+            _videoSourceConfigFlow.emit(null)
             try {
                 videoEncoderInternal?.release()
             } catch (t: Throwable) {
