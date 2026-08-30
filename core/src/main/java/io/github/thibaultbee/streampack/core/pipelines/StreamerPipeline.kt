@@ -322,7 +322,6 @@ open class StreamerPipeline(
      * @param withVideo whether the output has video. If the [StreamerPipeline] does not have video, it will be ignored.
      * @param endpointFactory the endpoint factory to add the output to
      * @param targetRotation the target rotation of the output
-     * @param dispatcherProvider the dispatcher provider for the encoding output
      *
      * @return the [EncodingPipelineOutput] created
      */

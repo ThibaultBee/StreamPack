@@ -1,0 +1,70 @@
+site_name: StreamPack
+site_description: StreamPack is an open-source, high-performance Android live streaming SDK (Kotlin) supporting low-latency RTMP, RTMPS, and SRT protocols via Camera2.
+site_url: https://thibaultbee.github.io/StreamPack/
+repo_name: ThibaultBee/StreamPack
+repo_url: https://github.com/ThibaultBee/StreamPack
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Quick Start (Camera): getting_started/QuickStartCamera.md
+      - Quick Start (Screen Recorder): getting_started/QuickStartScreenRecorder.md
+      - Boilerplate & Demos: getting_started/BoilerplateAndDemos.md
+  - Configuration:
+      - Audio/Video: configuration/Configuration.md
+      - Sources: configuration/SourceConfiguration.md
+      - Encoders: configuration/EncoderConfiguration.md
+      - Endpoints: configuration/EndpointConfiguration.md
+      - Bitrate Regulators: configuration/BitrateRegulator.md
+      - Effects & Processing: configuration/Effects.md
+  - Testing & Debugging:
+      - Testing with FFmpeg: testing/Testing.md
+  - Tips & Best Practices: Tips.md
+  - Advanced Guides:
+      - Glossary: advanced/Glossary.md
+      - Streamers:
+          - Streamers: advanced/Streamers.md
+          - Threading: advanced/Threading.md
+      - Use Cases:
+          - Live & Record Simultaneously: use_cases/LiveAndRecordSimultaneously.md
+          - Creating Custom Sources: use_cases/CustomSources.md
+          - Creating Custom Endpoints: use_cases/CustomEndpoints.md
+  - API Reference: https://thibaultbee.github.io/StreamPack/api/
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.snippets:
+      base_path: "."
+  - pymdownx.tabbed:
+      alternate_style: true

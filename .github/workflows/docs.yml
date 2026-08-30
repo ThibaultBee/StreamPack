@@ -1,14 +1,19 @@
-# This workflow will build a Java project with Gradle
-# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
-
-name: Updates API guide
-
+name: Documentation
 on:
+  workflow_dispatch:
   release:
     types: [ published ]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
-  update-doc:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -16,13 +21,31 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
       - name: Generate API documentation
         run: ./gradlew :dokkaGenerate
-      - name: Deploy API documentation to Github Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+
+      - uses: actions/setup-python@v6
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: gh-pages
-          folder: build/dokka/html
+          python-version: 3.x
+
+      - name: Install Zensical
+        run: pip install zensical
+
+      - name: Build Zensical site
+        run: zensical build --clean
+
+      - name: Copy API docs to site
+        run: cp -r build/dokka/html site/api
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+      - uses: actions/deploy-pages@v5
+        id: deployment
