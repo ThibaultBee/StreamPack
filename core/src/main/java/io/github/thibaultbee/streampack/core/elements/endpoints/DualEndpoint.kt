@@ -20,9 +20,10 @@ import android.net.Uri
 import androidx.core.net.toUri
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
-import io.github.thibaultbee.streampack.core.interfaces.open
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * An implementation of [CombineEndpoint] that combines two endpoints.
@@ -44,6 +45,8 @@ open class DualEndpoint(
     listOf(secondEndpoint, mainEndpoint),
     coroutineDispatcher
 ) {
+    private val secondMutex = Mutex()
+
     /**
      * Opens the [mainEndpoint].
      *
@@ -67,15 +70,47 @@ open class DualEndpoint(
     /**
      * Opens the [secondEndpoint].
      */
-    suspend fun openSecond(descriptor: MediaDescriptor) {
+    suspend fun openSecond(descriptor: MediaDescriptor) = secondMutex.withLock {
         secondEndpoint.open(descriptor)
     }
 
     /**
      * Starts the [secondEndpoint].
      */
-    suspend fun startStreamSecond() {
+    suspend fun startStreamSecond() = secondMutex.withLock {
         secondEndpoint.startStream()
+    }
+
+    /**
+     * Starts audio/video stream for the second endpoint.
+     *
+     * @param descriptor The media descriptor to open
+     */
+    suspend fun startStreamSecond(descriptor: MediaDescriptor) = secondMutex.withLock {
+        try {
+            secondEndpoint.open(descriptor)
+            secondEndpoint.startStream()
+        } catch (e: Exception) {
+            secondEndpoint.close()
+            throw e
+        }
+    }
+
+    /**
+     * Stops the [secondEndpoint].
+     */
+    suspend fun stopStreamSecond() = secondMutex.withLock {
+        secondEndpoint.stopStream()
+        endpointsToStreamIdsMap.keys.filter { it.first == secondEndpoint }.forEach {
+            endpointsToStreamIdsMap.remove(it)
+        }
+    }
+
+    /**
+     * Closes the [secondEndpoint].
+     */
+    suspend fun closeSecond() = secondMutex.withLock {
+        secondEndpoint.close()
     }
 }
 
@@ -93,17 +128,7 @@ suspend fun DualEndpoint.openSecond(uri: Uri) =
  * @param uriString The uri to open
  */
 suspend fun DualEndpoint.openSecond(uriString: String) =
-    openSecond(UriMediaDescriptor(uriString.toUri()))
-
-/**
- * Starts audio/video stream for the second endpoint.
- *
- * @param descriptor The media descriptor to open
- */
-suspend fun DualEndpoint.startStreamSecond(descriptor: MediaDescriptor) {
-    openSecond(descriptor)
-    startStreamSecond()
-}
+    openSecond(uriString.toUri())
 
 /**
  * Starts audio/video stream for the second endpoint.
@@ -112,15 +137,7 @@ suspend fun DualEndpoint.startStreamSecond(descriptor: MediaDescriptor) {
  *
  * @param uri The uri to open
  */
-suspend fun DualEndpoint.startStreamSecond(uri: Uri) {
-    openSecond(uri)
-    try {
-        startStreamSecond()
-    } catch (t: Throwable) {
-        close()
-        throw t
-    }
-}
+suspend fun DualEndpoint.startStreamSecond(uri: Uri) = startStreamSecond(UriMediaDescriptor(uri))
 
 /**
  * Starts audio/video stream for the second endpoint.
@@ -129,15 +146,8 @@ suspend fun DualEndpoint.startStreamSecond(uri: Uri) {
  *
  * @param uriString The uri to open
  */
-suspend fun DualEndpoint.startStreamSecond(uriString: String) {
-    openSecond(uriString)
-    try {
-        startStreamSecond()
-    } catch (t: Throwable) {
-        close()
-        throw t
-    }
-}
+suspend fun DualEndpoint.startStreamSecond(uriString: String) =
+    startStreamSecond(uriString.toUri())
 
 /**
  * A factory to build a [DualEndpoint].
