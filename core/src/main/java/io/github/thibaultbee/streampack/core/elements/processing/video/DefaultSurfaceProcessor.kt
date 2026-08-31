@@ -298,11 +298,11 @@ private class DefaultSurfaceProcessor(
         if (isReleaseRequested.get()) {
             return
         }
+        surfaceTexture
+        val timeConverter = surfaceInputsToTimeConverterMap[surfaceTexture] ?: return
 
         surfaceTexture.updateTexImage()
         surfaceTexture.getTransformMatrix(textureMatrix)
-
-        val timeConverter = surfaceInputsToTimeConverterMap[surfaceTexture]!!
 
         surfaceOutputs.filterIsInstance<SurfaceOutput>().forEach {
             try {
