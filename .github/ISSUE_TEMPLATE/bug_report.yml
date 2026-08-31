@@ -8,6 +8,8 @@ body:
   - type: markdown
     attributes:
       value: |
+        💖 **If you use StreamPack in a commercial product, please consider [sponsoring the project](https://github.com/sponsors/ThibaultBee).**
+
         Thanks for taking the time to fill out this bug report!
 
         Rules for reporting a bug:

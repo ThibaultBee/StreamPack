@@ -2,6 +2,7 @@
 [![License](https://img.shields.io/github/license/ThibaultBee/StreamPack)](LICENSE.md)
 [![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg)](https://android-arsenal.com/api?level=21)
 [![Stars](https://img.shields.io/github/stars/ThibaultBee/StreamPack?style=social)](https://github.com/ThibaultBee/StreamPack/stargazers)
+[![Sponsor](https://img.shields.io/badge/Sponsor-StreamPack-ff69b4)](https://github.com/sponsors/ThibaultBee)
 
 <!-- --8<-- [start:summary] -->
 # StreamPack: Open-Source Android Live Streaming SDK (RTMP & SRT)
