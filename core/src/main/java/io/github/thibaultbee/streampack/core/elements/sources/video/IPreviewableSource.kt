@@ -15,17 +15,21 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.video
 
+import android.graphics.PointF
 import android.util.Size
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.TextureView
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION
+import io.github.thibaultbee.streampack.core.elements.utils.MeteringPointFactory
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration
 
 /**
  * Interface for video sources that can be previewed.
@@ -34,6 +38,30 @@ import kotlinx.coroutines.withContext
  */
 @SubclassOptInRequired(InternalStreamPackApi::class)
 interface IPreviewableSource {
+    enum class ImplementationMode {
+        /**
+         * Based on TextureView
+         */
+        COMPATIBLE,
+
+        /**
+         * Based on SurfaceView
+         */
+        PERFORMANCE
+    }
+
+    data class PreviewConfiguration(
+        val orientationDegrees: Int? = null,
+        val isSourceMirroredHorizontally: Boolean = false,
+        val implementationMode: ImplementationMode? = null,
+    )
+
+    /**
+     * Configuration for the preview surface, such as orientation, implementation mode, and mirror mode.
+     */
+    val previewConfiguration: PreviewConfiguration
+        get() = PreviewConfiguration()
+
     /**
      * Mutex for the preview.
      * Use it when you have to synchronise access to the preview.
@@ -179,3 +207,52 @@ suspend fun IPreviewableSource.startPreview(surfaceHolder: SurfaceHolder) =
  */
 suspend fun IPreviewableSource.startPreview(textureView: TextureView) =
     startPreview(Surface(textureView.surfaceTexture))
+
+/**
+ * Interface for video sources that can be controlled via preview gestures (like zoom and focus).
+ */
+@SubclassOptInRequired(InternalStreamPackApi::class)
+interface IPreviewControllableSource {
+    /**
+     * Whether the video source supports pinch to zoom.
+     */
+    val isZoomOnPinchSupported: Boolean
+        get() = false
+
+    /**
+     * Sets the zoom on pinch scale gesture.
+     *
+     * In case [isZoomOnPinchSupported] is false, this method throws.
+     *
+     * @param scale the scale factor. Typically, values > 1.0 should zoom in and values between 0.0 and 1.0 should zoom out (dezoom).
+     * @param pinchCenter the center point of the pinch gesture on the preview surface.
+     */
+    suspend fun setZoomOnPinch(scale: Float, pinchCenter: PointF) {
+        throw NotImplementedError("setZoomOnPinch is not implemented")
+    }
+
+    /**
+     * Whether the video source supports tap to focus.
+     */
+    val isTapToFocusSupported: Boolean
+        get() = false
+
+    /**
+     * Sets tap to focus.
+     *
+     * In case [isTapToFocusSupported] is false, this method throws.
+     *
+     * @param point the point to focus
+     * @param factory the factory to create the metering point
+     * @param viewRotationDegree the orientation of view
+     * @param timeoutDuration the duration after which the focus should be automatically canceled. Default is [DEFAULT_AUTO_CANCEL_DURATION].
+     */
+    suspend fun tapToFocus(
+        point: PointF,
+        factory: MeteringPointFactory,
+        viewRotationDegree: Int,
+        timeoutDuration: Duration = DEFAULT_AUTO_CANCEL_DURATION
+    ) {
+        throw NotImplementedError("tapToFocus is not implemented")
+    }
+}

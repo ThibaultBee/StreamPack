@@ -18,9 +18,15 @@ package io.github.thibaultbee.streampack.core.elements.sources.video.camera.cont
 import android.Manifest
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
+import android.hardware.camera2.TotalCaptureResult
+import android.os.Build
 import android.util.Range
 import androidx.annotation.RequiresPermission
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraException
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.dynamicRangeProfiles
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFpsSupported
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.CameraCaptureSessionCompatBuilder
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSessionCallback
@@ -30,11 +36,15 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureResultListener
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.logger.Logger
+import java.util.concurrent.atomic.AtomicLong
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -70,6 +80,9 @@ internal class CameraController(
 
     private val _isActiveFlow = MutableStateFlow(false)
     val isActiveFlow = _isActiveFlow.asStateFlow()
+
+    private val isActive: Boolean
+        get() = isActiveFlow.value && sessionController?.isClosed == false && deviceController?.isClosed == false
 
     private val fpsRange: Range<Int>
         get() = CameraUtils.getClosestFpsRange(characteristics, fps)
@@ -116,9 +129,18 @@ internal class CameraController(
                     Logger.w(TAG, "Output is already added: $output")
                     return@withContext
                 }
-                outputs[output.name] = output
-                if (isActiveFlow.value) {
-                    restartSessionUnsafe()
+                val previousOutput = outputs.put(output.name, output)
+                if (isActive) {
+                    try {
+                        restartSessionUnsafe()
+                    } catch (t: Throwable) {
+                        if (previousOutput != null) {
+                            outputs[output.name] = previousOutput
+                        } else {
+                            outputs.remove(output.name)
+                        }
+                        throw t
+                    }
                 }
             }
         }
@@ -133,10 +155,14 @@ internal class CameraController(
     suspend fun removeOutput(name: String) {
         withContext(defaultDispatcher) {
             controllerMutex.withLock {
-                val needRestart = outputs.remove(name) != null && isActiveFlow.value
-                if (outputs.isEmpty()) {
+                if (isReleased) {
+                    return@withContext
+                }
+                val removedOutput = outputs.remove(name) ?: return@withContext
+                captureRequestBuilder?.removeTarget(removedOutput)
+                if (outputs.isEmpty() || captureRequestBuilder?.isEmpty() != false) {
                     sessionController?.close()
-                } else if (needRestart) {
+                } else if (isActive) {
                     restartSessionUnsafe()
                 }
             }
@@ -177,6 +203,15 @@ internal class CameraController(
         }
     }
 
+    @RequiresPermission(Manifest.permission.CAMERA)
+    private suspend fun getSessionParameters(): CaptureRequest? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            getCaptureRequestBuilder().build()
+        } else {
+            null
+        }
+    }
+
     /**
      * To be used under [controllerMutex]
      */
@@ -189,7 +224,8 @@ internal class CameraController(
                 sessionCompat,
                 outputs.values.toList(),
                 dynamicRange = dynamicRangeProfile.dynamicRange,
-                defaultDispatcher
+                sessionParameters = getSessionParameters(),
+                coroutineDispatcher = defaultDispatcher
             ).apply {
                 applySessionController(this)
                 Logger.d(TAG, "Session controller created")
@@ -202,7 +238,8 @@ internal class CameraController(
                     sessionController!!.recreate(
                         getDeviceController(),
                         outputs.values.toList(),
-                        dynamicRange = dynamicRangeProfile.dynamicRange
+                        dynamicRange = dynamicRangeProfile.dynamicRange,
+                        sessionParameters = getSessionParameters()
                     ).apply {
                         applySessionController(this)
                         Logger.d(TAG, "Session controller recreated")
@@ -221,16 +258,22 @@ internal class CameraController(
     ) {
         this.sessionController = sessionController
 
+        isActiveJob?.cancel()
         isActiveJob = coroutineScope.launch {
-            sessionController.isClosedFlow.collect {
-                _isActiveFlow.emit(!it)
+            combine(
+                sessionController.isClosedFlow,
+                sessionController.cameraIsClosedFlow
+            ) { sessionClosed, cameraClosed ->
+                !sessionClosed && !cameraClosed
+            }.collect { isActive ->
+                _isActiveFlow.emit(isActive)
             }
         }
 
         // Re-add targets that are in the new outputs (identified by their name)
         captureRequestBuilder?.let {
             val targets = outputs.values.filter { output ->
-                it.hasTarget(output)
+                it.hasTarget(output.name)
             }
             it.clearTargets()
             if (targets.isNotEmpty()) {
@@ -260,7 +303,8 @@ internal class CameraController(
         sessionController.recreate(
             getDeviceController(),
             outputs.values.toList(),
-            dynamicRange = dynamicRangeProfile.dynamicRange
+            dynamicRange = dynamicRangeProfile.dynamicRange,
+            sessionParameters = getSessionParameters()
         ).apply {
             applySessionController(this)
             Logger.d(TAG, "Session controller restarted")
@@ -283,9 +327,11 @@ internal class CameraController(
             val wasAdded = getCaptureRequestBuilder().addTarget(target)
             if (wasAdded) {
                 try {
-                    applyRepeatingSessionUnsafe()
+                    applyRepeatingSessionSyncUnsafe()
                 } catch (t: Throwable) {
+                    getCaptureRequestBuilder().removeTarget(target)
                     Logger.e(TAG, "Error to add target $name", t)
+                    throw t
                 }
                 Logger.d(TAG, "Target $name added")
             }
@@ -366,27 +412,66 @@ internal class CameraController(
     /**
      * Sets the fps to the current capture request.
      *
-     * @param fpsRange The fps range
+     * @param fps The fps
      */
     @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun setFps(fps: Int) {
+        require(characteristics.isFpsSupported(fps)) {
+            "Camera $cameraId does not support $fps fps"
+        }
         withContext(defaultDispatcher) {
             controllerMutex.withLock {
                 if (this@CameraController.fps == fps) {
                     return@withContext
                 }
+                Logger.d(TAG, "Setting fps to $fps")
 
+                val previousFps = this@CameraController.fps
                 this@CameraController.fps = fps
 
                 val captureRequestBuilder = getCaptureRequestBuilder()
+                val previousRange =
+                    captureRequestBuilder.get(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE)
+                val previousMinFrameDuration =
+                    captureRequestBuilder.get(CaptureRequest.SENSOR_FRAME_DURATION)
 
                 val range = fpsRange
                 val minFrameDuration = 1_000_000_000 / range.upper.toLong()
                 captureRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, range)
                 captureRequestBuilder.set(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
 
-                if (isActiveFlow.value) {
-                    applyRepeatingSessionUnsafe()
+                try {
+                    val validOutputs = outputs.values.map { it.surface }.filter { it.isValid }
+                    if (validOutputs.isNotEmpty()) {
+                        val isSupported = CameraUtils.isSessionConfigurationSupported(
+                            getDeviceController(),
+                            validOutputs,
+                            dynamicRangeProfile.dynamicRange,
+                            getSessionParameters()
+                        )
+                        if (!isSupported) {
+                            throw CameraException("Session configuration with $fps fps ($range) is not supported for outputs $validOutputs")
+                        }
+                    }
+
+                    if (isActive) {
+                        applyRepeatingSessionUnsafe()
+                    }
+                } catch (t: Throwable) {
+                    this@CameraController.fps = previousFps
+                    if (previousRange != null) {
+                        captureRequestBuilder.set(
+                            CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE,
+                            previousRange
+                        )
+                    }
+                    if (previousMinFrameDuration != null) {
+                        captureRequestBuilder.set(
+                            CaptureRequest.SENSOR_FRAME_DURATION,
+                            previousMinFrameDuration
+                        )
+                    }
+                    throw t
                 }
             }
         }
@@ -399,6 +484,9 @@ internal class CameraController(
      */
     @RequiresPermission(Manifest.permission.CAMERA)
     suspend fun setDynamicRangeProfile(dynamicRangeProfile: DynamicRangeProfile) {
+        require(characteristics.dynamicRangeProfiles.contains(dynamicRangeProfile.dynamicRange)) {
+            "Camera $cameraId does not support dynamic range profile $dynamicRangeProfile"
+        }
         withContext(defaultDispatcher) {
             controllerMutex.withLock {
                 if (this@CameraController.dynamicRangeProfile == dynamicRangeProfile) {
@@ -406,10 +494,29 @@ internal class CameraController(
                 }
                 Logger.d(TAG, "Setting dynamic range profile to $dynamicRangeProfile")
 
+                val previousProfile = this@CameraController.dynamicRangeProfile
                 this@CameraController.dynamicRangeProfile = dynamicRangeProfile
 
-                if (isActiveFlow.value) {
-                    restartSessionUnsafe()
+                try {
+                    if (isActive) {
+                        restartSessionUnsafe()
+                    } else {
+                        val validOutputs = outputs.values.map { it.surface }.filter { it.isValid }
+                        if (validOutputs.isNotEmpty()) {
+                            val isSupported = CameraUtils.isSessionConfigurationSupported(
+                                getDeviceController(),
+                                validOutputs,
+                                dynamicRangeProfile.dynamicRange,
+                                getSessionParameters()
+                            )
+                            if (!isSupported) {
+                                throw CameraException("Session configuration with dynamic range $dynamicRangeProfile is not supported for outputs $validOutputs")
+                            }
+                        }
+                    }
+                } catch (t: Throwable) {
+                    this@CameraController.dynamicRangeProfile = previousProfile
+                    throw t
                 }
             }
         }
@@ -459,6 +566,158 @@ internal class CameraController(
         withContext(defaultDispatcher) {
             controllerMutex.withLock {
                 applyRepeatingSessionUnsafe(tag)
+            }
+        }
+    }
+
+    /**
+     * Applies settings to the camera repeatedly.
+     *
+     * @param onCaptureResult the capture result callback. Return `true` to stop the callback.
+     */
+    @RequiresPermission(Manifest.permission.CAMERA)
+    suspend fun applyRepeatingSession(onCaptureResult: CaptureResultListener) {
+        withContext(defaultDispatcher) {
+            controllerMutex.withLock {
+                applyRepeatingSessionUnsafe(onCaptureResult)
+            }
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.CAMERA)
+    private suspend fun applyRepeatingSessionUnsafe(onCaptureResult: CaptureResultListener): CaptureResultListener {
+        val tag = TagBundle.Factory.default.create()
+        val captureCallback = object : CaptureResultListener {
+            override fun onCaptureResult(result: TotalCaptureResult): Boolean {
+                val resultTag = result.request.tag as? TagBundle
+                val keyId = resultTag?.keyId ?: return false
+                return keyId >= tag.keyId && onCaptureResult.onCaptureResult(result)
+            }
+
+            override fun onCaptureFailed(failure: CaptureFailure): Boolean {
+                Logger.e(TAG, "Capture request failed: reason=${failure.reason}")
+                val failureTag = failure.request.tag as? TagBundle
+                val keyId = failureTag?.keyId ?: return false
+                return keyId >= tag.keyId && onCaptureResult.onCaptureFailed(failure)
+            }
+        }
+
+        addCaptureCallbackListener(captureCallback)
+        applyRepeatingSessionUnsafe(tag)
+        return captureCallback
+    }
+
+    /**
+     * Applies settings to the camera repeatedly in a synchronized way.
+     *
+     * This method returns when the capture callback is received with the passed request.
+     *
+     * @return the total capture result
+     */
+    @RequiresPermission(Manifest.permission.CAMERA)
+    suspend fun applyRepeatingSessionSync(): TotalCaptureResult =
+        withContext(defaultDispatcher) {
+            controllerMutex.withLock {
+                applyRepeatingSessionSyncUnsafe()
+            }
+        }
+
+    @RequiresPermission(Manifest.permission.CAMERA)
+    private suspend fun applyRepeatingSessionSyncUnsafe(): TotalCaptureResult {
+        val captureRequestBuilder = getCaptureRequestBuilder()
+        if (captureRequestBuilder.isEmpty()) {
+            throw IllegalStateException("Cannot synchronize repeating session without targets")
+        }
+
+        val deviceController = getDeviceController()
+        if (deviceController.isClosed) {
+            val error = deviceController.throwableFlow.value
+                ?: CameraException("Camera device is closed")
+            throw error
+        }
+
+        val sessionController = getSessionController()
+        if (sessionController.isClosed) {
+            val error = deviceController.throwableFlow.value
+                ?: CameraException("Camera session is closed")
+            throw error
+        }
+
+        val deferred = CompletableDeferred<TotalCaptureResult>()
+
+        val captureResult = object : CaptureResultListener {
+            override fun onCaptureResult(result: TotalCaptureResult): Boolean {
+                deferred.complete(result)
+                return true
+            }
+
+            override fun onCaptureFailed(failure: CaptureFailure): Boolean {
+                deferred.completeExceptionally(
+                    CameraException("Capture request failed: reason=${failure.reason}")
+                )
+                return true
+            }
+        }
+
+        val errorJob = coroutineScope.launch {
+            combine(
+                deviceController.throwableFlow,
+                deviceController.isClosedFlow,
+                sessionController.isClosedFlow
+            ) { throwable, deviceClosed, sessionClosed ->
+                when {
+                    throwable != null -> throwable
+                    deviceClosed -> CameraException("Camera device has been closed")
+                    sessionClosed -> CameraException("Camera session has been closed")
+                    else -> null
+                }
+            }.filterNotNull().collect { error ->
+                deferred.completeExceptionally(error)
+            }
+        }
+
+        val registeredListener = applyRepeatingSessionUnsafe(captureResult)
+        try {
+            return deferred.await()
+        } finally {
+            errorJob.cancel()
+            removeCaptureCallbackListener(registeredListener)
+        }
+    }
+
+    private class TagBundle(val keyId: Long) {
+        private val tagMap = mutableMapOf<String, Any?>().apply {
+            put(TAG_KEY_ID, keyId)
+        }
+
+        val keys: Set<String>
+            get() = tagMap.keys
+
+        fun setTag(key: String, value: Any?) {
+            tagMap[key] = value
+        }
+
+        companion object {
+            private const val TAG_KEY_ID = "TAG_KEY_ID"
+        }
+
+        /**
+         * Factory for [TagBundle].
+         *
+         * The purpose is to make sure the tag always contains an increasing id.
+         */
+        class Factory private constructor() {
+            /**
+             * Next session id.
+             */
+            private val nextSessionUpdateId = AtomicLong(0)
+
+            fun create(): TagBundle {
+                return TagBundle(nextSessionUpdateId.getAndIncrement())
+            }
+
+            companion object {
+                val default = Factory()
             }
         }
     }

@@ -31,7 +31,6 @@ import android.hardware.camera2.params.ColorSpaceTransform
 import android.hardware.camera2.params.MeteringRectangle
 import android.hardware.camera2.params.RggbChannelVector
 import android.os.Build
-import android.util.Log
 import android.util.Range
 import android.util.Rational
 import androidx.annotation.IntRange

@@ -39,11 +39,11 @@ import io.github.thibaultbee.streampack.app.R
 import io.github.thibaultbee.streampack.app.databinding.MainFragmentBinding
 import io.github.thibaultbee.streampack.app.utils.DialogUtils
 import io.github.thibaultbee.streampack.app.utils.PermissionManager
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.streamers.lifecycle.StreamerLifeCycleObserver
-import io.github.thibaultbee.streampack.ui.views.PreviewView
+import io.github.thibaultbee.streampack.core.utils.ExperimentalStreamPackApi
+import io.github.thibaultbee.streampack.ui.utils.bindToStreamerSource
 import kotlinx.coroutines.launch
 
 class PreviewFragment : Fragment(R.layout.main_fragment) {
@@ -65,8 +65,10 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
         return binding.root
     }
 
+    @OptIn(ExperimentalStreamPackApi::class)
     @SuppressLint("MissingPermission")
     private fun bindProperties() {
+        binding.preview.addOnPinchToZoomListener { _, _ -> previewViewModel.onZoomChanged() }
         binding.liveButton.setOnClickListener { view ->
             view as ToggleButton
             if (view.isPressed) {
@@ -131,7 +133,7 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
                 lifecycle.addObserver(newObserver)
 
             } else {
-                Log.e(TAG, "Streamer is not a ICoroutineStreamer")
+                Log.e(TAG, "Streamer is not a IStreamer")
             }
             if (streamer is IWithVideoSource) {
                 inflateStreamerPreview(streamer)
@@ -222,26 +224,10 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
         }
     }
 
+    @OptIn(ExperimentalStreamPackApi::class)
     @RequiresPermission(Manifest.permission.CAMERA)
     private fun inflateStreamerPreview(streamer: IWithVideoSource) {
-        val preview = binding.preview
-        // Set camera settings button when camera is started
-        preview.listener = object : PreviewView.PreviewListener {
-            override fun onPreviewStarted() {
-                Log.i(TAG, "Preview started")
-            }
-        }
-
-        preview.setZoomListener(object : CameraSettings.Zoom.OnZoomChangedListener {
-            override fun onZoomChanged(zoomRatio: Float) {
-                previewViewModel.onZoomChanged()
-            }
-        })
-
-        // Wait till streamer exists to set it to the SurfaceView.
-        lifecycleScope.launch {
-            preview.setVideoSourceProvider(streamer)
-        }
+        binding.preview.bindToStreamerSource(viewLifecycleOwner, streamer)
     }
 
     private fun startStreamIfPermissions(permissions: List<String>) {

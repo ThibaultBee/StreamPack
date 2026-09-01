@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.core.elements.sources.video.camera.util
 
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCaptureSession.CaptureCallback
+import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.TotalCaptureResult
 import kotlinx.coroutines.CoroutineScope
@@ -67,7 +68,31 @@ internal class CameraSessionCallback(private val coroutineScope: CoroutineScope)
                     }
                 }
             }
-            if (!removeSet.isEmpty()) {
+            if (removeSet.isNotEmpty()) {
+                mutex.withLock {
+                    resultListeners.removeAll(removeSet)
+                }
+            }
+        }
+    }
+
+    override fun onCaptureFailed(
+        session: CameraCaptureSession,
+        request: CaptureRequest,
+        failure: CaptureFailure
+    ) {
+        super.onCaptureFailed(session, request, failure)
+        coroutineScope.launch {
+            val removeSet = mutableSetOf<CaptureResultListener>()
+            mutex.withLock {
+                for (listener in resultListeners) {
+                    val isFinished: Boolean = listener.onCaptureFailed(failure)
+                    if (isFinished) {
+                        removeSet.add(listener)
+                    }
+                }
+            }
+            if (removeSet.isNotEmpty()) {
                 mutex.withLock {
                     resultListeners.removeAll(removeSet)
                 }

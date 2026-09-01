@@ -66,6 +66,10 @@ interface IVideoInput : ISnapshotable {
     val sourceFlow: StateFlow<IVideoSource?>
 
     /**
+     * The video source configuration
+     */
+    val sourceConfigFlow: StateFlow<VideoSourceConfig?>
+    /**
      * Mute the video stream.
      * The video stream will be replaced by a black screen.
      * It is a shortcut to [ISurfaceProcessor.isMuted]
@@ -141,7 +145,7 @@ internal class VideoInput(
     /**
      * The video source configuration.
      */
-    val sourceConfigFlow = _sourceConfigFlow.asStateFlow()
+    override val sourceConfigFlow = _sourceConfigFlow.asStateFlow()
 
     private val sourceConfig: VideoSourceConfig?
         get() = sourceConfigFlow.value
