@@ -88,6 +88,7 @@ import java.util.concurrent.atomic.AtomicLong
  * @param characteristics Camera characteristics of the current camera.
  */
 class CameraSettings internal constructor(
+    private val context: Context,
     private val coroutineScope: CoroutineScope,
     val characteristics: CameraCharacteristics,
     private val cameraController: CameraController
@@ -182,7 +183,16 @@ class CameraSettings internal constructor(
      * Current focus metering API.
      */
     val focusMetering =
-        FocusMetering(coroutineScope, characteristics, this, zoom, focus, exposure, whiteBalance)
+        FocusMetering(
+            context,
+            coroutineScope,
+            characteristics,
+            this,
+            zoom,
+            focus,
+            exposure,
+            whiteBalance
+        )
 
     /**
      * Directly gets a [CaptureRequest] from the camera.
@@ -1021,7 +1031,8 @@ class CameraSettings internal constructor(
         @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setLensDistance(lensDistance: Float) {
             cameraSettings.set(
-                CaptureRequest.LENS_FOCUS_DISTANCE, lensDistance.coerceIn(availableLensDistanceRange)
+                CaptureRequest.LENS_FOCUS_DISTANCE,
+                lensDistance.coerceIn(availableLensDistanceRange)
             )
             cameraSettings.applyRepeatingSession()
         }
@@ -1152,6 +1163,7 @@ class CameraSettings internal constructor(
     }
 
     class FocusMetering internal constructor(
+        private val context: Context,
         private val coroutineScope: CoroutineScope,
         private val characteristics: CameraCharacteristics,
         private val cameraSettings: CameraSettings,
@@ -1421,7 +1433,6 @@ class CameraSettings internal constructor(
         /**
          * Sets the focus on tap.
          *
-         * @param context the application context
          * @param point the point to focus on in [fovRect] coordinate system
          * @param fovRect the field of view rectangle
          * @param fovRotationDegree the orientation of the field of view
@@ -1429,7 +1440,6 @@ class CameraSettings internal constructor(
          */
         @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun onTap(
-            context: Context,
             point: PointF,
             fovRect: Rect,
             fovRotationDegree: Int,
@@ -1437,7 +1447,6 @@ class CameraSettings internal constructor(
         ) {
             val points = listOf(point)
             return onTap(
-                context,
                 points,
                 points,
                 emptyList(),
@@ -1452,7 +1461,6 @@ class CameraSettings internal constructor(
          *
          * At least one of lost of points must not be empty.
          *
-         * @param context the application context
          * @param afPoints the points where the focus is done in [fovRect] coordinate system
          * @param aePoints the points where the exposure is done in [fovRect] coordinate system
          * @param awbPoints the points where the white balance is done in [fovRect] coordinate system
@@ -1462,7 +1470,6 @@ class CameraSettings internal constructor(
          */
         @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun onTap(
-            context: Context,
             afPoints: List<PointF>,
             aePoints: List<PointF>,
             awbPoints: List<PointF>,

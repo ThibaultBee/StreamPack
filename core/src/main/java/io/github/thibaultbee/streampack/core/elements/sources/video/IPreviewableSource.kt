@@ -15,11 +15,14 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.video
 
+import android.graphics.PointF
+import android.graphics.Rect
 import android.util.Size
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.TextureView
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION_MS
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.NonCancellable
@@ -34,6 +37,30 @@ import kotlinx.coroutines.withContext
  */
 @SubclassOptInRequired(InternalStreamPackApi::class)
 interface IPreviewableSource {
+    enum class ImplementationMode {
+        /**
+         * Based on TextureView
+         */
+        COMPATIBLE,
+
+        /**
+         * Based on SurfaceView
+         */
+        PERFORMANCE
+    }
+
+    data class PreviewConfiguration(
+        val orientationDegrees: Int? = null,
+        val isSourceMirroredHorizontally: Boolean = false,
+        val implementationMode: ImplementationMode? = null,
+    )
+
+    /**
+     * Configuration for the preview surface, such as orientation, implementation mode, and mirror mode.
+     */
+    val previewConfiguration: PreviewConfiguration
+        get() = PreviewConfiguration()
+
     /**
      * Mutex for the preview.
      * Use it when you have to synchronise access to the preview.
@@ -179,3 +206,60 @@ suspend fun IPreviewableSource.startPreview(surfaceHolder: SurfaceHolder) =
  */
 suspend fun IPreviewableSource.startPreview(textureView: TextureView) =
     startPreview(Surface(textureView.surfaceTexture))
+
+/**
+ * Interface for video sources that can be controlled via preview gestures (like zoom and focus).
+ */
+@SubclassOptInRequired(InternalStreamPackApi::class)
+interface IPreviewControllableSource {
+    /**
+     * Whether the video source supports pinch to zoom.
+     */
+    val isPinchToZoomSupported: Boolean
+        get() = false
+
+    /**
+     * Sets the zoom on pinch scale gesture.
+     *
+     * In case [isPinchToZoomSupported] is false, this method throws.
+     *
+     * @param scale the scale factor. Typically, values > 1.0 should zoom in and values between 0.0 and 1.0 should zoom out (dezoom).
+     * @param pinchCenter the center point of the pinch gesture on the preview surface.
+     */
+    suspend fun setZoomOnPinch(scale: Float, pinchCenter: PointF) {
+        throw NotImplementedError("setZoomOnPinch is not implemented")
+    }
+
+    /**
+     * Whether the video source supports tap to focus.
+     */
+    val isTapToFocusSupported: Boolean
+        get() = false
+
+    /**
+     * Sets tap to focus.
+     *
+     * In case [isTapToFocusSupported] is false, this method throws.
+     *
+     * @param point the point to focus on in [fovRect] coordinate system
+     * @param fovRect the field of view rectangle
+     * @param fovRotationDegree the orientation of the field of view
+     * @param timeoutDurationMs the duration in milliseconds after which the focus should be automatically canceled. Default is [DEFAULT_AUTO_CANCEL_DURATION_MS].
+     */
+    suspend fun setTapToFocus(
+        point: PointF,
+        fovRect: Rect,
+        fovRotationDegree: Int,
+        timeoutDurationMs: Long = DEFAULT_AUTO_CANCEL_DURATION_MS
+    ) {
+        throw NotImplementedError("setTapToFocus is not implemented")
+    }
+
+    /**
+     * Sets a listener to be notified when the zoom ratio changes.
+     * This reports the actual absolute zoom ratio of the source, regardless of whether it was changed via pinch gesture or programmatically.
+     *
+     * @param listener the listener to be notified with the new zoom ratio. Use `null` to remove the listener.
+     */
+    fun setOnZoomListener(listener: ((Float) -> Unit)?) {}
+}
