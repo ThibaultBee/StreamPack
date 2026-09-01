@@ -15,102 +15,136 @@
  */
 package io.github.thibaultbee.streampack.compose
 
+import android.util.Size
+import android.view.SurfaceHolder
+import androidx.camera.viewfinder.core.populateFromCharacteristics
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
 import io.github.thibaultbee.streampack.compose.utils.BitmapUtils
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.BitmapSourceFactory
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION_MS
-import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraCharacteristics
+import io.github.thibaultbee.streampack.core.elements.utils.OrientationUtils
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
-import io.github.thibaultbee.streampack.ui.views.PreviewView
+import io.github.thibaultbee.streampack.ui.views.ViewfinderView
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
 
 private const val TAG = "ComposeSourcePreview"
 
 /**
- * Displays the preview of a [IWithVideoSource].
- *
- * A [IWithVideoSource] must have a video sourc.
- *
- * @param videoSource the [IWithVideoSource] to preview
- * @param modifier the [Modifier] to apply to the [PreviewView]
- * @param enableZoomOnPinch enable zoom on pinch gesture
- * @param enableTapToFocus enable tap to focus
- * @param onTapToFocusTimeoutMs the duration in milliseconds after which the focus area set by tap-to-focus is cleared
+ * Displays the preview of a [IPreviewableSource].
  */
 @Composable
 fun SourcePreview(
-    videoSource: IWithVideoSource,
+    previewableSource: IPreviewableSource?,
     modifier: Modifier = Modifier,
-    onZoomChanged: ((zoomRatio: Float) -> Unit)? = null,
-    enableZoomOnPinch: Boolean = true,
-    enableTapToFocus: Boolean = true,
-    onTapToFocusTimeoutMs: Long = DEFAULT_AUTO_CANCEL_DURATION_MS
+    isTapToFocusEnabled: Boolean = true,
+    onTapToFocus: ((Offset, Int) -> Unit)? = null,
+    autoCancelDurationMillis: Long = DEFAULT_AUTO_CANCEL_DURATION_MS,
+    isPinchToZoomEnabled: Boolean = true,
+    onZoomRatioChanged: ((Float) -> Unit)? = null
 ) {
     val scope = rememberCoroutineScope()
+    val viewfinderView = remember { mutableStateOf<ViewfinderView?>(null) }
+    val viewSize = remember { mutableStateOf<Size?>(null) }
+    val context = LocalContext.current
 
-    AndroidView(
-        factory = { context ->
-            PreviewView(context).apply {
-                this.enableZoomOnPinch = enableZoomOnPinch
-                this.enableTapToFocus = enableTapToFocus
-                this.onTapToFocusTimeoutMs = onTapToFocusTimeoutMs
-                onZoomChanged?.let {
-                    val onZoomChangedListener = object : CameraSettings.Zoom.OnZoomChangedListener {
-                        override fun onZoomChanged(zoomRatio: Float) {
-                            onZoomChanged(zoomRatio)
+    DisposableEffect(previewableSource) {
+        onDispose {
+            scope.launch {
+                previewableSource?.previewMutex?.withLock {
+                    previewableSource.stopPreview()
+                    previewableSource.resetPreview()
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(previewableSource, viewfinderView.value, viewSize.value) {
+        val view = viewfinderView.value
+        val size = viewSize.value
+        if (view != null && size != null && size.width > 0 && size.height > 0) {
+            try {
+                previewableSource?.let { source ->
+                    source.previewMutex.withLock {
+                        source.stopPreview()
+                        source.resetPreview()
+                    }
+                    val previewSize = source.getPreviewSize(size, SurfaceHolder::class.java)
+                    val surface = view.requestSurface(previewSize) {
+                        if (source is ICameraSource) {
+                            val cameraCharacteristics = context.getCameraCharacteristics(source.cameraId)
+                            populateFromCharacteristics(cameraCharacteristics)
+                        } else {
+                            val display = view.display
+                            if (display != null) {
+                                val rotationDegrees = OrientationUtils.getSurfaceRotationDegrees(display.rotation)
+                                setSourceOrientation(rotationDegrees)
+                            }
                         }
                     }
-                    this.setZoomListener(onZoomChangedListener)
-                }
-
-
-                scope.launch {
-                    try {
-                        setVideoSourceProvider(videoSource)
-                    } catch (e: Exception) {
-                        Logger.e(TAG, "Failed to start preview", e)
+                    source.previewMutex.withLock {
+                        source.startPreview(surface)
                     }
                 }
+            } catch (e: Exception) {
+                Logger.e(TAG, "Failed to set video source provider", e)
+            }
+        }
+    }
+
+    AndroidView(
+        factory = { ctx ->
+            ViewfinderView(ctx).apply {
+                this.isPinchToZoomEnabled = isPinchToZoomEnabled
+                this.isTapToFocusEnabled = isTapToFocusEnabled
+                this.autoCancelDurationMillis = autoCancelDurationMillis
+                this.onZoomRatioChanged = onZoomRatioChanged
+                this.onTapToFocus = { pointF, rotation ->
+                    onTapToFocus?.invoke(Offset(pointF.x, pointF.y), rotation)
+                }
+                viewfinderView.value = this
             }
         },
-        modifier = modifier,
-        onRelease = {
-            scope.launch {
-                val source = videoSource.videoInput.sourceFlow.value as? IPreviewableSource
-                source?.previewMutex?.withLock {
-                    source.stopPreview()
-                    source.resetPreview()
-                }
+        update = { view ->
+            view.isPinchToZoomEnabled = isPinchToZoomEnabled
+            view.isTapToFocusEnabled = isTapToFocusEnabled
+            view.autoCancelDurationMillis = autoCancelDurationMillis
+            view.onZoomRatioChanged = onZoomRatioChanged
+            view.onTapToFocus = { pointF, rotation ->
+                onTapToFocus?.invoke(Offset(pointF.x, pointF.y), rotation)
             }
-        })
+            viewfinderView.value = view
+        },
+        modifier = modifier.onSizeChanged { intSize ->
+            viewSize.value = Size(intSize.width, intSize.height)
+        },
+        onRelease = { viewfinderView.value = null })
 }
 
 @Preview
 @Composable
 fun PreviewScreenSourcePreview() {
     val context = LocalContext.current
-    val streamer = SingleStreamer(context)
-    LaunchedEffect(Unit) {
-        streamer.setVideoSource(
-            BitmapSourceFactory(
-                BitmapUtils.createImage(
-                    1280,
-                    720
-                )
-            )
-        )
+    val previewableSource = remember {
+        BitmapSourceFactory(
+            BitmapUtils.createImage(1280, 720)
+        ).build(context) as IPreviewableSource
     }
 
-    SourcePreview(streamer, modifier = Modifier.fillMaxSize())
+    SourcePreview(previewableSource, modifier = Modifier.fillMaxSize())
 }

@@ -71,6 +71,7 @@ import kotlinx.coroutines.withContext
  *
  * The [Manifest.permission.CAMERA] permission must be granted before using this view.
  */
+@Deprecated("Use ViewfinderView instead.", ReplaceWith("ViewfinderView"))
 class PreviewView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
 ) : FrameLayout(context, attrs, defStyle) {
@@ -365,7 +366,6 @@ class PreviewView @JvmOverloads constructor(
             defaultScope.launch {
                 try {
                     cameraSource.settings.focusMetering.onTap(
-                        context,
                         PointF(x, y),
                         Rect(
                             this@PreviewView.x.toInt(),

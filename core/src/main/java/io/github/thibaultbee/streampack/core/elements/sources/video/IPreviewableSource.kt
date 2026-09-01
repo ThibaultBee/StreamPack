@@ -15,6 +15,8 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.video
 
+import android.graphics.PointF
+import android.graphics.Rect
 import android.util.Size
 import android.view.Surface
 import android.view.SurfaceHolder
@@ -34,6 +36,62 @@ import kotlinx.coroutines.withContext
  */
 @SubclassOptInRequired(InternalStreamPackApi::class)
 interface IPreviewableSource {
+    enum class ImplementationMode {
+        /**
+         * Based on TextureView
+         */
+        COMPATIBLE,
+
+        /**
+         * Based on SurfaceView
+         */
+        PERFORMANCE
+    }
+
+    data class PreviewConfiguration(
+        val orientationDegrees: Int? = null,
+        val isSourceMirroredHorizontally: Boolean = false,
+        val implementationMode: ImplementationMode? = null,
+    )
+
+    /**
+     * Configuration for the preview surface, such as orientation, implementation mode, and mirror mode.
+     */
+    val previewConfiguration: PreviewConfiguration
+        get() = PreviewConfiguration()
+
+    /**
+     * Whether the video source supports pinch to zoom.
+     */
+    val isPinchToZoomSupported: Boolean
+        get() = false
+
+    /**
+     * Sets the zoom on pinch scale gesture.
+     *
+     * In case [isPinchToZoomSupported] is false, this method should do nothing.
+     *
+     * @param scale the scale factor. Typically, values > 1.0 should zoom in and values between 0.0 and 1.0 should zoom out (dezoom).
+     */
+    suspend fun setZoomOnPinch(scale: Float) {}
+
+    /**
+     * Whether the video source supports tap to focus.
+     */
+    val isTapToFocusSupported: Boolean
+        get() = false
+
+    /**
+     * Sets tap to focus.
+     *
+     * In case [isTapToFocusSupported] is false, this method should do nothing.
+     *
+     * @param point the point to focus on in [fovRect] coordinate system
+     * @param fovRect the field of view rectangle
+     * @param fovRotationDegree the orientation of the field of view
+     */
+    suspend fun setTapToFocus(point: PointF, fovRect: Rect, fovRotationDegree: Int) {}
+
     /**
      * Mutex for the preview.
      * Use it when you have to synchronise access to the preview.

@@ -1,18 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Must be kept in sync with PreviewView -->
+    <!-- Must be kept in sync with ViewfinderView -->
     <attr name="scaleMode" format="enum">
         <enum name="fill" value="0"/>
         <enum name="fit" value="1"/>
     </attr>
 
-    <!-- Must be kept in sync with PreviewView -->
+    <!-- Must be kept in sync with ViewfinderView -->
     <attr name="position" format="enum">
         <enum name="start" value="0"/>
         <enum name="center" value="1"/>
         <enum name="end" value="2"/>
     </attr>
 
+    <declare-styleable name="ViewfinderView">
+        <attr name="isPinchToZoomEnabled" format="boolean" />
+        <attr name="isTapToFocusEnabled" format="boolean" />
+        <attr name="scaleMode"  />
+        <attr name="position" />
+    </declare-styleable>
     <declare-styleable name="PreviewView">
         <attr name="enableZoomOnPinch" format="boolean" />
         <attr name="enableTapToFocus" format="boolean" />

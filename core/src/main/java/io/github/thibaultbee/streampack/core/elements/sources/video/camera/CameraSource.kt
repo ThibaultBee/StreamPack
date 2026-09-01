@@ -19,13 +19,18 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.PointF
+import android.graphics.Rect
 import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.core.elements.sources.video.AbstractPreviewableSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource.ImplementationMode
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraController
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameraManager
@@ -75,6 +80,7 @@ internal class CameraSource(
 
     override val settings by lazy {
         CameraSettings(
+            context,
             coroutineScope,
             characteristics,
             controller
@@ -168,7 +174,7 @@ internal class CameraSource(
 
     @RequiresPermission(Manifest.permission.CAMERA)
     override suspend fun configure(config: VideoSourceConfig) {
-        if (!settings.characteristics.isFpsSupported(config.fps)) {
+        if (!characteristics.isFpsSupported(config.fps)) {
             Logger.w(TAG, "Camera $cameraId does not support ${config.fps} fps")
         }
 
@@ -184,6 +190,41 @@ internal class CameraSource(
         }
     }
 
+    override val isPinchToZoomSupported = true
+
+    override suspend fun setZoomOnPinch(scale: Float) {
+        executeIfCameraPermission {
+            settings.zoom.onPinch(scale)
+        }
+    }
+
+    override val isTapToFocusSupported = true
+
+    @SuppressLint("MissingPermission")
+    override suspend fun setTapToFocus(
+        point: PointF,
+        fovRect: Rect,
+        fovRotationDegree: Int
+    ) {
+        executeIfCameraPermission {
+            settings.focusMetering.onTap(point, fovRect, fovRotationDegree)
+        }
+    }
+
+    override val previewConfiguration by lazy {
+        IPreviewableSource.PreviewConfiguration(
+            orientationDegrees = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION),
+            implementationMode = if (
+                characteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL) ==
+                CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY
+            ) {
+                ImplementationMode.PERFORMANCE
+            } else {
+                null
+            },
+            isSourceMirroredHorizontally = characteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT
+        )
+    }
 
     override fun <T> getPreviewSize(targetSize: Size, targetClass: Class<T>): Size {
         return CameraSizes.getPreviewOutputSize(
