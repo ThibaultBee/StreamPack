@@ -54,6 +54,9 @@ internal fun <T : Comparable<T>> T.coerceIn(min: T, max: T): T {
 internal fun <T : Comparable<T>> T.coerceIn(range: Range<T>) =
     this.coerceIn(range.lower, range.upper)
 
+internal val Range<*>.isEmpty: Boolean
+    get() = upper == lower
+
 internal val PointF.isNormalized: Boolean
     get() = x in 0f..1f && y in 0f..1f
 

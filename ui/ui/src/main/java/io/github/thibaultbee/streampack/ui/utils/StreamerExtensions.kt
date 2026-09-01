@@ -1,4 +1,4 @@
-package io.github.thibaultbee.streampack.ui.views
+package io.github.thibaultbee.streampack.ui.utils
 
 import android.util.Size
 import androidx.camera.viewfinder.CameraViewfinder

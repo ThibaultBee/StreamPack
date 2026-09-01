@@ -28,6 +28,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraException
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
+import io.github.thibaultbee.streampack.core.logger.Logger
 
 /**
  * A [ICameraCaptureSessionCompat] that manages camera API >= 28.
@@ -50,26 +51,32 @@ internal class CameraExecutorCaptureSessionCompat(dispatcherProvider: CameraDisp
     override fun createCaptureSession(
         camera: CameraDevice,
         targets: List<Surface>,
+        sessionParameters: CaptureRequest?,
         callback: CameraCaptureSession.StateCallback
     ) {
         val outputConfigurations = targets.map { OutputConfiguration(it) }
-        createCaptureSessionByOutputConfiguration(camera, outputConfigurations, callback)
+        createCaptureSessionByOutputConfiguration(
+            camera,
+            outputConfigurations,
+            sessionParameters,
+            callback
+        )
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
     override fun createCaptureSessionByOutputConfiguration(
         camera: CameraDevice,
         outputConfigurations: List<OutputConfiguration>,
+        sessionParameters: CaptureRequest?,
         callback: CameraCaptureSession.StateCallback
     ) {
-        val sessionConfig = SessionConfiguration(
-            SessionConfiguration.SESSION_REGULAR,
+        val sessionConfig = buildSessionConfiguration(
             outputConfigurations,
-            executor,
+            sessionParameters,
             callback
         )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            if (!camera.isSessionConfigurationSupported(sessionConfig)) {
+            if (!isSessionConfigurationSupported(camera, sessionConfig)) {
                 throw CameraException(
                     "Session configuration is not supported for camera ${camera.id}"
                 )
@@ -77,6 +84,64 @@ internal class CameraExecutorCaptureSessionCompat(dispatcherProvider: CameraDisp
         }
 
         camera.createCaptureSession(sessionConfig)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    override fun isSessionConfigurationSupported(
+        camera: CameraDevice,
+        outputConfigurations: List<OutputConfiguration>,
+        sessionParameters: CaptureRequest?
+    ): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val sessionConfig = buildSessionConfiguration(
+                outputConfigurations,
+                sessionParameters,
+                NoOpStateCallback
+            )
+            isSessionConfigurationSupported(camera, sessionConfig)
+        } else {
+            true
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun buildSessionConfiguration(
+        outputConfigurations: List<OutputConfiguration>,
+        sessionParameters: CaptureRequest?,
+        callback: CameraCaptureSession.StateCallback
+    ): SessionConfiguration {
+        return SessionConfiguration(
+            SessionConfiguration.SESSION_REGULAR,
+            outputConfigurations,
+            executor,
+            callback
+        ).apply {
+            if (sessionParameters != null) {
+                this.sessionParameters = sessionParameters
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun isSessionConfigurationSupported(
+        camera: CameraDevice,
+        sessionConfig: SessionConfiguration
+    ): Boolean {
+        return try {
+            camera.isSessionConfigurationSupported(sessionConfig)
+        } catch (e: UnsupportedOperationException) {
+            Logger.w(
+                TAG,
+                "isSessionConfigurationSupported is not supported on camera ${camera.id}: ${e.message}"
+            )
+            true
+        } catch (e: IllegalArgumentException) {
+            Logger.w(
+                TAG,
+                "Invalid session configuration for camera ${camera.id}: ${e.message}"
+            )
+            false
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
@@ -100,6 +165,11 @@ internal class CameraExecutorCaptureSessionCompat(dispatcherProvider: CameraDisp
     override fun release() {
         // Potential source of java.util.concurrent.RejectedExecutionException
         //executor.shutdown()
+    }
+
+    private object NoOpStateCallback : CameraCaptureSession.StateCallback() {
+        override fun onConfigured(session: CameraCaptureSession) = Unit
+        override fun onConfigureFailed(session: CameraCaptureSession) = Unit
     }
 
     companion object {

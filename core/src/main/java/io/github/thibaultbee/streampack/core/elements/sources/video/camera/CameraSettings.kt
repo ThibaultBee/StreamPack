@@ -24,6 +24,7 @@ import android.hardware.camera2.CameraMetadata.CONTROL_AF_STATE_ACTIVE_SCAN
 import android.hardware.camera2.CameraMetadata.CONTROL_AF_STATE_FOCUSED_LOCKED
 import android.hardware.camera2.CameraMetadata.CONTROL_AF_STATE_INACTIVE
 import android.hardware.camera2.CameraMetadata.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED
+import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.CaptureResult
 import android.hardware.camera2.TotalCaptureResult
@@ -31,7 +32,6 @@ import android.hardware.camera2.params.ColorSpaceTransform
 import android.hardware.camera2.params.MeteringRectangle
 import android.hardware.camera2.params.RggbChannelVector
 import android.os.Build
-import android.util.Log
 import android.util.Range
 import android.util.Rational
 import androidx.annotation.IntRange
@@ -62,8 +62,6 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.isNormali
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.launchIn
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
 import io.github.thibaultbee.streampack.core.logger.Logger
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -79,7 +77,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.atomic.AtomicLong
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 
 /**
@@ -214,18 +213,8 @@ class CameraSettings internal constructor(
      * @return the total capture result
      */
     @RequiresPermission(Manifest.permission.CAMERA)
-    suspend fun applyRepeatingSessionSync(): TotalCaptureResult {
-        val deferred = CompletableDeferred<TotalCaptureResult>()
-
-        val captureResult = object : CaptureResultListener {
-            override fun onCaptureResult(result: TotalCaptureResult): Boolean {
-                deferred.complete(result)
-                return false
-            }
-        }
-        applyRepeatingSession(captureResult)
-        return deferred.await()
-    }
+    suspend fun applyRepeatingSessionSync(): TotalCaptureResult =
+        cameraController.applyRepeatingSessionSync()
 
     /**
      * Applies settings to the camera repeatedly.
@@ -233,22 +222,8 @@ class CameraSettings internal constructor(
      * @param onCaptureResult the capture result callback. Return `true` to stop the callback.
      */
     @RequiresPermission(Manifest.permission.CAMERA)
-    private suspend fun applyRepeatingSession(onCaptureResult: CaptureResultListener) {
-        val tag = TagBundle.Factory.default.create()
-        val captureCallback = object : CaptureResultListener {
-            override fun onCaptureResult(result: TotalCaptureResult): Boolean {
-                val resultTag = result.request.tag as? TagBundle
-                val keyId = resultTag?.keyId ?: return false
-                if (keyId >= tag.keyId) {
-                    return onCaptureResult.onCaptureResult(result)
-                }
-                return false
-            }
-        }
-
-        cameraController.addCaptureCallbackListener(captureCallback)
-        cameraController.applyRepeatingSession(tag)
-    }
+    private suspend fun applyRepeatingSession(onCaptureResult: CaptureResultListener) =
+        cameraController.applyRepeatingSession(onCaptureResult)
 
     /**
      * Applies settings to the camera repeatedly.
@@ -263,43 +238,6 @@ class CameraSettings internal constructor(
     suspend fun resetAll() {
         cameraController.resetSettings()
         applyRepeatingSession()
-    }
-
-    private class TagBundle(val keyId: Long) {
-        private val tagMap = mutableMapOf<String, Any?>().apply {
-            put(TAG_KEY_ID, keyId)
-        }
-
-        val keys: Set<String>
-            get() = tagMap.keys
-
-        fun setTag(key: String, value: Any?) {
-            tagMap[key] = value
-        }
-
-        companion object {
-            private const val TAG_KEY_ID = "TAG_KEY_ID"
-        }
-
-        /**
-         * Factory for [TagBundle].
-         *
-         * The purpose is to make sure the tag always contains an increasing id.
-         */
-        class Factory private constructor() {
-            /**
-             * Next session id.
-             */
-            private val nextSessionUpdateId = AtomicLong(0)
-
-            fun create(): TagBundle {
-                return TagBundle(nextSessionUpdateId.getAndIncrement())
-            }
-
-            companion object {
-                val default = Factory()
-            }
-        }
     }
 
     class Flash internal constructor(
@@ -1253,6 +1191,13 @@ class CameraSettings internal constructor(
                             deferred.completeExceptionally(IllegalStateException("AF is not in an expected state $afState"))
                         }
                     }
+                }
+
+                override fun onCaptureFailed(failure: CaptureFailure): Boolean {
+                    deferred.completeExceptionally(
+                        CameraException("AF capture failed: reason=${failure.reason}")
+                    )
+                    return true
                 }
             }
             cameraSettings.applyRepeatingSession(captureResult)

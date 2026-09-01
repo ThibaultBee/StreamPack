@@ -21,6 +21,7 @@ import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.TotalCaptureResult
 import android.view.Surface
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraException
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.ICameraCaptureSessionCompat
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSessionCallback
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSurface
@@ -146,15 +147,30 @@ internal class CameraSessionController private constructor(
      * @param cameraDeviceController The [CameraDeviceController] to use.
      * @param outputs The outputs to use. By default it uses the current outputs.
      * @param dynamicRange The dynamic range to use
+     * @param sessionParameters Optional [CaptureRequest] session parameters
      * @return A new [CameraSessionController]
      */
     suspend fun recreate(
         cameraDeviceController: CameraDeviceController,
         outputs: List<CameraSurface>,
         dynamicRange: Long,
+        sessionParameters: CaptureRequest? = null,
     ): CameraSessionController = withContext(coroutineDispatcher) {
         require(outputs.isNotEmpty()) { "At least one output is required" }
         require(outputs.all { it.surface.isValid }) { "All outputs $outputs must be valid but ${outputs.filter { !it.surface.isValid }} is invalid" }
+
+        val surfaces = outputs.map { it.surface }
+        if (!CameraUtils.isSessionConfigurationSupported(
+                cameraDeviceController,
+                surfaces,
+                dynamicRange,
+                sessionParameters
+            )
+        ) {
+            throw CameraException(
+                "Session configuration is not supported for camera ${cameraDeviceController.id}"
+            )
+        }
 
         // Close current session
         close()
@@ -163,8 +179,9 @@ internal class CameraSessionController private constructor(
         val newCaptureSession =
             CameraUtils.createCaptureSession(
                 cameraDeviceController,
-                outputs.map { it.surface },
+                surfaces,
                 dynamicRange,
+                sessionParameters,
                 isClosedFlow
             )
 
@@ -189,6 +206,7 @@ internal class CameraSessionController private constructor(
             sessionCompat: ICameraCaptureSessionCompat,
             outputs: List<CameraSurface>,
             dynamicRange: Long,
+            sessionParameters: CaptureRequest? = null,
             coroutineDispatcher: CoroutineDispatcher
         ): CameraSessionController {
             require(outputs.isNotEmpty()) { "At least one output is required" }
@@ -200,6 +218,7 @@ internal class CameraSessionController private constructor(
                     cameraDeviceController,
                     outputs.map { it.surface },
                     dynamicRange,
+                    sessionParameters,
                     isClosedFlow
                 )
 

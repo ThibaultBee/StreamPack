@@ -16,7 +16,7 @@
         android:layout_height="match_parent"
         android:keepScreenOn="true">
 
-        <io.github.thibaultbee.streampack.ui.views.PreviewView
+        <io.github.thibaultbee.streampack.ui.views.ViewfinderView
             android:id="@+id/preview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -26,7 +26,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:position="center"
-            app:scaleMode="fill" />
+            app:scaleMode="fit" />
 
         <FrameLayout
             android:id="@+id/videoMuteOverlay"

@@ -15,13 +15,14 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera
 
+import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewControllableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 
 @SubclassOptInRequired(InternalStreamPackApi::class)
-interface ICameraSource : IVideoSource, IPreviewableSource {
+interface ICameraSource : IVideoSource, IPreviewableSource, IPreviewControllableSource {
     /**
      * Get/Set current camera id.
      */

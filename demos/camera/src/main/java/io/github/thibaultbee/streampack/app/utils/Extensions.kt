@@ -19,6 +19,7 @@ import android.Manifest
 import android.content.ContentValues
 import android.content.Context
 import android.provider.MediaStore
+import android.util.Log
 import android.util.Range
 import androidx.annotation.RequiresPermission
 import androidx.datastore.preferences.preferencesDataStore
@@ -38,6 +39,10 @@ import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun IWithVideoSource.setNextCameraId(context: Context) {
     val cameras = context.cameraManager.cameras
+    if (cameras.isEmpty()) {
+        Log.e("PreviewFragment", "No camera available")
+        return
+    }
     val videoSource = videoInput.sourceFlow.value
 
     val newCameraId = if (videoSource is ICameraSource) {
