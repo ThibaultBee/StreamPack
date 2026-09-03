@@ -25,6 +25,7 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.source.De
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
@@ -39,10 +40,12 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_VIRTUAL_DISPLAY
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.utils.HandlerThreadExecutor
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
 
+@OptIn(InternalAPI::class)
 internal class MediaProjectionVideoSource(
     private val context: Context,
     override val mediaProjection: MediaProjection,
@@ -170,11 +173,12 @@ internal class MediaProjectionVideoSource(
  * @param mediaProjection The media projection
  * @param overrideRotation The override rotation. If null, the rotation is taken from the device orientation. Use this to force a specific rotation of the media projection surface.
  */
+@OptIn(InternalAPI::class)
 class MediaProjectionVideoSourceFactory(
     private val mediaProjection: MediaProjection,
     @RotationValue private val overrideRotation: Int? = null
 ) :
-    IVideoSourceInternal.Factory {
+    IVideoSource.Factory {
     override suspend fun create(
         context: Context,
         dispatcherProvider: IVideoDispatcherProvider

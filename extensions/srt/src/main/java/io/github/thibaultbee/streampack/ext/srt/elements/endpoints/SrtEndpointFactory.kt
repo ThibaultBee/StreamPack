@@ -20,6 +20,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.Compo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpointWithMetricsFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TsMuxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import io.github.thibaultbee.streampack.ext.srt.elements.endpoints.composites.sinks.SrtSink
 import kotlinx.coroutines.CoroutineDispatcher
 
@@ -31,6 +32,7 @@ import kotlinx.coroutines.CoroutineDispatcher
  * @param serviceInfo The service info to use in the TS muxer. Default to a basic service info.
  * @param coroutineDispatcher The coroutine dispatcher to use in the SRT sink.
  */
+@OptIn(InternalAPI::class)
 fun SrtEndpointFactory(
     serviceInfo: TSServiceInfo = createDefaultTsServiceInfo(),
     coroutineDispatcher: CoroutineDispatcher

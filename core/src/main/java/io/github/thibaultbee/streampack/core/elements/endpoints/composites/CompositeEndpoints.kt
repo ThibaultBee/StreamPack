@@ -18,12 +18,14 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ISinkInternal
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import kotlinx.coroutines.CoroutineDispatcher
 
 /**
  * An [IEndpointInternal] implementation that combines a [IMuxerInternal] and a [ISinkInternal].
  */
 object CompositeEndpoints {
+    @OptIn(InternalAPI::class)
     internal fun createSrtSink(coroutineDispatcher: CoroutineDispatcher): ISinkInternal {
         return try {
             val clazz =

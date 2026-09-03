@@ -22,15 +22,40 @@ import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamab
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 import kotlinx.coroutines.flow.StateFlow
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 
 /**
  * The public interface for video sources.
  */
-interface IVideoSource
+interface IVideoSource {
+    /**
+     * A factory to build an [IVideoSource].
+     */
+    interface Factory {
+        /**
+         * Creates an [IVideoSourceInternal] instance.
+         *
+         * @param context the application context
+         * @return an [IVideoSourceInternal]
+         */
+        @InternalAPI
+        suspend fun create(
+            context: Context,
+            dispatcherProvider: IVideoDispatcherProvider
+        ): IVideoSourceInternal
+
+        /**
+         * Whether the source that will be created by [create] is equal to another source.
+         */
+        @InternalAPI
+        fun isSourceEquals(source: IVideoSourceInternal?): Boolean
+    }
+}
 
 /**
  * The internal interface for video sources.
  */
+@InternalAPI
 interface IVideoSourceInternal : IVideoSource,
     SuspendStreamable, SuspendConfigurable<VideoSourceConfig>, SuspendReleasable {
     /**
@@ -43,26 +68,5 @@ interface IVideoSourceInternal : IVideoSource,
      * Flow of the last streaming state.
      */
     val isStreamingFlow: StateFlow<Boolean>
-
-    /**
-     * A factory to build an [IVideoSourceInternal].
-     */
-    interface Factory {
-        /**
-         * Creates an [IVideoSourceInternal] instance.
-         *
-         * @param context the application context
-         * @return an [IVideoSourceInternal]
-         */
-        suspend fun create(
-            context: Context,
-            dispatcherProvider: IVideoDispatcherProvider
-        ): IVideoSourceInternal
-
-        /**
-         * Whether the source that will be created by [create] is equal to another source.
-         */
-        fun isSourceEquals(source: IVideoSourceInternal?): Boolean
-    }
 }
 

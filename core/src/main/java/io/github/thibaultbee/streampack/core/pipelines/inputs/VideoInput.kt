@@ -20,6 +20,7 @@ import android.graphics.Bitmap
 import android.view.Surface
 import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.elements.interfaces.ISnapshotable
+import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessor
 import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.ISurfaceOutput
 import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.SurfaceOutput
@@ -36,6 +37,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRang
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,6 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * The public interface for the video input.
  * It provides access to the video source, the video processor, and the streaming state.
  */
+@OptIn(InternalAPI::class)
 interface IVideoInput : ISnapshotable {
 
     /**
@@ -80,7 +83,7 @@ interface IVideoInput : ISnapshotable {
      *
      * The previous video source will be released unless its preview is still running.
      */
-    suspend fun setSource(videoSourceFactory: IVideoSourceInternal.Factory)
+    suspend fun setSource(videoSourceFactory: IVideoSource.Factory)
 
     /**
      * Whether the video input has a configuration.
@@ -91,7 +94,7 @@ interface IVideoInput : ISnapshotable {
     /**
      * The video processor for adding effects to the video frames.
      */
-    val processor: ISurfaceProcessorInternal
+    val processor: ISurfaceProcessor
 }
 
 /**
@@ -103,9 +106,10 @@ val IVideoInput.withSource: Boolean
 /**
  * A internal class that manages a video source and a video processor.
  */
+@OptIn(InternalAPI::class)
 internal class VideoInput(
     private val context: Context,
-    private val surfaceProcessorFactory: ISurfaceProcessorInternal.Factory,
+    private val surfaceProcessorFactory: ISurfaceProcessor.Factory,
     private val dispatcherProvider: IVideoDispatcherProvider,
     dynamicRangeProfileHint: DynamicRangeProfile = DynamicRangeProfile.sdr,
     private val onUpdateOutputSurface: suspend () -> List<Triple<SurfaceDescriptor, Boolean, () -> Boolean>>
@@ -155,7 +159,7 @@ internal class VideoInput(
     private val _isStreamingFlow = MutableStateFlow(false)
     override val isStreamingFlow = _isStreamingFlow.asStateFlow()
 
-    override suspend fun setSource(videoSourceFactory: IVideoSourceInternal.Factory) {
+    override suspend fun setSource(videoSourceFactory: IVideoSource.Factory) {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Input is released")
         }

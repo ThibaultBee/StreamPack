@@ -16,7 +16,9 @@
 package io.github.thibaultbee.streampack.core.elements.sources.audio
 
 import java.nio.ByteBuffer
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 
+@InternalAPI
 interface IAudioFrameSourceInternal {
     /**
      * Gets the size of the buffer to allocate.

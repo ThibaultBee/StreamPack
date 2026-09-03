@@ -17,11 +17,13 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites.sink
 
 import android.net.Uri
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.fail
 import org.junit.Test
 
+@OptIn(InternalAPI::class)
 class FileSinkTest : AbstractLocalSinkTest(FileSink(Dispatchers.IO)) {
     @Test
     fun `open not a file test`() = runTest {

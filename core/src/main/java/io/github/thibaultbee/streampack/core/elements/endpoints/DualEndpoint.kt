@@ -21,6 +21,7 @@ import androidx.core.net.toUri
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -37,6 +38,7 @@ import kotlinx.coroutines.sync.withLock
  * @param secondEndpoint the second endpoint
  * @param coroutineDispatcher the coroutine dispatcher
  */
+@OptIn(InternalAPI::class)
 open class DualEndpoint(
     private val mainEndpoint: IEndpointInternal,
     private val secondEndpoint: IEndpointInternal,
@@ -152,10 +154,11 @@ suspend fun DualEndpoint.startStreamSecond(uriString: String) =
 /**
  * A factory to build a [DualEndpoint].
  */
+@OptIn(InternalAPI::class)
 class DualEndpointFactory(
-    private val mainEndpointFactory: IEndpointInternal.Factory,
-    private val secondEndpointFactory: IEndpointInternal.Factory
-) : IEndpointInternal.Factory {
+    private val mainEndpointFactory: IEndpoint.Factory,
+    private val secondEndpointFactory: IEndpoint.Factory
+) : IEndpoint.Factory {
     override fun create(
         context: Context,
         dispatcherProvider: IDispatcherProvider

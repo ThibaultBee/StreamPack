@@ -28,13 +28,14 @@ import android.os.IBinder
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSource
-import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MediaProjectionAudioSourceFactory
-import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IWithAudioSource
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import io.github.thibaultbee.streampack.core.utils.extensions.getMediaProjection
 import io.github.thibaultbee.streampack.services.utils.StreamerFactory
 
@@ -63,6 +64,7 @@ import io.github.thibaultbee.streampack.services.utils.StreamerFactory
  * @param channelDescriptionResourceId A string resource identifier for the user visible description of the notification channel.
  * @param notificationIconResourceId A drawable resource identifier for the user visible icon of the notification channel.
  */
+@OptIn(InternalAPI::class)
 abstract class MediaProjectionService<T : IStreamer>(
     streamerFactory: StreamerFactory<T>,
     notificationId: Int = DEFAULT_NOTIFICATION_ID,
@@ -127,7 +129,7 @@ abstract class MediaProjectionService<T : IStreamer>(
     protected open fun createDefaultVideoSource(
         mediaProjection: MediaProjection,
         extras: Bundle
-    ): IVideoSourceInternal.Factory? {
+    ): IVideoSource.Factory? {
         return MediaProjectionVideoSourceFactory(mediaProjection)
     }
 
@@ -140,7 +142,7 @@ abstract class MediaProjectionService<T : IStreamer>(
      */
     protected abstract fun createDefaultAudioSource(
         mediaProjection: MediaProjection, extras: Bundle
-    ): IAudioSourceInternal.Factory?
+    ): IAudioSource.Factory?
 
     /**
      * Sets the media projection to the streamer.
@@ -175,7 +177,7 @@ abstract class MediaProjectionService<T : IStreamer>(
         }
 
         if (streamer is IWithAudioSource) {
-            val audioSource = streamer.audioInput.sourceFlow?.value
+            val audioSource = streamer.audioInput.sourceFlow.value
             if (audioSource is IMediaProjectionSource) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     streamer.setAudioSource(MediaProjectionAudioSourceFactory(mediaProjection))

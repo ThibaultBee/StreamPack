@@ -17,10 +17,12 @@ package io.github.thibaultbee.streampack.core.elements.sources.video
 
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.utils.time.Timebase
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 
 /**
  * Interface for video source that provides a [Surface] for video stream.
  */
+@InternalAPI
 interface ISurfaceSourceInternal {
     /**
      * Gets the timebase used for the video source.

@@ -29,6 +29,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
 import io.github.thibaultbee.streampack.core.elements.metrics.WithEndpointMetrics
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,6 +40,7 @@ import kotlinx.coroutines.sync.withLock
 /**
  * An [IEndpointInternal] implementation that combines a [IMuxerInternal] and a [ISinkInternal].
  */
+@OptIn(InternalAPI::class)
 open class CompositeEndpoint(
     override val muxer: IMuxerInternal,
     override val sink: ISinkInternal
@@ -132,6 +134,7 @@ open class CompositeEndpoint(
 /**
  * An [IEndpointInternal] implementation of [CompositeEndpoint] with [WithEndpointMetrics].
  */
+@OptIn(InternalAPI::class)
 class CompositeEndpointWithMetrics<T : Any>(
     muxer: IMuxerInternal,
     sink: ISinkWithMetricsInternal<T>
@@ -140,10 +143,11 @@ class CompositeEndpointWithMetrics<T : Any>(
 /**
  * A factory to build a [CompositeEndpoint].
  */
+@OptIn(InternalAPI::class)
 class CompositeEndpointFactory(
     val muxer: IMuxerInternal,
     val sink: ISinkInternal
-) : IEndpointInternal.Factory {
+) : IEndpoint.Factory {
     override fun create(
         context: Context,
         dispatcherProvider: IDispatcherProvider
@@ -155,10 +159,11 @@ class CompositeEndpointFactory(
 /**
  * A factory to build a [CompositeEndpointWithMetrics].
  */
+@OptIn(InternalAPI::class)
 class CompositeEndpointWithMetricsFactory<T : Any>(
     val muxer: IMuxerInternal,
     val sink: ISinkWithMetricsInternal<T>
-) : IEndpointInternal.Factory {
+) : IEndpoint.Factory {
     override fun create(
         context: Context,
         dispatcherProvider: IDispatcherProvider

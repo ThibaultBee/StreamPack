@@ -22,6 +22,7 @@ import androidx.core.net.toUri
 import androidx.test.filters.LargeTest
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.streamer.dual.utils.DualStreamerConfigUtils
@@ -31,6 +32,7 @@ import io.github.thibaultbee.streampack.core.streamers.dual.cameraDualStreamer
 import io.github.thibaultbee.streampack.core.streamers.dual.setConfig
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -39,15 +41,16 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(InternalAPI::class)
 @LargeTest
 @RunWith(Parameterized::class)
 class CameraDualStreamerFileTest(
     private val firstDescriptor: MediaDescriptor,
     private val verifyFirst: Boolean,
-    firstEndpointFactory: IEndpointInternal.Factory?,
+    firstEndpointFactory: IEndpoint.Factory?,
     private val secondDescriptor: MediaDescriptor,
     private val verifySecond: Boolean,
-    secondEndpointFactory: IEndpointInternal.Factory?,
+    secondEndpointFactory: IEndpoint.Factory?,
 ) : DeviceTest() {
     private val streamer by lazy {
         runBlocking {

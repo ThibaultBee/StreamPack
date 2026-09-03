@@ -31,6 +31,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ISinkWithMetricsInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.SinkConfiguration
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import io.github.thibaultbee.streampack.ext.srt.configuration.mediadescriptor.SrtMediaDescriptor
 import io.github.thibaultbee.streampack.ext.srt.elements.endpoints.SrtEndpointMetrics
 import io.github.thibaultbee.streampack.ext.srt.elements.endpoints.SrtRawMetrics
@@ -38,6 +39,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+@OptIn(InternalAPI::class)
 class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSink(),
     ISinkWithMetricsInternal<SrtRawMetrics> {
     override val supportedSinkTypes: List<MediaSinkType> = listOf(MediaSinkType.SRT)

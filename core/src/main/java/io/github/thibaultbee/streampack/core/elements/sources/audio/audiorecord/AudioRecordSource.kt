@@ -23,6 +23,7 @@ import android.media.audiofx.AudioEffect
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordEffect.Companion.isValidUUID
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.AudioRecordEffect.Factory.Companion.getFactoryForEffectType
@@ -31,6 +32,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.type
 import io.github.thibaultbee.streampack.core.elements.utils.time.TimeUtils
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.nio.ByteBuffer
@@ -40,6 +42,7 @@ import java.util.UUID
  * The [AudioRecordSource] class is an implementation of [IAudioSourceInternal] that captures audio
  * from [AudioRecord].
  */
+@OptIn(InternalAPI::class)
 internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSource {
     private var audioRecord: AudioRecord? = null
     private var _minBufferSize: Int? = null
@@ -316,10 +319,10 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
     }
 }
 
-
+@OptIn(InternalAPI::class)
 abstract class AudioRecordSourceFactory(
     protected val effects: Set<UUID>
-) : IAudioSourceInternal.Factory {
+) : IAudioSource.Factory {
     /**
      * Create an [AudioRecordSource] implementation.
      */

@@ -23,7 +23,9 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.MediaContainerTy
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 
+@OptIn(InternalAPI::class)
 class StreamerInfoFactory(
     context: Context,
     private val endpointType: EndpointType,

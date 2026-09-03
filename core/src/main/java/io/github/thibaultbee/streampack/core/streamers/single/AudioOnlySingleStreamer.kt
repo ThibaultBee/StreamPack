@@ -23,6 +23,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
@@ -32,6 +33,7 @@ import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline.AudioInp
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline.AudioInputMode.CALLBACK
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 
 /**
  * Creates a [AudioOnlySingleStreamer] with a default audio source.
@@ -39,14 +41,15 @@ import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
  * @param context the application context
  * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory. If parameter is null, no audio source are set. It can be set later with [AudioOnlySingleStreamer.setAudioSource].
  * @param audioInputMode the audio output mode. By default, it is [StreamerPipeline.AudioInputMode.CALLBACK].
- * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
+
 suspend fun AudioOnlySingleStreamer(
     context: Context,
-    audioSourceFactory: IAudioSourceInternal.Factory = MicrophoneSourceFactory(),
+    audioSourceFactory: IAudioSource.Factory = MicrophoneSourceFactory(),
     audioInputMode: AudioInputMode = CALLBACK,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ): AudioOnlySingleStreamer {
     val streamer = AudioOnlySingleStreamer(
@@ -64,13 +67,13 @@ suspend fun AudioOnlySingleStreamer(
  *
  * @param context the application context
  * @param audioInputMode the audio output mode. By default, it is [StreamerPipeline.AudioInputMode.CALLBACK].
- * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
 class AudioOnlySingleStreamer(
     context: Context,
     audioInputMode: AudioInputMode = CALLBACK,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ) : ISingleStreamer, IAudioSingleStreamer {
     private val streamer = SingleStreamerImpl(
@@ -101,7 +104,7 @@ class AudioOnlySingleStreamer(
     override suspend fun setAudioConfig(audioConfig: AudioConfig) =
         streamer.setAudioConfig(audioConfig)
 
-    override suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory) =
+    override suspend fun setAudioSource(audioSourceFactory: IAudioSource.Factory) =
         streamer.setAudioSource(audioSourceFactory)
 
     override suspend fun open(descriptor: MediaDescriptor) = streamer.open(descriptor)

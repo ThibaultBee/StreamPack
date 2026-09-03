@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.core.elements.sources.video.camera
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 
 interface ICameraSource : IVideoSource, IPreviewableSource {
     /**
@@ -31,4 +32,5 @@ interface ICameraSource : IVideoSource, IPreviewableSource {
     val settings: CameraSettings
 }
 
+@InternalAPI
 interface ICameraSourceInternal : IVideoSourceInternal

@@ -24,6 +24,7 @@ import io.github.komedia.komuxer.flv.tags.script.OnMetadata
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
+import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.CompositeEndpoint.EndpointInfo
@@ -32,6 +33,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.ChannelWithCloseable
 import io.github.thibaultbee.streampack.core.elements.utils.useConsumeEach
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.FlvMuxerInfo
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.FlvTagBuilder
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.close
@@ -49,6 +51,7 @@ import kotlinx.coroutines.withContext
 /**
  * Writes FLV Data to a file or content.
  */
+@OptIn(InternalAPI::class)
 sealed class FlvEndpoint(
     defaultDispatcher: CoroutineDispatcher,
     private val ioDispatcher: CoroutineDispatcher
@@ -204,7 +207,8 @@ class FlvContentEndpoint(
 /**
  * A factory to build a [FlvContentEndpoint].
  */
-class FlvContentEndpointFactory : IEndpointInternal.Factory {
+@OptIn(InternalAPI::class)
+class FlvContentEndpointFactory : IEndpoint.Factory {
     override fun create(
         context: Context,
         dispatcherProvider: IDispatcherProvider
@@ -216,6 +220,7 @@ class FlvContentEndpointFactory : IEndpointInternal.Factory {
 /**
  * Writes FLV Data to a file.
  */
+@OptIn(InternalAPI::class)
 class FlvFileEndpoint(
     defaultDispatcher: CoroutineDispatcher,
     ioDispatcher: CoroutineDispatcher
@@ -229,7 +234,8 @@ class FlvFileEndpoint(
 /**
  * A factory to build a [FlvFileEndpoint].
  */
-class FlvFileEndpointFactory : IEndpointInternal.Factory {
+@OptIn(InternalAPI::class)
+class FlvFileEndpointFactory : IEndpoint.Factory {
     override fun create(
         context: Context,
         dispatcherProvider: IDispatcherProvider

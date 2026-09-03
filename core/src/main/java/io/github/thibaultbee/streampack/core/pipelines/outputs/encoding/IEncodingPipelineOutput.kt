@@ -29,6 +29,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineEventOut
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutput
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import kotlinx.coroutines.flow.StateFlow
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 
 /**
  * An output component for a streamer.
@@ -112,6 +113,7 @@ interface IConfigurableVideoEncodingPipelineOutput : IEncodingPipelineOutput,
 interface IConfigurableAudioVideoEncodingPipelineOutput :
     IConfigurableAudioEncodingPipelineOutput, IConfigurableVideoEncodingPipelineOutput
 
+@InternalAPI
 internal interface IEncodingPipelineOutputInternal : IConfigurableAudioVideoEncodingPipelineOutput,
     IConfigurableAudioPipelineOutputInternal,
     IConfigurableVideoPipelineOutputInternal,

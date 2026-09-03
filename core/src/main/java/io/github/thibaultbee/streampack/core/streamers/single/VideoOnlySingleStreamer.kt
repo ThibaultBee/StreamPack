@@ -27,7 +27,9 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointF
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.processing.video.DefaultSurfaceProcessorFactory
+import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessor
 import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
@@ -39,25 +41,26 @@ import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
-
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 
 /**
  * Creates a [VideoOnlySingleStreamer] with the camera as video source and no audio source.
  *
  * @param context the application context
  * @param cameraId the camera id to use. By default, it is the default camera.
- * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
- * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param surfaceProcessorFactory the [ISurfaceProcessor.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
  * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
+
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun cameraVideoOnlySingleStreamer(
     context: Context,
     cameraId: String = context.defaultCameraId,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
-    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
+    surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ): VideoOnlySingleStreamer {
     val streamer = VideoOnlySingleStreamer(
@@ -76,17 +79,18 @@ suspend fun cameraVideoOnlySingleStreamer(
  *
  * @param context the application context
  * @param mediaProjection the media projection. It can be obtained with [MediaProjectionManager.getMediaProjection]. Don't forget to call [MediaProjection.stop] when you are done.
- * @param endpointFactory the [IEndpointInternal.Factory] implementation
+ * @param endpointFactory the [IEndpoint.Factory] implementation
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
- * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param surfaceProcessorFactory the [ISurfaceProcessor.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
  * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
+
 suspend fun videoMediaProjectionVideoOnlySingleStreamer(
     context: Context,
     mediaProjection: MediaProjection,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
-    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
+    surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ): VideoOnlySingleStreamer {
     val streamer = VideoOnlySingleStreamer(
@@ -105,17 +109,18 @@ suspend fun videoMediaProjectionVideoOnlySingleStreamer(
  *
  * @param context the application context
  * @param videoSourceFactory the video source factory. If parameter is null, no audio source are set. It can be set later with [VideoOnlySingleStreamer.setVideoSource].
- * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
- * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param surfaceProcessorFactory the [ISurfaceProcessor.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
  * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
+
 suspend fun VideoOnlySingleStreamer(
     context: Context,
-    videoSourceFactory: IVideoSourceInternal.Factory,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    videoSourceFactory: IVideoSource.Factory,
+    endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
-    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
+    surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ): VideoOnlySingleStreamer {
     val streamer = VideoOnlySingleStreamer(
@@ -133,17 +138,17 @@ suspend fun VideoOnlySingleStreamer(
  * A [ISingleStreamer] implementation for video only (without audio).
  *
  * @param context the application context
- * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
- * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
- * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param surfaceProcessorFactory the [ISurfaceProcessor.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param surfaceProcessorFactory the [ISurfaceProcessor.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
  * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
 class VideoOnlySingleStreamer(
     context: Context,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
-    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
+    surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ) : ISingleStreamer, IVideoSingleStreamer {
     private val streamer = SingleStreamerImpl(

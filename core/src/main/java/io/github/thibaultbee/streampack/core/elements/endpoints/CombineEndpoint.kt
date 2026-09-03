@@ -24,6 +24,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.intersect
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.utils.MultiThrowable
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -43,6 +44,7 @@ import kotlinx.coroutines.launch
  * @param endpoints Endpoints to combine
  * @param coroutineDispatcher Coroutine dispatcher to use for frame writing
  */
+@OptIn(InternalAPI::class)
 fun CombineEndpoint(vararg endpoints: IEndpointInternal, coroutineDispatcher: CoroutineDispatcher) =
     CombineEndpoint(endpoints.toList(), coroutineDispatcher)
 
@@ -59,6 +61,7 @@ fun CombineEndpoint(vararg endpoints: IEndpointInternal, coroutineDispatcher: Co
  * @param endpointInternals List of endpoints to combine
  * @param coroutineDispatcher Coroutine dispatcher to use for frame writing
  */
+@OptIn(InternalAPI::class)
 open class CombineEndpoint(
     protected val endpointInternals: List<IEndpointInternal>,
     coroutineDispatcher: CoroutineDispatcher
@@ -282,16 +285,18 @@ open class CombineEndpoint(
 }
 
 /**
- * A factory to build a [CombineEndpoint] from a varargs of [IEndpointInternal.Factory].
+ * A factory to build a [CombineEndpoint] from a varargs of [IEndpoint.Factory].
  */
-fun CombineEndpointFactory(vararg endpointFactory: IEndpointInternal.Factory) =
+@OptIn(InternalAPI::class)
+fun CombineEndpointFactory(vararg endpointFactory: IEndpoint.Factory) =
     CombineEndpointFactory(endpointFactory.toList())
 
 /**
- * A factory to build a [CombineEndpoint] from a list of [IEndpointInternal.Factory].
+ * A factory to build a [CombineEndpoint] from a list of [IEndpoint.Factory].
  */
-class CombineEndpointFactory(private val endpointFactory: List<IEndpointInternal.Factory>) :
-    IEndpointInternal.Factory {
+@OptIn(InternalAPI::class)
+class CombineEndpointFactory(private val endpointFactory: List<IEndpoint.Factory>) :
+    IEndpoint.Factory {
     override fun create(
         context: Context,
         dispatcherProvider: IDispatcherProvider

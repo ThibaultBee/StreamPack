@@ -25,6 +25,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpointDummyFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpointFactory
+import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
@@ -36,6 +37,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineEventOut
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.pipelines.outputs.releaseBlocking
 import io.github.thibaultbee.streampack.core.utils.FakeRawFrame
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -54,6 +56,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.random.Random
 
+@OptIn(InternalAPI::class)
 class EncodingPipelineOutputTest {
     private val context: Context = InstrumentationRegistry.getInstrumentation().context
     private lateinit var output: EncodingPipelineOutput
@@ -72,7 +75,7 @@ class EncodingPipelineOutputTest {
     }
 
     private fun createOutput(
-        endpointFactory: IEndpointInternal.Factory,
+        endpointFactory: IEndpoint.Factory,
         withAudio: Boolean = true,
         withVideo: Boolean = true,
     ): EncodingPipelineOutput {

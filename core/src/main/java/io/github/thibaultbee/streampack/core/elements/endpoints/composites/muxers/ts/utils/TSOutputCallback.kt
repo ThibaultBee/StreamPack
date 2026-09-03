@@ -17,7 +17,9 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxe
 
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.SrtPacket
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 
+@OptIn(InternalAPI::class)
 open class TSOutputCallback(var listener: IMuxerInternal.IMuxerListener? = null) {
     protected fun writePacket(packet: SrtPacket) {
         packet.buffer.rewind()

@@ -3,6 +3,7 @@ package io.github.thibaultbee.streampack.core.elements.endpoints.composites.sink
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 
 /**
  * Abstract class to write data to a sink
@@ -10,6 +11,7 @@ import io.github.thibaultbee.streampack.core.logger.Logger
  *
  * Use [openImpl] to implement the opening of the sink.
  */
+@OptIn(InternalAPI::class)
 abstract class AbstractSink : ISinkInternal {
     abstract val supportedSinkTypes: List<MediaSinkType>
 

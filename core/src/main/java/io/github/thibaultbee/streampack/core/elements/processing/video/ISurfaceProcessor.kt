@@ -23,6 +23,7 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.outputs.I
 import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRangeProfile
 import io.github.thibaultbee.streampack.core.elements.utils.time.Timebase
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 
 interface ISurfaceProcessor {
     /**
@@ -30,6 +31,18 @@ interface ISurfaceProcessor {
      * The video stream will be replaced by a black screen.
      */
     var isMuted: Boolean
+
+    /**
+     * Factory interface for creating instances of [ISurfaceProcessor].
+     */
+    interface Factory {
+        @InternalAPI
+        fun create(
+            context: Context,
+            dynamicRangeProfile: DynamicRangeProfile,
+            dispatcherProvider: IVideoDispatcherProvider
+        ): ISurfaceProcessorInternal
+    }
 }
 
 /**
@@ -40,6 +53,7 @@ interface ISurfaceProcessor {
  *
  * You can create your own implementation of this interface to handle custom effects or processing.
  */
+@InternalAPI
 interface ISurfaceProcessorInternal : ISurfaceProcessor, Releasable {
     fun createInputSurface(surfaceSize: Size, timebase: Timebase): Surface
 
@@ -55,14 +69,4 @@ interface ISurfaceProcessorInternal : ISurfaceProcessor, Releasable {
 
     fun removeAllOutputSurfaces()
 
-    /**
-     * Factory interface for creating instances of [ISurfaceProcessorInternal].
-     */
-    interface Factory {
-        fun create(
-            context: Context,
-            dynamicRangeProfile: DynamicRangeProfile,
-            dispatcherProvider: IVideoDispatcherProvider
-        ): ISurfaceProcessorInternal
-    }
 }

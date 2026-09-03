@@ -25,6 +25,7 @@ import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreame
 import io.github.thibaultbee.streampack.core.streamers.single.AudioOnlySingleStreamer
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -32,6 +33,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
+@OptIn(InternalAPI::class)
 @RunWith(Parameterized::class)
 class AudioOnlySingleStreamerStateTest(private val descriptor: MediaDescriptor) :
     DeviceTest(withCamera = false) {

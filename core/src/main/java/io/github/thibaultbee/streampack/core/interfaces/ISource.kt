@@ -30,6 +30,10 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.Camer
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
+
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 
 /**
  * An audio single Streamer
@@ -45,7 +49,7 @@ interface IWithAudioSource {
      *
      * @param audioSourceFactory The new audio source factory.
      */
-    suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory) {
+    suspend fun setAudioSource(audioSourceFactory: IAudioSource.Factory) {
         audioInput.setSource(audioSourceFactory)
     }
 }
@@ -73,7 +77,7 @@ interface IWithVideoSource {
      *
      * The previous video source will be released unless its preview is still running.
      */
-    suspend fun setVideoSource(videoSourceFactory: IVideoSourceInternal.Factory) {
+    suspend fun setVideoSource(videoSourceFactory: IVideoSource.Factory) {
         videoInput.setSource(videoSourceFactory)
     }
 }
@@ -85,6 +89,7 @@ interface IWithVideoSource {
  *
  * @param cameraId the camera id
  */
+@OptIn(InternalAPI::class)
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun IWithVideoSource.setCameraId(cameraId: String) {
     setVideoSource(CameraSourceFactory(cameraId))
@@ -97,6 +102,7 @@ suspend fun IWithVideoSource.setCameraId(cameraId: String) {
  *
  * @param bitmap the [Bitmap] to stream
  */
+@OptIn(InternalAPI::class)
 suspend fun IWithVideoSource.setBitmap(bitmap: Bitmap) {
     setVideoSource(BitmapSourceFactory(bitmap))
 }

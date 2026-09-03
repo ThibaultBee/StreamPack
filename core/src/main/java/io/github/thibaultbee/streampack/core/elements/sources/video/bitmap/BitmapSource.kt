@@ -23,10 +23,12 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.source.De
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.AbstractPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.time.Timebase
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.concurrent.Executors
@@ -37,6 +39,7 @@ import java.util.concurrent.TimeUnit
  * Video source that streams a [Bitmap].
  */
 // TODO: move to coroutines instead of ExecutorService
+@OptIn(InternalAPI::class)
 internal class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSource(),
     IVideoSourceInternal,
     ISurfaceSourceInternal,
@@ -168,7 +171,8 @@ internal class BitmapSource(override val bitmap: Bitmap) : AbstractPreviewableSo
  *
  * @param bitmap the [Bitmap] to stream.
  */
-class BitmapSourceFactory(private val bitmap: Bitmap) : IVideoSourceInternal.Factory {
+@OptIn(InternalAPI::class)
+class BitmapSourceFactory(private val bitmap: Bitmap) : IVideoSource.Factory {
     override suspend fun create(
         context: Context,
         dispatcherProvider: IVideoDispatcherProvider

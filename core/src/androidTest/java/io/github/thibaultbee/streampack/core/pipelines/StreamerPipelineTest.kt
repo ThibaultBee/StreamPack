@@ -24,7 +24,9 @@ import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.sources.StubAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.StubVideoSurfaceSource
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.StubAudioAsyncPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.StubAudioSyncConfigurableEncodingPipelineOutputInternal
@@ -32,6 +34,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.StubAudioSyncVide
 import io.github.thibaultbee.streampack.core.pipelines.outputs.StubAudioSyncVideoSurfacePipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.StubVideoSurfaceConfigurableEncodingPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.StubVideoSurfacePipelineOutput
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -40,6 +43,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 
+@OptIn(InternalAPI::class)
 class StreamerPipelineTest {
     private val context = InstrumentationRegistry.getInstrumentation().context
     private lateinit var streamerPipeline: StreamerPipeline
@@ -55,8 +59,8 @@ class StreamerPipelineTest {
 
     private suspend fun buildStreamerPipeline(
         context: Context,
-        audioSource: IAudioSourceInternal.Factory?,
-        videoSource: IVideoSourceInternal.Factory?,
+        audioSource: IAudioSource.Factory?,
+        videoSource: IVideoSource.Factory?,
         audioInputMode: StreamerPipeline.AudioInputMode = StreamerPipeline.AudioInputMode.PUSH
     ): StreamerPipeline {
         val pipeline = StreamerPipeline(

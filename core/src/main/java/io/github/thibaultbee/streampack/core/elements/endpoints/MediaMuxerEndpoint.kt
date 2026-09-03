@@ -28,6 +28,7 @@ import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,6 +41,7 @@ import java.security.InvalidParameterException
 /**
  * An [IEndpointInternal] implementation of the [MediaMuxer].
  */
+@OptIn(InternalAPI::class)
 class MediaMuxerEndpoint(
     private val context: Context,
     private val ioDispatcher: CoroutineDispatcher
@@ -491,7 +493,9 @@ class MediaMuxerEndpoint(
 /**
  * Factory for [MediaMuxerEndpoint].
  */
-class MediaMuxerEndpointFactory : IEndpointInternal.Factory {
+@OptIn(InternalAPI::class)
+class MediaMuxerEndpointFactory :
+    IEndpoint.Factory {
     override fun create(
         context: Context, dispatcherProvider: IDispatcherProvider
     ): IEndpointInternal {

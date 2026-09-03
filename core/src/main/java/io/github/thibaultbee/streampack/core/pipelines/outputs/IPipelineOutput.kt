@@ -29,6 +29,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 
 /**
  * An output component for a streamer.
@@ -54,6 +55,7 @@ val IPipelineOutput.isStreaming: Boolean
 /**
  * An internal output component for a pipeline.
  */
+@InternalAPI
 interface IPipelineEventOutputInternal : IPipelineOutput {
     /**
      * A listener for audio/video stream events.
@@ -99,6 +101,7 @@ interface IConfigurableAudioPipelineOutput {
 /**
  * A configurable audio internal output component for a pipeline.
  */
+@InternalAPI
 interface IConfigurableAudioPipelineOutputInternal : IConfigurableAudioPipelineOutput {
     /**
      * Audio configuration listener.
@@ -131,6 +134,7 @@ interface IConfigurableVideoPipelineOutput {
 /**
  * A configurable video internal output component for a pipeline.
  */
+@InternalAPI
 interface IConfigurableVideoPipelineOutputInternal : IConfigurableVideoPipelineOutput {
     /**
      * Video configuration listener.
@@ -170,6 +174,7 @@ data class SurfaceDescriptor(
 /**
  * An internal audio output component for a pipeline.
  */
+@InternalAPI
 sealed interface IVideoPipelineOutputInternal : IPipelineOutput {
     /**
      * The target rotation in [Surface] rotation ([Surface.ROTATION_0], ...)
@@ -181,6 +186,7 @@ sealed interface IVideoPipelineOutputInternal : IPipelineOutput {
 /**
  * An internal video output component for a pipeline.
  */
+@InternalAPI
 interface IVideoSurfacePipelineOutputInternal : IVideoPipelineOutputInternal, IWithVideoRotation {
     /**
      * The [Surface] flow to render video.
@@ -193,6 +199,7 @@ interface IVideoSurfacePipelineOutputInternal : IVideoPipelineOutputInternal, IW
  * An internal video output component for a pipeline.
  * The pipeline is responsible for pulling video [Frame] from the user.
  */
+@InternalAPI
 interface IVideoCallbackPipelineOutputInternal : IVideoPipelineOutputInternal {
     /**
      * The video [Frame] listener.
@@ -204,6 +211,7 @@ interface IVideoCallbackPipelineOutputInternal : IVideoPipelineOutputInternal {
  * An internal video output component for a pipeline.
  * The provider is responsible for pushing video [RawFrame] to the pipeline.
  */
+@InternalAPI
 interface IVideoSyncPipelineOutputInternal : IVideoPipelineOutputInternal {
     /**
      * Queues a video [RawFrame] to be encoded.
@@ -225,12 +233,14 @@ interface IVideoSyncPipelineOutputInternal : IVideoPipelineOutputInternal {
 /**
  * An internal audio output component for a pipeline.
  */
+@InternalAPI
 sealed interface IAudioPipelineOutputInternal : IPipelineOutput
 
 /**
  * An internal audio output component for a pipeline.
  * The provider is responsible for pushing audio [RawFrame] to the pipeline.
  */
+@InternalAPI
 interface IAudioSyncPipelineOutputInternal : IAudioPipelineOutputInternal {
     /**
      * Queues an audio [RawFrame] to be encoded.
@@ -254,6 +264,7 @@ interface IAudioSyncPipelineOutputInternal : IAudioPipelineOutputInternal {
  * An internal audio output component for a pipeline.
  * The pipeline is responsible for pulling audio [Frame] from the user.
  */
+@InternalAPI
 interface IAudioCallbackPipelineOutputInternal : IAudioPipelineOutputInternal {
     /**
      * The audio [Frame] listener.

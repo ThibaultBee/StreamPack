@@ -38,6 +38,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.ChannelWithCloseable
 import io.github.thibaultbee.streampack.core.elements.utils.useConsumeEach
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
+import io.github.thibaultbee.streampack.core.utils.InternalAPI
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.FlvMuxerInfo
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.FlvTagBuilder
 import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils.close
@@ -63,7 +64,7 @@ import kotlin.concurrent.atomics.ExperimentalAtomicApi
 /**
  * An endpoint that send frame to an RTMP server.
  */
-@OptIn(ExperimentalAtomicApi::class)
+@OptIn(ExperimentalAtomicApi::class, InternalAPI::class)
 class RtmpEndpoint internal constructor(
     defaultDispatcher: CoroutineDispatcher, val ioDispatcher: CoroutineDispatcher
 ) : IEndpointInternal, WithEndpointMetrics<RtmpRawMetrics> {
@@ -312,7 +313,8 @@ class RtmpEndpoint internal constructor(
 /**
  * A factory to build a [RtmpEndpoint].
  */
-class RtmpEndpointFactory : IEndpointInternal.Factory {
+@OptIn(InternalAPI::class)
+class RtmpEndpointFactory : IEndpoint.Factory {
     override fun create(
         context: Context, dispatcherProvider: IDispatcherProvider
     ): IEndpointInternal = RtmpEndpoint(dispatcherProvider.default, dispatcherProvider.io)
