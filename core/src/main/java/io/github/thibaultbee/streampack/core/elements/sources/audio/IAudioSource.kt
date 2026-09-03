@@ -20,26 +20,14 @@ import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendConfigurable
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamable
 import kotlinx.coroutines.flow.StateFlow
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 
 /**
  * The public interface for audio sources.
  */
-interface IAudioSource
-
-/**
- * The internal interface for audio sources.
- *
- * This interface extends [IAudioSource] and adds additional functionality for streaming and configuration.
- */
-interface IAudioSourceInternal : IAudioSource, IAudioFrameSourceInternal, SuspendStreamable,
-    SuspendConfigurable<AudioSourceConfig>, Releasable {
+interface IAudioSource {
     /**
-     * Flow of the last streaming state.
-     */
-    val isStreamingFlow: StateFlow<Boolean>
-
-    /**
-     * A factory to build an [IAudioSourceInternal].
+     * A factory to build an [IAudioSource].
      */
     interface Factory {
         /**
@@ -47,11 +35,27 @@ interface IAudioSourceInternal : IAudioSource, IAudioFrameSourceInternal, Suspen
          *
          * @return an [IAudioSourceInternal]
          */
+        @InternalStreamPackApi
         suspend fun create(context: Context): IAudioSourceInternal
 
         /**
          * Whether the source that will be created by [create] is equal to another source.
          */
+        @InternalStreamPackApi
         fun isSourceEquals(source: IAudioSourceInternal?): Boolean
     }
+}
+
+/**
+ * The internal interface for audio sources.
+ *
+ * This interface extends [IAudioSource] and adds additional functionality for streaming and configuration.
+ */
+@InternalStreamPackApi
+interface IAudioSourceInternal : IAudioSource, IAudioFrameSourceInternal, SuspendStreamable,
+    SuspendConfigurable<AudioSourceConfig>, Releasable {
+    /**
+     * Flow of the last streaming state.
+     */
+    val isStreamingFlow: StateFlow<Boolean>
 }

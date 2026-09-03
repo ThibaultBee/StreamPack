@@ -6,15 +6,18 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.source.De
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.ISurfaceSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoFrameSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.time.Timebase
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.nio.ByteBuffer
 
+@OptIn(InternalStreamPackApi::class)
 class StubVideoSurfaceSource(override val timebase: Timebase = Timebase.REALTIME) :
     StubVideoSource(),
     ISurfaceSourceInternal {
@@ -29,7 +32,7 @@ class StubVideoSurfaceSource(override val timebase: Timebase = Timebase.REALTIME
         outputSurface = null
     }
 
-    class Factory(val timebase: Timebase = Timebase.REALTIME) : IVideoSourceInternal.Factory {
+    class Factory(val timebase: Timebase = Timebase.REALTIME) : IVideoSource.Factory {
         override suspend fun create(
             context: Context,
             dispatcherProvider: IVideoDispatcherProvider
@@ -43,12 +46,13 @@ class StubVideoSurfaceSource(override val timebase: Timebase = Timebase.REALTIME
     }
 }
 
+@OptIn(InternalStreamPackApi::class)
 class StubVideoFrameSource : StubVideoSource(), IVideoFrameSourceInternal {
     override fun getVideoFrame(buffer: ByteBuffer): Long {
         return 0L
     }
 
-    class Factory : IVideoSourceInternal.Factory {
+    class Factory : IVideoSource.Factory {
         override suspend fun create(
             context: Context,
             dispatcherProvider: IVideoDispatcherProvider
@@ -62,6 +66,7 @@ class StubVideoFrameSource : StubVideoSource(), IVideoFrameSourceInternal {
     }
 }
 
+@OptIn(InternalStreamPackApi::class)
 abstract class StubVideoSource : IVideoSourceInternal {
     override val infoProviderFlow: StateFlow<ISourceInfoProvider> =
         MutableStateFlow(DefaultSourceInfoProvider())

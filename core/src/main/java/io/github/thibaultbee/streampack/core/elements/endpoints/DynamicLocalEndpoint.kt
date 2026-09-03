@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.core.elements.endpoints
 import android.content.Context
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.CoroutineDispatcher
 
 /**
@@ -42,7 +43,8 @@ class DynamicLocalEndpoint(
     }
 }
 
-class DynamicLocalEndpointFactory : IEndpointInternal.Factory {
+@OptIn(InternalStreamPackApi::class)
+class DynamicLocalEndpointFactory : IEndpoint.Factory {
     override fun create(
         context: Context,
         dispatcherProvider: IDispatcherProvider

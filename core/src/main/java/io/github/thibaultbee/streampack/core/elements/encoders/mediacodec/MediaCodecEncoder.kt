@@ -35,6 +35,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.put
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.removePrefixes
 import io.github.thibaultbee.streampack.core.elements.utils.pool.FramePool
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -51,6 +52,7 @@ import kotlin.math.min
  *
  * @param encoderConfig the encoder configuration
  */
+@OptIn(InternalStreamPackApi::class)
 internal class MediaCodecEncoder
 internal constructor(
     private val encoderConfig: EncoderConfig<*>,

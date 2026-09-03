@@ -18,6 +18,9 @@ package io.github.thibaultbee.streampack.core.elements.sources.video.bitmap
 import android.graphics.Bitmap
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
+
+@SubclassOptInRequired(InternalStreamPackApi::class)
 interface IBitmapSource : IPreviewableSource {
     /**
      * Gets a bitmap to be displayed.

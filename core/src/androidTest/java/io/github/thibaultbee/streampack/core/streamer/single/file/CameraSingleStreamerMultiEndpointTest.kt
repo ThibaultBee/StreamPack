@@ -30,6 +30,7 @@ import io.github.thibaultbee.streampack.core.streamers.single.cameraSingleStream
 import io.github.thibaultbee.streampack.core.streamers.single.setConfig
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -39,6 +40,7 @@ import kotlin.time.Duration.Companion.milliseconds
 /**
  * Test [cameraSingleStreamer] with multiple endpoint.
  */
+@OptIn(InternalStreamPackApi::class)
 @LargeTest
 class CameraSingleStreamerMultiEndpointTest : DeviceTest() {
     private val streamer by lazy { runBlocking { cameraSingleStreamer(context) } }

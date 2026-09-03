@@ -24,7 +24,9 @@ import io.github.thibaultbee.streampack.core.elements.utils.time.TimeUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isVideo
 import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 
+@OptIn(InternalStreamPackApi::class)
 class Pes(
     byteBufferPool: ByteBufferPool,
     muxerListener: IMuxerInternal.IMuxerListener? = null,

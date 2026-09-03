@@ -25,7 +25,9 @@ import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendReleasab
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamable
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.flow.StateFlow
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 
+@InternalStreamPackApi
 interface IEndpointInternal : IEndpoint, SuspendStreamable,
     SuspendCloseable, SuspendReleasable {
 
@@ -82,28 +84,30 @@ interface IEndpointInternal : IEndpoint, SuspendStreamable,
         close()
     }
 
+}
+
+interface IEndpoint {
     /**
-     * A factory to build an [IEndpointInternal].
+     * A factory to build an [IEndpoint].
      */
     interface Factory {
         /**
-         * Creates an [IEndpointInternal] instance.
+         * Creates an [IEndpoint] instance.
          *
          * The endpoint should use the [dispatcherProvider] to get the correct dispatcher
          * for processing frames.
          *
          * @param context the application context
          * @param dispatcherProvider the [IDispatcherProvider] to use
-         * @return an [IEndpointInternal]
+         * @return an [IEndpoint]
          */
+        @InternalStreamPackApi
         fun create(
             context: Context,
             dispatcherProvider: IDispatcherProvider
         ): IEndpointInternal
     }
-}
 
-interface IEndpoint {
     /**
      * Whether if the endpoint is opened.
      * For example, if the file is opened for [FileSink].

@@ -24,10 +24,9 @@ import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.processing.video.DefaultSurfaceProcessorFactory
-import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal
-import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessor
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
@@ -36,19 +35,20 @@ import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
-import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.CameraStreamerConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 import io.github.thibaultbee.streampack.core.streamers.infos.StreamerConfigurationInfo
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /**
@@ -58,18 +58,19 @@ import kotlinx.coroutines.launch
  * @param withAudio `true` to capture audio. It can't be changed after instantiation.
  * @param withVideo `true` to capture video. It can't be changed after instantiation.
  * @param audioInputMode the audio output mode. By default, it is [StreamerPipeline.AudioInputMode.CALLBACK]. Use [StreamerPipeline.AudioInputMode.PUSH] only to get processor (incl. vumeter) running outside a stream
- * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
- * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param surfaceProcessorFactory the [ISurfaceProcessor.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
  */
+@OptIn(InternalStreamPackApi::class)
 internal class SingleStreamerImpl(
     private val context: Context,
     withAudio: Boolean,
     withVideo: Boolean,
     audioInputMode: StreamerPipeline.AudioInputMode = StreamerPipeline.AudioInputMode.CALLBACK,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
-    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
+    surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider(),
 ) : ISingleStreamer, IAudioSingleStreamer, IVideoSingleStreamer {
     private val coroutineScope: CoroutineScope = CoroutineScope(dispatcherProvider.default)
@@ -119,7 +120,7 @@ internal class SingleStreamerImpl(
     override val audioEncoder: IEncoder?
         get() = pipelineOutput.audioEncoder
 
-    override suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory) {
+    override suspend fun setAudioSource(audioSourceFactory: IAudioSource.Factory) {
         initJob.join()
         pipeline.setAudioSource(audioSourceFactory)
     }

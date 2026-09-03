@@ -33,8 +33,10 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.utils.time.TimeUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isAudio
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isVideo
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import java.nio.ByteBuffer
 
+@OptIn(InternalStreamPackApi::class)
 class Mp4Muxer(
     override var listener: IMuxerInternal.IMuxerListener? = null,
     private val timescale: Int = DEFAULT_TIMESCALE,

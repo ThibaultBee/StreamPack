@@ -19,8 +19,10 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.CRC32
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.put
 import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import java.nio.ByteBuffer
 
+@OptIn(InternalStreamPackApi::class)
 open class Psi(
     byteBufferPool: ByteBufferPool,
     listener: IMuxerInternal.IMuxerListener? = null,

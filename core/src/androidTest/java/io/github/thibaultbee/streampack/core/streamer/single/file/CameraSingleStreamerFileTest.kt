@@ -22,7 +22,7 @@ import androidx.core.net.toUri
 import androidx.test.filters.LargeTest
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.MediaDescriptor
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
-import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
 import io.github.thibaultbee.streampack.core.streamer.single.utils.SingleStreamerConfigUtils
 import io.github.thibaultbee.streampack.core.streamer.utils.StreamerUtils
@@ -31,6 +31,7 @@ import io.github.thibaultbee.streampack.core.streamers.single.cameraSingleStream
 import io.github.thibaultbee.streampack.core.streamers.single.setConfig
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -39,12 +40,13 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(InternalStreamPackApi::class)
 @LargeTest
 @RunWith(Parameterized::class)
 class CameraSingleStreamerFileTest(
     private val descriptor: MediaDescriptor,
     private val verify: Boolean,
-    endpointFactory: IEndpointInternal.Factory?
+    endpointFactory: IEndpoint.Factory?
 ) : DeviceTest() {
     private val streamer by lazy {
         runBlocking {

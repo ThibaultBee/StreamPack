@@ -22,14 +22,15 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.TextureView
 import androidx.annotation.RequiresPermission
-import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.BitmapSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 
 /**
  * An audio single Streamer
@@ -45,7 +46,7 @@ interface IWithAudioSource {
      *
      * @param audioSourceFactory The new audio source factory.
      */
-    suspend fun setAudioSource(audioSourceFactory: IAudioSourceInternal.Factory) {
+    suspend fun setAudioSource(audioSourceFactory: IAudioSource.Factory) {
         audioInput.setSource(audioSourceFactory)
     }
 }
@@ -73,7 +74,7 @@ interface IWithVideoSource {
      *
      * The previous video source will be released unless its preview is still running.
      */
-    suspend fun setVideoSource(videoSourceFactory: IVideoSourceInternal.Factory) {
+    suspend fun setVideoSource(videoSourceFactory: IVideoSource.Factory) {
         videoInput.setSource(videoSourceFactory)
     }
 }
@@ -85,6 +86,7 @@ interface IWithVideoSource {
  *
  * @param cameraId the camera id
  */
+@OptIn(InternalStreamPackApi::class)
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun IWithVideoSource.setCameraId(cameraId: String) {
     setVideoSource(CameraSourceFactory(cameraId))
@@ -97,6 +99,7 @@ suspend fun IWithVideoSource.setCameraId(cameraId: String) {
  *
  * @param bitmap the [Bitmap] to stream
  */
+@OptIn(InternalStreamPackApi::class)
 suspend fun IWithVideoSource.setBitmap(bitmap: Bitmap) {
     setVideoSource(BitmapSourceFactory(bitmap))
 }

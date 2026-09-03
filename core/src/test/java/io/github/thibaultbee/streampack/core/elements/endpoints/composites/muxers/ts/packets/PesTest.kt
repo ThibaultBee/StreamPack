@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.packets
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
@@ -29,6 +30,7 @@ import org.junit.Test
 import java.io.File
 import java.nio.ByteBuffer
 
+@OptIn(InternalStreamPackApi::class)
 class PesTest {
     /**
      * Read all files with prefix "frame" and suffix ".ts" from specified directory

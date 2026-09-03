@@ -23,7 +23,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.lifecycleScope
-import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MediaProjectionAudioSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
@@ -32,6 +32,7 @@ import io.github.thibaultbee.streampack.core.streamers.orientation.IRotationProv
 import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.audioVideoMediaProjectionSingleStreamer
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import io.github.thibaultbee.streampack.screenrecorder.R
 import io.github.thibaultbee.streampack.screenrecorder.models.Actions
 import io.github.thibaultbee.streampack.services.MediaProjectionService
@@ -62,10 +63,11 @@ class DemoMediaProjectionService : MediaProjectionService<ISingleStreamer>(
     /**
      * Override to use another audio source.
      */
+    @OptIn(InternalStreamPackApi::class)
     override fun createDefaultAudioSource(
         mediaProjection: MediaProjection,
         extras: Bundle
-    ): IAudioSourceInternal.Factory {
+    ): IAudioSource.Factory {
         val audioSource = extras.getString(AUDIO_SOURCE_KEY)
         return if (audioSource == AUDIO_SOURCE_MEDIA_PROJECTION_KEY) {
             /**

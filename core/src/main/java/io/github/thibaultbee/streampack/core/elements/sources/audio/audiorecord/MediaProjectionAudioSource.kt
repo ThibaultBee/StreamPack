@@ -31,6 +31,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.IMediaProjectionSo
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.runBlocking
 import java.util.UUID
 
@@ -113,6 +114,7 @@ internal class MediaProjectionAudioSource(
  * @param mediaProjection The media projection
  * @param effects The audio effects to apply
  */
+@OptIn(InternalStreamPackApi::class)
 @RequiresApi(Build.VERSION_CODES.Q)
 class MediaProjectionAudioSourceFactory(
     private val mediaProjection: MediaProjection,

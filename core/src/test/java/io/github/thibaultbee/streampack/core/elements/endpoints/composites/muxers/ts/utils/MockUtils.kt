@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.Packet
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.packets.TS
@@ -25,6 +26,7 @@ import java.nio.ByteBuffer
  * Assert expected buffer is equals to expected buffer
  * @param expectedBuffer expected buffer (pre-generated buffer)
  */
+@OptIn(InternalStreamPackApi::class)
 class AssertEqualsSingleBufferMockMuxerListener(private val expectedBuffer: ByteBuffer) :
     io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal.IMuxerListener {
     override fun onOutputFrame(packet: Packet) {
@@ -36,6 +38,7 @@ class AssertEqualsSingleBufferMockMuxerListener(private val expectedBuffer: Byte
  * Assert expected buffers is equals to expected buffers
  * @param expectedBuffers expected buffers (often pre-generated buffers)
  */
+@OptIn(InternalStreamPackApi::class)
 class AssertEqualsBuffersMockMuxerListener(private val expectedBuffers: List<ByteBuffer>) :
     io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal.IMuxerListener {
     var expectedBufferIndex = 0

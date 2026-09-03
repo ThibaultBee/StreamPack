@@ -50,20 +50,18 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.IVideoSurfacePipe
 import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -81,11 +79,12 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @param defaultRotation The default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param dispatcherProvider The dispatcher provider to use for coroutine dispatching
  */
+@OptIn(InternalStreamPackApi::class)
 internal class EncodingPipelineOutput(
     private val context: Context,
     override val withAudio: Boolean,
     override val withVideo: Boolean,
-    endpointFactory: IEndpointInternal.Factory,
+    endpointFactory: IEndpoint.Factory,
     @RotationValue defaultRotation: Int,
     private val dispatcherProvider: IDispatcherProvider
 ) : IConfigurableAudioVideoEncodingPipelineOutput, IEncodingPipelineOutputInternal,

@@ -20,6 +20,7 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.Media
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.asStateFlow
 /**
  * A dummy endpoint for testing.
  */
+@OptIn(InternalStreamPackApi::class)
 class DummyEndpoint : IEndpointInternal {
     private val _isOpenFlow = MutableStateFlow(false)
     override val isOpenFlow = _isOpenFlow.asStateFlow()
@@ -75,7 +77,8 @@ class DummyEndpoint : IEndpointInternal {
 /**
  * The factory to create [DummyEndpoint].
  */
-class DummyEndpointFactory : IEndpointInternal.Factory {
+@OptIn(InternalStreamPackApi::class)
+class DummyEndpointFactory : IEndpoint.Factory {
     override fun create(
         context: Context,
         dispatcherProvider: IDispatcherProvider
@@ -87,7 +90,8 @@ class DummyEndpointFactory : IEndpointInternal.Factory {
 /**
  * The factory to create [DummyEndpoint].
  */
-class DummyEndpointDummyFactory(val dummyEndpoint: DummyEndpoint) : IEndpointInternal.Factory {
+@OptIn(InternalStreamPackApi::class)
+class DummyEndpointDummyFactory(val dummyEndpoint: DummyEndpoint) : IEndpoint.Factory {
     override fun create(
         context: Context,
         dispatcherProvider: IDispatcherProvider

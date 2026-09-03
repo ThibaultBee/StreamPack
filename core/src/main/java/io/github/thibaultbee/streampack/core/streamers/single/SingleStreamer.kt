@@ -27,13 +27,12 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.Media
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
-import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.processing.video.DefaultSurfaceProcessorFactory
-import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal
-import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessor
+import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MediaProjectionAudioSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
-import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
+import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
@@ -47,7 +46,6 @@ import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 
-
 /**
  * Creates a [SingleStreamer] with the camera as video source and an audio source (by default, the microphone).
  *
@@ -55,20 +53,21 @@ import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
  * @param cameraId the camera id to use. By default, it is the default camera.
  * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory. If set to null, you will have to set it later explicitly.
  * @param audioInputMode the audio output mode. By default, it is [StreamerPipeline.AudioInputMode.CALLBACK].
- * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
- * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param surfaceProcessorFactory the [ISurfaceProcessor.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
  * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
 @RequiresPermission(Manifest.permission.CAMERA)
+
 suspend fun cameraSingleStreamer(
     context: Context,
     cameraId: String = context.defaultCameraId,
-    audioSourceFactory: IAudioSourceInternal.Factory? = MicrophoneSourceFactory(),
+    audioSourceFactory: IAudioSource.Factory? = MicrophoneSourceFactory(),
     audioInputMode: StreamerPipeline.AudioInputMode = StreamerPipeline.AudioInputMode.CALLBACK,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
-    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
+    surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ): SingleStreamer {
     val streamer = SingleStreamer(
@@ -92,19 +91,20 @@ suspend fun cameraSingleStreamer(
  * @param context the application context
  * @param mediaProjection the media projection. It can be obtained with [MediaProjectionManager.getMediaProjection]. Don't forget to call [MediaProjection.stop] when you are done.
  * @param audioInputMode the audio output mode. By default, it is [StreamerPipeline.AudioInputMode.CALLBACK].
- * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
- * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param surfaceProcessorFactory the [ISurfaceProcessor.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
  * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
+
 @RequiresApi(Build.VERSION_CODES.Q)
 suspend fun audioVideoMediaProjectionSingleStreamer(
     context: Context,
     mediaProjection: MediaProjection,
     audioInputMode: StreamerPipeline.AudioInputMode = StreamerPipeline.AudioInputMode.CALLBACK,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
-    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
+    surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ): SingleStreamer {
     val streamer = SingleStreamer(
@@ -128,19 +128,20 @@ suspend fun audioVideoMediaProjectionSingleStreamer(
  * @param mediaProjection the media projection. It can be obtained with [MediaProjectionManager.getMediaProjection]. Don't forget to call [MediaProjection.stop] when you are done.
  * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory. If set to null, you will have to set it later explicitly.
  * @param audioInputMode the audio output mode. By default, it is [StreamerPipeline.AudioInputMode.CALLBACK].
- * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
- * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param surfaceProcessorFactory the [ISurfaceProcessor.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
  * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
+
 suspend fun videoMediaProjectionSingleStreamer(
     context: Context,
     mediaProjection: MediaProjection,
-    audioSourceFactory: IAudioSourceInternal.Factory? = MicrophoneSourceFactory(),
+    audioSourceFactory: IAudioSource.Factory? = MicrophoneSourceFactory(),
     audioInputMode: StreamerPipeline.AudioInputMode = StreamerPipeline.AudioInputMode.CALLBACK,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
-    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
+    surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ): SingleStreamer {
     val streamer = SingleStreamer(
@@ -166,19 +167,20 @@ suspend fun videoMediaProjectionSingleStreamer(
  * @param audioSourceFactory the audio source factory.
  * @param videoSourceFactory the video source factory.
  * @param audioInputMode the audio output mode. By default, it is [StreamerPipeline.AudioInputMode.CALLBACK].
- * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
- * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param surfaceProcessorFactory the [ISurfaceProcessor.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
  * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
+
 suspend fun SingleStreamer(
     context: Context,
-    audioSourceFactory: IAudioSourceInternal.Factory,
-    videoSourceFactory: IVideoSourceInternal.Factory,
+    audioSourceFactory: IAudioSource.Factory,
+    videoSourceFactory: IVideoSource.Factory,
     audioInputMode: StreamerPipeline.AudioInputMode = StreamerPipeline.AudioInputMode.CALLBACK,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
-    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
+    surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ): SingleStreamer {
     val streamer = SingleStreamer(
@@ -199,17 +201,17 @@ suspend fun SingleStreamer(
  *
  * @param context the application context
  * @param audioInputMode the audio output mode. By default, it is [StreamerPipeline.AudioInputMode.CALLBACK].
- * @param endpointFactory the [IEndpointInternal.Factory] implementation. By default, it is a [DynamicEndpointFactory].
+ * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
- * @param surfaceProcessorFactory the [ISurfaceProcessorInternal.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
+ * @param surfaceProcessorFactory the [ISurfaceProcessor.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
  * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
 class SingleStreamer(
     context: Context,
     audioInputMode: StreamerPipeline.AudioInputMode = StreamerPipeline.AudioInputMode.CALLBACK,
-    endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+    endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
-    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
+    surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider(),
 ) : ISingleStreamer, IAudioSingleStreamer, IVideoSingleStreamer {
     private val streamer = SingleStreamerImpl(
@@ -277,7 +279,6 @@ class SingleStreamer(
             streamer.bitrateRegulatorControllerFactory = value
         }
 }
-
 
 /**
  * Configures both video and audio settings.

@@ -21,6 +21,7 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.TextureView
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.sync.Mutex
@@ -31,6 +32,7 @@ import kotlinx.coroutines.withContext
  *
  * The methods of this interface should be called in the [previewMutex].
  */
+@SubclassOptInRequired(InternalStreamPackApi::class)
 interface IPreviewableSource {
     /**
      * Mutex for the preview.

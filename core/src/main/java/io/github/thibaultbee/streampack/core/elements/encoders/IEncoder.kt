@@ -22,6 +22,7 @@ import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendReleasab
 import io.github.thibaultbee.streampack.core.elements.interfaces.SuspendStreamable
 import kotlinx.coroutines.channels.SendChannel
 import java.nio.ByteBuffer
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 
 interface IEncoder {
     /**
@@ -60,6 +61,7 @@ interface IEncoder {
     fun requestKeyFrame()
 }
 
+@InternalStreamPackApi
 interface IEncoderInternal : SuspendStreamable, SuspendReleasable,
     IEncoder {
 

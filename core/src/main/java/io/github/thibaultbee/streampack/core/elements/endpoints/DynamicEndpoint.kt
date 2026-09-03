@@ -31,6 +31,7 @@ import io.github.thibaultbee.streampack.core.elements.metrics.WithEndpointMetric
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancelChildren
@@ -47,6 +48,7 @@ import kotlinx.coroutines.sync.withLock
  *
  * @param context The application context
  */
+@OptIn(InternalStreamPackApi::class)
 open class DynamicEndpoint(
     private val context: Context,
     private val defaultDispatcher: CoroutineDispatcher,
@@ -276,7 +278,8 @@ open class DynamicEndpoint(
 /**
  * A factory to build a [DynamicEndpoint].
  */
-class DynamicEndpointFactory : IEndpointInternal.Factory {
+@OptIn(InternalStreamPackApi::class)
+class DynamicEndpointFactory : IEndpoint.Factory {
     override fun create(
         context: Context,
         dispatcherProvider: IDispatcherProvider

@@ -21,9 +21,11 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.TSOutputCallback
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.toInt
 import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import java.nio.ByteBuffer
 import java.security.InvalidParameterException
 
+@OptIn(InternalStreamPackApi::class)
 open class TS(
     private val byteBufferPool: ByteBufferPool,
     listener: IMuxerInternal.IMuxerListener? = null,

@@ -30,6 +30,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigu
 import io.github.thibaultbee.streampack.core.streamer.utils.VideoUtils
 import io.github.thibaultbee.streampack.core.utils.DeviceTest
 import io.github.thibaultbee.streampack.core.utils.FileUtils
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
@@ -40,6 +41,7 @@ import org.junit.Test
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(InternalStreamPackApi::class)
 @LargeTest
 class StreamerPipelineFileTest : DeviceTest() {
     private val streamerPipeline by lazy {

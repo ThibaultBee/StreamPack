@@ -20,7 +20,9 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.
 import io.github.thibaultbee.streampack.core.elements.encoders.CodecConfig
 import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.interfaces.Streamable
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 
+@InternalStreamPackApi
 interface IMuxerInternal :
     IMuxer, Streamable,
     Releasable {

@@ -39,11 +39,12 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_GL
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.utils.HandlerThreadExecutor
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-
+@OptIn(InternalStreamPackApi::class)
 private class DefaultSurfaceProcessor(
     private val dynamicRangeProfile: DynamicRangeProfile,
     private val glThread: HandlerThreadExecutor,
@@ -445,8 +446,9 @@ private class DefaultSurfaceProcessor(
     )
 }
 
+@OptIn(InternalStreamPackApi::class)
 class DefaultSurfaceProcessorFactory :
-    ISurfaceProcessorInternal.Factory {
+    ISurfaceProcessor.Factory {
     override fun create(
         context: Context,
         dynamicRangeProfile: DynamicRangeProfile,

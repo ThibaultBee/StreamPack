@@ -35,10 +35,12 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.utils.av.audio.aac.ADTSFrameWriter
 import io.github.thibaultbee.streampack.core.elements.utils.av.audio.aac.LATMFrameWriter
 import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import java.nio.ByteBuffer
 import java.util.MissingFormatArgumentException
 import kotlin.random.Random
 
+@OptIn(InternalStreamPackApi::class)
 class TsMuxer : IMuxerInternal {
     private val tsBufferPool = ByteBufferPool(true)
 

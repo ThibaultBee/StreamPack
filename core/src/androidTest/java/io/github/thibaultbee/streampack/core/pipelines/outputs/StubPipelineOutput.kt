@@ -30,6 +30,7 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import io.github.thibaultbee.streampack.core.utils.SurfaceUtils
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -41,6 +42,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
+@OptIn(InternalStreamPackApi::class)
 open class StubAudioAsyncPipelineOutput :
     StubPipelineOutput(withAudio = true, withVideo = false),
     IAudioSyncPipelineOutputInternal {
@@ -53,6 +55,7 @@ open class StubAudioAsyncPipelineOutput :
     }
 }
 
+@OptIn(InternalStreamPackApi::class)
 open class StubVideoSurfacePipelineOutput(resolution: Size) :
     StubPipelineOutput(withAudio = false, withVideo = true),
     IVideoSurfacePipelineOutputInternal {
@@ -70,6 +73,7 @@ open class StubVideoSurfacePipelineOutput(resolution: Size) :
     override val surfaceFlow = _surfaceFlow.asStateFlow()
 }
 
+@OptIn(InternalStreamPackApi::class)
 class StubAudioSyncVideoSurfacePipelineOutput(resolution: Size) :
     StubPipelineOutput(withAudio = true, withVideo = true),
     IAudioSyncPipelineOutputInternal, IVideoSurfacePipelineOutputInternal {
@@ -138,6 +142,7 @@ abstract class StubPipelineOutput(
     }
 }
 
+@OptIn(InternalStreamPackApi::class)
 class StubAudioSyncVideoSurfacePipelineOutputInternal(resolution: Size) :
     StubPipelineOutputInternal(hasAudio = true, hasVideo = true),
     IAudioSyncPipelineOutputInternal, IVideoSurfacePipelineOutputInternal {
@@ -162,6 +167,7 @@ class StubAudioSyncVideoSurfacePipelineOutputInternal(resolution: Size) :
     }
 }
 
+@OptIn(InternalStreamPackApi::class)
 class StubVideoSurfacePipelineOutputInternal(resolution: Size) :
     StubPipelineOutputInternal(hasAudio = false, hasVideo = true),
     IVideoSurfacePipelineOutputInternal {
@@ -179,6 +185,7 @@ class StubVideoSurfacePipelineOutputInternal(resolution: Size) :
     override val surfaceFlow = _surfaceFlow.asStateFlow()
 }
 
+@OptIn(InternalStreamPackApi::class)
 abstract class StubPipelineOutputInternal(hasAudio: Boolean, hasVideo: Boolean) :
     StubPipelineOutput(hasAudio, hasVideo),
     IPipelineEventOutputInternal {
@@ -196,6 +203,7 @@ abstract class StubPipelineOutputInternal(hasAudio: Boolean, hasVideo: Boolean) 
     }
 }
 
+@OptIn(InternalStreamPackApi::class)
 internal class StubAudioSyncConfigurableEncodingPipelineOutputInternal :
     StubAudioAsyncPipelineOutput(),
     IConfigurableAudioEncodingPipelineOutput,
@@ -243,6 +251,7 @@ internal class StubAudioSyncConfigurableEncodingPipelineOutputInternal :
     }
 }
 
+@OptIn(InternalStreamPackApi::class)
 internal class StubVideoSurfaceConfigurableEncodingPipelineOutputInternal :
     StubVideoSurfacePipelineOutput(resolution = Size(1280, 720)),
     IConfigurableVideoEncodingPipelineOutput,

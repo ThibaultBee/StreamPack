@@ -16,7 +16,9 @@
 package io.github.thibaultbee.streampack.core.elements.sources.video
 
 import java.nio.ByteBuffer
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 
+@InternalStreamPackApi
 interface IVideoFrameSourceInternal {
 
     /**

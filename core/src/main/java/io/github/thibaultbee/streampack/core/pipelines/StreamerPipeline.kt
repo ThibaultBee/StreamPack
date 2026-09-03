@@ -19,9 +19,9 @@ import android.content.Context
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.data.copy
 import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointFactory
-import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.processing.video.DefaultSurfaceProcessorFactory
-import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessorInternal
+import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceProcessor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
@@ -56,6 +56,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodin
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.pipelines.utils.MultiThrowable
 import io.github.thibaultbee.streampack.core.pipelines.utils.SourceConfigUtils
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -83,12 +84,13 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @param surfaceProcessorFactory the factory to create the surface processor
  * @param dispatcherProvider the coroutine dispatcher
  */
+@OptIn(InternalStreamPackApi::class)
 open class StreamerPipeline(
     protected val context: Context,
     val withAudio: Boolean = true,
     val withVideo: Boolean = true,
     private val audioInputMode: AudioInputMode = AudioInputMode.PUSH,
-    surfaceProcessorFactory: ISurfaceProcessorInternal.Factory = DefaultSurfaceProcessorFactory(),
+    surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
     protected val dispatcherProvider: IDispatcherProvider = DispatcherProvider()
 ) : IWithVideoSource, IWithVideoRotation, IWithAudioSource, IStreamer {
     private val coroutineScope = CoroutineScope(dispatcherProvider.default)
@@ -328,7 +330,7 @@ open class StreamerPipeline(
     suspend fun createEncodingOutput(
         withAudio: Boolean = this.withAudio,
         withVideo: Boolean = this.withVideo,
-        endpointFactory: IEndpointInternal.Factory = DynamicEndpointFactory(),
+        endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
         @RotationValue targetRotation: Int = context.displayRotation
     ): IConfigurableAudioVideoEncodingPipelineOutput {
         if (isReleaseRequested.get()) {
