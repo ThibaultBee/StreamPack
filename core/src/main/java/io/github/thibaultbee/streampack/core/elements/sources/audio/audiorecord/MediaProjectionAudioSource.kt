@@ -87,12 +87,18 @@ internal class MediaProjectionAudioSource(
     override suspend fun stopStream() {
         super.stopStream()
 
-        mediaProjection.unregisterCallback(mediaProjectionCallback)
+        try {
+            mediaProjection.unregisterCallback(mediaProjectionCallback)
+        } catch (_: Exception) {
+        }
     }
 
     override fun release() {
         super.release()
-        mediaProjection.unregisterCallback(mediaProjectionCallback)
+        try {
+            mediaProjection.unregisterCallback(mediaProjectionCallback)
+        } catch (_: Exception) {
+        }
         callbackHandlerThread.quitSafely()
         try {
             callbackHandlerThread.join()

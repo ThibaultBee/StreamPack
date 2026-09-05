@@ -129,7 +129,10 @@ internal class MediaProjectionVideoSource(
         virtualDisplay?.release()
         virtualDisplay = null
 
-        mediaProjection.unregisterCallback(mediaProjectionCallback)
+        try {
+            mediaProjection.unregisterCallback(mediaProjectionCallback)
+        } catch (_: Exception) {
+        }
         _isStreamingFlow.emit(false)
     }
 
