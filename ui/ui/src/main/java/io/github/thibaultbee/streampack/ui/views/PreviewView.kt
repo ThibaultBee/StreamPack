@@ -43,6 +43,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.Camer
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraCharacteristics
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotateFromNaturalOrientation
 import io.github.thibaultbee.streampack.core.elements.utils.OrientationUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.runningHistoryNotNull
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
@@ -52,6 +53,8 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -114,6 +117,18 @@ class PreviewView @JvmOverloads constructor(
     /**
      * The [PreviewListener] to listen to specific view events.
      */
+    /**
+     * If true, it uses the video source configuration resolution for the preview.
+     * Default is true.
+     */
+    var matchVideoConfig: Boolean = true
+        set(value) {
+            if (field != value) {
+                field = value
+                attachToStreamerIfReady(false)
+            }
+        }
+
     var listener: PreviewListener? = null
 
     private var zoomListener: CameraSettings.Zoom.OnZoomChangedListener? = null
@@ -130,6 +145,7 @@ class PreviewView @JvmOverloads constructor(
         CoroutineScope(defaultDispatcher + SupervisorJob() + CoroutineName("preview"))
     private var startPreviewJob = ConflatedJob()
     private var sourceJob = ConflatedJob()
+    private var sourceConfigJob = ConflatedJob()
 
     private var streamer: IWithVideoSource? = null
     private val streamerMutex = Mutex()
@@ -187,6 +203,17 @@ class PreviewView @JvmOverloads constructor(
                                 registerZoomListener(it)
                             }
                         }
+                    }
+                }
+        }
+
+        sourceConfigJob += defaultScope.launch {
+            streamer.videoInput.sourceConfigFlow
+                .map { it?.resolution }
+                .distinctUntilChanged()
+                .collect {
+                    if (matchVideoConfig) {
+                        attachToStreamerIfReady(true)
                     }
                 }
         }
@@ -266,6 +293,7 @@ class PreviewView @JvmOverloads constructor(
                     collectSource(newStreamer)
                 } else {
                     sourceJob.cancel()
+                    sourceConfigJob.cancel()
                 }
             }
         }
@@ -274,7 +302,15 @@ class PreviewView @JvmOverloads constructor(
     private fun attachToStreamerIfReady(shouldFailSilently: Boolean) {
         if (streamer != null && isAttachedToWindow) {
             try {
-                startPreview(size)
+                val config = streamer?.videoInput?.sourceConfigFlow?.value
+                Logger.e(TAG, "Resolution = ${config?.resolution}")
+                startPreview(
+                    if (matchVideoConfig) {
+                        config?.resolution ?: size
+                    } else {
+                        size
+                    }
+                )
             } catch (t: Throwable) {
                 if (shouldFailSilently) {
                     // Swallow the exception and fail silently if the method is invoked by View
