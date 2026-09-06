@@ -406,6 +406,22 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         }
     }
 
+    @RequiresPermission(Manifest.permission.CAMERA)
+    fun setVideoSourceToDefaultIfNone() {
+        viewModelScope.launch(defaultDispatcher) {
+            videoSourceMutex.withLock {
+                val currentSource = streamer?.videoInput?.sourceFlow?.value
+                if (currentSource != null) {
+                    Log.i(TAG, "Video source is already set, ignoring default initialization")
+                    return@launch
+                }
+
+                Log.i(TAG, "Switch video source to default Camera")
+                streamer?.setVideoSource(CameraSourceFactory(defaultCameraId))
+            }
+        }
+    }
+
     fun setVideoSourceToBitmap() {
         viewModelScope.launch(defaultDispatcher) {
             videoSourceMutex.withLock {

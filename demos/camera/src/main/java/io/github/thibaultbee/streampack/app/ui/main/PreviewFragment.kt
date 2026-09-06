@@ -283,7 +283,7 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
             ) -> {
                 inflateStreamerPreview()
                 previewViewModel.configureMicrophone()
-                previewViewModel.setVideoSourceToCamera()
+                previewViewModel.setVideoSourceToDefaultIfNone()
             }
 
             shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO) -> {
