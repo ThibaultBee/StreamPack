@@ -18,5 +18,6 @@
         <attr name="enableTapToFocus" format="boolean" />
         <attr name="scaleMode"  />
         <attr name="position" />
+        <attr name="matchVideoConfig" format="boolean" />
     </declare-styleable>
 </resources>
