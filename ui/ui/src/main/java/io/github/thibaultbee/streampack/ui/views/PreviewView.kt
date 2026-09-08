@@ -19,8 +19,9 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Matrix
 import android.graphics.PointF
-import android.graphics.Rect
+import android.graphics.RectF
 import android.util.AttributeSet
 import android.util.Size
 import android.view.MotionEvent
@@ -31,6 +32,7 @@ import android.view.SurfaceHolder
 import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.annotation.VisibleForTesting
 import androidx.camera.viewfinder.CameraViewfinder
 import androidx.camera.viewfinder.CameraViewfinderExt.requestSurface
 import androidx.camera.viewfinder.core.ScaleType
@@ -39,10 +41,10 @@ import androidx.camera.viewfinder.core.populateFromCharacteristics
 import androidx.core.content.ContextCompat
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION_MS
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraCharacteristics
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
+import io.github.thibaultbee.streampack.core.elements.utils.MeteringPointFactory
 import io.github.thibaultbee.streampack.core.elements.utils.OrientationUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.runningHistoryNotNull
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
@@ -91,24 +93,30 @@ class PreviewView @JvmOverloads constructor(
     /**
      * The duration in milliseconds after which the focus area set by tap-to-focus is cleared.
      */
-    var onTapToFocusTimeoutMs = DEFAULT_AUTO_CANCEL_DURATION_MS
+    var onTapToFocusTimeoutMs = 5000L
+
+    private var scaleType: ScaleType = ScaleType.FIT_CENTER
+        set(value) {
+            viewfinder.scaleType = value
+            field = value
+        }
 
     /**
      * The position of the [PreviewView] within its container.
      */
     var position: Position
-        get() = getPosition(viewfinder.scaleType)
+        get() = getPosition(scaleType)
         set(value) {
-            viewfinder.scaleType = getScaleType(scaleMode, value)
+            scaleType = getScaleType(scaleMode, value)
         }
 
     /**
      * The scale mode of the [PreviewView] within its container.
      */
     var scaleMode: ScaleMode
-        get() = getScaleMode(viewfinder.scaleType)
+        get() = getScaleMode(scaleType)
         set(value) {
-            viewfinder.scaleType = getScaleType(value, position)
+            scaleType = getScaleType(value, position)
         }
 
     /**
@@ -349,6 +357,48 @@ class PreviewView @JvmOverloads constructor(
         return true
     }
 
+    /**
+     * Gets a [Matrix] that transforms normalized video frame coordinates [0..1]
+     * to the [PreviewView] coordinate space, accounting for the current [ScaleMode].
+     * 
+     * This is highly useful for overlaying UI elements (like bounding boxes) on top of the
+     * preview, or mapping UI touch events back to the video frame (via [Matrix.invert]).
+     */
+    internal val surfaceToViewMatrix: Matrix?
+        get() {
+            if (width == 0 || height == 0) {
+                return null
+            }
+            val surfaceSize = viewfinderSurfaceRequest?.resolution
+
+            if (surfaceSize == null || surfaceSize.width == 0 || surfaceSize.height == 0) {
+                return Matrix().apply {
+                    postScale(width.toFloat(), height.toFloat())
+                }
+            }
+            return getSurfaceToViewMatrix(width, height, surfaceSize, scaleType)
+        }
+
+    private inner class ViewMeteringPointFactory : MeteringPointFactory() {
+        override fun translatePoint(x: Float, y: Float): PointF {
+            if (width == 0 || height == 0) {
+                return PointF(0f, 0f)
+            }
+
+            val matrix =
+                surfaceToViewMatrix ?: return PointF(x / width.toFloat(), y / height.toFloat())
+            val inverseMatrix = Matrix()
+            matrix.invert(inverseMatrix)
+
+            val point = floatArrayOf(x, y)
+            inverseMatrix.mapPoints(point)
+
+            return PointF(point[0], point[1])
+        }
+    }
+
+    private val meteringPointFactory = ViewMeteringPointFactory()
+
     @SuppressLint("MissingPermission")
     private fun performCameraTap(cameraSource: ICameraSource) {
         if (ContextCompat.checkSelfPermission(
@@ -362,17 +412,12 @@ class PreviewView @JvmOverloads constructor(
             // touchUpEvent == null means it's an accessibility click. Focus at the center instead.
             val x = touchUpEvent?.x ?: (width / 2f)
             val y = touchUpEvent?.y ?: (height / 2f)
-            defaultScope.launch {
+
+            defaultScope.launch(Dispatchers.Main) {
                 try {
-                    cameraSource.settings.focusMetering.onTap(
-                        context,
+                    cameraSource.settings.focusMetering.tapToFocus(
                         PointF(x, y),
-                        Rect(
-                            this@PreviewView.x.toInt(),
-                            this@PreviewView.y.toInt(),
-                            width,
-                            height
-                        ),
+                        meteringPointFactory,
                         OrientationUtils.getSurfaceRotationDegrees(display.rotation),
                         onTapToFocusTimeoutMs
                     )
@@ -508,6 +553,59 @@ class PreviewView @JvmOverloads constructor(
     }
 
     companion object {
+        @VisibleForTesting
+        internal fun getSurfaceToViewMatrix(
+            viewWidth: Int,
+            viewHeight: Int,
+            surfaceSize: Size,
+            scaleType: ScaleType
+        ): Matrix {
+            val surfaceWidth = surfaceSize.width.toFloat()
+            val surfaceHeight = surfaceSize.height.toFloat()
+
+            val surfaceRect = RectF(0f, 0f, surfaceWidth, surfaceHeight)
+            val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat())
+            val matrix = Matrix()
+
+            when (scaleType) {
+                ScaleType.FIT_START -> matrix.setRectToRect(
+                    surfaceRect,
+                    viewRect,
+                    Matrix.ScaleToFit.START
+                )
+
+                ScaleType.FIT_CENTER -> matrix.setRectToRect(
+                    surfaceRect,
+                    viewRect,
+                    Matrix.ScaleToFit.CENTER
+                )
+
+                ScaleType.FIT_END -> matrix.setRectToRect(
+                    surfaceRect,
+                    viewRect,
+                    Matrix.ScaleToFit.END
+                )
+
+                ScaleType.FILL_START -> {
+                    matrix.setRectToRect(viewRect, surfaceRect, Matrix.ScaleToFit.START)
+                    matrix.invert(matrix)
+                }
+
+                ScaleType.FILL_CENTER -> {
+                    matrix.setRectToRect(viewRect, surfaceRect, Matrix.ScaleToFit.CENTER)
+                    matrix.invert(matrix)
+                }
+
+                ScaleType.FILL_END -> {
+                    matrix.setRectToRect(viewRect, surfaceRect, Matrix.ScaleToFit.END)
+                    matrix.invert(matrix)
+                }
+            }
+
+            matrix.preScale(surfaceWidth, surfaceHeight)
+            return matrix
+        }
+
         private const val TAG = "PreviewView"
 
         private fun getPosition(scaleType: ScaleType): Position {
