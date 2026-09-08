@@ -72,7 +72,7 @@ internal fun PointF.normalize(width: Int, height: Int): PointF {
 }
 
 internal fun PointF.normalize(rect: Rect): PointF {
-    return PointF(x / rect.width(), y / rect.height())
+    return normalize(rect.width(), rect.height())
 }
 
 internal fun Rational.flip() = Rational(denominator, numerator)

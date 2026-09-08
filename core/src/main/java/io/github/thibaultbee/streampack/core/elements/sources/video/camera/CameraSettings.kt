@@ -16,7 +16,6 @@
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera
 
 import android.Manifest
-import android.content.Context
 import android.graphics.PointF
 import android.graphics.Rect
 import android.hardware.camera2.CameraCharacteristics
@@ -32,6 +31,7 @@ import android.hardware.camera2.params.ColorSpaceTransform
 import android.hardware.camera2.params.MeteringRectangle
 import android.hardware.camera2.params.RggbChannelVector
 import android.os.Build
+import android.util.Log
 import android.util.Range
 import android.util.Rational
 import androidx.annotation.IntRange
@@ -56,11 +56,10 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.sensitivityRange
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.zoomRatioRange
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureResultListener
+import io.github.thibaultbee.streampack.core.elements.utils.MeteringPointFactory
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.coerceIn
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.isApplicationPortrait
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isNormalized
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.launchIn
-import io.github.thibaultbee.streampack.core.elements.utils.extensions.normalize
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
 import io.github.thibaultbee.streampack.core.logger.Logger
 import kotlinx.coroutines.CompletableDeferred
@@ -1021,7 +1020,8 @@ class CameraSettings internal constructor(
         @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun setLensDistance(lensDistance: Float) {
             cameraSettings.set(
-                CaptureRequest.LENS_FOCUS_DISTANCE, lensDistance.coerceIn(availableLensDistanceRange)
+                CaptureRequest.LENS_FOCUS_DISTANCE,
+                lensDistance.coerceIn(availableLensDistanceRange)
             )
             cameraSettings.applyRepeatingSession()
         }
@@ -1326,7 +1326,7 @@ class CameraSettings internal constructor(
             )
 
             require(afRectangles.isNotEmpty() || aeRectangles.isNotEmpty() || awbRectangles.isNotEmpty()) {
-                "At least one of AF, AE, AWB points must be non empty"
+                "At least one of AF, AE, AWB rectangles must be non empty"
             }
 
             executeMetering(afRectangles, aeRectangles, awbRectangles, timeoutDurationMs)
@@ -1381,18 +1381,22 @@ class CameraSettings internal constructor(
             }
         }
 
-        private fun normalizePoint(point: PointF, fovRect: Rect, relativeRotation: Int): PointF {
-            val normalizedPoint = point.normalize(fovRect)
+        private fun normalizePoint(
+            point: PointF,
+            factory: MeteringPointFactory,
+            relativeRotation: Int
+        ): PointF {
+            val normalizedPoint = factory.createPoint(point.x, point.y)
             return normalizedPoint.rotate(relativeRotation)
         }
 
         private fun normalizePoint(
             point: PointF,
-            fovRect: Rect,
+            factory: MeteringPointFactory,
             relativeRotation: Int,
             isFrontCamera: Boolean
         ): PointF {
-            val normalizedPoint = normalizePoint(point, fovRect, relativeRotation)
+            val normalizedPoint = normalizePoint(point, factory, relativeRotation)
             return if (isFrontCamera) {
                 if (relativeRotation.is90or270) {
                     // If the rotation is 90/270, the Point should be flipped vertically.
@@ -1421,28 +1425,25 @@ class CameraSettings internal constructor(
         /**
          * Sets the focus on tap.
          *
-         * @param context the application context
-         * @param point the point to focus on in [fovRect] coordinate system
-         * @param fovRect the field of view rectangle
-         * @param fovRotationDegree the orientation of the field of view
+         * @param point the point to focus
+         * @param factory the factory to normalize the view points
+         * @param viewRotationDegree the orientation of the field of view
          * @param timeoutDurationMs duration in milliseconds after which the focus and metering will be cancelled automatically
          */
         @RequiresPermission(Manifest.permission.CAMERA)
-        suspend fun onTap(
-            context: Context,
+        suspend fun tapToFocus(
             point: PointF,
-            fovRect: Rect,
-            fovRotationDegree: Int,
-            timeoutDurationMs: Long = DEFAULT_AUTO_CANCEL_DURATION_MS
+            factory: MeteringPointFactory,
+            viewRotationDegree: Int,
+            timeoutDurationMs: Long
         ) {
             val points = listOf(point)
             return onTap(
-                context,
                 points,
                 points,
                 emptyList(),
-                fovRect,
-                fovRotationDegree,
+                factory,
+                viewRotationDegree,
                 timeoutDurationMs
             )
         }
@@ -1452,41 +1453,35 @@ class CameraSettings internal constructor(
          *
          * At least one of lost of points must not be empty.
          *
-         * @param context the application context
-         * @param afPoints the points where the focus is done in [fovRect] coordinate system
-         * @param aePoints the points where the exposure is done in [fovRect] coordinate system
-         * @param awbPoints the points where the white balance is done in [fovRect] coordinate system
-         * @param fovRect the field of view rectangle
-         * @param fovRotationDegree the orientation of the field of view
+         * @param afPoints the points where the focus is done
+         * @param aePoints the points where the exposure is done
+         * @param awbPoints the points where the white balance is done
+         * @param factory the factory to normalize the view points
+         * @param viewRotationDegree the orientation of the view
          * @param timeoutDurationMs duration in milliseconds after which the focus and metering will be cancelled automatically
          */
         @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun onTap(
-            context: Context,
             afPoints: List<PointF>,
             aePoints: List<PointF>,
             awbPoints: List<PointF>,
-            fovRect: Rect,
-            fovRotationDegree: Int,
+            factory: MeteringPointFactory,
+            viewRotationDegree: Int,
             timeoutDurationMs: Long = DEFAULT_AUTO_CANCEL_DURATION_MS
         ) {
             val relativeRotation =
                 getSensorRotationDegrees(
                     characteristics,
                     cameraSettings.cameraId,
-                    fovRotationDegree
+                    viewRotationDegree
                 )
 
             val isFrontCamera = characteristics.isFrontCamera
             startFocusAndMetering(
-                afPoints.map { normalizePoint(it, fovRect, relativeRotation, isFrontCamera) },
-                aePoints.map { normalizePoint(it, fovRect, relativeRotation, isFrontCamera) },
-                awbPoints.map { normalizePoint(it, fovRect, relativeRotation, isFrontCamera) },
-                if (context.isApplicationPortrait) {
-                    Rational(fovRect.height(), fovRect.width())
-                } else {
-                    Rational(fovRect.width(), fovRect.height())
-                },
+                afPoints.map { normalizePoint(it, factory, relativeRotation, isFrontCamera) },
+                aePoints.map { normalizePoint(it, factory, relativeRotation, isFrontCamera) },
+                awbPoints.map { normalizePoint(it, factory, relativeRotation, isFrontCamera) },
+                Rational(1, 1),
                 timeoutDurationMs
             )
         }
@@ -1618,10 +1613,10 @@ class CameraSettings internal constructor(
                     (centerY + height / 2).toInt()
                 )
 
-                focusRect.left = focusRect.left.coerceIn(cropRegion.right, cropRegion.left)
-                focusRect.right = focusRect.right.coerceIn(cropRegion.right, cropRegion.left)
-                focusRect.top = focusRect.top.coerceIn(cropRegion.bottom, cropRegion.top)
-                focusRect.bottom = focusRect.bottom.coerceIn(cropRegion.bottom, cropRegion.top)
+                focusRect.left = focusRect.left.coerceIn(cropRegion.left, cropRegion.right)
+                focusRect.right = focusRect.right.coerceIn(cropRegion.left, cropRegion.right)
+                focusRect.top = focusRect.top.coerceIn(cropRegion.top, cropRegion.bottom)
+                focusRect.bottom = focusRect.bottom.coerceIn(cropRegion.top, cropRegion.bottom)
 
                 return MeteringRectangle(focusRect, DEFAULT_METERING_WEIGHT_MAX)
             }

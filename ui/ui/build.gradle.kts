@@ -16,4 +16,8 @@ dependencies {
     implementation(libs.androidx.camera.viewfinder.view)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.core.ktx)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.ext.junit.ktx)
 }
