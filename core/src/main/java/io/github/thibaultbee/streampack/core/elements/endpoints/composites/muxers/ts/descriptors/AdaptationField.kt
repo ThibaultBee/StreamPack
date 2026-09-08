@@ -87,11 +87,24 @@ class AdaptationField(
     }
 
     private fun addClockReference(buffer: ByteBuffer, timestamp: Long) {
-        val pcrBase =
-            (TSConst.SYSTEM_CLOCK_FREQ * timestamp / 1000000 /* µs -> s */ / 300) % 2.toDouble()
-                .pow(33)
-                .toLong()
-        val pcrExt = (TSConst.SYSTEM_CLOCK_FREQ * timestamp / 1000000 /* µs -> s */) % 300
+        // PATCH LOCALE (regia-rtmp, 9/8): la formula originale calcola
+        // SYSTEM_CLOCK_FREQ(27_000_000) * timestamp PRIMA di dividere — con
+        // timestamp in microsecondi di uptime del device (TimeUtils.currentTime()
+        // usa SystemClock.uptimeMillis()-equivalente), questo prodotto sfora un
+        // Long a 64 bit (overflow silenzioso in Kotlin/JVM) non appena l'uptime
+        // supera ~95 ore (~3.95 giorni): 27_000_000 * timestamp > Long.MAX_VALUE
+        // quando timestamp > ~3.416e11 µs. Il valore avvolto (wrapped) produce
+        // un PCR sostanzialmente casuale ad ogni frame — root cause isolata sul
+        // campo di un blocco totale/intermittente della ridistribuzione RTSP/
+        // SRT-pull/HLS su mediamtx per stream pubblicati da device con uptime
+        // lungo (7 giorni nel caso diagnosticato). Riscritto nello stesso ordine
+        // di operazioni già usato da RootEncoder (pedroSG94/RootEncoder,
+        // srt/.../AdaptationField.kt: "timestamp * 9 / 100"), che moltiplica per
+        // un fattore piccolo prima di dividere — matematicamente equivalente
+        // (27_000_000/1_000_000/300 = 9/100) ma sicuro fino a timestamp
+        // dell'ordine di 10^17 µs (~milioni di anni di uptime).
+        val pcrBase = (timestamp * 9 / 100) % (1L shl 33)
+        val pcrExt = (timestamp * 27) % 300
 
         /**
          * PCR Base -> 33 bits
