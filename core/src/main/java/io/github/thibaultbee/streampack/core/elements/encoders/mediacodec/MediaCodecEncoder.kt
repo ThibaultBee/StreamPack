@@ -648,10 +648,32 @@ internal constructor(
             } else {
                 null
             }
-            val rawBuffer = if (extraBuffers != null) {
+            val sourceBuffer = if (extraBuffers != null) {
                 buffer.removePrefixes(extraBuffers)
             } else {
                 buffer
+            }
+            // Upstream held the MediaCodec output ByteBuffer by reference
+            // (zero-copy) and only released it in Frame.close(), which runs
+            // after the frame has travelled through the whole downstream
+            // pipeline (channel, muxer, network send). MediaCodec's output
+            // buffer pool is small (typically ~4 buffers): when the network
+            // send stalls (congestion / constrained bandwidth), the pool
+            // exhausts and the encoder stops producing output until the
+            // network unblocks — isolated root cause of total/intermittent
+            // re-distribution stalls on mediamtx (multi-second gaps confirmed
+            // via byte-level dump; HLS tolerates them as a new segment, RTSP
+            // does not). RootEncoder avoids this by copying bytes out early,
+            // decoupling encoder throughput from network speed. Copy the bytes
+            // here immediately and release the MediaCodec buffer right away
+            // instead of holding it until the pipeline finishes.
+            val rawBuffer = ByteBuffer.allocate(sourceBuffer.remaining())
+            rawBuffer.put(sourceBuffer)
+            rawBuffer.rewind()
+            try {
+                codec.releaseOutputBuffer(index, false)
+            } catch (t: Throwable) {
+                Logger.w(tag, "Failed to release output buffer for code: ${t.message}")
             }
 
             return pool.get(
@@ -661,13 +683,7 @@ internal constructor(
                 isKeyFrame,
                 extra,
                 outputFormat,
-                onClosed = {
-                    try {
-                        codec.releaseOutputBuffer(index, false)
-                    } catch (t: Throwable) {
-                        Logger.w(tag, "Failed to release output buffer for code: ${t.message}")
-                    }
-                })
+            )
         }
 
         override fun close() {
