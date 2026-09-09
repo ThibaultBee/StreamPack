@@ -22,6 +22,7 @@ import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.math.BigInteger
+import java.nio.ByteBuffer
 
 class AdaptationFieldTest {
 
@@ -53,10 +54,9 @@ class AdaptationFieldTest {
         // (SYSTEM_CLOCK_FREQ * timestamp evaluated before any division),
         // 27_000_000 * 400_000_000_000 = 1.08e19 overflows Long.MAX_VALUE
         // (~9.223e18) and silently wraps in Kotlin/JVM, corrupting the PCR of
-        // every frame past ~95h of uptime (~3.4e11 us). This reproduces that
-        // magnitude and checks the encoded PCR against a ground truth computed
-        // with BigInteger (same original semantics, immune to Long overflow at
-        // this size) instead of against the patched formula itself.
+        // every frame past ~95h of uptime (~3.4e11 us). The expected PCR is
+        // computed with BigInteger (same original semantics, immune to Long
+        // overflow at this size) instead of with the patched formula itself.
         val timestamp = 400_000_000_000L
 
         val adaptationField = AdaptationField(
@@ -70,10 +70,13 @@ class AdaptationFieldTest {
             adaptationFieldExtension = null
         )
 
-        val bytes = adaptationField.toByteBuffer()
-        bytes.position(2) // skip adaptation_field_length + flags byte
-        val pcrBaseHigh32 = bytes.int.toLong() and 0xFFFFFFFFL
-        val tail = bytes.short.toInt() and 0xFFFF
+        // addClockReference writes pcrBase (4 bytes, 33 bits shifted left by
+        // one) then pcrExt + reserved (2 bytes).
+        val buffer = ByteBuffer.allocate(6)
+        adaptationField.addClockReference(buffer, timestamp)
+        buffer.rewind()
+        val pcrBaseHigh32 = buffer.int.toLong() and 0xFFFFFFFFL
+        val tail = buffer.short.toInt() and 0xFFFF
         val actualPcrBase = (pcrBaseHigh32 shl 1) or ((tail.toLong() shr 15) and 0x1L)
         val actualPcrExt = tail and 0x1FF
 
