@@ -16,14 +16,13 @@
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.packets
 
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.ITSElement
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.TSConst
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.TSTimeUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.put
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.putShort
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.shl
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.toInt
 import java.nio.ByteBuffer
 import kotlin.experimental.and
-import kotlin.math.pow
 
 class PesHeader(
     private val streamId: Short,
@@ -129,10 +128,7 @@ class PesHeader(
     }
 
     private fun addTimestamp(buffer: ByteBuffer, timestamp: Long, fourBits: Byte) {
-        val pts =
-            (TSConst.SYSTEM_CLOCK_FREQ * timestamp / 1000000 /* µs -> s */ / 300) % 2.toDouble()
-                .pow(33)
-                .toLong()
+        val pts = TSTimeUtils.computeTimestamp90kHz(timestamp)
 
         buffer.put(
             (((fourBits and 0xF).toInt() shl 4)
