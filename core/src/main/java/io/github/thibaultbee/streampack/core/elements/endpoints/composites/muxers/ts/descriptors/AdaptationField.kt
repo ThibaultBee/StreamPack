@@ -16,12 +16,11 @@
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.descriptors
 
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.ITSElement
-import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.TSConst
+import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.utils.TSTimeUtils
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.put
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.putShort
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.shl
 import java.nio.ByteBuffer
-import kotlin.math.pow
 
 class AdaptationField(
     private val discontinuityIndicator: Boolean = false,
@@ -53,15 +52,16 @@ class AdaptationField(
         val buffer = ByteBuffer.allocate(size)
 
         buffer.put(adaptationFieldLength)
-        buffer.put(((discontinuityIndicator shl 7)
-                or (randomAccessIndicator shl 6)
-                or (elementaryStreamPriorityIndicator shl 5)
-                or ((programClockReference?.let { 1 } ?: 0) shl 4)
-                or ((originalProgramClockReference?.let { 1 } ?: 0) shl 3)
-                or ((spliceCountdown?.let { 1 } ?: 0) shl 2)
-                or ((transportPrivateData?.let { 1 } ?: 0) shl 1)
-                or (adaptationFieldExtension?.let { 1 } ?: 0)
-                ))
+        buffer.put(
+            ((discontinuityIndicator shl 7)
+                    or (randomAccessIndicator shl 6)
+                    or (elementaryStreamPriorityIndicator shl 5)
+                    or ((programClockReference?.let { 1 } ?: 0) shl 4)
+                    or ((originalProgramClockReference?.let { 1 } ?: 0) shl 3)
+                    or ((spliceCountdown?.let { 1 } ?: 0) shl 2)
+                    or ((transportPrivateData?.let { 1 } ?: 0) shl 1)
+                    or (adaptationFieldExtension?.let { 1 } ?: 0)
+                    ))
 
         programClockReference?.let {
             addClockReference(buffer, it)
@@ -86,23 +86,22 @@ class AdaptationField(
         return buffer
     }
 
-    private fun addClockReference(buffer: ByteBuffer, timestamp: Long) {
-        val pcrBase =
-            (TSConst.SYSTEM_CLOCK_FREQ * timestamp / 1000000 /* µs -> s */ / 300) % 2.toDouble()
-                .pow(33)
-                .toLong()
-        val pcrExt = (TSConst.SYSTEM_CLOCK_FREQ * timestamp / 1000000 /* µs -> s */) % 300
+    companion object {
+        private fun addClockReference(buffer: ByteBuffer, timestamp: Long) {
+            val pcrBase = TSTimeUtils.computeTimestamp90kHz(timestamp)
+            val pcrExt = TSTimeUtils.computePcrExt(timestamp)
 
-        /**
-         * PCR Base -> 33 bits
-         * Reserved -> 6 bits (0b111111)
-         * PCR Ext -> 9 bits
-         */
-        buffer.putInt((pcrBase shr 1).toInt())
-        buffer.putShort(
-            (((pcrBase and 0x1) shl 15)
-                    or (0b111111 shl 9)
-                    or (pcrExt and 0x1FF))
-        )
+            /**
+             * PCR Base -> 33 bits
+             * Reserved -> 6 bits (0b111111)
+             * PCR Ext -> 9 bits
+             */
+            buffer.putInt((pcrBase shr 1).toInt())
+            buffer.putShort(
+                (((pcrBase and 0x1) shl 15)
+                        or (0b111111 shl 9)
+                        or (pcrExt and 0x1FF))
+            )
+        }
     }
 }
