@@ -247,11 +247,10 @@ internal constructor(
 
         setState(State.PENDING_RELEASE)
         try {
-            mediaCodec.release()
-
             if (input is SurfaceInput) {
                 input.release()
             }
+            mediaCodec.release()
         } catch (_: Throwable) {
         } finally {
             setState(State.RELEASED)
@@ -463,7 +462,6 @@ internal constructor(
     }
 
     internal inner class SurfaceInput : IEncoderInternal.ISurfaceInput {
-        private val obsoleteSurfaces = mutableListOf<Surface>()
 
         override var surface: Surface? = null
             private set
@@ -476,8 +474,10 @@ internal constructor(
 
         fun reset() {
             val surface = synchronized(this) {
-                surface?.let {
-                    obsoleteSurfaces.add(it)
+                try {
+                    surface?.release()
+                } catch (t: Throwable) {
+                    Logger.w(tag, "Failed to release surface: ${t.message}")
                 }
                 this.surface = mediaCodec.createInputSurface()
                 this.surface
@@ -491,10 +491,13 @@ internal constructor(
          */
         fun release() {
             val surface = synchronized(this) {
-                this.surface
+                try {
+                    surface?.release()
+                } catch (t: Throwable) {
+                    Logger.w(tag, "Failed to release surface: ${t.message}")
+                }
+                this.surface = null
             }
-            surface?.release()
-            obsoleteSurfaces.forEach { it.release() }
         }
 
         private fun notifySurfaceUpdate(surface: Surface) {
