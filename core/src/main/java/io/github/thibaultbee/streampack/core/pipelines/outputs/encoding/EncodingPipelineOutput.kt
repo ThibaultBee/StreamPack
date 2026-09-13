@@ -52,6 +52,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -368,8 +369,10 @@ internal class EncodingPipelineOutput(
             _audioCodecConfigFlow.emit(audioCodecConfig)
             _audioSourceConfigFlow.emit(audioCodecConfig.sourceConfig)
         } catch (t: Throwable) {
-            _audioCodecConfigFlow.emit(null)
-            _audioSourceConfigFlow.emit(null)
+            withContext(NonCancellable) {
+                _audioCodecConfigFlow.emit(null)
+                _audioSourceConfigFlow.emit(null)
+            }
             throw t
         }
     }
@@ -381,8 +384,10 @@ internal class EncodingPipelineOutput(
                 configure()
             }
         } catch (t: Throwable) {
-            audioEncoderInternal?.release()
-            audioEncoderInternal = null
+            withContext(NonCancellable) {
+                audioEncoderInternal?.release()
+                audioEncoderInternal = null
+            }
             throw t
         }
     }
@@ -426,14 +431,16 @@ internal class EncodingPipelineOutput(
         withContextMutex {
             require(!isStreaming) { "Can't invalidate audio configuration while streaming" }
 
-            _audioCodecConfigFlow.emit(null)
-            _audioSourceConfigFlow.emit(null)
-            try {
-                audioEncoderInternal?.release()
-            } catch (t: Throwable) {
-                Logger.w(TAG, "Can't release audio encoder: ${t.message}")
+            withContext(NonCancellable) {
+                _audioCodecConfigFlow.emit(null)
+                _audioSourceConfigFlow.emit(null)
+                try {
+                    audioEncoderInternal?.release()
+                } catch (t: Throwable) {
+                    Logger.w(TAG, "Can't release audio encoder: ${t.message}")
+                }
+                audioEncoderInternal = null
             }
-            audioEncoderInternal = null
         }
     }
 
@@ -493,8 +500,10 @@ internal class EncodingPipelineOutput(
             _videoCodecConfigFlow.emit(videoCodecConfig)
             _videoSourceConfigFlow.emit(videoCodecConfig.sourceConfig)
         } catch (t: Throwable) {
-            _videoCodecConfigFlow.emit(null)
-            _videoSourceConfigFlow.emit(null)
+            withContext(NonCancellable) {
+                _videoCodecConfigFlow.emit(null)
+                _videoSourceConfigFlow.emit(null)
+            }
             throw t
         }
     }
@@ -505,8 +514,10 @@ internal class EncodingPipelineOutput(
                 videoConfig, targetRotation
             )
         } catch (t: Throwable) {
-            videoEncoderInternal?.release()
-            videoEncoderInternal = null
+            withContext(NonCancellable) {
+                videoEncoderInternal?.release()
+                videoEncoderInternal = null
+            }
             throw t
         }
     }
@@ -574,15 +585,17 @@ internal class EncodingPipelineOutput(
         withContextMutex {
             require(!isStreaming) { "Can't invalidate video configuration while streaming" }
 
-            _videoCodecConfigFlow.emit(null)
-            _videoSourceConfigFlow.emit(null)
-            try {
-                videoEncoderInternal?.release()
-            } catch (t: Throwable) {
-                Logger.w(TAG, "Can't release video encoder: ${t.message}")
+            withContext(NonCancellable) {
+                _videoCodecConfigFlow.emit(null)
+                _videoSourceConfigFlow.emit(null)
+                try {
+                    videoEncoderInternal?.release()
+                } catch (t: Throwable) {
+                    Logger.w(TAG, "Can't release video encoder: ${t.message}")
+                }
+                videoEncoderInternal = null
+                _surfaceFlow.emit(null)
             }
-            videoEncoderInternal = null
-            _surfaceFlow.emit(null)
         }
     }
 
@@ -612,7 +625,9 @@ internal class EncodingPipelineOutput(
     override suspend fun close() {
         withContext(coroutineDispatcher) {
             openCloseMutex.withLock {
-                closeUnsafe()
+                withContext(NonCancellable) {
+                    closeUnsafe()
+                }
             }
         }
     }
@@ -684,7 +699,9 @@ internal class EncodingPipelineOutput(
 
             endpointInternal.startStream()
         } catch (t: Throwable) {
-            stopStreamUnsafe()
+            withContext(NonCancellable) {
+                stopStreamUnsafe()
+            }
             throw t
         }
     }
@@ -717,7 +734,9 @@ internal class EncodingPipelineOutput(
                 try {
                     startStream()
                 } catch (t: Throwable) {
-                    closeUnsafe()
+                    withContext(NonCancellable) {
+                        closeUnsafe()
+                    }
                     throw t
                 }
             }
@@ -739,7 +758,9 @@ internal class EncodingPipelineOutput(
                     Logger.w(TAG, "Output is released")
                     return@withLock
                 }
-                stopStreamUnsafe()
+                withContext(NonCancellable) {
+                    stopStreamUnsafe()
+                }
             }
         }
     }
@@ -840,7 +861,7 @@ internal class EncodingPipelineOutput(
         videoEncoderJob?.join()
     }
 
-    private suspend fun releaseUnsafe() {
+    private suspend fun releaseUnsafe() = withContext(NonCancellable) {
         _isStreamingFlow.emit(false)
 
         // Encoders

@@ -61,6 +61,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -390,15 +391,17 @@ open class StreamerPipeline(
                     outputsToJobsMap[output] = jobs
                 }
             } catch (t: Throwable) {
-                removeOutput(output)
-                try {
-                    output.release()
-                } catch (t2: Throwable) {
-                    Logger.e(
-                        TAG,
-                        "Error while releasing output $output after a failure to add it",
-                        t2
-                    )
+                withContext(NonCancellable) {
+                    removeOutput(output)
+                    try {
+                        output.release()
+                    } catch (t2: Throwable) {
+                        Logger.e(
+                            TAG,
+                            "Error while releasing output $output after a failure to add it",
+                            t2
+                        )
+                    }
                 }
                 throw t
             }
@@ -768,7 +771,9 @@ open class StreamerPipeline(
             } catch (t: Throwable) {
                 // Restore audio source state
                 if (!isAudioSourceStreaming) {
-                    _audioInput?.stopStream()
+                    withContext(NonCancellable) {
+                        _audioInput?.stopStream()
+                    }
                 }
                 throw t
             }
