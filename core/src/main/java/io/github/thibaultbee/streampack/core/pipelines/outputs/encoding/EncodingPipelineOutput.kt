@@ -265,9 +265,13 @@ internal class EncodingPipelineOutput(
             onInternalError(t)
         }
 
+        /**
+         * Using a size will make the [Channel] release encoder frame instead of stalling it.
+         */
         override val outputChannel =
-            Channel<Frame>(Channel.UNLIMITED, onUndeliveredElement = {
+            Channel<Frame>(AUDIO_ENCODER_CHANNEL_SIZE, onUndeliveredElement = {
                 it.close()
+                Logger.w(TAG, "Audio frame dropped")
             })
     }
 
@@ -276,9 +280,13 @@ internal class EncodingPipelineOutput(
             onInternalError(t)
         }
 
+        /**
+         * Using a size will make the [Channel] release encoder frame instead of stalling it.
+         */
         override val outputChannel =
-            Channel<Frame>(Channel.UNLIMITED, onUndeliveredElement = {
+            Channel<Frame>(VIDEO_ENCODER_CHANNEL_SIZE, onUndeliveredElement = {
                 it.close()
+                Logger.w(TAG, "Video frame dropped")
             })
     }
 
@@ -965,5 +973,10 @@ internal class EncodingPipelineOutput(
 
     companion object {
         private const val TAG = "EncodingPipelineOutput"
+
+        private const val AUDIO_ENCODER_CHANNEL_SIZE =
+            4 // This is an arbitrary value. It depends on the encoder, but 4 is a reasonable value based on real-world implementations.
+        private const val VIDEO_ENCODER_CHANNEL_SIZE =
+            4 // This is an arbitrary value. It depends on the encoder, but 4 is a reasonable value based on real-world implementations.
     }
 }

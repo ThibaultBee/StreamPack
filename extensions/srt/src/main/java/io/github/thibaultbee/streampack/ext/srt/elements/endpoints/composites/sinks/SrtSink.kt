@@ -147,7 +147,7 @@ class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSi
         }
 
         try {
-            return socket.send(packet.buffer, buildMsgCtrl(packet))
+            return socket.trySend(packet.buffer, buildMsgCtrl(packet))
         } catch (t: Throwable) {
             isOnError = true
             if (completionException != null) {
