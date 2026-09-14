@@ -141,18 +141,12 @@ class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSi
                 )
                 return -1
             }
-        } catch (t: Throwable) {
-            Logger.w(TAG, "Failed to get connection time: $t")
-            return -1
-        }
-
-        try {
-            return socket.send(packet.buffer, buildMsgCtrl(packet))
+            return socket.trySend(packet.buffer, buildMsgCtrl(packet))
         } catch (t: Throwable) {
             isOnError = true
-            if (completionException != null) {
+            completionException?.let {
                 // Socket already closed
-                throw ClosedException(completionException!!)
+                throw ClosedException(it)
             }
             close()
             throw ClosedException(t)
