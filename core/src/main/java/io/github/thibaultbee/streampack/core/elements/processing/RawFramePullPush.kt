@@ -74,12 +74,15 @@ class RawFramePullPush(
         while (isActive) {
             val rawFrame = mutex.withLock {
                 val unwrapSource = source ?: return@withLock null
+                val buffer = bufferPool.get(unwrapSource.minBufferSize)
                 try {
-                    val buffer = bufferPool.get(unwrapSource.minBufferSize)
                     val timestampInUs = unwrapSource.fillAudioFrame(buffer)
-                    pool.get(buffer, timestampInUs)
+                    pool.get(buffer, timestampInUs) {
+                        bufferPool.put(buffer)
+                    }
                 } catch (t: Throwable) {
                     Logger.e(TAG, "Failed to get frame: ${t.message}")
+                    bufferPool.put(buffer)
                     null
                 }
             }

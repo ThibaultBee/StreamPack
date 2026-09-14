@@ -54,7 +54,9 @@ class AudioFrameProcessor(
     ) {
         val consumeFrame = data.deepCopy(bufferPool)
         coroutineScope.launch {
-            effect.consume(isMuted, consumeFrame)
+            consumeFrame.use {
+                effect.consume(isMuted, it)
+            }
         }
     }
 
