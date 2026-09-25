@@ -299,7 +299,6 @@ private class DefaultSurfaceProcessor(
         if (isReleaseRequested.get()) {
             return
         }
-        surfaceTexture
         val timeConverter = surfaceInputsToTimeConverterMap[surfaceTexture] ?: return
 
         surfaceTexture.updateTexImage()
