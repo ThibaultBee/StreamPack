@@ -66,9 +66,9 @@ class Sdt(
         return nBits
     }
 
-    fun write() {
+    fun write(timestamp: Long) {
         if (services.isNotEmpty()) {
-            write(toByteBuffer())
+            write(toByteBuffer(), timestamp)
         }
     }
 

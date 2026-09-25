@@ -40,8 +40,8 @@ open class Psi(
         const val PSI_HEADER_SIZE = 9 // contains pointer_field
     }
 
-    protected fun write(buffer: ByteBuffer) {
-        write(payload = toByteBuffer(buffer))
+    protected fun write(buffer: ByteBuffer, timestamp: Long) {
+        write(payload = toByteBuffer(buffer), timestamp = timestamp)
     }
 
     fun toByteBuffer(payload: ByteBuffer): ByteBuffer {

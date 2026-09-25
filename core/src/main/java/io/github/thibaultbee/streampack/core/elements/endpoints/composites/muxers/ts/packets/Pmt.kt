@@ -62,9 +62,9 @@ class Pmt(
             MediaFormat.MIMETYPE_VIDEO_HEVC
         ) * streams.filter { it.config.mimeType == MediaFormat.MIMETYPE_VIDEO_HEVC }.size
 
-    fun write() {
+    fun write(timestamp: Long) {
         if (service.pcrPid != null) {
-            write(toByteBuffer())
+            write(toByteBuffer(), timestamp)
         }
     }
 

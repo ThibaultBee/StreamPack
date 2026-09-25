@@ -44,7 +44,7 @@ class SdtTest {
             )
         )
         Sdt(ByteBufferPool(true), listener, services, 0x0001, 0xff01.toShort()).run {
-            write()
+            write(0)
         }
     }
 }

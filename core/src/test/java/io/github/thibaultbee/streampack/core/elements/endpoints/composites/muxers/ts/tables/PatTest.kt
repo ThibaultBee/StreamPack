@@ -47,7 +47,7 @@ class PatTest {
         Pmt(byteBufferPool, listener, service, emptyList(), 0x64).run { service.pmt = this }
 
         Pat(byteBufferPool, listener, listOf(service), tsId = 0x437, versionNumber = 3).run {
-            write()
+            write(0)
         }
     }
 }
