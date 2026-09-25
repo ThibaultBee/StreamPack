@@ -54,9 +54,9 @@ class Pat(
     override val size: Int
         get() = bitSize / Byte.SIZE_BITS
 
-    fun write() {
+    fun write(timestamp: Long) {
         if (services.any { it.pmt != null }) {
-            write(toByteBuffer())
+            write(toByteBuffer(), timestamp)
         }
     }
 

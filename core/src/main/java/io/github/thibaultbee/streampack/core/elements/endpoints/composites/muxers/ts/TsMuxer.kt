@@ -182,16 +182,19 @@ class TsMuxer : IMuxerInternal {
     private fun generateStreams(
         frame: Frame, pes: Pes
     ) {
-        retransmitPsi(pes.stream.isVideo and frame.isKeyFrame)
+        retransmitPsi(pes.stream.isVideo and frame.isKeyFrame, frame.ptsInUs)
         pes.write(frame)
     }
 
     /**
-     * Manages table retransmission
+     * Manages table retransmission.
+     * If [sendPsiOnce] is true, tables (SDT, PAT, PMT) are sent only once at the beginning of the stream.
+     * Otherwise, they are retransmitted periodically and on every video key frame.
      *
      * @param forcePat Force to remit a PAT. Set to true on video key frame.
+     * @param timestamp Timestamp in µs to associate with the PSI packets (typically the current frame PTS).
      */
-    private fun retransmitPsi(forcePat: Boolean) {
+    private fun retransmitPsi(forcePat: Boolean, timestamp: Long = 0L) {
         var sendSdt = false
         var sendPat = false
 
@@ -208,41 +211,41 @@ class TsMuxer : IMuxerInternal {
         }
 
         if (sendSdt) {
-            sendSdt()
+            sendSdt(timestamp)
         }
         if (sendPat) {
-            sendPat()
-            sendPmts()
+            sendPat(timestamp)
+            sendPmts(timestamp)
         }
     }
 
-    private fun upgradePat() {
+    private fun upgradePat(timestamp: Long = 0L) {
         pat.versionNumber = (pat.versionNumber + 1).toByte()
-        sendPat()
+        sendPat(timestamp)
     }
 
-    private fun sendPat() {
-        pat.write()
+    private fun sendPat(timestamp: Long = 0L) {
+        pat.write(timestamp)
     }
 
 
-    private fun sendPmt(service: Service) {
-        service.pmt?.write() ?: throw UnsupportedOperationException("PMT must not be null")
+    private fun sendPmt(service: Service, timestamp: Long = 0L) {
+        service.pmt?.write(timestamp) ?: throw UnsupportedOperationException("PMT must not be null")
     }
 
-    private fun sendPmts() {
+    private fun sendPmts(timestamp: Long = 0L) {
         tsServices.filter { it.pmt != null }.forEach {
-            it.pmt?.write() ?: throw UnsupportedOperationException("PMT must not be null")
+            it.pmt?.write(timestamp) ?: throw UnsupportedOperationException("PMT must not be null")
         }
     }
 
-    private fun upgradeSdt() {
+    private fun upgradeSdt(timestamp: Long = 0L) {
         sdt.versionNumber = (sdt.versionNumber + 1).toByte()
-        sendSdt()
+        sendSdt(timestamp)
     }
 
-    private fun sendSdt() {
-        sdt.write()
+    private fun sendSdt(timestamp: Long = 0L) {
+        sdt.write(timestamp)
     }
 
     /**
