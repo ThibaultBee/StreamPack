@@ -123,8 +123,13 @@ class RtmpEndpoint internal constructor(
             }
         }
 
+    private val rtmpRawMetrics = RtmpRawMetrics(
+        clientProvider = { rtmpClient },
+        metricsProvider = { syncMetrics }
+    )
+
     override val metrics: RtmpEndpointMetrics
-        get() = RtmpEndpointMetrics { syncMetrics }
+        get() = RtmpEndpointMetrics(rtmpRawMetrics)
 
     private val _isOpenFlow = MutableStateFlow(false)
     override val isOpenFlow = _isOpenFlow.asStateFlow()
