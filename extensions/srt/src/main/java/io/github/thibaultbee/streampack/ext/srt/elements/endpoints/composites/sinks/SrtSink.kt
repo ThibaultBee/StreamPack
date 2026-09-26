@@ -144,9 +144,9 @@ class SrtSink(private val coroutineDispatcher: CoroutineDispatcher) : AbstractSi
             return socket.trySend(packet.buffer, buildMsgCtrl(packet))
         } catch (t: Throwable) {
             isOnError = true
-            if (completionException != null) {
+            completionException?.let {
                 // Socket already closed
-                throw ClosedException(completionException!!)
+                throw ClosedException(it)
             }
             close()
             throw ClosedException(t)
