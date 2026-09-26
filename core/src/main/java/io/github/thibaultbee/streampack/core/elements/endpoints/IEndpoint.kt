@@ -27,7 +27,7 @@ import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import kotlinx.coroutines.flow.StateFlow
 import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 
-@InternalStreamPackApi
+@SubclassOptInRequired(InternalStreamPackApi::class)
 interface IEndpointInternal : IEndpoint, SuspendStreamable,
     SuspendCloseable, SuspendReleasable {
 
@@ -90,6 +90,7 @@ interface IEndpoint {
     /**
      * A factory to build an [IEndpoint].
      */
+    @SubclassOptInRequired(InternalStreamPackApi::class)
     interface Factory {
         /**
          * Creates an [IEndpoint] instance.
@@ -101,7 +102,6 @@ interface IEndpoint {
          * @param dispatcherProvider the [IDispatcherProvider] to use
          * @return an [IEndpoint]
          */
-        @InternalStreamPackApi
         fun create(
             context: Context,
             dispatcherProvider: IDispatcherProvider

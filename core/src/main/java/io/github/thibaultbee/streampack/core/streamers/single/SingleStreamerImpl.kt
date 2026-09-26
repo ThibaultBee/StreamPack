@@ -30,6 +30,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.pipelines.AudioInputMode
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
@@ -57,7 +58,7 @@ import kotlinx.coroutines.launch
  * @param context the application context
  * @param withAudio `true` to capture audio. It can't be changed after instantiation.
  * @param withVideo `true` to capture video. It can't be changed after instantiation.
- * @param audioInputMode the audio output mode. By default, it is [StreamerPipeline.AudioInputMode.CALLBACK]. Use [StreamerPipeline.AudioInputMode.PUSH] only to get processor (incl. vumeter) running outside a stream
+ * @param audioInputMode the audio output mode. By default, it is [AudioInputMode.CALLBACK]. Use [AudioInputMode.PUSH] only to get processor (incl. vumeter) running outside a stream
  * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param surfaceProcessorFactory the [ISurfaceProcessor.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
@@ -67,7 +68,7 @@ internal class SingleStreamerImpl(
     private val context: Context,
     withAudio: Boolean,
     withVideo: Boolean,
-    audioInputMode: StreamerPipeline.AudioInputMode = StreamerPipeline.AudioInputMode.CALLBACK,
+    audioInputMode: AudioInputMode = AudioInputMode.CALLBACK,
     endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),

@@ -55,7 +55,7 @@ val IPipelineOutput.isStreaming: Boolean
 /**
  * An internal output component for a pipeline.
  */
-@InternalStreamPackApi
+@SubclassOptInRequired(InternalStreamPackApi::class)
 interface IPipelineEventOutputInternal : IPipelineOutput {
     /**
      * A listener for audio/video stream events.

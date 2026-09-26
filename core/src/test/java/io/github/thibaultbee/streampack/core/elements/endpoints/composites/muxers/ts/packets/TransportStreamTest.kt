@@ -19,14 +19,12 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.data.
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.IMuxerInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.descriptors.AdaptationField
 import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
-import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.nio.ByteBuffer
 import kotlin.math.min
 import kotlin.random.Random
 
-@OptIn(InternalStreamPackApi::class)
 class TransportStreamTest {
 
     class MockMuxerListener(

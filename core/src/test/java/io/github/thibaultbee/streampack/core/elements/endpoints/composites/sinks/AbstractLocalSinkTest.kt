@@ -22,7 +22,6 @@ import io.github.thibaultbee.streampack.core.elements.utils.StubLogger
 import io.github.thibaultbee.streampack.core.elements.utils.FileUtils
 import io.github.thibaultbee.streampack.core.elements.utils.Utils
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
@@ -35,7 +34,6 @@ import java.nio.ByteBuffer
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [36])
-@OptIn(InternalStreamPackApi::class)
 abstract class AbstractLocalSinkTest(val sink: ISinkInternal) {
     init {
         Logger.logger = StubLogger()

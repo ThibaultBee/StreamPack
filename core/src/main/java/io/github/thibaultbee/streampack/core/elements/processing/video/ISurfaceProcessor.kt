@@ -35,8 +35,8 @@ interface ISurfaceProcessor {
     /**
      * Factory interface for creating instances of [ISurfaceProcessor].
      */
+    @SubclassOptInRequired(InternalStreamPackApi::class)
     interface Factory {
-        @InternalStreamPackApi
         fun create(
             context: Context,
             dynamicRangeProfile: DynamicRangeProfile,
@@ -53,7 +53,7 @@ interface ISurfaceProcessor {
  *
  * You can create your own implementation of this interface to handle custom effects or processing.
  */
-@InternalStreamPackApi
+@SubclassOptInRequired(InternalStreamPackApi::class)
 interface ISurfaceProcessorInternal : ISurfaceProcessor, Releasable {
     fun createInputSurface(surfaceSize: Size, timebase: Timebase): Surface
 

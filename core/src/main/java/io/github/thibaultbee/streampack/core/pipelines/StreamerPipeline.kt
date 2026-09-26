@@ -85,7 +85,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @param surfaceProcessorFactory the factory to create the surface processor
  * @param dispatcherProvider the coroutine dispatcher
  */
-@OptIn(InternalStreamPackApi::class)
+@InternalStreamPackApi
 open class StreamerPipeline(
     protected val context: Context,
     val withAudio: Boolean = true,
@@ -1045,21 +1045,6 @@ open class StreamerPipeline(
     companion object {
         private const val TAG = "StreamerPipeline"
     }
-
-    /**
-     * Audio output mode.
-     */
-    enum class AudioInputMode {
-        /**
-         * The audio is pushed to the output.
-         */
-        PUSH,
-
-        /**
-         * The audio is pulled by the output.
-         */
-        CALLBACK,
-    }
 }
 
 /**
@@ -1067,7 +1052,23 @@ open class StreamerPipeline(
  *
  * @see [StreamerPipeline.release]
  */
+@InternalStreamPackApi
 fun StreamerPipeline.releaseBlocking(dispatcher: CoroutineDispatcher = Dispatchers.Default) =
     runBlocking(dispatcher) {
         release()
     }
+
+/**
+ * Audio output mode.
+ */
+enum class AudioInputMode {
+    /**
+     * The audio is pushed to the output.
+     */
+    PUSH,
+
+    /**
+     * The audio is pulled by the output.
+     */
+    CALLBACK,
+}

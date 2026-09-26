@@ -37,7 +37,6 @@ import io.github.thibaultbee.streampack.core.elements.utils.av.video.DynamicRang
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.IVideoDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
-import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,7 +53,6 @@ import java.util.concurrent.atomic.AtomicBoolean
  * The public interface for the video input.
  * It provides access to the video source, the video processor, and the streaming state.
  */
-@OptIn(InternalStreamPackApi::class)
 interface IVideoInput : ISnapshotable {
 
     /**
@@ -106,7 +104,6 @@ val IVideoInput.withSource: Boolean
 /**
  * A internal class that manages a video source and a video processor.
  */
-@OptIn(InternalStreamPackApi::class)
 internal class VideoInput(
     private val context: Context,
     private val surfaceProcessorFactory: ISurfaceProcessor.Factory,

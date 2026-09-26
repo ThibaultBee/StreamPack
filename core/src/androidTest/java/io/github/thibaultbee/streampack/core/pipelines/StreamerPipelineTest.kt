@@ -61,7 +61,7 @@ class StreamerPipelineTest {
         context: Context,
         audioSource: IAudioSource.Factory?,
         videoSource: IVideoSource.Factory?,
-        audioInputMode: StreamerPipeline.AudioInputMode = StreamerPipeline.AudioInputMode.PUSH
+        audioInputMode: AudioInputMode = AudioInputMode.PUSH
     ): StreamerPipeline {
         val pipeline = StreamerPipeline(
             context,

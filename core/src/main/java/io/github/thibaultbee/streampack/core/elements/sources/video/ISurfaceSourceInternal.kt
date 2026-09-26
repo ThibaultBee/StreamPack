@@ -22,7 +22,7 @@ import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 /**
  * Interface for video source that provides a [Surface] for video stream.
  */
-@InternalStreamPackApi
+@SubclassOptInRequired(InternalStreamPackApi::class)
 interface ISurfaceSourceInternal {
     /**
      * Gets the timebase used for the video source.

@@ -31,7 +31,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.isCompati
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
-import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline.AudioInputMode
+import io.github.thibaultbee.streampack.core.pipelines.AudioInputMode
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutput

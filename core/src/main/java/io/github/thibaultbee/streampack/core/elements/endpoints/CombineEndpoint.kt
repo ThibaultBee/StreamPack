@@ -44,7 +44,6 @@ import kotlinx.coroutines.launch
  * @param endpoints Endpoints to combine
  * @param coroutineDispatcher Coroutine dispatcher to use for frame writing
  */
-@OptIn(InternalStreamPackApi::class)
 fun CombineEndpoint(vararg endpoints: IEndpointInternal, coroutineDispatcher: CoroutineDispatcher) =
     CombineEndpoint(endpoints.toList(), coroutineDispatcher)
 
@@ -287,7 +286,6 @@ open class CombineEndpoint(
 /**
  * A factory to build a [CombineEndpoint] from a varargs of [IEndpoint.Factory].
  */
-@OptIn(InternalStreamPackApi::class)
 fun CombineEndpointFactory(vararg endpointFactory: IEndpoint.Factory) =
     CombineEndpointFactory(endpointFactory.toList())
 
