@@ -1,7 +1,6 @@
 package io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks
 
 import androidx.test.platform.app.InstrumentationRegistry
-import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import io.github.thibaultbee.streampack.ext.srt.elements.endpoints.composites.sinks.SrtSink
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
@@ -12,7 +11,6 @@ import org.junit.runners.Parameterized
 /**
  * Test class for [ISink] state.
  */
-@OptIn(InternalStreamPackApi::class)
 @RunWith(Parameterized::class)
 class SinkStateTest(private val endpoint: ISinkInternal) {
     @Test

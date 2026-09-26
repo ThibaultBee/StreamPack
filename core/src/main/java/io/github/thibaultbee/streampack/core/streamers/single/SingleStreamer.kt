@@ -38,9 +38,9 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.mediaproject
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.interfaces.setCameraId
+import io.github.thibaultbee.streampack.core.pipelines.AudioInputMode
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
-import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
@@ -52,7 +52,7 @@ import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
  * @param context the application context
  * @param cameraId the camera id to use. By default, it is the default camera.
  * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory. If set to null, you will have to set it later explicitly.
- * @param audioInputMode the audio output mode. By default, it is [StreamerPipeline.AudioInputMode.CALLBACK].
+ * @param audioInputMode the audio output mode. By default, it is [AudioInputMode.CALLBACK].
  * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param surfaceProcessorFactory the [ISurfaceProcessor.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
@@ -64,7 +64,7 @@ suspend fun cameraSingleStreamer(
     context: Context,
     cameraId: String = context.defaultCameraId,
     audioSourceFactory: IAudioSource.Factory? = MicrophoneSourceFactory(),
-    audioInputMode: StreamerPipeline.AudioInputMode = StreamerPipeline.AudioInputMode.CALLBACK,
+    audioInputMode: AudioInputMode = AudioInputMode.CALLBACK,
     endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
@@ -90,7 +90,7 @@ suspend fun cameraSingleStreamer(
  *
  * @param context the application context
  * @param mediaProjection the media projection. It can be obtained with [MediaProjectionManager.getMediaProjection]. Don't forget to call [MediaProjection.stop] when you are done.
- * @param audioInputMode the audio output mode. By default, it is [StreamerPipeline.AudioInputMode.CALLBACK].
+ * @param audioInputMode the audio output mode. By default, it is [AudioInputMode.CALLBACK].
  * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param surfaceProcessorFactory the [ISurfaceProcessor.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
@@ -101,7 +101,7 @@ suspend fun cameraSingleStreamer(
 suspend fun audioVideoMediaProjectionSingleStreamer(
     context: Context,
     mediaProjection: MediaProjection,
-    audioInputMode: StreamerPipeline.AudioInputMode = StreamerPipeline.AudioInputMode.CALLBACK,
+    audioInputMode: AudioInputMode = AudioInputMode.CALLBACK,
     endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
@@ -127,7 +127,7 @@ suspend fun audioVideoMediaProjectionSingleStreamer(
  * @param context the application context
  * @param mediaProjection the media projection. It can be obtained with [MediaProjectionManager.getMediaProjection]. Don't forget to call [MediaProjection.stop] when you are done.
  * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory. If set to null, you will have to set it later explicitly.
- * @param audioInputMode the audio output mode. By default, it is [StreamerPipeline.AudioInputMode.CALLBACK].
+ * @param audioInputMode the audio output mode. By default, it is [AudioInputMode.CALLBACK].
  * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param surfaceProcessorFactory the [ISurfaceProcessor.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
@@ -138,7 +138,7 @@ suspend fun videoMediaProjectionSingleStreamer(
     context: Context,
     mediaProjection: MediaProjection,
     audioSourceFactory: IAudioSource.Factory? = MicrophoneSourceFactory(),
-    audioInputMode: StreamerPipeline.AudioInputMode = StreamerPipeline.AudioInputMode.CALLBACK,
+    audioInputMode: AudioInputMode = AudioInputMode.CALLBACK,
     endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
@@ -166,7 +166,7 @@ suspend fun videoMediaProjectionSingleStreamer(
  * @param context the application context
  * @param audioSourceFactory the audio source factory.
  * @param videoSourceFactory the video source factory.
- * @param audioInputMode the audio output mode. By default, it is [StreamerPipeline.AudioInputMode.CALLBACK].
+ * @param audioInputMode the audio output mode. By default, it is [AudioInputMode.CALLBACK].
  * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param surfaceProcessorFactory the [ISurfaceProcessor.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
@@ -177,7 +177,7 @@ suspend fun SingleStreamer(
     context: Context,
     audioSourceFactory: IAudioSource.Factory,
     videoSourceFactory: IVideoSource.Factory,
-    audioInputMode: StreamerPipeline.AudioInputMode = StreamerPipeline.AudioInputMode.CALLBACK,
+    audioInputMode: AudioInputMode = AudioInputMode.CALLBACK,
     endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
@@ -200,7 +200,7 @@ suspend fun SingleStreamer(
  * A [ISingleStreamer] implementation for both audio and video.
  *
  * @param context the application context
- * @param audioInputMode the audio output mode. By default, it is [StreamerPipeline.AudioInputMode.CALLBACK].
+ * @param audioInputMode the audio output mode. By default, it is [AudioInputMode.CALLBACK].
  * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param defaultRotation the default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param surfaceProcessorFactory the [ISurfaceProcessor.Factory] implementation. By default, it is a [DefaultSurfaceProcessorFactory].
@@ -208,7 +208,7 @@ suspend fun SingleStreamer(
  */
 class SingleStreamer(
     context: Context,
-    audioInputMode: StreamerPipeline.AudioInputMode = StreamerPipeline.AudioInputMode.CALLBACK,
+    audioInputMode: AudioInputMode = AudioInputMode.CALLBACK,
     endpointFactory: IEndpoint.Factory = DynamicEndpointFactory(),
     @RotationValue defaultRotation: Int = context.displayRotation,
     surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),

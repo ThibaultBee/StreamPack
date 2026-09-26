@@ -29,19 +29,18 @@ interface IAudioSource {
     /**
      * A factory to build an [IAudioSource].
      */
+    @SubclassOptInRequired(InternalStreamPackApi::class)
     interface Factory {
         /**
          * Creates an [IAudioSourceInternal] instance.
          *
          * @return an [IAudioSourceInternal]
          */
-        @InternalStreamPackApi
         suspend fun create(context: Context): IAudioSourceInternal
 
         /**
          * Whether the source that will be created by [create] is equal to another source.
          */
-        @InternalStreamPackApi
         fun isSourceEquals(source: IAudioSourceInternal?): Boolean
     }
 }
@@ -51,7 +50,7 @@ interface IAudioSource {
  *
  * This interface extends [IAudioSource] and adds additional functionality for streaming and configuration.
  */
-@InternalStreamPackApi
+@SubclassOptInRequired(InternalStreamPackApi::class)
 interface IAudioSourceInternal : IAudioSource, IAudioFrameSourceInternal, SuspendStreamable,
     SuspendConfigurable<AudioSourceConfig>, Releasable {
     /**

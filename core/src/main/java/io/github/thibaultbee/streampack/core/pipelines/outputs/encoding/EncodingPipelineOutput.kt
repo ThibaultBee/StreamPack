@@ -80,7 +80,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @param defaultRotation The default rotation in [Surface] rotation ([Surface.ROTATION_0], ...). By default, it is the current device orientation.
  * @param dispatcherProvider The dispatcher provider to use for coroutine dispatching
  */
-@OptIn(InternalStreamPackApi::class)
+@InternalStreamPackApi
 internal class EncodingPipelineOutput(
     private val context: Context,
     override val withAudio: Boolean,

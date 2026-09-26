@@ -6,14 +6,12 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.Compo
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ISinkWithMetricsInternal
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.TsMuxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
-import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.CoroutineDispatcher
 
 object Endpoints {
     /**
      * Creates an endpoint for RTMP (with a FLV muxer)
      */
-    @OptIn(InternalStreamPackApi::class)
     internal fun createRtmpEndpoint(
         defaultDispatcher: CoroutineDispatcher,
         ioDispatcher: CoroutineDispatcher
@@ -38,7 +36,6 @@ object Endpoints {
     /**
      * Creates an endpoint for FLV File
      */
-    @OptIn(InternalStreamPackApi::class)
     internal fun createFlvFileEndpoint(
         defaultDispatcher: CoroutineDispatcher,
         ioDispatcher: CoroutineDispatcher
@@ -64,7 +61,6 @@ object Endpoints {
     /**
      * Creates an endpoint for FLV File
      */
-    @OptIn(InternalStreamPackApi::class)
     internal fun createFlvContentEndpoint(
         context: Context,
         defaultDispatcher: CoroutineDispatcher,
@@ -94,7 +90,6 @@ object Endpoints {
     /**
      * Creates an endpoint for SRT (with a TS muxer)
      */
-    @OptIn(InternalStreamPackApi::class)
     internal fun createSrtEndpoint(
         serviceInfo: TSServiceInfo?,
         coroutineDispatcher: CoroutineDispatcher

@@ -27,8 +27,8 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
-import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline.AudioInputMode
-import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline.AudioInputMode.CALLBACK
+import io.github.thibaultbee.streampack.core.pipelines.AudioInputMode
+import io.github.thibaultbee.streampack.core.pipelines.AudioInputMode.CALLBACK
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
 
@@ -37,7 +37,7 @@ import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
  *
  * @param context the application context
  * @param audioSourceFactory the audio source factory. By default, it is the default microphone source factory. If parameter is null, no audio source are set. It can be set later with [AudioOnlySingleStreamer.setAudioSource].
- * @param audioInputMode the audio output mode. By default, it is [StreamerPipeline.AudioInputMode.CALLBACK].
+ * @param audioInputMode the audio output mode. By default, it is [AudioInputMode.CALLBACK].
  * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */
@@ -63,7 +63,7 @@ suspend fun AudioOnlySingleStreamer(
  * A [ISingleStreamer] implementation for audio only (without video).
  *
  * @param context the application context
- * @param audioInputMode the audio output mode. By default, it is [StreamerPipeline.AudioInputMode.CALLBACK].
+ * @param audioInputMode the audio output mode. By default, it is [AudioInputMode.CALLBACK].
  * @param endpointFactory the [IEndpoint.Factory] implementation. By default, it is a [DynamicEndpointFactory].
  * @param dispatcherProvider the [IDispatcherProvider] implementation. By default, it is a [DispatcherProvider].
  */

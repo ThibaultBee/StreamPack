@@ -61,7 +61,7 @@ interface IEncoder {
     fun requestKeyFrame()
 }
 
-@InternalStreamPackApi
+@SubclassOptInRequired(InternalStreamPackApi::class)
 interface IEncoderInternal : SuspendStreamable, SuspendReleasable,
     IEncoder {
 

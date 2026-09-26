@@ -35,7 +35,6 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.mediaproject
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IWithAudioSource
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
-import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import io.github.thibaultbee.streampack.core.utils.extensions.getMediaProjection
 import io.github.thibaultbee.streampack.services.utils.StreamerFactory
 
@@ -64,7 +63,6 @@ import io.github.thibaultbee.streampack.services.utils.StreamerFactory
  * @param channelDescriptionResourceId A string resource identifier for the user visible description of the notification channel.
  * @param notificationIconResourceId A drawable resource identifier for the user visible icon of the notification channel.
  */
-@OptIn(InternalStreamPackApi::class)
 abstract class MediaProjectionService<T : IStreamer>(
     streamerFactory: StreamerFactory<T>,
     notificationId: Int = DEFAULT_NOTIFICATION_ID,

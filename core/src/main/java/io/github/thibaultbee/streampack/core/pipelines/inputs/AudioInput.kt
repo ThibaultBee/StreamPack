@@ -34,7 +34,6 @@ import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_AUDIO_PREPROCESSING
 import io.github.thibaultbee.streampack.core.pipelines.IAudioDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.inputs.AudioInput.PushConfig
-import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,7 +51,6 @@ import java.util.concurrent.atomic.AtomicBoolean
  * The public interface for the audio input.
  * It provides access to the audio source, the audio processor, and the streaming state.
  */
-@OptIn(InternalStreamPackApi::class)
 interface IAudioInput {
     /**
      * Whether the audio input is streaming.
@@ -120,7 +118,6 @@ val IAudioInput.withSource: Boolean
 /**
  * A internal class that manages an audio source and an audio processor.
  */
-@OptIn(InternalStreamPackApi::class)
 internal class AudioInput(
     private val context: Context,
     config: Config,
@@ -503,13 +500,11 @@ internal class AudioInput(
     internal class CallbackConfig : Config()
 }
 
-@OptIn(InternalStreamPackApi::class)
 private sealed interface IAudioPort : Streamable, Releasable {
     suspend fun setInput(source: IAudioFrameSourceInternal)
     suspend fun removeInput()
 }
 
-@OptIn(InternalStreamPackApi::class)
 private class PushAudioPort(
     audioFrameProcessor: AudioFrameProcessor,
     config: PushConfig,
@@ -547,7 +542,6 @@ private class PushAudioPort(
     }
 }
 
-@OptIn(InternalStreamPackApi::class)
 private class CallbackAudioPort(private val audioFrameProcessor: AudioFrameProcessor) :
     IAudioPort {
     private val mutex = Mutex()

@@ -31,7 +31,6 @@ import io.github.thibaultbee.streampack.core.streamers.single.cameraSingleStream
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import io.github.thibaultbee.streampack.core.streamers.single.setConfig
 import io.github.thibaultbee.streampack.core.utils.FileUtils
-import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
@@ -40,7 +39,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import kotlin.time.Duration.Companion.minutes
 
-@OptIn(InternalStreamPackApi::class)
 @RunWith(Parameterized::class)
 class CameraSingleStreamerStateTest(descriptor: MediaDescriptor) :
     SingleStreamerStateTest(

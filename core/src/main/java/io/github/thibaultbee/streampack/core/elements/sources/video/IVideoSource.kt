@@ -31,6 +31,7 @@ interface IVideoSource {
     /**
      * A factory to build an [IVideoSource].
      */
+    @SubclassOptInRequired(InternalStreamPackApi::class)
     interface Factory {
         /**
          * Creates an [IVideoSourceInternal] instance.
@@ -38,7 +39,6 @@ interface IVideoSource {
          * @param context the application context
          * @return an [IVideoSourceInternal]
          */
-        @InternalStreamPackApi
         suspend fun create(
             context: Context,
             dispatcherProvider: IVideoDispatcherProvider
@@ -47,7 +47,6 @@ interface IVideoSource {
         /**
          * Whether the source that will be created by [create] is equal to another source.
          */
-        @InternalStreamPackApi
         fun isSourceEquals(source: IVideoSourceInternal?): Boolean
     }
 }
@@ -55,7 +54,7 @@ interface IVideoSource {
 /**
  * The internal interface for video sources.
  */
-@InternalStreamPackApi
+@SubclassOptInRequired(InternalStreamPackApi::class)
 interface IVideoSourceInternal : IVideoSource,
     SuspendStreamable, SuspendConfigurable<VideoSourceConfig>, SuspendReleasable {
     /**

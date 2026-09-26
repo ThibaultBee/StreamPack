@@ -30,7 +30,6 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.Camer
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
-import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 
 /**
  * An audio single Streamer
@@ -86,7 +85,6 @@ interface IWithVideoSource {
  *
  * @param cameraId the camera id
  */
-@OptIn(InternalStreamPackApi::class)
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun IWithVideoSource.setCameraId(cameraId: String) {
     setVideoSource(CameraSourceFactory(cameraId))
@@ -99,7 +97,6 @@ suspend fun IWithVideoSource.setCameraId(cameraId: String) {
  *
  * @param bitmap the [Bitmap] to stream
  */
-@OptIn(InternalStreamPackApi::class)
 suspend fun IWithVideoSource.setBitmap(bitmap: Bitmap) {
     setVideoSource(BitmapSourceFactory(bitmap))
 }

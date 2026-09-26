@@ -33,5 +33,5 @@ interface ICameraSource : IVideoSource, IPreviewableSource {
     val settings: CameraSettings
 }
 
-@InternalStreamPackApi
+@SubclassOptInRequired(InternalStreamPackApi::class)
 interface ICameraSourceInternal : IVideoSourceInternal

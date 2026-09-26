@@ -6,7 +6,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxer
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.sinks.ISink
 import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 
-@InternalStreamPackApi
+@SubclassOptInRequired(InternalStreamPackApi::class)
 interface ICompositeEndpointInternal : IEndpointInternal, ICompositeEndpoint
 
 interface ICompositeEndpoint : IEndpoint {

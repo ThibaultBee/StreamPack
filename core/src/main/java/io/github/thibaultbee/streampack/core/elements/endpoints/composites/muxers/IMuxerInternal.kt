@@ -22,7 +22,7 @@ import io.github.thibaultbee.streampack.core.elements.interfaces.Releasable
 import io.github.thibaultbee.streampack.core.elements.interfaces.Streamable
 import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 
-@InternalStreamPackApi
+@SubclassOptInRequired(InternalStreamPackApi::class)
 interface IMuxerInternal :
     IMuxer, Streamable,
     Releasable {
