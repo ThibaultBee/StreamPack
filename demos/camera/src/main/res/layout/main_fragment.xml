@@ -28,6 +28,38 @@
             app:position="center"
             app:scaleMode="fill" />
 
+        <FrameLayout
+            android:id="@+id/videoMuteOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#66000000"
+            android:clickable="false"
+            app:goneUnless="@{viewmodel.isVideoMuted}">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:contentDescription="@string/video_muted"
+                    android:src="@drawable/ic_baseline_videocam_off_24"
+                    app:tint="@android:color/white" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/video_muted"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp" />
+            </LinearLayout>
+        </FrameLayout>
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -61,8 +93,10 @@
             app:layout_constraintStart_toStartOf="parent">
 
             <ToggleButton
+                android:id="@+id/muteVideoButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:checked="@{viewmodel.isVideoMuted}"
                 android:contentDescription="@string/mute_unmute_video"
                 android:drawableTop="@drawable/ic_toggle_video_button"
                 android:onCheckedChanged="@{(_, checked) -> viewmodel.setVideoIsMuted(checked)}"
@@ -196,8 +230,10 @@
                 app:tint="@android:color/white" />
 
             <ToggleButton
+                android:id="@+id/muteMicButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:checked="@{viewmodel.isAudioMuted}"
                 android:contentDescription="@string/mute_unmute_microphone"
                 android:drawableTop="@drawable/ic_toggle_mic_button"
                 android:onCheckedChanged="@{(_, checked) -> viewmodel.setAudioIsMuted(checked)}"

@@ -367,12 +367,22 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         }
     }
 
+    val isAudioMuted = MutableLiveData(false)
+
     fun setAudioIsMuted(isMuted: Boolean) {
         audioStreamer?.audioInput?.isMuted = isMuted
+        isAudioMuted.value = isMuted
     }
 
+    val isVideoMuted = MutableLiveData(false)
+
     fun setVideoIsMuted(isMuted: Boolean) {
-        requiredStreamer.videoInput.processor.isMuted = isMuted
+        try {
+            streamer?.videoInput?.processor?.isMuted = isMuted
+            isVideoMuted.value = isMuted
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to set video isMuted", e)
+        }
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)

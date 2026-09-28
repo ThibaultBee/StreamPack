@@ -19,6 +19,7 @@
     <string name="set_auto_focus_mode">Set auto focus mode</string>
     <string name="mute_unmute_microphone">Mute unmute microphone</string>
     <string name="mute_unmute_video">Mute unmute video</string>
+    <string name="video_muted">Video Muted</string>
 
     <!-- Settings -->
     <string name="settings">Settings</string>
