@@ -476,6 +476,7 @@ internal constructor(
 
         fun reset() {
             val surface = synchronized(this) {
+                obsoleteSurfaces.removeFirstOrNull()?.release()
                 surface?.let {
                     obsoleteSurfaces.add(it)
                 }
@@ -490,11 +491,12 @@ internal constructor(
          * Releases the surface
          */
         fun release() {
-            val surface = synchronized(this) {
-                this.surface
+            synchronized(this) {
+                surface?.release()
+                surface = null
+                obsoleteSurfaces.forEach { it.release() }
+                obsoleteSurfaces.clear()
             }
-            surface?.release()
-            obsoleteSurfaces.forEach { it.release() }
         }
 
         private fun notifySurfaceUpdate(surface: Surface) {
