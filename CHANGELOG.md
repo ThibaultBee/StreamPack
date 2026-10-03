@@ -1,6 +1,28 @@
 Changelog
 ==========
 
+Version 3.2.1
+----------------
+
+## Features:
+
+- Introducing a new documentation: https://thibaultbee.github.io/StreamPack/
+- RTMP: add an API to measure the RTT
+- Demo: request local network access permission
+- Add Internal API annotations for plugins development
+- Upgrade dependencies and AGP to 9+
+
+## Bug fixes:
+
+- Preview/Camera: use metering areas factory to fix focus on tap
+- Use `NonCancellable` context on few exceptions
+- Make `startStream` and `close` thread safe
+- Reduce Surface memory impact (see [#306](https://github.com/ThibaultBee/StreamPack/issues/306))
+- TS: fix timestamp computation for long live (see [#301](https://github.com/ThibaultBee/StreamPack/issues/301))
+- SRT: avoid stalling the encoder (see [#302](https://github.com/ThibaultBee/StreamPack/issues/302))
+- SRT: fix a crash on `stopStream`
+- Processor: add a `Context` in the `Surface` processor factory
+
 Version 3.2.0
 ----------------
 
