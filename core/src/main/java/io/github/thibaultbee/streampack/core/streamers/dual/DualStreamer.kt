@@ -37,7 +37,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
-import io.github.thibaultbee.streampack.core.interfaces.setCameraId
+import io.github.thibaultbee.streampack.core.interfaces.setCameraSource
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
@@ -78,7 +78,7 @@ suspend fun cameraDualStreamer(
         dispatcherProvider = dispatcherProvider
     )
 
-    streamer.setCameraId(cameraId)
+    streamer.setCameraSource(cameraId)
     if (audioSourceFactory != null) {
         streamer.setAudioSource(audioSourceFactory)
     }

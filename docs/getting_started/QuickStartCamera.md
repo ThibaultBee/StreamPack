@@ -120,7 +120,7 @@ val streamer = cameraSingleStreamer(context = requireContext())
  * You can also create the `SingleStreamer`or the `DualStreamer` and add later the audio and video source with `setAudioSource` 
  * and `setVideoSource`.
  * val streamer = SingleStreamer(context = requireContext())
- * streamer.setVideoSource(CameraSourceFactory()) // Same as streamer.setCameraId(context.defaultCameraId)
+ * streamer.setVideoSource(CameraSourceFactory()) // Same as streamer.setCameraSource(context.defaultCameraId)
  * streamer.setAudioSource(MicrophoneSourceFactory())
  */
 ```

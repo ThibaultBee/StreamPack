@@ -79,25 +79,25 @@ interface IWithVideoSource {
 }
 
 /**
- * Sets the [cameraId] as the new video source.
+ * Sets the camera [cameraId] as the new video source.
  *
  * Same as [IWithVideoSource.setVideoSource] with a [CameraSourceFactory].
  *
  * @param cameraId the camera id
  */
 @RequiresPermission(Manifest.permission.CAMERA)
-suspend fun IWithVideoSource.setCameraId(cameraId: String) {
+suspend fun IWithVideoSource.setCameraSource(cameraId: String) {
     setVideoSource(CameraSourceFactory(cameraId))
 }
 
 /**
  * Sets the [Bitmap] as the new video source.
  *
- * Same as [IWithVideoSource.setVideoSource] with a [CameraSourceFactory].
+ * Same as [IWithVideoSource.setVideoSource] with a [BitmapSourceFactory].
  *
  * @param bitmap the [Bitmap] to stream
  */
-suspend fun IWithVideoSource.setBitmap(bitmap: Bitmap) {
+suspend fun IWithVideoSource.setBitmapSource(bitmap: Bitmap) {
     setVideoSource(BitmapSourceFactory(bitmap))
 }
 
