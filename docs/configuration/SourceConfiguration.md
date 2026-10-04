@@ -35,11 +35,11 @@ StreamPack provides convenient extension functions to quickly configure specific
 
 ```kotlin
 // Switch to a specific camera ID (often "0" for back, "1" for front but you should always query the camera list)
-streamer.setCameraId("0") 
+streamer.setCameraSource("0") 
 
 // Set a static image/bitmap as the video source (useful for "stream starting soon" screens)
 val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.holding_image)
-streamer.setBitmap(bitmap)
+streamer.setBitmapSource(bitmap)
 ```
 
 ## On-the-fly control
