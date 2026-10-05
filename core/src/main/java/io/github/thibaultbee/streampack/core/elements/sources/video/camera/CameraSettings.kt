@@ -1288,8 +1288,9 @@ class CameraSettings internal constructor(
             if (timeoutDurationMs > 0) {
                 autoCancelHandle = coroutineScope.launchIn(timeoutDurationMs)
                 {
+                    autoCancelHandle = null
                     try {
-                        cancelFocusAndMetering()
+                        cancelAfAeTrigger()
                     } catch (t: Throwable) {
                         Logger.w(TAG, "Failed to auto cancel focus and metering", t)
                     }
