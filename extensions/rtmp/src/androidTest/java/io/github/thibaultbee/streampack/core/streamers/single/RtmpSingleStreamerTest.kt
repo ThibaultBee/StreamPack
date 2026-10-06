@@ -25,6 +25,7 @@ import video.api.client.api.models.Environment
 import video.api.client.api.models.LiveStreamCreationPayload
 import video.api.client.api.models.VideoStatus
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @LargeTest
 class RtmpSingleStreamerTest {
@@ -43,7 +44,7 @@ class RtmpSingleStreamerTest {
     }
 
     @Test
-    fun writeToRtmp() = runTest(timeout = TEST_TIMEOUT_MS.milliseconds) {
+    fun writeToRtmp() = runTest(timeout = TEST_TIMEOUT) {
         assumeTrue("Required API key", apiKey != null)
         assumeTrue("API key not set", apiKey != "null")
 
@@ -62,15 +63,15 @@ class RtmpSingleStreamerTest {
             )
             streamer.startStream("rtmps://broadcast.api.video:1936/s/${liveStream.streamKey}")
             var i = 0
-            val numOfLoop = LIVE_STREAM_DURATION_MS / LIVE_STREAM_POLLING_MS
+            val numOfLoop = LIVE_STREAM_DURATION / LIVE_STREAM_POLLING
             withContext(Dispatchers.Default) {
                 while (i < numOfLoop) {
                     i++
                     Log.d(
                         TAG,
-                        "Waiting for 1s (${i * LIVE_STREAM_POLLING_MS} ms/$LIVE_STREAM_DURATION_MS) ms"
+                        "Waiting for 1s (${LIVE_STREAM_POLLING * i}/$LIVE_STREAM_DURATION)"
                     )
-                    delay(LIVE_STREAM_POLLING_MS.milliseconds)
+                    delay(LIVE_STREAM_POLLING)
                     val isBroadcasting =
                         liveStreamEndpoint.get(liveStream.liveStreamId).broadcasting!!
                     Log.i(TAG, "Is broadcasting $isBroadcasting")
@@ -124,9 +125,9 @@ class RtmpSingleStreamerTest {
     companion object {
         private const val TAG = "RTMPStreamerTest"
 
-        private const val TEST_TIMEOUT_MS = 200_000L
-        private const val LIVE_STREAM_DURATION_MS = 30_000L
-        private const val LIVE_STREAM_POLLING_MS = 1_000L
+        private val TEST_TIMEOUT = 200.seconds
+        private val LIVE_STREAM_DURATION = 30.seconds
+        private val LIVE_STREAM_POLLING = 1.seconds
 
         private const val VIDEO_WIDTH = 640
         private const val VIDEO_HEIGHT = 360
