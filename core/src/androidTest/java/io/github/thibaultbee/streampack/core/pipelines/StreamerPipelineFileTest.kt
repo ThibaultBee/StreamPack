@@ -40,6 +40,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(InternalStreamPackApi::class)
 @LargeTest
@@ -62,7 +63,7 @@ class StreamerPipelineFileTest : DeviceTest() {
     }
 
     @Test
-    fun testAudioOrVideoStream() = runTest(timeout = TEST_TIMEOUT_MS.milliseconds) {
+    fun testAudioOrVideoStream() = runTest(timeout = TEST_TIMEOUT) {
         // Add sources
         streamerPipeline.setAudioSource(MicrophoneSourceFactory())
         streamerPipeline.setVideoSource(CameraSourceFactory(context))
@@ -93,8 +94,8 @@ class StreamerPipelineFileTest : DeviceTest() {
         }
         videoOnlyOutput.startStream(videoOnlyDescriptor)
 
-        val duration: Duration = STREAM_DURATION_MS.milliseconds
-        val pollDuration: Duration = STREAM_POLLING_MS.milliseconds
+        val duration: Duration = STREAM_DURATION
+        val pollDuration: Duration = STREAM_POLLING
         var i = 0
         val numOfLoop = duration / pollDuration
 
@@ -133,9 +134,9 @@ class StreamerPipelineFileTest : DeviceTest() {
     companion object {
         private const val TAG = "StreamerPipelineFileTest"
 
-        private const val TEST_TIMEOUT_MS = 60_000L
-        private const val STREAM_DURATION_MS = 30_000L
-        private const val STREAM_POLLING_MS = 1_000L
+        private val TEST_TIMEOUT = 60.seconds
+        private val STREAM_DURATION = 30.seconds
+        private val STREAM_POLLING = 1.seconds
 
         private const val VIDEO_WIDTH = 1280
         private const val VIDEO_HEIGHT = 720
