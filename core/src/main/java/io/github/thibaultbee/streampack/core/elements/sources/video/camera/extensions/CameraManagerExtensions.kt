@@ -103,11 +103,7 @@ fun CameraManager.isFrontCamera(cameraId: String) =
  * @return true if string is a external camera id, otherwise false
  */
 fun CameraManager.isExternalCamera(cameraId: String) =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        getFacingDirection(cameraId) == CameraCharacteristics.LENS_FACING_EXTERNAL
-    } else {
-        false
-    }
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && getFacingDirection(cameraId) == CameraCharacteristics.LENS_FACING_EXTERNAL
 
 /**
  * Gets camera facing direction.
@@ -121,14 +117,15 @@ private fun CameraManager.getFacingDirection(cameraId: String) =
 
 
 /**
- * Gets all output capture sizes.
+ * Gets union of output stream sizes across specified cameras.
  *
- * @return List of resolutions supported by all camera
+ * @param cameraIds list of camera ids to get sizes for. Defaults to all cameras.
+ * @return List of resolutions supported by at least one specified camera
  */
-fun CameraManager.getCameraOutputStreamSizes(): List<Size> {
-    val cameraIdList = cameras
+fun CameraManager.getCameraOutputStreamSizes(cameraIds: List<String> = cameras): List<Size> {
+    if (cameraIds.isEmpty()) return emptyList()
     val resolutionSet = mutableSetOf<Size>()
-    cameraIdList.forEach { cameraId ->
+    cameraIds.forEach { cameraId ->
         resolutionSet.addAll(getCameraCharacteristics(cameraId).getCameraOutputStreamSizes())
     }
     return resolutionSet.toList()

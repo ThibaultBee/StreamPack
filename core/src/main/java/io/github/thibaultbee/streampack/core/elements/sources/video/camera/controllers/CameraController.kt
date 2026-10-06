@@ -59,6 +59,8 @@ internal class CameraController(
     private var deviceController: CameraDeviceController? = null
     private var sessionController: CameraSessionController? = null
 
+    private var isReleased = false
+
     private var captureRequestBuilder: CaptureRequestWithTargetsBuilder? = null
     private val sessionCallback = CameraSessionCallback(coroutineScope)
 
@@ -146,6 +148,9 @@ internal class CameraController(
      */
     @RequiresPermission(Manifest.permission.CAMERA)
     private suspend fun getDeviceController(): CameraDeviceController {
+        if (isReleased) {
+            throw IllegalStateException("CameraController is already released")
+        }
         return if (deviceController != null && !deviceController!!.isClosed) {
             deviceController!!
         } else {
@@ -296,6 +301,9 @@ internal class CameraController(
     suspend fun removeTarget(name: String) {
         withContext(defaultDispatcher) {
             controllerMutex.withLock {
+                if (isReleased) {
+                    return@withContext
+                }
                 val target = outputs[name] ?: return@withContext
 
                 val wasRemoved = getCaptureRequestBuilder().removeTarget(target)
@@ -466,10 +474,11 @@ internal class CameraController(
     suspend fun release() {
         withContext(defaultDispatcher) {
             controllerMutex.withLock {
+                isReleased = true
                 closeControllers()
+                outputs.clear()
             }
         }
-        outputs.clear()
         sessionCompat.release()
         coroutineScope.cancel()
     }

@@ -50,11 +50,7 @@ val CameraCharacteristics.isFrontCamera: Boolean
  * @return true if string is a external camera id, otherwise false
  */
 val CameraCharacteristics.isExternalCamera: Boolean
-    get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        facingDirection == CameraCharacteristics.LENS_FACING_EXTERNAL
-    } else {
-        false
-    }
+    get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && facingDirection == CameraCharacteristics.LENS_FACING_EXTERNAL
 
 /**
  * Gets [CameraCharacteristics] facing direction.
@@ -72,7 +68,7 @@ val CameraCharacteristics.facingDirection: Int?
  * @param klass a non-null Class object reference (for example SurfaceHolder::class.java)
  * @return List of resolutions supported by a camera for the [klass]
  */
-fun <T : Any> CameraCharacteristics.getCameraOutputSizes(klass: Class<T>): List<Size> {
+fun <T> CameraCharacteristics.getCameraOutputSizes(klass: Class<T>): List<Size> {
     return this[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]?.getOutputSizes(
         klass
     )?.toList() ?: emptyList()
@@ -250,13 +246,9 @@ fun CameraCharacteristics.isCapabilitiesSupported(
  * @return true if the camera supports 10-bit dynamic range output, false otherwise
  */
 val CameraCharacteristics.is10BitProfileSupported: Boolean
-    get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        isCapabilitiesSupported(
-            CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_DYNAMIC_RANGE_TEN_BIT
-        )
-    } else {
-        false
-    }
+    get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && isCapabilitiesSupported(
+        CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_DYNAMIC_RANGE_TEN_BIT
+    )
 
 /**
  * Gets list of 10-bit dynamic range output profiles.

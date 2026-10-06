@@ -35,9 +35,18 @@ object CameraSizes {
             characteristics[CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP]!!.getOutputSizes(
                 targetClass
             ).toList()
+        return getPreviewOutputSize(allSizes, targetSize)
+    }
 
+    /**
+     * Returns the closest available preview size to [targetSize] from [sizes].
+     */
+    fun getPreviewOutputSize(
+        sizes: List<Size>,
+        targetSize: Size,
+    ): Size {
         // Get available sizes and sort them by area from largest to smallest
-        val validSizes = allSizes
+        val validSizes = sizes
             .sortedWith(compareBy { it.height * it.width })
             .map { Size(it.width, it.height) }.reversed()
 

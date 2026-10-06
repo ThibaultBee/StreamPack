@@ -15,12 +15,15 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera
 
+import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.util.Size
 import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraOutputSizes
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraOrientationUtils
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSizes
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotationToDegrees
 
@@ -29,12 +32,14 @@ internal fun CameraInfoProvider(
     cameraId: String
 ): CameraInfoProvider {
     val characteristics = cameraManager.getCameraCharacteristics(cameraId)
+    val supportedSizes = characteristics.getCameraOutputSizes(SurfaceTexture::class.java)
     val rotationDegrees = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 0
     val facingDirection = characteristics.get(CameraCharacteristics.LENS_FACING)
-    return CameraInfoProvider(rotationDegrees, facingDirection = facingDirection)
+    return CameraInfoProvider(supportedSizes, rotationDegrees, facingDirection = facingDirection)
 }
 
 class CameraInfoProvider(
+    private val supportedSizes: List<Size>,
     @IntRange(from = 0, to = 359) override val rotationDegrees: Int,
     private val facingDirection: Int?
 ) :
@@ -63,7 +68,17 @@ class CameraInfoProvider(
         )
     }
 
-    override fun getSurfaceSize(targetResolution: Size) = targetResolution
+    override fun getSurfaceSize(targetResolution: Size): Size {
+        return if (supportedSizes.isEmpty() || supportedSizes.contains(targetResolution)) {
+            targetResolution
+        } else {
+            // Pick the closest supported camera size (e.g. 1920x1080 or 1440x1080)
+            CameraSizes.getPreviewOutputSize(
+                supportedSizes,
+                targetResolution
+            )
+        }
+    }
 
     override fun toString(): String {
         return "CameraInfoProvider(rotationDegrees=$rotationDegrees, isMirror=$isMirror, facingDirection=$facingDirection, isFrontFacing=$isFrontFacing)"

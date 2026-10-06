@@ -56,10 +56,8 @@ internal object CameraUtils {
             }
 
             override fun onDisconnected(camera: CameraDevice) {
-                try {
+                if (continuation.isActive) {
                     continuation.resumeWithException(RuntimeException("Camera has been disconnected"))
-                } catch (t: Throwable) {
-                    Logger.e(TAG, "Error while resuming with exception: $t")
                 }
                 isClosedFlow.tryEmit(true)
                 Logger.w(TAG, "Camera ${camera.id} has been disconnected")
@@ -67,8 +65,6 @@ internal object CameraUtils {
             }
 
             override fun onError(camera: CameraDevice, error: Int) {
-                Logger.e(TAG, "Camera ${camera.id} is in error $error")
-
                 val exception = when (error) {
                     ERROR_CAMERA_IN_USE -> CameraException("Camera already in use")
                     ERROR_MAX_CAMERAS_IN_USE -> CameraException("Max cameras in use")
@@ -77,12 +73,11 @@ internal object CameraUtils {
                     ERROR_CAMERA_SERVICE -> CameraException("Camera service has crashed")
                     else -> CameraException("Unknown error")
                 }
-                try {
+                if (continuation.isActive) {
                     continuation.resumeWithException(exception)
-                } catch (t: Throwable) {
-                    Logger.e(TAG, "Error while resuming with exception: $t")
                 }
                 isClosedFlow.tryEmit(true)
+                Logger.e(TAG, "Camera ${camera.id} is in error $error")
                 camera.close()
                 throwableFlow.tryEmit(exception)
             }
@@ -95,10 +90,8 @@ internal object CameraUtils {
         try {
             sessionCompat.openCamera(manager, cameraId, callbacks)
         } catch (t: Throwable) {
-            try {
+            if (continuation.isActive) {
                 continuation.resumeWithException(CameraException("Failed to open camera $cameraId: $t"))
-            } catch (t: Throwable) {
-                Logger.e(TAG, "Error while resuming with exception: $t")
             }
         }
     }
@@ -125,15 +118,13 @@ internal object CameraUtils {
 
             override fun onConfigureFailed(session: CameraCaptureSession) {
                 isClosedFlow.tryEmit(true)
+                if (continuation.isActive) {
+                    continuation.resumeWithException(CameraException("Camera: failed to configure the capture session for camera $cameraId and outputs $outputs"))
+                }
                 Logger.e(
                     TAG,
                     "Camera session configuration failed for camera $cameraId and outputs $outputs"
                 )
-                try {
-                    continuation.resumeWithException(CameraException("Camera: failed to configure the capture session for camera $cameraId and outputs $outputs"))
-                } catch (t: Throwable) {
-                    Logger.e(TAG, "Error while resuming with exception: $t")
-                }
             }
 
             override fun onClosed(session: CameraCaptureSession) {
@@ -164,10 +155,8 @@ internal object CameraUtils {
                 )
             }
         } catch (t: Throwable) {
-            try {
+            if (continuation.isActive) {
                 continuation.resumeWithException(CameraException("Failed to create capture session for camera $cameraId and outputs $outputs: $t"))
-            } catch (t: Throwable) {
-                Logger.e(TAG, "Error while resuming with exception: $t")
             }
         }
     }

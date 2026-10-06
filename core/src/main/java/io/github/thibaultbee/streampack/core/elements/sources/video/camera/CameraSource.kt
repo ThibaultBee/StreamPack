@@ -168,7 +168,7 @@ internal class CameraSource(
 
     @RequiresPermission(Manifest.permission.CAMERA)
     override suspend fun configure(config: VideoSourceConfig) {
-        if (!settings.characteristics.isFpsSupported(config.fps)) {
+        if (!characteristics.isFpsSupported(config.fps)) {
             Logger.w(TAG, "Camera $cameraId does not support ${config.fps} fps")
         }
 
@@ -187,7 +187,7 @@ internal class CameraSource(
 
     override fun <T> getPreviewSize(targetSize: Size, targetClass: Class<T>): Size {
         return CameraSizes.getPreviewOutputSize(
-            manager.getCameraCharacteristics(cameraId),
+            characteristics,
             targetSize,
             targetClass
         )
