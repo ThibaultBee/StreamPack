@@ -26,6 +26,7 @@ import android.os.Build
 import android.view.Surface
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraException
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
 
 /**
@@ -61,14 +62,21 @@ internal class CameraExecutorCaptureSessionCompat(dispatcherProvider: CameraDisp
         outputConfigurations: List<OutputConfiguration>,
         callback: CameraCaptureSession.StateCallback
     ) {
-        SessionConfiguration(
+        val sessionConfig = SessionConfiguration(
             SessionConfiguration.SESSION_REGULAR,
             outputConfigurations,
             executor,
             callback
-        ).also { sessionConfig ->
-            camera.createCaptureSession(sessionConfig)
+        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (!camera.isSessionConfigurationSupported(sessionConfig)) {
+                throw CameraException(
+                    "Session configuration is not supported for camera ${camera.id}"
+                )
+            }
         }
+
+        camera.createCaptureSession(sessionConfig)
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
@@ -92,5 +100,9 @@ internal class CameraExecutorCaptureSessionCompat(dispatcherProvider: CameraDisp
     override fun release() {
         // Potential source of java.util.concurrent.RejectedExecutionException
         //executor.shutdown()
+    }
+
+    companion object {
+        private const val TAG = "CameraExecutorCaptureSessionCompat"
     }
 }
