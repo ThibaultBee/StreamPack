@@ -62,6 +62,8 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.isNormali
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.launchIn
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
 import io.github.thibaultbee.streampack.core.logger.Logger
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -1262,7 +1264,7 @@ class CameraSettings internal constructor(
             afRectangles: List<MeteringRectangle>,
             aeRectangles: List<MeteringRectangle>,
             awbRectangles: List<MeteringRectangle>,
-            timeoutDurationMs: Long
+            timeoutDuration: Duration
         ) {
             disableAutoCancel()
 
@@ -1284,9 +1286,9 @@ class CameraSettings internal constructor(
 
             addFocusMetering(afRectangles, aeRectangles, awbRectangles)
 
-            // Auto cancel AF trigger after timeoutDurationMs
-            if (timeoutDurationMs > 0) {
-                autoCancelHandle = coroutineScope.launchIn(timeoutDurationMs)
+            // Auto cancel AF trigger after timeoutDuration
+            if (timeoutDuration.isPositive()) {
+                autoCancelHandle = coroutineScope.launchIn(timeoutDuration)
                 {
                     autoCancelHandle = null
                     try {
@@ -1308,7 +1310,7 @@ class CameraSettings internal constructor(
             aePoints: List<PointF>,
             awbPoints: List<PointF>,
             fovAspectRatio: Rational,
-            timeoutDurationMs: Long
+            timeoutDuration: Duration
         ) {
             val cropRegion = zoom.getCropSensorRegion()
 
@@ -1330,7 +1332,7 @@ class CameraSettings internal constructor(
                 "At least one of AF, AE, AWB rectangles must be non empty"
             }
 
-            executeMetering(afRectangles, aeRectangles, awbRectangles, timeoutDurationMs)
+            executeMetering(afRectangles, aeRectangles, awbRectangles, timeoutDuration)
         }
 
         private fun disableAutoCancel() {
@@ -1429,14 +1431,14 @@ class CameraSettings internal constructor(
          * @param point the point to focus
          * @param factory the factory to normalize the view points
          * @param viewRotationDegree the orientation of the field of view
-         * @param timeoutDurationMs duration in milliseconds after which the focus and metering will be cancelled automatically
+         * @param timeoutDuration duration after which the focus and metering will be cancelled automatically
          */
         @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun tapToFocus(
             point: PointF,
             factory: MeteringPointFactory,
             viewRotationDegree: Int,
-            timeoutDurationMs: Long
+            timeoutDuration: Duration
         ) {
             val points = listOf(point)
             return onTap(
@@ -1445,7 +1447,7 @@ class CameraSettings internal constructor(
                 emptyList(),
                 factory,
                 viewRotationDegree,
-                timeoutDurationMs
+                timeoutDuration
             )
         }
 
@@ -1459,7 +1461,7 @@ class CameraSettings internal constructor(
          * @param awbPoints the points where the white balance is done
          * @param factory the factory to normalize the view points
          * @param viewRotationDegree the orientation of the view
-         * @param timeoutDurationMs duration in milliseconds after which the focus and metering will be cancelled automatically
+         * @param timeoutDuration duration after which the focus and metering will be cancelled automatically
          */
         @RequiresPermission(Manifest.permission.CAMERA)
         suspend fun onTap(
@@ -1468,7 +1470,7 @@ class CameraSettings internal constructor(
             awbPoints: List<PointF>,
             factory: MeteringPointFactory,
             viewRotationDegree: Int,
-            timeoutDurationMs: Long = DEFAULT_AUTO_CANCEL_DURATION_MS
+            timeoutDuration: Duration = DEFAULT_AUTO_CANCEL_DURATION
         ) {
             val relativeRotation =
                 getSensorRotationDegrees(
@@ -1483,7 +1485,7 @@ class CameraSettings internal constructor(
                 aePoints.map { normalizePoint(it, factory, relativeRotation, isFrontCamera) },
                 awbPoints.map { normalizePoint(it, factory, relativeRotation, isFrontCamera) },
                 Rational(1, 1),
-                timeoutDurationMs
+                timeoutDuration
             )
         }
 
@@ -1502,7 +1504,7 @@ class CameraSettings internal constructor(
             private const val DEFAULT_AE_SIZE = DEFAULT_AF_SIZE * 1.5f
             private const val DEFAULT_METERING_WEIGHT_MAX =
                 MeteringRectangle.METERING_WEIGHT_MAX
-            const val DEFAULT_AUTO_CANCEL_DURATION_MS = 5000L
+            val DEFAULT_AUTO_CANCEL_DURATION = 5000.milliseconds
 
             private fun getPreferredAFMode(
                 characteristics: CameraCharacteristics, preferredMode: Int

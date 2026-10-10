@@ -35,6 +35,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Test
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Test [cameraSingleStreamer] with multiple endpoint.
@@ -61,7 +62,7 @@ class CameraSingleStreamerMultiEndpointTest : DeviceTest() {
     }
 
     @Test
-    fun writeToEndpoints() = runTest(timeout = TEST_TIMEOUT_MS.milliseconds * descriptors.size) {
+    fun writeToEndpoints() = runTest(timeout = TEST_TIMEOUT * descriptors.size) {
         val audioConfig = AudioConfig()
         val videoConfig = VideoConfig(resolution = Size(VIDEO_WIDTH, VIDEO_HEIGHT))
 
@@ -94,8 +95,8 @@ class CameraSingleStreamerMultiEndpointTest : DeviceTest() {
         StreamerUtils.runSingleStream(
             streamer,
             descriptor,
-            STREAM_DURATION_MS.milliseconds,
-            STREAM_POLLING_MS.milliseconds
+            STREAM_DURATION,
+            STREAM_POLLING
         )
 
         // Check file
@@ -122,9 +123,9 @@ class CameraSingleStreamerMultiEndpointTest : DeviceTest() {
     companion object {
         private const val TAG = "MultiEndpointTest"
 
-        private const val TEST_TIMEOUT_MS = 40_000L
-        private const val STREAM_DURATION_MS = 20_000L
-        private const val STREAM_POLLING_MS = 1_000L
+        private val TEST_TIMEOUT = 40.seconds
+        private val STREAM_DURATION = 20.seconds
+        private val STREAM_POLLING = 1.seconds
 
         private const val VIDEO_WIDTH = 1280
         private const val VIDEO_HEIGHT = 720
