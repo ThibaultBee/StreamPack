@@ -33,7 +33,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.frontCameras
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isBackCamera
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
-import io.github.thibaultbee.streampack.core.interfaces.setCameraId
+import io.github.thibaultbee.streampack.core.interfaces.setCameraSource
 
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun IWithVideoSource.setNextCameraId(context: Context) {
@@ -48,7 +48,7 @@ suspend fun IWithVideoSource.setNextCameraId(context: Context) {
         context.defaultCameraId
     }
 
-    setCameraId(newCameraId)
+    setCameraSource(newCameraId)
 }
 
 @RequiresPermission(Manifest.permission.CAMERA)
@@ -66,7 +66,7 @@ suspend fun IWithVideoSource.switchBackToFront(context: Context) {
     }
 
     if (cameras.isNotEmpty()) {
-        setCameraId(cameras[0])
+        setCameraSource(cameras[0])
     } else {
         throw Exception("No camera available")
     }

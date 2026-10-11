@@ -51,14 +51,14 @@ import io.github.thibaultbee.streampack.core.elements.metrics.metricsFlow
 import io.github.thibaultbee.streampack.core.elements.metrics.writtenBitrateInBps
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.BitmapSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameraManager
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.defaultCameraId
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.interfaces.releaseBlocking
+import io.github.thibaultbee.streampack.core.interfaces.setBitmapSource
+import io.github.thibaultbee.streampack.core.interfaces.setCameraSource
 import io.github.thibaultbee.streampack.core.regulator.controllers.intervalBitrateRegulatorControllerFactory
 import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
@@ -297,7 +297,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
             videoSourceMutex.withLock {
                 streamer?.let {
                     if (it.videoInput.sourceFlow.value == null) {
-                        it.setVideoSource(CameraSourceFactory(defaultCameraId))
+                        it.setCameraSource(defaultCameraId)
                     } else {
                         Log.i(TAG, "Camera source already set")
                     }
@@ -419,7 +419,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         viewModelScope.launch(defaultDispatcher) {
             videoSourceMutex.withLock {
                 Log.i(TAG, "Switch video source to Camera $cameraId")
-                streamer?.setVideoSource(CameraSourceFactory(cameraId))
+                streamer?.setCameraSource(cameraId)
             }
         }
     }
@@ -435,7 +435,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
                 }
 
                 Log.i(TAG, "Switch video source to default Camera")
-                streamer?.setVideoSource(CameraSourceFactory(defaultCameraId))
+                streamer?.setCameraSource(defaultCameraId)
             }
         }
     }
@@ -444,7 +444,7 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         viewModelScope.launch(defaultDispatcher) {
             videoSourceMutex.withLock {
                 Log.i(TAG, "Switch video source to Bitmap")
-                streamer?.setVideoSource(BitmapSourceFactory(testBitmap))
+                streamer?.setBitmapSource(testBitmap)
             }
         }
     }
