@@ -237,10 +237,7 @@ class CameraSettings internal constructor(
             override fun onCaptureResult(result: TotalCaptureResult): Boolean {
                 val resultTag = result.request.tag as? TagBundle
                 val keyId = resultTag?.keyId ?: return false
-                if (keyId >= tag.keyId) {
-                    return onCaptureResult.onCaptureResult(result)
-                }
-                return false
+                return keyId >= tag.keyId && onCaptureResult.onCaptureResult(result)
             }
         }
 

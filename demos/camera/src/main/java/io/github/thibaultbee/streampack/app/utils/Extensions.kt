@@ -38,6 +38,9 @@ import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 @RequiresPermission(Manifest.permission.CAMERA)
 suspend fun IWithVideoSource.setNextCameraId(context: Context) {
     val cameras = context.cameraManager.cameras
+    if (cameras.isEmpty()) {
+        throw Exception("No camera available")
+    }
     val videoSource = videoInput.sourceFlow.value
 
     val newCameraId = if (videoSource is ICameraSource) {

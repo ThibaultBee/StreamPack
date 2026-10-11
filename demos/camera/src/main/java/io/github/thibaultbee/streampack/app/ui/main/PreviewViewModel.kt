@@ -409,7 +409,12 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
          */
         viewModelScope.launch(defaultDispatcher) {
             videoSourceMutex.withLock {
-                streamer?.setNextCameraId(application)
+                try {
+                    streamer?.setNextCameraId(application)
+                } catch (t: Throwable) {
+                    Log.e(TAG, "toggleCamera failed", t)
+                    _streamerErrorLiveData.postValue("toggleCamera: ${t.message ?: "Unknown error"}")
+                }
             }
         }
     }
