@@ -17,6 +17,7 @@ package io.github.thibaultbee.streampack.ext.srt.configuration.mediadescriptor
 
 import org.junit.Assert
 import org.junit.Test
+import kotlin.time.Duration.Companion.milliseconds
 
 class SrtMediaDescriptorTest {
     @Test
@@ -66,5 +67,17 @@ class SrtMediaDescriptorTest {
                 t.message
             )
         }
+    }
+
+    @Test
+    fun fromParametersWithDuration() {
+        val connection = SrtMediaDescriptor(
+            host = "192.168.1.12",
+            port = 1234,
+            latency = 120.milliseconds,
+            connectionTimeout = 3000.milliseconds
+        )
+        Assert.assertEquals(120, connection.srtUrl.latencyInMs)
+        Assert.assertEquals(3000, connection.srtUrl.connectTimeoutInMs)
     }
 }
