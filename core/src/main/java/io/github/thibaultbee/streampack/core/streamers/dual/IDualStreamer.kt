@@ -35,6 +35,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.ByteFormatValue
 import io.github.thibaultbee.streampack.core.elements.utils.ChannelConfigValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isCompatibleWith
 import io.github.thibaultbee.streampack.core.interfaces.ICloseableStreamer
+import io.github.thibaultbee.streampack.core.interfaces.IWithOutputs
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutput

@@ -148,11 +148,19 @@ class SurfaceOutput(
             rotationDegrees,
             sourceInfoProvider.isMirror
         )
+        val vecX = floatArrayOf(1f, 0f)
+        val vecY = floatArrayOf(0f, 1f)
+        imageTransform.mapVectors(vecX)
+        imageTransform.mapVectors(vecY)
+        val isXInverted = (vecX[0] + vecX[1]) < -0.001f
+        val isYInverted = (vecY[0] + vecY[1]) < -0.001f
+
         val rotatedCroppedRect = TransformUtils.calculateViewfinder(
             rotatedTargetResolutionRectF,
             sourceResolutionRectF,
             scaleMode,
-            position
+            xPosition = if (isXInverted) position.invert() else position,
+            yPosition = if (isYInverted) position.invert() else position
         )
         imageTransform.mapRect(rotatedCroppedRect)
         // According to the rotated size and cropRect, compute the normalized offset and the scale

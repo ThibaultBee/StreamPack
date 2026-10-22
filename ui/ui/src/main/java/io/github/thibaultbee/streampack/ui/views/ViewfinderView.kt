@@ -35,7 +35,7 @@ import androidx.camera.viewfinder.core.ScaleType
 import androidx.camera.viewfinder.core.ViewfinderSurfaceRequest
 import androidx.camera.viewfinder.core.ViewfinderSurfaceRequest.Companion.MIRROR_MODE_HORIZONTAL
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.defaultAutoCancelDuration
 import io.github.thibaultbee.streampack.core.elements.utils.MeteringPointFactory
 import io.github.thibaultbee.streampack.core.elements.utils.OrientationUtils
 import io.github.thibaultbee.streampack.core.elements.utils.Position
@@ -45,6 +45,9 @@ import io.github.thibaultbee.streampack.core.utils.ExperimentalStreamPackApi
 import io.github.thibaultbee.streampack.ui.R
 import io.github.thibaultbee.streampack.ui.utils.PreviewConfigurationMapper
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.time.Duration
@@ -65,7 +68,7 @@ class ViewfinderView @JvmOverloads constructor(
     /**
      * The duration after which the focus area set by tap-to-focus is automatically cleared.
      */
-    var autoCancelDuration: Duration = DEFAULT_AUTO_CANCEL_DURATION
+    var autoCancelDuration: Duration = defaultAutoCancelDuration
 
     /**
      * Interface definition for a callback to be invoked when a tap-to-focus gesture occurs.
@@ -134,10 +137,14 @@ class ViewfinderView @JvmOverloads constructor(
 
     private val meteringPointFactory = ViewMeteringPointFactory()
 
-    private var scaleType: ScaleType = ScaleType.FIT_CENTER
+    private val _scaleTypeFlow = MutableStateFlow(ScaleType.FILL_CENTER)
+    internal val scaleTypeFlow: StateFlow<ScaleType> = _scaleTypeFlow.asStateFlow()
+
+    private var scaleType: ScaleType
+        get() = _scaleTypeFlow.value
         set(value) {
             viewfinder.scaleType = value
-            field = value
+            _scaleTypeFlow.value = value
         }
 
     /**
@@ -325,18 +332,18 @@ class ViewfinderView @JvmOverloads constructor(
     }
 
     companion object {
-        private fun getPosition(scaleType: ScaleType): Position = when (scaleType) {
+        internal fun getPosition(scaleType: ScaleType): Position = when (scaleType) {
             ScaleType.FILL_START, ScaleType.FIT_START -> Position.START
             ScaleType.FILL_CENTER, ScaleType.FIT_CENTER -> Position.CENTER
             ScaleType.FILL_END, ScaleType.FIT_END -> Position.END
         }
 
-        private fun getScaleMode(scaleType: ScaleType): ScaleMode = when (scaleType) {
+        internal fun getScaleMode(scaleType: ScaleType): ScaleMode = when (scaleType) {
             ScaleType.FILL_START, ScaleType.FILL_CENTER, ScaleType.FILL_END -> ScaleMode.CROP
             ScaleType.FIT_START, ScaleType.FIT_CENTER, ScaleType.FIT_END -> ScaleMode.FIT
         }
 
-        private fun getScaleType(scaleMode: ScaleMode, position: Position): ScaleType =
+        internal fun getScaleType(scaleMode: ScaleMode, position: Position): ScaleType =
             when (position) {
                 Position.START -> if (scaleMode == ScaleMode.CROP) ScaleType.FILL_START else ScaleType.FIT_START
                 Position.CENTER -> if (scaleMode == ScaleMode.CROP) ScaleType.FILL_CENTER else ScaleType.FIT_CENTER

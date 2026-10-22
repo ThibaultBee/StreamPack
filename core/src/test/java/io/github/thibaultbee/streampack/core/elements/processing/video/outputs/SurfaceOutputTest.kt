@@ -233,6 +233,54 @@ class SurfaceOutputTest {
         } finally {
             cleanFit()
         }
+
+        val (outFitStart, cleanFitStart) = createSurfaceOutput(src, dst, rotationDegrees = 90, scaleMode = ScaleMode.FIT, position = Position.START)
+        try {
+            val p0 = transformPoint(outFitStart, PointF(0f, 0f))
+            val p1 = transformPoint(outFitStart, PointF(1f, 1f))
+            assertEquals(0f, p0.x, 0.001f)
+            assertEquals(0f, p0.y, 0.001f)
+            assertEquals(1.77777f, p1.x, 0.001f)
+            assertEquals(1f, p1.y, 0.001f)
+        } finally {
+            cleanFitStart()
+        }
+
+        val (outFitEnd, cleanFitEnd) = createSurfaceOutput(src, dst, rotationDegrees = 90, scaleMode = ScaleMode.FIT, position = Position.END)
+        try {
+            val p0 = transformPoint(outFitEnd, PointF(0f, 0f))
+            val p1 = transformPoint(outFitEnd, PointF(1f, 1f))
+            assertEquals(-0.77777f, p0.x, 0.001f)
+            assertEquals(0f, p0.y, 0.001f)
+            assertEquals(1f, p1.x, 0.001f)
+            assertEquals(1f, p1.y, 0.001f)
+        } finally {
+            cleanFitEnd()
+        }
+
+        val (outCropStart, cleanCropStart) = createSurfaceOutput(src, dst, rotationDegrees = 90, scaleMode = ScaleMode.CROP, position = Position.START)
+        try {
+            val p0 = transformPoint(outCropStart, PointF(0f, 0f))
+            val p1 = transformPoint(outCropStart, PointF(1f, 1f))
+            assertEquals(0f, p0.x, 0.001f)
+            assertEquals(0.4375f, p0.y, 0.001f)
+            assertEquals(1f, p1.x, 0.001f)
+            assertEquals(1f, p1.y, 0.001f)
+        } finally {
+            cleanCropStart()
+        }
+
+        val (outCropEnd, cleanCropEnd) = createSurfaceOutput(src, dst, rotationDegrees = 90, scaleMode = ScaleMode.CROP, position = Position.END)
+        try {
+            val p0 = transformPoint(outCropEnd, PointF(0f, 0f))
+            val p1 = transformPoint(outCropEnd, PointF(1f, 1f))
+            assertEquals(0f, p0.x, 0.001f)
+            assertEquals(0f, p0.y, 0.001f)
+            assertEquals(1f, p1.x, 0.001f)
+            assertEquals(0.5625f, p1.y, 0.001f)
+        } finally {
+            cleanCropEnd()
+        }
     }
 
     @Test

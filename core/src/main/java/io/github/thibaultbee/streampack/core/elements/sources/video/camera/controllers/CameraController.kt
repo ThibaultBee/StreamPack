@@ -18,6 +18,7 @@ package io.github.thibaultbee.streampack.core.elements.sources.video.camera.cont
 import android.Manifest
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.TotalCaptureResult
@@ -26,6 +27,7 @@ import android.util.Range
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraException
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.dynamicRangeProfiles
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isCapabilitiesSupported
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFpsSupported
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.sessioncompat.CameraCaptureSessionCompatBuilder
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
@@ -195,9 +197,11 @@ internal class CameraController(
             getDeviceController().createCaptureRequestBuilder().apply {
                 captureRequestBuilder = this
 
-                val minFrameDuration = 1_000_000_000 / fpsRange.upper.toLong()
                 set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
-                set(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
+                if (characteristics.isCapabilitiesSupported(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR)) {
+                    val minFrameDuration = 1_000_000_000 / fpsRange.upper.toLong()
+                    set(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
+                }
                 onCaptureRequestBuilder()
             }
         }
@@ -436,9 +440,11 @@ internal class CameraController(
                     captureRequestBuilder.get(CaptureRequest.SENSOR_FRAME_DURATION)
 
                 val range = fpsRange
-                val minFrameDuration = 1_000_000_000 / range.upper.toLong()
                 captureRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, range)
-                captureRequestBuilder.set(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
+                if (characteristics.isCapabilitiesSupported(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR)) {
+                    val minFrameDuration = 1_000_000_000 / range.upper.toLong()
+                    captureRequestBuilder.set(CaptureRequest.SENSOR_FRAME_DURATION, minFrameDuration)
+                }
 
                 try {
                     val validOutputs = outputs.values.map { it.surface }.filter { it.isValid }

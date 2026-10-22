@@ -61,7 +61,6 @@ open class StubVideoSurfacePipelineOutput(resolution: Size) :
     IVideoSurfacePipelineOutputInternal {
 
     override val targetRotation = Surface.ROTATION_0
-    override suspend fun setTargetRotation(@RotationValue rotation: Int) = Unit
 
     private val _surfaceFlow =
         MutableStateFlow<SurfaceDescriptor?>(
@@ -79,7 +78,6 @@ class StubAudioSyncVideoSurfacePipelineOutput(resolution: Size) :
     IAudioSyncPipelineOutputInternal, IVideoSurfacePipelineOutputInternal {
 
     override val targetRotation = Surface.ROTATION_0
-    override suspend fun setTargetRotation(@RotationValue rotation: Int) = Unit
 
     private val _surfaceFlow =
         MutableStateFlow<SurfaceDescriptor?>(
@@ -148,7 +146,6 @@ class StubAudioSyncVideoSurfacePipelineOutputInternal(resolution: Size) :
     IAudioSyncPipelineOutputInternal, IVideoSurfacePipelineOutputInternal {
 
     override val targetRotation = Surface.ROTATION_0
-    override suspend fun setTargetRotation(@RotationValue rotation: Int) = Unit
 
     private val _surfaceFlow =
         MutableStateFlow<SurfaceDescriptor?>(
@@ -173,7 +170,6 @@ class StubVideoSurfacePipelineOutputInternal(resolution: Size) :
     IVideoSurfacePipelineOutputInternal {
 
     override val targetRotation = Surface.ROTATION_0
-    override suspend fun setTargetRotation(@RotationValue rotation: Int) = Unit
 
     private val _surfaceFlow =
         MutableStateFlow<SurfaceDescriptor?>(
@@ -297,6 +293,10 @@ internal class StubVideoSurfaceConfigurableEncodingPipelineOutputInternal :
     }
 
     override suspend fun startStream(descriptor: MediaDescriptor) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun setTargetRotation(rotation: Int) {
         TODO("Not yet implemented")
     }
 }

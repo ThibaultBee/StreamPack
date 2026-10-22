@@ -1415,7 +1415,7 @@ class CameraSettings internal constructor(
             awbPoints: List<PointF>,
             factory: MeteringPointFactory,
             viewRotationDegree: Int,
-            timeoutDuration: Duration = DEFAULT_AUTO_CANCEL_DURATION
+            timeoutDuration: Duration = defaultAutoCancelDuration
         ) {
             val relativeRotation =
                 getSensorRotationDegrees(
@@ -1449,7 +1449,7 @@ class CameraSettings internal constructor(
             private const val DEFAULT_AE_SIZE = DEFAULT_AF_SIZE * 1.5f
             private const val DEFAULT_METERING_WEIGHT_MAX =
                 MeteringRectangle.METERING_WEIGHT_MAX
-            val DEFAULT_AUTO_CANCEL_DURATION = 5000.milliseconds
+            val defaultAutoCancelDuration = 5000.milliseconds
 
             private fun getPreferredAFMode(
                 characteristics: CameraCharacteristics, preferredMode: Int

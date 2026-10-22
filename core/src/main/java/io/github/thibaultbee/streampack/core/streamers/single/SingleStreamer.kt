@@ -37,14 +37,17 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.interfaces.IWithOutputs
 import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 import io.github.thibaultbee.streampack.core.pipelines.AudioInputMode
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutput
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 
 /**
  * Creates a [SingleStreamer] with the camera as video source and an audio source (by default, the microphone).
@@ -213,7 +216,7 @@ class SingleStreamer(
     @RotationValue defaultRotation: Int = context.displayRotation,
     surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider(),
-) : ISingleStreamer, IAudioSingleStreamer, IVideoSingleStreamer {
+) : ISingleStreamer, IAudioSingleStreamer, IVideoSingleStreamer, IWithOutputs {
     private val streamer = SingleStreamerImpl(
         context = context,
         withAudio = true,
@@ -272,6 +275,14 @@ class SingleStreamer(
     override suspend fun stopStream() = streamer.stopStream()
 
     override suspend fun release() = streamer.release()
+
+    @InternalStreamPackApi
+    override suspend fun <T : IPipelineOutput> addOutput(output: T): T =
+        streamer.addOutput(output)
+
+    @InternalStreamPackApi
+    override suspend fun removeOutput(output: IPipelineOutput) =
+        streamer.removeOutput(output)
 
     override var bitrateRegulatorControllerFactory: IBitrateRegulatorController.Factory?
         get() = streamer.bitrateRegulatorControllerFactory

@@ -46,9 +46,9 @@ Get StreamPack core latest artifacts on Maven Central:
 dependencies {
     // Replace $latest_version with the version on the Maven Central badge
     implementation 'io.github.thibaultbee.streampack:streampack-core:$latest_version'
-    // For xml UI (incl. PreviewView)
+    // For xml UI (incl. ViewfinderView)
     implementation 'io.github.thibaultbee.streampack:streampack-ui:$latest_version'
-    // Or compose UI (incl. SourcePreview)
+    // Or compose UI (incl. ViewfinderStreamerSource and ViewfinderStreamerOutput)
     implementation 'io.github.thibaultbee.streampack:streampack-compose:$latest_version'
     // For services (incl. screen capture/media projection service)
     implementation 'io.github.thibaultbee.streampack:streampack-services:$latest_version'

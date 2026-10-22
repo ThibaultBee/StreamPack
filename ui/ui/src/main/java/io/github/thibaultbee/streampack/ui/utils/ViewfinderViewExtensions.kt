@@ -26,15 +26,25 @@ import androidx.lifecycle.repeatOnLifecycle
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewControllableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.utils.OrientationUtils
+import io.github.thibaultbee.streampack.core.elements.utils.Position
+import io.github.thibaultbee.streampack.core.elements.utils.ScaleMode
+import io.github.thibaultbee.streampack.core.interfaces.IWithOutputs
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
+import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfacePipelineOutput
+import io.github.thibaultbee.streampack.core.streamers.orientation.DisplayRotationProvider
+import io.github.thibaultbee.streampack.core.streamers.orientation.IRotationProvider
+import io.github.thibaultbee.streampack.core.streamers.orientation.rotationFlow
 import io.github.thibaultbee.streampack.core.utils.ExperimentalStreamPackApi
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import io.github.thibaultbee.streampack.ui.R
 import io.github.thibaultbee.streampack.ui.views.ViewfinderView
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -97,7 +107,7 @@ fun ViewfinderView.bindToStreamerSource(
                     }
 
                 try {
-                    feedPreview(streamer, previewableSource)
+                    feedPreviewSource(streamer, previewableSource)
                 } finally {
                     pinchToZoomListener?.let { removeOnPinchToZoomListener(it) }
                     tapToFocusListener?.let { removeOnTapToFocusListener(it) }
@@ -122,6 +132,120 @@ fun ViewfinderView.bindToStreamerSource(
 fun ViewfinderView.unbind() {
     (getTag(R.id.viewfinder_bind_job) as? Job)?.cancel()
     setTag(R.id.viewfinder_bind_job, null)
+}
+
+/**
+ * Binds a [io.github.thibaultbee.streampack.ui.views.ViewfinderView] to the video output of a streamer pipeline.
+ *
+ * Instead of displaying the raw video source preview, this displays the processed
+ * output of the streamer pipeline (including scaling, positioning, and effects).
+ *
+ * @param lifecycleOwner The [LifecycleOwner] to observe
+ * @param streamer The streamer whose pipeline output is to be displayed
+ * @param isPinchToZoomEnabled Whether pinch to zoom is enabled (if supported by the source)
+ * @param isTapToFocusEnabled Whether tap to focus is enabled (if supported by the source)
+ * @param rotationProvider The [IRotationProvider] providing display rotation. Defaults to [DisplayRotationProvider].
+ */
+@OptIn(InternalStreamPackApi::class)
+@ExperimentalStreamPackApi
+fun ViewfinderView.bindToStreamerOutput(
+    lifecycleOwner: LifecycleOwner,
+    streamer: IWithVideoSource,
+    isPinchToZoomEnabled: Boolean = true,
+    isTapToFocusEnabled: Boolean = true,
+    rotationProvider: IRotationProvider = DisplayRotationProvider(context)
+) {
+    require(streamer is IWithOutputs) { "Streamer must implement IWithOutputs" }
+
+    val previousJob = getTag(R.id.viewfinder_bind_job) as? Job
+    previousJob?.cancel()
+
+    val job = lifecycleOwner.lifecycleScope.launch {
+        previousJob?.join()
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            val output = SurfacePipelineOutput(defaultRotation = rotationProvider.rotation)
+            streamer.addOutput(output)
+
+            val gestureJob = launch {
+                streamer.videoInput.sourceFlow.collectLatest { source ->
+                    val controllableSource =
+                        source as? IPreviewControllableSource ?: return@collectLatest
+
+                    val pinchToZoomListener =
+                        if (isPinchToZoomEnabled && controllableSource.isZoomOnPinchSupported) {
+                            createPinchToZoomListener(this, controllableSource).also {
+                                addOnPinchToZoomListener(it)
+                            }
+                        } else {
+                            null
+                        }
+
+                    val tapToFocusListener =
+                        if (isTapToFocusEnabled && controllableSource.isTapToFocusSupported) {
+                            createTapToFocusListener(this, controllableSource).also {
+                                addOnTapToFocusListener(it)
+                            }
+                        } else {
+                            null
+                        }
+
+                    try {
+                        awaitCancellation()
+                    } finally {
+                        pinchToZoomListener?.let { removeOnPinchToZoomListener(it) }
+                        tapToFocusListener?.let { removeOnTapToFocusListener(it) }
+                    }
+                }
+            }
+
+            val streamJob = launch {
+                combine(
+                    streamer.videoInput.sourceFlow,
+                    streamer.videoInput.sourceConfigFlow,
+                    output.surfaceFlow
+                ) { source, sourceConfig, surfaceDescriptor ->
+                    source != null && sourceConfig != null && surfaceDescriptor != null && surfaceDescriptor.surface.isValid
+                }
+                    .distinctUntilChanged()
+                    .collect { canStream ->
+                        try {
+                            if (canStream) {
+                                output.startStream()
+                            } else {
+                                output.stopStream()
+                            }
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (t: Throwable) {
+                            Logger.e(
+                                TAG,
+                                "Failed to update output streaming state: ${t.message}",
+                                t
+                            )
+                        }
+                    }
+            }
+
+            try {
+                feedPreviewOutput(output, rotationProvider)
+            } finally {
+                gestureJob.cancel()
+                streamJob.cancel()
+                withContext(NonCancellable) {
+                    try {
+                        output.stopStream()
+                        output.setSurface(null)
+                        streamer.removeOutput(output)
+                        output.release()
+                    } catch (t: Throwable) {
+                        Logger.w(TAG, "Failed to clean up output: ${t.message}")
+                    }
+                    releaseSurface()
+                }
+            }
+        }
+    }
+    setTag(R.id.viewfinder_bind_job, job)
 }
 
 @OptIn(ExperimentalStreamPackApi::class)
@@ -164,7 +288,7 @@ private fun ViewfinderView.createTapToFocusListener(
 }
 
 @OptIn(ExperimentalStreamPackApi::class)
-private suspend fun ViewfinderView.feedPreview(
+private suspend fun ViewfinderView.feedPreviewSource(
     streamer: IWithVideoSource,
     previewableSource: IPreviewableSource
 ) {
@@ -208,6 +332,75 @@ private suspend fun ViewfinderView.startPreview(
     }
 }
 
+private data class PreviewOutputParams(
+    val viewSize: Size,
+    val scaleMode: ScaleMode,
+    val position: Position,
+    val displayRotation: Int
+)
+
+@OptIn(ExperimentalStreamPackApi::class, InternalStreamPackApi::class)
+private suspend fun ViewfinderView.feedPreviewOutput(
+    output: SurfacePipelineOutput,
+    rotationProvider: IRotationProvider
+) {
+    var currentSurface: Surface? = null
+    var currentSize: Size? = null
+    var currentRotation: Int? = null
+
+    combine(
+        layoutSizeFlow(),
+        scaleTypeFlow,
+        //rotationProvider.rotationFlow()
+    ) { viewSize, scaleType ->
+        PreviewOutputParams(
+            viewSize = viewSize,
+            scaleMode = ViewfinderView.getScaleMode(scaleType),
+            position = ViewfinderView.getPosition(scaleType),
+            displayRotation = rotationProvider.rotation
+        )
+    }
+        .distinctUntilChanged()
+        .collectLatest { (viewSize, scaleMode, position, displayRotation) ->
+            try {
+                val surface =
+                    if (currentSurface == null || currentSize != viewSize || currentRotation != displayRotation || currentSurface?.isValid != true) {
+                        requestSurface(
+                            viewSize, IPreviewableSource.PreviewConfiguration(
+                                orientationDegrees = OrientationUtils.getSurfaceRotationDegrees(
+                                    displayRotation
+                                )
+                            )
+                        ).also {
+                            currentSurface = it
+                            currentSize = viewSize
+                            currentRotation = displayRotation
+                        }
+                    } else {
+                        currentSurface!!
+                    }
+
+                if (surface.isValid) {
+                    output.setSurface(
+                        SurfaceDescriptor(
+                            surface = surface,
+                            resolution = viewSize,
+                            scaleMode = scaleMode,
+                            position = position,
+                            targetRotation = displayRotation
+                        )
+                    )
+                } else {
+                    output.setSurface(null)
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Logger.e(TAG, "Failed to request surface for output preview", e)
+            }
+        }
+}
+
 private suspend fun IPreviewableSource.stopAndResetPreview(shouldRelease: Boolean = false) {
     withContext(NonCancellable) {
         previewMutex.withLock {
@@ -237,3 +430,4 @@ private fun View.layoutSizeFlow() = callbackFlow {
         removeOnLayoutChangeListener(listener)
     }
 }.filter { it.width > 0 && it.height > 0 }.distinctUntilChanged()
+

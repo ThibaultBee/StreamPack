@@ -30,11 +30,14 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.interfaces.IWithOutputs
 import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableVideoEncodingPipelineOutput
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 
 /**
  * Creates a [VideoOnlyDualStreamer] with the camera as video source and no audio source.
@@ -153,7 +156,7 @@ class VideoOnlyDualStreamer(
     @RotationValue defaultRotation: Int = context.displayRotation,
     surfaceProcessorFactory: Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider()
-) : IDualStreamer, IVideoDualStreamer {
+) : IDualStreamer, IVideoDualStreamer, IWithOutputs {
     private val streamer = DualStreamerImpl(
         context = context,
         withAudio = false,
@@ -192,4 +195,12 @@ class VideoOnlyDualStreamer(
     override suspend fun stopStream() = streamer.stopStream()
 
     override suspend fun release() = streamer.release()
+
+    @InternalStreamPackApi
+    override suspend fun <T : IPipelineOutput> addOutput(output: T): T =
+        streamer.addOutput(output)
+
+    @InternalStreamPackApi
+    override suspend fun removeOutput(output: IPipelineOutput) =
+        streamer.removeOutput(output)
 }

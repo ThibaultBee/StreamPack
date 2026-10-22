@@ -43,6 +43,7 @@ import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.streamers.lifecycle.StreamerLifeCycleObserver
 import io.github.thibaultbee.streampack.core.utils.ExperimentalStreamPackApi
+import io.github.thibaultbee.streampack.ui.utils.bindToStreamerOutput
 import io.github.thibaultbee.streampack.ui.utils.bindToStreamerSource
 import kotlinx.coroutines.launch
 
@@ -227,7 +228,7 @@ class PreviewFragment : Fragment(R.layout.main_fragment) {
     @OptIn(ExperimentalStreamPackApi::class)
     @RequiresPermission(Manifest.permission.CAMERA)
     private fun inflateStreamerPreview(streamer: IWithVideoSource) {
-        binding.preview.bindToStreamerSource(viewLifecycleOwner, streamer)
+        binding.preview.bindToStreamerOutput(viewLifecycleOwner, streamer)
     }
 
     private fun startStreamIfPermissions(permissions: List<String>) {

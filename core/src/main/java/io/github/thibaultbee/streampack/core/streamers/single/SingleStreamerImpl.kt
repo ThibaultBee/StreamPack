@@ -30,12 +30,14 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSource
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.interfaces.IWithOutputs
 import io.github.thibaultbee.streampack.core.pipelines.AudioInputMode
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
@@ -73,7 +75,7 @@ internal class SingleStreamerImpl(
     @RotationValue defaultRotation: Int = context.displayRotation,
     surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider(),
-) : ISingleStreamer, IAudioSingleStreamer, IVideoSingleStreamer {
+) : ISingleStreamer, IAudioSingleStreamer, IVideoSingleStreamer, IWithOutputs {
     private val coroutineScope: CoroutineScope = CoroutineScope(dispatcherProvider.default)
 
     private val pipeline = StreamerPipeline(
@@ -108,7 +110,20 @@ internal class SingleStreamerImpl(
     override val isOpenFlow: StateFlow<Boolean>
         get() = pipelineOutput.isOpenFlow
 
-    override val isStreamingFlow: StateFlow<Boolean> = pipeline.isStreamingFlow
+    override val isStreamingFlow: StateFlow<Boolean>
+        get() = pipelineOutput.isStreamingFlow
+
+    @InternalStreamPackApi
+    override suspend fun <T : IPipelineOutput> addOutput(output: T): T {
+        initJob.join()
+        return pipeline.addOutput(output)
+    }
+
+    @InternalStreamPackApi
+    override suspend fun removeOutput(output: IPipelineOutput) {
+        initJob.join()
+        pipeline.removeOutput(output)
+    }
 
     // AUDIO
     /**
@@ -279,7 +294,7 @@ internal class SingleStreamerImpl(
      */
     override suspend fun stopStream() {
         initJob.join()
-        pipeline.stopStream()
+        pipelineOutput.stopStream()
     }
 
     /**

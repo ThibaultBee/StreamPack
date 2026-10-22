@@ -32,12 +32,15 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.interfaces.IWithOutputs
 import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutput
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.streamers.infos.IConfigurationInfo
+import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 
 /**
  * Creates a [VideoOnlySingleStreamer] with the camera as video source and no audio source.
@@ -146,7 +149,7 @@ class VideoOnlySingleStreamer(
     @RotationValue defaultRotation: Int = context.displayRotation,
     surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider()
-) : ISingleStreamer, IVideoSingleStreamer {
+) : ISingleStreamer, IVideoSingleStreamer, IWithOutputs {
     private val streamer = SingleStreamerImpl(
         context = context,
         withAudio = false,
@@ -195,6 +198,14 @@ class VideoOnlySingleStreamer(
     override suspend fun stopStream() = streamer.stopStream()
 
     override suspend fun release() = streamer.release()
+
+    @InternalStreamPackApi
+    override suspend fun <T : IPipelineOutput> addOutput(output: T): T =
+        streamer.addOutput(output)
+
+    @InternalStreamPackApi
+    override suspend fun removeOutput(output: IPipelineOutput) =
+        streamer.removeOutput(output)
 
     override var bitrateRegulatorControllerFactory: IBitrateRegulatorController.Factory?
         get() = streamer.bitrateRegulatorControllerFactory

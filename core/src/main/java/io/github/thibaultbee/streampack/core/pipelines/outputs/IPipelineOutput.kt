@@ -26,7 +26,6 @@ import io.github.thibaultbee.streampack.core.elements.utils.Position
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.ScaleMode
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
-import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
@@ -171,8 +170,8 @@ interface IConfigurableVideoPipelineOutputInternal : IConfigurableVideoPipelineO
 data class SurfaceDescriptor(
     val surface: Surface,
     val resolution: Size,
-    val scaleMode: ScaleMode,
-    val position: Position,
+    val scaleMode: ScaleMode = ScaleMode.CROP,
+    val position: Position = Position.CENTER,
     @RotationValue val targetRotation: Int = 0,
     val isEncoderInputSurface: Boolean = false
 )
@@ -193,7 +192,7 @@ sealed interface IVideoPipelineOutputInternal : IPipelineOutput {
  * An internal video output component for a pipeline.
  */
 @InternalStreamPackApi
-interface IVideoSurfacePipelineOutputInternal : IVideoPipelineOutputInternal, IWithVideoRotation {
+interface IVideoSurfacePipelineOutputInternal : IVideoPipelineOutputInternal {
     /**
      * The [Surface] flow to render video.
      * For surface mode video encoder.

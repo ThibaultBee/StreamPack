@@ -2,7 +2,7 @@ package io.github.thibaultbee.streampack.app.data.rotation
 
 import android.content.Context
 import io.github.thibaultbee.streampack.core.streamers.orientation.SensorRotationProvider
-import io.github.thibaultbee.streampack.core.streamers.orientation.asFlowProvider
+import io.github.thibaultbee.streampack.core.streamers.orientation.rotationFlow
 import kotlinx.coroutines.flow.Flow
 
 
@@ -18,8 +18,8 @@ class RotationRepository(
      * device is rotated.
      * If the application orientation is locked, you should use `DisplayRotationProvider` instead.
      */
-    private val rotationProvider = SensorRotationProvider(context).asFlowProvider()
-    val rotationFlow: Flow<Int> = rotationProvider.rotationFlow
+    private val rotationProvider = SensorRotationProvider(context)
+    val rotationFlow: Flow<Int> = rotationProvider.rotationFlow()
 
     companion object {
         @Volatile

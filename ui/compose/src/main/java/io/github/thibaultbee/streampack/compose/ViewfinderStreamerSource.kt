@@ -30,7 +30,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.thibaultbee.streampack.compose.utils.BitmapUtils
 import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.BitmapSourceFactory
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.defaultAutoCancelDuration
 import io.github.thibaultbee.streampack.core.elements.utils.Position
 import io.github.thibaultbee.streampack.core.elements.utils.ScaleMode
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
@@ -65,7 +65,7 @@ fun ViewfinderStreamerSource(
     position: Position = Position.CENTER,
     isPinchToZoomEnabled: Boolean = true,
     isTapToFocusEnabled: Boolean = true,
-    autoCancelDuration: Duration = DEFAULT_AUTO_CANCEL_DURATION,
+    autoCancelDuration: Duration = defaultAutoCancelDuration,
     onPinchToZoom: ViewfinderView.OnPinchToZoomListener? = null,
     onTapToFocus: ViewfinderView.OnTapToFocusListener? = null
 ) {

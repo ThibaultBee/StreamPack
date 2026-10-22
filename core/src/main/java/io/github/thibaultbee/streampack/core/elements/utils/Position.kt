@@ -34,6 +34,15 @@ enum class Position(val value: Int) {
      */
     END(2);
 
+    /**
+     * Inverts the position (START becomes END, END becomes START, CENTER remains CENTER).
+     */
+    fun invert(): Position = when (this) {
+        START -> END
+        CENTER -> CENTER
+        END -> START
+    }
+
     companion object {
         fun entryOf(value: Int) = entries.first { it.value == value }
     }
