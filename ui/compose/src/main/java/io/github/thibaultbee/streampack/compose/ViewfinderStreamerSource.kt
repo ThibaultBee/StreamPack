@@ -31,6 +31,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.thibaultbee.streampack.compose.utils.BitmapUtils
 import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.BitmapSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION
+import io.github.thibaultbee.streampack.core.elements.utils.Position
+import io.github.thibaultbee.streampack.core.elements.utils.ScaleMode
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.core.utils.ExperimentalStreamPackApi
@@ -46,8 +48,8 @@ import kotlin.time.Duration
  *
  * @param streamer The streamer to preview
  * @param modifier The modifier to apply to this composable
- * @param scaleMode The [ViewfinderView.ScaleMode] of the preview within its container
- * @param position The [ViewfinderView.Position] of the preview within its container
+ * @param scaleMode The [ScaleMode] of the preview within its container
+ * @param position The [Position] of the preview within its container
  * @param isPinchToZoomEnabled Whether pinch to zoom is enabled (if supported by the source)
  * @param isTapToFocusEnabled Whether tap to focus is enabled (if supported by the source)
  * @param autoCancelDuration The duration after which the focus area set by tap-to-focus is cleared
@@ -59,8 +61,8 @@ import kotlin.time.Duration
 fun ViewfinderStreamerSource(
     streamer: IWithVideoSource,
     modifier: Modifier = Modifier,
-    scaleMode: ViewfinderView.ScaleMode = ViewfinderView.ScaleMode.FILL,
-    position: ViewfinderView.Position = ViewfinderView.Position.CENTER,
+    scaleMode: ScaleMode = ScaleMode.CROP,
+    position: Position = Position.CENTER,
     isPinchToZoomEnabled: Boolean = true,
     isTapToFocusEnabled: Boolean = true,
     autoCancelDuration: Duration = DEFAULT_AUTO_CANCEL_DURATION,

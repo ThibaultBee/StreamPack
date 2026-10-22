@@ -22,7 +22,9 @@ import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal.IAsyncByteBufferInput.OnFrameRequestedListener
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
+import io.github.thibaultbee.streampack.core.elements.utils.Position
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
+import io.github.thibaultbee.streampack.core.elements.utils.ScaleMode
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
 import kotlinx.coroutines.CoroutineDispatcher
@@ -161,12 +163,16 @@ interface IConfigurableVideoPipelineOutputInternal : IConfigurableVideoPipelineO
  *
  * @param surface The [Surface].
  * @param resolution The resolution of the [Surface].
+ * @param scaleMode The scale mode to use when rendering the video to the [Surface].
+ * @param position The position alignment of the video within the [Surface].
  * @param targetRotation The target rotation in [Surface] rotation ([Surface.ROTATION_0], ...).
  * @param isEncoderInputSurface Whether the [Surface] is used as an input for a video encoder.
  */
 data class SurfaceDescriptor(
     val surface: Surface,
     val resolution: Size,
+    val scaleMode: ScaleMode,
+    val position: Position,
     @RotationValue val targetRotation: Int = 0,
     val isEncoderInputSurface: Boolean = false
 )

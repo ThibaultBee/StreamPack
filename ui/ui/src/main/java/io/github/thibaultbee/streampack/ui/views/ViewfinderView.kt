@@ -38,6 +38,8 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewable
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION
 import io.github.thibaultbee.streampack.core.elements.utils.MeteringPointFactory
 import io.github.thibaultbee.streampack.core.elements.utils.OrientationUtils
+import io.github.thibaultbee.streampack.core.elements.utils.Position
+import io.github.thibaultbee.streampack.core.elements.utils.ScaleMode
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
 import io.github.thibaultbee.streampack.core.utils.ExperimentalStreamPackApi
 import io.github.thibaultbee.streampack.ui.R
@@ -193,7 +195,7 @@ class ViewfinderView @JvmOverloads constructor(
             scaleMode = ScaleMode.entryOf(
                 a.getInt(
                     R.styleable.ViewfinderView_scaleMode,
-                    ScaleMode.FILL.value
+                    ScaleMode.CROP.value
                 )
             )
             position = Position.entryOf(
@@ -322,22 +324,6 @@ class ViewfinderView @JvmOverloads constructor(
         }
     }
 
-    enum class Position(val value: Int) {
-        START(0), CENTER(1), END(2);
-
-        companion object {
-            fun entryOf(value: Int) = entries.first { it.value == value }
-        }
-    }
-
-    enum class ScaleMode(val value: Int) {
-        FILL(0), FIT(1);
-
-        companion object {
-            fun entryOf(value: Int) = entries.first { it.value == value }
-        }
-    }
-
     companion object {
         private fun getPosition(scaleType: ScaleType): Position = when (scaleType) {
             ScaleType.FILL_START, ScaleType.FIT_START -> Position.START
@@ -346,15 +332,15 @@ class ViewfinderView @JvmOverloads constructor(
         }
 
         private fun getScaleMode(scaleType: ScaleType): ScaleMode = when (scaleType) {
-            ScaleType.FILL_START, ScaleType.FILL_CENTER, ScaleType.FILL_END -> ScaleMode.FILL
+            ScaleType.FILL_START, ScaleType.FILL_CENTER, ScaleType.FILL_END -> ScaleMode.CROP
             ScaleType.FIT_START, ScaleType.FIT_CENTER, ScaleType.FIT_END -> ScaleMode.FIT
         }
 
         private fun getScaleType(scaleMode: ScaleMode, position: Position): ScaleType =
             when (position) {
-                Position.START -> if (scaleMode == ScaleMode.FILL) ScaleType.FILL_START else ScaleType.FIT_START
-                Position.CENTER -> if (scaleMode == ScaleMode.FILL) ScaleType.FILL_CENTER else ScaleType.FIT_CENTER
-                Position.END -> if (scaleMode == ScaleMode.FILL) ScaleType.FILL_END else ScaleType.FIT_END
+                Position.START -> if (scaleMode == ScaleMode.CROP) ScaleType.FILL_START else ScaleType.FIT_START
+                Position.CENTER -> if (scaleMode == ScaleMode.CROP) ScaleType.FILL_CENTER else ScaleType.FIT_CENTER
+                Position.END -> if (scaleMode == ScaleMode.CROP) ScaleType.FILL_END else ScaleType.FIT_END
             }
 
         @VisibleForTesting

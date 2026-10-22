@@ -4,6 +4,8 @@ import android.graphics.Matrix
 import android.graphics.RectF
 import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.normalized
+import io.github.thibaultbee.streampack.core.elements.utils.Position
+import io.github.thibaultbee.streampack.core.elements.utils.ScaleMode
 import kotlin.math.abs
 
 
@@ -44,38 +46,48 @@ object TransformUtils {
 
     fun calculateViewfinder(
         source: RectF,
-        target: RectF
+        target: RectF,
+        scaleMode: ScaleMode = ScaleMode.CROP,
+        position: Position = Position.CENTER
     ): RectF {
         val sourceAspectRatio = abs(source.width() / source.height())
         val targetAspectRatio = abs(target.width() / target.height())
 
-        return when {
-            sourceAspectRatio == targetAspectRatio -> {
-                // Same aspect ratio, no need to adjust
-                RectF(target)
+        if (sourceAspectRatio == targetAspectRatio) {
+            return RectF(target)
+        }
+
+        val (scaledWidth, scaledHeight) = when (scaleMode) {
+            ScaleMode.CROP -> {
+                if (sourceAspectRatio > targetAspectRatio) {
+                    target.width() to (target.width() / sourceAspectRatio)
+                } else {
+                    (target.height() * sourceAspectRatio) to target.height()
+                }
             }
-            sourceAspectRatio > targetAspectRatio -> {
-                // Source is wider than target, fit width
-                val scaledHeight = target.width() / sourceAspectRatio
-                val top = target.centerY() - scaledHeight / 2f
-                RectF(
-                    target.left,
-                    top,
-                    target.right,
-                    top + scaledHeight
-                )
-            }
-            else -> {
-                // Source is taller than target, fit height
-                val scaledWidth = target.height() * sourceAspectRatio
-                val left = target.centerX() - scaledWidth / 2f
-                RectF(
-                    left,
-                    target.top,
-                    left + scaledWidth,
-                    target.bottom
-                )
+            ScaleMode.FIT -> {
+                if (sourceAspectRatio > targetAspectRatio) {
+                    (target.height() * sourceAspectRatio) to target.height()
+                } else {
+                    target.width() to (target.width() / sourceAspectRatio)
+                }
             }
         }
+
+        val excessWidth = target.width() - scaledWidth
+        val left = when (position) {
+            Position.START -> target.left
+            Position.CENTER -> target.left + excessWidth / 2f
+            Position.END -> target.left + excessWidth
+        }
+
+        val excessHeight = target.height() - scaledHeight
+        val top = when (position) {
+            Position.START -> target.top
+            Position.CENTER -> target.top + excessHeight / 2f
+            Position.END -> target.top + excessHeight
+        }
+
+        return RectF(left, top, left + scaledWidth, top + scaledHeight)
     }
 }

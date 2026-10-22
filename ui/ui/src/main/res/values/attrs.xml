@@ -2,6 +2,7 @@
 <resources>
     <!-- Must be kept in sync with ViewfinderView -->
     <attr name="scaleMode" format="enum">
+        <enum name="crop" value="0"/>
         <enum name="fill" value="0"/>
         <enum name="fit" value="1"/>
     </attr>
