@@ -133,4 +133,37 @@ class TransformUtilsTest {
         matrix90.mapRect(mapped90, source)
         assertEquals(target, mapped90)
     }
+
+    @Test
+    fun `calculateViewfinder with independent xPosition and yPosition`() {
+        val source = RectF(0f, 0f, 1080f, 1080f)
+        val target = RectF(0f, 0f, 1920f, 1080f)
+
+        val result = TransformUtils.calculateViewfinder(
+            source,
+            target,
+            ScaleMode.CROP,
+            xPosition = Position.START,
+            yPosition = Position.END
+        )
+        // excessWidth = 1920 - 1080 = 840; START gives left = 0
+        assertEquals(RectF(0f, 0f, 1080f, 1080f), result)
+
+        val resultInvert = TransformUtils.calculateViewfinder(
+            source,
+            target,
+            ScaleMode.CROP,
+            xPosition = Position.START.invert(),
+            yPosition = Position.END.invert()
+        )
+        // xPosition inverted is END (left = 840)
+        assertEquals(RectF(840f, 0f, 1920f, 1080f), resultInvert)
+    }
+
+    @Test
+    fun `Position invert returns opposite or center`() {
+        assertEquals(Position.END, Position.START.invert())
+        assertEquals(Position.START, Position.END.invert())
+        assertEquals(Position.CENTER, Position.CENTER.invert())
+    }
 }

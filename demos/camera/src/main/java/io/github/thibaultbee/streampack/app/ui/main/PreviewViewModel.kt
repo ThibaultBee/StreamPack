@@ -423,8 +423,13 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
     fun setVideoSourceToCamera(cameraId: String = defaultCameraId) {
         viewModelScope.launch(defaultDispatcher) {
             videoSourceMutex.withLock {
-                Log.i(TAG, "Switch video source to Camera $cameraId")
-                streamer?.setCameraSource(cameraId)
+                try {
+                    Log.i(TAG, "Switch video source to Camera $cameraId")
+                    streamer?.setCameraSource(cameraId)
+                } catch (t: Throwable) {
+                    Log.e(TAG, "setVideoSourceToCamera: ${t.message}", t)
+                    _streamerErrorLiveData.postValue("setVideoSource: ${t.message ?: t::class.java.simpleName}")
+                }
             }
         }
     }
@@ -523,8 +528,12 @@ class PreviewViewModel(private val application: Application) : ObservableViewMod
         @Bindable get() {
             val settings = cameraSettings
             return if (settings != null && settings.isActiveFlow.value) {
-                runBlocking {
-                    settings.zoom.getZoomRatio()
+                try {
+                    runBlocking {
+                        settings.zoom.getZoomRatio()
+                    }
+                } catch (_: Throwable) {
+                    1f
                 }
             } else {
                 1f

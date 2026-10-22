@@ -41,7 +41,7 @@ import androidx.camera.viewfinder.core.populateFromCharacteristics
 import androidx.core.content.ContextCompat
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.defaultAutoCancelDuration
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraCharacteristics
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
@@ -76,7 +76,7 @@ import kotlin.time.Duration
  *
  * The [Manifest.permission.CAMERA] permission must be granted before using this view.
  */
-@Deprecated("Use ViewfinderView instead.", ReplaceWith("ViewfinderView"))
+@Deprecated("Use InteractivePreviewView instead.", ReplaceWith("InteractivePreviewView"))
 class PreviewView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
 ) : FrameLayout(context, attrs, defStyle) {
@@ -97,7 +97,7 @@ class PreviewView @JvmOverloads constructor(
     /**
      * The duration after which the focus area set by tap-to-focus is cleared.
      */
-    var onTapToFocusTimeout: Duration = DEFAULT_AUTO_CANCEL_DURATION
+    var onTapToFocusTimeout: Duration = defaultAutoCancelDuration
 
     private var scaleType: ScaleType = ScaleType.FIT_CENTER
         set(value) {

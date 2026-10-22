@@ -21,7 +21,7 @@ import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.TextureView
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.defaultAutoCancelDuration
 import io.github.thibaultbee.streampack.core.elements.utils.MeteringPointFactory
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
@@ -245,13 +245,13 @@ interface IPreviewControllableSource {
      * @param point the point to focus
      * @param factory the factory to create the metering point
      * @param viewRotationDegree the orientation of view
-     * @param timeoutDuration the duration after which the focus should be automatically canceled. Default is [DEFAULT_AUTO_CANCEL_DURATION].
+     * @param timeoutDuration the duration after which the focus should be automatically canceled. Default is [defaultAutoCancelDuration].
      */
     suspend fun tapToFocus(
         point: PointF,
         factory: MeteringPointFactory,
         viewRotationDegree: Int,
-        timeoutDuration: Duration = DEFAULT_AUTO_CANCEL_DURATION
+        timeoutDuration: Duration = defaultAutoCancelDuration
     ) {
         throw NotImplementedError("tapToFocus is not implemented")
     }

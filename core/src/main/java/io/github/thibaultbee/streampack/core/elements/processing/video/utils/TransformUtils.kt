@@ -49,6 +49,20 @@ object TransformUtils {
         target: RectF,
         scaleMode: ScaleMode = ScaleMode.CROP,
         position: Position = Position.CENTER
+    ): RectF = calculateViewfinder(
+        source,
+        target,
+        scaleMode,
+        xPosition = position,
+        yPosition = position
+    )
+
+    fun calculateViewfinder(
+        source: RectF,
+        target: RectF,
+        scaleMode: ScaleMode = ScaleMode.CROP,
+        xPosition: Position = Position.CENTER,
+        yPosition: Position = Position.CENTER
     ): RectF {
         val sourceAspectRatio = abs(source.width() / source.height())
         val targetAspectRatio = abs(target.width() / target.height())
@@ -75,14 +89,14 @@ object TransformUtils {
         }
 
         val excessWidth = target.width() - scaledWidth
-        val left = when (position) {
+        val left = when (xPosition) {
             Position.START -> target.left
             Position.CENTER -> target.left + excessWidth / 2f
             Position.END -> target.left + excessWidth
         }
 
         val excessHeight = target.height() - scaledHeight
-        val top = when (position) {
+        val top = when (yPosition) {
             Position.START -> target.top
             Position.CENTER -> target.top + excessHeight / 2f
             Position.END -> target.top + excessHeight
