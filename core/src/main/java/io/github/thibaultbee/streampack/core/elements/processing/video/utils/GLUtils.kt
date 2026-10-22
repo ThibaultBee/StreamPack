@@ -131,11 +131,17 @@ varying vec2 %s;
 uniform samplerExternalOES %s;
 uniform float uAlphaScale;
 void main() {
-    vec4 src = texture2D(%s, %s);
-    gl_FragColor = vec4(src.rgb, src.a * uAlphaScale);
+    if (%s.x < 0.0 || %s.x > 1.0 || %s.y < 0.0 || %s.y > 1.0) {
+        gl_FragColor = vec4(0.0, 0.0, 0.0, uAlphaScale);
+    } else {
+        vec4 src = texture2D(%s, %s);
+        gl_FragColor = vec4(src.rgb, src.a * uAlphaScale);
+    }
 }
 """),
-                fragCoordsVarName, samplerVarName, samplerVarName, fragCoordsVarName
+                fragCoordsVarName, samplerVarName,
+                fragCoordsVarName, fragCoordsVarName, fragCoordsVarName, fragCoordsVarName,
+                samplerVarName, fragCoordsVarName
             )
         }
     }
@@ -155,10 +161,16 @@ in vec2 %s;
 out vec4 outColor;
 
 void main() {
-  vec4 src = texture(%s, %s);
-  outColor = vec4(src.rgb, src.a * uAlphaScale);
+  if (%s.x < 0.0 || %s.x > 1.0 || %s.y < 0.0 || %s.y > 1.0) {
+    outColor = vec4(0.0, 0.0, 0.0, uAlphaScale);
+  } else {
+    vec4 src = texture(%s, %s);
+    outColor = vec4(src.rgb, src.a * uAlphaScale);
+  }
 }"""),
-                samplerVarName, fragCoordsVarName, samplerVarName, fragCoordsVarName
+                samplerVarName, fragCoordsVarName,
+                fragCoordsVarName, fragCoordsVarName, fragCoordsVarName, fragCoordsVarName,
+                samplerVarName, fragCoordsVarName
             )
         }
     }
@@ -188,11 +200,17 @@ vec3 yuvToRgb(vec3 yuv) {
 }
 
 void main() {
-  vec3 srcYuv = texture(%s, %s).xyz;
-  vec3 srcRgb = yuvToRgb(srcYuv);
-  outColor = vec4(srcRgb, uAlphaScale);
+  if (%s.x < 0.0 || %s.x > 1.0 || %s.y < 0.0 || %s.y > 1.0) {
+    outColor = vec4(0.0, 0.0, 0.0, uAlphaScale);
+  } else {
+    vec3 srcYuv = texture(%s, %s).xyz;
+    vec3 srcRgb = yuvToRgb(srcYuv);
+    outColor = vec4(srcRgb, uAlphaScale);
+  }
 }"""),
-                samplerVarName, fragCoordsVarName, samplerVarName, fragCoordsVarName
+                samplerVarName, fragCoordsVarName,
+                fragCoordsVarName, fragCoordsVarName, fragCoordsVarName, fragCoordsVarName,
+                samplerVarName, fragCoordsVarName
             )
         }
     }

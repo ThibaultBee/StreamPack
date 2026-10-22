@@ -24,9 +24,10 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.utils.Tra
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.preRotate
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.preVerticalFlip
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.toRectF
+import io.github.thibaultbee.streampack.core.elements.utils.Position
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
+import io.github.thibaultbee.streampack.core.elements.utils.ScaleMode
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
-import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
 
 fun SurfaceOutput(
@@ -43,7 +44,9 @@ fun SurfaceOutput(
         isStreaming,
         sourceResolution,
         needMirroring,
-        sourceInfoProvider
+        sourceInfoProvider,
+        descriptor.scaleMode,
+        descriptor.position
     )
 
 class SurfaceOutput(
@@ -53,7 +56,9 @@ class SurfaceOutput(
     val isStreaming: () -> Boolean,
     sourceResolution: Size,
     val needMirroring: Boolean,
-    sourceInfoProvider: ISourceInfoProvider
+    sourceInfoProvider: ISourceInfoProvider,
+    val scaleMode: ScaleMode = ScaleMode.CROP,
+    val position: Position = Position.CENTER
 ) :
     ISurfaceOutput {
     override val type = ISurfaceOutput.OutputType.INTERNAL
@@ -145,7 +150,9 @@ class SurfaceOutput(
         )
         val rotatedCroppedRect = TransformUtils.calculateViewfinder(
             rotatedTargetResolutionRectF,
-            sourceResolutionRectF
+            sourceResolutionRectF,
+            scaleMode,
+            position
         )
         imageTransform.mapRect(rotatedCroppedRect)
         // According to the rotated size and cropRect, compute the normalized offset and the scale
