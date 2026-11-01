@@ -174,6 +174,12 @@ internal class VideoInput(
                     return@withContext
                 }
 
+                sourceConfig?.let {
+                    require(videoSourceFactory.isConfigurationSupported(context, it)) {
+                        "Video source $videoSourceFactory does not support configuration: $it"
+                    }
+                }
+
                 if ((previousVideoSource is CameraSource) && (videoSourceFactory is CameraSourceFactory)) {
                     /**
                      * It is not possible to have 2 camera sources at the same time because of

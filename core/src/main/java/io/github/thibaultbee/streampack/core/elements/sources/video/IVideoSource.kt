@@ -48,6 +48,15 @@ interface IVideoSource {
          * Whether the source that will be created by [create] is equal to another source.
          */
         fun isSourceEquals(source: IVideoSourceInternal?): Boolean
+
+        /**
+         * Whether the source that will be created by [create] supports the given [config].
+         *
+         * @param context the application context
+         * @param config the video source configuration
+         * @return `true` if configuration is supported, `false` otherwise
+         */
+        fun isConfigurationSupported(context: Context, config: VideoSourceConfig): Boolean = true
     }
 }
 
