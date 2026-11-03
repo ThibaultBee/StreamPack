@@ -175,21 +175,27 @@ internal class VideoInput(
                 }
 
                 if ((previousVideoSource is CameraSource) && (videoSourceFactory is CameraSourceFactory)) {
-                    if (previousVideoSource.cameraId == videoSourceFactory.cameraId) {
-                        Logger.i(
-                            TAG,
-                            "Camera id ${previousVideoSource.cameraId} is already set, skipping"
-                        )
-                        return@withContext
-                    }
-
                     /**
                      * It is not possible to have 2 camera sources at the same time because of
                      * camera2 API. If the new video source is a camera source and the current one
                      * is a camera source, we release the current one ASAP.
                      */
-                    previousVideoSource.stopStream()
-                    previousVideoSource.release()
+                    try {
+                        previousVideoSource.stopStream()
+                    } catch (t: Throwable) {
+                        Logger.w(
+                            TAG,
+                            "setVideoSource: Can't stop previous video source: ${t.message}"
+                        )
+                    }
+                    try {
+                        previousVideoSource.release()
+                    } catch (t: Throwable) {
+                        Logger.w(
+                            TAG,
+                            "setVideoSource: Can't release previous video source: ${t.message}"
+                        )
+                    }
                 }
 
                 // Prepare new video source
