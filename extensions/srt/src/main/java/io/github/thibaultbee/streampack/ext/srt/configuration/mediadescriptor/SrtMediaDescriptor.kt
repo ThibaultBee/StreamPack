@@ -25,6 +25,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.MediaSinkType
 import io.github.thibaultbee.streampack.core.elements.endpoints.composites.muxers.ts.data.TSServiceInfo
 import java.security.InvalidParameterException
 import androidx.core.net.toUri
+import kotlin.time.Duration
 
 /**
  * Creates a SRT connection descriptor from an [descriptor].
@@ -74,8 +75,8 @@ fun SrtMediaDescriptor(uri: Uri, serviceInfo: TSServiceInfo = createDefaultTsSer
  * @param port the server port
  * @param streamId the SRT stream ID
  * @param passPhrase the SRT passphrase
- * @param latency the SRT latency in ms
- * @param connectionTimeout the SRT connection timeout in ms
+ * @param latency the SRT latency
+ * @param connectionTimeout the SRT connection timeout
  * @param serviceInfo the TS service information
  */
 fun SrtMediaDescriptor(
@@ -83,19 +84,19 @@ fun SrtMediaDescriptor(
     port: Int,
     streamId: String? = null,
     passPhrase: String? = null,
-    latency: Int? = null,
-    connectionTimeout: Int? = null,
+    latency: Duration? = null,
+    connectionTimeout: Duration? = null,
     serviceInfo: TSServiceInfo = createDefaultTsServiceInfo()
 ) = SrtMediaDescriptor(
     SrtUrl(
         hostname = host,
         port = port,
-        connectTimeoutInMs = connectionTimeout,
+        connectTimeoutInMs = connectionTimeout?.inWholeMilliseconds?.toInt(),
         null,
         null,
         null,
         null,
-        latencyInMs = latency,
+        latencyInMs = latency?.inWholeMilliseconds?.toInt(),
         null,
         null,
         null,

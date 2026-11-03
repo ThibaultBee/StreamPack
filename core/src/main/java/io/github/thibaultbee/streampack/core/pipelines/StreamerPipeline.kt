@@ -30,6 +30,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.isCompati
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.runningHistoryNotNull
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
 import io.github.thibaultbee.streampack.core.interfaces.IWithAudioSource
+import io.github.thibaultbee.streampack.core.interfaces.IWithOutputs
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -93,7 +94,7 @@ open class StreamerPipeline(
     private val audioInputMode: AudioInputMode = AudioInputMode.PUSH,
     surfaceProcessorFactory: ISurfaceProcessor.Factory = DefaultSurfaceProcessorFactory(),
     protected val dispatcherProvider: IDispatcherProvider = DispatcherProvider()
-) : IWithVideoSource, IWithVideoRotation, IWithAudioSource, IStreamer {
+) : IWithVideoSource, IWithVideoRotation, IWithAudioSource, IStreamer, IWithOutputs {
     private val coroutineScope = CoroutineScope(dispatcherProvider.default)
     private val isReleaseRequested = AtomicBoolean(false)
 
@@ -162,7 +163,7 @@ open class StreamerPipeline(
             val jobs = mutableListOf<Job>()
             safeOutputCall { outputs ->
                 jobs += coroutineScope.launch {
-                    outputs.keys.filterIsInstance<IVideoSurfacePipelineOutputInternal>()
+                    outputs.keys.filterIsInstance<IWithVideoRotation>()
                         .forEach { it.setTargetRotation(rotation) }
                 }
             }
@@ -338,16 +339,8 @@ open class StreamerPipeline(
             throw IllegalStateException("Pipeline is released")
         }
         require(withAudio || withVideo) { "At least one of audio or video must be set" }
-        val withAudioCorrected = if (this@StreamerPipeline.withAudio) {
-            withAudio
-        } else {
-            false
-        }
-        val withVideoCorrected = if (this@StreamerPipeline.withVideo) {
-            withVideo
-        } else {
-            false
-        }
+        val withAudioCorrected = this@StreamerPipeline.withAudio && withAudio
+        val withVideoCorrected = this@StreamerPipeline.withVideo && withVideo
 
         return withContext(dispatcherProvider.default) {
             val output =
@@ -371,7 +364,8 @@ open class StreamerPipeline(
      * @param output the output to add
      * @return the [output] added (same as input)
      */
-    suspend fun <T : IPipelineOutput> addOutput(output: T): T {
+    @InternalStreamPackApi
+    override suspend fun <T : IPipelineOutput> addOutput(output: T): T {
         if (isReleaseRequested.get()) {
             throw IllegalStateException("Pipeline is released")
         }
@@ -595,15 +589,17 @@ open class StreamerPipeline(
             output.surfaceFlow.runningHistoryNotNull()
                 .collect { (previousSurfaceDescriptor, newSurfaceDescriptor) ->
                     Logger.i(TAG, "Surface changed")
-                    if (previousSurfaceDescriptor?.surface == newSurfaceDescriptor?.surface) {
+                    if (previousSurfaceDescriptor == newSurfaceDescriptor) {
                         return@collect
                     }
 
                     val input = requireNotNull(_videoInput) { "Video input is not set" }
 
-                    previousSurfaceDescriptor?.let {
+                    if (previousSurfaceDescriptor != null &&
+                        previousSurfaceDescriptor.surface != newSurfaceDescriptor?.surface
+                    ) {
                         Logger.i(TAG, "Removing previous surface: $previousSurfaceDescriptor")
-                        input.removeOutputSurface(it.surface)
+                        input.removeOutputSurface(previousSurfaceDescriptor.surface)
                     }
                     if (isReleaseRequested.get()) {
                         Logger.w(TAG, "Pipeline is released, dropping new surface")
@@ -611,7 +607,11 @@ open class StreamerPipeline(
                     }
                     try {
                         newSurfaceDescriptor?.let {
-                            Logger.i(TAG, "Adding new surface: $newSurfaceDescriptor")
+                            if (previousSurfaceDescriptor?.surface == it.surface) {
+                                Logger.i(TAG, "Updating surface: $newSurfaceDescriptor")
+                            } else {
+                                Logger.i(TAG, "Adding new surface: $newSurfaceDescriptor")
+                            }
                             input.addOutputSurface(
                                 it,
                                 isMirroringRequired(),
@@ -727,7 +727,8 @@ open class StreamerPipeline(
      *
      * It will stop the stream.
      */
-    suspend fun removeOutput(output: IPipelineOutput) =
+    @InternalStreamPackApi
+    override suspend fun removeOutput(output: IPipelineOutput) =
         withContext(dispatcherProvider.default) {
             safeOutputCall { outputs ->
                 if (!outputs.contains(output)) {

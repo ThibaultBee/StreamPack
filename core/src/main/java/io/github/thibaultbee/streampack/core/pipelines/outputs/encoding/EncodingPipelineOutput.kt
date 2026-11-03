@@ -34,7 +34,9 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
+import io.github.thibaultbee.streampack.core.elements.utils.Position
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
+import io.github.thibaultbee.streampack.core.elements.utils.ScaleMode
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.flush
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.sourceConfig
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -570,6 +572,8 @@ internal class EncodingPipelineOutput(
                                 SurfaceDescriptor(
                                     surface,
                                     videoConfig.resolution,
+                                    scaleMode = ScaleMode.CROP,
+                                    position = Position.CENTER,
                                     targetRotation,
                                     true
                                 )

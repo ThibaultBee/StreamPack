@@ -15,18 +15,21 @@
  */
 package io.github.thibaultbee.streampack.core.elements.processing.video.outputs
 
+import android.graphics.Color
 import android.opengl.Matrix
 import android.util.Size
 import android.view.Surface
+import androidx.annotation.ColorInt
 import androidx.annotation.IntRange
 import io.github.thibaultbee.streampack.core.elements.processing.video.source.ISourceInfoProvider
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.TransformUtils
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.preRotate
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.preVerticalFlip
 import io.github.thibaultbee.streampack.core.elements.processing.video.utils.extensions.toRectF
+import io.github.thibaultbee.streampack.core.elements.utils.Position
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
+import io.github.thibaultbee.streampack.core.elements.utils.ScaleMode
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.rotate
-import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.pipelines.outputs.SurfaceDescriptor
 
 fun SurfaceOutput(
@@ -43,7 +46,10 @@ fun SurfaceOutput(
         isStreaming,
         sourceResolution,
         needMirroring,
-        sourceInfoProvider
+        sourceInfoProvider,
+        descriptor.scaleMode,
+        descriptor.position,
+        descriptor.backgroundColor
     )
 
 class SurfaceOutput(
@@ -53,7 +59,10 @@ class SurfaceOutput(
     val isStreaming: () -> Boolean,
     sourceResolution: Size,
     val needMirroring: Boolean,
-    sourceInfoProvider: ISourceInfoProvider
+    sourceInfoProvider: ISourceInfoProvider,
+    val scaleMode: ScaleMode = ScaleMode.CROP,
+    val position: Position = Position.CENTER,
+    @ColorInt override val backgroundColor: Int = Color.BLACK
 ) :
     ISurfaceOutput {
     override val type = ISurfaceOutput.OutputType.INTERNAL
@@ -143,9 +152,19 @@ class SurfaceOutput(
             rotationDegrees,
             sourceInfoProvider.isMirror
         )
+        val vecX = floatArrayOf(1f, 0f)
+        val vecY = floatArrayOf(0f, 1f)
+        imageTransform.mapVectors(vecX)
+        imageTransform.mapVectors(vecY)
+        val isXInverted = (vecX[0] + vecX[1]) < -0.001f
+        val isYInverted = (vecY[0] + vecY[1]) < -0.001f
+
         val rotatedCroppedRect = TransformUtils.calculateViewfinder(
             rotatedTargetResolutionRectF,
-            sourceResolutionRectF
+            sourceResolutionRectF,
+            scaleMode,
+            xPosition = if (isXInverted) position.invert() else position,
+            yPosition = if (isYInverted) position.invert() else position
         )
         imageTransform.mapRect(rotatedCroppedRect)
         // According to the rotated size and cropRect, compute the normalized offset and the scale

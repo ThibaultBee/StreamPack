@@ -8,9 +8,9 @@ Add the StreamPack packages in dependency in your module `build.gradle` file:
 dependencies {
     // Replace $latest_version with the version on the Maven Central badge
     implementation 'io.github.thibaultbee.streampack:streampack-core:$latest_version'
-    // For xml UI (incl. PreviewView)
+    // For xml UI (incl. InteractivePreviewView)
     implementation 'io.github.thibaultbee.streampack:streampack-ui:$latest_version'
-    // Or compose UI (incl. SourcePreview)
+    // Or compose UI (incl. ViewfinderStreamerSource and ViewfinderStreamerOutput)
     implementation 'io.github.thibaultbee.streampack:streampack-compose:$latest_version'
     // RTMP or/and SRT package according to your requirements
 }
@@ -65,26 +65,6 @@ For the PlayStore, your application might declare this in its `AndroidManifest.x
 </manifest>
 ```
 
-## Preview (XML-based view only)
-
-Create a `View` to display the preview in your layout.
-
-As a camera preview, you can also use a `SurfaceView`, a `TextureView` or any
-`View` where that can provide a `Surface`.
-
-To simplify integration, StreamPack provides an `PreviewView` in the `streampack-ui` package.
-
-```xml
-
-<layout>
-    <io.github.thibaultbee.streampack.views.PreviewView android:id="@+id/preview"
-        android:layout_width="match_parent" android:layout_height="match_parent"
-        app:enableZoomOnPinch="true" />
-</layout>
-```
-
-`app:enableZoomOnPinch` is a boolean to enable zoom on pinch gesture.
-
 ## Streamer instantiation
 
 A `Streamer` is a class that represents a whole streaming pipeline from capture to endpoint (
@@ -120,7 +100,7 @@ val streamer = cameraSingleStreamer(context = requireContext())
  * You can also create the `SingleStreamer`or the `DualStreamer` and add later the audio and video source with `setAudioSource` 
  * and `setVideoSource`.
  * val streamer = SingleStreamer(context = requireContext())
- * streamer.setVideoSource(CameraSourceFactory()) // Same as streamer.setCameraId(context.defaultCameraId)
+ * streamer.setVideoSource(CameraSourceFactory()) // Same as streamer.setCameraSource(context.defaultCameraId)
  * streamer.setAudioSource(MicrophoneSourceFactory())
  */
 ```
@@ -152,33 +132,141 @@ viewModelScope.launch {
 }
 ```
 
-## Preview connection
+## Preview
+
+StreamPack supports two types of previews:
+
+- **Source Preview**: Directly displays the raw frames from the source with minimal latency.
+- **Output Preview**: Displays the processed frames from the pipeline output, including all applied filters, effects, scaling, and positioning.
+
+Both preview types automatically manage the surface lifecycle and support pinch-to-zoom and tap-to-focus gestures (when supported by the source).
+
+### Key Differences & APIs
+
+| Feature | Source Preview | Output Preview |
+| :--- | :--- | :--- |
+| **Data Path** | Directly fed from the video source | Fed from the pipeline output (`SurfacePipelineOutput`) |
+| **Processing** | Bypasses the surface processor pipeline | Renders after all video filters, custom effects, transformations, and overlays |
+| **WYSIWYG** | Shows raw source frames; does not reflect transformations or filters | Exact visual representation of what the streamer encodes and transmits |
+| **Latency & Overhead** | Lowest latency, minimal GPU overhead | Slight processing latency and GPU overhead |
+| **XML UI API** | `preview.bindToStreamerSource(...)` | `preview.bindToStreamerOutput(...)` |
+| **Compose API** | `ViewfinderStreamerSource(...)` | `ViewfinderStreamerOutput(...)` |
 
 === "XML UI"
 
+    StreamPack provides `InteractivePreviewView` in the `streampack-ui` package. It supports aspect ratio scaling (`crop` or `fit`) and positioning (`start`, `center`, or `end`), with pinch-to-zoom and tap-to-focus.
+    Rendering is delegated to an internal child view attached based on what you bind: an AndroidX `CameraViewfinder` for raw source preview, or a `SurfaceView` for processed pipeline output.
+
+    Create an `InteractivePreviewView` to display the preview in your layout:
+
+    ```xml
+    <layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+
+        <io.github.thibaultbee.streampack.ui.views.InteractivePreviewView
+            android:id="@+id/preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:scaleMode="crop"
+            app:position="center" />
+    </layout>
+    ```
+
+    - `app:scaleMode`: `crop` (fills view, cropping excess) or `fit` (fits inside view with letterbox/pillarbox).
+    - `app:position`: `start` (top/left), `center`, or `end` (bottom/right).
+
+    StreamPack provides extension functions on `InteractivePreviewView` to bind either the source or output preview.
+
+    #### Source Preview
+
     ```kotlin
-    val streamer = cameraSingleStreamer(context = requireContext()) // Already instantiated streamer
-    val preview = findViewById<PreviewView>(R.id.preview) // Already inflated preview
-    
-    /**
-     * If the preview is a `PreviewView`
-     */
-    preview.setVideoSourceProvider(streamer)
-    // The preview automatically starts
-    
-    /**
-     * Otherwise if the preview is in a [SurfaceView], a [TextureView], a [Surface],... you can use:
-     */
-    streamer.startPreview(preview)
+    val streamer = cameraSingleStreamer(context = requireContext())
+    val preview = findViewById<InteractivePreviewView>(R.id.preview)
+
+    // Binds InteractivePreviewView to the video source
+    preview.bindToStreamerSource(
+        lifecycleOwner = viewLifecycleOwner,
+        streamer = streamer,
+        isPinchToZoomEnabled = true,
+        isTapToFocusEnabled = true
+    )
+    ```
+
+    #### Output Preview
+
+    ```kotlin
+    val streamer = cameraSingleStreamer(context = requireContext())
+    val preview = findViewById<InteractivePreviewView>(R.id.preview)
+
+    // Binds InteractivePreviewView to the processed pipeline output
+    preview.bindToStreamerOutput(
+        lifecycleOwner = viewLifecycleOwner,
+        streamer = streamer,
+        isPinchToZoomEnabled = true,
+        isTapToFocusEnabled = true
+    )
+    ```
+
+    #### Scale Mode and Position
+
+    You can change the scale mode and positioning programmatically at runtime:
+
+    ```kotlin
+    preview.scaleMode = ScaleMode.FIT // or ScaleMode.CROP
+    preview.position = Position.CENTER // or Position.START, Position.END
+    ```
+
+    #### Unbinding
+
+    To manually unbind the preview before its lifecycle ends:
+
+    ```kotlin
+    preview.unbind()
+    ```
+
+    #### Custom Views
+
+    As a preview, you can also use a `SurfaceView`, a `TextureView`, or any custom view that can provide a `Surface`:
+
+    ```kotlin
+    streamer.startPreview(surface)
     ```
 
 === "Compose UI"
 
+    StreamPack provides `ViewfinderStreamerSource` and `ViewfinderStreamerOutput` composables in `streampack-compose`.
+
+    #### Source Preview
+
     ```kotlin
-    val streamer = cameraSingleStreamer(context = requireContext()) // Already instantiated streamer
-    
-    Box {
-        SourcePreview(streamer, modifier = Modifier.fillMaxSize())
+    val streamer = cameraSingleStreamer(context = LocalContext.current)
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        ViewfinderStreamerSource(
+            streamer = streamer,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop, // or ContentScale.Fit
+            alignment = Alignment.Center, // or Alignment.TopCenter, Alignment.BottomCenter, etc.
+            isPinchToZoomEnabled = true,
+            isTapToFocusEnabled = true
+        )
+    }
+    ```
+
+    #### Output Preview
+
+    ```kotlin
+    val streamer = cameraSingleStreamer(context = LocalContext.current)
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        ViewfinderStreamerOutput(
+            streamer = streamer,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop, // or ContentScale.Fit
+            alignment = Alignment.Center, // or Alignment.TopCenter, Alignment.BottomCenter, etc.
+            isPinchToZoomEnabled = true,
+            isTapToFocusEnabled = true
+        )
     }
     ```
 
@@ -214,16 +302,14 @@ rotationProvider.addListener(object : IRotationProvider.Listener {
 rotationProvider.removeListener(listener)
 ```
 
-You can transform the `RotationProvider` into a `Flow` provider through the `asFlowProvider`.
+You can transform the `RotationProvider` into a `Flow` through `rotationFlow()`.
 
 ```kotlin
 val streamer = cameraSingleStreamer(context = requireContext()) // Already instantiated streamer
 val rotationProvider = SensorRotationProvider(context = requireContext())
 
-// For coroutine based
-val rotationFlowProvider = rotationProvider.asFlowProvider()
 // Then in a coroutine suspend function
-rotationFlowProvider.rotationFlow.collect { rotation ->
+rotationProvider.rotationFlow().collect { rotation ->
     streamer.setTargetRotation(rotation)
 }
 ```

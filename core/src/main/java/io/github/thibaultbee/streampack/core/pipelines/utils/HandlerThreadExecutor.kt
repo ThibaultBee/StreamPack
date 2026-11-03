@@ -19,6 +19,7 @@ import android.os.Handler
 import android.os.HandlerThread
 import io.github.thibaultbee.streampack.core.elements.utils.ProcessThreadPriorityValue
 import java.util.concurrent.Executor
+import kotlin.time.Duration
 
 /**
  * Helper class that wraps a Handler/HandlerThread combination and implements the [Executor]
@@ -36,8 +37,8 @@ class HandlerThreadExecutor(name: String, @ProcessThreadPriorityValue priority: 
         handler.post(runnable)
     }
 
-    fun postDelayed(runnable: Runnable, delayMillis: Long) {
-        handler.postDelayed(runnable, delayMillis)
+    fun postDelayed(runnable: Runnable, delay: Duration) {
+        handler.postDelayed(runnable, delay.inWholeMilliseconds)
     }
 
     fun removeCallbacksAndMessages(token: Any) {

@@ -99,8 +99,9 @@ void main() {
 
     const val BLANK_FRAGMENT_SHADER: String = ("precision mediump float;\n"
             + "uniform float uAlphaScale;\n"
+            + "uniform vec4 uBackgroundColor;\n"
             + "void main() {\n"
-            + "    gl_FragColor = vec4(0.0, 0.0, 0.0, uAlphaScale);\n"
+            + "    gl_FragColor = vec4(uBackgroundColor.rgb, uBackgroundColor.a * uAlphaScale);\n"
             + "}\n")
     val VERTEX_COORDS: FloatArray = floatArrayOf(
         -1.0f, -1.0f,  // 0 bottom left
@@ -130,12 +131,19 @@ precision mediump float;
 varying vec2 %s;
 uniform samplerExternalOES %s;
 uniform float uAlphaScale;
+uniform vec4 uBackgroundColor;
 void main() {
-    vec4 src = texture2D(%s, %s);
-    gl_FragColor = vec4(src.rgb, src.a * uAlphaScale);
+    if (%s.x < 0.0 || %s.x > 1.0 || %s.y < 0.0 || %s.y > 1.0) {
+        gl_FragColor = vec4(uBackgroundColor.rgb, uBackgroundColor.a * uAlphaScale);
+    } else {
+        vec4 src = texture2D(%s, %s);
+        gl_FragColor = vec4(src.rgb, src.a * uAlphaScale);
+    }
 }
 """),
-                fragCoordsVarName, samplerVarName, samplerVarName, fragCoordsVarName
+                fragCoordsVarName, samplerVarName,
+                fragCoordsVarName, fragCoordsVarName, fragCoordsVarName, fragCoordsVarName,
+                samplerVarName, fragCoordsVarName
             )
         }
     }
@@ -151,14 +159,21 @@ void main() {
 precision mediump float;
 uniform samplerExternalOES %s;
 uniform float uAlphaScale;
+uniform vec4 uBackgroundColor;
 in vec2 %s;
 out vec4 outColor;
 
 void main() {
-  vec4 src = texture(%s, %s);
-  outColor = vec4(src.rgb, src.a * uAlphaScale);
+  if (%s.x < 0.0 || %s.x > 1.0 || %s.y < 0.0 || %s.y > 1.0) {
+    outColor = vec4(uBackgroundColor.rgb, uBackgroundColor.a * uAlphaScale);
+  } else {
+    vec4 src = texture(%s, %s);
+    outColor = vec4(src.rgb, src.a * uAlphaScale);
+  }
 }"""),
-                samplerVarName, fragCoordsVarName, samplerVarName, fragCoordsVarName
+                samplerVarName, fragCoordsVarName,
+                fragCoordsVarName, fragCoordsVarName, fragCoordsVarName, fragCoordsVarName,
+                samplerVarName, fragCoordsVarName
             )
         }
     }
@@ -174,6 +189,7 @@ void main() {
 precision mediump float;
 uniform __samplerExternal2DY2YEXT %s;
 uniform float uAlphaScale;
+uniform vec4 uBackgroundColor;
 in vec2 %s;
 out vec4 outColor;
 
@@ -188,11 +204,17 @@ vec3 yuvToRgb(vec3 yuv) {
 }
 
 void main() {
-  vec3 srcYuv = texture(%s, %s).xyz;
-  vec3 srcRgb = yuvToRgb(srcYuv);
-  outColor = vec4(srcRgb, uAlphaScale);
+  if (%s.x < 0.0 || %s.x > 1.0 || %s.y < 0.0 || %s.y > 1.0) {
+    outColor = vec4(uBackgroundColor.rgb, uBackgroundColor.a * uAlphaScale);
+  } else {
+    vec3 srcYuv = texture(%s, %s).xyz;
+    vec3 srcRgb = yuvToRgb(srcYuv);
+    outColor = vec4(srcRgb, uAlphaScale);
+  }
 }"""),
-                samplerVarName, fragCoordsVarName, samplerVarName, fragCoordsVarName
+                samplerVarName, fragCoordsVarName,
+                fragCoordsVarName, fragCoordsVarName, fragCoordsVarName, fragCoordsVarName,
+                samplerVarName, fragCoordsVarName
             )
         }
     }
@@ -594,6 +616,7 @@ void main() {
         protected var mTransMatrixLoc: Int = -1
         protected var mAlphaScaleLoc: Int = -1
         protected var mPositionLoc: Int = -1
+        protected var mBackgroundColorLoc: Int = -1
 
         init {
             var vertexShader = -1
@@ -668,6 +691,7 @@ void main() {
             // Set to default value for single camera case
             updateTransformMatrix(create4x4IdentityMatrix())
             updateAlpha(1.0f)
+            updateBackgroundColor(0.0f, 0.0f, 0.0f, 1.0f)
         }
 
         /**
@@ -691,6 +715,16 @@ void main() {
         }
 
         /**
+         * Updates the background color of the drawn frame
+         */
+        fun updateBackgroundColor(r: Float, g: Float, b: Float, a: Float) {
+            if (mBackgroundColorLoc >= 0) {
+                GLES20.glUniform4f(mBackgroundColorLoc, r, g, b, a)
+                checkGlErrorOrThrow("glUniform4f")
+            }
+        }
+
+        /**
          * Delete the shader program
          *
          *
@@ -707,6 +741,7 @@ void main() {
             checkLocationOrThrow(mTransMatrixLoc, "uTransMatrix")
             mAlphaScaleLoc = GLES20.glGetUniformLocation(mProgramHandle, "uAlphaScale")
             checkLocationOrThrow(mAlphaScaleLoc, "uAlphaScale")
+            mBackgroundColorLoc = GLES20.glGetUniformLocation(mProgramHandle, "uBackgroundColor")
         }
     }
 
