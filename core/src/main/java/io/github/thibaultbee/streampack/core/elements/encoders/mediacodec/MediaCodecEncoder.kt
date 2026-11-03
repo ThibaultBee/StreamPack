@@ -361,6 +361,7 @@ internal constructor(
                     try {
                         listener.outputChannel.send(frame)
                     } catch (t: Throwable) {
+                        frame.close()
                         if (state.isRunning) {
                             handleErrorUnsafe(t)
                         } else {
@@ -375,6 +376,11 @@ internal constructor(
                         }
                     }
                 } catch (t: Throwable) {
+                    try {
+                        codec.releaseOutputBuffer(index, false)
+                    } catch (_: Throwable) {
+                        // Do nothing
+                    }
                     handleErrorUnsafe(t)
                 }
             }
