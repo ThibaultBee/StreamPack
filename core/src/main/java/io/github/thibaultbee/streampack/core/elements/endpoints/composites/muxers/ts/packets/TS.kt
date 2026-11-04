@@ -58,7 +58,8 @@ open class TS(
 
         try {
             while (payload?.hasRemaining() == true || adaptationFieldIndicator) {
-                buffer.limit(buffer.position() + PACKET_SIZE)
+                val packetPosition = buffer.position()
+                buffer.limit(packetPosition + PACKET_SIZE)
 
                 // Write header to packet
                 buffer.put(SYNC_BYTE)
@@ -87,10 +88,40 @@ open class TS(
                 buffer.put(byte.toByte())
                 continuityCounter = ((continuityCounter + 1) and 0xF).toByte()
 
-                // Add adaptation fields first if needed
+                val stuffingSize = if (stuffingForLastPacket && payload != null) {
+                    buffer.remaining() - payload.remaining() - (specificHeader?.remaining() ?: 0) -
+                            if (adaptationFieldIndicator) adaptationField!!.remaining() else 0
+                } else {
+                    0
+                }
+
+                // Add adaptation fields first if needed. Stuffing goes at its end.
                 if (adaptationFieldIndicator) {
+                    val adaptationFieldPosition = buffer.position()
                     buffer.put(adaptationField!!) // Is not null if adaptationFieldIndicator is true
                     adaptationFieldIndicator = false
+                    if (stuffingSize > 0) {
+                        val adaptationFieldLength = buffer[adaptationFieldPosition].toInt() and 0xFF
+                        var stuffingBytes = stuffingSize
+                        if (adaptationFieldLength == 0) {
+                            buffer.put(0.toByte()) // Flags
+                            stuffingBytes--
+                        }
+                        repeat(stuffingBytes) {
+                            buffer.put(0xFF.toByte()) // Stuffing
+                        }
+                        buffer.put(adaptationFieldPosition, (adaptationFieldLength + stuffingSize).toByte())
+                    }
+                } else if (stuffingSize > 0) {
+                    byte = buffer[packetPosition + 3].toInt() or (1 shl 5)
+                    buffer.put(packetPosition + 3, byte.toByte())
+                    buffer.put((stuffingSize - 1).toByte())
+                    if (stuffingSize > 1) {
+                        buffer.put(0.toByte()) // Flags
+                        repeat(stuffingSize - 2) {
+                            buffer.put(0xFF.toByte()) // Stuffing
+                        }
+                    }
                 }
 
                 // Then specific stream header. Mainly for PES header.
@@ -100,28 +131,6 @@ open class TS(
 
                 // Fill packet with correct size of payload
                 payload?.let {
-                    if (stuffingForLastPacket) {
-                        // Add stuffing before last packet remaining payload
-                        if (buffer.remaining() > it.remaining()) {
-                            val headerSize = buffer.position() % PACKET_SIZE
-                            val currentPacketFirstPosition =
-                                buffer.position() / PACKET_SIZE * PACKET_SIZE
-                            byte = buffer[currentPacketFirstPosition + 3].toInt()
-                            byte = byte or (1 shl 5)
-                            buffer.position(currentPacketFirstPosition + 3)
-                            buffer.put(byte.toByte())
-                            buffer.position(currentPacketFirstPosition + 4)
-                            val stuffingLength = PACKET_SIZE - it.remaining() - headerSize - 1
-                            buffer.put(stuffingLength.toByte())
-                            if (stuffingLength >= 1) {
-                                buffer.put(0.toByte())
-                                for (i in 0..stuffingLength - 2) {
-                                    buffer.put(0xFF.toByte()) // Stuffing
-                                }
-                            }
-                        }
-                    }
-
                     it.limit(it.position() + buffer.remaining().coerceAtMost(it.remaining()))
                     buffer.put(it)
                     it.limit(payloadLimit)
