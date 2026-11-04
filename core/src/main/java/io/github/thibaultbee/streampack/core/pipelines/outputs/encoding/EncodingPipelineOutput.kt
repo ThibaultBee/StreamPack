@@ -38,6 +38,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.flush
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.sourceConfig
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_ENCODER_INPUT_PREFIX
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_ENCODER_PREFIX
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_ENCODING_OUTPUT_PREFIX
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
@@ -152,6 +153,8 @@ internal class EncodingPipelineOutput(
         dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_ENCODING_OUTPUT_PREFIX)
     private val audioEncoderDispatcher =
         dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_ENCODER_PREFIX)
+    private val audioEncoderInputDispatcher =
+        dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_ENCODER_INPUT_PREFIX)
 
     private var audioEncoderInternal: IEncoderInternal? = null
         set(value) {
@@ -412,7 +415,8 @@ internal class EncodingPipelineOutput(
             ),
             audioEncoderListener,
             dispatcherProvider.default,
-            audioEncoderDispatcher
+            audioEncoderDispatcher,
+            audioEncoderInputDispatcher
         )
 
         when (audioEncoder.input) {
@@ -901,6 +905,7 @@ internal class EncodingPipelineOutput(
 
         audioOutputDispatcher.cancel()
         audioEncoderDispatcher.cancel()
+        audioEncoderInputDispatcher.cancel()
         videoOutputDispatcher.cancel()
         videoEncoderDispatcher.cancel()
 
