@@ -45,6 +45,7 @@ import io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.mu
 import io.github.thibaultbee.streampack.ext.rtmp.configuration.mediadescriptor.RtmpMediaDescriptor
 import io.ktor.network.selector.SelectorManager
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.TimeoutCancellationException
@@ -100,7 +101,16 @@ class RtmpEndpoint internal constructor(
     )
     private val flvTagBuilder = FlvTagBuilder(flvTagChannel)
 
-    private val selectorManager = SelectorManager(ioDispatcher)
+    /**
+     * komuxer runs ktor's socket and TLS coroutines in this context, which has no Job: without a
+     * handler, a failed TLS close_notify write to a peer that already closed kills the process.
+     * Log only: the connection's own read/write path reports the drop, and a report here would be
+     * replayed by throwableFlow as a drop of the next connection.
+     */
+    private val selectorManager = SelectorManager(
+        ioDispatcher + CoroutineExceptionHandler { _, throwable ->
+            Logger.e(TAG, "Uncaught in RTMP socket: $throwable")
+        })
     private val connectionBuilder = RtmpConnectionBuilder(selectorManager)
     private var rtmpClient: RtmpClient? = null
 
