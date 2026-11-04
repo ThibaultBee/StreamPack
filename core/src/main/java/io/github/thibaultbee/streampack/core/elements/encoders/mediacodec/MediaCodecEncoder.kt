@@ -20,6 +20,9 @@ import android.media.MediaCodec.BufferInfo
 import android.media.MediaCodec.CodecException
 import android.media.MediaFormat
 import android.os.Bundle
+import android.os.Handler
+import android.os.HandlerThread
+import android.os.Process
 import android.util.Log
 import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.data.Extra
@@ -94,6 +97,17 @@ internal constructor(
 
     private val encoderCallback = EncoderCallback()
 
+    /**
+     * Without a handler, MediaCodec delivers callbacks on the looper of the thread that created it,
+     * else on the main looper: a busy main thread would then stall the encoder.
+     */
+    private val callbackThread = lazy {
+        HandlerThread(
+            "$tag-callback",
+            if (isVideo) Process.THREAD_PRIORITY_DISPLAY else Process.THREAD_PRIORITY_AUDIO
+        ).apply { start() }
+    }
+
     init {
         val mediaCodecWithFormat = MediaCodecUtils.createCodec(encoderConfig)
         mediaCodec = mediaCodecWithFormat.mediaCodec
@@ -119,10 +133,7 @@ internal constructor(
     private fun configureUnsafe() {
         try {
             if (input !is SyncByteBufferInput) {
-                /**
-                 * Set encoder callback without handler.
-                 */
-                mediaCodec.setCallback(encoderCallback)
+                mediaCodec.setCallback(encoderCallback, Handler(callbackThread.value.looper))
             }
 
             mediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
@@ -261,6 +272,9 @@ internal constructor(
     override suspend fun release() {
         withMutexContext {
             releaseUnsafe()
+        }
+        if (callbackThread.isInitialized()) {
+            callbackThread.value.quitSafely()
         }
         coroutineScope.cancel()
     }
