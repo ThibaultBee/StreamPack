@@ -94,6 +94,7 @@ open class TS(
                 }
 
                 // Then specific stream header. Mainly for PES header.
+                val specificHeaderPosition = buffer.position()
                 specificHeader?.let {
                     buffer.put(it)
                 }
@@ -103,22 +104,47 @@ open class TS(
                     if (stuffingForLastPacket) {
                         // Add stuffing before last packet remaining payload
                         if (buffer.remaining() > it.remaining()) {
-                            val headerSize = buffer.position() % PACKET_SIZE
                             val currentPacketFirstPosition =
                                 buffer.position() / PACKET_SIZE * PACKET_SIZE
-                            byte = buffer[currentPacketFirstPosition + 3].toInt()
-                            byte = byte or (1 shl 5)
-                            buffer.position(currentPacketFirstPosition + 3)
-                            buffer.put(byte.toByte())
-                            buffer.position(currentPacketFirstPosition + 4)
-                            val stuffingLength = PACKET_SIZE - it.remaining() - headerSize - 1
-                            buffer.put(stuffingLength.toByte())
-                            if (stuffingLength >= 1) {
-                                buffer.put(0.toByte())
-                                for (i in 0..stuffingLength - 2) {
+                            val adaptationFieldPosition = currentPacketFirstPosition + 4
+                            val stuffingSize = buffer.remaining() - it.remaining()
+
+                            // Stuffing lives in the adaptation field, so the specific header moves after it
+                            val header = ByteArray(buffer.position() - specificHeaderPosition)
+                            buffer.position(specificHeaderPosition)
+                            buffer.get(header)
+                            buffer.position(specificHeaderPosition)
+
+                            if (specificHeaderPosition > adaptationFieldPosition) {
+                                // This packet already has an adaptation field: grow it
+                                val adaptationFieldLength =
+                                    buffer[adaptationFieldPosition].toInt() and 0xFF
+                                var stuffingBytes = stuffingSize
+                                if (adaptationFieldLength == 0) {
+                                    buffer.put(0.toByte()) // Flags
+                                    stuffingBytes--
+                                }
+                                repeat(stuffingBytes) {
                                     buffer.put(0xFF.toByte()) // Stuffing
                                 }
+                                buffer.put(
+                                    adaptationFieldPosition,
+                                    (adaptationFieldLength + stuffingSize).toByte()
+                                )
+                            } else {
+                                byte = buffer[currentPacketFirstPosition + 3].toInt()
+                                byte = byte or (1 shl 5)
+                                buffer.put(currentPacketFirstPosition + 3, byte.toByte())
+                                val stuffingLength = stuffingSize - 1
+                                buffer.put(stuffingLength.toByte())
+                                if (stuffingLength >= 1) {
+                                    buffer.put(0.toByte())
+                                    for (i in 0..stuffingLength - 2) {
+                                        buffer.put(0xFF.toByte()) // Stuffing
+                                    }
+                                }
                             }
+                            buffer.put(header)
                         }
                     }
 
