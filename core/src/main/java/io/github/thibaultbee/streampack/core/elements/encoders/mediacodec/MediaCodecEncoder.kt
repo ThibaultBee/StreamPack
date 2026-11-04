@@ -25,8 +25,10 @@ import android.view.Surface
 import io.github.thibaultbee.streampack.core.elements.data.Extra
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
+import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.EncoderMode
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal
+import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.hasEndOfStreamFlag
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.isKeyFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.extensions.isValid
@@ -40,6 +42,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -51,6 +54,8 @@ import kotlin.math.min
  * The [MediaCodec] encoder implementation.
  *
  * @param encoderConfig the encoder configuration
+ * @param inputDispatcher the dispatcher for [EncoderMode.ASYNC] input requests. It must not be
+ * [processDispatcher] for a blocking input: the request would then delay output delivery.
  */
 @OptIn(InternalStreamPackApi::class)
 internal class MediaCodecEncoder
@@ -58,10 +63,29 @@ internal constructor(
     private val encoderConfig: EncoderConfig<*>,
     private val listener: IEncoderInternal.IListener,
     private val defaultDispatcher: CoroutineDispatcher,
-    private val processDispatcher: CoroutineDispatcher
+    private val processDispatcher: CoroutineDispatcher,
+    private val inputDispatcher: CoroutineDispatcher = processDispatcher
 ) : IEncoderInternal {
     private val coroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
     private val mutex = Mutex()
+
+    /**
+     * Serializes [EncoderMode.ASYNC] input requests, in callback order. Never taken while [mutex]
+     * is held.
+     */
+    private val inputMutex = Mutex()
+
+    /**
+     * Incremented on each start: an input buffer index from an earlier session is never queued.
+     */
+    @Volatile
+    private var inputGeneration = 0
+
+    /**
+     * The frame is requested into this buffer, outside [mutex], then copied into the codec buffer.
+     * The codec buffer is only touched under [mutex] while its index is valid.
+     */
+    private var inputStagingBuffer: ByteBuffer? = null
 
     private val mediaCodec: MediaCodec
     private val format: MediaFormat
@@ -177,6 +201,8 @@ internal constructor(
             State.CONFIGURED -> {
                 setState(State.PENDING_START)
                 try {
+                    // Before start(): input callbacks of the new session can fire before it returns.
+                    inputGeneration++
                     mediaCodec.start()
                     setState(State.STARTED)
                 } catch (e: CodecException) {
@@ -233,6 +259,16 @@ internal constructor(
         withMutexContext {
             stopStreamUnsafe()
         }
+        awaitInputRequest()
+    }
+
+    /**
+     * Waits for an in-flight frame request; later requests see a stopped codec and drop.
+     */
+    private suspend fun awaitInputRequest() {
+        withContext(defaultDispatcher) {
+            inputMutex.withLock {}
+        }
     }
 
     private fun releaseUnsafe() {
@@ -262,6 +298,7 @@ internal constructor(
         withMutexContext {
             releaseUnsafe()
         }
+        awaitInputRequest()
         coroutineScope.cancel()
     }
 
@@ -409,40 +446,121 @@ internal constructor(
         }
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
-            launchProcessingMutex {
+            val generation = inputGeneration
+            coroutineScope.launch(inputDispatcher) {
+                inputMutex.withLock {
+                    processInputBuffer(index, generation)
+                }
+            }
+        }
+
+        /**
+         * The frame request may block for a whole frame, so it runs without [mutex]: output
+         * buffers are delivered meanwhile.
+         */
+        private suspend fun processInputBuffer(index: Int, generation: Int) {
+            val stagingBuffer = mutex.withLock {
                 when {
-                    !state.isRunning -> {
+                    !isInputBufferValid(generation) -> {
                         Logger.w(tag, "Receives input frame after codec is not running: $state.")
-                        return@launchProcessingMutex
+                        return
                     }
 
                     input !is IEncoderInternal.IAsyncByteBufferInput -> {
                         Logger.w(tag, "Input buffer is only available for byte buffer input")
-                        return@launchProcessingMutex
+                        return
                     }
 
                     else -> {
-                        val frame = try {
-                            val buffer = requireNotNull(mediaCodec.getInputBuffer(index))
-                            input.listener.onFrameRequested(buffer)
+                        try {
+                            stagingBufferFor(requireNotNull(mediaCodec.getInputBuffer(index)))
                         } catch (t: Throwable) {
                             Logger.e(tag, "Failed to get input buffer: $t")
-                            mediaCodec.queueInputBuffer(
-                                index, 0, 0, 0, 0
-                            )
-                            return@launchProcessingMutex
-                        }
-
-                        try {
-                            queueInputFrame(index, frame)
-                        } catch (t: Throwable) {
-                            handleErrorUnsafe(t)
-                        } finally {
-                            frame.close()
+                            queueEmptyInputBufferUnsafe(index)
+                            return
                         }
                     }
                 }
             }
+
+            val requestedSize = stagingBuffer.remaining()
+            val frame = try {
+                (input as IEncoderInternal.IAsyncByteBufferInput).listener.onFrameRequested(
+                    stagingBuffer
+                )
+            } catch (t: Throwable) {
+                Logger.e(tag, "Failed to get input buffer: $t")
+                // The codec returns an empty buffer at once: without a pause, a failing input spins.
+                delay(inputFrameDurationMs(requestedSize))
+                mutex.withLock {
+                    if (isInputBufferValid(generation)) {
+                        queueEmptyInputBufferUnsafe(index)
+                    }
+                }
+                return
+            }
+
+            mutex.withLock {
+                try {
+                    if (!isInputBufferValid(generation)) {
+                        Logger.w(tag, "Drops input frame: codec stopped during the request: $state.")
+                        return
+                    }
+                    try {
+                        val buffer = requireNotNull(mediaCodec.getInputBuffer(index))
+                        buffer.position(frame.rawBuffer.position())
+                        buffer.put(frame.rawBuffer.duplicate())
+                    } catch (t: Throwable) {
+                        Logger.e(tag, "Failed to get input buffer: $t")
+                        queueEmptyInputBufferUnsafe(index)
+                        return
+                    }
+                    try {
+                        queueInputFrame(index, frame)
+                    } catch (t: Throwable) {
+                        handleErrorUnsafe(t)
+                    }
+                } finally {
+                    frame.close()
+                }
+            }
+        }
+
+        private suspend fun queueEmptyInputBufferUnsafe(index: Int) {
+            try {
+                mediaCodec.queueInputBuffer(index, 0, 0, 0, 0)
+            } catch (t: Throwable) {
+                handleErrorUnsafe(t)
+            }
+        }
+
+        /**
+         * Returns how long the input takes to produce [size] bytes.
+         */
+        private fun inputFrameDurationMs(size: Int): Long = when (val config = config) {
+            is AudioCodecConfig -> size * 1000L / (config.sampleRate *
+                    AudioCodecConfig.getNumberOfChannels(config.channelConfig) *
+                    AudioCodecConfig.getNumOfBytesPerSample(config.byteFormat))
+
+            is VideoCodecConfig -> 1000L / config.fps
+        }
+
+        private fun isInputBufferValid(generation: Int) =
+            state.isRunning && generation == inputGeneration
+
+        /**
+         * Returns [inputStagingBuffer] with the capacity, byte order, position and limit of the
+         * codec buffer.
+         */
+        private fun stagingBufferFor(codecBuffer: ByteBuffer): ByteBuffer {
+            val buffer = inputStagingBuffer?.takeIf { it.capacity() >= codecBuffer.capacity() }
+                ?: ByteBuffer.allocateDirect(codecBuffer.capacity())
+                    .also { inputStagingBuffer = it }
+            buffer.clear()
+            buffer.order(codecBuffer.order())
+            buffer.limit(codecBuffer.limit())
+            buffer.position(codecBuffer.position())
+            return buffer
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
