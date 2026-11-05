@@ -22,6 +22,7 @@ import android.media.AudioTimestamp
 import android.media.audiofx.AudioEffect
 import android.os.Build
 import androidx.annotation.RequiresPermission
+import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
@@ -60,6 +61,10 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
 
     private val audioTimestamp = AudioTimestamp()
 
+    // Frames read since startRecording(), which also restarts framePosition's count.
+    private var framesRead = 0L
+    private var clock: AudioFrameClock? = null
+
     protected abstract fun buildAudioRecord(
         config: AudioSourceConfig,
         bufferSize: Int
@@ -80,6 +85,7 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
         }
 
         _minBufferSize = getMinBufferSize(config)
+        clock = AudioFrameClock(config.sampleRate)
 
         audioRecord = buildAudioRecord(config, _minBufferSize!!).also {
             val previousEffects = processor?.getAll() ?: emptyList()
@@ -112,6 +118,8 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
 
         processor?.setEnabled(true)
 
+        framesRead = 0
+        requireNotNull(clock).reset()
         audioRecord.startRecording()
         _isStreamingFlow.tryEmit(true)
     }
@@ -139,26 +147,36 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
         audioRecord = null
     }
 
-    private fun getTimestampInUs(audioRecord: AudioRecord): Long {
-        // Get timestamp from AudioRecord
-        // If we can not get timestamp through getTimestamp, we timestamp audio sample.
-        var timestamp: Long = -1
+    /**
+     * Returns the timestamp of a buffer of [framesInBuffer] frames that was just read.
+     */
+    private fun getTimestampInUs(audioRecord: AudioRecord, framesInBuffer: Int): Long {
+        val sampleRate = audioRecord.sampleRate
+        var measured: Long = -1
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             if (audioRecord.getTimestamp(
                     audioTimestamp,
                     AudioTimestamp.TIMEBASE_MONOTONIC
                 ) == AudioRecord.SUCCESS
             ) {
-                timestamp = audioTimestamp.nanoTime / 1000 // to us
+                measured = firstFrameTimestampInUs(
+                    audioTimestamp.nanoTime,
+                    audioTimestamp.framePosition,
+                    framesRead,
+                    // Not bufferSizeInFrames: a stalled reader can fall further behind.
+                    sampleRate.toLong(),
+                    sampleRate
+                )
             }
         }
 
-        // Fallback
-        if (timestamp < 0) {
-            timestamp = TimeUtils.currentTime()
-        }
-
-        return timestamp
+        return requireNotNull(clock).timestampInUs(
+            framesRead,
+            framesInBuffer,
+            measured,
+            // The read has just returned with the buffer's last frame.
+            TimeUtils.currentTime() - framesToUs(framesInBuffer.toLong(), sampleRate)
+        )
     }
 
 
@@ -174,7 +192,11 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
         if (length <= 0) {
             throw IllegalArgumentException(audioRecordErrorToString(length))
         }
-        return getTimestampInUs(audioRecord)
+        val frames = length / (audioRecord.channelCount *
+                AudioCodecConfig.getNumOfBytesPerSample(audioRecord.audioFormat))
+        val timestamp = getTimestampInUs(audioRecord, frames)
+        framesRead += frames
+        return timestamp
     }
 
     /**
@@ -215,6 +237,32 @@ internal sealed class AudioRecordSource : IAudioSourceInternal, IAudioRecordSour
 
     companion object {
         private const val TAG = "AudioRecordSource"
+
+        private fun framesToUs(frames: Long, sampleRate: Int) = frames * 1_000_000L / sampleRate
+
+        /**
+         * Extrapolates an [AudioTimestamp] (frame [framePosition] captured at [nanoTime]) to
+         * frame [framesReadBefore], the first frame of the buffer just read.
+         *
+         * [framePosition] may be behind [framesReadBefore]: a stale timestamp while the reader
+         * drains a backlog.
+         *
+         * @return the timestamp in us, or -1 if [framePosition] is more than [maxFramesApart]
+         * frames from [framesReadBefore], i.e. it is not counted from the same start.
+         */
+        internal fun firstFrameTimestampInUs(
+            nanoTime: Long,
+            framePosition: Long,
+            framesReadBefore: Long,
+            maxFramesApart: Long,
+            sampleRate: Int
+        ): Long {
+            val framesAhead = framePosition - framesReadBefore
+            if (framesAhead !in -maxFramesApart..maxFramesApart) {
+                return -1
+            }
+            return nanoTime / 1000 - framesToUs(framesAhead, sampleRate)
+        }
 
         /**
          * Gets minimum buffer size for audio capture.
