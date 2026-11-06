@@ -28,11 +28,26 @@ import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
  */
 internal sealed class FlvStream {
     protected var sentSequenceStart = false
+    private var sequenceStart: FLVData? = null
 
     abstract val flvConfig: FLVConfig<*>
 
-    fun create(frame: Frame): List<FLVData> {
-        return createImpl(frame)
+    fun create(frame: Frame): List<FLVData> = synchronized(this) {
+        val hadSequenceStart = sentSequenceStart
+        createImpl(frame).also {
+            if (!hadSequenceStart && sentSequenceStart) sequenceStart = it.first()
+        }
+    }
+
+    /**
+     * Re-arms the sequence start if [data] is it, so that the next frame (keyframe for video)
+     * carries it again. Called from any thread.
+     */
+    fun onDropped(data: FLVData) = synchronized(this) {
+        if (data === sequenceStart) {
+            sequenceStart = null
+            sentSequenceStart = false
+        }
     }
 
     abstract fun createImpl(frame: Frame): List<FLVData>
@@ -61,6 +76,10 @@ internal class VideoFlvStream(codecConfig: VideoCodecConfig) : FlvStream() {
     private val frameFactory = FlvVideoDataFactory.createFactory(codecConfig)
 
     override fun createImpl(frame: Frame): List<FLVData> {
+        if (!sentSequenceStart && !frame.isKeyFrame) {
+            // Undecodable without the sequence header, which only a keyframe carries.
+            return emptyList()
+        }
         var withSequenceStart = false
         if ((!sentSequenceStart) && (frame.isKeyFrame)) {
             // Send config
