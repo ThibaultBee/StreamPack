@@ -105,6 +105,15 @@ class FlvTagBuilder(val channel: ChannelWithCloseableData<FLVTag>) {
         }
     }
 
+    /**
+     * To call for every tag that is dropped instead of written: if it was a sequence start, the
+     * next frame of its stream (keyframe for video) carries it again.
+     */
+    fun onTagDropped(tag: FLVTag) {
+        audioStream?.onDropped(tag.data)
+        videoStream?.onDropped(tag.data)
+    }
+
     suspend fun write(
         frame: Frame,
         ts: Int,
@@ -127,6 +136,10 @@ class FlvTagBuilder(val channel: ChannelWithCloseableData<FLVTag>) {
                 ?: throw IllegalStateException("Video stream not added")
 
             else -> throw IllegalArgumentException("Invalid stream PID $streamPid for frame $frame")
+        }
+        if (flvDatas.isEmpty()) {
+            frame.close()
+            return
         }
         flvDatas.forEachIndexed { index, flvData ->
             if (index == flvDatas.lastIndex) {

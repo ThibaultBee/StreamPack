@@ -84,6 +84,7 @@ class RtmpEndpoint internal constructor(
         FLV_TAG_CHANNEL_SIZE,
         BufferOverflow.DROP_OLDEST,
         onUndeliveredElement = { flvTag ->
+            flvTagBuilder.onTagDropped(flvTag)
             synchronized(metricsLock) {
                 val payloadSize = flvTag.data.getSize(AmfVersion.AMF0)
                 frameDropped++
@@ -98,7 +99,7 @@ class RtmpEndpoint internal constructor(
             }
         }
     )
-    private val flvTagBuilder = FlvTagBuilder(flvTagChannel)
+    private val flvTagBuilder: FlvTagBuilder = FlvTagBuilder(flvTagChannel)
 
     private val selectorManager = SelectorManager(ioDispatcher)
     private val connectionBuilder = RtmpConnectionBuilder(selectorManager)
@@ -230,6 +231,7 @@ class RtmpEndpoint internal constructor(
             }
         } catch (_: TimeoutCancellationException) {
             Logger.w(TAG, "Frame dropped due to timeout")
+            flvTagBuilder.onTagDropped(flvTag)
         } catch (t: Throwable) {
             Logger.w(TAG, "Error while writing FLV data: $t")
             // Socket is closed automatically on error

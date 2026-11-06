@@ -688,6 +688,12 @@ internal class EncodingPipelineOutput(
             }
             audioCodecConfig?.let { audioStreamId = streamsIdMap[it] }
 
+            /**
+             * Before the encoders: frames that reach an endpoint before it is started can be lost
+             * (RTMP queues them behind `publish` and drops the oldest, the sequence headers first).
+             */
+            endpointInternal.startStream()
+
             streamEventListener?.onStartStream()
 
             val audioEncoderJob = audioEncoderInternal?.let {
@@ -704,8 +710,6 @@ internal class EncodingPipelineOutput(
 
             audioEncoderJob?.join()
             videoEncoderJob?.join()
-
-            endpointInternal.startStream()
         } catch (t: Throwable) {
             withContext(NonCancellable) {
                 stopStreamUnsafe()

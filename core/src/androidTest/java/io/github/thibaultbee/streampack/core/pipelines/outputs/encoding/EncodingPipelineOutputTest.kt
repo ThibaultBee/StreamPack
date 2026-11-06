@@ -26,10 +26,13 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpointDummyFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
+import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableAudioPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineEventOutputInternal
@@ -38,6 +41,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.releaseBlocking
 import io.github.thibaultbee.streampack.core.utils.FakeRawFrame
 import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import junit.framework.TestCase.assertTrue
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -51,6 +55,9 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.fail
 import org.junit.Test
 import java.nio.ByteBuffer
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.concurrent.thread
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.random.Random
@@ -336,6 +343,69 @@ class EncodingPipelineOutputTest {
                 Random.nextLong()
             )
         )
+    }
+
+    @Test
+    fun testEndpointIsStartedBeforeTheEncodersOutput() = runBlocking {
+        val endpoint = SlowStartEndpoint()
+        output = createOutput(
+            endpointFactory = object : IEndpoint.Factory {
+                override fun create(context: Context, dispatcherProvider: IDispatcherProvider) = endpoint
+            },
+            withAudio = false
+        )
+        output.setVideoCodecConfig(VideoCodecConfig())
+
+        val drawing = AtomicBoolean(true)
+        val drawer = thread {
+            while (drawing.get()) {
+                output.surfaceFlow.value?.surface?.let { surface ->
+                    runCatching {
+                        val canvas = surface.lockHardwareCanvas()
+                        canvas.drawColor(Random.nextInt())
+                        surface.unlockCanvasAndPost(canvas)
+                    }
+                }
+                Thread.sleep(33)
+            }
+        }
+        try {
+            output.startStream(descriptor)
+            delay(1000)
+        } finally {
+            drawing.set(false)
+            drawer.join()
+        }
+
+        assertTrue("No frame reached the endpoint", endpoint.writes.get() > 0)
+        assertEquals("Frames written before the endpoint started", 0, endpoint.writesBeforeStart.get())
+        output.stopStream()
+    }
+
+    /** Takes as long to start as an RTMP `publish` to a distant server. */
+    private class SlowStartEndpoint(private val endpoint: DummyEndpoint = DummyEndpoint()) :
+        IEndpointInternal by endpoint {
+        @Volatile
+        private var started = false
+        val writes = AtomicInteger(0)
+        val writesBeforeStart = AtomicInteger(0)
+
+        override suspend fun startStream() {
+            delay(500)
+            endpoint.startStream()
+            started = true
+        }
+
+        override suspend fun stopStream() {
+            started = false
+            endpoint.stopStream()
+        }
+
+        override suspend fun write(frame: Frame, streamPid: Int) {
+            writes.incrementAndGet()
+            if (!started) writesBeforeStart.incrementAndGet()
+            endpoint.write(frame, streamPid)
+        }
     }
 
     companion object {
