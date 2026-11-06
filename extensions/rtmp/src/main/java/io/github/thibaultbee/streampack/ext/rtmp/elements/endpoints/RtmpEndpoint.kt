@@ -49,7 +49,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -81,8 +81,8 @@ class RtmpEndpoint internal constructor(
     private var videoPayloadSendDroppedSize = 0L
 
     private val flvTagChannel = ChannelWithCloseableData<FLVTag>(
-        FLV_TAG_CHANNEL_SIZE,
-        BufferOverflow.DROP_OLDEST,
+        Channel.UNLIMITED,
+        sizeOf = { flvTag -> flvTag.data.getSize(AmfVersion.AMF0) },
         onUndeliveredElement = { flvTag ->
             synchronized(metricsLock) {
                 val payloadSize = flvTag.data.getSize(AmfVersion.AMF0)
@@ -99,6 +99,7 @@ class RtmpEndpoint internal constructor(
         }
     )
     private val flvTagBuilder = FlvTagBuilder(flvTagChannel)
+    private var streamsBitrate = 0L
 
     private val selectorManager = SelectorManager(ioDispatcher)
     private val connectionBuilder = RtmpConnectionBuilder(selectorManager)
@@ -255,11 +256,16 @@ class RtmpEndpoint internal constructor(
 
     override suspend fun addStreams(streamConfigs: List<CodecConfig>): Map<CodecConfig, Int> {
         require(streamConfigs.isNotEmpty()) { "At least one stream must be provided" }
-        return flvTagBuilder.addStreams(streamConfigs)
+        return flvTagBuilder.addStreams(streamConfigs).also { addQueueBudget(streamConfigs) }
     }
 
     override suspend fun addStream(streamConfig: CodecConfig) =
-        flvTagBuilder.addStream(streamConfig)
+        flvTagBuilder.addStream(streamConfig).also { addQueueBudget(listOf(streamConfig)) }
+
+    private fun addQueueBudget(streamConfigs: List<CodecConfig>) {
+        streamsBitrate += streamConfigs.sumOf { it.startBitrate.toLong() }
+        flvTagChannel.maxBytes = streamsBitrate * FLV_TAG_QUEUE_MS / 8_000
+    }
 
     override suspend fun startStream() {
         safeClient { rtmpClient ->
@@ -284,6 +290,7 @@ class RtmpEndpoint internal constructor(
         } finally {
             flvTagChannel.clear()
             flvTagBuilder.clearStreams()
+            streamsBitrate = 0L
             timestampMutex.withLock {
                 startUpTimestamp = INVALID_TIMESTAMP
             }
@@ -310,8 +317,12 @@ class RtmpEndpoint internal constructor(
 
         private const val INVALID_TIMESTAMP = -1L
 
-        private const val FLV_TAG_CHANNEL_SIZE =
-            8 // Arbitrary buffer size. It's Audio output size + Video output size in the encoding output
+        /**
+         * The send queue holds this much media at the streams' start bitrates, counted in bytes so
+         * a burst of small audio tags fits beside a few video frames. Past it, the oldest tags
+         * are dropped.
+         */
+        private const val FLV_TAG_QUEUE_MS = 500L
 
         init {
             System.setProperty("kotlinx.io.pool.size.bytes", "4194304") // 4MB
