@@ -20,28 +20,37 @@ import android.util.Log
 import androidx.core.net.toFile
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpointDummyFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpointFactory
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
+import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInternal
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
+import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_ENCODING_OUTPUT_PREFIX
+import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableAudioPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IConfigurableVideoPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineEventOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.pipelines.outputs.releaseBlocking
+import io.github.thibaultbee.streampack.core.utils.ExecutorRecordingDispatcherProvider
 import io.github.thibaultbee.streampack.core.utils.FakeRawFrame
 import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import junit.framework.TestCase.assertTrue
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -51,6 +60,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.fail
 import org.junit.Test
 import java.nio.ByteBuffer
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.random.Random
@@ -77,6 +87,7 @@ class EncodingPipelineOutputTest {
         endpointFactory: IEndpoint.Factory,
         withAudio: Boolean = true,
         withVideo: Boolean = true,
+        dispatcherProvider: IDispatcherProvider = DispatcherProvider()
     ): EncodingPipelineOutput {
         return EncodingPipelineOutput(
             context = context,
@@ -84,7 +95,7 @@ class EncodingPipelineOutputTest {
             withVideo = withVideo,
             endpointFactory = endpointFactory,
             defaultRotation = context.displayRotation,
-            dispatcherProvider = DispatcherProvider()
+            dispatcherProvider = dispatcherProvider
         )
     }
 
@@ -284,6 +295,68 @@ class EncodingPipelineOutputTest {
     fun testReleaseOnly() = runTest {
         output = createOutput(endpointFactory = DummyEndpointFactory())
         output.release()
+    }
+
+    @Test
+    fun testReleaseShutsDownItsDispatchers() = runTest {
+        val dispatcherProvider = ExecutorRecordingDispatcherProvider()
+        output = createOutput(
+            endpointFactory = DummyEndpointFactory(),
+            dispatcherProvider = dispatcherProvider
+        )
+        output.setAudioCodecConfig(AudioCodecConfig())
+        output.setVideoCodecConfig(VideoCodecConfig())
+        output.startStream(descriptor)
+        output.stopStream()
+        output.release()
+
+        assertTrue(dispatcherProvider.executors.isNotEmpty())
+        dispatcherProvider.executors.forEach {
+            assertTrue("Executor still running: $it", it.awaitTermination(5, TimeUnit.SECONDS))
+        }
+    }
+
+    @Test
+    fun testReleaseWhileTheEndpointWrites() = runBlocking {
+        val dispatcherProvider = ExecutorRecordingDispatcherProvider()
+        val endpoint = BlockingWriteEndpoint()
+        output = createOutput(
+            endpointFactory = object : IEndpoint.Factory {
+                override fun create(context: Context, dispatcherProvider: IDispatcherProvider) =
+                    endpoint
+            },
+            withVideo = false,
+            dispatcherProvider = dispatcherProvider
+        )
+        output.setAudioCodecConfig(AudioCodecConfig())
+        output.startStream(descriptor)
+
+        var timestampInUs = 0L
+        withTimeout(5000) {
+            while (!endpoint.isWriting.isCompleted) {
+                runCatching {
+                    output.queueAudioFrame(
+                        FakeRawFrame(ByteBuffer.allocateDirect(4096), timestampInUs)
+                    )
+                }
+                timestampInUs += 23_220
+                delay(10)
+            }
+        }
+        output.release()
+
+        assertEquals(0, dispatcherProvider.rejections(THREAD_NAME_ENCODING_OUTPUT_PREFIX))
+    }
+
+    /** Never returns from [write] until cancelled. */
+    private class BlockingWriteEndpoint(private val endpoint: DummyEndpoint = DummyEndpoint()) :
+        IEndpointInternal by endpoint {
+        val isWriting = CompletableDeferred<Unit>()
+
+        override suspend fun write(frame: Frame, streamPid: Int) {
+            isWriting.complete(Unit)
+            awaitCancellation()
+        }
     }
 
     // Tests on inputs
