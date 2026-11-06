@@ -9,6 +9,7 @@ import io.github.thibaultbee.streampack.core.pipelines.utils.ThreadUtils.default
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
+import java.io.Closeable
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 
@@ -24,6 +25,8 @@ interface IAudioDispatcherProvider {
 
     /**
      * Creates a [CoroutineDispatcher] for audio processing.
+     *
+     * The caller closes it on release if it is [Closeable].
      *
      * @param numOfThread number of threads in the pool
      * @param componentName name of the component using the dispatcher
@@ -44,6 +47,8 @@ interface IVideoDispatcherProvider {
 
     /**
      * Creates a [CoroutineDispatcher] for video processing.
+     *
+     * The caller closes it on release if it is [Closeable].
      *
      * @param numOfThread number of threads in the pool
      * @param componentName name of the component using the dispatcher
@@ -148,4 +153,12 @@ data class DispatcherProvider(
         internal const val THREAD_NAME_VIRTUAL_DISPLAY = "virtual-display"
         internal const val THREAD_NAME_AUDIO_PREPROCESSING = "preprocessing"
     }
+}
+
+/**
+ * Closes a dispatcher created by [IAudioDispatcherProvider.createAudioDispatcher] or
+ * [IVideoDispatcherProvider.createVideoDispatcher]. Its pending tasks still run.
+ */
+internal fun CoroutineDispatcher.close() {
+    (this as? Closeable)?.close()
 }

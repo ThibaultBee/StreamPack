@@ -28,13 +28,27 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraException
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
+import io.github.thibaultbee.streampack.core.logger.Logger
+import java.util.concurrent.Executor
+import java.util.concurrent.RejectedExecutionException
 
 /**
  * A [ICameraCaptureSessionCompat] that manages camera API >= 28.
  */
 internal class CameraExecutorCaptureSessionCompat(dispatcherProvider: CameraDispatcherProvider) :
     ICameraCaptureSessionCompat {
-    private val executor = dispatcherProvider.cameraExecutor
+    private val cameraExecutor = dispatcherProvider.cameraExecutor
+
+    /**
+     * The camera may still deliver a callback after [release]: it is dropped.
+     */
+    private val executor = Executor { command ->
+        try {
+            cameraExecutor.execute(command)
+        } catch (_: RejectedExecutionException) {
+            Logger.w(TAG, "Camera callback dropped after release")
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.P)
     @RequiresPermission(Manifest.permission.CAMERA)
@@ -98,8 +112,7 @@ internal class CameraExecutorCaptureSessionCompat(dispatcherProvider: CameraDisp
     }
 
     override fun release() {
-        // Potential source of java.util.concurrent.RejectedExecutionException
-        //executor.shutdown()
+        cameraExecutor.shutdown()
     }
 
     companion object {

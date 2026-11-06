@@ -34,6 +34,7 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.StubAudioSyncVide
 import io.github.thibaultbee.streampack.core.pipelines.outputs.StubAudioSyncVideoSurfacePipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.StubVideoSurfaceConfigurableEncodingPipelineOutputInternal
 import io.github.thibaultbee.streampack.core.pipelines.outputs.StubVideoSurfacePipelineOutput
+import io.github.thibaultbee.streampack.core.utils.ExecutorRecordingDispatcherProvider
 import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -42,6 +43,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import java.util.concurrent.TimeUnit
 
 @OptIn(InternalStreamPackApi::class)
 class StreamerPipelineTest {
@@ -61,13 +63,15 @@ class StreamerPipelineTest {
         context: Context,
         audioSource: IAudioSource.Factory?,
         videoSource: IVideoSource.Factory?,
-        audioInputMode: AudioInputMode = AudioInputMode.PUSH
+        audioInputMode: AudioInputMode = AudioInputMode.PUSH,
+        dispatcherProvider: IDispatcherProvider = DispatcherProvider()
     ): StreamerPipeline {
         val pipeline = StreamerPipeline(
             context,
             withAudio = audioSource != null,
             withVideo = videoSource != null,
             audioInputMode = audioInputMode,
+            dispatcherProvider = dispatcherProvider
         )
         audioSource?.let { pipeline.setAudioSource(it) }
         videoSource?.let { pipeline.setVideoSource(it) }
@@ -422,6 +426,28 @@ class StreamerPipelineTest {
             StubVideoSurfaceSource.Factory()
         )
         streamerPipeline.release()
+    }
+
+    @Test
+    fun testReleaseShutsDownItsDispatchers() = runTest {
+        val dispatcherProvider = ExecutorRecordingDispatcherProvider()
+        streamerPipeline = buildStreamerPipeline(
+            context,
+            StubAudioSource.Factory(),
+            StubVideoSurfaceSource.Factory(),
+            dispatcherProvider = dispatcherProvider
+        )
+        streamerPipeline.addOutput(
+            StubAudioSyncVideoSurfacePipelineOutputInternal(resolution = Size(640, 480))
+        )
+        streamerPipeline.startStream()
+        streamerPipeline.stopStream()
+        streamerPipeline.release()
+
+        assertTrue(dispatcherProvider.executors.isNotEmpty())
+        dispatcherProvider.executors.forEach {
+            assertTrue("Executor still running: $it", it.awaitTermination(5, TimeUnit.SECONDS))
+        }
     }
 
     companion object {
