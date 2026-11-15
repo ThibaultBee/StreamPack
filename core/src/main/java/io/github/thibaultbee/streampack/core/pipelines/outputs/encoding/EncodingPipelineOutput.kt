@@ -38,6 +38,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.flush
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.sourceConfig
 import io.github.thibaultbee.streampack.core.logger.Logger
+import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_ENCODER_INPUT_PREFIX
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_ENCODER_PREFIX
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider.Companion.THREAD_NAME_ENCODING_OUTPUT_PREFIX
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
@@ -152,6 +153,8 @@ internal class EncodingPipelineOutput(
         dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_ENCODING_OUTPUT_PREFIX)
     private val audioEncoderDispatcher =
         dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_ENCODER_PREFIX)
+    private val audioEncoderInputDispatcher =
+        dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_ENCODER_INPUT_PREFIX)
 
     private var audioEncoderInternal: IEncoderInternal? = null
         set(value) {
@@ -401,19 +404,22 @@ internal class EncodingPipelineOutput(
     }
 
     private fun buildAudioEncoder(audioConfig: AudioCodecConfig): IEncoderInternal {
-        val encoderMode = if (audioFrameRequestedListener != null) {
-            EncoderMode.ASYNC
+        val audioEncoder = if (audioFrameRequestedListener != null) {
+            MediaCodecEncoder.createAsync(
+                AudioEncoderConfig(audioConfig, EncoderMode.ASYNC),
+                audioEncoderListener,
+                dispatcherProvider.default,
+                outputDispatcher = audioEncoderDispatcher,
+                inputDispatcher = audioEncoderInputDispatcher
+            )
         } else {
-            EncoderMode.SYNC
+            MediaCodecEncoder.createSync(
+                AudioEncoderConfig(audioConfig, EncoderMode.SYNC),
+                audioEncoderListener,
+                dispatcherProvider.default,
+                audioEncoderDispatcher
+            )
         }
-        val audioEncoder = MediaCodecEncoder(
-            AudioEncoderConfig(
-                audioConfig, encoderMode
-            ),
-            audioEncoderListener,
-            dispatcherProvider.default,
-            audioEncoderDispatcher
-        )
 
         when (audioEncoder.input) {
             is MediaCodecEncoder.AsyncByteBufferInput -> {
@@ -551,7 +557,7 @@ internal class EncodingPipelineOutput(
     }
 
     private fun buildVideoEncoder(videoConfig: VideoCodecConfig): IEncoderInternal {
-        val videoEncoder = MediaCodecEncoder(
+        val videoEncoder = MediaCodecEncoder.createSurface(
             VideoEncoderConfig(
                 videoConfig,
                 EncoderMode.SURFACE
@@ -901,6 +907,7 @@ internal class EncodingPipelineOutput(
 
         audioOutputDispatcher.cancel()
         audioEncoderDispatcher.cancel()
+        audioEncoderInputDispatcher.cancel()
         videoOutputDispatcher.cancel()
         videoEncoderDispatcher.cancel()
 

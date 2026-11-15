@@ -142,7 +142,8 @@ data class DispatcherProvider(
 
     companion object {
         internal const val THREAD_NAME_ENCODER_PREFIX = "encoder-"
-        internal const val THREAD_NAME_ENCODING_OUTPUT_PREFIX = "encoding-output-"
+        internal const val THREAD_NAME_ENCODER_INPUT_PREFIX = "encoder-input-"
+        internal const val THREAD_NAME_ENCODING_OUTPUT_PREFIX = "encoder-output-"
         internal const val THREAD_NAME_CAMERA = "camera"
         internal const val THREAD_NAME_GL = "gl"
         internal const val THREAD_NAME_VIRTUAL_DISPLAY = "virtual-display"

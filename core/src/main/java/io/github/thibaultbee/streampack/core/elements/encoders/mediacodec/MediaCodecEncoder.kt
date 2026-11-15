@@ -54,14 +54,16 @@ import kotlin.math.min
  */
 @OptIn(InternalStreamPackApi::class)
 internal class MediaCodecEncoder
-internal constructor(
+private constructor(
     private val encoderConfig: EncoderConfig<*>,
     private val listener: IEncoderInternal.IListener,
     private val defaultDispatcher: CoroutineDispatcher,
-    private val processDispatcher: CoroutineDispatcher
+    private val outputDispatcher: CoroutineDispatcher,
+    private val inputDispatcher: CoroutineDispatcher
 ) : IEncoderInternal {
     private val coroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
-    private val mutex = Mutex()
+    private val inputMutex = Mutex()
+    private val outputMutex = Mutex()
 
     private val mediaCodec: MediaCodec
     private val format: MediaFormat
@@ -72,6 +74,7 @@ internal constructor(
     private val tag = if (isVideo) VIDEO_ENCODER_TAG else AUDIO_ENCODER_TAG + "(${this.hashCode()})"
 
 
+    @Volatile
     private var state = State.IDLE
 
     override val startBitrate = encoderConfig.config.startBitrate
@@ -139,7 +142,7 @@ internal constructor(
     }
 
     override suspend fun configure() {
-        withMutexContext {
+        withAllMutexes {
             configureUnsafe()
         }
     }
@@ -159,7 +162,7 @@ internal constructor(
     }
 
     override suspend fun reset() {
-        withMutexContext {
+        withAllMutexes {
             resetUnsafe()
         }
     }
@@ -191,7 +194,7 @@ internal constructor(
     }
 
     override suspend fun startStream() {
-        withMutexContext {
+        withAllMutexes {
             startStreamUnsafe()
         }
     }
@@ -230,7 +233,7 @@ internal constructor(
     }
 
     override suspend fun stopStream() {
-        withMutexContext {
+        withAllMutexes {
             stopStreamUnsafe()
         }
     }
@@ -259,7 +262,7 @@ internal constructor(
     }
 
     override suspend fun release() {
-        withMutexContext {
+        withAllMutexes {
             releaseUnsafe()
         }
         coroutineScope.cancel()
@@ -271,12 +274,12 @@ internal constructor(
         }
     }
 
-    private suspend fun handleErrorUnsafe(t: Throwable) {
+    private fun handleErrorUnsafe(t: Throwable) {
         when (state) {
             State.CONFIGURED -> {
                 notifyError(t)
                 // Trying to reset
-                reset()
+                resetUnsafe()
             }
 
             State.RELEASED -> { // Do Nothing
@@ -305,7 +308,7 @@ internal constructor(
     }
 
     private suspend fun handleError(t: Throwable) {
-        withMutexContext {
+        withAllMutexes {
             handleErrorUnsafe(t)
         }
     }
@@ -325,17 +328,27 @@ internal constructor(
         this.state = state
     }
 
-    private suspend fun withMutexContext(block: suspend () -> Unit) {
+    private suspend fun withAllMutexes(block: suspend () -> Unit) {
         withContext(defaultDispatcher) {
-            mutex.withLock {
+            inputMutex.withLock {
+                outputMutex.withLock {
+                    block()
+                }
+            }
+        }
+    }
+
+    private fun launchInputProcessingMutex(block: suspend () -> Unit) {
+        coroutineScope.launch(inputDispatcher) {
+            inputMutex.withLock {
                 block()
             }
         }
     }
 
-    private fun launchProcessingMutex(block: suspend () -> Unit) {
-        coroutineScope.launch(processDispatcher) {
-            mutex.withLock {
+    private fun launchOutputProcessingMutex(block: suspend () -> Unit) {
+        coroutineScope.launch(outputDispatcher) {
+            outputMutex.withLock {
                 block()
             }
         }
@@ -363,7 +376,9 @@ internal constructor(
                     } catch (t: Throwable) {
                         frame.close()
                         if (state.isRunning) {
-                            handleErrorUnsafe(t)
+                            coroutineScope.launch {
+                                handleError(t)
+                            }
                         } else {
                             /**
                              * Next streamer element could be stopped and we are still processing.
@@ -381,7 +396,9 @@ internal constructor(
                     } catch (_: Throwable) {
                         // Do nothing
                     }
-                    handleErrorUnsafe(t)
+                    coroutineScope.launch {
+                        handleError(t)
+                    }
                 }
             }
 
@@ -403,22 +420,22 @@ internal constructor(
         override fun onOutputBufferAvailable(
             codec: MediaCodec, index: Int, info: BufferInfo
         ) {
-            launchProcessingMutex {
+            launchOutputProcessingMutex {
                 processOutputFrameUnsafe(codec, index, info)
             }
         }
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
-            launchProcessingMutex {
+            launchInputProcessingMutex {
                 when {
                     !state.isRunning -> {
                         Logger.w(tag, "Receives input frame after codec is not running: $state.")
-                        return@launchProcessingMutex
+                        return@launchInputProcessingMutex
                     }
 
                     input !is IEncoderInternal.IAsyncByteBufferInput -> {
                         Logger.w(tag, "Input buffer is only available for byte buffer input")
-                        return@launchProcessingMutex
+                        return@launchInputProcessingMutex
                     }
 
                     else -> {
@@ -427,16 +444,22 @@ internal constructor(
                             input.listener.onFrameRequested(buffer)
                         } catch (t: Throwable) {
                             Logger.e(tag, "Failed to get input buffer: $t")
-                            mediaCodec.queueInputBuffer(
-                                index, 0, 0, 0, 0
-                            )
-                            return@launchProcessingMutex
+                            try {
+                                mediaCodec.queueInputBuffer(
+                                    index, 0, 0, 0, 0
+                                )
+                            } catch (_: Throwable) {
+                                // Do nothing
+                            }
+                            return@launchInputProcessingMutex
                         }
 
                         try {
                             queueInputFrame(index, frame)
                         } catch (t: Throwable) {
-                            handleErrorUnsafe(t)
+                            coroutineScope.launch {
+                                handleError(t)
+                            }
                         } finally {
                             frame.close()
                         }
@@ -542,45 +565,56 @@ internal constructor(
         }
 
         override fun queueInputFrame(frame: RawFrame) {
-            launchProcessingMutex {
-                if (!state.isRunning) {
-                    Logger.w(tag, "Receives input frame after codec is not running: $state.")
-                    return@launchProcessingMutex
-                }
-
+            coroutineScope.launch(outputDispatcher) {
                 try {
+                    if (!state.isRunning) {
+                        Logger.w(tag, "Receives input frame after codec is not running: $state.")
+                        return@launch
+                    }
+
                     /**
                      * Queue input frame until the buffer is empty.
                      * The counter is used to avoid infinite loop in case of a buffer that is not
                      * fully consumed because of a really slow encoder
                      */
                     var counter = 0
-                    while (frame.rawBuffer.hasRemaining() && counter < 10) {
-                        if (queueInputFrameSync(frame)) {
+                    while (state.isRunning && frame.rawBuffer.hasRemaining() && counter < 10) {
+                        val queued = inputMutex.withLock {
+                            if (!state.isRunning) return@withLock false
+                            queueInputFrameSync(frame)
+                        }
+                        if (!state.isRunning) break
+
+                        if (queued) {
                             counter = 0
                         } else {
                             counter++
                         }
 
-                        var outputBufferId: Int
-                        while (mediaCodec.dequeueOutputBuffer(bufferInfo, 0) // Don't block
-                                .also { outputBufferId = it } != MediaCodec.INFO_TRY_AGAIN_LATER
-                        ) {
-                            if (outputBufferId >= 0) {
-                                processOutputFrameUnsafe(mediaCodec, outputBufferId, bufferInfo)
-                            } else if (outputBufferId == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                                Logger.i(tag, "Format changed: ${mediaCodec.outputFormat}")
+                        outputMutex.withLock {
+                            if (!state.isRunning) return@withLock
+                            var outputBufferId: Int
+                            while (mediaCodec.dequeueOutputBuffer(bufferInfo, 0) // Don't block
+                                    .also { outputBufferId = it } != MediaCodec.INFO_TRY_AGAIN_LATER
+                            ) {
+                                if (outputBufferId >= 0) {
+                                    processOutputFrameUnsafe(mediaCodec, outputBufferId, bufferInfo)
+                                } else if (outputBufferId == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                                    Logger.i(tag, "Format changed: ${mediaCodec.outputFormat}")
+                                }
                             }
                         }
                     }
-                    if (frame.rawBuffer.hasRemaining()) {
+                    if (state.isRunning && frame.rawBuffer.hasRemaining()) {
                         Logger.w(
                             tag,
                             "Failed to queue input frame: skipping: ${frame.rawBuffer.remaining()} bytes"
                         )
                     }
                 } catch (t: Throwable) {
-                    handleErrorUnsafe(t)
+                    coroutineScope.launch {
+                        handleError(t)
+                    }
                 } finally {
                     // Release frame resources
                     frame.close()
@@ -688,6 +722,61 @@ internal constructor(
     companion object {
         private const val AUDIO_ENCODER_TAG = "AudioEncoder"
         private const val VIDEO_ENCODER_TAG = "VideoEncoder"
+
+        fun createSurface(
+            encoderConfig: EncoderConfig<*>,
+            listener: IEncoderInternal.IListener,
+            defaultDispatcher: CoroutineDispatcher,
+            encoderDispatcher: CoroutineDispatcher
+        ): MediaCodecEncoder {
+            require(encoderConfig.mode == EncoderMode.SURFACE) {
+                "EncoderMode must be SURFACE"
+            }
+            return MediaCodecEncoder(
+                encoderConfig,
+                listener,
+                defaultDispatcher,
+                outputDispatcher = encoderDispatcher,
+                inputDispatcher = encoderDispatcher
+            )
+        }
+
+        fun createSync(
+            encoderConfig: EncoderConfig<*>,
+            listener: IEncoderInternal.IListener,
+            defaultDispatcher: CoroutineDispatcher,
+            encoderDispatcher: CoroutineDispatcher
+        ): MediaCodecEncoder {
+            require(encoderConfig.mode == EncoderMode.SYNC) {
+                "EncoderMode must be SYNC"
+            }
+            return MediaCodecEncoder(
+                encoderConfig,
+                listener,
+                defaultDispatcher,
+                outputDispatcher = encoderDispatcher,
+                inputDispatcher = encoderDispatcher
+            )
+        }
+
+        fun createAsync(
+            encoderConfig: EncoderConfig<*>,
+            listener: IEncoderInternal.IListener,
+            defaultDispatcher: CoroutineDispatcher,
+            outputDispatcher: CoroutineDispatcher,
+            inputDispatcher: CoroutineDispatcher
+        ): MediaCodecEncoder {
+            require(encoderConfig.mode == EncoderMode.ASYNC) {
+                "EncoderMode must be ASYNC"
+            }
+            return MediaCodecEncoder(
+                encoderConfig,
+                listener,
+                defaultDispatcher,
+                outputDispatcher = outputDispatcher,
+                inputDispatcher = inputDispatcher
+            )
+        }
     }
 
 
