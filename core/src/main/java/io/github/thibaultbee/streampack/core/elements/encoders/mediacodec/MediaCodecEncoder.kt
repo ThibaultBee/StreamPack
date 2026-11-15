@@ -58,7 +58,7 @@ internal constructor(
     private val encoderConfig: EncoderConfig<*>,
     private val listener: IEncoderInternal.IListener,
     private val defaultDispatcher: CoroutineDispatcher,
-    private val processDispatcher: CoroutineDispatcher
+    private val callbackCompat: MediaCodecCallbackCompat
 ) : IEncoderInternal {
     private val coroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
     private val mutex = Mutex()
@@ -119,10 +119,7 @@ internal constructor(
     private fun configureUnsafe() {
         try {
             if (input !is SyncByteBufferInput) {
-                /**
-                 * Set encoder callback without handler.
-                 */
-                mediaCodec.setCallback(encoderCallback)
+                callbackCompat.setCallback(mediaCodec, encoderCallback)
             }
 
             mediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
@@ -334,7 +331,7 @@ internal constructor(
     }
 
     private fun launchProcessingMutex(block: suspend () -> Unit) {
-        coroutineScope.launch(processDispatcher) {
+        coroutineScope.launch(callbackCompat.processDispatcher) {
             mutex.withLock {
                 block()
             }

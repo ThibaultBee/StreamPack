@@ -30,6 +30,14 @@ interface IAudioDispatcherProvider {
      * @return the created [CoroutineDispatcher]
      */
     fun createAudioDispatcher(numOfThread: Int, componentName: String): CoroutineDispatcher
+
+    /**
+     * Creates an [Handler] for audio processing.
+     *
+     * @param componentName name of the component using the dispatcher
+     * @return the created [Handler]
+     */
+    fun createAudioHandlerExecutor(componentName: String): HandlerThreadExecutor
 }
 
 /**
@@ -104,6 +112,16 @@ data class DispatcherProvider(
             ThreadUtils.THREAD_NAME_AUDIO_PREFIX + componentName,
             audioThreadPriority
         ).asCoroutineDispatcher()
+
+    /**
+     * Creates an [Handler] for audio processing with [audioThreadPriority].
+     *
+     * @param componentName name of the component using the dispatcher
+     * @return the created [Handler]
+     */
+    override fun createAudioHandlerExecutor(componentName: String) = HandlerThreadExecutor(
+        ThreadUtils.THREAD_NAME_AUDIO_PREFIX + componentName, audioThreadPriority
+    )
 
     /**
      * Creates a [CoroutineDispatcher] for video processing with [videoThreadPriority].
