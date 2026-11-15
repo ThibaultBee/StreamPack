@@ -20,7 +20,9 @@ import android.util.Log
 import androidx.core.net.toFile
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
+import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpoint
 import io.github.thibaultbee.streampack.core.elements.endpoints.DummyEndpointDummyFactory
@@ -38,10 +40,12 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.releaseBlocking
 import io.github.thibaultbee.streampack.core.utils.FakeRawFrame
 import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import junit.framework.TestCase.assertTrue
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -51,6 +55,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.fail
 import org.junit.Test
 import java.nio.ByteBuffer
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.random.Random
