@@ -98,8 +98,7 @@ internal class CameraExecutorCaptureSessionCompat(dispatcherProvider: CameraDisp
     }
 
     override fun release() {
-        // Potential source of java.util.concurrent.RejectedExecutionException
-        //executor.shutdown()
+        executor.shutdown()
     }
 
     companion object {

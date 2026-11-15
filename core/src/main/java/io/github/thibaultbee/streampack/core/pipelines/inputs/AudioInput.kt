@@ -28,6 +28,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioFrameS
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.close
 import io.github.thibaultbee.streampack.core.elements.utils.pool.ByteBufferPool
 import io.github.thibaultbee.streampack.core.elements.utils.pool.RawFramePool
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -511,14 +512,15 @@ private class PushAudioPort(
     bufferPool: ByteBufferPool,
     dispatcherProvider: IAudioDispatcherProvider
 ) : IAudioPort {
+    private val processDispatcher = dispatcherProvider.createAudioDispatcher(
+        1,
+        THREAD_NAME_AUDIO_PREPROCESSING
+    )
     private val audioPullPush = RawFramePullPush(
         audioFrameProcessor,
         config.onFrame,
         bufferPool,
-        dispatcherProvider.createAudioDispatcher(
-            1,
-            THREAD_NAME_AUDIO_PREPROCESSING
-        )
+        processDispatcher
     )
 
     override suspend fun setInput(source: IAudioFrameSourceInternal) {
@@ -539,6 +541,7 @@ private class PushAudioPort(
 
     override fun release() {
         audioPullPush.release()
+        processDispatcher.close()
     }
 }
 

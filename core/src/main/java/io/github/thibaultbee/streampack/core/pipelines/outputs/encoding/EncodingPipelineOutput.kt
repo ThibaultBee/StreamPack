@@ -35,6 +35,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpointInterna
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.close
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.flush
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.sourceConfig
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -52,9 +53,11 @@ import io.github.thibaultbee.streampack.core.pipelines.outputs.isStreaming
 import io.github.thibaultbee.streampack.core.regulator.controllers.IBitrateRegulatorController
 import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -165,6 +168,9 @@ internal class EncodingPipelineOutput(
         dispatcherProvider.createVideoDispatcher(1, THREAD_NAME_ENCODING_OUTPUT_PREFIX)
     private val videoEncoderDispatcher =
         dispatcherProvider.createVideoDispatcher(1, THREAD_NAME_ENCODER_PREFIX)
+
+    private var audioOutputJob: Job? = null
+    private var videoOutputJob: Job? = null
 
     private var videoEncoderInternal: IEncoderInternal? = null
     override val videoEncoder: IEncoder?
@@ -302,7 +308,7 @@ internal class EncodingPipelineOutput(
         }
 
         if (withAudio) {
-            coroutineScope.launch(audioOutputDispatcher) {
+            audioOutputJob = coroutineScope.launch(audioOutputDispatcher) {
                 // Audio
                 audioEncoderListener.outputChannel.consumeEach { frame ->
                     try {
@@ -318,7 +324,7 @@ internal class EncodingPipelineOutput(
             }
         }
         if (withVideo) {
-            coroutineScope.launch(videoOutputDispatcher) {
+            videoOutputJob = coroutineScope.launch(videoOutputDispatcher) {
                 // Video
                 videoEncoderListener.outputChannel.consumeEach { frame ->
                     try {
@@ -899,10 +905,14 @@ internal class EncodingPipelineOutput(
             Logger.w(TAG, "Can't release endpoint: ${t.message}")
         }
 
-        audioOutputDispatcher.cancel()
-        audioEncoderDispatcher.cancel()
-        videoOutputDispatcher.cancel()
-        videoEncoderDispatcher.cancel()
+        // The output loops must not resume on a closed dispatcher.
+        audioOutputJob?.cancelAndJoin()
+        videoOutputJob?.cancelAndJoin()
+
+        audioOutputDispatcher.close()
+        audioEncoderDispatcher.close()
+        videoOutputDispatcher.close()
+        videoEncoderDispatcher.close()
 
         coroutineScope.cancel()
     }
