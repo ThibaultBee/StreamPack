@@ -27,6 +27,7 @@ import io.github.thibaultbee.streampack.core.elements.encoders.IEncoder
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal
 import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.AudioEncoderConfig
+import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecCallbackCompat
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.MediaCodecEncoder
 import io.github.thibaultbee.streampack.core.elements.encoders.mediacodec.VideoEncoderConfig
 import io.github.thibaultbee.streampack.core.elements.encoders.rotateFromNaturalOrientation
@@ -150,8 +151,10 @@ internal class EncodingPipelineOutput(
 
     private val audioOutputDispatcher =
         dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_ENCODING_OUTPUT_PREFIX)
-    private val audioEncoderDispatcher =
-        dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_ENCODER_PREFIX)
+    private val audioEncoderCallback = MediaCodecCallbackCompat.create(
+        { dispatcherProvider.createAudioHandlerExecutor(THREAD_NAME_ENCODER_PREFIX) },
+        { dispatcherProvider.createAudioDispatcher(1, THREAD_NAME_ENCODER_PREFIX) }
+    )
 
     private var audioEncoderInternal: IEncoderInternal? = null
         set(value) {
@@ -163,8 +166,10 @@ internal class EncodingPipelineOutput(
 
     private val videoOutputDispatcher =
         dispatcherProvider.createVideoDispatcher(1, THREAD_NAME_ENCODING_OUTPUT_PREFIX)
-    private val videoEncoderDispatcher =
-        dispatcherProvider.createVideoDispatcher(1, THREAD_NAME_ENCODER_PREFIX)
+    private val videoEncoderCallback = MediaCodecCallbackCompat.create(
+        { dispatcherProvider.createVideoHandlerExecutor(THREAD_NAME_ENCODER_PREFIX) },
+        { dispatcherProvider.createVideoDispatcher(1, THREAD_NAME_ENCODER_PREFIX) }
+    )
 
     private var videoEncoderInternal: IEncoderInternal? = null
     override val videoEncoder: IEncoder?
@@ -412,7 +417,7 @@ internal class EncodingPipelineOutput(
             ),
             audioEncoderListener,
             dispatcherProvider.default,
-            audioEncoderDispatcher
+            audioEncoderCallback
         )
 
         when (audioEncoder.input) {
@@ -558,7 +563,7 @@ internal class EncodingPipelineOutput(
             ),
             videoEncoderListener,
             dispatcherProvider.default,
-            videoEncoderDispatcher
+            videoEncoderCallback
         )
 
         when (videoEncoder.input) {
@@ -900,9 +905,9 @@ internal class EncodingPipelineOutput(
         }
 
         audioOutputDispatcher.cancel()
-        audioEncoderDispatcher.cancel()
+        audioEncoderCallback.release()
         videoOutputDispatcher.cancel()
-        videoEncoderDispatcher.cancel()
+        videoEncoderCallback.release()
 
         coroutineScope.cancel()
     }
