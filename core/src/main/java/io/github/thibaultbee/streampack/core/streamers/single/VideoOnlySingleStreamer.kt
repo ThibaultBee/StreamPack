@@ -32,6 +32,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.interfaces.releaseOnFailure
 import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
@@ -66,8 +67,9 @@ suspend fun cameraVideoOnlySingleStreamer(
         surfaceProcessorFactory = surfaceProcessorFactory,
         dispatcherProvider = dispatcherProvider
     )
-    streamer.setCameraId(cameraId)
-    return streamer
+    return streamer.releaseOnFailure {
+        streamer.setCameraId(cameraId)
+    }
 }
 
 /**
@@ -96,8 +98,9 @@ suspend fun videoMediaProjectionVideoOnlySingleStreamer(
         surfaceProcessorFactory = surfaceProcessorFactory,
         dispatcherProvider = dispatcherProvider
     )
-    streamer.setVideoSource(MediaProjectionVideoSourceFactory(mediaProjection))
-    return streamer
+    return streamer.releaseOnFailure {
+        streamer.setVideoSource(MediaProjectionVideoSourceFactory(mediaProjection))
+    }
 }
 
 /**
@@ -126,8 +129,9 @@ suspend fun VideoOnlySingleStreamer(
         surfaceProcessorFactory = surfaceProcessorFactory,
         dispatcherProvider = dispatcherProvider
     )
-    streamer.setVideoSource(videoSourceFactory)
-    return streamer
+    return streamer.releaseOnFailure {
+        streamer.setVideoSource(videoSourceFactory)
+    }
 }
 
 /**

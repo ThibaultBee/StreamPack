@@ -24,6 +24,7 @@ import io.github.thibaultbee.streampack.core.elements.endpoints.DynamicEndpointF
 import io.github.thibaultbee.streampack.core.elements.endpoints.IEndpoint
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSource
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
+import io.github.thibaultbee.streampack.core.interfaces.releaseOnFailure
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
@@ -55,8 +56,9 @@ suspend fun AudioOnlySingleStreamer(
         endpointFactory = endpointFactory,
         dispatcherProvider = dispatcherProvider
     )
-    streamer.setAudioSource(audioSourceFactory)
-    return streamer
+    return streamer.releaseOnFailure {
+        streamer.setAudioSource(audioSourceFactory)
+    }
 }
 
 /**

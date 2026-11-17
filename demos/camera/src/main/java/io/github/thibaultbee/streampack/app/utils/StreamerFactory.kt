@@ -13,7 +13,9 @@ import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStream
 import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoOnlySingleStreamer
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 
 class StreamerFactory(
     private val application: Application,
@@ -29,28 +31,33 @@ class StreamerFactory(
             VideoOnlySingleStreamer(application, defaultRotation = rotation)
         }
 
-        if (ActivityCompat.checkSelfPermission(
-                application, Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            streamer.setVideoSource(CameraSourceFactory(application.defaultCameraId))
-        }
+        try {
+            if (ActivityCompat.checkSelfPermission(
+                    application, Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                streamer.setVideoSource(CameraSourceFactory(application.defaultCameraId))
+            }
 
-        storageRepository.videoConfigFlow.first()?.let {
-            streamer.setVideoConfig(it)
-        }
+            storageRepository.videoConfigFlow.first()?.let {
+                streamer.setVideoConfig(it)
+            }
 
-        if (ActivityCompat.checkSelfPermission(
-                application, Manifest.permission.RECORD_AUDIO
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            val audioStreamer = streamer as? IAudioSingleStreamer
-            audioStreamer?.let {
-                it.setAudioSource(MicrophoneSourceFactory())
-                storageRepository.audioConfigFlow.first()?.let { config ->
-                    it.setAudioConfig(config)
+            if (ActivityCompat.checkSelfPermission(
+                    application, Manifest.permission.RECORD_AUDIO
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                val audioStreamer = streamer as? IAudioSingleStreamer
+                audioStreamer?.let {
+                    it.setAudioSource(MicrophoneSourceFactory())
+                    storageRepository.audioConfigFlow.first()?.let { config ->
+                        it.setAudioConfig(config)
+                    }
                 }
             }
+        } catch (t: Throwable) {
+            withContext(NonCancellable) { streamer.release() }
+            throw t
         }
 
         return streamer

@@ -306,6 +306,7 @@ internal class DualStreamerImpl(
     }
 
     override suspend fun release() {
+        initJob.join()
         pipeline.release()
         coroutineScope.cancel()
     }
