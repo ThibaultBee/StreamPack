@@ -37,7 +37,7 @@ import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @LargeTest
 @RunWith(Parameterized::class)
@@ -76,7 +76,7 @@ class CameraSingleStreamerFileTest(
     }
 
     @Test
-    fun writeToFile() = runTest(timeout = TEST_TIMEOUT_MS.milliseconds) {
+    fun writeToFile() = runTest(timeout = TEST_TIMEOUT) {
         // Run stream
         streamer.setConfig(
             audioConfig,
@@ -87,8 +87,8 @@ class CameraSingleStreamerFileTest(
         StreamerUtils.runSingleStream(
             streamer,
             descriptor,
-            STREAM_DURATION_MS.milliseconds,
-            STREAM_POLLING_MS.milliseconds
+            STREAM_DURATION,
+            STREAM_POLLING
         )
         streamer.release()
 
@@ -105,9 +105,9 @@ class CameraSingleStreamerFileTest(
     companion object {
         private const val TAG = "CameraSinStrFileTest"
 
-        private const val TEST_TIMEOUT_MS = 60_000L
-        private const val STREAM_DURATION_MS = 30_000L
-        private const val STREAM_POLLING_MS = 1_000L
+        private val TEST_TIMEOUT = 60.seconds
+        private val STREAM_DURATION = 30.seconds
+        private val STREAM_POLLING = 1.seconds
 
         private const val VIDEO_WIDTH = 640
         private const val VIDEO_HEIGHT = 360

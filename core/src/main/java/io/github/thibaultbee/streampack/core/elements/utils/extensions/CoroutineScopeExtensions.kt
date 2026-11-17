@@ -21,15 +21,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.time.Duration.Companion.milliseconds
-
+import kotlin.time.Duration
 
 fun CoroutineScope.launchIn(
-    delayTimeInMs: Long,
+    delayTime: Duration,
     context: CoroutineContext = EmptyCoroutineContext,
     start: CoroutineStart = CoroutineStart.DEFAULT,
     block: suspend CoroutineScope.() -> Unit
 ) = launch(context, start) {
-    delay(delayTimeInMs.milliseconds)
+    delay(delayTime)
     block()
 }

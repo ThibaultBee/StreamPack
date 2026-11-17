@@ -27,13 +27,14 @@ import io.github.thibaultbee.streampack.compose.utils.BitmapUtils
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.bitmap.BitmapSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION_MS
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.DEFAULT_AUTO_CANCEL_DURATION
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.streamers.single.SingleStreamer
 import io.github.thibaultbee.streampack.ui.views.PreviewView
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
+import kotlin.time.Duration
 
 private const val TAG = "ComposeSourcePreview"
 
@@ -46,7 +47,7 @@ private const val TAG = "ComposeSourcePreview"
  * @param modifier the [Modifier] to apply to the [PreviewView]
  * @param enableZoomOnPinch enable zoom on pinch gesture
  * @param enableTapToFocus enable tap to focus
- * @param onTapToFocusTimeoutMs the duration in milliseconds after which the focus area set by tap-to-focus is cleared
+ * @param onTapToFocusTimeout the duration after which the focus area set by tap-to-focus is cleared
  */
 @Composable
 fun SourcePreview(
@@ -55,7 +56,7 @@ fun SourcePreview(
     onZoomChanged: ((zoomRatio: Float) -> Unit)? = null,
     enableZoomOnPinch: Boolean = true,
     enableTapToFocus: Boolean = true,
-    onTapToFocusTimeoutMs: Long = DEFAULT_AUTO_CANCEL_DURATION_MS
+    onTapToFocusTimeout: Duration = DEFAULT_AUTO_CANCEL_DURATION
 ) {
     val scope = rememberCoroutineScope()
 
@@ -64,7 +65,7 @@ fun SourcePreview(
             PreviewView(context).apply {
                 this.enableZoomOnPinch = enableZoomOnPinch
                 this.enableTapToFocus = enableTapToFocus
-                this.onTapToFocusTimeoutMs = onTapToFocusTimeoutMs
+                this.onTapToFocusTimeout = onTapToFocusTimeout
                 onZoomChanged?.let {
                     val onZoomChangedListener = object : CameraSettings.Zoom.OnZoomChangedListener {
                         override fun onZoomChanged(zoomRatio: Float) {
