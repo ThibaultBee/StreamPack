@@ -180,6 +180,9 @@ internal class VideoInput(
                     }
                 }
 
+                // Read before the camera release below: a released camera source has no output.
+                val previousSurface = (previousVideoSource as? ISurfaceSourceInternal)?.getOutput()
+
                 if ((previousVideoSource is CameraSource) && (videoSourceFactory is CameraSourceFactory)) {
                     /**
                      * It is not possible to have 2 camera sources at the same time because of
@@ -277,9 +280,8 @@ internal class VideoInput(
                 // Gets and resets output surface from previous video source.
                 if (previousVideoSource is ISurfaceSourceInternal) {
                     try {
-                        val surface = previousVideoSource.getOutput()
                         previousVideoSource.resetOutput()
-                        surface?.let { processor.removeInputSurface(surface) }
+                        previousSurface?.let { processor.removeInputSurface(it) }
                     } catch (t: Throwable) {
                         Logger.w(
                             TAG,
