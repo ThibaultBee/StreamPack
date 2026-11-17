@@ -16,7 +16,9 @@
 package io.github.thibaultbee.streampack.ext.flv.elements.endpoints.composites.muxer.utils
 
 import io.github.komedia.komuxer.flv.tags.FLVTag
+import io.github.komedia.komuxer.flv.tags.audio.AudioData
 import io.github.komedia.komuxer.flv.tags.script.Metadata
+import io.github.komedia.komuxer.flv.tags.video.VideoData
 import io.github.komedia.komuxer.logger.KomuxerLogger
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.encoders.AudioCodecConfig
@@ -105,6 +107,25 @@ class FlvTagBuilder(val channel: ChannelWithCloseableData<FLVTag>) {
         }
     }
 
+    /**
+     * To call for every tag that is dropped instead of written: if it was a sequence start, the
+     * next frame of its stream (keyframe for video) carries it again.
+     */
+    fun onTagDropped(tag: FLVTag) {
+        audioStream?.onDropped(tag.data)
+        videoStream?.onDropped(tag.data)
+    }
+
+    /**
+     * To call before writing [tag]: false while its stream waits for a sequence start that
+     * replaces a dropped one. Such a tag is to be dropped.
+     */
+    fun isSendable(tag: FLVTag): Boolean = when (tag.data) {
+        is AudioData -> audioStream?.isSendable(tag.data) ?: true
+        is VideoData -> videoStream?.isSendable(tag.data) ?: true
+        else -> true
+    }
+
     suspend fun write(
         frame: Frame,
         ts: Int,
@@ -127,6 +148,10 @@ class FlvTagBuilder(val channel: ChannelWithCloseableData<FLVTag>) {
                 ?: throw IllegalStateException("Video stream not added")
 
             else -> throw IllegalArgumentException("Invalid stream PID $streamPid for frame $frame")
+        }
+        if (flvDatas.isEmpty()) {
+            frame.close()
+            return
         }
         flvDatas.forEachIndexed { index, flvData ->
             if (index == flvDatas.lastIndex) {

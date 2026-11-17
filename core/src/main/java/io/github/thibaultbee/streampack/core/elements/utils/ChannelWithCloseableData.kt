@@ -21,9 +21,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.RENDEZVOUS
+import kotlinx.coroutines.channels.ChannelIterator
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.consumeEach
 import java.io.Closeable
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * A channel that sends and receives data along with a close action to be executed when the data is no longer needed.
@@ -31,17 +34,33 @@ import java.io.Closeable
  * @param T The type of data to be sent and received.
  * @param capacity The capacity of the channel.
  * @param onBufferOverflow The behavior when the buffer overflows.
+ * @param sizeOf The size of an element in bytes, to bound the queue by [maxBytes].
  */
 class ChannelWithCloseableData<T>(
     capacity: Int = RENDEZVOUS,
     onBufferOverflow: BufferOverflow = BufferOverflow.SUSPEND,
-    onUndeliveredElement: ((T) -> Unit) = {}
+    private val onUndeliveredElement: ((T) -> Unit) = {},
+    private val sizeOf: ((T) -> Int)? = null
 ) : ReceiveChannel<ChannelWithCloseableData.CloseableData<T>> {
     private val channel =
-        Channel<CloseableData<T>>(capacity, onBufferOverflow, onUndeliveredElement = {
-            it.close()
-            onUndeliveredElement(it.data)
-        })
+        Channel<CloseableData<T>>(capacity, onBufferOverflow, onUndeliveredElement = ::drop)
+
+    /**
+     * With [sizeOf]: after each send, the oldest queued elements are dropped (as on overflow) while
+     * the queued bytes exceed this. An element larger than this does not count, so it is dropped
+     * only as the oldest while the smaller ones behind it exceed the budget. An element stops
+     * counting once received.
+     */
+    @Volatile
+    var maxBytes = Long.MAX_VALUE
+
+    private val queuedBytes = AtomicLong(0)
+    private val trimLock = Any()
+
+    private fun drop(element: CloseableData<T>) {
+        element.close()
+        onUndeliveredElement(element.data)
+    }
 
     /**
      * Sends data along with a close action to the channel.
@@ -50,7 +69,17 @@ class ChannelWithCloseableData<T>(
      * @param onClose The action to be executed when the data is no longer needed.
      */
     suspend fun send(data: T, onClose: (() -> Unit) = {}) {
-        channel.send(CloseableData(data, onClose))
+        val element = CloseableData(data, onClose)
+        val size = sizeOf?.invoke(data)?.toLong() ?: return channel.send(element)
+        val counted = if (size > maxBytes) 0L else size
+        queuedBytes.addAndGet(counted)
+        element.onDequeued = { queuedBytes.addAndGet(-counted) }
+        channel.send(element)
+        synchronized(trimLock) {
+            while (queuedBytes.get() > maxBytes) {
+                drop(tryReceive().getOrNull() ?: break)
+            }
+        }
     }
 
     @DelicateCoroutinesApi
@@ -68,13 +97,20 @@ class ChannelWithCloseableData<T>(
      *
      * @return The received data along with its close action.
      */
-    override suspend fun receive() = channel.receive()
+    override suspend fun receive() = channel.receive().also { it.dequeue() }
 
-    override suspend fun receiveCatching() = channel.receiveCatching()
+    override suspend fun receiveCatching() =
+        channel.receiveCatching().also { it.getOrNull()?.dequeue() }
 
-    override fun tryReceive() = channel.tryReceive()
+    override fun tryReceive() = channel.tryReceive().also { it.getOrNull()?.dequeue() }
 
-    override fun iterator() = channel.iterator()
+    override fun iterator(): ChannelIterator<CloseableData<T>> {
+        val iterator = channel.iterator()
+        return object : ChannelIterator<CloseableData<T>> {
+            override suspend fun hasNext() = iterator.hasNext()
+            override fun next() = iterator.next().also { it.dequeue() }
+        }
+    }
 
     override fun cancel(cause: CancellationException?) =
         channel.cancel(cause)
@@ -91,7 +127,16 @@ class ChannelWithCloseableData<T>(
         val data: T,
         val onClose: () -> Unit
     ) : Closeable {
+        internal var onDequeued: (() -> Unit)? = null
+        private val dequeued = AtomicBoolean(false)
+
+        // Select clauses (onReceive) are not wrapped: their elements stop counting on close.
+        internal fun dequeue() {
+            if (dequeued.compareAndSet(false, true)) onDequeued?.invoke()
+        }
+
         override fun close() {
+            dequeue()
             onClose()
         }
     }

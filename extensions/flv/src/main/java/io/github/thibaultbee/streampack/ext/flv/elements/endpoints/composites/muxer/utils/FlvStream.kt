@@ -28,11 +28,39 @@ import io.github.thibaultbee.streampack.core.elements.encoders.VideoCodecConfig
  */
 internal sealed class FlvStream {
     protected var sentSequenceStart = false
+    private var sequenceStart: FLVData? = null
+    private var awaitingSequenceStart = false
 
     abstract val flvConfig: FLVConfig<*>
 
-    fun create(frame: Frame): List<FLVData> {
-        return createImpl(frame)
+    fun create(frame: Frame): List<FLVData> = synchronized(this) {
+        val hadSequenceStart = sentSequenceStart
+        createImpl(frame).also {
+            if (!hadSequenceStart && sentSequenceStart) sequenceStart = it.first()
+        }
+    }
+
+    /**
+     * Re-arms the sequence start if [data] is it, so that the next frame (keyframe for video)
+     * carries it again. Called from any thread.
+     */
+    fun onDropped(data: FLVData) = synchronized(this) {
+        if (data === sequenceStart) {
+            sequenceStart = null
+            sentSequenceStart = false
+            awaitingSequenceStart = true
+        }
+    }
+
+    /**
+     * Whether [data], about to be written, can be decoded: after a dropped sequence start, the
+     * data queued before its replacement can't. Called from the writer, in queue order.
+     */
+    fun isSendable(data: FLVData): Boolean = synchronized(this) {
+        if (!awaitingSequenceStart) return true
+        if (data !== sequenceStart) return false
+        awaitingSequenceStart = false
+        true
     }
 
     abstract fun createImpl(frame: Frame): List<FLVData>
@@ -61,6 +89,10 @@ internal class VideoFlvStream(codecConfig: VideoCodecConfig) : FlvStream() {
     private val frameFactory = FlvVideoDataFactory.createFactory(codecConfig)
 
     override fun createImpl(frame: Frame): List<FLVData> {
+        if (!sentSequenceStart && !frame.isKeyFrame) {
+            // Undecodable without the sequence header, which only a keyframe carries.
+            return emptyList()
+        }
         var withSequenceStart = false
         if ((!sentSequenceStart) && (frame.isKeyFrame)) {
             // Send config
