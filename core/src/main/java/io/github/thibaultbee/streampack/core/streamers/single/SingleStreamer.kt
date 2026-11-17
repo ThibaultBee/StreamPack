@@ -37,6 +37,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.exten
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
+import io.github.thibaultbee.streampack.core.interfaces.releaseOnFailure
 import io.github.thibaultbee.streampack.core.interfaces.setCameraId
 import io.github.thibaultbee.streampack.core.pipelines.AudioInputMode
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
@@ -78,11 +79,12 @@ suspend fun cameraSingleStreamer(
         surfaceProcessorFactory = surfaceProcessorFactory,
         dispatcherProvider = dispatcherProvider
     )
-    streamer.setCameraId(cameraId)
-    if (audioSourceFactory != null) {
-        streamer.setAudioSource(audioSourceFactory)
+    return streamer.releaseOnFailure {
+        streamer.setCameraId(cameraId)
+        if (audioSourceFactory != null) {
+            streamer.setAudioSource(audioSourceFactory)
+        }
     }
-    return streamer
 }
 
 /**
@@ -115,10 +117,10 @@ suspend fun audioVideoMediaProjectionSingleStreamer(
         surfaceProcessorFactory = surfaceProcessorFactory,
         dispatcherProvider = dispatcherProvider
     )
-
-    streamer.setVideoSource(MediaProjectionVideoSourceFactory(mediaProjection))
-    streamer.setAudioSource(MediaProjectionAudioSourceFactory(mediaProjection))
-    return streamer
+    return streamer.releaseOnFailure {
+        streamer.setVideoSource(MediaProjectionVideoSourceFactory(mediaProjection))
+        streamer.setAudioSource(MediaProjectionAudioSourceFactory(mediaProjection))
+    }
 }
 
 /**
@@ -152,12 +154,12 @@ suspend fun videoMediaProjectionSingleStreamer(
         surfaceProcessorFactory = surfaceProcessorFactory,
         dispatcherProvider = dispatcherProvider
     )
-
-    streamer.setVideoSource(MediaProjectionVideoSourceFactory(mediaProjection))
-    if (audioSourceFactory != null) {
-        streamer.setAudioSource(audioSourceFactory)
+    return streamer.releaseOnFailure {
+        streamer.setVideoSource(MediaProjectionVideoSourceFactory(mediaProjection))
+        if (audioSourceFactory != null) {
+            streamer.setAudioSource(audioSourceFactory)
+        }
     }
-    return streamer
 }
 
 /**
@@ -191,9 +193,10 @@ suspend fun SingleStreamer(
         surfaceProcessorFactory = surfaceProcessorFactory,
         dispatcherProvider = dispatcherProvider
     )
-    streamer.setAudioSource(audioSourceFactory)
-    streamer.setVideoSource(videoSourceFactory)
-    return streamer
+    return streamer.releaseOnFailure {
+        streamer.setAudioSource(audioSourceFactory)
+        streamer.setVideoSource(videoSourceFactory)
+    }
 }
 
 /**

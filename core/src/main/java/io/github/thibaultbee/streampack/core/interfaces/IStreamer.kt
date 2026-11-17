@@ -21,8 +21,10 @@ import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.Media
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 /**
  * A streamer based on coroutines.
@@ -68,6 +70,21 @@ fun IStreamer.releaseBlocking(dispatcher: CoroutineDispatcher = Dispatchers.Defa
     runBlocking(dispatcher) {
         release()
     }
+
+/**
+ * Releases the streamer if [block] fails or is cancelled, then rethrows.
+ */
+internal suspend inline fun <T : IStreamer> T.releaseOnFailure(block: () -> Unit): T {
+    try {
+        block()
+    } catch (t: Throwable) {
+        withContext(NonCancellable) {
+            runCatching { release() }.onFailure { t.addSuppressed(it) }
+        }
+        throw t
+    }
+    return this
+}
 
 /**
  * An interface for a component that can be closed.

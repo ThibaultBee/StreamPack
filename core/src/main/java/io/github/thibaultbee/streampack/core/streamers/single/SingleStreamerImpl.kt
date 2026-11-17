@@ -286,6 +286,7 @@ internal class SingleStreamerImpl(
      * Releases the streamer.
      */
     override suspend fun release() {
+        initJob.join()
         pipeline.release()
         coroutineScope.cancel()
     }
