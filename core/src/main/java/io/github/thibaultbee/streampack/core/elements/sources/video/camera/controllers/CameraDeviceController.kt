@@ -61,17 +61,29 @@ internal class CameraDeviceController private constructor(
     }
 
     fun createCaptureSession(
-        targets: List<Surface>, callback: CameraCaptureSession.StateCallback
+        targets: List<Surface>,
+        sessionParameters: CaptureRequest? = null,
+        callback: CameraCaptureSession.StateCallback
     ) {
-        sessionCompat.createCaptureSession(cameraDevice, targets, callback)
+        sessionCompat.createCaptureSession(cameraDevice, targets, sessionParameters, callback)
     }
 
     fun createCaptureSessionByOutputConfiguration(
         outputConfigurations: List<OutputConfiguration>,
+        sessionParameters: CaptureRequest? = null,
         callback: CameraCaptureSession.StateCallback
     ) {
         sessionCompat.createCaptureSessionByOutputConfiguration(
-            cameraDevice, outputConfigurations, callback
+            cameraDevice, outputConfigurations, sessionParameters, callback
+        )
+    }
+
+    fun isSessionConfigurationSupported(
+        outputConfigurations: List<OutputConfiguration>,
+        sessionParameters: CaptureRequest? = null
+    ): Boolean {
+        return sessionCompat.isSessionConfigurationSupported(
+            cameraDevice, outputConfigurations, sessionParameters
         )
     }
 

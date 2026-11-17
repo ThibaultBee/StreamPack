@@ -20,10 +20,12 @@ import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.params.OutputConfiguration
 import android.os.Build
 import android.util.Range
 import android.view.Surface
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraException
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraDeviceController
@@ -34,6 +36,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.math.abs
+import kotlin.math.min
 
 internal object CameraUtils {
     private const val TAG = "CameraUtils"
@@ -76,10 +80,10 @@ internal object CameraUtils {
                 if (continuation.isActive) {
                     continuation.resumeWithException(exception)
                 }
+                throwableFlow.tryEmit(exception)
                 isClosedFlow.tryEmit(true)
                 Logger.e(TAG, "Camera ${camera.id} is in error $error")
                 camera.close()
-                throwableFlow.tryEmit(exception)
             }
 
             override fun onClosed(camera: CameraDevice) {
@@ -96,10 +100,42 @@ internal object CameraUtils {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun getOutputConfigurations(
+        outputs: List<Surface>,
+        dynamicRange: Long
+    ): List<OutputConfiguration> {
+        return outputs.map {
+            OutputConfiguration(it).apply {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    dynamicRangeProfile = dynamicRange
+                }
+            }
+        }
+    }
+
+    internal fun isSessionConfigurationSupported(
+        cameraDeviceController: CameraDeviceController,
+        outputs: List<Surface>,
+        dynamicRange: Long,
+        sessionParameters: CaptureRequest? = null
+    ): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val outputConfigurations = getOutputConfigurations(outputs, dynamicRange)
+            cameraDeviceController.isSessionConfigurationSupported(
+                outputConfigurations,
+                sessionParameters
+            )
+        } else {
+            true
+        }
+    }
+
     internal suspend fun createCaptureSession(
         cameraDeviceController: CameraDeviceController,
         outputs: List<Surface>,
         dynamicRange: Long,
+        sessionParameters: CaptureRequest? = null,
         isClosedFlow: MutableStateFlow<Boolean>
     ): CameraCaptureSession = suspendCancellableCoroutine { continuation ->
         val cameraId = cameraDeviceController.id
@@ -138,20 +174,14 @@ internal object CameraUtils {
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                val outputConfigurations = outputs.map {
-                    OutputConfiguration(it).apply {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            dynamicRangeProfile = dynamicRange
-                        }
-                    }
-                }
+                val outputConfigurations = getOutputConfigurations(outputs, dynamicRange)
 
                 cameraDeviceController.createCaptureSessionByOutputConfiguration(
-                    outputConfigurations, callbacks
+                    outputConfigurations, sessionParameters, callbacks
                 )
             } else {
                 cameraDeviceController.createCaptureSession(
-                    outputs, callbacks
+                    outputs, sessionParameters, callbacks
                 )
             }
         } catch (t: Throwable) {
@@ -165,13 +195,23 @@ internal object CameraUtils {
         characteristics: CameraCharacteristics,
         fps: Int
     ): Range<Int> {
-        var fpsRangeList = characteristics.targetFps
-        Logger.i(TAG, "Supported FPS range list: $fpsRangeList")
+        val supportedFpsRanges = characteristics.targetFps
+        Logger.i(TAG, "Supported FPS range list: $supportedFpsRanges")
 
         // Get range that contains FPS
-        fpsRangeList =
-            fpsRangeList.filter { it.contains(fps) or it.contains(fps * 1000) } // On Samsung S4 fps range is [4000-30000] instead of [4-30]
+        val fpsRangeList =
+            supportedFpsRanges.filter { it.contains(fps) or it.contains(fps * 1000) } // On Samsung S4 fps range is [4000-30000] instead of [4-30]
         if (fpsRangeList.isEmpty()) {
+            val closestRange = supportedFpsRanges.minByOrNull {
+                min(abs(it.upper - fps), abs(it.lower - fps))
+            }
+            if (closestRange != null) {
+                Logger.w(
+                    TAG,
+                    "Failed to find a single FPS range that contains $fps. Using closest supported range $closestRange."
+                )
+                return closestRange
+            }
             Logger.w(
                 TAG,
                 "Failed to find a single FPS range that contains $fps. Trying with forced $fps."
@@ -180,13 +220,7 @@ internal object CameraUtils {
         }
 
         // Get smaller range
-        var selectedFpsRange = fpsRangeList[0]
-        fpsRangeList = fpsRangeList.drop(0)
-        fpsRangeList.forEach {
-            if ((it.upper - it.lower) < (selectedFpsRange.upper - selectedFpsRange.lower)) {
-                selectedFpsRange = it
-            }
-        }
+        val selectedFpsRange = fpsRangeList.minBy { it.upper - it.lower }
 
         Logger.d(TAG, "Selected Fps range $selectedFpsRange")
         return selectedFpsRange

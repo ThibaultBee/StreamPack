@@ -19,22 +19,31 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.PointF
 import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
+import android.os.Build
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import io.github.thibaultbee.streampack.core.elements.sources.video.AbstractPreviewableSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
+import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource.ImplementationMode
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.controllers.CameraController
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameraManager
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.cameras
-import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.isFpsSupported
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.maxNumberOfFocusMeteringRegions
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.scalerMaxZoom
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.zoomRatioRange
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraDispatcherProvider
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSizes
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CameraSurface
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils.CaptureRequestWithTargetsBuilder
+import io.github.thibaultbee.streampack.core.elements.utils.MeteringPointFactory
+import io.github.thibaultbee.streampack.core.elements.utils.extensions.isEmpty
 import io.github.thibaultbee.streampack.core.elements.utils.time.Timebase
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.utils.InternalStreamPackApi
@@ -45,6 +54,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration
 
 /**
  * Camera source implementation.
@@ -168,10 +178,6 @@ internal class CameraSource(
 
     @RequiresPermission(Manifest.permission.CAMERA)
     override suspend fun configure(config: VideoSourceConfig) {
-        if (!characteristics.isFpsSupported(config.fps)) {
-            Logger.w(TAG, "Camera $cameraId does not support ${config.fps} fps")
-        }
-
         try {
             controller.setDynamicRangeProfile(config.dynamicRangeProfile)
         } catch (t: Throwable) {
@@ -184,6 +190,50 @@ internal class CameraSource(
         }
     }
 
+    override val isZoomOnPinchSupported by lazy {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            characteristics.zoomRatioRange?.let { !it.isEmpty } ?: false
+        } else {
+            characteristics.scalerMaxZoom > 1.0f
+        }
+    }
+
+    override suspend fun setZoomOnPinch(scale: Float, pinchCenter: PointF) {
+        executeIfCameraPermission {
+            settings.zoom.onPinch(scale)
+        }
+    }
+
+    override val isTapToFocusSupported by lazy {
+        (characteristics.maxNumberOfFocusMeteringRegions ?: 0) > 0
+    }
+
+    @SuppressLint("MissingPermission")
+    override suspend fun tapToFocus(
+        point: PointF,
+        factory: MeteringPointFactory,
+        viewRotationDegree: Int,
+        timeoutDuration: Duration
+    ) {
+        executeIfCameraPermission {
+            settings.focusMetering.tapToFocus(point, factory, viewRotationDegree, timeoutDuration)
+        }
+    }
+
+    override val previewConfiguration by lazy {
+        IPreviewableSource.PreviewConfiguration(
+            orientationDegrees = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION),
+            implementationMode = if (
+                characteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL) ==
+                CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY
+            ) {
+                ImplementationMode.PERFORMANCE
+            } else {
+                null
+            },
+            isSourceMirroredHorizontally = characteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT
+        )
+    }
 
     override fun <T> getPreviewSize(targetSize: Size, targetClass: Class<T>): Size {
         return CameraSizes.getPreviewOutputSize(

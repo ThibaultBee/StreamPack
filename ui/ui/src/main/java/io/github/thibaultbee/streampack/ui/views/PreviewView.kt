@@ -41,6 +41,7 @@ import androidx.camera.viewfinder.core.populateFromCharacteristics
 import androidx.core.content.ContextCompat
 import io.github.thibaultbee.streampack.core.elements.sources.video.IPreviewableSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings
+import io.github.thibaultbee.streampack.core.elements.sources.video.camera.CameraSettings.FocusMetering.Companion.defaultAutoCancelDuration
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.ICameraSource
 import io.github.thibaultbee.streampack.core.elements.sources.video.camera.extensions.getCameraCharacteristics
 import io.github.thibaultbee.streampack.core.elements.utils.ConflatedJob
@@ -50,6 +51,7 @@ import io.github.thibaultbee.streampack.core.elements.utils.extensions.runningHi
 import io.github.thibaultbee.streampack.core.interfaces.IWithVideoSource
 import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.ui.R
+import io.github.thibaultbee.streampack.ui.utils.size
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -58,6 +60,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration
 
 
 /**
@@ -73,6 +76,7 @@ import kotlinx.coroutines.withContext
  *
  * The [Manifest.permission.CAMERA] permission must be granted before using this view.
  */
+@Deprecated("Use InteractivePreviewView instead.", ReplaceWith("InteractivePreviewView"))
 class PreviewView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
 ) : FrameLayout(context, attrs, defStyle) {
@@ -91,9 +95,9 @@ class PreviewView @JvmOverloads constructor(
     var enableTapToFocus: Boolean
 
     /**
-     * The duration in milliseconds after which the focus area set by tap-to-focus is cleared.
+     * The duration after which the focus area set by tap-to-focus is cleared.
      */
-    var onTapToFocusTimeoutMs = 5000L
+    var onTapToFocusTimeout: Duration = defaultAutoCancelDuration
 
     private var scaleType: ScaleType = ScaleType.FIT_CENTER
         set(value) {
@@ -419,7 +423,7 @@ class PreviewView @JvmOverloads constructor(
                         PointF(x, y),
                         meteringPointFactory,
                         OrientationUtils.getSurfaceRotationDegrees(display.rotation),
-                        onTapToFocusTimeoutMs
+                        onTapToFocusTimeout
                     )
                 } catch (t: Throwable) {
                     Logger.e(TAG, "Failed to focus at $x, $y", t)

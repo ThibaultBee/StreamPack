@@ -30,7 +30,7 @@ import io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils
 
 /**
  * As camera API that support a [Handler] are deprecated since API >= 30.
- * Is is a [ICameraCaptureSessionCompat] that manages camera API < 30.
+ * It is a [ICameraCaptureSessionCompat] that manages camera API < 30.
  */
 internal class CameraHandlerCaptureSessionCompat(dispatcherProvider: CameraDispatcherProvider) :
     ICameraCaptureSessionCompat {
@@ -49,9 +49,13 @@ internal class CameraHandlerCaptureSessionCompat(dispatcherProvider: CameraDispa
     override fun createCaptureSession(
         camera: CameraDevice,
         targets: List<Surface>,
+        sessionParameters: CaptureRequest?,
         callback: CameraCaptureSession.StateCallback
     ) {
-        @Suppress("deprecation")
+        if (sessionParameters != null) {
+            throw UnsupportedOperationException("Session parameters are not supported on API < 28")
+        }
+        @Suppress("DEPRECATION")
         camera.createCaptureSession(targets, callback, handler)
     }
 
@@ -59,14 +63,29 @@ internal class CameraHandlerCaptureSessionCompat(dispatcherProvider: CameraDispa
     override fun createCaptureSessionByOutputConfiguration(
         camera: CameraDevice,
         outputConfigurations: List<OutputConfiguration>,
+        sessionParameters: CaptureRequest?,
         callback: CameraCaptureSession.StateCallback
     ) {
-        @Suppress("deprecation")
+        if (sessionParameters != null) {
+            throw UnsupportedOperationException("Session parameters are not supported on API < 28")
+        }
+        @Suppress("DEPRECATION")
         camera.createCaptureSessionByOutputConfigurations(
             outputConfigurations,
             callback,
             handler
         )
+    }
+
+    override fun isSessionConfigurationSupported(
+        camera: CameraDevice,
+        outputConfigurations: List<OutputConfiguration>,
+        sessionParameters: CaptureRequest?
+    ): Boolean {
+        if (sessionParameters != null) {
+            throw UnsupportedOperationException("Session parameters are not supported on API < 28")
+        }
+        return true
     }
 
     override fun setRepeatingSingleRequest(

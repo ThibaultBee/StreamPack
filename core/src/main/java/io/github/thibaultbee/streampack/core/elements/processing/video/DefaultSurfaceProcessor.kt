@@ -159,11 +159,17 @@ private class DefaultSurfaceProcessor(
             if (isReleaseRequested.get()) {
                 throw IllegalStateException("SurfaceProcessor is released")
             }
-            if (!surfaceOutputs.map { it.targetSurface }.contains(surfaceOutput.targetSurface)) {
+            val index =
+                surfaceOutputs.indexOfFirst { it.targetSurface == surfaceOutput.targetSurface }
+            if (index != -1) {
+                surfaceOutputs[index] = surfaceOutput
+                renderer.setOutputSurfaceSize(
+                    surfaceOutput.targetSurface,
+                    surfaceOutput.targetResolution
+                )
+            } else {
                 renderer.registerOutputSurface(surfaceOutput.targetSurface)
                 surfaceOutputs.add(surfaceOutput)
-            } else {
-                Logger.w(TAG, "Surface already added")
             }
         }
     }
@@ -314,7 +320,8 @@ private class DefaultSurfaceProcessor(
                         ),
                         surfaceOutputMatrix,
                         it.targetSurface,
-                        isMuted
+                        isMuted,
+                        it.backgroundColor
                     )
                 }
             } catch (t: Throwable) {

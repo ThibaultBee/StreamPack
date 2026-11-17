@@ -43,10 +43,14 @@ internal interface ICameraCaptureSessionCompat {
      *
      * @param camera the [CameraDevice]
      * @param targets list of [Surface]
+     * @param sessionParameters optional [CaptureRequest] session parameters
      * @param callback an implementation of [CameraCaptureSession.StateCallback]
      */
     fun createCaptureSession(
-        camera: CameraDevice, targets: List<Surface>, callback: CameraCaptureSession.StateCallback
+        camera: CameraDevice,
+        targets: List<Surface>,
+        sessionParameters: CaptureRequest? = null,
+        callback: CameraCaptureSession.StateCallback
     )
 
     /**
@@ -54,13 +58,29 @@ internal interface ICameraCaptureSessionCompat {
      *
      * @param camera the [CameraDevice]
      * @param outputConfigurations list of [OutputConfiguration]
+     * @param sessionParameters optional [CaptureRequest] session parameters
      * @param callback an implementation of [CameraCaptureSession.StateCallback]
      */
     fun createCaptureSessionByOutputConfiguration(
         camera: CameraDevice,
         outputConfigurations: List<OutputConfiguration>,
+        sessionParameters: CaptureRequest? = null,
         callback: CameraCaptureSession.StateCallback
     )
+
+    /**
+     * Checks whether a particular session configuration is supported by the camera device.
+     *
+     * @param camera the [CameraDevice]
+     * @param outputConfigurations list of [OutputConfiguration]
+     * @param sessionParameters optional [CaptureRequest] session parameters
+     * @return `true` if the session configuration is supported, `false` otherwise
+     */
+    fun isSessionConfigurationSupported(
+        camera: CameraDevice,
+        outputConfigurations: List<OutputConfiguration>,
+        sessionParameters: CaptureRequest? = null
+    ): Boolean
 
     /**
      * Set a repeating request.

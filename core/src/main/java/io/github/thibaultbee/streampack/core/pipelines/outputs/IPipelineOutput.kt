@@ -15,16 +15,19 @@
  */
 package io.github.thibaultbee.streampack.core.pipelines.outputs
 
+import android.graphics.Color
 import android.util.Size
 import android.view.Surface
+import androidx.annotation.ColorInt
 import io.github.thibaultbee.streampack.core.elements.data.Frame
 import io.github.thibaultbee.streampack.core.elements.data.RawFrame
 import io.github.thibaultbee.streampack.core.elements.encoders.IEncoderInternal.IAsyncByteBufferInput.OnFrameRequestedListener
 import io.github.thibaultbee.streampack.core.elements.sources.audio.AudioSourceConfig
 import io.github.thibaultbee.streampack.core.elements.sources.video.VideoSourceConfig
+import io.github.thibaultbee.streampack.core.elements.utils.Position
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
+import io.github.thibaultbee.streampack.core.elements.utils.ScaleMode
 import io.github.thibaultbee.streampack.core.interfaces.IStreamer
-import io.github.thibaultbee.streampack.core.interfaces.IWithVideoRotation
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
@@ -161,14 +164,20 @@ interface IConfigurableVideoPipelineOutputInternal : IConfigurableVideoPipelineO
  *
  * @param surface The [Surface].
  * @param resolution The resolution of the [Surface].
+ * @param scaleMode The scale mode to use when rendering the video to the [Surface].
+ * @param position The position alignment of the video within the [Surface].
  * @param targetRotation The target rotation in [Surface] rotation ([Surface.ROTATION_0], ...).
  * @param isEncoderInputSurface Whether the [Surface] is used as an input for a video encoder.
+ * @param backgroundColor The background color of the surface in ARGB format.
  */
 data class SurfaceDescriptor(
     val surface: Surface,
     val resolution: Size,
+    val scaleMode: ScaleMode = ScaleMode.CROP,
+    val position: Position = Position.CENTER,
     @RotationValue val targetRotation: Int = 0,
-    val isEncoderInputSurface: Boolean = false
+    val isEncoderInputSurface: Boolean = false,
+    @ColorInt val backgroundColor: Int = Color.BLACK
 )
 
 /**
@@ -187,7 +196,7 @@ sealed interface IVideoPipelineOutputInternal : IPipelineOutput {
  * An internal video output component for a pipeline.
  */
 @InternalStreamPackApi
-interface IVideoSurfacePipelineOutputInternal : IVideoPipelineOutputInternal, IWithVideoRotation {
+interface IVideoSurfacePipelineOutputInternal : IVideoPipelineOutputInternal {
     /**
      * The [Surface] flow to render video.
      * For surface mode video encoder.

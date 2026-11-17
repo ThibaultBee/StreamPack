@@ -15,6 +15,7 @@
  */
 package io.github.thibaultbee.streampack.core.elements.sources.video.camera.utils
 
+import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.TotalCaptureResult
 
 interface CaptureResultListener {
@@ -25,4 +26,12 @@ interface CaptureResultListener {
      * @return true if the listener is finished and should be removed, false otherwise.
      */
     fun onCaptureResult(result: TotalCaptureResult): Boolean
+
+    /**
+     * Called when a capture failure occurs.
+     *
+     * @param failure The capture failure.
+     * @return true if the listener is finished and should be removed, false otherwise.
+     */
+    fun onCaptureFailed(failure: CaptureFailure): Boolean = false
 }

@@ -28,12 +28,14 @@ import io.github.thibaultbee.streampack.core.elements.processing.video.ISurfaceP
 import io.github.thibaultbee.streampack.core.elements.utils.RotationValue
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.displayRotation
 import io.github.thibaultbee.streampack.core.elements.utils.extensions.isCompatibleWith
+import io.github.thibaultbee.streampack.core.interfaces.IWithOutputs
+import io.github.thibaultbee.streampack.core.pipelines.AudioInputMode
 import io.github.thibaultbee.streampack.core.pipelines.DispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.IDispatcherProvider
 import io.github.thibaultbee.streampack.core.pipelines.StreamerPipeline
-import io.github.thibaultbee.streampack.core.pipelines.AudioInputMode
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IAudioInput
 import io.github.thibaultbee.streampack.core.pipelines.inputs.IVideoInput
+import io.github.thibaultbee.streampack.core.pipelines.outputs.IPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.EncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IConfigurableAudioVideoEncodingPipelineOutput
 import io.github.thibaultbee.streampack.core.pipelines.outputs.encoding.IEncodingPipelineOutputInternal
@@ -76,7 +78,7 @@ internal class DualStreamerImpl(
     @RotationValue defaultRotation: Int = context.displayRotation,
     surfaceProcessorFactory: Factory = DefaultSurfaceProcessorFactory(),
     dispatcherProvider: IDispatcherProvider = DispatcherProvider(),
-) : IDualStreamer, IAudioDualStreamer, IVideoDualStreamer {
+) : IDualStreamer, IAudioDualStreamer, IVideoDualStreamer, IWithOutputs {
     private val coroutineScope = CoroutineScope(dispatcherProvider.default)
 
     private val pipeline = StreamerPipeline(
@@ -308,5 +310,17 @@ internal class DualStreamerImpl(
     override suspend fun release() {
         pipeline.release()
         coroutineScope.cancel()
+    }
+
+    @InternalStreamPackApi
+    override suspend fun <T : IPipelineOutput> addOutput(output: T): T {
+        initJob.join()
+        return pipeline.addOutput(output)
+    }
+
+    @InternalStreamPackApi
+    override suspend fun removeOutput(output: IPipelineOutput) {
+        initJob.join()
+        pipeline.removeOutput(output)
     }
 }

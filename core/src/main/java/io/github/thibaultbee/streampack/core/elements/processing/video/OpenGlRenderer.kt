@@ -17,6 +17,7 @@
 package io.github.thibaultbee.streampack.core.elements.processing.video
 
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.opengl.EGL14
 import android.opengl.EGLConfig
 import android.opengl.EGLContext
@@ -28,6 +29,7 @@ import android.opengl.GLES20
 import android.util.Log
 import android.util.Size
 import android.view.Surface
+import androidx.annotation.ColorInt
 import androidx.annotation.WorkerThread
 import androidx.core.graphics.createBitmap
 import androidx.core.util.Pair
@@ -197,6 +199,29 @@ class OpenGlRenderer {
         removeOutputSurfaceInternal(surface, true)
     }
 
+    /**
+     * Updates the size (viewport and scissor) of an already registered output surface.
+     *
+     * @param surface The output surface.
+     * @param size The new size of the surface.
+     * @throws IllegalStateException if the renderer is not initialized or the caller doesn't run
+     * on the GL thread.
+     */
+    fun setOutputSurfaceSize(surface: Surface, size: Size) {
+        checkInitializedOrThrow(mInitialized, true)
+        checkGlThreadOrThrow(mGlThread)
+
+        val outputSurface = mOutputSurfaceMap[surface]
+        if (outputSurface != null && outputSurface !== NO_OUTPUT_SURFACE) {
+            if (outputSurface.viewPortRect.width() != size.width || outputSurface.viewPortRect.height() != size.height) {
+                mOutputSurfaceMap[surface] = OutputSurface(outputSurface.eglSurface, size.width, size.height)
+                if (mCurrentSurface === surface) {
+                    mCurrentSurface = null
+                }
+            }
+        }
+    }
+
     val textureName: Int
         /**
          * Gets the texture name.
@@ -251,7 +276,8 @@ class OpenGlRenderer {
         timestampNs: Long,
         textureTransform: FloatArray,
         surface: Surface,
-        isMuted: Boolean = false
+        isMuted: Boolean = false,
+        @ColorInt backgroundColor: Int = Color.BLACK
     ) {
         checkInitializedOrThrow(mInitialized, true)
         checkGlThreadOrThrow(mGlThread)
@@ -269,6 +295,18 @@ class OpenGlRenderer {
         }
 
         requireNotNull(outputSurface)
+
+        val surfaceSize = getSurfaceSize(mEglDisplay, outputSurface.eglSurface)
+        if (surfaceSize.width > 0 && surfaceSize.height > 0 &&
+            (outputSurface.viewPortRect.width() != surfaceSize.width ||
+             outputSurface.viewPortRect.height() != surfaceSize.height)
+        ) {
+            outputSurface = OutputSurface(outputSurface.eglSurface, surfaceSize.width, surfaceSize.height)
+            mOutputSurfaceMap[surface] = outputSurface
+            if (mCurrentSurface === surface) {
+                mCurrentSurface = null
+            }
+        }
 
         // Set output surface.
         if (surface !== mCurrentSurface) {
@@ -288,9 +326,13 @@ class OpenGlRenderer {
             )
         }
 
+        val r = Color.red(backgroundColor) / 255f
+        val g = Color.green(backgroundColor) / 255f
+        val b = Color.blue(backgroundColor) / 255f
+        val a = Color.alpha(backgroundColor) / 255f
 
         if (isMuted) {
-            GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f)
+            GLES20.glClearColor(r, g, b, a)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         } else {
             // TODO(b/245855601): Upload the matrix to GPU when textureTransform is changed.
@@ -298,6 +340,7 @@ class OpenGlRenderer {
             if (program is SamplerShaderProgram) {
                 // Copy the texture transformation matrix over.
                 program.updateTextureMatrix(textureTransform)
+                program.updateBackgroundColor(r, g, b, a)
             }
 
             // Draw the rect.
@@ -326,14 +369,18 @@ class OpenGlRenderer {
      * @param textureTransform the transformation matrix.
      * See: [SurfaceOutput.updateTransformMatrix]
      */
-    fun snapshot(size: Size, textureTransform: FloatArray): Bitmap {
+    fun snapshot(
+        size: Size,
+        textureTransform: FloatArray,
+        @ColorInt backgroundColor: Int = Color.BLACK
+    ): Bitmap {
         // Allocate buffer.
         val byteBuffer = ByteBuffer.allocateDirect(
             size.width * size.height * PIXEL_STRIDE
         )
 
         // Take a snapshot.
-        snapshot(byteBuffer, size, textureTransform)
+        snapshot(byteBuffer, size, textureTransform, backgroundColor)
         byteBuffer.rewind()
 
         // Create a Bitmap and copy the bytes over.
@@ -353,10 +400,12 @@ class OpenGlRenderer {
      * @param size             the size of the output image.
      * @param textureTransform the transformation matrix.
      * See: [SurfaceOutput.updateTransformMatrix]
+     * @param backgroundColor  the background color to use.
      */
     private fun snapshot(
         byteBuffer: ByteBuffer, size: Size,
-        textureTransform: FloatArray
+        textureTransform: FloatArray,
+        @ColorInt backgroundColor: Int = Color.BLACK
     ) {
         check(byteBuffer.capacity() == size.width * size.height * 4) {
             "ByteBuffer capacity is not equal to width * height * 4."
@@ -407,8 +456,13 @@ class OpenGlRenderer {
 
         val program: Program2D = requireNotNull(mCurrentProgram)
         if (program is SamplerShaderProgram) {
-            // Upload transform matrix.
+            val r = Color.red(backgroundColor) / 255f
+            val g = Color.green(backgroundColor) / 255f
+            val b = Color.blue(backgroundColor) / 255f
+            val a = Color.alpha(backgroundColor) / 255f
+            // Upload transform matrix and background color.
             program.updateTextureMatrix(textureTransform)
+            program.updateBackgroundColor(r, g, b, a)
         }
 
         // Draw the external texture to the intermediate texture.
